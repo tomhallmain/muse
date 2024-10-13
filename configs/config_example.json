@@ -1,5 +1,7 @@
 {
     "directories": [
         "{HOME}\\audio"
-    ]
+    ],
+    "foreground_color": "white",
+    "background_color": "#2596BE"
 }

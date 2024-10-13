@@ -9,6 +9,7 @@ class RunnerAppConfig:
         self.total = "1"
         self.delay_time_seconds = "1"
         self.directory = "ALL"
+        self.overwrite = False
 
     def set_from_run_config(self, args):
         pass

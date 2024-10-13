@@ -1,6 +1,5 @@
 
 from utils.globals import Globals, WorkflowType # must import first
-from utils.runner_app_config import RunnerAppConfig
 
 class RunConfig:
 
@@ -9,6 +8,8 @@ class RunConfig:
         self.workflow_tag = WorkflowType.RANDOM.name
         self.total = '1'
         self.directories = self.get("directories")
+        self.overwrite = False
+        self.only_music = True
 
     def get(self, name):
         if isinstance(self.args, dict):

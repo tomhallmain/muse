@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 
 
 class Config:
@@ -7,9 +8,10 @@ class Config:
 
     def __init__(self):
         self.dict = {}
-        self.foreground_color = None
-        self.background_color = None
+        self.foreground_color = "white"
+        self.background_color = "#2596BE"
         self.directories = []
+        self.debug = False
 
         self.server_port = 6000
         self.server_password = "<PASSWORD>"
@@ -48,10 +50,17 @@ class Config:
         # self.set_filepaths(
         # )
 
-        for i in range(len(self.directories)):
+        i = 0
+        while i < len(self.directories):
             d = self.directories[i]
-            if not os.path.isdir(d):
-                self.directories[i] = self.validate_and_set_directory(d)
+            try:
+                if sys.platform == "win32" and not d.startswith("C:\\") and not d.startswith("{HOME}"):
+                    pass
+                elif not os.path.isdir(d):
+                    self.directories[i] = self.validate_and_set_directory(d, override=True)
+            except Exception as e:
+                pass
+            i += 1
 
 
     def validate_and_set_directory(self, key, override=False):
@@ -112,12 +121,15 @@ class Config:
     def get_subdirectories(self):
         subdirectories = {}
         for directory in self.directories:
-            this_dir_subdirs = [os.path.join(directory, d) for d in os.listdir(directory) if os .path.isdir(os.path.join(directory, d))]
-            if len(this_dir_subdirs) == 0:
-                subdirectories[directory] = os.path.basename(directory)
-            else:
-                for d in this_dir_subdirs:
-                    subdirectories[d] = os.path.join(os.path.basename(directory), os.path.basename(d))
+            try:
+                this_dir_subdirs = [os.path.join(directory, d) for d in os.listdir(directory) if os .path.isdir(os.path.join(directory, d))]
+                if len(this_dir_subdirs) == 0:
+                    subdirectories[directory] = os.path.basename(directory)
+                else:
+                    for d in this_dir_subdirs:
+                        subdirectories[d] = os.path.join(os.path.basename(directory), os.path.basename(d))
+            except Exception:
+                pass
         return subdirectories
 
 config = Config()

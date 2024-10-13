@@ -4,6 +4,7 @@ import time
 import traceback
 
 from utils.globals import Globals # must import first
+from ops.muse import Muse
 from ops.playback import Playback
 from ops.playback_config import PlaybackConfig
 from ops.run_config import RunConfig
@@ -17,7 +18,7 @@ prompt_list = [
 
 
 class Run:
-    def __init__(self, args, progress_callback=None):
+    def __init__(self, args, song_text_callback=None):
         self.id = str(time.time())
         self.is_complete = False
         self.is_cancelled = False
@@ -25,8 +26,9 @@ class Run:
         self.editing = False
         self.switching_params = False
         self.last_config = None
-        self.progress_callback = progress_callback
+        self.song_text_callback = song_text_callback
         self.playback = None
+        self.muse = Muse(self.args)
 
     def is_infinite(self):
         return self.args.total == -1
@@ -58,8 +60,8 @@ class Run:
 #        if config.prompts_match(self.last_config) or config.validate():
         self.playback.run()
 
-        if config.maximum_gens() > 10:
-            print(f"Large config with maximum gens {config.maximum_gens()} - skipping loop.")
+        if config.maximum_plays() > 10:
+            print(f"Large config with maximum gens {config.maximum_plays()} - skipping loop.")
             exit()
 
         self.last_config = deepcopy(self.playback._playback_config)
@@ -67,7 +69,7 @@ class Run:
 
     def do_workflow(self, workflow):
         config = PlaybackConfig(self.args)
-        self.playback = Playback(config)
+        self.playback = Playback(config, self.song_text_callback, self)
         self.editing = False
         self.switching_params = False
         self.last_config = None
@@ -82,16 +84,16 @@ class Run:
                 if self.args.total:
                     if self.args.total > -1 and count == self.args.total:
                         print(f"Reached maximum requested iterations: {self.args.total}")
-                        if self.progress_callback is not None:
-                            self.progress_callback(count, self.args.total)
+                        if self.song_text_callback is not None:
+                            self.song_text_callback(count, self.args.total)
                         return
                     else:
                         if self.args.total == -1:
                             print("Running until cancelled or total iterations reached")
                         else:
                             print(f"On iteration {count} of {self.args.total} - continuing.")
-                        if self.progress_callback is not None:
-                            self.progress_callback(count, self.args.total)
+                        if self.song_text_callback is not None:
+                            self.song_text_callback(count, self.args.total)
                 if True: # self.args.auto_run:
                     sleep_time = config.maximum_plays()
                     sleep_time *= Globals.DELAY_TIME_SECONDS
@@ -129,7 +131,7 @@ class Run:
     def cancel(self):
         print("Canceling...")
         self.is_cancelled = True
-        # TODO send cancel/delete call to ComfyUI for all previously started prompts
+        self.playback.next()
 
 def main(args):
     run = Run(args)

@@ -107,7 +107,7 @@ class Utils:
 
     @staticmethod
     def is_similar_str(s0, s1):
-        l_distance = string_distance(s0, s1)
+        l_distance = Utils.string_distance(s0, s1)
         min_len = min(len(s0), len(s1))
         if min_len == len(s0):
             weighted_avg_len = (len(s0) + len(s1) / 2) / 2
@@ -152,6 +152,69 @@ class Utils:
         return parts
 
     @staticmethod
+    def _wrap_text_to_fit_length(text: str, fit_length: int):
+        if len(text) <= fit_length:
+            return text
+
+        if " " in text and text.index(" ") < len(text) - 2:
+            test_new_text = text[:fit_length]
+            if " " in test_new_text:
+                last_space_block = re.findall(" +", test_new_text)[-1]
+                last_space_block_index = test_new_text.rfind(last_space_block)
+                new_text = text[:last_space_block_index]
+                text = text[(last_space_block_index+len(last_space_block)):]
+            else:
+                new_text = test_new_text
+                text = text[fit_length:]
+            while len(text) > 0:
+                new_text += "\n"
+                test_new_text = text[:fit_length]
+                if len(test_new_text) <= fit_length:
+                    new_text += test_new_text
+                    text = text[fit_length:]
+                elif " " in test_new_text and test_new_text.index(" ") < len(test_new_text) - 2:
+                    last_space_block = re.findall(" +", test_new_text)[-1]
+                    last_space_block_index = test_new_text.rfind(
+                        last_space_block)
+                    new_text += text[:last_space_block_index]
+                    text = text[(last_space_block_index
+                                 + len(last_space_block)):]
+                else:
+                    new_text += test_new_text
+                    text = text[fit_length:]
+        else:
+            new_text = text[:fit_length]
+            text = text[fit_length:]
+            while len(text) > 0:
+                new_text += "\n"
+                new_text += text[:fit_length]
+                text = text[fit_length:]
+
+        return new_text
+
+    @staticmethod
+    def get_relative_dirpath(directory, levels=1):
+        # get relative dirpath from base directory
+        if "/" not in directory and "\\" not in directory:
+            return directory
+        if "/" in directory:
+            # temp = base_dir
+            # if "/" == base_dir[0]:
+            #     temp = base_dir[1:]
+            dir_parts = directory.split("/")
+        else:
+            dir_parts = directory.split("\\")
+        if len(dir_parts) <= levels:
+            return directory
+        relative_dirpath = ""
+        for i in range(len(dir_parts) - 1, len(dir_parts) - levels - 1, -1):
+            if relative_dirpath == "":
+                relative_dirpath = dir_parts[i]
+            else:
+                relative_dirpath = dir_parts[i] + "/" + relative_dirpath
+        return relative_dirpath
+
+    @staticmethod
     def get_default_user_language():
         _locale = os.environ['LANG'] if "LANG" in os.environ else None
         if not _locale or _locale == '':
@@ -177,3 +240,39 @@ class Utils:
         sound = os.path.join(os.path.dirname(os.path.dirname(__file__)), "lib", "sounds", sound + ".wav")
         import winsound
         winsound.PlaySound(sound, winsound.SND_ASYNC)
+
+    @staticmethod
+    def longest_common_substring(str1, str2):
+        m = [[0] * (1 + len(str2)) for _ in range(1 + len(str1))]
+        longest, x_longest = 0, 0
+        for x in range(1, 1 + len(str1)):
+            for y in range(1, 1 + len(str2)):
+                if str1[x - 1] == str2[y - 1]:
+                    m[x][y] = m[x - 1][y - 1] + 1
+                    if m[x][y] > longest:
+                        longest = m[x][y]
+                        x_longest = x
+                else:
+                    m[x][y] = 0
+        return str1[x_longest - longest: x_longest]
+
+
+
+if __name__ == "__main__":
+    import pickle
+    from ops.playback_config import PlaybackConfig
+    if os.path.exists("test.pkl"):
+        with open("test.pkl", "rb") as f:
+            data = pickle.load(f)
+    else:
+        data = {}
+        cache = PlaybackConfig.DIRECTORIES_CACHE
+        for artist_dir, sound_files in cache.items():
+            artist_data = {}
+            file_basenames = []
+            for _file in sound_files:
+                file_basenames.append(os.path.basename(_file))
+            artist_data["file_basenames"] = file_basenames
+            data[os.path.basename(artist_dir)] = artist_data
+    pickle.dump(data, open("test.pkl", "wb"))
+    

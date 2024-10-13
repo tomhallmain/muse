@@ -15,10 +15,12 @@ from utils.globals import Globals, WorkflowType
 
 from ops.run import Run
 from ops.run_config import RunConfig
+from ops.playback_config import PlaybackConfig
 from ui.app_style import AppStyle
 from utils.app_info_cache import app_info_cache
 from utils.config import config
 from utils.globals import WorkflowType
+from utils.job_queue import JobQueue
 from utils.runner_app_config import RunnerAppConfig
 from utils.translations import I18N
 from utils.utils import Utils
@@ -70,38 +72,6 @@ class ProgressListener:
     def update(self, context, percent_complete):
         self.update_func(context, percent_complete)
 
-class JobQueue:
-    def __init__(self, name="JobQueue", max_size=50):
-        self.name = name
-        self.max_size = max_size
-        self.pending_jobs = []
-        self.job_running = False
-
-    def has_pending(self):
-        return self.job_running or len(self.pending_jobs) > 0
-
-    def take(self):
-        if len(self.pending_jobs) == 0:
-            return None
-        job_args = self.pending_jobs[0]
-        del self.pending_jobs[0]
-        return job_args
-
-    def add(self, job_args):
-        if len(self.pending_jobs) > self.max_size:
-            raise Exception(f"Reached limit of pending runs: {self.max_size} - wait until current run has completed.")
-        self.pending_jobs.append(job_args)
-        print(f"JobQueue {self.name} - Added pending job: {job_args}")
-
-    def cancel(self):
-        self.pending_jobs = []
-        self.job_running = False
-
-    def pending_text(self):
-        if len(self.pending_jobs) == 0:
-            return ""
-        if self.name == "Playlist Runs":
-            return _(" (Pending runs: {0})").format(len(self.pending_jobs))
 
 class App():
     '''
@@ -132,6 +102,9 @@ class App():
         self.run_btn = None
         self.add_button("run_btn", _("Play"), self.run)
 
+        self.run_plus_btn = None
+        self.add_button("run_plus_btn", _("Play Plus"), lambda event: self.run(event, only_music=False))
+
         self.next_btn = None
         self.add_button("next_btn", _("Next"), self.next)
 
@@ -139,8 +112,9 @@ class App():
         self.add_button("pause_btn", _("Pause"), self.pause)
 
         self.cancel_btn = Button(self.sidebar, text=_("Stop"), command=self.cancel)
-        self.label_progress = Label(self.sidebar)
-        self.add_label(self.label_progress, "", sticky=None)
+        self.label_song_text = Label(self.sidebar)
+        self.add_label(self.label_song_text, "", sticky=None)
+
 
         # TODO multiselect
         self.label_workflows = Label(self.sidebar)
@@ -191,6 +165,11 @@ class App():
         # self.presets_window_btn = None
         # self.add_button("tag_blacklist_btn", text=_("Tag Blacklist"), command=self.show_tag_blacklist, sidebar=False, increment_row_counter=False)
         # self.add_button("presets_window_btn", text=_("Presets Window"), command=self.open_presets_window, sidebar=False, interior_column=1)
+
+
+        self.overwrite = BooleanVar(value=False)
+        self.overwrite_choice = Checkbutton(self.sidebar, text=_('Overwrite'), variable=self.overwrite)
+        self.apply_to_grid(self.overwrite_choice, sticky=W)
 
         self.master.bind("<Control-Return>", self.run)
         self.master.bind("<Shift-R>", self.run)
@@ -251,15 +230,17 @@ class App():
 
 
     def store_info_cache(self):
-        # if self.runner_app_config is not None:
-        #     if app_info_cache.set_history(self.runner_app_config):
-        #         if self.config_history_index > 0:
-        #             self.config_history_index -= 1
-        # app_info_cache.set("config_history_index", self.config_history_index)
+        if self.runner_app_config is not None:
+            if app_info_cache.set_history(self.runner_app_config):
+                if self.config_history_index > 0:
+                    self.config_history_index -= 1
+        app_info_cache.set("config_history_index", self.config_history_index)
+        PlaybackConfig.store_directory_cache()
         app_info_cache.store()
 
     def load_info_cache(self):
         try:
+            PlaybackConfig.load_directory_cache()
             self.config_history_index = app_info_cache.get("config_history_index", default_val=0)
             return RunnerAppConfig.from_dict(app_info_cache.get_history(0))
         except Exception as e:
@@ -311,6 +292,7 @@ class App():
 
         self.total.set(str(self.runner_app_config.total))
         self.delay.set(str(self.runner_app_config.delay_time_seconds))
+        self.overwrite.set(self.runner_app_config.overwrite)
 
     # def set_widgets_from_preset(self, preset):
     #     self.prompt_mode.set(preset.prompt_mode)
@@ -384,7 +366,7 @@ class App():
             self.destroy_grid_element("progress_bar")
             self.progress_bar = None
 
-    def run(self, event=None):
+    def run(self, event=None, only_music=True):
         if self.current_run.is_infinite():
             self.current_run.cancel()
         # if event is not None and self.job_queue_preset_schedules.has_pending():
@@ -394,7 +376,7 @@ class App():
         #     if res != messagebox.OK:
         #         return
         # self.job_queue_preset_schedules.cancel()
-        args, args_copy = self.get_args()
+        args, args_copy = self.get_args(only_music=only_music)
 
         try:
             args.validate()
@@ -412,7 +394,7 @@ class App():
             self.progress_bar.grid(row=1, column=1)
             self.progress_bar.start()
             self.cancel_btn.grid(row=2, column=1)
-            self.current_run = Run(args, progress_callback=self.update_progress)
+            self.current_run = Run(args, song_text_callback=self.update_song_text)
             self.current_run.execute()
             self.cancel_btn.grid_forget()
             self.destroy_progress_bar()
@@ -436,7 +418,7 @@ class App():
     def cancel(self, event=None):
         self.current_run.cancel()
 
-    def get_args(self):
+    def get_args(self, only_music=True):
         self.store_info_cache()
         self.set_delay()
         # self.set_concepts_dir()
@@ -444,6 +426,8 @@ class App():
         args.workflow_tag = self.workflow.get()
         args.total = self.total.get()
         args.directories = self.get_directories()
+        args.overwrite = self.overwrite.get()
+        args.only_music = only_music
 
         # controlnet_file = clear_quotes(self.controlnet_file.get())
         # self.runner_app_config.control_net_file = controlnet_file
@@ -464,14 +448,10 @@ class App():
                     break
             return directories
 
-    def update_progress(self, current_index, total):
-        if total == -1:
-            self.label_progress["text"] = str(current_index) + _(" (unlimited)")
-        else:
-            pending_text = self.job_queue.pending_text()
-            if pending_text is None:
-                pending_text = ""
-            self.label_progress["text"] = str(current_index) + "/" + str(total) + pending_text
+    def update_song_text(self, song_name, directory):
+        text = "Song: " + song_name + "\nDirectory: " + directory
+        text = Utils._wrap_text_to_fit_length(text, 100)
+        self.label_song_text["text"] = text
         self.master.update()
 
     # def open_presets_window(self):
