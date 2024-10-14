@@ -112,9 +112,9 @@ class App():
         self.add_button("pause_btn", _("Pause"), self.pause)
 
         self.cancel_btn = Button(self.sidebar, text=_("Stop"), command=self.cancel)
+        self.text_btn = Button(self.sidebar, text=_("Text"), command=self.open_text)
         self.label_song_text = Label(self.sidebar)
         self.add_label(self.label_song_text, "", sticky=None)
-
 
         # TODO multiselect
         self.label_workflows = Label(self.sidebar)
@@ -394,9 +394,11 @@ class App():
             self.progress_bar.grid(row=1, column=1)
             self.progress_bar.start()
             self.cancel_btn.grid(row=2, column=1)
+            self.text_btn.grid(row=3, column=1)
             self.current_run = Run(args, song_text_callback=self.update_song_text)
             self.current_run.execute()
             self.cancel_btn.grid_forget()
+            self.text_btn.grid_forget()
             self.destroy_progress_bar()
             self.job_queue.job_running = False
             next_job_args = self.job_queue.take()
@@ -434,6 +436,11 @@ class App():
         args_copy = deepcopy(args)
 
         return args, args_copy
+
+    def open_text(self):
+        if self.current_run is None or self.current_run.is_complete or self.current_run.is_cancelled:
+            return
+        self.current_run.open_text()
 
     def get_directories(self):
         directories = []

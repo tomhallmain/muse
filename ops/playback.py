@@ -1,3 +1,4 @@
+import glob
 import os
 import subprocess
 from time import sleep
@@ -76,4 +77,34 @@ class Playback:
         Playback.VLC_MEDIA_PLAYER.stop()
         self.skip_song = True
         self.skip_delay = True
+
+    def get_song_text_file(self):
+        if self.song is None or self.song == "" or not os.path.exists(self.song):
+            return None
+        song_basename = os.path.basename(self.song).lower()
+        dirname = os.path.dirname(self.song)
+        txt_files = glob.glob(os.path.join(dirname, "*.txt"))
+        txt_basenames = []
+        for f in txt_files:
+            basename = os.path.basename(f).lower()
+            if song_basename.startswith(basename):
+                return f
+            txt_basenames.append(basename)
+        for basename in txt_basenames:
+            if basename[:-4] in song_basename:
+                return os.path.join(dirname,  basename)
+        string_distance_dict = {}
+        song_basename_no_ext = os.path.splitext(song_basename)[0]
+        print("Song basename no ext: " + song_basename_no_ext)
+        min_string_distance = (999999999, None)
+        for basename in txt_basenames:
+            basename_no_ext = os.path.splitext(basename)[0]
+            string_distance = Utils.string_distance(song_basename_no_ext,  basename_no_ext)
+            string_distance_dict[basename] = string_distance
+            print("Txt basename no ext: " + basename_no_ext + ", string distance: " + str(string_distance))
+            if min_string_distance[0] > string_distance:
+                min_string_distance = (string_distance, basename)
+        if min_string_distance[1] is not None and min_string_distance[0] < 30:
+            return os.path.join(dirname,  min_string_distance[1])
+        raise Exception("No matching text file found for song: " + self.song)
 

@@ -10,6 +10,7 @@ from ops.playback_config import PlaybackConfig
 from ops.run_config import RunConfig
 from ops.workflow import WorkflowPrompt
 from utils.translations import I18N
+from utils.utils import Utils
 
 _ = I18N._
 
@@ -132,6 +133,11 @@ class Run:
         print("Canceling...")
         self.is_cancelled = True
         self.playback.next()
+
+    def open_text(self):
+        assert self.playback is not None
+        song_text_filepath = self.playback.get_song_text_file()
+        Utils.open_file(song_text_filepath)
 
 def main(args):
     run = Run(args)

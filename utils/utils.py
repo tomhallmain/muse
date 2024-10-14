@@ -256,6 +256,16 @@ class Utils:
                     m[x][y] = 0
         return str1[x_longest - longest: x_longest]
 
+    @staticmethod
+    def open_file(filepath):
+        if sys.platform == 'win32':
+            os.startfile(filepath)
+        elif sys.platform == 'darwin':
+            os.system('open "%s"' % filepath)
+        else:
+            os.system('xdg-open "%s"' % filepath)
+
+
 
 
 if __name__ == "__main__":
