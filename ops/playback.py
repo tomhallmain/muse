@@ -48,6 +48,7 @@ class Playback:
 
     def run(self):
         while self.get_song() and not self._run.is_cancelled:
+            self._run.muse.maybe_dj()
             song_name = os.path.basename(self.song)
             if "." in self.song:
                 song_name = song_name[:song_name.rfind(".")]

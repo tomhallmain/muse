@@ -1,4 +1,6 @@
 
+import random
+
 from extensions.news_api import NewsAPI
 from extensions.open_weather import OpenWeatherAPI
 from extensions.llm import LLM
@@ -15,6 +17,39 @@ class Muse:
         self.open_weather_api = OpenWeatherAPI()
         self.news_api = NewsAPI()
         self.prompter = Prompter()
+
+    def maybe_dj(self):
+        if random.random() < 0.2:
+            self.talk_about_something()
+
+    def talk_about_something(self):
+        if Prompter.over_n_hours_since_last("weather", n_hours=24):
+            topic = "weather"
+            print("Talking about the weather")
+        elif Prompter.over_n_hours_since_last("news", n_hours=96):
+            topic = "news"
+            print("Talking about the news")
+        else:
+            topic = Prompter.get_oldest_topic()
+            print("Talking about topic: " + topic)
+        if topic == "weather":
+            self.talk_about_weather()
+        elif topic == "news":
+            self.talk_about_news()
+        elif topic == "joke":
+            self.tell_a_joke()
+        elif topic == "fact":
+            self.share_a_fact()
+        elif topic == "truth_and_lie":
+            self.play_two_truths_and_one_lie()
+        elif topic == "fable":
+            self.share_a_fable()
+        elif topic == "aphorism":
+            self.share_an_aphorism()
+        elif topic == "poem":
+            self.share_a_poem()
+        else:
+            print("Unhandled topic: " + topic)
 
     def talk_about_weather(self, city="Washington"):
         weather = self.open_weather_api.get_weather_for_city(city)

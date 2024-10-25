@@ -61,10 +61,6 @@ class Run:
 #        if config.prompts_match(self.last_config) or config.validate():
         self.playback.run()
 
-        if config.maximum_plays() > 10:
-            print(f"Large config with maximum gens {config.maximum_plays()} - skipping loop.")
-            exit()
-
         self.last_config = deepcopy(self.playback._playback_config)
 
 

@@ -1,5 +1,4 @@
 from copy import deepcopy
-import os
 import signal
 import time
 import traceback
@@ -368,20 +367,6 @@ class App():
             self.progress_bar = None
 
     def run(self, event=None, only_music=True):
-
-        muse = Muse(None)
-
-        for i in range(2):
-            muse.tell_a_joke()
-            muse.play_two_truths_and_one_lie()
-            muse.share_a_fable()
-            muse.share_a_poem()
-            muse.share_a_fact()
-            muse.share_an_aphorism()
-
-        if True:
-            return
-
         if self.current_run.is_infinite():
             self.current_run.cancel()
         # if event is not None and self.job_queue_preset_schedules.has_pending():
