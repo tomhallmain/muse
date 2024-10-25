@@ -48,7 +48,7 @@ class PlaybackConfig:
 
     def _get_directory_files(self, directory):
         if directory not in PlaybackConfig.DIRECTORIES_CACHE or self.overwrite:
-            files = glob.glob(directory + "\\**/*", recursive = True)
+            files = glob.glob(os.path.join(directory, "**/*"), recursive = True)
             PlaybackConfig.DIRECTORIES_CACHE[directory] = files
         else:
             files = PlaybackConfig.DIRECTORIES_CACHE[directory]

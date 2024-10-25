@@ -7,8 +7,10 @@ import vlc
 from utils.globals import Globals
 from utils.utils import Utils
 
+INSTANCE = vlc.Instance("verbose=-2")
+
 class Playback:
-    VLC_MEDIA_PLAYER = vlc.MediaPlayer()
+    VLC_MEDIA_PLAYER = INSTANCE.media_player_new()
 
     def __init__(self, playback_config, song_text_callback, run):
         self._playback_config = playback_config

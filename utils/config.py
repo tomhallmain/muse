@@ -11,6 +11,9 @@ class Config:
         self.foreground_color = "white"
         self.background_color = "#2596BE"
         self.directories = []
+        self.prompts_directory = "prompts"
+        self.open_weather_api_key = None
+        self.news_api_key = None
         self.debug = False
 
         self.server_port = 6000
@@ -39,14 +42,15 @@ class Config:
         self.set_values(str,
                         "foreground_color",
                         "background_color",
+                        "open_weather_api_key",
+                        "news_api_key",
                         )
         self.set_values(list,
                         "directories",
                         )
         # self.set_values(dict,
         #                 )
-        # self.set_directories(
-        # )
+        self.set_directories("prompts_directory")
         # self.set_filepaths(
         # )
 
@@ -68,6 +72,8 @@ class Config:
         if loc and loc.strip() != "":
             if "{HOME}" in loc:
                 loc = loc.strip().replace("{HOME}", os.path.expanduser("~"))
+            if not sys.platform == "win32" and "\\" in loc:
+                loc = loc.replace("\\", "/")
             if not os.path.isdir(loc):
                 raise Exception(f"Invalid location provided for {key}: {loc}")
             return loc

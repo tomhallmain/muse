@@ -2,6 +2,9 @@
     "directories": [
         "{HOME}\\audio"
     ],
+    "prompts_directory": "prompts",
     "foreground_color": "white",
-    "background_color": "#2596BE"
+    "background_color": "#2596BE",
+    "open_weather_api_key": "<KEY>",
+    "news_api_key": "<KEY>"
 }
