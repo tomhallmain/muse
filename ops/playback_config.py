@@ -10,6 +10,10 @@ class PlaybackConfig:
     DIRECTORIES_CACHE = {}
 
     @staticmethod
+    def new_playback_config(override_dir=None):
+        return PlaybackConfig(override_dir=override_dir)
+
+    @staticmethod
     def store_directory_cache():
         app_info_cache.set("directories_cache", PlaybackConfig.DIRECTORIES_CACHE)
 
@@ -17,11 +21,11 @@ class PlaybackConfig:
     def load_directory_cache():
         PlaybackConfig.DIRECTORIES_CACHE = app_info_cache.get("directories_cache", default_val={})
 
-    def __init__(self, args):
+    def __init__(self, args=None, override_dir=None):
         self.current_song_index = -1
-        self.type = WorkflowType[args.workflow_tag]
-        self.directories = args.directories
-        self.overwrite = args.overwrite
+        self.type = WorkflowType[args.workflow_tag] if args else WorkflowType.RANDOM
+        self.directories = args.directories if args else ([override_dir] if override_dir else [])
+        self.overwrite = args.overwrite if args else False
         self.list = []
 
     def maximum_plays(self):

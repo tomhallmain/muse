@@ -4,8 +4,10 @@ import random
 from extensions.news_api import NewsAPI
 from extensions.open_weather import OpenWeatherAPI
 from extensions.llm import LLM
+from ops.playback import Playback
 from ops.prompter import Prompter
 from ops.voice import Voice
+from utils.config import config
 
 
 class Muse:
@@ -18,7 +20,12 @@ class Muse:
         self.news_api = NewsAPI()
         self.prompter = Prompter()
 
-    def maybe_dj(self):
+    def maybe_dj(self, song_name, previous_song_name):
+        # TODO quality info for songs
+        if previous_song_name != "" and random.random() < 0.2:
+            self.voice.say("That was " + previous_song_name + ", how about that.")
+        if random.random() < 0.3:
+            self.voice.say("Next up, we'll be playing: " + song_name)
         if random.random() < 0.2:
             self.talk_about_something()
 
@@ -48,6 +55,10 @@ class Muse:
             self.share_an_aphorism()
         elif topic == "poem":
             self.share_a_poem()
+        elif topic == "quote":
+            self.share_a_quote()
+        elif topic == "tongue_twister":
+            self.share_a_tongue_twister()
         else:
             print("Unhandled topic: " + topic)
 
@@ -86,4 +97,13 @@ class Muse:
     def share_a_poem(self):
         poem = self.llm.generate_response(self.prompter.get_prompt("poem"))
         self.voice.say(poem)
+    
+    def share_a_quote(self):
+        quote = self.llm.generate_response(self.prompter.get_prompt("quote"))
+        self.voice.say(quote)
 
+    def share_a_tongue_twister(self):
+        if config.tongue_twisters_dir is None or config.tongue_twisters_dir == "":
+            raise Exception("No tongue twister directory specified")
+        playback = Playback.new_playback(config.tongue_twisters_dir)
+        playback.play_one_song()

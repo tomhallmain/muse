@@ -6,7 +6,7 @@ from utils.app_info_cache import app_info_cache
 from utils.config import config
 
 class Prompter:
-    TOPICS = ["weather", "news", "joke", "fact", "fable", "truth_and_lie", "aphorism", "poem", "quote"]
+    TOPICS = ["weather", "news", "joke", "fact", "fable", "truth_and_lie", "aphorism", "poem", "quote", "tongue_twister"]
     TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M"
 
     @staticmethod

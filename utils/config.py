@@ -12,6 +12,7 @@ class Config:
         self.background_color = "#2596BE"
         self.directories = []
         self.prompts_directory = "prompts"
+        self.tongue_twisters_dir = None
         self.open_weather_api_key = None
         self.news_api_key = None
         self.debug = False
@@ -44,6 +45,7 @@ class Config:
                         "background_color",
                         "open_weather_api_key",
                         "news_api_key",
+                        "tongue_twisters_dir",
                         )
         self.set_values(list,
                         "directories",

@@ -4,6 +4,7 @@ import subprocess
 from time import sleep
 import vlc
 
+from ops.playback_config import PlaybackConfig
 from utils.globals import Globals
 from utils.utils import Utils
 
@@ -11,6 +12,11 @@ INSTANCE = vlc.Instance("verbose=-2")
 
 class Playback:
     VLC_MEDIA_PLAYER = INSTANCE.media_player_new()
+
+    @staticmethod
+    def new_playback(override_dir=None):
+        config = PlaybackConfig.new_playback_config(override_dir=override_dir)
+        return Playback(config, None, True)
 
     def __init__(self, playback_config, song_text_callback, run):
         self._playback_config = playback_config
@@ -20,8 +26,10 @@ class Playback:
         self.skip_song = False
         self.skip_delay = False
         self.song = ""
+        self.previous_song = ""
 
     def get_song(self):
+        self.previous_song = self.song
         self.song = self._playback_config.next_song()
         if self.song is None:
             return False
@@ -46,20 +54,40 @@ class Playback:
                 max_volume = float(line[line.index(max_volume_tag)+len(max_volume_tag):-3].strip())
         return mean_volume, max_volume
 
+    def get_song_quality_info(self):
+        # TODO: Get info like bit rate, mono vs stereo, possibly try to infer if it's AI or not
+        pass
+
+    @staticmethod
+    def get_song_name(song):
+        return os.path.splitext(os.path.basename(song))[0]
+
+    def play_one_song(self):
+        if self.get_song():
+            Playback.VLC_MEDIA_PLAYER.play()
+            sleep(0.5)
+            while (Playback.VLC_MEDIA_PLAYER.is_playing() or self.is_paused) and not self.skip_song:
+                sleep(0.5)
+            Playback.VLC_MEDIA_PLAYER.stop()
+        else:
+            raise Exception("No songs in playlist")
+
     def run(self):
         while self.get_song() and not self._run.is_cancelled:
-            self._run.muse.maybe_dj()
-            song_name = os.path.basename(self.song)
-            if "." in self.song:
-                song_name = song_name[:song_name.rfind(".")]
+            song_name = Playback.get_song_name(self.song)
+            self._run.muse.maybe_dj(song_name, Playback.get_song_name(self.previous_song))
             directory = Utils.get_relative_dirpath(os.path.dirname(self.song))
-            self._song_text_callback(song_name, directory)
+            if self._song_text_callback is not None:
+                self._song_text_callback(song_name, directory)
             delay_timer = 0
             while not self.skip_delay and delay_timer < Globals.DELAY_TIME_SECONDS:
                 sleep(0.5)
                 delay_timer += 0.5
             if self.skip_delay:
                 self.skip_delay = False
+            mean_volume, max_volume = self.get_song_volume()
+            print("Mean volume: " + str(mean_volume))
+            print("Max volume: " + str(max_volume))
             self.is_paused = False
             self.skip_song = False
             Playback.VLC_MEDIA_PLAYER.play()
