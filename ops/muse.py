@@ -20,12 +20,12 @@ class Muse:
         self.news_api = NewsAPI()
         self.prompter = Prompter()
 
-    def maybe_dj(self, song_name, previous_song_name):
+    def maybe_dj(self, track, previous_track, skip_previous_track_remark=False):
         # TODO quality info for songs
-        if previous_song_name != "" and random.random() < 0.2:
-            self.voice.say("That was " + previous_song_name + ", how about that.")
+        if not skip_previous_track_remark and previous_track != "" and random.random() < 0.2:
+            self.voice.say("That was \"" + previous_track.title + "\" in \"" + previous_track.album + "\", how about that.")
         if random.random() < 0.3:
-            self.voice.say("Next up, we'll be playing: " + song_name)
+            self.voice.say("Next up, we'll be playing: \"" + track.title + "\" from \"" + track.album + "\".")
         if random.random() < 0.2:
             self.talk_about_something()
 
@@ -105,5 +105,11 @@ class Muse:
     def share_a_tongue_twister(self):
         if config.tongue_twisters_dir is None or config.tongue_twisters_dir == "":
             raise Exception("No tongue twister directory specified")
+        print(f"Playing tongue twister from {config.tongue_twisters_dir}")
         playback = Playback.new_playback(config.tongue_twisters_dir)
-        playback.play_one_song()
+        try:
+            playback.play_one_song()
+        except Exception as e:
+            print("Error playing tongue twister: " + str(e))
+            print(playback._playback_config.directories)
+            print(playback._playback_config.list)

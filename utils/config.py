@@ -45,14 +45,16 @@ class Config:
                         "background_color",
                         "open_weather_api_key",
                         "news_api_key",
-                        "tongue_twisters_dir",
                         )
         self.set_values(list,
                         "directories",
                         )
         # self.set_values(dict,
         #                 )
-        self.set_directories("prompts_directory")
+        self.set_directories(
+                             "prompts_directory",
+                             "tongue_twisters_dir",
+                             )
         # self.set_filepaths(
         # )
 

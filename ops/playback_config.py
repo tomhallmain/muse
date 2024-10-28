@@ -2,6 +2,7 @@ import os
 import glob
 import random
 
+from ops.audio_track import AudioTrack
 from utils.app_info_cache import app_info_cache
 from utils.config import config
 from utils.globals import MediaFileType, WorkflowType
@@ -63,7 +64,7 @@ class PlaybackConfig:
         if len(l) == 0 or self.current_song_index >= len(l):
             return None
         self.current_song_index += 1
-        return l[self.current_song_index]
-    
+        return AudioTrack(l[self.current_song_index])
+
     def __str__(self) -> str:
         return "PlaybackConfig(type=" + str(self.type) + ", directories=" + str(len(self.directories)) + ")"

@@ -132,7 +132,7 @@ class Run:
 
     def open_text(self):
         assert self.playback is not None
-        song_text_filepath = self.playback.get_song_text_file()
+        song_text_filepath = self.playback.get_track_text_file()
         Utils.open_file(song_text_filepath)
 
 def main(args):

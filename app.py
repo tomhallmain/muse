@@ -146,27 +146,6 @@ class App():
         self.directory_choice = OptionMenu(self.sidebar, self.directory, str(self.runner_app_config.directory), *directory_options)
         self.apply_to_grid(self.directory_choice, interior_column=1, sticky=W)
 
-        # self.label_model_tags = Label(self.sidebar)
-        # self.add_label(self.label_model_tags, _("Model Tags"))
-        # self.model_tags = StringVar()
-        # model_names = list(map(lambda l: str(l).split('.')[0], Model.CHECKPOINTS))
-        # self.model_tags_box = AutocompleteEntry(model_names,
-        #                                        self.sidebar,
-        #                                        listboxLength=6,
-        #                                        textvariable=self.model_tags,
-        #                                        matchesFunction=matches_tag,
-        #                                        setFunction=set_tag,
-        #                                        width=55, font=fnt.Font(size=8))
-        # self.model_tags_box.bind("<Return>", self.set_model_dependent_fields)
-        # self.model_tags_box.insert(0, self.runner_app_config.model_tags)
-        # self.apply_to_grid(self.model_tags_box, sticky=W, columnspan=2)
-
-        # self.tag_blacklist_btn = None
-        # self.presets_window_btn = None
-        # self.add_button("tag_blacklist_btn", text=_("Tag Blacklist"), command=self.show_tag_blacklist, sidebar=False, increment_row_counter=False)
-        # self.add_button("presets_window_btn", text=_("Presets Window"), command=self.open_presets_window, sidebar=False, interior_column=1)
-
-
         self.overwrite = BooleanVar(value=False)
         self.overwrite_choice = Checkbutton(self.sidebar, text=_('Overwrite'), variable=self.overwrite)
         self.apply_to_grid(self.overwrite_choice, sticky=W)
@@ -294,63 +273,6 @@ class App():
         self.delay.set(str(self.runner_app_config.delay_time_seconds))
         self.overwrite.set(self.runner_app_config.overwrite)
 
-    # def set_widgets_from_preset(self, preset):
-    #     self.prompt_mode.set(preset.prompt_mode)
-    #     self.set_widget_value(self.positive_tags_box, preset.positive_tags)
-    #     self.set_widget_value(self.negative_tags_box, preset.negative_tags)
-    #     self.master.update()
-
-    # def construct_preset(self, name):
-    #     args, args_copy = self.get_args()
-    #     self.runner_app_config.set_from_run_config(args)
-    #     return Preset.from_runner_app_config(name, self.runner_app_config)
-
-    # def run_preset_schedule(self, override_args={}):
-    #     def run_preset_async():
-    #         self.job_queue_preset_schedules.job_running = True
-    #         if "control_net" in override_args:
-    #             self.controlnet_file.set(override_args["control_net"])
-    #             print(f"Updated Control Net for next preset schedule: " + str(override_args["control_net"]))
-    #         if "ip_adapter" in override_args:
-    #             self.ipadapter_file.set(override_args["ip_adapter"])
-    #             print(f"Updated IP Adapater for next preset schedule: " + str(override_args["ip_adapter"]))
-    #         starting_total = int(self.total.get())
-    #         schedule = config.prompt_preset_schedules[self.preset_schedule.get()]
-    #         for preset_name, count in schedule.items():
-    #             if not self.job_queue_preset_schedules.has_pending() or not self.run_preset_schedule_var.get() or \
-    #                     (self.current_run is not None and not self.current_run.is_infinite() and self.current_run.is_cancelled):
-    #                 self.job_queue_preset_schedules.cancel()
-    #                 return
-    #             try:
-    #                 preset = PresetsWindow.get_preset_by_name(preset_name)
-    #             except Exception as e:
-    #                 self.handle_error(str(e), "Preset Schedule Error")
-    #                 raise e
-    #             self.set_widgets_from_preset(preset)
-    #             if count > 0:
-    #                 self.total.set(str(count))
-    #             self.run()
-    #             # NOTE have to do some special handling here because the runs are still not self-contained,
-    #             # and overwriting widget values may cause the current run to have its settings changed mid-run
-    #             time.sleep(0.1)
-    #             started_run_id = self.current_run.id
-    #             while (self.current_run is not None and started_run_id == self.current_run.id
-    #                     and not self.current_run.is_cancelled and not self.current_run.is_complete):
-    #                 if not self.job_queue_preset_schedules.has_pending() or not self.run_preset_schedule_var.get():
-    #                     self.job_queue_preset_schedules.cancel()
-    #                     return
-    #                 time.sleep(1)
-    #         self.total.set(str(starting_total))
-    #         self.job_queue_preset_schedules.job_running = False
-    #         next_preset_schedule_args = self.job_queue_preset_schedules.take()
-    #         if next_preset_schedule_args is None:
-    #             play_sound()
-    #             self.job_queue_preset_schedules.cancel()
-    #         else:
-    #             self.run_preset_schedule(override_args=next_preset_schedule_args)
-
-    #     start_thread(run_preset_async, use_asyncio=False, args=[])
-
     def set_workflow_type(self, event=None, workflow_tag=None):
         if workflow_tag is None:
             workflow_tag = self.workflow.get()
@@ -395,7 +317,7 @@ class App():
             self.progress_bar.start()
             self.cancel_btn.grid(row=2, column=1)
             self.text_btn.grid(row=3, column=1)
-            self.current_run = Run(args, song_text_callback=self.update_song_text)
+            self.current_run = Run(args, song_text_callback=self.update_track_text)
             self.current_run.execute()
             self.cancel_btn.grid_forget()
             self.text_btn.grid_forget()
@@ -455,8 +377,8 @@ class App():
                     break
             return directories
 
-    def update_song_text(self, song_name, directory):
-        text = "Song: " + song_name + "\nDirectory: " + directory
+    def update_track_text(self, audio_track):
+        text = "Track: " + audio_track.title + "\nAlbum: " + audio_track.album
         text = Utils._wrap_text_to_fit_length(text, 100)
         self.label_song_text["text"] = text
         self.master.update()
