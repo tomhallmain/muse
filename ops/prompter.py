@@ -6,7 +6,7 @@ from utils.app_info_cache import app_info_cache
 from utils.config import config
 
 class Prompter:
-    TOPICS = ["weather", "news", "joke", "fact", "fable", "truth_and_lie", "aphorism", "poem", "quote", "tongue_twister"]
+    TOPICS = ["weather", "news", "hackernews", "joke", "fact", "fable", "truth_and_lie", "aphorism", "poem", "quote", "tongue_twister"]
     TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M"
 
     @staticmethod
@@ -54,10 +54,16 @@ class Prompter:
     def __init__(self):
         pass
 
+    def get_prompt_topic(self, topic):
+        if topic == "hackernews":
+            return "news"
+        return str(topic)
+
     def get_prompt(self, topic):
         if not topic in Prompter.TOPICS:
             raise Exception("Invalid topic: " + topic)
+        prompt_topic = self.get_prompt_topic(topic)
         Prompter.update_history(topic)
-        with open(os.path.join(config.prompts_directory, topic + ".txt"), 'r') as f:
+        with open(os.path.join(config.prompts_directory, prompt_topic + ".txt"), 'r') as f:
             return f.read().strip()
 

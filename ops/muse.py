@@ -1,6 +1,7 @@
 
 import random
 
+from extensions.hacker_news_souper import HackerNewsSouper
 from extensions.news_api import NewsAPI
 from extensions.open_weather import OpenWeatherAPI
 from extensions.llm import LLM
@@ -18,31 +19,77 @@ class Muse:
         self.voice = Voice()
         self.open_weather_api = OpenWeatherAPI()
         self.news_api = NewsAPI()
+        self.hacker_news_souper = HackerNewsSouper()
         self.prompter = Prompter()
 
     def maybe_dj(self, track, previous_track, skip_previous_track_remark=False):
         # TODO quality info for songs
+        has_already_spoken = False
         if not skip_previous_track_remark and previous_track != "" and random.random() < 0.2:
-            self.voice.say("That was \"" + previous_track.title + "\" in \"" + previous_track.album + "\", how about that.")
+            if True:
+                dj_remark = "Das war „{0}“ aus „{1}“".format(previous_track.title, previous_track.album)
+                if previous_track.artist is not None and previous_track.artist!= "":
+                    dj_remark += " von „{0}“.".format(previous_track.artist)
+                else:
+                    dj_remark += "."
+            else:
+                dj_remark = "That was \"" + previous_track.title + "\" in \"" + previous_track.album + "\""
+                if previous_track.artist is not None and previous_track.artist!= "":
+                    dj_remark += " by " + previous_track.artist + "."
+                else:
+                    dj_remark += "."
+            self.voice.say(dj_remark)
         if random.random() < 0.3:
-            self.voice.say("Next up, we'll be playing: \"" + track.title + "\" from \"" + track.album + "\".")
+            if True:
+                start_tag = "Als Nächstes" if previous_track is not None else "Zu Beginn"
+                dj_remark = start_tag + " spielen wir „{0}“ aus „{1}“".format(track.title, track.album)
+                if track.artist is not None and track.artist!= "":
+                    dj_remark += " von „{0}“.".format(track.artist)
+                else:
+                    dj_remark += "."
+            else:
+                start_tag = "Next up" if previous_track is not None else "To start"
+                dj_remark = start_tag + ", we'll be playing: \"" + track.title + "\" from \"" + track.album + "\""
+                if track.artist is not None and track.artist!= "":
+                    dj_remark += " by " + track.artist + "."
+                else:
+                    dj_remark += "."
+            self.voice.say(dj_remark)
+            has_already_spoken = True
         if random.random() < 0.2:
-            self.talk_about_something()
+            self.talk_about_something(previous_track, has_already_spoken, skip_previous_track_remark)
 
-    def talk_about_something(self):
+    def talk_about_something(self, previous_track=None, has_already_spoken=False, skip_previous_track_remark=False):
         if Prompter.over_n_hours_since_last("weather", n_hours=24):
             topic = "weather"
             print("Talking about the weather")
         elif Prompter.over_n_hours_since_last("news", n_hours=96):
             topic = "news"
             print("Talking about the news")
+        elif Prompter.over_n_hours_since_last("hackernews", n_hours=96):
+            topic = "hackernews"
+            print("Talking about the news")
         else:
             topic = Prompter.get_oldest_topic()
             print("Talking about topic: " + topic)
+
+        if (has_already_spoken and random.random() < 0.75) or (not has_already_spoken and random.random() < 0.6):
+            if skip_previous_track_remark or previous_track is None:
+                if True:
+                    remark = "Zunächst zum Thema „{0}“.".format(topic)
+                else:
+                    remark = "First let's hear about {0}".format(topic)
+            else:
+                if True:
+                    remark = "Doch zunächst zum Thema „{0}“.".format(topic)
+                else:
+                    remark = "But first, let's hear about {0}.".format(topic)
+                self.voice.say(remark)
+
         if topic == "weather":
             self.talk_about_weather()
-        elif topic == "news":
-            self.talk_about_news()
+        elif topic in ["news", "hackernews"]:
+            self.talk_about_news(topic)
         elif topic == "joke":
             self.tell_a_joke()
         elif topic == "fact":
@@ -69,9 +116,12 @@ class Muse:
         self.voice.say(weather_summary)
 
     def talk_about_news(self, topic=None):
-        news = self.news_api.get_news(topic=topic)
+        if topic == "hackernews":
+            news = self.hacker_news_souper.get_news(total=15)
+        else:
+            news = self.news_api.get_news(topic=topic)
         news_summary = self.llm.generate_response(
-            self.prompter.get_prompt("news") + "\n\n" + str(news))
+            self.prompter.get_prompt(topic) + "\n\n" + str(news))
         self.voice.say(news_summary)
 
     def tell_a_joke(self):
@@ -107,6 +157,7 @@ class Muse:
             raise Exception("No tongue twister directory specified")
         print(f"Playing tongue twister from {config.tongue_twisters_dir}")
         playback = Playback.new_playback(config.tongue_twisters_dir)
+        Prompter.update_history("tongue_twister")
         try:
             playback.play_one_song()
         except Exception as e:

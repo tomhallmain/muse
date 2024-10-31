@@ -150,6 +150,10 @@ class App():
         self.overwrite_choice = Checkbutton(self.sidebar, text=_('Overwrite'), variable=self.overwrite)
         self.apply_to_grid(self.overwrite_choice, sticky=W)
 
+        self.favorite = BooleanVar(value=False)
+        self.favorite_choice = Checkbutton(self.sidebar, text=_('Favorite'), variable=self.favorite)
+        self.apply_to_grid(self.favorite_choice, sticky=W)
+
         self.master.bind("<Control-Return>", self.run)
         self.master.bind("<Shift-R>", self.run)
         self.master.bind("<Prior>", lambda event: self.one_config_away(change=1))
@@ -379,6 +383,8 @@ class App():
 
     def update_track_text(self, audio_track):
         text = "Track: " + audio_track.title + "\nAlbum: " + audio_track.album
+        if audio_track.artist is not None:
+            text += "\nArtist: " + audio_track.artist
         text = Utils._wrap_text_to_fit_length(text, 100)
         self.label_song_text["text"] = text
         self.master.update()

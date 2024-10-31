@@ -4,6 +4,7 @@
     ],
     "prompts_directory": "prompts",
     "tongue_twisters_dir": "",
+    "artists_file": "artists.json",
     "foreground_color": "white",
     "background_color": "#2596BE",
     "open_weather_api_key": "<KEY>",

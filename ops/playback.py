@@ -11,7 +11,6 @@ from utils.utils import Utils
 INSTANCE = vlc.Instance("verbose=-2")
 
 class Playback:
-    VLC_MEDIA_PLAYER = INSTANCE.media_player_new()
 
     @staticmethod
     def new_playback(override_dir=None):
@@ -19,6 +18,7 @@ class Playback:
         return Playback(config, None, True)
 
     def __init__(self, playback_config, track_text_callback, run):
+        self.vlc_media_player = INSTANCE.media_player_new()
         self._playback_config = playback_config
         self._track_text_callback = track_text_callback
         self._run = run
@@ -35,11 +35,11 @@ class Playback:
         if self.track is None or self.track.is_invalid():
             return False
         print(f"Playing track file: {self.track.filepath}")
-        Playback.VLC_MEDIA_PLAYER = vlc.MediaPlayer(self.track.filepath)
+        self.vlc_media_player = vlc.MediaPlayer(self.track.filepath)
         return True
 
     def get_song_volume(self):
-        args = ["ffmpeg", "-i", self.track, "-af", "volumedetect", "-f", "null", "/dev/null"]
+        args = ["ffmpeg", "-i", self.track.filepath, "-af", "volumedetect", "-f", "null", "/dev/null"]
         process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         output, _ = process.communicate()
         mean_volume_tag = "] mean_volume: "
@@ -63,11 +63,11 @@ class Playback:
 
     def play_one_song(self):
         if self.get_track():
-            Playback.VLC_MEDIA_PLAYER.play()
+            self.vlc_media_player.play()
             sleep(0.5)
-            while (Playback.VLC_MEDIA_PLAYER.is_playing() or self.is_paused) and not self.skip_track:
+            while (self.vlc_media_player.is_playing() or self.is_paused) and not self.skip_track:
                 sleep(0.5)
-            Playback.VLC_MEDIA_PLAYER.stop()
+            self.vlc_media_player.stop()
         else:
             raise Exception("No tracks in playlist")
 
@@ -84,29 +84,40 @@ class Playback:
                 delay_timer += 0.5
             if self.skip_delay:
                 self.skip_delay = False
-            # mean_volume, max_volume = self.get_song_volume()
-            # print("Mean volume: " + str(mean_volume))
-            # print("Max volume: " + str(max_volume))
+            self.set_volume()
             self.is_paused = False
             self.skip_track = False
-            Playback.VLC_MEDIA_PLAYER.play()
+            self.vlc_media_player.play()
             sleep(0.5)
-            if not Playback.VLC_MEDIA_PLAYER.is_playing():
+            if not self.vlc_media_player.is_playing():
                 self.last_track_failed = True
-            while (Playback.VLC_MEDIA_PLAYER.is_playing() or self.is_paused) and not self.skip_track:
+            while (self.vlc_media_player.is_playing() or self.is_paused) and not self.skip_track:
                 sleep(0.5)
-            Playback.VLC_MEDIA_PLAYER.stop()
+            self.vlc_media_player.stop()
+
+    def set_volume(self):
+        mean_volume, max_volume = self.get_song_volume()
+        print("Mean volume: " + str(mean_volume))
+        print("Max volume: " + str(max_volume))
+        if mean_volume < -50:
+            volume = 100
+        else:
+            volume = int(75 + (-1 * mean_volume))
+            if volume > 100:
+                volume = 100
+        self.vlc_media_player.audio_set_volume(volume)
+        # TODO callback for UI element
 
     def pause(self):
-        Playback.VLC_MEDIA_PLAYER.pause()
+        self.vlc_media_player.pause()
         self.is_paused = True
 
     def unpause(self):
-        Playback.VLC_MEDIA_PLAYER.play()
+        self.vlc_media_player.play()
         self.is_paused = False
 
     def next(self):
-        Playback.VLC_MEDIA_PLAYER.stop()
+        self.vlc_media_player.stop()
         self.skip_track = True
         self.skip_delay = True
 

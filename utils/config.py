@@ -13,6 +13,7 @@ class Config:
         self.directories = []
         self.prompts_directory = "prompts"
         self.tongue_twisters_dir = None
+        self.artists_file = "artists.json"
         self.open_weather_api_key = None
         self.news_api_key = None
         self.debug = False
@@ -55,8 +56,9 @@ class Config:
                              "prompts_directory",
                              "tongue_twisters_dir",
                              )
-        # self.set_filepaths(
-        # )
+        self.set_filepaths(
+                           "artists_file",
+                           )
 
         i = 0
         while i < len(self.directories):
