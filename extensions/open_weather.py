@@ -1,6 +1,6 @@
 
 from datetime import datetime
-import pprint
+# import pprint
 import requests
 
 from utils.config import config
@@ -8,7 +8,7 @@ from utils.config import config
 
 class OpenWeatherResponse:
     def __init__(self, current_json, forecast_json=None):
-        pprint.pprint(current_json)
+        # pprint.pprint(current_json)
         self.datetime = datetime.fromtimestamp(current_json['dt'])
         self.city = current_json["name"] + ", " + current_json["sys"]["country"] if "name" in current_json else None
         self.temperature = int(round(float(current_json['main']['temp']), 0))
@@ -35,10 +35,13 @@ class OpenWeatherResponse:
                 self.hourly_forecast[hour] = OpenWeatherResponse(hourly_data)
 
     def rain_in_next_5_days(self):
-        hours_with_rain = []
+        hours_with_rain = {}
         for hour, hourly_data in self.hourly_forecast.items():
             if hourly_data.rain is not None:
-                hours_with_rain.append(hour)
+                date = hourly_data.datetime.strftime("%m/%d (%A)")
+                if date not in hours_with_rain:
+                    hours_with_rain[date] = []
+                hours_with_rain[date].append(hourly_data.datetime.strftime("%H:%M"))
         return hours_with_rain
 
     def forecast_min_max_temps_by_day(self):
@@ -74,10 +77,10 @@ Sunset: {self.sunset} hours"""
         if self.hourly_forecast is not None:
             out += "\nForecast"
             hours_with_rain = self.rain_in_next_5_days()
-            if len(hours_with_rain) > 0:
-                out += f"\nRainy hours:\n{','.join(hours_with_rain)}"
             for date, date_data in self.forecast_min_max_temps_by_day().items():
                 out += f"\n{date}: Max {date_data['max_temp']}°F Min {date_data['min_temp']}°F"
+                if date_data['rain'] and date in hours_with_rain:
+                    out += f"  Rainy hours: {', '.join(hours_with_rain[date])}"
         return out
 
 class OpenWeatherAPI:
@@ -106,6 +109,7 @@ class OpenWeatherAPI:
 
         weather = OpenWeatherResponse(current_weather_response.json(), hourly_forecast_response.json())
         print(weather)
+        return weather
 
 
 

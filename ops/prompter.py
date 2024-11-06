@@ -6,7 +6,9 @@ from utils.app_info_cache import app_info_cache
 from utils.config import config
 
 class Prompter:
-    TOPICS = ["weather", "news", "hackernews", "joke", "fact", "fable", "truth_and_lie", "aphorism", "poem", "quote", "tongue_twister"]
+    TOPICS = ["weather", "news", "hackernews", "joke", "fact", "fable", 
+              "truth_and_lie", "aphorism", "poem", "quote", "tongue_twister", 
+              "motivation", "calendar"]
     TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M"
 
     @staticmethod
@@ -37,9 +39,14 @@ class Prompter:
         return Prompter.time_from_last_topic(topic) > (60 * n_hours)
 
     @staticmethod
-    def get_oldest_topic():
+    def under_n_hours_since_last(topic, n_hours):
+        return not Prompter.over_n_hours_since_last(topic, n_hours)
+
+    @staticmethod
+    def get_oldest_topic(excluded_topics=[]):
         oldest_time = None
         for topic in Prompter.TOPICS:
+            if topic in excluded_topics: continue
             topic_time_str = app_info_cache.get(topic)
             if topic_time_str is not None:
                 topic_time = datetime.datetime.strptime(topic_time_str, Prompter.TIMESTAMP_FORMAT)

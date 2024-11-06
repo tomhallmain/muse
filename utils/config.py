@@ -14,8 +14,11 @@ class Config:
         self.prompts_directory = "prompts"
         self.tongue_twisters_dir = None
         self.artists_file = "artists.json"
+        self.composers_file = "composers.json"
         self.open_weather_api_key = None
         self.news_api_key = None
+        self.news_api_source_trustworthiness = {}
+        self.holiday_api_key = None
         self.debug = False
 
         self.server_port = 6000
@@ -46,18 +49,20 @@ class Config:
                         "background_color",
                         "open_weather_api_key",
                         "news_api_key",
+                        "holiday_api_key",
                         )
         self.set_values(list,
                         "directories",
                         )
-        # self.set_values(dict,
-        #                 )
+        self.set_values(dict,
+                        "news_api_source_trustworthiness")
         self.set_directories(
                              "prompts_directory",
                              "tongue_twisters_dir",
                              )
         self.set_filepaths(
                            "artists_file",
+                           "composers_file",
                            )
 
         i = 0
@@ -90,6 +95,10 @@ class Config:
         if filepath and filepath.strip() != "":
             if "{HOME}" in filepath:
                 filepath = filepath.strip().replace("{HOME}", os.path.expanduser("~"))
+            elif not os.path.isfile(filepath):
+                try_path = os.path.join("configs", filepath)
+                if os.path.isfile(try_path):
+                    filepath = try_path
             if not os.path.isfile(filepath):
                 raise Exception(f"Invalid location provided for {key}: {filepath}")
             return filepath

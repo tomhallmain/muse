@@ -1,2 +1,3 @@
 CALL TITLE Muse
-python %~dp0\app.py
+CALL C:\Scripts\conda_hook.bat tts
+CALL python %~dp0\app.py

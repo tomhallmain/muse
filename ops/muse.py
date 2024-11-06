@@ -1,4 +1,5 @@
 
+import datetime
 import random
 
 from extensions.hacker_news_souper import HackerNewsSouper
@@ -24,12 +25,13 @@ class Muse:
 
     def maybe_dj(self, track, previous_track, skip_previous_track_remark=False):
         # TODO quality info for songs
+        # TODO i18n
         has_already_spoken = False
         if not skip_previous_track_remark and previous_track != "" and random.random() < 0.2:
             if True:
-                dj_remark = "Das war „{0}“ aus „{1}“".format(previous_track.title, previous_track.album)
+                dj_remark = "Das war „{0}“ aus „{1}“".format(previous_track.readable_title(), previous_track.readable_album())
                 if previous_track.artist is not None and previous_track.artist!= "":
-                    dj_remark += " von „{0}“.".format(previous_track.artist)
+                    dj_remark += " von „{0}“.".format(previous_track.readable_artist())
                 else:
                     dj_remark += "."
             else:
@@ -42,9 +44,9 @@ class Muse:
         if random.random() < 0.3:
             if True:
                 start_tag = "Als Nächstes" if previous_track is not None else "Zu Beginn"
-                dj_remark = start_tag + " spielen wir „{0}“ aus „{1}“".format(track.title, track.album)
+                dj_remark = start_tag + " spielen wir „{0}“ aus „{1}“".format(track.readable_title(), track.readable_album())
                 if track.artist is not None and track.artist!= "":
-                    dj_remark += " von „{0}“.".format(track.artist)
+                    dj_remark += " von „{0}“.".format(track.readable_artist())
                 else:
                     dj_remark += "."
             else:
@@ -59,7 +61,7 @@ class Muse:
         if random.random() < 0.2:
             self.talk_about_something(previous_track, has_already_spoken, skip_previous_track_remark)
 
-    def talk_about_something(self, previous_track=None, has_already_spoken=False, skip_previous_track_remark=False):
+    def get_topic(self, excluded_topics=[]):
         if Prompter.over_n_hours_since_last("weather", n_hours=24):
             topic = "weather"
             print("Talking about the weather")
@@ -70,8 +72,18 @@ class Muse:
             topic = "hackernews"
             print("Talking about the news")
         else:
-            topic = Prompter.get_oldest_topic()
+            topic = Prompter.get_oldest_topic(excluded_topics)
             print("Talking about topic: " + topic)
+
+        while topic in ["hackernews", "news"] and Prompter.under_n_hours_since_last(topic, n_hours=14):
+            if topic not in excluded_topics:
+                excluded_topics.append(topic)
+            topic = self.get_topic(excluded_topics=excluded_topics)
+
+        return topic
+
+    def talk_about_something(self, previous_track=None, has_already_spoken=False, skip_previous_track_remark=False):
+        topic = self.get_topic()
 
         if (has_already_spoken and random.random() < 0.75) or (not has_already_spoken and random.random() < 0.6):
             if skip_previous_track_remark or previous_track is None:
@@ -106,6 +118,10 @@ class Muse:
             self.share_a_quote()
         elif topic == "tongue_twister":
             self.share_a_tongue_twister()
+        elif topic == "calendar":
+            self.talk_about_the_calendar()
+        elif topic == "motivation":
+            self.share_a_motivational_message()
         else:
             print("Unhandled topic: " + topic)
 
@@ -164,3 +180,15 @@ class Muse:
             print("Error playing tongue twister: " + str(e))
             print(playback._playback_config.directories)
             print(playback._playback_config.list)
+
+    def talk_about_the_calendar(self):
+        today = datetime.datetime.today()
+        prompt = self.prompter.get_prompt("calendar")
+        prompt = prompt.replace("DATE", today.strftime("%d/%m/%Y"))
+        prompt = prompt.replace("TIME", today.strftime("%H:%M"))
+        calendar = self.llm.generate_response(prompt)
+        self.voice.say(calendar)
+
+    def share_a_motivational_message(self):
+        motivation = self.llm.generate_response(self.prompter.get_prompt("motivation"))
+        self.voice.say(motivation)

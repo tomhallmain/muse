@@ -1,4 +1,3 @@
-import glob
 import os
 import subprocess
 from time import sleep
@@ -6,7 +5,6 @@ import vlc
 
 from ops.playback_config import PlaybackConfig
 from utils.globals import Globals
-from utils.utils import Utils
 
 INSTANCE = vlc.Instance("verbose=-2")
 
@@ -25,7 +23,7 @@ class Playback:
         self.is_paused = False
         self.skip_track = False
         self.skip_delay = False
-        self.track = ""
+        self.track = None
         self.previous_track = ""
         self.last_track_failed = False
 
@@ -73,8 +71,10 @@ class Playback:
 
     def run(self):
         while self.get_track() and not self._run.is_cancelled:
-            skip_previous_song_remark = self.last_track_failed or self.skip_track
-            self._run.muse.maybe_dj(self.track, self.previous_track, skip_previous_song_remark)
+            if self._run.args.muse:
+                skip_previous_song_remark = self.last_track_failed or self.skip_track
+                self._run.muse.maybe_dj(self.track, self.previous_track, skip_previous_song_remark)
+
             self.last_track_failed = False
             if self._track_text_callback is not None:
                 self._track_text_callback(self.track)
@@ -84,29 +84,27 @@ class Playback:
                 delay_timer += 0.5
             if self.skip_delay:
                 self.skip_delay = False
+
             self.set_volume()
             self.is_paused = False
             self.skip_track = False
+
             self.vlc_media_player.play()
             sleep(0.5)
             if not self.vlc_media_player.is_playing():
                 self.last_track_failed = True
             while (self.vlc_media_player.is_playing() or self.is_paused) and not self.skip_track:
                 sleep(0.5)
+
             self.vlc_media_player.stop()
 
     def set_volume(self):
         mean_volume, max_volume = self.get_song_volume()
         print("Mean volume: " + str(mean_volume))
         print("Max volume: " + str(max_volume))
-        if mean_volume < -50:
-            volume = 100
-        else:
-            volume = int(75 + (-1 * mean_volume))
-            if volume > 100:
-                volume = 100
+        volume = (Globals.DEFAULT_VOLUME_THRESHOLD + 30) if mean_volume < -50 else min(int(Globals.DEFAULT_VOLUME_THRESHOLD + (-1 * mean_volume)), 100)
         self.vlc_media_player.audio_set_volume(volume)
-        # TODO callback for UI element
+        # TODO callback for UI element, add a UI element for "effective volume"
 
     def pause(self):
         self.vlc_media_player.pause()
@@ -122,32 +120,6 @@ class Playback:
         self.skip_delay = True
 
     def get_track_text_file(self):
-        if self.track is None or self.track == "" or not os.path.exists(self.track):
+        if self.track is None or self.track.is_invalid():
             return None
-        track_basename = os.path.basename(self.track).lower()
-        dirname = os.path.dirname(self.track)
-        txt_files = glob.glob(os.path.join(dirname, "*.txt"))
-        txt_basenames = []
-        for f in txt_files:
-            basename = os.path.basename(f).lower()
-            if track_basename.startswith(basename):
-                return f
-            txt_basenames.append(basename)
-        for basename in txt_basenames:
-            if basename[:-4] in track_basename:
-                return os.path.join(dirname,  basename)
-        string_distance_dict = {}
-        song_basename_no_ext = os.path.splitext(track_basename)[0]
-        print("Track basename no ext: " + song_basename_no_ext)
-        min_string_distance = (999999999, None)
-        for basename in txt_basenames:
-            basename_no_ext = os.path.splitext(basename)[0]
-            string_distance = Utils.string_distance(song_basename_no_ext,  basename_no_ext)
-            string_distance_dict[basename] = string_distance
-            print("Txt basename no ext: " + basename_no_ext + ", string distance: " + str(string_distance))
-            if min_string_distance[0] > string_distance:
-                min_string_distance = (string_distance, basename)
-        if min_string_distance[1] is not None and min_string_distance[0] < 30:
-            return os.path.join(dirname,  min_string_distance[1])
-        raise Exception("No matching text file found for track: " + self.track)
-
+        return self.track.get_track_text_file()

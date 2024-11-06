@@ -1,1 +1,1 @@
-Based on the provided weather data only --- without making up any information not provided below --- give a fun and quick summary of the current weather for today and five-day forecast in 
+Based on the provided weather data only --- without making up any information not provided below, and without being too specific either --- give a fun and quick summary of the current weather for today and five-day forecast in 

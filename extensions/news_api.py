@@ -15,12 +15,20 @@ class NewsResponse:
         self.status = resp_json["status"]
         self.totalResults = resp_json["totalResults"]
         self.articles = resp_json["articles"]
-    
+
+    def get_source_trustworthiness(self, source_name):
+        if source_name in config.news_api_source_trustworthiness:
+            return config.news_api_source_trustworthiness[source_name]
+        print(f"No trustworthiness score found for News API propaganda source {source_name}")
+        return 0.25
+
     def __str__(self):
         out = f"Latest Propaganda for {self.country} on {self.datetime}"
         for article in self.articles:
             source_name = article["source"]["name"]
-            out += f"\n{article['title']} - Propaganda Source {source_name}"
+            trustworthiness = self.get_source_trustworthiness(source_name)
+            if trustworthiness > 0.2:
+                out += f"\n{article['title']} - Propaganda Source {source_name} (Trustworthiness score: {trustworthiness})"
         return out
 
 class NewsAPI:
@@ -34,7 +42,8 @@ class NewsAPI:
         url = f"{self.ENDPOINT}?country={country}&apiKey={NewsAPI.KEY}"
         if topic is not None:
             url += "&q={}".format(topic)
-        return NewsResponse(requests.get(url).json(), country)
+        news = NewsResponse(requests.get(url).json(), country)
+        return news
 
 
 if __name__ == "__main__":

@@ -3,7 +3,7 @@ import signal
 import time
 import traceback
 
-from tkinter import messagebox, Toplevel, Frame, Label, Checkbutton, Text, StringVar, BooleanVar, END, HORIZONTAL, NW, BOTH, YES, N, E, W
+from tkinter import messagebox, Toplevel, Frame, Label, Checkbutton, Text, StringVar, BooleanVar, Scale, END, HORIZONTAL, NW, BOTH, YES, N, E, W
 from tkinter.constants import W
 import tkinter.font as fnt
 from tkinter.ttk import Button, Entry, OptionMenu, Progressbar, Scale
@@ -12,7 +12,6 @@ from ttkthemes import ThemedTk
 
 from utils.globals import Globals, WorkflowType
 
-from ops.muse import Muse
 from ops.run import Run
 from ops.run_config import RunConfig
 from ops.playback_config import PlaybackConfig
@@ -26,6 +25,8 @@ from utils.translations import I18N
 from utils.utils import Utils
 
 _ = I18N._
+
+# TODO figure out why overwrite not working
 
 def set_attr_if_not_empty(text_box):
     current_value = text_box.get()
@@ -102,9 +103,6 @@ class App():
         self.run_btn = None
         self.add_button("run_btn", _("Play"), self.run)
 
-        self.run_plus_btn = None
-        self.add_button("run_plus_btn", _("Play Plus"), lambda event: self.run(event, only_music=False))
-
         self.next_btn = None
         self.add_button("next_btn", _("Next"), self.next)
 
@@ -153,6 +151,16 @@ class App():
         self.favorite = BooleanVar(value=False)
         self.favorite_choice = Checkbutton(self.sidebar, text=_('Favorite'), variable=self.favorite)
         self.apply_to_grid(self.favorite_choice, sticky=W)
+
+        self.muse = BooleanVar(value=True)
+        self.muse_choice = Checkbutton(self.sidebar, text=_('Muse'), variable=self.muse)
+        self.apply_to_grid(self.muse_choice, sticky=W)
+
+        self.label_volume = Label(self.sidebar)
+        self.add_label(self.label_volume, _("Volume"), increment_row_counter=False)
+        self.volume_slider = Scale(self.sidebar, from_=0, to=100, orient=HORIZONTAL, command=self.set_volume)
+        self.set_widget_value(self.volume_slider, Globals.DEFAULT_VOLUME_THRESHOLD)
+        self.apply_to_grid(self.volume_slider, interior_column=1, sticky=W)
 
         self.master.bind("<Control-Return>", self.run)
         self.master.bind("<Shift-R>", self.run)
@@ -256,7 +264,7 @@ class App():
 
     def set_widget_value(self, widget, value):
         if isinstance(widget, Scale):
-            widget.set(float(value) * 100)
+            widget.set(float(value))
         elif isinstance(widget, Text):
             widget.delete("0.0", "end")
             widget.insert("0.0", str(value))
@@ -276,6 +284,7 @@ class App():
         self.total.set(str(self.runner_app_config.total))
         self.delay.set(str(self.runner_app_config.delay_time_seconds))
         self.overwrite.set(self.runner_app_config.overwrite)
+        self.muse.set(self.runner_app_config.muse)
 
     def set_workflow_type(self, event=None, workflow_tag=None):
         if workflow_tag is None:
@@ -285,6 +294,13 @@ class App():
         self.runner_app_config.delay_time_seconds = self.delay.get()
         Globals.set_delay(int(self.runner_app_config.delay_time_seconds))
 
+    def set_volume(self, event=None):
+        self.runner_app_config.volume = self.volume_slider.get()
+        Globals.set_volume(int(self.runner_app_config.volume))
+
+    def set_muse(self, event=None):
+        self.runner_app_config.muse = self.muse.get()
+
     def destroy_progress_bar(self):
         if self.progress_bar is not None:
             self.progress_bar.stop()
@@ -292,7 +308,7 @@ class App():
             self.destroy_grid_element("progress_bar")
             self.progress_bar = None
 
-    def run(self, event=None, only_music=True):
+    def run(self, event=None):
         if self.current_run.is_infinite():
             self.current_run.cancel()
         # if event is not None and self.job_queue_preset_schedules.has_pending():
@@ -302,7 +318,7 @@ class App():
         #     if res != messagebox.OK:
         #         return
         # self.job_queue_preset_schedules.cancel()
-        args, args_copy = self.get_args(only_music=only_music)
+        args, args_copy = self.get_args()
 
         try:
             args.validate()
@@ -346,7 +362,7 @@ class App():
     def cancel(self, event=None):
         self.current_run.cancel()
 
-    def get_args(self, only_music=True):
+    def get_args(self):
         self.store_info_cache()
         self.set_delay()
         # self.set_concepts_dir()
@@ -355,7 +371,7 @@ class App():
         args.total = self.total.get()
         args.directories = self.get_directories()
         args.overwrite = self.overwrite.get()
-        args.only_music = only_music
+        args.muse = self.muse.get()
 
         # controlnet_file = clear_quotes(self.controlnet_file.get())
         # self.runner_app_config.control_net_file = controlnet_file

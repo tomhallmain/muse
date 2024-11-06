@@ -1,60 +1,11 @@
 import datetime
-import os
-from copy import deepcopy
-import urllib.request
-from bs4 import BeautifulSoup
 
-
-def get_elements(class_path=[["class","*"]], parent=None):
-    assert parent is not None
-    all_elements = []
-    type_def = class_path[0]
-    _type = type_def[0]
-    value = type_def[1]
-    
-    lowest_class = len(class_path) == 1
-
-    if _type == "class":
-        elements = parent.find_all(class_=value)
-    elif _type == "id":
-        elements = parent.find_all(id=value)
-    elif _type == "tag":
-        elements = parent.find_all(value)
-    else:
-        raise Exception("Unhandled type: " + _type)
-
-    # print(f"Found {len(elements)} elements of {_type}={value}")
-    
-    if lowest_class:
-        all_elements = elements
-    else:
-        for element in elements:
-            all_elements.extend(get_elements(class_path[1:], element))
-
-    return all_elements
-
-def get_element_texts(class_path=[["class","*"]], start_element=None):
-    out = []
-    try:
-        for element in get_elements(class_path, start_element):
-            out.append(element.text)
-    except Exception as e:
-        print(f"Failed to find elements of class {class_path} - {e}")
-    return out
-
-def extract_int_from_start(s):
-    out = ""
-    for c in s:
-        if c.isdigit():
-            out += c
-        else:
-            break
-    return int(out)
+from extensions.soup_utils import SoupUtils
 
 
 class HackerNewsItem:
     def __init__(self, id, titleline_el):
-        titleline_links = get_elements(class_path=[["tag", "a"]], parent=titleline_el)
+        titleline_links = SoupUtils.get_elements(class_path=[["tag", "a"]], parent=titleline_el)
         if len(titleline_links) > 2:
             print("Unexpected number of title line links found: " + str(len(titleline_links)))
         elif len(titleline_links) == 1:
@@ -76,10 +27,10 @@ class HackerNewsItem:
         age_str = subline_el.find(class_="age").attrs["title"]
         date = datetime.datetime.fromtimestamp(int(age_str.split(" ")[1]))
         comments_el = subline_el.select_one('a[href*="item?id="]')
-        self.points = extract_int_from_start(score_el.text)
+        self.points = SoupUtils.extract_int_from_start(score_el.text)
         self.user = subline_el.find(class_="hnuser").text
         self.age = date
-        self.comments = extract_int_from_start(comments_el.text)
+        self.comments = SoupUtils.extract_int_from_start(comments_el.text)
 
     def __str__(self):
         current_date = datetime.datetime.now()
@@ -101,23 +52,12 @@ class HackerNewsItem:
 class HackerNewsSouper():
 
     @staticmethod
-    def get_hacker_news_soup():
-        try:
-            url = f"https://news.ycombinator.com"
-            response = urllib.request.urlopen(url)
-            html_string = response.read().decode("utf-8")
-            soup = BeautifulSoup(html_string, "lxml")
-            return soup
-        except Exception as e:
-            raise Exception(f"Failed to get HTML for Hacker News: {e}")
-
-    @staticmethod
     def get_hacker_news_items():
         # There is one table with alternating classes containing title and subline, so need to update the news item on every other row.
-        soup = HackerNewsSouper.get_hacker_news_soup()
+        soup = SoupUtils.get_soup("https://news.ycombinator.com")
         items = []
-        main_table = get_elements(class_path=[["tag", "table"]], parent=soup)[2]
-        row_els = get_elements(class_path=[["tag", "tr"]], parent=main_table)
+        main_table = SoupUtils.get_elements(class_path=[["tag", "table"]], parent=soup)[2]
+        row_els = SoupUtils.get_elements(class_path=[["tag", "tr"]], parent=main_table)
         if len(row_els) < 10:
             raise Exception(f"Not enough news rows found!")
 

@@ -4,9 +4,14 @@
     ],
     "prompts_directory": "prompts",
     "tongue_twisters_dir": "",
-    "artists_file": "artists.json",
+    "artists_file": "artists_example.json",
+    "composers_file": "composers_example.json",
     "foreground_color": "white",
     "background_color": "#2596BE",
     "open_weather_api_key": "<KEY>",
-    "news_api_key": "<KEY>"
+    "news_api_key": "<KEY>",
+    "news_api_source_trustworthiness": {
+        "bbc-news": 0.5
+    },
+    "holiday_api_key": "<KEY>"
 }

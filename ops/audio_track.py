@@ -1,6 +1,8 @@
+import glob
 import os
 
 # from ops.artists import Artists
+from utils.utils import Utils
 
 
 """
@@ -63,6 +65,15 @@ class AudioTrack:
             self.title = None
             self.ext = None
 
+    def readable_title(self):
+        return AudioTrack._prep_track_text(self.title)
+
+    def readable_album(self):
+        return AudioTrack._prep_track_text(self.album)
+    
+    def readable_artist(self):
+        return AudioTrack._prep_track_text(self.artist)
+
     def is_invalid(self):
         if self.basename is None:
             return True
@@ -79,6 +90,43 @@ class AudioTrack:
             if maybe_track_index is not None and maybe_track_index > 0 and maybe_track_index < 40:
                 self.track_index = maybe_track_index
                 self.title = maybe_title
+
+    def get_track_text_file(self):
+        if self.basename is None:
+            return None
+        track_basename = self.basename.lower()
+        dirname = os.path.dirname(self.filepath)
+        txt_files = glob.glob(os.path.join(dirname, "*.txt"))
+        txt_basenames = []
+        for f in txt_files:
+            basename = os.path.basename(f).lower()
+            if track_basename.startswith(basename):
+                return f
+            txt_basenames.append(basename)
+        for basename in txt_basenames:
+            if basename[:-4] in track_basename:
+                return os.path.join(dirname,  basename)
+        string_distance_dict = {}
+        song_basename_no_ext = os.path.splitext(track_basename)[0]
+        print(f"Track basename no ext: {song_basename_no_ext}")
+        min_string_distance = (999999999, None)
+        for basename in txt_basenames:
+            basename_no_ext = os.path.splitext(basename)[0]
+            string_distance = Utils.string_distance(song_basename_no_ext,  basename_no_ext)
+            string_distance_dict[basename] = string_distance
+            print(f"Txt basename no ext: {basename_no_ext}, string distance: {string_distance}")
+            if min_string_distance[0] > string_distance:
+                min_string_distance = (string_distance, basename)
+        if min_string_distance[1] is not None and min_string_distance[0] < 30:
+            return os.path.join(dirname,  min_string_distance[1])
+        raise Exception(f"No matching text file found for track: {self.title}")
+
+    @staticmethod
+    def _prep_track_text(text):
+        # TODO i18n (and maybe i18n to detect track language context)
+        return text.replace(" No. ", " Number ") \
+                   .replace("Nr. ", "Number ") \
+                   .replace("Nr .",  "Number ") \
 
     @staticmethod
     def extract_ints_from_start(s):

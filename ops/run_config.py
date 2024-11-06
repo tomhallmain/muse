@@ -9,7 +9,7 @@ class RunConfig:
         self.total = '1'
         self.directories = self.get("directories")
         self.overwrite = False
-        self.only_music = True
+        self.muse = True
 
     def get(self, name):
         if isinstance(self.args, dict):

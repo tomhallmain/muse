@@ -1,4 +1,5 @@
 import asyncio
+import base64
 import math
 import re
 import os
@@ -265,6 +266,25 @@ class Utils:
         else:
             os.system('xdg-open "%s"' % filepath)
 
+    @staticmethod
+    def simple_encode(s="", n=0):
+        if isinstance(s, str):
+            s = bytes(s, "UTF-8")
+        elif not isinstance(s, bytes):
+            raise TypeError("Argument must be bytes or str")
+        for i in range(n):
+            s = base64.b64encode(s)
+        return s.decode("UTF-8")
+
+    @staticmethod
+    def simple_decode(s="", n=0):
+        if isinstance(s, str):
+            s = bytes(s, "UTF-8")
+        elif not isinstance(s, bytes):
+            raise TypeError("Argument must be bytes or str")
+        for i in range(n):
+            s = base64.b64decode(s)
+        return s.decode("UTF-8")
 
 
 
