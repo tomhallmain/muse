@@ -10,6 +10,9 @@ from ops.playback import Playback
 from ops.prompter import Prompter
 from ops.voice import Voice
 from utils.config import config
+from utils.translations import I18N
+
+_ = I18N._
 
 
 class Muse:
@@ -27,35 +30,22 @@ class Muse:
         # TODO quality info for songs
         # TODO i18n
         has_already_spoken = False
-        if not skip_previous_track_remark and previous_track != "" and random.random() < 0.2:
-            if True:
-                dj_remark = "Das war „{0}“ aus „{1}“".format(previous_track.readable_title(), previous_track.readable_album())
-                if previous_track.artist is not None and previous_track.artist!= "":
-                    dj_remark += " von „{0}“.".format(previous_track.readable_artist())
-                else:
-                    dj_remark += "."
+        if not skip_previous_track_remark and previous_track != None and random.random() < 0.2:
+            dj_remark = _("That was \"{0}\" in \"{1}\"").format(previous_track.readable_title(), previous_track.readable_album())
+            if previous_track.artist is not None and previous_track.artist!= "":
+                dj_remark += _(" by \"{0}\".").format(previous_track.readable_artist())
             else:
-                dj_remark = "That was \"" + previous_track.title + "\" in \"" + previous_track.album + "\""
-                if previous_track.artist is not None and previous_track.artist!= "":
-                    dj_remark += " by " + previous_track.artist + "."
-                else:
-                    dj_remark += "."
+                dj_remark += "."
             self.voice.say(dj_remark)
         if random.random() < 0.3:
-            if True:
-                start_tag = "Als Nächstes" if previous_track is not None else "Zu Beginn"
-                dj_remark = start_tag + " spielen wir „{0}“ aus „{1}“".format(track.readable_title(), track.readable_album())
-                if track.artist is not None and track.artist!= "":
-                    dj_remark += " von „{0}“.".format(track.readable_artist())
-                else:
-                    dj_remark += "."
+            if previous_track is None:
+                dj_remark = _("To start, we'll be playing: \"{0}\" from \"{1}\"").format(track.readable_title(), track.readable_album())
             else:
-                start_tag = "Next up" if previous_track is not None else "To start"
-                dj_remark = start_tag + ", we'll be playing: \"" + track.title + "\" from \"" + track.album + "\""
-                if track.artist is not None and track.artist!= "":
-                    dj_remark += " by " + track.artist + "."
-                else:
-                    dj_remark += "."
+                dj_remark = _("Next up, we'll be playing: \"{0}\" from \"{1}\"").format(track.readable_title(), track.readable_album())
+            if track.artist is not None and track.artist!= "":
+                dj_remark += _(" by \"{0}\".").format(track.readable_artist())
+            else:
+                dj_remark += "."
             self.voice.say(dj_remark)
             has_already_spoken = True
         if random.random() < 0.2:
@@ -90,12 +80,12 @@ class Muse:
                 if True:
                     remark = "Zunächst zum Thema „{0}“.".format(topic)
                 else:
-                    remark = "First let's hear about {0}".format(topic)
+                    remark = _("First let's hear about {0}").format(topic)
             else:
                 if True:
                     remark = "Doch zunächst zum Thema „{0}“.".format(topic)
                 else:
-                    remark = "But first, let's hear about {0}.".format(topic)
+                    remark = _("But first, let's hear about {0}.").format(topic)
                 self.voice.say(remark)
 
         if topic == "weather":

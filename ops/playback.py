@@ -72,8 +72,11 @@ class Playback:
     def run(self):
         while self.get_track() and not self._run.is_cancelled:
             if self._run.args.muse:
-                skip_previous_song_remark = self.last_track_failed or self.skip_track
-                self._run.muse.maybe_dj(self.track, self.previous_track, skip_previous_song_remark)
+                if self._run.muse.voice.can_speak:
+                    skip_previous_song_remark = self.last_track_failed or self.skip_track
+                    self._run.muse.maybe_dj(self.track, self.previous_track, skip_previous_song_remark)
+                else:
+                    print("No voice available due to import failure, skipping Muse.")
 
             self.last_track_failed = False
             if self._track_text_callback is not None:

@@ -7,6 +7,7 @@ class Config:
     CONFIGS_DIR_LOC = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "configs")
 
     def __init__(self):
+        self.tts_runner_location = None
         self.dict = {}
         self.foreground_color = "white"
         self.background_color = "#2596BE"
@@ -59,6 +60,7 @@ class Config:
         self.set_directories(
                              "prompts_directory",
                              "tongue_twisters_dir",
+                             "tts_runner_location",
                              )
         self.set_filepaths(
                            "artists_file",

@@ -1,4 +1,5 @@
 {
+    "tts_runner_location": "{HOME}\\tts-runner",
     "directories": [
         "{HOME}\\audio"
     ],
