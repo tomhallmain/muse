@@ -6,9 +6,9 @@ from extensions.hacker_news_souper import HackerNewsSouper
 from extensions.news_api import NewsAPI
 from extensions.open_weather import OpenWeatherAPI
 from extensions.llm import LLM
-from ops.playback import Playback
-from ops.prompter import Prompter
-from ops.voice import Voice
+from muse.playback import Playback
+from muse.prompter import Prompter
+from muse.voice import Voice
 from utils.config import config
 from utils.translations import I18N
 
@@ -76,16 +76,11 @@ class Muse:
         topic = self.get_topic()
 
         if (has_already_spoken and random.random() < 0.75) or (not has_already_spoken and random.random() < 0.6):
+            topic_translated = self.prompter.translate_topic(topic)
             if skip_previous_track_remark or previous_track is None:
-                if True:
-                    remark = "Zunächst zum Thema „{0}“.".format(topic)
-                else:
-                    remark = _("First let's hear about {0}").format(topic)
+                remark = _("First let's hear about {0}").format(topic_translated)
             else:
-                if True:
-                    remark = "Doch zunächst zum Thema „{0}“.".format(topic)
-                else:
-                    remark = _("But first, let's hear about {0}.").format(topic)
+                remark = _("But first, let's hear about {0}.").format(topic_translated)
                 self.voice.say(remark)
 
         if topic == "weather":
@@ -172,6 +167,7 @@ class Muse:
             print(playback._playback_config.list)
 
     def talk_about_the_calendar(self):
+        # TODO talk about tomorrow as well, or the upcoming week
         today = datetime.datetime.today()
         prompt = self.prompter.get_prompt("calendar")
         prompt = prompt.replace("DATE", today.strftime("%A %B %d %Y"))

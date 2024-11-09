@@ -12,9 +12,9 @@ from ttkthemes import ThemedTk
 
 from utils.globals import Globals, WorkflowType
 
-from ops.run import Run
-from ops.run_config import RunConfig
-from ops.playback_config import PlaybackConfig
+from muse.playback_config import PlaybackConfig
+from muse.run import Run
+from muse.run_config import RunConfig
 from ui.app_style import AppStyle
 from utils.app_info_cache import app_info_cache
 from utils.config import config

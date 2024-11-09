@@ -7,7 +7,6 @@ class Config:
     CONFIGS_DIR_LOC = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "configs")
 
     def __init__(self):
-        self.tts_runner_location = None
         self.dict = {}
         self.foreground_color = "white"
         self.background_color = "#2596BE"
@@ -21,6 +20,11 @@ class Config:
         self.news_api_source_trustworthiness = {}
         self.holiday_api_key = None
         self.debug = False
+
+        self.text_cleaner_ruleset = []
+        self.coqui_tts_location = ""
+        self.coqui_tts_model = ("tts_models/multilingual/multi-dataset/xtts_v2", "Royston Min", "en")
+        self.max_chunk_tokens = 200
 
         self.server_port = 6000
         self.server_password = "<PASSWORD>"
@@ -40,32 +44,37 @@ class Config:
             self.config_path = os.path.join(Config.CONFIGS_DIR_LOC, "config_example.json")
 
         try:
-            self.dict = json.load(open(self.config_path, "r"))
+            self.dict = json.load(open(self.config_path, "r", encoding="utf-8"))
         except Exception as e:
             print(e)
             print("Unable to load config. Ensure config.json file settings are correct.")
 
         self.set_values(str,
-                        "foreground_color",
-                        "background_color",
-                        "open_weather_api_key",
-                        "news_api_key",
-                        "holiday_api_key",
-                        )
+            "foreground_color",
+            "background_color",
+            "open_weather_api_key",
+            "news_api_key",
+            "holiday_api_key",
+        )
+        self.set_values(int,
+            "max_chunk_tokens",
+        )
         self.set_values(list,
-                        "directories",
-                        )
+            "directories",
+            "text_cleaner_ruleset",
+            "coqui_tts_model",
+        )
         self.set_values(dict,
-                        "news_api_source_trustworthiness")
+            "news_api_source_trustworthiness")
         self.set_directories(
-                             "prompts_directory",
-                             "tongue_twisters_dir",
-                             "tts_runner_location",
-                             )
+            "prompts_directory",
+            "tongue_twisters_dir",
+            "coqui_tts_location",
+        )
         self.set_filepaths(
-                           "artists_file",
-                           "composers_file",
-                           )
+            "artists_file",
+            "composers_file",
+        )
 
         i = 0
         while i < len(self.directories):
@@ -78,6 +87,8 @@ class Config:
             except Exception as e:
                 pass
             i += 1
+
+        self.coqui_tts_model = tuple(self.coqui_tts_model)
 
 
     def validate_and_set_directory(self, key, override=False):

@@ -1,3 +1,4 @@
+import datetime
 import json
 import os
 
@@ -8,6 +9,7 @@ class AppInfoCache:
     INFO_KEY = "info"
     HISTORY_KEY = "history"
     DIRECTORIES_KEY = "directories"
+    TRACKERS_KEY = "trackers"
     MAX_HISTORY_ENTRIES = 50
 
     def __init__(self):
@@ -38,6 +40,11 @@ class AppInfoCache:
         if AppInfoCache.DIRECTORIES_KEY not in self._cache:
             self._cache[AppInfoCache.DIRECTORIES_KEY] = {}
         return self._cache[AppInfoCache.DIRECTORIES_KEY]
+
+    def _get_trackers(self) -> dict:
+        if AppInfoCache.TRACKERS_KEY not in self._cache:
+            self._cache[AppInfoCache.TRACKERS_KEY] = {}
+        return self._cache[AppInfoCache.TRACKERS_KEY]
 
     def set(self, key, value):
         if AppInfoCache.INFO_KEY not in self._cache:
@@ -85,6 +92,24 @@ class AppInfoCache:
         if directory not in directory_info or key not in directory_info[directory]:
             return default_val
         return directory_info[directory][key]
+
+    def get_tracker(self, tracker):
+        trackers = self._get_trackers()
+        if tracker not in trackers:
+            trackers[tracker] = {"count": 0, "last": datetime.datetime.now()}
+        return trackers[tracker]
+
+    def increment_tracker(self, tracker):
+        tracker = self.get_tracker(tracker)
+        now = datetime.datetime.now()
+        last_track = tracker["last"]
+        if now.year <= last_track.year and now.month <= last_track.month and now.day <= last_track.day:
+            tracker["count"] += 1
+        else:
+            tracker["count"] = 1
+        tracker["last"] = now
+        hours_since_last = (now - last_track).total_seconds()/3600
+        return int(tracker["count"]), float(hours_since_last)
 
     @staticmethod
     def normalize_directory_key(directory):

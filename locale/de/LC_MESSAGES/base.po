@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2024-11-06 20:14-0500\n"
+"POT-Creation-Date: 2024-11-09 16:05-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Thomas Hall <tomhall.main@gmail.com>\n"
 "Language-Team: de Team <<EMAIL>>\n"
@@ -118,6 +118,54 @@ msgstr "Zun\u00e4chst zum Thema \u201e{0}\u201c."
 #: .\ops\muse.py:88
 msgid "But first, let's hear about {0}."
 msgstr "Doch zun\u00e4chst zum Thema \u201e{0}\u201c."
+
+#: .\ops\prompter.py:21
+msgid "weather"
+msgstr "Wetter"
+
+#: .\ops\prompter.py:23
+msgid "news"
+msgstr "Nachrichten"
+
+#: .\ops\prompter.py:27
+msgid "joke"
+msgstr "Scherz"
+
+#: .\ops\prompter.py:29
+msgid "fact"
+msgstr "Tatsache"
+
+#: .\ops\prompter.py:31
+msgid "fable"
+msgstr "Fabel"
+
+#: .\ops\prompter.py:33
+msgid "truth and lie"
+msgstr "Wahrheit und L\u00fcge"
+
+#: .\ops\prompter.py:35
+msgid "aphorism"
+msgstr "Aphorismus"
+
+#: .\ops\prompter.py:37
+msgid "poem"
+msgstr "Gedicht"
+
+#: .\ops\prompter.py:39
+msgid "quote"
+msgstr "Zitat"
+
+#: .\ops\prompter.py:41
+msgid "tongue twister"
+msgstr "Zungenbrecher"
+
+#: .\ops\prompter.py:43
+msgid "motivation"
+msgstr "Motivation"
+
+#: .\ops\prompter.py:45
+msgid "calendar"
+msgstr "Kalender"
 
 #: .\utils\job_queue.py:33
 msgid " (Pending runs: {0})"

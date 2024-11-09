@@ -4,11 +4,11 @@ import time
 import traceback
 
 from utils.globals import Globals # must import first
-from ops.muse import Muse
-from ops.playback import Playback
-from ops.playback_config import PlaybackConfig
-from ops.run_config import RunConfig
-from ops.workflow import WorkflowPrompt
+from muse.muse import Muse
+from muse.playback import Playback
+from muse.playback_config import PlaybackConfig
+from muse.run_config import RunConfig
+from muse.workflow import WorkflowPrompt
 from utils.translations import I18N
 from utils.utils import Utils
 

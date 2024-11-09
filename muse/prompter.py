@@ -4,12 +4,47 @@ import os
 
 from utils.app_info_cache import app_info_cache
 from utils.config import config
+from utils.translations import I18N
+
+_ = I18N._
+
 
 class Prompter:
     TOPICS = ["weather", "news", "hackernews", "joke", "fact", "fable", 
               "truth_and_lie", "aphorism", "poem", "quote", "tongue_twister", 
               "motivation", "calendar"]
     TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M"
+
+    @staticmethod
+    def translate_topic(topic):
+        if topic == "weather":
+            return _("weather")
+        elif topic == "news":
+            return _("news")
+        elif topic == "hackernews":
+            return  "hacker news"
+        elif topic == "joke":
+            return _("joke")
+        elif topic == "fact":
+            return  _("fact")
+        elif topic == "fable":
+            return  _("fable")
+        elif topic == "truth_and_lie":
+            return  _("truth and lie")
+        elif topic == "aphorism":
+            return  _("aphorism")
+        elif topic == "poem":
+            return  _("poem")
+        elif topic == "quote":
+            return  _("quote")
+        elif topic == "tongue_twister":
+            return  _("tongue twister")
+        elif topic == "motivation":
+            return   _("motivation")
+        elif topic == "calendar":
+            return   _("calendar")
+        else:
+            return topic
 
     @staticmethod
     def minutes_since(measure_time, from_time=None):

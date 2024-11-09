@@ -6,4 +6,4 @@ configs/*
 !configs/artists_example.json
 library_data/*
 temp*.py
-
+tts_output/*

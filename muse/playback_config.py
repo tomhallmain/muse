@@ -2,7 +2,7 @@ import os
 import glob
 import random
 
-from ops.audio_track import AudioTrack
+from muse.audio_track import AudioTrack
 from utils.app_info_cache import app_info_cache
 from utils.config import config
 from utils.globals import MediaFileType, WorkflowType

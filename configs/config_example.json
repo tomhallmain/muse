@@ -14,5 +14,25 @@
     "news_api_source_trustworthiness": {
         "bbc-news": 0.5
     },
-    "holiday_api_key": "<KEY>"
+    "holiday_api_key": "<KEY>",
+    "coqui_tts_location": "{HOME}\\TTS-dev",
+    "text_cleaner_ruleset": [
+        {
+            "pattern": "BWV\\.?([ -])?",
+            "replacement": "Bach-Werke-Verzeichnis ",
+            "simple_replacement": false
+        },
+        {
+            "pattern": " KV?\\. ?([0-9])",
+            "replacement": " Köchel \\1",
+            "simple_replacement": false
+        },
+        {
+            "pattern": " Vol\\.? ?([0-9IVXLM])",
+            "replacement": " Volume \\1",
+            "simple_replacement": false
+        }
+    ],
+    "coqui_tts_model": ["tts_models/multilingual/multi-dataset/xtts_v2", "Royston Min", "en"],
+    "max_chunk_tokens": 200
 }

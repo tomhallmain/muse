@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2024-11-06 20:13-0500\n"
+"POT-Creation-Date: 2024-11-09 16:05-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -117,6 +117,54 @@ msgstr ""
 
 #: .\ops\muse.py:88
 msgid "But first, let's hear about {0}."
+msgstr ""
+
+#: .\ops\prompter.py:21
+msgid "weather"
+msgstr ""
+
+#: .\ops\prompter.py:23
+msgid "news"
+msgstr ""
+
+#: .\ops\prompter.py:27
+msgid "joke"
+msgstr ""
+
+#: .\ops\prompter.py:29
+msgid "fact"
+msgstr ""
+
+#: .\ops\prompter.py:31
+msgid "fable"
+msgstr ""
+
+#: .\ops\prompter.py:33
+msgid "truth and lie"
+msgstr ""
+
+#: .\ops\prompter.py:35
+msgid "aphorism"
+msgstr ""
+
+#: .\ops\prompter.py:37
+msgid "poem"
+msgstr ""
+
+#: .\ops\prompter.py:39
+msgid "quote"
+msgstr ""
+
+#: .\ops\prompter.py:41
+msgid "tongue twister"
+msgstr ""
+
+#: .\ops\prompter.py:43
+msgid "motivation"
+msgstr ""
+
+#: .\ops\prompter.py:45
+msgid "calendar"
 msgstr ""
 
 #: .\utils\job_queue.py:33

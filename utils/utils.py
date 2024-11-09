@@ -3,8 +3,10 @@ import base64
 import math
 import re
 import os
+import shutil
 import sys
 import threading
+import unicodedata
 
 
 class Utils:
@@ -14,6 +16,11 @@ class Utils:
         if result:
             return result.group()
         return ""
+
+    @staticmethod
+    def ascii_normalize(string):
+        string = str(unicodedata.normalize('NFKD', string).encode('ascii', 'ignore'))
+        return string[2:-1]
 
     @staticmethod
     def start_thread(callable, use_asyncio=True, args=None):
@@ -288,11 +295,23 @@ class Utils:
             s = base64.b64decode(s)
         return s.decode("UTF-8")
 
+    @staticmethod
+    # NOTE: Maybe want to raise Exception if either existing filepath or target dir are not valid
+    def move_file(existing_filepath, new_filepath, overwrite_existing=False):
+        if not overwrite_existing and os.path.exists(new_filepath):
+            raise Exception("File already exists: " + new_filepath)
+        return shutil.move(existing_filepath, new_filepath)
+
+    @staticmethod
+    def copy_file(existing_filepath, new_filepath, overwrite_existing=False):
+        if not overwrite_existing and os.path.exists(new_filepath):
+            raise Exception("File already exists: " + new_filepath)
+        return shutil.copy2(existing_filepath, new_filepath)
 
 
 if __name__ == "__main__":
     import pickle
-    from ops.playback_config import PlaybackConfig
+    from muse.playback_config import PlaybackConfig
     if os.path.exists("test.pkl"):
         with open("test.pkl", "rb") as f:
             data = pickle.load(f)
