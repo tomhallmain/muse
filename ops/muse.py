@@ -174,7 +174,7 @@ class Muse:
     def talk_about_the_calendar(self):
         today = datetime.datetime.today()
         prompt = self.prompter.get_prompt("calendar")
-        prompt = prompt.replace("DATE", today.strftime("%d/%m/%Y"))
+        prompt = prompt.replace("DATE", today.strftime("%A %B %d %Y"))
         prompt = prompt.replace("TIME", today.strftime("%H:%M"))
         calendar = self.llm.generate_response(prompt)
         self.voice.say(calendar)

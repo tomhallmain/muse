@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2024-11-06 19:06-0500\n"
+"POT-Creation-Date: 2024-11-06 20:14-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Thomas Hall <tomhall.main@gmail.com>\n"
 "Language-Team: en Team <<EMAIL>>\n"
@@ -91,27 +91,31 @@ msgstr "Error"
 msgid " Muse "
 msgstr " Muse "
 
-#: .\ops\muse.py:41
+#: .\ops\audio_track.py:131 .\ops\audio_track.py:132
+msgid "Number \\1"
+msgstr " Number \\1"
+
+#: .\ops\muse.py:34
 msgid "That was \"{0}\" in \"{1}\""
 msgstr "That was \"{0}\" in \"{1}\""
 
-#: .\ops\muse.py:43 .\ops\muse.py:61
+#: .\ops\muse.py:36 .\ops\muse.py:46
 msgid " by \"{0}\"."
 msgstr " by \"{0}\"."
 
-#: .\ops\muse.py:57
+#: .\ops\muse.py:42
 msgid "To start, we'll be playing: \"{0}\" from \"{1}\""
 msgstr "To start, we'll be playing: \"{0}\" from \"{1}\""
 
-#: .\ops\muse.py:59
+#: .\ops\muse.py:44
 msgid "Next up, we'll be playing: \"{0}\" from \"{1}\""
 msgstr "Next up, we'll be playing: \"{0}\" from \"{1}\""
 
-#: .\ops\muse.py:98
+#: .\ops\muse.py:83
 msgid "First let's hear about {0}"
 msgstr "First let's hear about {0}"
 
-#: .\ops\muse.py:103
+#: .\ops\muse.py:88
 msgid "But first, let's hear about {0}."
 msgstr "But first, let's hear about {0}."
 

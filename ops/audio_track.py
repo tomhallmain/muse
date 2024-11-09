@@ -1,8 +1,12 @@
 import glob
 import os
+import re
 
 # from ops.artists import Artists
+from utils.translations import I18N
 from utils.utils import Utils
+
+_ = I18N._
 
 
 """
@@ -123,10 +127,10 @@ class AudioTrack:
 
     @staticmethod
     def _prep_track_text(text):
-        # TODO i18n (and maybe i18n to detect track language context)
-        return text.replace(" No. ", " Number ") \
-                   .replace("Nr. ", "Number ") \
-                   .replace("Nr .",  "Number ") \
+        # TODO i18n to detect track language context
+        text = re.sub(re.compile(" No. ?([0-9])"), _("Number \\1"), text)
+        text = re.sub(re.compile("Nr. ?([0-9])"),  _("Number \\1"), text)
+        return text
 
     @staticmethod
     def extract_ints_from_start(s):

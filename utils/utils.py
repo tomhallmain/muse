@@ -277,8 +277,10 @@ class Utils:
         return s.decode("UTF-8")
 
     @staticmethod
-    def simple_decode(s="", n=0):
+    def simple_decode(s="", n=0, r=True):
         if isinstance(s, str):
+            if r:
+                s = s[::-1]
             s = bytes(s, "UTF-8")
         elif not isinstance(s, bytes):
             raise TypeError("Argument must be bytes or str")

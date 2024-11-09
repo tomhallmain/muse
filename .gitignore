@@ -4,5 +4,6 @@ configs/*
 !configs/config_example.json
 !configs/composers_example.json
 !configs/artists_example.json
+library_data/*
 temp*.py
 

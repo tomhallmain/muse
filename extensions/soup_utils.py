@@ -1,3 +1,5 @@
+import html
+import urllib.parse
 import urllib.request
 from bs4 import BeautifulSoup
 import pandas as pd
@@ -5,6 +7,10 @@ import io
 
 
 class SoupUtils:
+    @staticmethod
+    def clean_html(html_encoded):
+        return urllib.parse.unquote(html.unescape(html_encoded))
+
     @staticmethod
     def get_soup(url=None, base_url="", extension=""):
         if url is None:

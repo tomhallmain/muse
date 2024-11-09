@@ -59,6 +59,22 @@ class Event:
             if not other_name in self.other_names:
                 self.other_names.append(other_name)
 
+    def __str__(self):
+        sources = ",".join(self.sources)
+        date = self.date.strftime("%Y-%m-%d")
+        out = f"{self.name} ({date}) from {sources}"
+        if len(self.other_names) > 0:
+            other_names = ",".join(self.other_names)
+            out += f"\n    Other Names: {other_names}"
+        if len(self.notes) > 0:
+            for note in self.notes:
+                if type(note) == dict:
+                    for k, v in note.items():
+                        out += f"\n    {k} - {v}"
+                else:
+                    out += f"\n    {note}"
+        return out
+
     @staticmethod
     def from_holiday_api(event):
         notes = []
@@ -84,18 +100,6 @@ class Event:
             fixed=event["fixed"],
             country=event["countryCode"],
             other_name=event["localName"],
-            notes=notes)
-        return new_event
-
-    @staticmethod
-    def from_inadiutorium(event):
-        notes = []
-        new_event = Event(name=event["name"],
-            date=datetime.datetime.strptime(event["date"], "%Y-%m-%d"),
-            source="Inadiutorium",
-            fixed=None,
-            country=None,
-            other_name=None,
             notes=notes)
         return new_event
 
@@ -165,15 +169,28 @@ class Event:
     @staticmethod
     def from_hijri_api(event):
         notes = []
-        new_event = Event(name=event["title"],
-            date=datetime.datetime(year=event["year"], month=event["month"], day=event["day"]),
+        notes.append({"hijri": event["hijri"]})
+        event_name = event["holidays"][0]
+        new_event = Event(name=event_name,
+            date=datetime.datetime.strptime(event["gregorian"]["date"], "%Y-%m-%d"),
             source="Hijri API",
-            fixed=None,
+            fixed=False,
             country=None,
             other_name=None,
             notes=notes)
         return new_event
 
+    @staticmethod
+    def merge_events(events=[], events_to_merge=[]):
+        for event_to_merge in events_to_merge:
+            has_merged_event = False
+            for event in events:
+                if event_to_merge.name == event.name and event_to_merge.date == event.date:
+                    event.merge(event_to_merge)
+                    has_merged_event = True
+                    break
+            if not has_merged_event:
+                events.append(event_to_merge)
 
 
 class HolidayAPI:
@@ -185,15 +202,24 @@ class HolidayAPI:
     def __build_url(self, country, year):
         return f"{self.BASE_URL}?key={self.api_key}&country={country}&year={year}"
 
-    def get_events(self, country="US", year=-1):
+    def get_events_for_country(self, country="US", year=-1):
         events = []
         try:
             events_json = requests.get(self.__build_url(country, year)).json()
+            print(events_json)
             for event in events_json:
                 events.append(Event.from_holiday_api(event))
         except Exception as e:
             print("Error getting events from Holiday API: " + str(e))
+            raise e
         return events
+
+    def get_events(self, country_codes=["US"], year=-1):
+        events = []
+        for country in country_codes:
+            Event.merge_events(events, self.get_events_for_country(country, year))
+        return events
+
 
 
 class NagerPublicHolidaysAPI:
@@ -205,7 +231,7 @@ class NagerPublicHolidaysAPI:
     def __build_url(self, country_code="US", year=-1):
         return self.BASE_URL + str(year) + "/" + country_code
 
-    def get_events(self, country_code="US", year=-1):
+    def get_events_for_country(self, country_code="US", year=-1):
         events = []
         try:
             events_json = requests.get(self.__build_url(country_code, year)).json()
@@ -213,19 +239,14 @@ class NagerPublicHolidaysAPI:
                 events.append(Event.from_nager_public_holidays_api(event))
         except Exception as e:
             print("Error getting events from Nager Public Holidays API: " + str(e))
+            raise e
         return events
 
-    def get_events_for_countries(self, country_codes=["US"], year=-1):
+    def get_events(self, country_codes=["US"], year=-1):
         events = []
         for country in country_codes:
-            self.merge_events(events, self.get_events(country, year))
+            Event.merge_events(events, self.get_events_for_country(country, year))
         return events
-
-    def merge_events(self, events=[], events_to_merge=[]):
-        for event_to_merge in events_to_merge:
-            for event in events:
-                if event_to_merge.name == event.name and event_to_merge.date == event.date:
-                    event.merge(event_to_merge)
 
 
 class InadiutoriumAPI:
@@ -236,18 +257,24 @@ class InadiutoriumAPI:
 
     def __build_url(self, year=-1, month=-1):
         return self.BASE_URL + str(year) + "/" + str(month)
-    
+
+    def get_events_for_month(self, year=-1, month=-1):
+        events = []
+        try:
+            events_json = requests.get(self.__build_url(year, month)).json()
+            print(events_json)
+            for event in events_json:
+                events.append(Event.from_inadiutorium_api(event))
+            time.sleep(0.5)
+        except Exception as e:
+            print("Error getting events from Inadiutorium API: " + str(e))
+            raise e
+        return events
+
     def get_events(self, year=-1):
         events = []
-        for i in range(0, 12):
-            try:
-                events_json = requests.get(self.__build_url(year, i + 1)).json()
-                for event in events_json["data"]:
-                    events.append(Event.from_inadiutorium(event))
-                time.sleep(0.5)
-            except Exception as e:
-                print("Error getting events from Inadiutorium API: " + str(e))
-        
+        for month in range(0, 12):
+            events.extend(self.get_events_for_month(year, month + 1))        
         return events
 
 
@@ -261,16 +288,24 @@ class HijriCalendarAPI:
         pass
 
     def __build_url(self, month=-1, year=-1):
-        return self.BASE_URL + str(month) + '/' + str(year)
+        return self.BASE_URL + self.G_TO_H_CALENDAR + str(month) + '/' + str(year)
 
-    def get_events(self, month=-1, year=-1):
+    def get_events_for_month(self, month=-1, year=-1):
         events = []
         try:
-            events_json  = requests.get(self.__build_url(month, year)).json()["data"]["items"]
-            for event in events_json:
-                events.append(Event.from_hijri_api(event))
+            dates_json  = requests.get(self.__build_url(month, year)).json()["data"]
+            for date in dates_json:
+                if len(date["hijri"]["holidays"]) > 0:
+                    events.append(Event.from_hijri_api(date))
         except Exception as e:
-           print("Error getting events from Hijri Calendar API: " + str(e))
+            print("Error getting events from Hijri Calendar API: " + str(e))
+            raise e
+        return events
+
+    def get_events(self, year=-1):
+        events = []
+        for month in range(0, 12):
+            events.extend(self.get_events_for_month(year, month + 1))
         return events
 
 
@@ -281,20 +316,17 @@ class CalendarAggregator:
         self.inadiutorium_api = InadiutoriumAPI()
         self.hijri_calendar_api = HijriCalendarAPI()
 
-    def get_events(self):
-        now = datetime.datetime.now()
-        holidays = self.holiday_api.get_events()
-        public_holidays = self.public_holidays_api.get_events_for_countries(["US", "DE", "GB", "CA", "RU"], now.year)
-        inadiutorium = self.inadiutorium_api.get_events(now.year)
-        hijri = self.hijri_calendar_api.get_events(now.year)
-        all_events = holidays
-        self.merge_events(all_events, public_holidays)
-        self.merge_events(all_events, inadiutorium)
-        self.merge_events(all_events, hijri)
+    def get_events(self, year):
+        # holidays = self.holiday_api.get_events(["US", "DE", "GB", "CA", "RU"], year)
+        inadiutorium = self.inadiutorium_api.get_events(year)
+        public_holidays = self.public_holidays_api.get_events(["US", "DE", "GB", "CA", "RU"], year)
+        hijri = self.hijri_calendar_api.get_events(year)
+
+        all_events = []
+        Event.merge_events(all_events, public_holidays)
+        Event.merge_events(all_events, inadiutorium)
+        Event.merge_events(all_events, hijri)
+        all_events.sort(key=lambda e: (e.date))
         return all_events
 
-    def merge_events(self, events=[], events_to_merge=[]):
-        for event_to_merge in events_to_merge:
-            for event in events:
-                if event_to_merge.name == event.name and event_to_merge.date == event.date:
-                    event.merge(event_to_merge)
+
