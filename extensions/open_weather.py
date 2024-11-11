@@ -64,7 +64,7 @@ class OpenWeatherResponse:
 City: {self.city}
 Temperature: {self.temperature}°F
 Feels Like: {self.feels_like}°F"""
-        if self.rain is not None and self.rain > 0:
+        if self.rain is not None:
             out += f"\nRain: {self.rain}"
         if self.wind is not None:
             out += f"\nWind Speed: {self.wind}"
