@@ -1,6 +1,8 @@
 
 import requests
 
+from extensions.soup_utils import SoupUtils
+
 
 class WikiOpenSearchResponse:
     def __init__(self, json: dict) -> None:
@@ -12,6 +14,19 @@ class WikiOpenSearchResponse:
         for i in range(len(self._json[1])):
             self.articles.append((self._json[1][i], self._json[3][i]))
 
+class RandomWikiResponse:
+    def __init__(self, json: dict) -> None:
+        self._json = json
+        pages_content = json["query"]["pages"]
+        page_content = list(pages_content.keys())[0]
+        self.title = page_content['title']
+        self.data = SoupUtils.remove_tags(page_content['extract'].replace('\n', ''))
+
+    def is_valid(self) -> bool:
+        return self.title is not None and self.title != "" and self.data is not None and self.data != ""
+
+    def __str__(self) -> str:
+        return self.title + '\n\n' + self.data
 
 class WikiOpenSearchAPI:
     BASE_URL = 'https://en.wikipedia.org/w/api.php'
@@ -29,3 +44,12 @@ class WikiOpenSearchAPI:
         except Exception as e:
             print(f"Failed to connect to Wiki OpenSearch API: {e}")
             return None
+
+    def random_wiki(self):
+        try:
+            req = requests.get(f'{self.BASE_URL}?action=query&generator=random&grnnamespace=0&grnlimit=1&format=json')
+            return RandomWikiResponse(req.json())
+        except Exception as e:
+            print(f"Failed to connect to Wiki OpenSearch API: {e}")
+            return None
+

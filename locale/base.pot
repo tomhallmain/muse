@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2024-11-09 16:05-0500\n"
+"POT-Creation-Date: 2024-11-11 09:47-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -91,80 +91,96 @@ msgstr ""
 msgid " Muse "
 msgstr ""
 
-#: .\ops\audio_track.py:131 .\ops\audio_track.py:132
+#: .\muse\audio_track.py:131 .\muse\audio_track.py:132
 msgid "Number \\1"
 msgstr ""
 
-#: .\ops\muse.py:34
+#: .\muse\audio_track.py:133
+msgid "\\1text to speech\\2"
+msgstr ""
+
+#: .\muse\muse.py:36
 msgid "That was \"{0}\" in \"{1}\""
 msgstr ""
 
-#: .\ops\muse.py:36 .\ops\muse.py:46
+#: .\muse\muse.py:38 .\muse\muse.py:48
 msgid " by \"{0}\"."
 msgstr ""
 
-#: .\ops\muse.py:42
+#: .\muse\muse.py:44
 msgid "To start, we'll be playing: \"{0}\" from \"{1}\""
 msgstr ""
 
-#: .\ops\muse.py:44
+#: .\muse\muse.py:46
 msgid "Next up, we'll be playing: \"{0}\" from \"{1}\""
 msgstr ""
 
-#: .\ops\muse.py:83
+#: .\muse\muse.py:83
 msgid "First let's hear about {0}"
 msgstr ""
 
-#: .\ops\muse.py:88
+#: .\muse\muse.py:85
 msgid "But first, let's hear about {0}."
 msgstr ""
 
-#: .\ops\prompter.py:21
+#: .\muse\prompter.py:23
 msgid "weather"
 msgstr ""
 
-#: .\ops\prompter.py:23
+#: .\muse\prompter.py:25
 msgid "news"
 msgstr ""
 
-#: .\ops\prompter.py:27
+#: .\muse\prompter.py:29
 msgid "joke"
 msgstr ""
 
-#: .\ops\prompter.py:29
+#: .\muse\prompter.py:31
 msgid "fact"
 msgstr ""
 
-#: .\ops\prompter.py:31
+#: .\muse\prompter.py:33
 msgid "fable"
 msgstr ""
 
-#: .\ops\prompter.py:33
+#: .\muse\prompter.py:35
 msgid "truth and lie"
 msgstr ""
 
-#: .\ops\prompter.py:35
+#: .\muse\prompter.py:37
 msgid "aphorism"
 msgstr ""
 
-#: .\ops\prompter.py:37
+#: .\muse\prompter.py:39
 msgid "poem"
 msgstr ""
 
-#: .\ops\prompter.py:39
+#: .\muse\prompter.py:41
 msgid "quote"
 msgstr ""
 
-#: .\ops\prompter.py:41
+#: .\muse\prompter.py:43
 msgid "tongue twister"
 msgstr ""
 
-#: .\ops\prompter.py:43
+#: .\muse\prompter.py:45
 msgid "motivation"
 msgstr ""
 
-#: .\ops\prompter.py:45
+#: .\muse\prompter.py:47
 msgid "calendar"
+msgstr ""
+
+#: .\muse\prompter.py:49
+msgid "more about the next track"
+msgstr ""
+
+#: .\muse\prompter.py:51
+msgid "more about the last track"
+msgstr ""
+
+#: .\muse\prompter.py:53
+msgid "random wiki article"
 msgstr ""
 
 #: .\utils\job_queue.py:33

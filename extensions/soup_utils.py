@@ -4,9 +4,14 @@ import urllib.request
 from bs4 import BeautifulSoup
 import pandas as pd
 import io
+import re
 
 
 class SoupUtils:
+    @staticmethod
+    def remove_tags(html_string):
+        return re.sub('<[^<]+?>', '', html_string).strip()
+
     @staticmethod
     def clean_html(html_encoded):
         return urllib.parse.unquote(html.unescape(html_encoded))

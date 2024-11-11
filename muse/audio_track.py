@@ -125,11 +125,19 @@ class AudioTrack:
             return os.path.join(dirname,  min_string_distance[1])
         raise Exception(f"No matching text file found for track: {self.title}")
 
+    def get_track_details(self):
+        if self.album is not None and self.album.strip() != "":
+            if self.artist is not None and self.artist.strip() != "":
+                return f"{self.readable_artist()} - {self.readable_title()} - {self.readable_album()}"
+            return f"{self.readable_title()} - {self.readable_album()}"            
+        return self.readable_title
+
     @staticmethod
     def _prep_track_text(text):
         # TODO i18n to detect track language context
         text = re.sub(re.compile(" No. ?([0-9])"), _("Number \\1"), text)
         text = re.sub(re.compile("Nr. ?([0-9])"),  _("Number \\1"), text)
+        text = re.sub(re.compile("( |^)TTS( |$)"),   _("\\1text to speech\\2"), text)
         return text
 
     @staticmethod

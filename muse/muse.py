@@ -5,6 +5,7 @@ import random
 from extensions.hacker_news_souper import HackerNewsSouper
 from extensions.news_api import NewsAPI
 from extensions.open_weather import OpenWeatherAPI
+from extensions.wiki_opensearch_api import WikiOpenSearchAPI
 from extensions.llm import LLM
 from muse.playback import Playback
 from muse.prompter import Prompter
@@ -25,6 +26,7 @@ class Muse:
         self.news_api = NewsAPI()
         self.hacker_news_souper = HackerNewsSouper()
         self.prompter = Prompter()
+        self.wiki_search = WikiOpenSearchAPI()
 
     def maybe_dj(self, track, previous_track, skip_previous_track_remark=False):
         # TODO quality info for songs
@@ -49,7 +51,7 @@ class Muse:
             self.voice.say(dj_remark)
             has_already_spoken = True
         if random.random() < 0.2:
-            self.talk_about_something(previous_track, has_already_spoken, skip_previous_track_remark)
+            self.talk_about_something(track, previous_track, has_already_spoken, skip_previous_track_remark)
 
     def get_topic(self, excluded_topics=[]):
         if Prompter.over_n_hours_since_last("weather", n_hours=24):
@@ -72,7 +74,7 @@ class Muse:
 
         return topic
 
-    def talk_about_something(self, previous_track=None, has_already_spoken=False, skip_previous_track_remark=False):
+    def talk_about_something(self, track, previous_track=None, has_already_spoken=False, skip_previous_track_remark=False):
         topic = self.get_topic()
 
         if (has_already_spoken and random.random() < 0.75) or (not has_already_spoken and random.random() < 0.6):
@@ -107,6 +109,14 @@ class Muse:
             self.talk_about_the_calendar()
         elif topic == "motivation":
             self.share_a_motivational_message()
+        elif topic =="track_context_prior":
+            self.talk_about_track_context(topic, track)
+        elif topic =="track_context_post":
+            self.talk_about_track_context(topic, previous_track)
+        elif topic == "random_wiki_article":
+            self.talk_about_random_wiki_article()
+        elif topic == "funny_story":
+            self.share_a_funny_story()
         else:
             print("Unhandled topic: " + topic)
 
@@ -178,3 +188,25 @@ class Muse:
     def share_a_motivational_message(self):
         motivation = self.llm.generate_response(self.prompter.get_prompt("motivation"))
         self.voice.say(motivation)
+
+    def talk_about_track_context(self, topic, track):
+        if track is None or topic is None:
+            raise Exception("No track or topic specified")
+        prompt = self.prompter.get_prompt(topic)
+        prompt = prompt.replace("TRACK_DETAILS", track.get_track_details())
+        track_context = self.llm.generate_response(prompt)
+        self.voice.say(track_context)
+
+    def talk_about_random_wiki_article(self):
+        article = self.wiki_search.random_wiki()
+        if article is None or not article.is_valid():
+            print("No article found")
+            return
+        prompt = self.prompter.get_prompt("random_wiki_article")
+        prompt = prompt.replace("ARTICLE", str(article)[:500])
+        summary = self.llm.generate_response(prompt)
+        self.voice.say(summary)
+
+    def share_a_funny_story(self):
+        funny_story = self.llm.generate_response(self.prompter.get_prompt("funny_story"))
+        self.voice.say(funny_story)

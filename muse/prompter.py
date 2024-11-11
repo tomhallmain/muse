@@ -12,7 +12,8 @@ _ = I18N._
 class Prompter:
     TOPICS = ["weather", "news", "hackernews", "joke", "fact", "fable", 
               "truth_and_lie", "aphorism", "poem", "quote", "tongue_twister", 
-              "motivation", "calendar"]
+              "motivation", "calendar", "track_context_prior", "track_context_post",
+              "random_wiki_article", "funny_story"]
     TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M"
 
     @staticmethod
@@ -22,27 +23,35 @@ class Prompter:
         elif topic == "news":
             return _("news")
         elif topic == "hackernews":
-            return  "hacker news"
+            return "hacker news"
         elif topic == "joke":
             return _("joke")
         elif topic == "fact":
-            return  _("fact")
+            return _("fact")
         elif topic == "fable":
-            return  _("fable")
+            return _("fable")
         elif topic == "truth_and_lie":
-            return  _("truth and lie")
+            return _("truth and lie")
         elif topic == "aphorism":
-            return  _("aphorism")
+            return _("aphorism")
         elif topic == "poem":
-            return  _("poem")
+            return _("poem")
         elif topic == "quote":
-            return  _("quote")
+            return _("quote")
         elif topic == "tongue_twister":
-            return  _("tongue twister")
+            return _("tongue twister")
         elif topic == "motivation":
-            return   _("motivation")
+            return _("motivation")
         elif topic == "calendar":
-            return   _("calendar")
+            return _("calendar")
+        elif topic == "track_context_prior":
+            return _("more about the next track")
+        elif topic == "track_context_post":
+            return _("more about the last track")
+        elif topic == "random_wiki_article":
+            return _("random wiki article")
+        elif topic == "funny_story":
+            return _("funny story")
         else:
             return topic
 

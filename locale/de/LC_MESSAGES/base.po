@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2024-11-09 16:05-0500\n"
+"POT-Creation-Date: 2024-11-11 09:48-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Thomas Hall <tomhall.main@gmail.com>\n"
 "Language-Team: de Team <<EMAIL>>\n"
@@ -91,81 +91,97 @@ msgstr "Fehler"
 msgid " Muse "
 msgstr " Muse "
 
-#: .\ops\audio_track.py:131 .\ops\audio_track.py:132
+#: .\muse\audio_track.py:131 .\muse\audio_track.py:132
 msgid "Number \\1"
 msgstr " Zahl \\1"
 
-#: .\ops\muse.py:34
+#: .\muse\audio_track.py:133
+msgid "\\1text to speech\\2"
+msgstr "\\1Text-in-Sprache\\2"
+
+#: .\muse\muse.py:36
 msgid "That was \"{0}\" in \"{1}\""
 msgstr "Das war \u201e{0}\u201c aus \u201e{1}\u201c"
 
-#: .\ops\muse.py:36 .\ops\muse.py:46
+#: .\muse\muse.py:38 .\muse\muse.py:48
 msgid " by \"{0}\"."
 msgstr " von \u201e{0}\u201c."
 
-#: .\ops\muse.py:42
+#: .\muse\muse.py:44
 msgid "To start, we'll be playing: \"{0}\" from \"{1}\""
 msgstr "Zu Beginn spielen wir \u201e{0}\u201c aus \u201e{1}\u201c"
 
-#: .\ops\muse.py:44
+#: .\muse\muse.py:46
 msgid "Next up, we'll be playing: \"{0}\" from \"{1}\""
 msgstr "Als N\u00e4chstes spielen wir \u201e{0}\u201c aus \u201e{1}\u201c"
 
-#: .\ops\muse.py:83
+#: .\muse\muse.py:83
 msgid "First let's hear about {0}"
 msgstr "Zun\u00e4chst zum Thema \u201e{0}\u201c."
 
-#: .\ops\muse.py:88
+#: .\muse\muse.py:85
 msgid "But first, let's hear about {0}."
 msgstr "Doch zun\u00e4chst zum Thema \u201e{0}\u201c."
 
-#: .\ops\prompter.py:21
+#: .\muse\prompter.py:23
 msgid "weather"
 msgstr "Wetter"
 
-#: .\ops\prompter.py:23
+#: .\muse\prompter.py:25
 msgid "news"
 msgstr "Nachrichten"
 
-#: .\ops\prompter.py:27
+#: .\muse\prompter.py:29
 msgid "joke"
 msgstr "Scherz"
 
-#: .\ops\prompter.py:29
+#: .\muse\prompter.py:31
 msgid "fact"
 msgstr "Tatsache"
 
-#: .\ops\prompter.py:31
+#: .\muse\prompter.py:33
 msgid "fable"
 msgstr "Fabel"
 
-#: .\ops\prompter.py:33
+#: .\muse\prompter.py:35
 msgid "truth and lie"
 msgstr "Wahrheit und L\u00fcge"
 
-#: .\ops\prompter.py:35
+#: .\muse\prompter.py:37
 msgid "aphorism"
 msgstr "Aphorismus"
 
-#: .\ops\prompter.py:37
+#: .\muse\prompter.py:39
 msgid "poem"
 msgstr "Gedicht"
 
-#: .\ops\prompter.py:39
+#: .\muse\prompter.py:41
 msgid "quote"
 msgstr "Zitat"
 
-#: .\ops\prompter.py:41
+#: .\muse\prompter.py:43
 msgid "tongue twister"
 msgstr "Zungenbrecher"
 
-#: .\ops\prompter.py:43
+#: .\muse\prompter.py:45
 msgid "motivation"
 msgstr "Motivation"
 
-#: .\ops\prompter.py:45
+#: .\muse\prompter.py:47
 msgid "calendar"
 msgstr "Kalender"
+
+#: .\muse\prompter.py:49
+msgid "more about the next track"
+msgstr "mehr \u00fcber den n\u00e4chsten Track"
+
+#: .\muse\prompter.py:51
+msgid "more about the last track"
+msgstr "mehr \u00fcber den letzten Track"
+
+#: .\muse\prompter.py:53
+msgid "random wiki article"
+msgstr "zuf\u00e4lliger Wiki-Artikel"
 
 #: .\utils\job_queue.py:33
 msgid " (Pending runs: {0})"
