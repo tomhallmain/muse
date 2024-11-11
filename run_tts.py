@@ -35,8 +35,8 @@ def main():
     #             try:
     #                 runner.speak(text)
     #             except Exception as e:
-    #                 print("Failed to speak text: " + text)
-    #                 print(e)
+    #                 Utils.log_red("Failed to speak text: " + text)
+    #                 Utils.log_red(e)
     #     except KeyboardInterrupt:
     #         break
 
@@ -47,17 +47,16 @@ def main():
     #             runner.set_output_path(cut_str_from_right_by_word(line))
     #             runner.speak(line)
     #         except Exception as e:
-    #             print("Failed to speak text: " + line)
+    #             Utils.log_red("Failed to speak text: " + line)
     #             failures.append((line, e))
 
     # if len(failures) > 0:
-    #     print("|--------------------------------------------------|")
-    #     print("Total failed to speak texts: " + str(len(failures)))
-    #     print("Failed to speak texts:")
+    #     Utils.log("|--------------------------------------------------|")
+    #     Utils.log_red("Total failed to speak texts: " + str(len(failures)))
     #     for line, e in failures:
-    #         print(line + ":" + str(e))
+    #         Utils.log(line + ":" + str(e))
 
 if __name__ == '__main__':
     main()
     # for s in Chunker.get_str_chunks(text):
-    #     print(s)
+    #     Utils.log(s)

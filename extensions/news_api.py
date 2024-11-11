@@ -2,14 +2,13 @@
 
 import datetime
 import requests
-import pprint
 
 from utils.config import config
+from utils.utils import Utils
 
 
 class NewsResponse:
     def __init__(self, resp_json, country="us"):
-        pprint.pprint(resp_json)
         self.country = country.upper()
         self.datetime = datetime.datetime.now().strftime("%A %B %d at %H:%M")
         self.status = resp_json["status"]
@@ -19,7 +18,7 @@ class NewsResponse:
     def get_source_trustworthiness(self, source_name):
         if source_name in config.news_api_source_trustworthiness:
             return config.news_api_source_trustworthiness[source_name]
-        print(f"No trustworthiness score found for News API propaganda source {source_name}")
+        Utils.log(f"No trustworthiness score found for News API propaganda source {source_name}")
         return 0.25
 
     def __str__(self):
@@ -48,5 +47,5 @@ class NewsAPI:
 
 if __name__ == "__main__":
     news = NewsAPI()
-    print(news.get_news())
+    Utils.log(news.get_news())
 

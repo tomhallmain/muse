@@ -1,17 +1,18 @@
 import datetime
 
 from extensions.soup_utils import SoupUtils
+from utils.utils import Utils
 
 
 class HackerNewsItem:
     def __init__(self, id, titleline_el):
         titleline_links = SoupUtils.get_elements(class_path=[["tag", "a"]], parent=titleline_el)
         if len(titleline_links) > 2:
-            print("Unexpected number of title line links found: " + str(len(titleline_links)))
+            Utils.log_yellow("Unexpected number of title line links found: " + str(len(titleline_links)))
         elif len(titleline_links) == 1:
             return # No source == no article
         elif len(titleline_links) == 0:
-            print(titleline_el)
+            Utils.log_yellow(titleline_el)
             raise Exception("No title line links found: " + str(len(titleline_links)))
         self.id = id
         self.title = titleline_links[0].text
@@ -69,12 +70,12 @@ class HackerNewsSouper():
                 if id != "pagespace":
                     titleline_el = el.find(class_="titleline")
                     if titleline_el is None:
-                        print("Failed to get titleline_el for Hacker New items")
+                        Utils.log_yellow("Failed to get titleline_el for Hacker New items")
                     else:
                         try:
                             hacker_news_item = HackerNewsItem(id, titleline_el)
                         except Exception as e:
-                            print(f"Failed to create Hacker News Item: {e}")
+                            Utils.log_yellow(f"Failed to create Hacker News Item: {e}")
             else:
                 subline_el = el.find(class_="subline")
                 if subline_el is not None:
@@ -85,8 +86,8 @@ class HackerNewsSouper():
                         if hasattr(hacker_news_item, "id") and hacker_news_item.id is not None:
                             items.append(hacker_news_item)
                     except Exception as e:
-                        print(el)
-                        print("Failed to extract data for Hacker New items: " + str(e))
+                        Utils.log_red(el)
+                        Utils.log_red("Failed to extract data for Hacker New items: " + str(e))
                 hacker_news_item = None
 
         return items

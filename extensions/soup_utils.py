@@ -6,6 +6,8 @@ import pandas as pd
 import io
 import re
 
+from utils.utils import Utils
+
 
 class SoupUtils:
     @staticmethod
@@ -47,7 +49,7 @@ class SoupUtils:
         else:
             raise Exception("Unhandled type: " + _type)
 
-        # print(f"Found {len(elements)} elements of {_type}={value}")
+        # Utils.log(f"Found {len(elements)} elements of {_type}={value}")
         
         if lowest_class:
             all_elements = elements
@@ -64,7 +66,7 @@ class SoupUtils:
             for element in SoupUtils.get_elements(class_path, start_element):
                 out.append(element.text)
         except Exception as e:
-            print(f"Failed to find elements of class {class_path} - {e}")
+            Utils.log_yellow(f"Failed to find elements of class {class_path} - {e}")
         return out
 
     @staticmethod

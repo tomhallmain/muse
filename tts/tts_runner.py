@@ -7,10 +7,12 @@ import time
 import torch
 
 from utils.config import config
+from utils.utils import Utils
 
 try:
     sys.path.insert(0, config.coqui_tts_location)
     from TTS.api import TTS
+    # Utils.remove_extra_handlers()
 except ImportError:
     raise Exception("Failed to import Coqui TTS. Ensure the code is downloaded and the \"coqui_tts_location\" value is set in the config.")
 
@@ -127,15 +129,15 @@ class TextToSpeechRunner:
 
     def generate_speech_file(self, text, output_path):
         if os.path.exists(output_path) and not self.overwrite:
-            print("Using existing generation file: " + output_path)
+            Utils.log("Using existing generation file: " + output_path)
             return
         output_path1, output_path_no_unicode = self.get_output_path_no_unicode()
         final_output_path_mp3 = self.get_output_path_mp3(output_path1)
         final_output_path_mp3 = final_output_path_mp3[:-4] + " - TTS.mp3"
         if os.path.exists(final_output_path_mp3):
-            print("Using existing generation file: " + final_output_path_mp3)
+            Utils.log("Using existing generation file: " + final_output_path_mp3)
             return
-        print("Generating speech file: " + output_path)
+        Utils.log("Generating speech file: " + output_path)
         # Init TTS with the target model name
         tts = TTS(model_name=self.model[0], progress_bar=False).to(device)
         # Run TTS
@@ -169,7 +171,7 @@ class TextToSpeechRunner:
 
     def speak(self, text):
         for chunk in Chunker.get_str_chunks(text):
-            print("-------------------\n" + chunk)
+            Utils.log("-------------------\n" + chunk)
             self._speak(chunk)
         while self.speech_queue.job_running:
             time.sleep(0.5)
@@ -177,7 +179,7 @@ class TextToSpeechRunner:
 
     def speak_file(self, filepath, split_on_each_line=False):
         for chunk in Chunker.get_chunks(filepath, split_on_each_line):
-            print("-------------------\n" + chunk)
+            Utils.log("-------------------\n" + chunk)
             self._speak(chunk)
         while self.speech_queue.job_running:
             time.sleep(0.5)
@@ -190,7 +192,7 @@ class TextToSpeechRunner:
         if file_path.endswith(".mp3") or os.path.exists(output_path):
             raise Exception("File already exists as mp3")
         args = ["ffmpeg", "-hide_banner", "-loglevel", "error", "-i", os.path.abspath(file_path), output_path]
-        # print(args)
+        # Utils.log(args)
         try:
             completed_process = subprocess.run(args)
             if completed_process.returncode != 0:
@@ -223,11 +225,11 @@ class TextToSpeechRunner:
             if i < len(self.audio_paths) - 1:
                 args.append(silence_file.replace("\\", "/"))
         args.append(output_path_no_unicode.replace("\\", "/"))
-        # print(args)
+        # Utils.log(args)
         try:
             completed_process = subprocess.run(args)
             if completed_process.returncode == 0:
-                print("Combined audio files: " + output_path)
+                Utils.log("Combined audio files: " + output_path)
                 mp3_path = self.convert_to_mp3(output_path_no_unicode)
                 os.remove(output_path_no_unicode)
                 if self.delete_interim_files:
@@ -260,15 +262,7 @@ if __name__ == "__main__":
     # multi_model = ("tts_models/multilingual/multi-dataset/xtts_v2", speaker, "en")
     # model = multi_model
 
-    # text = sys.argv[1] if len(sys.argv)>1 else "Ich bin eine Testnachricht. Im Englisch: What can I say in English?"
-    # text = """Fremd bin ich eingezogen,                   (I moved in a stranger,)
-    # Fremd zieh' ich wieder aus.                 (Stranger I move out again.)
-    # Der Mai war mir gewogen                     (May was kind to me)
-    # Mit manchem Blumenstrauss:                   (With many a bouquet of flowers):
-    # Das Madchen sprach von Liebe,              (The girl spoke of love)
-    # Die Mutter gar von Eh'                      (The mother even spoke of honour)"""
-
     # main(model, text)
 
     for chunk in Chunker.get_str_chunks("""Hello and welcome to our news show! Today, we have some exciting stories for you. First up, Tesla stock jumps on Q3 earnings beat. This is a major story as investors are always looking out for the latest updates from companies in their portfolios. The live briefing by Blinken says 'more progress' from Israel needed on Gaza aid flow shows that there is still tension between Israel and Palestine, with both countries blaming each other for the lack of aid to Gaza. The North Korean troops are in Russia, would be 'legitimate targets' in Ukraine, US says is a worrying story as we don't know what the United States plans to do if Russia invades Ukraine. The DOJ warns Elon Musk's America PAC that $1 million giveaway may break the law shows that money can buy influence and the DOJ is taking action against it. The Dragon Undocks from Station, Crew-8 Heads Toward Earth is a positive story as we finally have more astronauts going to space again! Chiefs finalizing trade to get DeAndre Hopkins from Titans shows that there are still trades happening in the NFL despite COVID-19 concerns. The Israeli strikes pound Lebanese coastal city after residents evacuate is a sad story as we don't know how many people were injured or killed during the attack. Wall Street closes down, pressured by tech losses and worries about rates shows that investors are still nervous about the economy despite the new stimulus package. The McDonald's takes Quarter Pounder off the menu at 1 in 5 restaurants due to E. coli outbreak is a scary story as we don't know where it came from or how many people got sick. Olivia Munn bares mastectomy scars in new SKIMS campaign shows that celebrities are still sharing their personal stories despite the pandemic. The Troops deployed to Jewish community center in Sri Lanka surfing town after US warns of possible attack in area is a worrying story as we don't know what will happen if this attack happens. The Panthers' Young to start after Dalton hurt in crash shows that there are still injuries happening despite the new safety measures. The New guidance for stroke prevention includes Ozempic, other weight loss drugs shows that healthcare professionals are trying to find new ways to help their patients and make it easier on them. The Iranian hacker group aims at US election websites and media before vote, Microsoft says is a worrying story as we don't know how serious this attack was or if any data was compromised. At least 4 dead in 'terrorist attack' on aerospace facility in Turkey shows that there are still terrorist attacks happening despite the pandemic. The Existing home sales fall to lowest level since 2010 shows that we need more affordable housing options for people who can't afford homes right now. And finally, How long can you stand like a flamingo? The answer may reflect your age, new study says is an interesting story as it gives us something fun to think about during these difficult times."""):
-        print(chunk)
+        Utils.log(chunk)

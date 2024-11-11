@@ -12,6 +12,7 @@ from muse.prompter import Prompter
 from muse.voice import Voice
 from utils.config import config
 from utils.translations import I18N
+from utils.utils import Utils
 
 _ = I18N._
 
@@ -56,16 +57,16 @@ class Muse:
     def get_topic(self, excluded_topics=[]):
         if Prompter.over_n_hours_since_last("weather", n_hours=24):
             topic = "weather"
-            print("Talking about the weather")
+            Utils.log("Talking about the weather")
         elif Prompter.over_n_hours_since_last("news", n_hours=96):
             topic = "news"
-            print("Talking about the news")
+            Utils.log("Talking about the news")
         elif Prompter.over_n_hours_since_last("hackernews", n_hours=96):
             topic = "hackernews"
-            print("Talking about the news")
+            Utils.log("Talking about the news")
         else:
             topic = Prompter.get_oldest_topic(excluded_topics)
-            print("Talking about topic: " + topic)
+            Utils.log("Talking about topic: " + topic)
 
         while topic in ["hackernews", "news"] and Prompter.under_n_hours_since_last(topic, n_hours=14):
             if topic not in excluded_topics:
@@ -118,10 +119,11 @@ class Muse:
         elif topic == "funny_story":
             self.share_a_funny_story()
         else:
-            print("Unhandled topic: " + topic)
+            Utils.log_yellow("Unhandled topic: " + topic)
 
     def talk_about_weather(self, city="Washington"):
         weather = self.open_weather_api.get_weather_for_city(city)
+        Utils.log(weather)
         weather_summary = self.llm.generate_response(
             self.prompter.get_prompt("weather") + city + ":\n\n" + str(weather))
         self.voice.say(weather_summary)
@@ -166,15 +168,15 @@ class Muse:
     def share_a_tongue_twister(self):
         if config.tongue_twisters_dir is None or config.tongue_twisters_dir == "":
             raise Exception("No tongue twister directory specified")
-        print(f"Playing tongue twister from {config.tongue_twisters_dir}")
+        Utils.log(f"Playing tongue twister from {config.tongue_twisters_dir}")
         playback = Playback.new_playback(config.tongue_twisters_dir)
         Prompter.update_history("tongue_twister")
         try:
             playback.play_one_song()
         except Exception as e:
-            print("Error playing tongue twister: " + str(e))
-            print(playback._playback_config.directories)
-            print(playback._playback_config.list)
+            Utils.log_red("Error playing tongue twister: " + str(e))
+            Utils.log(playback._playback_config.directories)
+            Utils.log(playback._playback_config.list)
 
     def talk_about_the_calendar(self):
         # TODO talk about tomorrow as well, or the upcoming week
@@ -200,7 +202,7 @@ class Muse:
     def talk_about_random_wiki_article(self):
         article = self.wiki_search.random_wiki()
         if article is None or not article.is_valid():
-            print("No article found")
+            Utils.log("No article found")
             return
         prompt = self.prompter.get_prompt("random_wiki_article")
         prompt = prompt.replace("ARTICLE", str(article)[:500])

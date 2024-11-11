@@ -112,13 +112,13 @@ class AudioTrack:
                 return os.path.join(dirname,  basename)
         string_distance_dict = {}
         song_basename_no_ext = os.path.splitext(track_basename)[0]
-        print(f"Track basename no ext: {song_basename_no_ext}")
+        Utils.log(f"Track basename no ext: {song_basename_no_ext}")
         min_string_distance = (999999999, None)
         for basename in txt_basenames:
             basename_no_ext = os.path.splitext(basename)[0]
             string_distance = Utils.string_distance(song_basename_no_ext,  basename_no_ext)
             string_distance_dict[basename] = string_distance
-            print(f"Txt basename no ext: {basename_no_ext}, string distance: {string_distance}")
+            Utils.log(f"Txt basename no ext: {basename_no_ext}, string distance: {string_distance}")
             if min_string_distance[0] > string_distance:
                 min_string_distance = (string_distance, basename)
         if min_string_distance[1] is not None and min_string_distance[0] < 30:
@@ -174,5 +174,5 @@ class AudioTrack:
 
 
 if __name__ == "__main__":
-    print(AudioTrack(r"D:\iTunes Music\András Schiff\Bach, J.S._ 6 French Suites BWV 812-817 - Italian Concerto\1-01 French Suite No. 1 In D Minor, BWV 812_ I. Allemande.m4a").title)
-    print(AudioTrack(r"D:\iTunes Music\conductor Evgeny Svetlanov\Symphony No. 3\03 5th Movement_ Lustig En Tempo Und.m4a").title)
+    Utils.log(AudioTrack(r"D:\iTunes Music\András Schiff\Bach, J.S._ 6 French Suites BWV 812-817 - Italian Concerto\1-01 French Suite No. 1 In D Minor, BWV 812_ I. Allemande.m4a").title)
+    Utils.log(AudioTrack(r"D:\iTunes Music\conductor Evgeny Svetlanov\Symphony No. 3\03 5th Movement_ Lustig En Tempo Und.m4a").title)

@@ -6,6 +6,8 @@ from muse.audio_track import AudioTrack
 from utils.app_info_cache import app_info_cache
 from utils.config import config
 from utils.globals import MediaFileType, WorkflowType
+from utils.utils import Utils
+
 
 class PlaybackConfig:
     DIRECTORIES_CACHE = {}
@@ -45,7 +47,7 @@ class PlaybackConfig:
                     if count > 5000:
                         break
                 elif os.path.isfile(f) and config.debug:
-                    print("Skipping non-media file: " + f)
+                    Utils.log("Skipping non-media file: " + f)
         self.list = l
         if self.type == WorkflowType.RANDOM:
             random.shuffle(self.list)

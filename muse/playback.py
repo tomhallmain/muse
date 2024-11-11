@@ -1,3 +1,4 @@
+
 import os
 import subprocess
 from time import sleep
@@ -5,6 +6,7 @@ import vlc
 
 from muse.playback_config import PlaybackConfig
 from utils.globals import Globals
+from utils.utils import Utils
 
 INSTANCE = vlc.Instance("verbose=-2")
 
@@ -32,7 +34,7 @@ class Playback:
         self.track = self._playback_config.next_song()
         if self.track is None or self.track.is_invalid():
             return False
-        print(f"Playing track file: {self.track.filepath}")
+        Utils.log(f"Playing track file: {self.track.filepath}")
         self.vlc_media_player = vlc.MediaPlayer(self.track.filepath)
         return True
 
@@ -76,7 +78,7 @@ class Playback:
                     skip_previous_song_remark = self.last_track_failed or self.skip_track
                     self._run.muse.maybe_dj(self.track, self.previous_track, skip_previous_song_remark)
                 else:
-                    print("No voice available due to import failure, skipping Muse.")
+                    Utils.log_yellow("No voice available due to import failure, skipping Muse.")
 
             self.last_track_failed = False
             if self._track_text_callback is not None:
@@ -103,8 +105,7 @@ class Playback:
 
     def set_volume(self):
         mean_volume, max_volume = self.get_song_volume()
-        print("Mean volume: " + str(mean_volume))
-        print("Max volume: " + str(max_volume))
+        Utils.log("Mean volume: " + str(mean_volume) + " Max volume: " + str(max_volume))
         volume = (Globals.DEFAULT_VOLUME_THRESHOLD + 30) if mean_volume < -50 else min(int(Globals.DEFAULT_VOLUME_THRESHOLD + (-1 * mean_volume)), 100)
         self.vlc_media_player.audio_set_volume(volume)
         # TODO callback for UI element, add a UI element for "effective volume"

@@ -1,6 +1,5 @@
 
 from datetime import datetime
-# import pprint
 import requests
 
 from utils.config import config
@@ -8,7 +7,6 @@ from utils.config import config
 
 class OpenWeatherResponse:
     def __init__(self, current_json, forecast_json=None):
-        # pprint.pprint(current_json)
         self.datetime = datetime.fromtimestamp(current_json['dt'])
         self.city = current_json["name"] + ", " + current_json["sys"]["country"] if "name" in current_json else None
         self.temperature = int(round(float(current_json['main']['temp']), 0))
@@ -108,7 +106,6 @@ class OpenWeatherAPI:
         hourly_forecast_response = requests.get(hourly_forecast_url)
 
         weather = OpenWeatherResponse(current_weather_response.json(), hourly_forecast_response.json())
-        print(weather)
         return weather
 
 

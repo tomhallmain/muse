@@ -2,6 +2,7 @@
 import re
 
 from utils.config import config
+from utils.utils import Utils
 
 
 class TextModifierRule:
@@ -44,7 +45,7 @@ class TextCleanerRuleset:
         for rule_config in config.text_cleaner_ruleset:
             rule = TextModifierRule(**rule_config)
             self.add_rule(rule)
-            print(f"Added rule: {rule}")
+            Utils.log(f"Added rule: {rule}")
 
         
     def clean(self, text):

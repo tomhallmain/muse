@@ -3,6 +3,7 @@ import requests
 import time
 
 from utils.config import config
+from utils.utils import Utils
 
 
 class EventGroup:
@@ -206,11 +207,10 @@ class HolidayAPI:
         events = []
         try:
             events_json = requests.get(self.__build_url(country, year)).json()
-            print(events_json)
             for event in events_json:
                 events.append(Event.from_holiday_api(event))
         except Exception as e:
-            print("Error getting events from Holiday API: " + str(e))
+            Utils.log_red("Error getting events from Holiday API: " + str(e))
             raise e
         return events
 
@@ -238,7 +238,7 @@ class NagerPublicHolidaysAPI:
             for event in events_json:
                 events.append(Event.from_nager_public_holidays_api(event))
         except Exception as e:
-            print("Error getting events from Nager Public Holidays API: " + str(e))
+            Utils.log_red("Error getting events from Nager Public Holidays API: " + str(e))
             raise e
         return events
 
@@ -262,12 +262,11 @@ class InadiutoriumAPI:
         events = []
         try:
             events_json = requests.get(self.__build_url(year, month)).json()
-            print(events_json)
             for event in events_json:
                 events.append(Event.from_inadiutorium_api(event))
             time.sleep(0.5)
         except Exception as e:
-            print("Error getting events from Inadiutorium API: " + str(e))
+            Utils.log_red("Error getting events from Inadiutorium API: " + str(e))
             raise e
         return events
 
@@ -298,7 +297,7 @@ class HijriCalendarAPI:
                 if len(date["hijri"]["holidays"]) > 0:
                     events.append(Event.from_hijri_api(date))
         except Exception as e:
-            print("Error getting events from Hijri Calendar API: " + str(e))
+            Utils.log_red("Error getting events from Hijri Calendar API: " + str(e))
             raise e
         return events
 

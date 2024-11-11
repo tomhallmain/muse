@@ -41,7 +41,7 @@ class Run:
         self.playback.pause()
 
     def run(self, config):
-        print(config)
+        Utils.log(config)
         # confirm_text = f"\n\nPrompt: \"{config.positive}\" (y/n/r/m/n/e/s/[space to quit]): "
         confirm = "y" # if Globals.SKIP_CONFIRMATIONS else input(confirm_text)
         self.switching_params = False
@@ -52,7 +52,7 @@ class Run:
             return
 
         if self.last_config and config == self.last_config:
-            print("\n\nConfig matches last config. Please modify it or quit.")
+            Utils.log("\n\nConfig matches last config. Please modify it or quit.")
             # if Globals.SKIP_CONFIRMATIONS:
             #     raise Exception("Invalid state - must select an auto-modifiable config option if using auto run.")
             # else:
@@ -80,21 +80,21 @@ class Run:
                 count += 1
                 if self.args.total:
                     if self.args.total > -1 and count == self.args.total:
-                        print(f"Reached maximum requested iterations: {self.args.total}")
+                        Utils.log(f"Reached maximum requested iterations: {self.args.total}")
                         if self.song_text_callback is not None:
                             self.song_text_callback(count, self.args.total)
                         return
                     else:
                         if self.args.total == -1:
-                            print("Running until cancelled or total iterations reached")
+                            Utils.log("Running until cancelled or total iterations reached")
                         else:
-                            print(f"On iteration {count} of {self.args.total} - continuing.")
+                            Utils.log(f"On iteration {count} of {self.args.total} - continuing.")
                         if self.song_text_callback is not None:
                             self.song_text_callback(count, self.args.total)
                 if True: # self.args.auto_run:
                     sleep_time = config.maximum_plays()
                     sleep_time *= Globals.DELAY_TIME_SECONDS
-                    print(f"Sleeping for {sleep_time} seconds.")
+                    Utils.log(f"Sleeping for {sleep_time} seconds.")
                     while sleep_time > 0 and not self.is_cancelled:
                         sleep_time -= 1
                         time.sleep(1)
@@ -104,8 +104,8 @@ class Run:
 
     def load_and_run(self):
         # if self.args.auto_run:
-        #     print("Auto-run mode set.")
-        # print("Running prompt mode: " + str(self.args.prompter_config.prompt_mode))
+        #     Utils.log("Auto-run mode set.")
+        # Utils.log("Running prompt mode: " + str(self.args.prompter_config.prompt_mode))
 
         workflow_tags = self.args.workflow_tag.split(",")
         for workflow_tag in workflow_tags:
@@ -115,7 +115,7 @@ class Run:
             try:
                 self.do_workflow(workflow)
             except Exception as e:
-                print(e)
+                Utils.log(e)
                 traceback.print_exc()
 
     def execute(self):
@@ -126,7 +126,7 @@ class Run:
         self.is_complete = True
 
     def cancel(self):
-        print("Canceling...")
+        Utils.log("Canceling...")
         self.is_cancelled = True
         self.playback.next()
 

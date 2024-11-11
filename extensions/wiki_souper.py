@@ -5,6 +5,7 @@ import pandas as pd
 import time
 
 from extensions.soup_utils import SoupUtils
+from utils.utils import Utils
 
 
 def clean_wiki_text(text):
@@ -206,7 +207,7 @@ class WikiSouper():
                         section.combine_temp_table()
 
         for section in wiki_compilation_data._sections:
-            print(section)
+            Utils.log(section)
 
         return wiki_compilation_data
 
@@ -221,24 +222,24 @@ class WikiSouper():
                 if not wiki_compilation_data.has_data():
                     invalid_data_urls.append(wiki_url)
             except Exception as e:
-                print("Error gathering data from Wiki url: " + wiki_url)
-                print(e)
+                Utils.log("Error gathering data from Wiki url: " + wiki_url)
+                Utils.log_red(e)
                 failed_urls[wiki_url] = str(e)
                 raise e
-            print("\n-----------------------------------------------------------\n")
+            Utils.log("\n-----------------------------------------------------------\n")
             time.sleep(2)
         
         if len(invalid_data_urls) > 0:
-            print("Invalid data urls:")
+            Utils.log_yellow("Invalid data urls:")
             for url in invalid_data_urls:
-                print(url)
+                Utils.log_yellow(url)
 
-            print("\n-----------------------------------------------------------\n")
+            Utils.log("\n-----------------------------------------------------------\n")
 
         if len(failed_urls) > 0:
-            print("Failed urls: ")
+            Utils.log_red("Failed urls: ")
             for url, e in failed_urls:
-                print(f"{url} - {e}")
+                Utils.log_red(f"{url} - {e}")
 
 
 if __name__ == "__main__":

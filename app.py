@@ -76,7 +76,7 @@ class ProgressListener:
 
 class App():
     '''
-    UI for Stable Diffusion workflow management.
+    UI for Muse media player application.
     '''
 
     def __init__(self, master):
@@ -200,7 +200,6 @@ class App():
             self.toast(f"Theme switched to {AppStyle.get_theme_name()}.")
 
     # def close_autocomplete_popups(self):
-    #     self.model_tags_box.closeListbox()
     #     self.lora_tags_box.closeListbox()
 
     def on_closing(self):
@@ -209,14 +208,14 @@ class App():
         #     try:
         #         self.server.stop()
         #     except Exception as e:
-        #         print(f"Error stopping server: {e}")
+        #         Utils.log_yellow(f"Error stopping server: {e}")
         self.master.destroy()
 
 
     def quit(self, event=None):
         res = self.alert(_("Confirm Quit"), _("Would you like to quit the application?"), kind="askokcancel")
         if res == messagebox.OK or res == True:
-            print("Exiting application")
+            Utils.log("Exiting application")
             self.on_closing()
 
 
@@ -235,7 +234,7 @@ class App():
             self.config_history_index = app_info_cache.get("config_history_index", default_val=0)
             return RunnerAppConfig.from_dict(app_info_cache.get_history(0))
         except Exception as e:
-            print(e)
+            Utils.log_red(e)
             return RunnerAppConfig()
 
     def one_config_away(self, change=1):
@@ -277,9 +276,6 @@ class App():
             raise Exception("No config to set widgets from")
         self.set_workflow_type(self.runner_app_config.workflow_type)
         # self.set_widget_value(self.resolutions_box, self.runner_app_config.resolutions)
-        # self.set_widget_value(self.model_tags_box, self.runner_app_config.model_tags)
-        # if self.runner_app_config.lora_tags is not None and self.runner_app_config.lora_tags!= "":
-        #     self.set_widget_value(self.lora_tags_box, self.runner_app_config.lora_tags)
 
         self.total.set(str(self.runner_app_config.total))
         self.delay.set(str(self.runner_app_config.delay_time_seconds))
@@ -297,6 +293,9 @@ class App():
     def set_volume(self, event=None):
         self.runner_app_config.volume = self.volume_slider.get()
         Globals.set_volume(int(self.runner_app_config.volume))
+        if (self.current_run is not None and not self.current_run.is_complete \
+                and self.current_run.playback is not None):
+            self.current_run.playback.set_volume()
 
     def set_muse(self, event=None):
         self.runner_app_config.muse = self.muse.get()
@@ -418,7 +417,13 @@ class App():
         if kind not in ("error", "warning", "info"):
             raise ValueError("Unsupported alert kind.")
 
-        print(f"Alert - Title: \"{title}\" Message: {message}")
+        if kind == "error":
+            Utils.log_red(f"Alert - Title: \"{title}\" Message: {message}")
+        elif kind == "warning":
+            Utils.log_yellow(f"Alert - Title: \"{title}\" Message: {message}")
+        else:
+            Utils.log(f"Alert - Title: \"{title}\" Message: {message}")
+
         show_method = getattr(messagebox, "show{}".format(kind))
         return show_method(title, message)
 
@@ -429,7 +434,7 @@ class App():
         self.alert(title, error_text, kind=kind)
 
     def toast(self, message):
-        print("Toast message: " + message)
+        Utils.log("Toast message: " + message)
 
         # Set the position of the toast on the screen (top right)
         width = 300
@@ -522,7 +527,7 @@ if __name__ == "__main__":
 
         # Graceful shutdown handler
         def graceful_shutdown(signum, frame):
-            print("Caught signal, shutting down gracefully...")
+            Utils.log("Caught signal, shutting down gracefully...")
             app.on_closing()
             exit(0)
 

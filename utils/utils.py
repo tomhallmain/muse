@@ -1,5 +1,6 @@
 import asyncio
 import base64
+import logging
 import math
 import re
 import os
@@ -8,8 +9,48 @@ import sys
 import threading
 import unicodedata
 
+from utils.custom_formatter import CustomFormatter
+
+# create logger
+logger = logging.getLogger("muse")
+logger.setLevel(logging.DEBUG)
+logger.propagate = False
+
+# create console handler with a higher log level
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+ch.setFormatter(CustomFormatter())
+logger.addHandler(ch)
+
 
 class Utils:
+    # @staticmethod
+    # def remove_extra_handlers():
+    #     # Handlers inserted by Coqui-TTS
+    #     for handler in logger.handlers[:]:
+    #         logger.removeHandler(handler)
+    #     # create console handler with a higher log level
+    #     ch = logging.StreamHandler()
+    #     ch.setLevel(logging.DEBUG)
+    #     ch.setFormatter(CustomFormatter())
+    #     logger.addHandler(ch)
+
+    @staticmethod
+    def log(message, level=logging.INFO):
+        logger.log(level, message)
+    
+    @staticmethod
+    def log_debug(message):
+        Utils.log(message, logging.DEBUG)
+
+    @staticmethod
+    def log_red(message):
+        Utils.log(message, logging.ERROR)
+    
+    @staticmethod
+    def log_yellow(message):
+        Utils.log(message, logging.WARNING)
+
     @staticmethod
     def extract_substring(text, pattern):
         result = re.search(pattern, text)    
@@ -49,7 +90,7 @@ class Utils:
                     period = int(run_obj) if isinstance(run_obj, int) else getattr(run_obj, sleep_attr)
                     await asyncio.sleep(period)
                     if run_obj and run_attr and not getattr(run_obj, run_attr):
-                        print(f"Ending periodic task: {run_obj.__name__}.{run_attr} = False")
+                        Utils.log(f"Ending periodic task: {run_obj.__name__}.{run_attr} = False")
                         break
             return wrapper
         return scheduler
@@ -132,11 +173,11 @@ class Utils:
         if end_index >= len(string) or start_index >= len(string):
             raise Exception("Start or end index were too high for string: " + string)
         if start_index == 0:
-            print("Removed: " + string[:end_index+1])
+            Utils.log("Removed: " + string[:end_index+1])
             return string[end_index+1:]
         left_part = string[:start_index]
         right_part = string[end_index+1:]
-        print("Removed: " + string[start_index:end_index+1])
+        Utils.log("Removed: " + string[start_index:end_index+1])
         return left_part + right_part
 
     @staticmethod
