@@ -29,30 +29,42 @@ class Muse:
         self.prompter = Prompter()
         self.wiki_search = WikiOpenSearchAPI()
 
-    def maybe_dj(self, track, previous_track, skip_previous_track_remark=False):
+
+    def maybe_dj(self, track, previous_track, delay_callback, skip_previous_track_remark=False):
         # TODO quality info for songs
-        # TODO i18n
         has_already_spoken = False
+
         if not skip_previous_track_remark and previous_track != None and random.random() < 0.2:
-            dj_remark = _("That was \"{0}\" in \"{1}\"").format(previous_track.readable_title(), previous_track.readable_album())
-            if previous_track.artist is not None and previous_track.artist!= "":
-                dj_remark += _(" by \"{0}\".").format(previous_track.readable_artist())
-            else:
-                dj_remark += "."
-            self.voice.say(dj_remark)
+            self.speak_about_previous_track(previous_track)
+
+        delay_callback()
+
         if random.random() < 0.3:
-            if previous_track is None:
-                dj_remark = _("To start, we'll be playing: \"{0}\" from \"{1}\"").format(track.readable_title(), track.readable_album())
-            else:
-                dj_remark = _("Next up, we'll be playing: \"{0}\" from \"{1}\"").format(track.readable_title(), track.readable_album())
-            if track.artist is not None and track.artist!= "":
-                dj_remark += _(" by \"{0}\".").format(track.readable_artist())
-            else:
-                dj_remark += "."
-            self.voice.say(dj_remark)
+            self.speak_about_upcoming_track(track, previous_track)
             has_already_spoken = True
+
         if random.random() < 0.2:
             self.talk_about_something(track, previous_track, has_already_spoken, skip_previous_track_remark)
+
+
+    def speak_about_previous_track(self, previous_track):
+        dj_remark = _("That was \"{0}\" in \"{1}\"").format(previous_track.readable_title(), previous_track.readable_album())
+        if previous_track.artist is not None and previous_track.artist!= "":
+            dj_remark += _(" by \"{0}\".").format(previous_track.readable_artist())
+        else:
+            dj_remark += "."
+        self.voice.say(dj_remark)
+
+    def speak_about_upcoming_track(self, track, previous_track):
+        if previous_track is None:
+            dj_remark = _("To start, we'll be playing: \"{0}\" from \"{1}\"").format(track.readable_title(), track.readable_album())
+        else:
+            dj_remark = _("Next up, we'll be playing: \"{0}\" from \"{1}\"").format(track.readable_title(), track.readable_album())
+        if track.artist is not None and track.artist!= "":
+            dj_remark += _(" by \"{0}\".").format(track.readable_artist())
+        else:
+            dj_remark += "."
+        self.voice.say(dj_remark)
 
     def get_topic(self, excluded_topics=[]):
         if Prompter.over_n_hours_since_last("weather", n_hours=24):

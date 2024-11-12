@@ -20,7 +20,6 @@ class Config:
         self.open_weather_api_key = None
         self.news_api_key = None
         self.news_api_source_trustworthiness = {}
-        self.holiday_api_key = None
         self.debug = False
 
         self.text_cleaner_ruleset = []
@@ -56,7 +55,6 @@ class Config:
             "background_color",
             "open_weather_api_key",
             "news_api_key",
-            "holiday_api_key",
         )
         self.set_values(int,
             "max_chunk_tokens",

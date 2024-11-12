@@ -144,7 +144,7 @@ class App():
         self.directory_choice = OptionMenu(self.sidebar, self.directory, str(self.runner_app_config.directory), *directory_options)
         self.apply_to_grid(self.directory_choice, interior_column=1, sticky=W)
 
-        self.overwrite = BooleanVar(value=False)
+        self.overwrite = BooleanVar(value=self.runner_app_config.overwrite)
         self.overwrite_choice = Checkbutton(self.sidebar, text=_('Overwrite'), variable=self.overwrite)
         self.apply_to_grid(self.overwrite_choice, sticky=W)
 
@@ -152,7 +152,7 @@ class App():
         self.favorite_choice = Checkbutton(self.sidebar, text=_('Favorite'), variable=self.favorite)
         self.apply_to_grid(self.favorite_choice, sticky=W)
 
-        self.muse = BooleanVar(value=True)
+        self.muse = BooleanVar(value=self.runner_app_config.muse)
         self.muse_choice = Checkbutton(self.sidebar, text=_('Muse'), variable=self.muse)
         self.apply_to_grid(self.muse_choice, sticky=W)
 
@@ -232,7 +232,7 @@ class App():
         try:
             PlaybackConfig.load_directory_cache()
             self.config_history_index = app_info_cache.get("config_history_index", default_val=0)
-            return RunnerAppConfig.from_dict(app_info_cache.get_history(0))
+            return app_info_cache.get_history_latest()
         except Exception as e:
             Utils.log_red(e)
             return RunnerAppConfig()
@@ -386,6 +386,7 @@ class App():
     def get_directories(self):
         directories = []
         selection = self.directory.get()
+        self.runner_app_config.directory = selection
         all_dirs = config.get_subdirectories()
         if selection == "ALL":
             return list(all_dirs.keys())

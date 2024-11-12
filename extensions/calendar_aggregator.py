@@ -310,7 +310,7 @@ class HijriCalendarAPI:
 
 class CalendarAggregator:
     def __init__(self):
-        self.holiday_api = HolidayAPI(config.holiday_api_key)
+        # self.holiday_api = HolidayAPI(config.holiday_api_key)
         self.public_holidays_api = NagerPublicHolidaysAPI()
         self.inadiutorium_api = InadiutoriumAPI()
         self.hijri_calendar_api = HijriCalendarAPI()

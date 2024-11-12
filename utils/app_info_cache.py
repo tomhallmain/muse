@@ -13,7 +13,7 @@ class AppInfoCache:
     MAX_HISTORY_ENTRIES = 50
 
     def __init__(self):
-        self._cache = {AppInfoCache.INFO_KEY: {}, AppInfoCache.HISTORY_KEY: {}, AppInfoCache.DIRECTORIES_KEY: {}}
+        self._cache = {AppInfoCache.INFO_KEY: {}, AppInfoCache.HISTORY_KEY: [], AppInfoCache.DIRECTORIES_KEY: {}}
         self.load()
         self.validate()
 
@@ -34,7 +34,7 @@ class AppInfoCache:
     def _get_history(self) -> list:
         if AppInfoCache.HISTORY_KEY not in self._cache:
             self._cache[AppInfoCache.HISTORY_KEY] = {}
-        return list(self._cache[AppInfoCache.HISTORY_KEY])
+        return self._cache[AppInfoCache.HISTORY_KEY]
 
     def _get_directory_info(self):
         if AppInfoCache.DIRECTORIES_KEY not in self._cache:
@@ -76,6 +76,12 @@ class AppInfoCache:
         if _idx >= len(history):
             raise Exception("Invalid history index " + str(_idx))
         return history[_idx]
+
+    def get_history_latest(self):
+        history = self._get_history()
+        if len(history) == 0:
+            return RunnerAppConfig()
+        return RunnerAppConfig.from_dict(history[0])
 
     def set_directory(self, directory, key, value):
         directory = AppInfoCache.normalize_directory_key(directory)

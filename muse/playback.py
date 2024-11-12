@@ -28,6 +28,7 @@ class Playback:
         self.track = None
         self.previous_track = ""
         self.last_track_failed = False
+        self.has_played_first_track = False
 
     def get_track(self):
         self.previous_track = self.track
@@ -76,19 +77,14 @@ class Playback:
             if self._run.args.muse:
                 if self._run.muse.voice.can_speak:
                     skip_previous_song_remark = self.last_track_failed or self.skip_track
-                    self._run.muse.maybe_dj(self.track, self.previous_track, skip_previous_song_remark)
+                    self._run.muse.maybe_dj(self.track, self.previous_track, self.delay, skip_previous_song_remark)
                 else:
                     Utils.log_yellow("No voice available due to import failure, skipping Muse.")
+                    self.delay()
 
             self.last_track_failed = False
             if self._track_text_callback is not None:
                 self._track_text_callback(self.track)
-            delay_timer = 0
-            while not self.skip_delay and delay_timer < Globals.DELAY_TIME_SECONDS:
-                sleep(0.5)
-                delay_timer += 0.5
-            if self.skip_delay:
-                self.skip_delay = False
 
             self.set_volume()
             self.is_paused = False
@@ -102,6 +98,16 @@ class Playback:
                 sleep(0.5)
 
             self.vlc_media_player.stop()
+            self.has_played_first_track = True
+
+    def delay(self):
+        if self.has_played_first_track:
+            delay_timer = 0
+            while not self.skip_delay and delay_timer < Globals.DELAY_TIME_SECONDS:
+                sleep(0.5)
+                delay_timer += 0.5
+            if self.skip_delay:
+                self.skip_delay = False
 
     def set_volume(self):
         mean_volume, max_volume = self.get_song_volume()
