@@ -29,15 +29,9 @@ class Muse:
         self.prompter = Prompter()
         self.wiki_search = WikiOpenSearchAPI()
 
-
-    def maybe_dj(self, track, previous_track, delay_callback, skip_previous_track_remark=False):
+    def maybe_dj_prior(self, track, previous_track, skip_previous_track_remark=False):
         # TODO quality info for songs
         has_already_spoken = False
-
-        if not skip_previous_track_remark and previous_track != None and random.random() < 0.2:
-            self.speak_about_previous_track(previous_track)
-
-        delay_callback()
 
         if random.random() < 0.3:
             self.speak_about_upcoming_track(track, previous_track)
@@ -46,6 +40,10 @@ class Muse:
         if random.random() < 0.2:
             self.talk_about_something(track, previous_track, has_already_spoken, skip_previous_track_remark)
 
+    def maybe_dj_post(self, previous_track):
+        # TODO quality info for songs
+        if previous_track != None and random.random() < 0.2:
+            self.speak_about_previous_track(previous_track)
 
     def speak_about_previous_track(self, previous_track):
         dj_remark = _("That was \"{0}\" in \"{1}\"").format(previous_track.readable_title(), previous_track.readable_album())
@@ -66,7 +64,7 @@ class Muse:
             dj_remark += "."
         self.voice.say(dj_remark)
 
-    def get_topic(self, excluded_topics=[]):
+    def get_topic(self, previous_track, excluded_topics=[]):
         if Prompter.over_n_hours_since_last("weather", n_hours=24):
             topic = "weather"
             Utils.log("Talking about the weather")
@@ -77,18 +75,24 @@ class Muse:
             topic = "hackernews"
             Utils.log("Talking about the news")
         else:
-            topic = Prompter.get_oldest_topic(excluded_topics)
+            topic = Prompter.get_oldest_topic(excluded_topics=excluded_topics)
             Utils.log("Talking about topic: " + topic)
 
-        while topic in ["hackernews", "news"] and Prompter.under_n_hours_since_last(topic, n_hours=14):
+        if topic in ["hackernews", "news"] and Prompter.under_n_hours_since_last(topic, n_hours=14):
             if topic not in excluded_topics:
                 excluded_topics.append(topic)
-            topic = self.get_topic(excluded_topics=excluded_topics)
+        
+        if previous_track is None and topic == "track_context_post":
+            if topic not in excluded_topics:
+                excluded_topics.append(topic)
+
+        while topic in excluded_topics:
+            topic = self.get_topic(previous_track, excluded_topics=excluded_topics)
 
         return topic
 
     def talk_about_something(self, track, previous_track=None, has_already_spoken=False, skip_previous_track_remark=False):
-        topic = self.get_topic()
+        topic = self.get_topic(previous_track)
 
         if (has_already_spoken and random.random() < 0.75) or (not has_already_spoken and random.random() < 0.6):
             topic_translated = self.prompter.translate_topic(topic)

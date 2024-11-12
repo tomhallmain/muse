@@ -6,7 +6,7 @@ class RunConfig:
     def __init__(self, args=None):
         self.args = args
         self.workflow_tag = WorkflowType.RANDOM.name
-        self.total = '1'
+        self.total = '-1'
         self.directories = self.get("directories")
         self.overwrite = False
         self.muse = True

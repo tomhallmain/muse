@@ -15,6 +15,7 @@ from utils.globals import Globals, WorkflowType
 from muse.playback_config import PlaybackConfig
 from muse.run import Run
 from muse.run_config import RunConfig
+from ui.app_actions import AppActions
 from ui.app_style import AppStyle
 from utils.app_info_cache import app_info_cache
 from utils.config import config
@@ -88,6 +89,7 @@ class App():
         self.runner_app_config = self.load_info_cache()
         self.config_history_index = 0
         self.current_run = Run(RunConfig())
+        self.app_actions = AppActions(self.update_track_text, self.update_progress_bar)
 
         # Sidebar
         self.sidebar = Sidebar(self.master)
@@ -331,12 +333,11 @@ class App():
         def run_async(args) -> None:
             self.job_queue.job_running = True
             self.destroy_progress_bar()
-            self.progress_bar = Progressbar(self.sidebar, orient=HORIZONTAL, length=100, mode='indeterminate')
+            self.progress_bar = Progressbar(self.sidebar, orient=HORIZONTAL, length=300, mode='determinate')
             self.progress_bar.grid(row=1, column=1)
-            self.progress_bar.start()
             self.cancel_btn.grid(row=2, column=1)
             self.text_btn.grid(row=3, column=1)
-            self.current_run = Run(args, song_text_callback=self.update_track_text)
+            self.current_run = Run(args, callbacks=self.app_actions)
             self.current_run.execute()
             self.cancel_btn.grid_forget()
             self.text_btn.grid_forget()
@@ -351,6 +352,11 @@ class App():
         else:
             self.runner_app_config.set_from_run_config(args_copy)
             Utils.start_thread(run_async, use_asyncio=False, args=[args])
+
+    def update_progress_bar(self, progress):
+        if self.progress_bar is not None:
+            self.progress_bar['value'] = progress
+            self.master.update_idletasks()  # Force update of the GUI
 
     def next(self, event=None) -> None:
         self.current_run.next()
@@ -382,6 +388,11 @@ class App():
         if self.current_run is None or self.current_run.is_complete or self.current_run.is_cancelled:
             return
         self.current_run.open_text()
+
+    def get_total(self):
+        total = self.total.get()
+        self.runner_app_config.total = total
+        return total
 
     def get_directories(self):
         directories = []

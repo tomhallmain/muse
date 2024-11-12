@@ -26,6 +26,7 @@ class PlaybackConfig:
 
     def __init__(self, args=None, override_dir=None):
         self.current_song_index = -1
+        self.total = int(args.total) if args else -1
         self.type = WorkflowType[args.workflow_tag] if args else WorkflowType.RANDOM
         self.directories = args.directories if args else ([override_dir] if override_dir else [])
         self.overwrite = args.overwrite if args else False

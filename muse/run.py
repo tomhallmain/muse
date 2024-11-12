@@ -19,7 +19,7 @@ prompt_list = [
 
 
 class Run:
-    def __init__(self, args, song_text_callback=None):
+    def __init__(self, args, callbacks=None):
         self.id = str(time.time())
         self.is_complete = False
         self.is_cancelled = False
@@ -27,7 +27,7 @@ class Run:
         self.editing = False
         self.switching_params = False
         self.last_config = None
-        self.song_text_callback = song_text_callback
+        self.callbacks = callbacks
         self.playback = None
         self.muse = Muse(self.args)
 
@@ -66,38 +66,13 @@ class Run:
 
     def do_workflow(self, workflow):
         config = PlaybackConfig(self.args)
-        self.playback = Playback(config, self.song_text_callback, self)
+        self.playback = Playback(config, self.callbacks, self)
         self.editing = False
         self.switching_params = False
         self.last_config = None
-        count = 0
 
         try:
-            while not self.is_cancelled:
-                self.run(config)
-                if self.last_config is None:
-                    return
-                count += 1
-                if self.args.total:
-                    if self.args.total > -1 and count == self.args.total:
-                        Utils.log(f"Reached maximum requested iterations: {self.args.total}")
-                        if self.song_text_callback is not None:
-                            self.song_text_callback(count, self.args.total)
-                        return
-                    else:
-                        if self.args.total == -1:
-                            Utils.log("Running until cancelled or total iterations reached")
-                        else:
-                            Utils.log(f"On iteration {count} of {self.args.total} - continuing.")
-                        if self.song_text_callback is not None:
-                            self.song_text_callback(count, self.args.total)
-                if True: # self.args.auto_run:
-                    sleep_time = config.maximum_plays()
-                    sleep_time *= Globals.DELAY_TIME_SECONDS
-                    Utils.log(f"Sleeping for {sleep_time} seconds.")
-                    while sleep_time > 0 and not self.is_cancelled:
-                        sleep_time -= 1
-                        time.sleep(1)
+            self.run(config)
         except KeyboardInterrupt:
             pass
 

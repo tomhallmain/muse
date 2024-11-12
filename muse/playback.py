@@ -17,11 +17,12 @@ class Playback:
         config = PlaybackConfig.new_playback_config(override_dir=override_dir)
         return Playback(config, None, True)
 
-    def __init__(self, playback_config, track_text_callback, run):
+    def __init__(self, playback_config, callbacks, run):
         self.vlc_media_player = INSTANCE.media_player_new()
         self._playback_config = playback_config
-        self._track_text_callback = track_text_callback
+        self.callbacks = callbacks
         self._run = run
+        assert self._run.muse is not None
         self.is_paused = False
         self.skip_track = False
         self.skip_delay = False
@@ -29,14 +30,13 @@ class Playback:
         self.previous_track = ""
         self.last_track_failed = False
         self.has_played_first_track = False
+        self.count = 0
 
     def get_track(self):
         self.previous_track = self.track
         self.track = self._playback_config.next_song()
         if self.track is None or self.track.is_invalid():
             return False
-        Utils.log(f"Playing track file: {self.track.filepath}")
-        self.vlc_media_player = vlc.MediaPlayer(self.track.filepath)
         return True
 
     def get_song_volume(self):
@@ -74,19 +74,21 @@ class Playback:
 
     def run(self):
         while self.get_track() and not self._run.is_cancelled:
-            if self._run.args.muse:
-                if self._run.muse.voice.can_speak:
-                    skip_previous_song_remark = self.last_track_failed or self.skip_track
-                    self._run.muse.maybe_dj(self.track, self.previous_track, self.delay, skip_previous_song_remark)
-                else:
-                    Utils.log_yellow("No voice available due to import failure, skipping Muse.")
-                    self.delay()
-
-            self.last_track_failed = False
-            if self._track_text_callback is not None:
-                self._track_text_callback(self.track)
+            if self._run.muse.voice.can_speak:
+                # TODO run muse in separate thread to be able to cancel it when user clicks Next
+                skip_previous_song_remark = self.last_track_failed or self.skip_track
+                if not skip_previous_song_remark:
+                    self._run.muse.maybe_dj_post(self.previous_track)
+                self.delay()
+                self.register_new_song()
+                self._run.muse.maybe_dj_prior(self.track, self.previous_track, skip_previous_song_remark)
+            else:
+                Utils.log_yellow("No voice available due to import failure, skipping Muse.")
+                self.delay()
+                self.register_new_song()
 
             self.set_volume()
+            self.last_track_failed = False
             self.is_paused = False
             self.skip_track = False
 
@@ -96,12 +98,36 @@ class Playback:
                 self.last_track_failed = True
             while (self.vlc_media_player.is_playing() or self.is_paused) and not self.skip_track:
                 sleep(0.5)
+                self.update_progress()
 
             self.vlc_media_player.stop()
             self.has_played_first_track = True
+            if self.increment_count():
+                break
+
+    def update_progress(self):
+        if self.callbacks.update_progress_callback is not None:
+            duration = self.vlc_media_player.get_length()
+            current_time = self.vlc_media_player.get_time()
+            if duration > 0:
+                progress = int((current_time / duration) * 100)
+            else:
+                progress = 0
+            self.callbacks.update_progress_callback(progress)
+
+    def register_new_song(self):
+        Utils.log(f"Playing track file: {self.track.filepath}")
+        self.vlc_media_player = vlc.MediaPlayer(self.track.filepath)
+        if self.callbacks.track_details_callback is not None:
+            self.callbacks.track_details_callback(self.track)
+
+    def increment_count(self):
+        if not self.skip_track:
+            self.count += 1
+        return bool(self._playback_config.total > -1 and self.count > self._playback_config.total)
 
     def delay(self):
-        if self.has_played_first_track:
+        if self.has_played_first_track and not self.last_track_failed:
             delay_timer = 0
             while not self.skip_delay and delay_timer < Globals.DELAY_TIME_SECONDS:
                 sleep(0.5)

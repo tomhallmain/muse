@@ -6,7 +6,7 @@ from utils.globals import Globals, WorkflowType
 class RunnerAppConfig:
     def __init__(self):
         self.workflow_type = WorkflowType.RANDOM.name
-        self.total = "1"
+        self.total = "-1"
         self.delay_time_seconds = "5"
         self.volume = 60.0
         self.directory = "ALL"
