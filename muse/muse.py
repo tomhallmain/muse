@@ -103,7 +103,7 @@ class Muse:
                 self.voice.say(remark)
 
         if topic == "weather":
-            self.talk_about_weather()
+            self.talk_about_weather(city=config.open_weather_city)
         elif topic in ["news", "hackernews"]:
             self.talk_about_news(topic)
         elif topic == "joke":

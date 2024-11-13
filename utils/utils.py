@@ -24,17 +24,6 @@ logger.addHandler(ch)
 
 
 class Utils:
-    # @staticmethod
-    # def remove_extra_handlers():
-    #     # Handlers inserted by Coqui-TTS
-    #     for handler in logger.handlers[:]:
-    #         logger.removeHandler(handler)
-    #     # create console handler with a higher log level
-    #     ch = logging.StreamHandler()
-    #     ch.setLevel(logging.DEBUG)
-    #     ch.setFormatter(CustomFormatter())
-    #     logger.addHandler(ch)
-
     @staticmethod
     def log(message, level=logging.INFO):
         logger.log(level, message)

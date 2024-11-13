@@ -7,6 +7,9 @@ import vlc
 from muse.playback_config import PlaybackConfig
 from utils.globals import Globals
 from utils.utils import Utils
+from utils.translations import I18N
+
+_ = I18N._
 
 INSTANCE = vlc.Instance("verbose=-2")
 
@@ -15,14 +18,13 @@ class Playback:
     @staticmethod
     def new_playback(override_dir=None):
         config = PlaybackConfig.new_playback_config(override_dir=override_dir)
-        return Playback(config, None, True)
+        return Playback(config, None, False)
 
     def __init__(self, playback_config, callbacks, run):
         self.vlc_media_player = INSTANCE.media_player_new()
         self._playback_config = playback_config
         self.callbacks = callbacks
         self._run = run
-        assert self._run.muse is not None
         self.is_paused = False
         self.skip_track = False
         self.skip_delay = False
@@ -74,7 +76,7 @@ class Playback:
 
     def run(self):
         while self.get_track() and not self._run.is_cancelled:
-            if self._run.muse.voice.can_speak:
+            if self._run and self._run.muse.voice.can_speak:
                 # TODO run muse in separate thread to be able to cancel it when user clicks Next
                 skip_previous_song_remark = self.last_track_failed or self.skip_track
                 if not skip_previous_song_remark:
@@ -83,7 +85,8 @@ class Playback:
                 self.register_new_song()
                 self._run.muse.maybe_dj_prior(self.track, self.previous_track, skip_previous_song_remark)
             else:
-                Utils.log_yellow("No voice available due to import failure, skipping Muse.")
+                if self._run:
+                    Utils.log_yellow("No voice available due to import failure, skipping Muse.")
                 self.delay()
                 self.register_new_song()
 
@@ -128,6 +131,8 @@ class Playback:
 
     def delay(self):
         if self.has_played_first_track and not self.last_track_failed:
+            if Globals.DELAY_TIME_SECONDS > 4:
+                self.callbacks.track_details_callback(_("Sleeping for seconds"))
             delay_timer = 0
             while not self.skip_delay and delay_timer < Globals.DELAY_TIME_SECONDS:
                 sleep(0.5)

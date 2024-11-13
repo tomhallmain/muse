@@ -17,6 +17,7 @@ from muse.run import Run
 from muse.run_config import RunConfig
 from ui.app_actions import AppActions
 from ui.app_style import AppStyle
+from ui.weather_window import WeatherWindow
 from utils.app_info_cache import app_info_cache
 from utils.config import config
 from utils.globals import WorkflowType
@@ -129,13 +130,15 @@ class App():
         self.total = StringVar(master)
         total_options = [str(i) for i in list(range(-1, 101))]
         total_options.remove('0')
-        self.total_choice = OptionMenu(self.sidebar, self.total, str(self.runner_app_config.total), *total_options)
+        self.total_choice = OptionMenu(self.sidebar, self.total, str(self.runner_app_config.total),
+                                       *total_options, command=self.set_total)
         self.apply_to_grid(self.total_choice, interior_column=1, sticky=W)
 
         self.label_delay = Label(self.sidebar)
         self.add_label(self.label_delay, _("Delay Seconds"), increment_row_counter=False)
         self.delay = StringVar(master)
-        self.delay_choice = OptionMenu(self.sidebar, self.delay, str(self.runner_app_config.delay_time_seconds), *[str(i) for i in list(range(101))], command=self.set_delay)
+        self.delay_choice = OptionMenu(self.sidebar, self.delay, str(self.runner_app_config.delay_time_seconds),
+                                       *[str(i) for i in list(range(101))], command=self.set_delay)
         self.apply_to_grid(self.delay_choice, interior_column=1, sticky=W)
 
         self.label_directory = Label(self.sidebar)
@@ -143,7 +146,8 @@ class App():
         self.directory = StringVar(master)
         directory_options = ["ALL"]
         directory_options.extend(list(config.get_subdirectories().values()))
-        self.directory_choice = OptionMenu(self.sidebar, self.directory, str(self.runner_app_config.directory), *directory_options)
+        self.directory_choice = OptionMenu(self.sidebar, self.directory, str(self.runner_app_config.directory),
+                                           *directory_options, command=self.set_directory)
         self.apply_to_grid(self.directory_choice, interior_column=1, sticky=W)
 
         self.overwrite = BooleanVar(value=self.runner_app_config.overwrite)
@@ -163,6 +167,9 @@ class App():
         self.volume_slider = Scale(self.sidebar, from_=0, to=100, orient=HORIZONTAL, command=self.set_volume)
         self.set_widget_value(self.volume_slider, Globals.DEFAULT_VOLUME_THRESHOLD)
         self.apply_to_grid(self.volume_slider, interior_column=1, sticky=W)
+
+        self.weather_btn = None
+        self.add_button("weather_btn", _("Weather"), self.open_weather_window)
 
         self.master.bind("<Control-Return>", self.run)
         self.master.bind("<Shift-R>", self.run)
@@ -288,6 +295,12 @@ class App():
         if workflow_tag is None:
             workflow_tag = self.workflow.get()
 
+    def set_total(self, event=None):
+        self.runner_app_config.total = self.total.get()
+
+    def set_directory(self, event=None):
+        self.runner_app_config.directory = self.directory.get()
+
     def set_delay(self, event=None):
         self.runner_app_config.delay_time_seconds = self.delay.get()
         Globals.set_delay(int(self.runner_app_config.delay_time_seconds))
@@ -378,16 +391,19 @@ class App():
         args.overwrite = self.overwrite.get()
         args.muse = self.muse.get()
 
-        # controlnet_file = clear_quotes(self.controlnet_file.get())
-        # self.runner_app_config.control_net_file = controlnet_file
         args_copy = deepcopy(args)
-
         return args, args_copy
 
     def open_text(self):
         if self.current_run is None or self.current_run.is_complete or self.current_run.is_cancelled:
             return
         self.current_run.open_text()
+
+    def open_weather_window(self):
+        try:
+            weather_window = WeatherWindow(self.master, self.app_actions)
+        except Exception as e:
+            Utils.log_red(f"Exception opening weather window: {e}")
 
     def get_total(self):
         total = self.total.get()
@@ -397,7 +413,6 @@ class App():
     def get_directories(self):
         directories = []
         selection = self.directory.get()
-        self.runner_app_config.directory = selection
         all_dirs = config.get_subdirectories()
         if selection == "ALL":
             return list(all_dirs.keys())
@@ -409,9 +424,12 @@ class App():
             return directories
 
     def update_track_text(self, audio_track):
-        text = "Track: " + audio_track.title + "\nAlbum: " + audio_track.album
-        if audio_track.artist is not None:
-            text += "\nArtist: " + audio_track.artist
+        if isinstance(audio_track, str):
+            text = audio_track
+        else:
+            text = "Track: " + audio_track.title + "\nAlbum: " + audio_track.album
+            if audio_track.artist is not None:
+                text += "\nArtist: " + audio_track.artist
         text = Utils._wrap_text_to_fit_length(text, 100)
         self.label_song_text["text"] = text
         self.master.update()

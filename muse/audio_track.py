@@ -8,6 +8,13 @@ from utils.utils import Utils
 
 _ = I18N._
 
+has_imported_music_tag = False
+try:
+    import music_tag
+    has_imported_music_tag = True
+except ImportError as e:
+    Utils.log_yellow("No music tag support: %s" % str(e))
+
 
 """
 See music-tag README: https://github.com/KristoforMaynard/music-tag
@@ -45,6 +52,24 @@ class AudioTrack:
         self.filepath = filepath
         self.album_index = -1
         self.track_index = -1
+        self.tracktitle = None
+        self.artist = None
+        self.album = None
+        self.albumartist = None
+        self.composer = None
+        self.tracknumber = -1
+        self.totaltracks = -1
+        self.discnumber = -1
+        self.totaldiscs = -1
+        self.genre = None
+        self.year = None
+        self.compilation = False
+        #bitrate : 128000
+        #codec : mp4a.40.2
+        #length : 241.78938775510204
+        #channels : 2
+        #bitspersample : 16
+        #samplerate : 44100
         if self.filepath is not None and self.filepath != "":
             self.basename = os.path.basename(filepath)
             dirpath1 = os.path.dirname(os.path.abspath(filepath))
@@ -62,12 +87,36 @@ class AudioTrack:
             # it may be possible to extract the specific artistic name given properties of the track relative to others
             # in the same album
             self.set_track_index()
+            self.clean_track_values()
+
+            try:
+                music_tag_wrapper = music_tag.load_file(filepath)
+                for k in music_tag_wrapper.__dict__["tag_map"].keys():
+                    if not k in ["lyrics", "isrc", "comment"] and not k.startswith("#"):
+                        value = music_tag_wrapper[k].first
+                        if value is not None:
+                            try:
+                                setattr(self, k, value)
+                            except Exception:
+                                pass
+            except Exception as e:
+                Utils.log(f"Failed to gather track details for track {self.title}")
         else:
             self.basename = None
             self.album = None
             self.artist = None
             self.title = None
             self.ext = None
+
+    def clean_track_values(self):
+        self.title = self.clean_track_value(self.title)
+        if self.album is not None:
+            self.album = self.clean_track_value(self.album)
+        if self.artist is not None:
+            self.artist = self.clean_track_value(self.artist)
+
+    def clean_track_value(self, track_value):
+        return re.sub(re.compile("([^_])_ "), "\\1: ", track_value) # Replacing colons in filepaths where they are not allowed
 
     def readable_title(self):
         return AudioTrack._prep_track_text(self.title)

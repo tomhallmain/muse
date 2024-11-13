@@ -52,6 +52,8 @@ class PlaybackConfig:
         self.list = l
         if self.type == WorkflowType.RANDOM:
             random.shuffle(self.list)
+        elif self.type == WorkflowType.SEQUENCE:
+            self.list.sort()
         return self.list
 
     def _get_directory_files(self, directory):

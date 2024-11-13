@@ -9,6 +9,7 @@
     "foreground_color": "white",
     "background_color": "#2596BE",
     "open_weather_api_key": "<KEY>",
+    "open_weather_city": "Washington",
     "news_api_key": "<KEY>",
     "news_api_source_trustworthiness": {
         "bbc-news": 0.5
@@ -22,8 +23,18 @@
             "simple_replacement": false
         },
         {
-            "pattern": " KV?\\. ?([0-9])",
+            "pattern": "HWV\\.?([ -])?",
+            "replacement": "Händel-Werke-Verzeichnis ",
+            "simple_replacement": false
+        },
+        {
+            "pattern": " KV?\\.? ?([0-9])",
             "replacement": " Köchel \\1",
+            "simple_replacement": false
+        },
+        {
+            "pattern": " RV\\.? ?([0-9])",
+            "replacement": " Ryom Verzeichnis \\1",
             "simple_replacement": false
         },
         {

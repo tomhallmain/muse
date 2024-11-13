@@ -90,7 +90,7 @@ class OpenWeatherAPI:
     def __init__(self):
         pass
 
-    def get_coordinates(self, city):
+    def get_coordinates(self, city=config.open_weather_city):
         url = f"{self.GEO_ENDPOINT}?q={city}&limit=3&appid={self.api_key}"
         response = requests.get(url)
         resp_json = response.json()[0]

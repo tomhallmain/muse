@@ -94,7 +94,7 @@ class WikiSection():
 
 
 class WikiCompilationData:
-    SAVE_LOCATION = os.path.join(os.path.dirname(os.path.dirname(__file__)), "library_data")
+    SAVE_LOCATION = os.path.join(os.path.dirname(os.path.dirname(__file__)), "library_data", "wiki")
 
     def __init__(self, url, has_tables):
         self._url = url
