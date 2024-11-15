@@ -1,10 +1,22 @@
 {
-    "lso": [
-        "London Symphony Orchestra",
-        "LSO"
-    ],
-    "allman_brothers": [
-        "Allman Brothers Band",
-        "Allman Brothers"
-    ]
+    "London Symphony Orchestra": {
+        "id": 0,
+        "name": "London Symphony Orchestra",
+        "indicators": [
+            "London Symphony Orchestra",
+            "LSO"
+        ],
+        "genres": [],
+        "works": []
+    },
+    "Allman Brothers Band": {
+        "id": 1,
+        "name": "Allman Brothers Band",
+        "indicators": [
+            "Allman Brothers Band",
+            "Allman Brothers"
+        ],
+        "genres": [],
+        "works": []
+    }
 }

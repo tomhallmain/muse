@@ -1,6 +1,7 @@
 
 import datetime
 import random
+import time
 
 from extensions.hacker_news_souper import HackerNewsSouper
 from extensions.news_api import NewsAPI
@@ -17,7 +18,45 @@ from utils.utils import Utils
 _ = I18N._
 
 
+class MuseSpotProfile:
+    chance_speak_after_track = config.muse_config["chance_speak_after_track"]
+    chance_speak_before_track = config.muse_config["chance_speak_before_track"]
+    chance_speak_about_other_topics = config.muse_config["chance_speak_about_other_topics"]
+
+    def __init__(self, previous_track, track, last_track_failed, skip_track):
+        self.previous_track = previous_track
+        self.track = track
+        self.speak_about_prior_track = previous_track is not None and random.random() < self.chance_speak_after_track
+        self.speak_about_upcoming_track = random.random() < self.chance_speak_before_track
+        self.talk_about_something = random.random() < self.chance_speak_about_other_topics
+        self.has_already_spoken = False
+        self.last_track_failed = last_track_failed
+        self.skip_previous_track_remark = last_track_failed or skip_track
+        self.immediate = False
+        self.is_prepared = False
+
+    def is_going_to_say_something(self):
+        return self.speak_about_prior_track or self.speak_about_upcoming_track or self.talk_about_something
+
+    def update_skip_previous_track_remark(self, skip_track):
+        self.skip_previous_track_remark = self.skip_previous_track_remark or skip_track
+
+    def __str__(self):
+        out = f"Track: {self.track.title}" if self.track is not None else "No track"
+        out += f"\nPrevious Track: {self.previous_track.title}" if self.previous_track is not None else "\nNo previous track"
+        if self.speak_about_prior_track:
+            out += f"\n - Speaking about prior track"
+        if self.speak_about_upcoming_track:
+            out += f"\n - Speaking about upcoming track"
+        if self.talk_about_something:
+            out += f"\n - Talking about something"
+        return out
+
+
 class Muse:
+    enable_preparation = config.muse_config["enable_preparation"]
+    preparation_starts_minutes_from_end = float(config.muse_config["preparation_starts_minutes_from_end"])
+    preparation_starts_after_seconds_sleep = int(config.muse_config["preparation_starts_after_seconds_sleep"])
 
     def __init__(self, args):
         self.args = args
@@ -28,33 +67,78 @@ class Muse:
         self.hacker_news_souper = HackerNewsSouper()
         self.prompter = Prompter()
         self.wiki_search = WikiOpenSearchAPI()
+        self.has_started_prep = False
+        self.post_id = "post"
+        self.prior_id = "prior"
 
-    def maybe_dj_prior(self, track, previous_track, skip_previous_track_remark=False):
+    def get_spot_profile(self, previous_track=None, track=None, last_track_failed=False, skip_track=False):
+        return MuseSpotProfile(previous_track, track, last_track_failed, skip_track)
+
+    def say(self, text, spot_profile):
+        if spot_profile.immediate:
+            self.voice.say(text)
+        else:
+            self.voice.prepare_to_say(text)
+
+    def ready_to_prepare(self, cumulative_sleep_seconds, seconds_remaining):
+        return Muse.enable_preparation \
+            and cumulative_sleep_seconds > Muse.preparation_starts_after_seconds_sleep \
+            and not self.has_started_prep \
+            and seconds_remaining < int(Muse.preparation_starts_minutes_from_end * 60 * 1000)
+
+    def prepare(self, spot_profile):
+        # TODO Lock both TTS runner queues here
+        self.has_started_prep = True
+        Utils.log_debug(f"Preparing muse:\n{spot_profile}")
+        if not spot_profile.skip_previous_track_remark:
+            self.maybe_prep_dj_post(spot_profile)
+        self.maybe_prep_dj_prior(spot_profile)
+        spot_profile.is_prepared = True
+
+    def maybe_prep_dj_prior(self, spot_profile):
         # TODO quality info for songs
-        has_already_spoken = False
+        if spot_profile.speak_about_upcoming_track:
+            self.speak_about_upcoming_track(spot_profile)
+            spot_profile.has_already_spoken = True
 
-        if random.random() < 0.3:
-            self.speak_about_upcoming_track(track, previous_track)
-            has_already_spoken = True
+        if spot_profile.talk_about_something:
+            self.talk_about_something(spot_profile)
 
-        if random.random() < 0.2:
-            self.talk_about_something(track, previous_track, has_already_spoken, skip_previous_track_remark)
-
-    def maybe_dj_post(self, previous_track):
+    def maybe_dj(self, spot_profile):
         # TODO quality info for songs
-        if previous_track != None and random.random() < 0.2:
-            self.speak_about_previous_track(previous_track)
+        # Release lock on TTS runner for "prior" queue
+        self.voice.finish_speaking()
+        while not spot_profile.is_prepared:
+            time.sleep(1)
+            self.voice.finish_speaking()
 
-    def speak_about_previous_track(self, previous_track):
+    def reset(self):
+        self.has_started_prep = False
+
+    def maybe_prep_dj_post(self, spot_profile):
+        # TODO quality info for songs
+        if spot_profile.speak_about_prior_track:
+            self.speak_about_previous_track(spot_profile)
+
+    # def maybe_dj_post(self, spot_profile):
+    #     # Release lock on TTS runner for "post" queue
+    #     if spot_profile.skip_previous_track_remark:
+    #         # TODO cancel the pending "post" queue
+    #         return
+    #     pass
+
+    def speak_about_previous_track(self, spot_profile):
+        previous_track = spot_profile.previous_track
         dj_remark = _("That was \"{0}\" in \"{1}\"").format(previous_track.readable_title(), previous_track.readable_album())
         if previous_track.artist is not None and previous_track.artist!= "":
             dj_remark += _(" by \"{0}\".").format(previous_track.readable_artist())
         else:
             dj_remark += "."
-        self.voice.say(dj_remark)
+        self.say(dj_remark, spot_profile)
 
-    def speak_about_upcoming_track(self, track, previous_track):
-        if previous_track is None:
+    def speak_about_upcoming_track(self, spot_profile):
+        track = spot_profile.track
+        if spot_profile.previous_track is None:
             dj_remark = _("To start, we'll be playing: \"{0}\" from \"{1}\"").format(track.readable_title(), track.readable_album())
         else:
             dj_remark = _("Next up, we'll be playing: \"{0}\" from \"{1}\"").format(track.readable_title(), track.readable_album())
@@ -62,7 +146,7 @@ class Muse:
             dj_remark += _(" by \"{0}\".").format(track.readable_artist())
         else:
             dj_remark += "."
-        self.voice.say(dj_remark)
+        self.say(dj_remark, spot_profile)
 
     def get_topic(self, previous_track, excluded_topics=[]):
         if Prompter.over_n_hours_since_last("weather", n_hours=24):
@@ -91,97 +175,99 @@ class Muse:
 
         return topic
 
-    def talk_about_something(self, track, previous_track=None, has_already_spoken=False, skip_previous_track_remark=False):
-        topic = self.get_topic(previous_track)
+    def talk_about_something(self, spot_profile):
+        topic = self.get_topic(spot_profile.previous_track)
 
-        if (has_already_spoken and random.random() < 0.75) or (not has_already_spoken and random.random() < 0.6):
+        if (spot_profile.has_already_spoken and random.random() < 0.75) \
+                or (not spot_profile.has_already_spoken and random.random() < 0.6):
             topic_translated = self.prompter.translate_topic(topic)
-            if skip_previous_track_remark or previous_track is None:
+            if spot_profile.skip_previous_track_remark or spot_profile.previous_track is None:
                 remark = _("First let's hear about {0}").format(topic_translated)
             else:
                 remark = _("But first, let's hear about {0}.").format(topic_translated)
-                self.voice.say(remark)
+                self.voice.prepare_to_say(remark)
 
         if topic == "weather":
-            self.talk_about_weather(city=config.open_weather_city)
+            self.talk_about_weather(config.open_weather_city, spot_profile)
         elif topic in ["news", "hackernews"]:
-            self.talk_about_news(topic)
+            self.talk_about_news(topic, spot_profile)
         elif topic == "joke":
-            self.tell_a_joke()
+            self.tell_a_joke(spot_profile)
         elif topic == "fact":
-            self.share_a_fact()
+            self.share_a_fact(spot_profile)
         elif topic == "truth_and_lie":
-            self.play_two_truths_and_one_lie()
+            self.play_two_truths_and_one_lie(spot_profile)
         elif topic == "fable":
-            self.share_a_fable()
+            self.share_a_fable(spot_profile)
         elif topic == "aphorism":
-            self.share_an_aphorism()
+            self.share_an_aphorism(spot_profile)
         elif topic == "poem":
-            self.share_a_poem()
+            self.share_a_poem(spot_profile)
         elif topic == "quote":
-            self.share_a_quote()
+            self.share_a_quote(spot_profile)
         elif topic == "tongue_twister":
-            self.share_a_tongue_twister()
+            self.share_a_tongue_twister(spot_profile)
         elif topic == "calendar":
-            self.talk_about_the_calendar()
+            self.talk_about_the_calendar(spot_profile)
         elif topic == "motivation":
-            self.share_a_motivational_message()
+            self.share_a_motivational_message(spot_profile)
         elif topic =="track_context_prior":
-            self.talk_about_track_context(topic, track)
+            self.talk_about_track_context(topic, spot_profile.track, spot_profile)
         elif topic =="track_context_post":
-            self.talk_about_track_context(topic, previous_track)
+            self.talk_about_track_context(topic, spot_profile.previous_track, spot_profile)
         elif topic == "random_wiki_article":
-            self.talk_about_random_wiki_article()
+            self.talk_about_random_wiki_article(spot_profile)
         elif topic == "funny_story":
-            self.share_a_funny_story()
+            self.share_a_funny_story(spot_profile)
         else:
             Utils.log_yellow("Unhandled topic: " + topic)
 
-    def talk_about_weather(self, city="Washington"):
+    def talk_about_weather(self, city="Washington", spot_profile=None):
         weather = self.open_weather_api.get_weather_for_city(city)
         Utils.log(weather)
         weather_summary = self.llm.generate_response(
             self.prompter.get_prompt("weather") + city + ":\n\n" + str(weather))
-        self.voice.say(weather_summary)
+        self.say(weather_summary, spot_profile)
 
-    def talk_about_news(self, topic=None):
+    def talk_about_news(self, topic=None, spot_profile=None):
         if topic == "hackernews":
             news = self.hacker_news_souper.get_news(total=15)
         else:
             news = self.news_api.get_news(topic=topic)
         news_summary = self.llm.generate_response(
             self.prompter.get_prompt(topic) + "\n\n" + str(news))
-        self.voice.say(news_summary)
+        self.say(news_summary, spot_profile)
 
-    def tell_a_joke(self):
+    def tell_a_joke(self, spot_profile):
         joke = self.llm.generate_response(self.prompter.get_prompt("joke"))
-        self.voice.say(joke)
+        self.say(joke, spot_profile)
 
-    def share_a_fact(self):
+    def share_a_fact(self, spot_profile):
         fact = self.llm.generate_response(self.prompter.get_prompt("fact"))
-        self.voice.say(fact)
+        self.say(fact, spot_profile)
 
-    def play_two_truths_and_one_lie(self):
+    def play_two_truths_and_one_lie(self, spot_profile):
         resp = self.llm.generate_response(self.prompter.get_prompt("truth_and_lie"))
-        self.voice.say(resp)
+        self.say(resp, spot_profile)
 
-    def share_a_fable(self):
+    def share_a_fable(self, spot_profile):
         fable = self.llm.generate_response(self.prompter.get_prompt("fable"))
-        self.voice.say(fable)
+        self.say(fable, spot_profile)
 
-    def share_an_aphorism(self):
+    def share_an_aphorism(self, spot_profile):
         aphorism = self.llm.generate_response(self.prompter.get_prompt("aphorism"))
-        self.voice.say(aphorism)
+        self.say(aphorism, spot_profile)
 
-    def share_a_poem(self):
+    def share_a_poem(self, spot_profile):
         poem = self.llm.generate_response(self.prompter.get_prompt("poem"))
-        self.voice.say(poem)
+        self.say(poem, spot_profile)
     
-    def share_a_quote(self):
+    def share_a_quote(self, spot_profile):
         quote = self.llm.generate_response(self.prompter.get_prompt("quote"))
-        self.voice.say(quote)
+        self.say(quote, spot_profile)
 
-    def share_a_tongue_twister(self):
+    def share_a_tongue_twister(self, spot_profile):
+        # TODO need to fix this up for the prepare case
         if config.tongue_twisters_dir is None or config.tongue_twisters_dir == "":
             raise Exception("No tongue twister directory specified")
         Utils.log(f"Playing tongue twister from {config.tongue_twisters_dir}")
@@ -194,28 +280,28 @@ class Muse:
             Utils.log(playback._playback_config.directories)
             Utils.log(playback._playback_config.list)
 
-    def talk_about_the_calendar(self):
+    def talk_about_the_calendar(self, spot_profile):
         # TODO talk about tomorrow as well, or the upcoming week
         today = datetime.datetime.today()
         prompt = self.prompter.get_prompt("calendar")
         prompt = prompt.replace("DATE", today.strftime("%A %B %d %Y"))
         prompt = prompt.replace("TIME", today.strftime("%H:%M"))
         calendar = self.llm.generate_response(prompt)
-        self.voice.say(calendar)
+        self.say(calendar, spot_profile)
 
-    def share_a_motivational_message(self):
+    def share_a_motivational_message(self, spot_profile):
         motivation = self.llm.generate_response(self.prompter.get_prompt("motivation"))
-        self.voice.say(motivation)
+        self.say(motivation, spot_profile)
 
-    def talk_about_track_context(self, topic, track):
+    def talk_about_track_context(self, topic, track, spot_profile):
         if track is None or topic is None:
             raise Exception("No track or topic specified")
         prompt = self.prompter.get_prompt(topic)
         prompt = prompt.replace("TRACK_DETAILS", track.get_track_details())
         track_context = self.llm.generate_response(prompt)
-        self.voice.say(track_context)
+        self.say(track_context, spot_profile)
 
-    def talk_about_random_wiki_article(self):
+    def talk_about_random_wiki_article(self, spot_profile):
         article = self.wiki_search.random_wiki()
         if article is None or not article.is_valid():
             Utils.log("No article found")
@@ -223,8 +309,8 @@ class Muse:
         prompt = self.prompter.get_prompt("random_wiki_article")
         prompt = prompt.replace("ARTICLE", str(article)[:500])
         summary = self.llm.generate_response(prompt)
-        self.voice.say(summary)
+        self.say(summary, spot_profile)
 
-    def share_a_funny_story(self):
+    def share_a_funny_story(self, spot_profile):
         funny_story = self.llm.generate_response(self.prompter.get_prompt("funny_story"))
-        self.voice.say(funny_story)
+        self.say(funny_story, spot_profile)

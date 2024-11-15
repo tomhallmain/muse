@@ -21,7 +21,15 @@ Muse is a media player with an integrated voice synthesizer attached to an LLM. 
 - `text_cleaner_ruleset` - Add a dictionary of text cleaning rules to be run on text before Muse speaks it.
 - `coqui_tts_model` - Set the TTS model and speaker to be used by Muse.
 - For weather, news, calendar data etc set the appropriate API keys.
-
+- `open_weather_city` - Set the city for Muse to use for weather data.
+- `muse_config`
+    - `enable_preparation` - Allows Muse to begin text-to-speech generation before songs end to minimize delays between songs.
+    - `preparation_starts_minutes_from_end` - Set the number of minutes from the end of a song that Muse should begin text-to-speech generation.
+    - `preparation_starts_after_seconds_sleep` - Set the number of seconds into a song to wait before starting text-to-speech generation.
+    - `chance_speak_after_track` - Set the chance that Muse will speak after each track identifying the previous song or other media.
+    - `chance_speak_before_track` - Set the chance that Muse will speak before each track identifying the upcoming song or other media.
+    - `chance_speak_about_other_topics` - Set the chance that Muse will speak about other topics.
+- `news_api_source_trustworthiness` - Set the trustworthiness of news sources from News API.
 
 ## Usage
 

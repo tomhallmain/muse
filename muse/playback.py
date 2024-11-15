@@ -1,5 +1,4 @@
 
-import os
 import subprocess
 from time import sleep
 import vlc
@@ -33,10 +32,14 @@ class Playback:
         self.last_track_failed = False
         self.has_played_first_track = False
         self.count = 0
+        self.muse_spot_profiles = []
+
+    def has_muse(self):
+        return self._run and self._run.muse is not None
 
     def get_track(self):
         self.previous_track = self.track
-        self.track = self._playback_config.next_song()
+        self.track = self._playback_config.next_track()
         if self.track is None or self.track.is_invalid():
             return False
         return True
@@ -60,9 +63,13 @@ class Playback:
         # TODO: Get info like bit rate, mono vs stereo, possibly try to infer if it's AI or not
         pass
 
-    @staticmethod
-    def get_song_name(song):
-        return os.path.splitext(os.path.basename(song))[0]
+    def get_spot_profile(self, audio_track=None):
+        if audio_track is None:
+            audio_track = self.track
+        for profile in self.muse_spot_profiles:
+            if audio_track == profile.track:
+                return profile
+        raise Exception(f"No spot profile found for track: {audio_track}")
 
     def play_one_song(self):
         if self.get_track():
@@ -76,14 +83,22 @@ class Playback:
 
     def run(self):
         while self.get_track() and not self._run.is_cancelled:
-            if self._run and self._run.muse.voice.can_speak:
-                # TODO run muse in separate thread to be able to cancel it when user clicks Next
-                skip_previous_song_remark = self.last_track_failed or self.skip_track
-                if not skip_previous_song_remark:
-                    self._run.muse.maybe_dj_post(self.previous_track)
-                self.delay()
-                self.register_new_song()
-                self._run.muse.maybe_dj_prior(self.track, self.previous_track, skip_previous_song_remark)
+            if self.has_muse() and self._run.muse.voice.can_speak:
+                if not self.has_played_first_track or not self._run.muse.has_started_prep:
+                    # First track, or if user skipped before end of last track
+                    self.prepare_muse(first_prep=not self.has_played_first_track, delayed_prep=True)
+                # TODO enable muse to be cancelled when user clicks Next
+                # The user may have requested to skip the last track since the muse profile was created
+                self.get_spot_profile().update_skip_previous_track_remark(self.skip_track)
+                if self.get_spot_profile().is_going_to_say_something():
+                    # TODO handle long delays edge case
+                    self._run.muse.maybe_dj(self.get_spot_profile())
+                    self.register_new_song()
+                    # self._run.muse.maybe_dj_prior(self.muse_spot_profile)
+                else:
+                    self.delay()
+                    self.register_new_song()
+                self.reset_muse()
             else:
                 if self._run:
                     Utils.log_yellow("No voice available due to import failure, skipping Muse.")
@@ -97,11 +112,16 @@ class Playback:
 
             self.vlc_media_player.play()
             sleep(0.5)
+            cumulative_sleep_seconds = 0.5
             if not self.vlc_media_player.is_playing():
                 self.last_track_failed = True
             while (self.vlc_media_player.is_playing() or self.is_paused) and not self.skip_track:
                 sleep(0.5)
-                self.update_progress()
+                cumulative_sleep_seconds += 0.5
+                seconds_remaining = self.update_progress()
+                if  self._run.muse is not None and \
+                        self._run.muse.ready_to_prepare(cumulative_sleep_seconds, seconds_remaining):
+                    self.prepare_muse()
 
             self.vlc_media_player.stop()
             self.has_played_first_track = True
@@ -109,14 +129,34 @@ class Playback:
                 break
 
     def update_progress(self):
+        duration = self.vlc_media_player.get_length()
+        current_time = self.vlc_media_player.get_time()
         if self.callbacks.update_progress_callback is not None:
-            duration = self.vlc_media_player.get_length()
-            current_time = self.vlc_media_player.get_time()
             if duration > 0:
                 progress = int((current_time / duration) * 100)
             else:
                 progress = 0
-            self.callbacks.update_progress_callback(progress)
+            self.callbacks.update_progress_callback(progress, current_time, duration)
+        return duration - current_time
+
+    def reset_muse(self):
+        self._run.muse.reset()
+        self.muse_spot_profiles.remove(self.get_spot_profile(self.track))
+
+    def prepare_muse(self, first_prep=False, delayed_prep=False):
+        # At the moment the local LLM and TTS models are not that fast, so need to start generation
+        # for muse before the previous track stops playing, to avoid waiting extra time beyond
+        # the expected delay.
+        next_track = self.track if delayed_prep else self._playback_config.upcoming_track()
+        previous_track = None if first_prep else (self.previous_track if delayed_prep else self.track)
+        spot_profile = self._run.muse.get_spot_profile(previous_track, next_track, self.last_track_failed, self.skip_track)
+        self.muse_spot_profiles.append(spot_profile)
+        if delayed_prep:
+            spot_profile.immediate = True
+            Utils.log("Delayed preparation.")
+            self._run.muse.prepare(spot_profile)
+        else:
+            Utils.start_thread(self._run.muse.prepare, use_asyncio=False, args=(spot_profile,))
 
     def register_new_song(self):
         Utils.log(f"Playing track file: {self.track.filepath}")
@@ -142,8 +182,8 @@ class Playback:
 
     def set_volume(self):
         mean_volume, max_volume = self.get_song_volume()
-        Utils.log("Mean volume: " + str(mean_volume) + " Max volume: " + str(max_volume))
         volume = (Globals.DEFAULT_VOLUME_THRESHOLD + 30) if mean_volume < -50 else min(int(Globals.DEFAULT_VOLUME_THRESHOLD + (-1 * mean_volume)), 100)
+        Utils.log(f"Mean volume: {mean_volume} Max volume: {max_volume} Setting volume to: {volume}")
         self.vlc_media_player.audio_set_volume(volume)
         # TODO callback for UI element, add a UI element for "effective volume"
 
@@ -157,6 +197,7 @@ class Playback:
 
     def next(self):
         self.vlc_media_player.stop()
+        Utils.log("Skipping ahead to next track.")
         self.skip_track = True
         self.skip_delay = True
 

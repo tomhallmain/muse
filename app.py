@@ -90,7 +90,7 @@ class App():
         self.runner_app_config = self.load_info_cache()
         self.config_history_index = 0
         self.current_run = Run(RunConfig())
-        self.app_actions = AppActions(self.update_track_text, self.update_progress_bar)
+        self.app_actions = AppActions(self.update_track_text, self.update_muse_text, self.update_progress_bar)
 
         # Sidebar
         self.sidebar = Sidebar(self.master)
@@ -366,7 +366,7 @@ class App():
             self.runner_app_config.set_from_run_config(args_copy)
             Utils.start_thread(run_async, use_asyncio=False, args=[args])
 
-    def update_progress_bar(self, progress):
+    def update_progress_bar(self, progress, elapsed_time, total_duration):
         if self.progress_bar is not None:
             self.progress_bar['value'] = progress
             self.master.update_idletasks()  # Force update of the GUI
@@ -432,6 +432,11 @@ class App():
                 text += "\nArtist: " + audio_track.artist
         text = Utils._wrap_text_to_fit_length(text, 100)
         self.label_song_text["text"] = text
+        self.master.update()
+
+    def update_muse_text(self, muse_text):
+        text = Utils._wrap_text_to_fit_length(muse_text[:500], 100)
+        self.label_muse["text"]  = text
         self.master.update()
 
     # def open_presets_window(self):

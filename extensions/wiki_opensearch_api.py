@@ -36,12 +36,15 @@ class WikiOpenSearchAPI:
     def __init__(self) -> None:
         pass
 
-    def __build_url(self, query: str):
-        return f'{self.BASE_URL}?action=opensearch&search={query}&format=json'
+    def __build_url(self, query: str, limit):
+        url = f'{self.BASE_URL}?action=opensearch&search={query}&format=json'
+        if limit > 0:
+            url += f'&limit={limit}'
+        return url
 
-    def search(self, query: str):
+    def search(self, query: str, limit=-1):
         try:
-            req = requests.get(self.__build_url(query))
+            req = requests.get(self.__build_url(query, limit))
             return WikiOpenSearchResponse(req.json())
         except Exception as e:
             Utils.log_red(f"Failed to connect to Wiki OpenSearch API: {e}")

@@ -2,7 +2,7 @@ import os
 import glob
 import random
 
-from muse.audio_track import AudioTrack
+from library_data.audio_track import AudioTrack
 from utils.app_info_cache import app_info_cache
 from utils.config import config
 from utils.globals import MediaFileType, WorkflowType
@@ -64,12 +64,18 @@ class PlaybackConfig:
             files = PlaybackConfig.DIRECTORIES_CACHE[directory]
         return files
 
-    def next_song(self):
+    def next_track(self):
         l = self.get_list()
         if len(l) == 0 or self.current_song_index >= len(l):
             return None
         self.current_song_index += 1
         return AudioTrack(l[self.current_song_index])
+
+    def upcoming_track(self):
+        l = self.get_list()
+        if len(l) == 0 or self.current_song_index >= len(l):
+            return None
+        return AudioTrack(l[self.current_song_index + 1])
 
     def __str__(self) -> str:
         return "PlaybackConfig(type=" + str(self.type) + ", directories=" + str(len(self.directories)) + ")"

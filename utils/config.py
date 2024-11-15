@@ -13,6 +13,14 @@ class Config:
         self.foreground_color = "white"
         self.background_color = "#2596BE"
         self.directories = []
+        self.muse_config = {
+            "enable_preparation": True,
+            "preparation_starts_minutes_from_end": 2,
+            "preparation_starts_after_seconds_sleep": 10,
+            "chance_speak_after_track": 0.3,
+            "chance_speak_before_track": 0.3,
+            "chance_speak_about_other_topics": 0.3,
+        }
         self.prompts_directory = "prompts"
         self.tongue_twisters_dir = None
         self.artists_file = "artists.json"
@@ -67,7 +75,9 @@ class Config:
             "coqui_tts_model",
         )
         self.set_values(dict,
-            "news_api_source_trustworthiness")
+            "muse_config",
+            "news_api_source_trustworthiness",
+        )
         self.set_directories(
             "prompts_directory",
             "tongue_twisters_dir",

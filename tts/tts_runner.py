@@ -7,6 +7,7 @@ import time
 import torch
 
 from utils.config import config
+from utils.job_queue import JobQueue
 from utils.utils import Utils
 
 try:
@@ -99,11 +100,12 @@ class Chunker:
 
 
 class TextToSpeechRunner:
+    QUEUES = [] # TODO multiple named queues
     VLC_MEDIA_PLAYER = vlc.MediaPlayer()
     output_directory = os.path.join(os.path.dirname(os.path.dirname(__file__)), "tts_output")
     lib_sounds = os.path.join(os.path.dirname(os.path.dirname(__file__)), "lib", "sounds")
 
-    def __init__(self, model, filepath="test", overwrite=False, delete_interim_files=True):
+    def __init__(self, model, filepath="test", overwrite=False, delete_interim_files=True, auto_play=True):
         self.speech_queue = JobQueue("Speech Queue")
         self.output_path = os.path.splitext(os.path.basename(filepath))[0]
         self.output_path_normalized = Utils.ascii_normalize(self.output_path)
@@ -111,7 +113,17 @@ class TextToSpeechRunner:
         self.overwrite = overwrite
         self.counter = 0
         self.audio_paths = []
-        self.delete_interim_files = delete_interim_files
+        self.used_audio_paths = []
+        self.delete_interim_files = delete_interim_files if auto_play else False
+        self.auto_play = auto_play
+
+    def clean(self):
+        if len(self.used_audio_paths) > 0:
+            Utils.log("Cleaning used TTS audio files.")
+            for path in self.used_audio_paths:
+                os.remove(path)
+
+            self.used_audio_paths = []
 
     def set_output_path(self, filepath):
         self.output_path = os.path.splitext(os.path.basename(filepath))[0]
@@ -147,8 +159,8 @@ class TextToSpeechRunner:
                         language=self.model[2])
 
     def play_async(self, filepath):
-        TextToSpeechRunner.VLC_MEDIA_PLAYER = vlc.MediaPlayer(filepath)
-        TextToSpeechRunner.VLC_MEDIA_PLAYER.play()
+        self.speech_queue.job_running = True
+        TextToSpeechRunner._play(filepath)
         time.sleep(1)
         while (TextToSpeechRunner.VLC_MEDIA_PLAYER.is_playing()):
             time.sleep(.1)
@@ -159,11 +171,37 @@ class TextToSpeechRunner:
         else:
             self.speech_queue.job_running = False
 
+    def await_pending_speech_jobs(self):
+        while self.speech_queue.has_pending():
+            next_job_output_path = self.speech_queue.take()
+            if next_job_output_path is not None:
+                if os.path.exists(next_job_output_path):
+                    self.play_async(next_job_output_path)
+                else:
+                    Utils.log_red(f"Cannot find speech output path: {next_job_output_path}")
+                while self.speech_queue.job_running:
+                    time.sleep(.5)
+        self.clean()
+
+    def stop_pending_jobs(self):
+        if TextToSpeechRunner.VLC_MEDIA_PLAYER is not None and \
+           TextToSpeechRunner.VLC_MEDIA_PLAYER.is_playing():
+            TextToSpeechRunner.VLC_MEDIA_PLAYER.stop()
+            TextToSpeechRunner.VLC_MEDIA_PLAYER = None
+
+    def stop(self):
+        self.stop_pending_jobs()
+
+    @staticmethod
+    def _play(filepath):
+        TextToSpeechRunner.VLC_MEDIA_PLAYER = vlc.MediaPlayer(filepath)
+        TextToSpeechRunner.VLC_MEDIA_PLAYER.play()
+
     def _speak(self, text):
         output_path = self.generate_output_path()
         self.audio_paths.append(output_path)
         self.generate_speech_file(text, output_path)
-        if self.speech_queue.has_pending() or self.speech_queue.job_running:
+        if not self.auto_play or self.speech_queue.has_pending() or self.speech_queue.job_running:
             self.speech_queue.add(output_path)
         else:
             self.speech_queue.job_running = True
@@ -222,6 +260,7 @@ class TextToSpeechRunner:
         for i in range(len(self.audio_paths)):
             f = self.audio_paths[i]
             args.append(f.replace("\\", "/"))
+            print(f"File {f} was found: {os.path.exists(f)}")
             if i < len(self.audio_paths) - 1:
                 args.append(silence_file.replace("\\", "/"))
         args.append(output_path_no_unicode.replace("\\", "/"))
@@ -235,6 +274,8 @@ class TextToSpeechRunner:
                 if self.delete_interim_files:
                     for f in self.audio_paths:
                         os.remove(f)
+                else:
+                    self.used_audio_paths.extend(self.audio_paths)
                 self.audio_paths = []
                 return Utils.move_file(mp3_path, output_path[:-4] + " - TTS.mp3")
             else:
@@ -242,7 +283,6 @@ class TextToSpeechRunner:
                 raise Exception()
         except Exception as e:
             raise Exception("Error combining audio files")
-        return output_path
 
 def main(model, text):
     runner = TextToSpeechRunner(model)

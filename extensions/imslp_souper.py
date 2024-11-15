@@ -17,7 +17,7 @@ def clean_wiki_text(text):
     return SoupUtils.clean_html(text)
 
 
-class WikiTable():
+class ImslpTable():
     def __init__(self, table=None):
         if table is None:
             self.df = pd.DataFrame()
@@ -42,7 +42,7 @@ class WikiTable():
         return str(self.df)
 
 
-class WikiSection():
+class ImslpSection():
     def __init__(self, header, tables=[]):
         self._header = header if type(header) == str else header.text
         if self._header and self._header.strip().endswith("]") and "[" in self._header:
@@ -52,10 +52,10 @@ class WikiSection():
         self._table_temp = None
         self._tables = []
         for table in tables:
-            self._tables.append(WikiTable(table))
+            self._tables.append(ImslpTable(table))
 
     def add_table(self, table):
-        self._tables.append(WikiTable(table))
+        self._tables.append(ImslpTable(table))
 
     def add_table_part(self, p):
         if self._table_temp is None:
@@ -65,7 +65,7 @@ class WikiSection():
     def combine_temp_table(self):
         if self._table_temp is not None and len(self._table_temp) > 0:
             self._table_temp.reset_index(drop=True, inplace=True)
-            self._tables.append(WikiTable(self._table_temp))
+            self._tables.append(ImslpTable(self._table_temp))
             self._table_temp = None
 
     def has_data(self):
@@ -84,7 +84,7 @@ class WikiSection():
 
     @staticmethod
     def from_json(data):
-        return WikiSection(data["header"], [WikiTable.from_json(t) for t in data["tables"]])
+        return ImslpSection(data["header"], [ImslpTable.from_json(t) for t in data["tables"]])
 
     def __str__(self):
         out = self._header + '\n'
@@ -93,19 +93,28 @@ class WikiSection():
         return out
 
 
-class WikiCompilationData:
+class ImslpCompilationData:
     SAVE_LOCATION = os.path.join(os.path.dirname(os.path.dirname(__file__)), "library_data", "wiki")
 
     def __init__(self, url, has_tables):
         self._url = url
-        self._name = clean_wiki_text(url.replace("https://en.wikipedia.org/wiki/", "").replace("_", " "))
+        last_part_of_url = url[url.rfind("/")+1:]
+        self._name = clean_wiki_text(last_part_of_url.replace("_", " ").replace(":", "_") + " (IMSLP)")
+        if "/" in self._name:
+            raise Exception("Compilation name contains '/'")
         self._sections = []
         self._has_tables = has_tables
 
     def add_section(self, section_el):
-        section = WikiSection(section_el)
+        section = ImslpSection(section_el)
         self._sections.append(section)
         return section
+
+    def has_section(self, section):
+        for s in self._sections:
+            if s == section or (s is not None and s.header() == section.header()):
+                return True
+        return False
 
     def has_data(self):
         for section in self._sections:
@@ -121,7 +130,7 @@ class WikiCompilationData:
             }
 
     def save_to_file(self):
-        filename = os.path.join(WikiCompilationData.SAVE_LOCATION, self._name + ".json")
+        filename = os.path.join(ImslpCompilationData.SAVE_LOCATION, self._name + ".json")
         with open(filename, 'w', encoding="utf-8") as f:
             f.write(json.dumps(self.json(), indent=4))
 
@@ -129,13 +138,13 @@ class WikiCompilationData:
     def load_from_file(name):
         with open(name, 'r', encoding="utf-8") as f:
             data = json.loads(f.read())
-            wiki_compilation_data = WikiCompilationData(data['url'], None)
+            wiki_compilation_data = ImslpCompilationData(data['url'], None)
             for section in data['sections']:
-                wiki_compilation_data._sections.append(WikiSection.from_json(section))
+                wiki_compilation_data._sections.append(ImslpSection.from_json(section))
         return wiki_compilation_data
 
 
-class WikiSouper():
+class ImslpSouper():
 
     @staticmethod
     def get_wiki_main_content(soup):
@@ -144,18 +153,8 @@ class WikiSouper():
 
     @staticmethod
     def get_wiki_body_content(soup):
-        body = soup.find('div', {'id': 'bodyContent'})
+        body = soup.find('div', {'class': 'body'})
         return body
-
-    @staticmethod
-    def get_mw_content(soup):
-        mw = soup.find('div', {'class': 'mw-content-ltr'})
-        return mw
-
-    @staticmethod
-    def get_more_citations_needed(soup):
-        more = soup.find('table', {'class':'box-More_citations_needed'})
-        return more
 
     @staticmethod
     def get_catlinks(soup):
@@ -198,19 +197,18 @@ class WikiSouper():
                 section.combine_temp_table()
         if el.name == 'div' and depth < 3:
             for sub_el in el.contents:
-                WikiSouper.extract_table_data(sub_el, section, wiki_compilation_data, depth=depth+1)
+                ImslpSouper.extract_table_data(sub_el, section, wiki_compilation_data, depth=depth+1)
 
     @staticmethod
     def get_wiki_tables(wiki_url):
         # There is one table with alternating classes containing title and subline, so need to update the news item on every other row.
         soup = SoupUtils.get_soup(wiki_url)
-        body_content = WikiSouper.get_mw_content(soup)
+        body_content = ImslpSouper.get_wiki_body_content(soup)
         tables = SoupUtils.get_elements(class_path=[["tag", "table"]], parent=body_content)
-        more_citations = WikiSouper.get_more_citations_needed(soup)
         # catlinks = WikiSouper.get_catlinks(soup)
-        has_tables = len(tables) > 0 if more_citations is None else len(tables) > 1
-        wiki_compilation_data = WikiCompilationData(wiki_url, has_tables)
-        section = WikiSection(wiki_compilation_data._name)
+        has_tables = len(tables) > 0
+        wiki_compilation_data = ImslpCompilationData(wiki_url, has_tables)
+        section = ImslpSection(wiki_compilation_data._name)
 
         for el in body_content.contents:
             if el.name == 'div' and el.has_attr('class') and len(el['class']) > 0 and el['class'][0] == 'mw-heading':
@@ -223,7 +221,12 @@ class WikiSouper():
                     break
                 section = wiki_compilation_data.add_section(el)
             if section is not None:
-                WikiSouper.extract_table_data(el, section, wiki_compilation_data)
+                ImslpSouper.extract_table_data(el, section, wiki_compilation_data)
+
+        if section is not None:
+            section.combine_temp_table()
+            if not wiki_compilation_data.has_section(section):
+                wiki_compilation_data._sections.append(section)
 
         for section in wiki_compilation_data._sections:
             Utils.log(section)
@@ -236,7 +239,7 @@ class WikiSouper():
         failed_urls = {}
         for wiki_url in wiki_urls:
             try:
-                wiki_compilation_data = WikiSouper.get_wiki_tables(wiki_url)
+                wiki_compilation_data = ImslpSouper.get_wiki_tables(wiki_url)
                 wiki_compilation_data.save_to_file()
                 if not wiki_compilation_data.has_data():
                     invalid_data_urls.append(wiki_url)
@@ -244,7 +247,7 @@ class WikiSouper():
                 Utils.log("Error gathering data from Wiki url: " + wiki_url)
                 Utils.log_red(e)
                 failed_urls[wiki_url] = str(e)
-                raise e
+                # raise e
             Utils.log("\n-----------------------------------------------------------\n")
             time.sleep(2)
         
@@ -262,6 +265,6 @@ class WikiSouper():
 
 
 if __name__ == "__main__":
-    WikiSouper.get_wiki_tables("https://en.wikipedia.org/wiki/List_of_compositions_by_George_Frideric_Handel")
+    ImslpSouper.get_wiki_tables("https://en.wikipedia.org/wiki/List_of_compositions_by_George_Frideric_Handel")
 
 

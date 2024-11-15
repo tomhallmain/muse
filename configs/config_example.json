@@ -2,6 +2,14 @@
     "directories": [
         "{HOME}\\audio"
     ],
+    "muse_config": {
+        "enable_preparation": true,
+        "preparation_starts_minutes_from_end": 2,
+        "preparation_starts_after_seconds_sleep": 10,
+        "chance_speak_after_track": 0.2,
+        "chance_speak_before_track": 0.3,
+        "chance_speak_about_other_topics": 0.2
+    },
     "prompts_directory": "prompts",
     "tongue_twisters_dir": "",
     "artists_file": "artists_example.json",
@@ -28,8 +36,8 @@
             "simple_replacement": false
         },
         {
-            "pattern": " KV?\\.? ?([0-9])",
-            "replacement": " Köchel \\1",
+            "pattern": " KV?(\\.)? ?([0-9])",
+            "replacement": " Köchel \\2",
             "simple_replacement": false
         },
         {

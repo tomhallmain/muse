@@ -50,9 +50,7 @@ dict_keys(['tag_aliases', 'tag_map', 'resolvers', 'singular_keys', 'filename', '
 class AudioTrack:
     def __init__(self, filepath):
         self.filepath = filepath
-        self.album_index = -1
-        self.track_index = -1
-        self.tracktitle = None
+        self.tracktitle = None # TODO merge this with self.title
         self.artist = None
         self.album = None
         self.albumartist = None
@@ -64,12 +62,15 @@ class AudioTrack:
         self.genre = None
         self.year = None
         self.compilation = False
-        #bitrate : 128000
-        #codec : mp4a.40.2
-        #length : 241.78938775510204
-        #channels : 2
-        #bitspersample : 16
-        #samplerate : 44100
+
+        # Unused tags:
+        # bitrate : 128000
+        # codec : mp4a.40.2
+        # length : 241.78938775510204
+        # channels : 2
+        # bitspersample : 16
+        # samplerate : 44100
+
         if self.filepath is not None and self.filepath != "":
             self.basename = os.path.basename(filepath)
             dirpath1 = os.path.dirname(os.path.abspath(filepath))
@@ -80,9 +81,7 @@ class AudioTrack:
             else:
                 self.artist = None
             self.album = os.path.basename(dirpath1)
-            # self.album = Utils.get_relative_dirpath(os.path.dirname(os.path.abspath(filepath)))
             self.title, self.ext = os.path.splitext(self.basename)
-            # self.artist = Artists.get_artist(self.title, self.album, self.filepath) #TODO: get artist from metadata
             # NOTE there are cases where a group of artists are combined in a single album or a single artist name, and
             # it may be possible to extract the specific artistic name given properties of the track relative to others
             # in the same album
@@ -139,15 +138,16 @@ class AudioTrack:
         if self.title is not None and len(self.title) > 0 and self.title[0].isdigit():
             maybe_album_index, maybe_track_index, maybe_title = AudioTrack.extract_ints_from_start(self.title)
             if maybe_album_index is not None and maybe_album_index > 0 and maybe_album_index < 15:
-                self.album_index = maybe_album_index
+                self.discnumber = maybe_album_index
             if maybe_track_index is not None and maybe_track_index > 0 and maybe_track_index < 40:
-                self.track_index = maybe_track_index
+                self.tracknumber = maybe_track_index
                 self.title = maybe_title
 
     def get_track_text_file(self):
         if self.basename is None:
             return None
         track_basename = self.basename.lower()
+        # TODO search in specific dir based on the composer, artist, topic etc.
         dirname = os.path.dirname(self.filepath)
         txt_files = glob.glob(os.path.join(dirname, "*.txt"))
         txt_basenames = []
@@ -187,6 +187,7 @@ class AudioTrack:
         text = re.sub(re.compile(" No. ?([0-9])"), _("Number \\1"), text)
         text = re.sub(re.compile("Nr. ?([0-9])"),  _("Number \\1"), text)
         text = re.sub(re.compile("( |^)TTS( |$)"),   _("\\1text to speech\\2"), text)
+        text = re.sub(re.compile("( o| ?O)p. ([0-9])"), _(" Opus \\1"), text)
         return text
 
     @staticmethod
@@ -220,6 +221,15 @@ class AudioTrack:
                 return maybe_album_index, maybe_track_index, maybe_title
 
         return -1, int(maybe_track_index), str(s[counter:])
+
+    def __str__(self) -> str:
+        return self.title
+
+    def __eq__(self, value: object) -> bool:
+        return isinstance(value, AudioTrack) and self.filepath == value.filepath
+
+    def __hash__(self):
+        return hash(self.filepath)
 
 
 if __name__ == "__main__":

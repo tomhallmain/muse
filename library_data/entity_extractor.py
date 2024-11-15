@@ -2,7 +2,9 @@
 import json
 import os
 
-from muse.audio_track import AudioTrack
+from library_data.audio_track import AudioTrack
+from library_data.composer import Composer
+from library_data.library_data import LibraryData
 from muse.playback_config import PlaybackConfig
 from muse.run_config import RunConfig
 from utils.config import config
@@ -17,13 +19,9 @@ PlaybackConfig.load_directory_cache()
 
 class EntityExtractor:
     def __init__(self):
+        self.libary_data = LibraryData()
         self.playback_config = PlaybackConfig(run_config)
         print(self.playback_config.type)
-        self.known_entities = {}
-
-        with open(os.path.join(configs_dir,'composers_dict.json'), 'r', encoding="utf-8") as f:
-            self.known_entities = json.load(f)
-        
         self.known_entities_found = {}
 
     def extract(self, audio_track):
@@ -34,17 +32,16 @@ class EntityExtractor:
         # TODO some way to avoid clashes between minimized and full names
         # TODO check for word inside spaces / at start or end
 
+        found_match = False
+
         if audio_track.artist is None or audio_track.title is None:
-            return {}
+            return found_match
 
         # Find the entities that match the audio track's title and artist
-        matches = []
-        for entity, values in self.known_entities.items():
-            for value in values:
-                if value in audio_track.title or value in audio_track.album or value in audio_track.artist:
-                    matches += [entity]
+        matches = self.libary_data.get_composers(audio_track)
 
         if len(matches) > 0:
+            found_match = True
             for match in matches:
                 if match not in self.known_entities_found:
                     self.known_entities_found[match] = []
@@ -54,15 +51,18 @@ class EntityExtractor:
         else:
             print(audio_track.album + " - " + audio_track.title + " - No matches found")
 
-        return {}
+        return found_match
 
     def run(self):
         # TODO try with new audio track properties
 
-        for song_filepath in self.playback_config.get_list():
-            self.extract(AudioTrack(song_filepath))
+        tracks_with_no_matches = []
 
-        entities_not_found = list(self.known_entities.keys())
+        for song_filepath in self.playback_config.get_list():
+            if not self.extract(AudioTrack(song_filepath)):
+                tracks_with_no_matches.append(song_filepath)
+
+        entities_not_found = self.libary_data.get_composer_names()
         files = os.listdir(os.path.join(libary_dir, "wiki"))
         not_found_files = []
 
@@ -98,4 +98,3 @@ class EntityExtractor:
         for entity in sorted(not_found_files):
             print(f"\t\"{entity}\"")
         print("]")
-

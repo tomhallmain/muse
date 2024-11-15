@@ -1,12 +1,31 @@
 {
-    "bach": [
-        "Johann Sebastian Bach",
-        "J. S. Bach",
-        "J.S. Bach",
-        "Bach"
-    ],
-    "beethoven": [
-        "Ludwig van Beethoven",
-        "Beethoven"
-    ]
+    "Johann Sebastian Bach": {
+        "id": 63,
+        "name": "Johann Sebastian Bach",
+        "indicators": [
+            "Johann Sebastian Bach",
+            "J. S. Bach",
+            "J.S. Bach",
+            "Bach, J. S.",
+            "Bach",
+            "BWV",
+            "B.W.V."
+        ],
+        "dob": null,
+        "dod": null,
+        "genres": [],
+        "works": []
+    },
+    "Ludwig van Beethoven": {
+        "id": 107,
+        "name": "Ludwig van Beethoven",
+        "indicators": [
+            "Ludwig van Beethoven",
+            "Beethoven"
+        ],
+        "dob": null,
+        "dod": null,
+        "genres": [],
+        "works": []
+    }
 }
