@@ -52,5 +52,6 @@
         }
     ],
     "coqui_tts_model": ["tts_models/multilingual/multi-dataset/xtts_v2", "Royston Min", "en"],
-    "max_chunk_tokens": 200
+    "max_chunk_tokens": 200,
+    "enable_library_extender": false
 }

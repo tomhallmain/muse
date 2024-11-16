@@ -69,6 +69,13 @@ class Playback:
         for profile in self.muse_spot_profiles:
             if audio_track == profile.track:
                 return profile
+        # It is possible for the spot profile to not have been prepared for the next track if the 
+        # next track was a late addition due to a forced playback extension. In this case, need
+        # to overwrite the "Next" track in the previously generated spot profile with the new one
+        for profile in self.muse_spot_profiles:
+            if profile.previous_track == self.previous_track:
+                profile.track = audio_track
+                return profile
         raise Exception(f"No spot profile found for track: {audio_track}")
 
     def play_one_song(self):

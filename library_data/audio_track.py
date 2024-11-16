@@ -3,6 +3,7 @@ import os
 import re
 
 # from ops.artists import Artists
+from library_data.composer import composers_data
 from utils.translations import I18N
 from utils.utils import Utils
 
@@ -48,6 +49,7 @@ dict_keys(['tag_aliases', 'tag_map', 'resolvers', 'singular_keys', 'filename', '
 """
 
 class AudioTrack:
+
     def __init__(self, filepath):
         self.filepath = filepath
         self.tracktitle = None # TODO merge this with self.title
@@ -70,6 +72,12 @@ class AudioTrack:
         # channels : 2
         # bitspersample : 16
         # samplerate : 44100
+
+        self.searchable_title = None
+        self.searchable_album = None
+        self.searchable_artist = None
+        self.searchable_composer = None
+        self.searchable_genre = None
 
         if self.filepath is not None and self.filepath != "":
             self.basename = os.path.basename(filepath)
@@ -99,7 +107,26 @@ class AudioTrack:
                             except Exception:
                                 pass
             except Exception as e:
-                Utils.log(f"Failed to gather track details for track {self.title}")
+                pass
+                # Utils.log(f"Failed to gather track details for track {self.title}")
+            
+            if self.title is not None:
+                self.searchable_title = Utils.ascii_normalize(self.title.lower())
+            if self.artist is not None:
+                self.searchable_artist = Utils.ascii_normalize(self.artist.lower())
+            if self.album is not None:
+                self.searchable_album = Utils.ascii_normalize(self.album.lower())
+            if self.composer is None:
+                try:
+                    composers = composers_data.get_composers(self)
+                    if len(composers) > 0:
+                        self.composer = ", ".join(composers)
+                except Exception:
+                    pass
+            if self.composer is not None:
+                self.searchable_composer = Utils.ascii_normalize(self.composer.lower())
+            if self.genre is not None:
+                self.searchable_genre = Utils.ascii_normalize(self.genre.lower())
         else:
             self.basename = None
             self.album = None

@@ -17,6 +17,8 @@ from muse.run import Run
 from muse.run_config import RunConfig
 from ui.app_actions import AppActions
 from ui.app_style import AppStyle
+from ui.search_window import SearchWindow
+from ui.track_details_window import TrackDetailsWindow
 from ui.weather_window import WeatherWindow
 from utils.app_info_cache import app_info_cache
 from utils.config import config
@@ -111,6 +113,9 @@ class App():
 
         self.pause_btn = None
         self.add_button("pause_btn", _("Pause"), self.pause)
+
+        self.search_btn = None
+        self.add_button("search_btn", _("Search"), self.open_search_window)
 
         self.cancel_btn = Button(self.sidebar, text=_("Stop"), command=self.cancel)
         self.text_btn = Button(self.sidebar, text=_("Text"), command=self.open_text)
@@ -398,6 +403,19 @@ class App():
         if self.current_run is None or self.current_run.is_complete or self.current_run.is_cancelled:
             return
         self.current_run.open_text()
+
+    def open_search_window(self):
+        try:
+            search_window = SearchWindow(self.master, self.app_actions)
+        except Exception as e:
+            Utils.log_red(f"Exception opening track details window: {e}")
+            raise e
+
+    def open_track_details_window(self):
+        try:
+            track_details_window = TrackDetailsWindow(self.master, self.app_actions)
+        except Exception as e:
+            Utils.log_red(f"Exception opening track details window: {e}")
 
     def open_weather_window(self):
         try:

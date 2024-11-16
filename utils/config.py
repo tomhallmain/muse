@@ -36,6 +36,8 @@ class Config:
         self.coqui_tts_model = ("tts_models/multilingual/multi-dataset/xtts_v2", "Royston Min", "en")
         self.max_chunk_tokens = 200
 
+        self.enable_library_extender = False
+
         self.server_port = 6000
         self.server_password = "<PASSWORD>"
         self.server_host = "localhost"
@@ -73,6 +75,9 @@ class Config:
             "directories",
             "text_cleaner_ruleset",
             "coqui_tts_model",
+        )
+        self.set_values(bool,
+            "enable_library_extender"
         )
         self.set_values(dict,
             "muse_config",

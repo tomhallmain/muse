@@ -89,10 +89,11 @@ class Muse:
     def prepare(self, spot_profile):
         # TODO Lock both TTS runner queues here
         self.has_started_prep = True
-        Utils.log_debug(f"Preparing muse:\n{spot_profile}")
-        if not spot_profile.skip_previous_track_remark:
-            self.maybe_prep_dj_post(spot_profile)
-        self.maybe_prep_dj_prior(spot_profile)
+        if spot_profile.is_going_to_say_something():
+            Utils.log_debug(f"Preparing muse:\n{spot_profile}")
+            if not spot_profile.skip_previous_track_remark:
+                self.maybe_prep_dj_post(spot_profile)
+            self.maybe_prep_dj_prior(spot_profile)
         spot_profile.is_prepared = True
 
     def maybe_prep_dj_prior(self, spot_profile):

@@ -37,9 +37,6 @@ class TrackDetailsWindow:
         self.frame = ScrollFrame(self.master, bg_color=AppStyle.BG_COLOR)
         self.frame.pack(side="top", fill="both", expand=True)
 
-        self._label_info = Label(self.frame.viewPort)
-        self.add_label(self._label_info, _("Weather"), row=0, wraplength=TrackDetailsWindow.COL_0_WIDTH)
-
         self.update_btn = None
         self.add_btn("update_btn", _("Update"), self.get_track_data, row=0)
 

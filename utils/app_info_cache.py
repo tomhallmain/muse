@@ -102,18 +102,18 @@ class AppInfoCache:
     def get_tracker(self, tracker):
         trackers = self._get_trackers()
         if tracker not in trackers:
-            trackers[tracker] = {"count": 0, "last": datetime.datetime.now()}
+            trackers[tracker] = {"count": 0, "last": datetime.datetime.now().strftime("%Y-%m-%d %H:%M")}
         return trackers[tracker]
 
     def increment_tracker(self, tracker):
         tracker = self.get_tracker(tracker)
         now = datetime.datetime.now()
-        last_track = tracker["last"]
+        last_track = datetime.datetime.strptime(tracker["last"], "%Y-%m-%d %H:%M")
         if now.year <= last_track.year and now.month <= last_track.month and now.day <= last_track.day:
             tracker["count"] += 1
         else:
             tracker["count"] = 1
-        tracker["last"] = now
+        tracker["last"] = now.strftime("%Y-%m-%d %H:%M")
         hours_since_last = (now - last_track).total_seconds()/3600
         return int(tracker["count"]), float(hours_since_last)
 

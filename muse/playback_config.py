@@ -1,6 +1,8 @@
+import datetime
 import os
 import glob
 import random
+import time
 
 from library_data.audio_track import AudioTrack
 from utils.app_info_cache import app_info_cache
@@ -11,6 +13,9 @@ from utils.utils import Utils
 
 class PlaybackConfig:
     DIRECTORIES_CACHE = {}
+    LAST_EXTENSION_PLAYED = datetime.datetime.now()
+    OPEN_CONFIGS = []
+    READY_FOR_EXTENSION = True
 
     @staticmethod
     def new_playback_config(override_dir=None):
@@ -31,6 +36,8 @@ class PlaybackConfig:
         self.directories = args.directories if args else ([override_dir] if override_dir else [])
         self.overwrite = args.overwrite if args else False
         self.list = []
+        self.next_track_override = None
+        PlaybackConfig.OPEN_CONFIGS.append(self)
 
     def maximum_plays(self):
         return 1
@@ -56,6 +63,10 @@ class PlaybackConfig:
             self.list.sort()
         return self.list
 
+    def get_audio_track_list(self):
+        Utils.log("Building audio track cache")
+        return [AudioTrack(t) for t in self.get_list()]
+
     def _get_directory_files(self, directory):
         if directory not in PlaybackConfig.DIRECTORIES_CACHE or self.overwrite:
             files = glob.glob(os.path.join(directory, "**/*"), recursive = True)
@@ -65,6 +76,11 @@ class PlaybackConfig:
         return files
 
     def next_track(self):
+        if self.next_track_override is not None:
+            next_track = AudioTrack(self.next_track_override)
+            self.next_track_override = None
+            PlaybackConfig.READY_FOR_EXTENSION = True
+            return next_track
         l = self.get_list()
         if len(l) == 0 or self.current_song_index >= len(l):
             return None
@@ -72,10 +88,27 @@ class PlaybackConfig:
         return AudioTrack(l[self.current_song_index])
 
     def upcoming_track(self):
+        if self.next_track_override is not None:
+            return AudioTrack(self.next_track_override)
         l = self.get_list()
         if len(l) == 0 or self.current_song_index >= len(l):
             return None
         return AudioTrack(l[self.current_song_index + 1])
+
+    def set_next_track_override(self, new_file):
+        self.next_track_override = new_file
+
+    @staticmethod
+    def force_extension(new_file):
+        while not PlaybackConfig.READY_FOR_EXTENSION:
+            Utils.log("Waiting for config to accept extension...")
+            time.sleep(5)
+        Utils.log("Assigning extension to playback")
+        PlaybackConfig.READY_FOR_EXTENSION = False
+        for open_config in PlaybackConfig.OPEN_CONFIGS:
+            open_config.overwrite = True
+            open_config.get_list()
+            open_config.set_next_track_override(new_file)
 
     def __str__(self) -> str:
         return "PlaybackConfig(type=" + str(self.type) + ", directories=" + str(len(self.directories)) + ")"

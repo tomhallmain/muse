@@ -3,12 +3,13 @@ from copy import deepcopy
 import time
 import traceback
 
-from utils.globals import Globals # must import first
+from library_data.library_data import LibraryData
 from muse.muse import Muse
 from muse.playback import Playback
 from muse.playback_config import PlaybackConfig
 from muse.run_config import RunConfig
 from muse.workflow import WorkflowPrompt
+from utils.config import config
 from utils.translations import I18N
 from utils.utils import Utils
 
@@ -30,6 +31,7 @@ class Run:
         self.callbacks = callbacks
         self.playback = None
         self.muse = Muse(self.args)
+        self.library_data = LibraryData()
 
     def is_infinite(self):
         return self.args.total == -1
@@ -40,8 +42,10 @@ class Run:
     def pause(self):
         self.playback.pause()
 
-    def run(self, config):
-        Utils.log(config)
+    def run(self, playback_config):
+        if config.enable_library_extender:
+            self.library_data.start_extensions_thread()
+        Utils.log(playback_config)
         # confirm_text = f"\n\nPrompt: \"{config.positive}\" (y/n/r/m/n/e/s/[space to quit]): "
         confirm = "y" # if Globals.SKIP_CONFIRMATIONS else input(confirm_text)
         self.switching_params = False
@@ -51,7 +55,7 @@ class Run:
         elif confirm.lower() != "y":
             return
 
-        if self.last_config and config == self.last_config:
+        if self.last_config and playback_config == self.last_config:
             Utils.log("\n\nConfig matches last config. Please modify it or quit.")
             # if Globals.SKIP_CONFIRMATIONS:
             #     raise Exception("Invalid state - must select an auto-modifiable config option if using auto run.")
@@ -65,14 +69,14 @@ class Run:
 
 
     def do_workflow(self, workflow):
-        config = PlaybackConfig(self.args)
-        self.playback = Playback(config, self.callbacks, self)
+        playback_config = PlaybackConfig(self.args)
+        self.playback = Playback(playback_config, self.callbacks, self)
         self.editing = False
         self.switching_params = False
         self.last_config = None
 
         try:
-            self.run(config)
+            self.run(playback_config)
         except KeyboardInterrupt:
             pass
 

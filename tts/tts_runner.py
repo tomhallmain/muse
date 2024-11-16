@@ -38,7 +38,11 @@ class Chunker:
 
     @staticmethod
     def _clean(text):
-        return Chunker.cleaner.clean(text)
+        cleaned = Chunker.cleaner.clean(text)
+        if Chunker.count_tokens(cleaned) > 200 and cleaned.startswith("\"") and cleaned.endswith("\""):
+            # The sentence segmentation algorithm does not break on quotes even if they are long.
+            return cleaned[1:-1]
+        return cleaned
 
     @staticmethod
     def contains_alphanumeric(text):

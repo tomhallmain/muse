@@ -4,23 +4,15 @@ import os
 
 from library_data.audio_track import AudioTrack
 from library_data.composer import Composer
-from library_data.library_data import LibraryData
-from muse.playback_config import PlaybackConfig
-from muse.run_config import RunConfig
-from utils.config import config
+from library_data.library_data import LibraryData, get_playback_config
 
 libary_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)))
 configs_dir = os.path.join(os.path.dirname(libary_dir), 'configs')
 
-run_config = RunConfig()
-run_config.workflow_tag = "SEQUENCE"
-run_config.directories = list(config.get_subdirectories().keys())
-PlaybackConfig.load_directory_cache()
-
 class EntityExtractor:
     def __init__(self):
         self.libary_data = LibraryData()
-        self.playback_config = PlaybackConfig(run_config)
+        self.playback_config = get_playback_config()
         print(self.playback_config.type)
         self.known_entities_found = {}
 
@@ -38,7 +30,7 @@ class EntityExtractor:
             return found_match
 
         # Find the entities that match the audio track's title and artist
-        matches = self.libary_data.get_composers(audio_track)
+        matches = self.libary_data.composers.get_composers(audio_track)
 
         if len(matches) > 0:
             found_match = True
@@ -62,7 +54,7 @@ class EntityExtractor:
             if not self.extract(AudioTrack(song_filepath)):
                 tracks_with_no_matches.append(song_filepath)
 
-        entities_not_found = self.libary_data.get_composer_names()
+        entities_not_found = self.libary_data.composers.get_composer_names()
         files = os.listdir(os.path.join(libary_dir, "wiki"))
         not_found_files = []
 
