@@ -78,6 +78,7 @@ class AudioTrack:
         self.searchable_artist = None
         self.searchable_composer = None
         self.searchable_genre = None
+        self._is_extended = False
 
         if self.filepath is not None and self.filepath != "":
             self.basename = os.path.basename(filepath)
@@ -142,7 +143,9 @@ class AudioTrack:
             self.artist = self.clean_track_value(self.artist)
 
     def clean_track_value(self, track_value):
-        return re.sub(re.compile("([^_])_ "), "\\1: ", track_value) # Replacing colons in filepaths where they are not allowed
+        cleaned = re.sub(re.compile(" ?\\[[A-Za-z0-9_\\-]*\\]"), "", track_value)  # remove ID strings
+        cleaned = re.sub(re.compile("([^_])_ "), "\\1: ", track_value) # Replacing colons in filepaths where they are not allowed
+        return cleaned
 
     def readable_title(self):
         return AudioTrack._prep_track_text(self.title)
@@ -159,6 +162,9 @@ class AudioTrack:
         if not os.path.isfile(self.filepath):
             raise Exception("Could not find song file path: " + self.filepath)
         return False
+
+    def set_is_extended(self, is_extended=True):
+        self._is_extended = is_extended
 
     def set_track_index(self):
         # NOTE there may be some cases where the track index is actually a number in the title, need a better way to handle these

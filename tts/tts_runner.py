@@ -123,10 +123,22 @@ class TextToSpeechRunner:
 
     def clean(self):
         if len(self.used_audio_paths) > 0:
-            Utils.log("Cleaning used TTS audio files.")
-            for path in self.used_audio_paths:
-                os.remove(path)
+            def _clean(files_to_delete=[]):
+                Utils.log(f"Cleaning used TTS audio files")
+                fail_count = 0
+                while len(files_to_delete) > 0:
+                    if fail_count > 6:
+                        Utils.log_red("Failed to delete audio files: " + str(len(files_to_delete)))
+                        break
+                    try:
+                        os.remove(files_to_delete[0])
+                        files_to_delete = files_to_delete[1:]
+                    except Exception as e:
+                        print(e)
+                        fail_count += 1
+                        time.sleep(0.5)
 
+            Utils.start_thread(_clean, use_asyncio=False, args=[self.used_audio_paths[:]])
             self.used_audio_paths = []
 
     def set_output_path(self, filepath):

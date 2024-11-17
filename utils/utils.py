@@ -7,6 +7,7 @@ import os
 import shutil
 import sys
 import threading
+import time
 import unicodedata
 
 from utils.custom_formatter import CustomFormatter
@@ -24,6 +25,20 @@ logger.addHandler(ch)
 
 
 class Utils:
+    @staticmethod
+    def long_sleep(seconds=0, extra_message=None):
+        if seconds <= 0:
+            return
+        if seconds >= 60:
+            minutes  = math.floor(seconds / 60)
+            message = f"Sleeping for {minutes} minutes"
+        else:
+            message = f"Sleeping for {seconds} seconds"
+        if extra_message is not None:
+            message += f" - {extra_message}"
+        Utils.log(message)
+        time.sleep(seconds)
+
     @staticmethod
     def log(message, level=logging.INFO):
         logger.log(level, message)

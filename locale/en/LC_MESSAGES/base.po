@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2024-11-11 09:48-0500\n"
+"POT-Creation-Date: 2024-11-16 16:11-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Thomas Hall <tomhall.main@gmail.com>\n"
 "Language-Team: en Team <<EMAIL>>\n"
@@ -15,173 +15,223 @@ msgstr ""
 "Generated-By: pygettext.py 1.5\n"
 
 
-#: .\app.py:100 .\app.py:156
+#: .\app.py:105 .\app.py:167
 msgid "Muse"
 msgstr "Muse"
 
-#: .\app.py:104
+#: .\app.py:109
 msgid "Play"
 msgstr "Play"
 
-#: .\app.py:107
+#: .\app.py:112
 msgid "Next"
 msgstr "Next"
 
-#: .\app.py:110
+#: .\app.py:115
 msgid "Pause"
 msgstr "Pause"
 
-#: .\app.py:112
+#: .\app.py:118 .\ui\search_window.py:57 .\ui\search_window.py:143
+#: .\ui\search_window.py:172
+msgid "Search"
+msgstr "Search"
+
+#: .\app.py:120
 msgid "Stop"
 msgstr "Stop"
 
-#: .\app.py:113
+#: .\app.py:121
 msgid "Text"
 msgstr "Text"
 
-#: .\app.py:119
+#: .\app.py:127
 msgid "Workflow"
 msgstr "Workflow"
 
-#: .\app.py:126
+#: .\app.py:134
 msgid "Set Total"
 msgstr "Set Total"
 
-#: .\app.py:134
+#: .\app.py:143
 msgid "Delay Seconds"
 msgstr "Delay Seconds"
 
-#: .\app.py:140
+#: .\app.py:150
 msgid "Directory"
 msgstr "Directory"
 
-#: .\app.py:148
+#: .\app.py:159
 msgid "Overwrite"
 msgstr "Overwrite"
 
-#: .\app.py:152
+#: .\app.py:163
 msgid "Favorite"
 msgstr "Favorite"
 
-#: .\app.py:160
+#: .\app.py:171
 msgid "Volume"
 msgstr "Volume"
 
-#: .\app.py:217
+#: .\app.py:177 .\ui\track_details_window.py:30 .\ui\weather_window.py:25
+#: .\ui\weather_window.py:35 .\ui\weather_window.py:65
+msgid "Weather"
+msgstr "Weather"
+
+#: .\app.py:230
 msgid "Confirm Quit"
 msgstr "Confirm Quit"
 
-#: .\app.py:217
+#: .\app.py:230
 msgid "Would you like to quit the application?"
 msgstr "Would you like to quit the application?"
 
-#: .\app.py:326
+#: .\app.py:345
 msgid "Confirm Run"
 msgstr "Confirm Run"
 
-#: .\app.py:327
+#: .\app.py:346
 msgid "Are you sure you want to proceed?"
 msgstr "Are you sure you want to proceed?"
 
-#: .\app.py:428
+#: .\app.py:486
 msgid "Error"
 msgstr "Error"
 
-#: .\app.py:512
+#: .\app.py:570
 msgid " Muse "
 msgstr " Muse "
 
-#: .\muse\audio_track.py:131 .\muse\audio_track.py:132
+#: .\library_data\audio_track.py:220 .\library_data\audio_track.py:221
 msgid "Number \\1"
 msgstr " Number \\1"
 
-#: .\muse\audio_track.py:133
+#: .\library_data\audio_track.py:222
 msgid "\\1text to speech\\2"
 msgstr "\\1text to speech\\2"
 
-#: .\muse\muse.py:36
+#: .\library_data\audio_track.py:223
+msgid " Opus \\1"
+msgstr " Opus \\1"
+
+#: .\muse\muse.py:133
 msgid "That was \"{0}\" in \"{1}\""
 msgstr "That was \"{0}\" in \"{1}\""
 
-#: .\muse\muse.py:38 .\muse\muse.py:48
+#: .\muse\muse.py:135 .\muse\muse.py:152
 msgid " by \"{0}\"."
 msgstr " by \"{0}\"."
 
-#: .\muse\muse.py:44
+#: .\muse\muse.py:140
+msgid "That was a new track! How'd you like that?"
+msgstr "That was a new track! How'd you like that?"
+
+#: .\muse\muse.py:142
+msgid "That was a new one! How'd you like it?"
+msgstr "That was a new one! How'd you like it?"
+
+#: .\muse\muse.py:148
 msgid "To start, we'll be playing: \"{0}\" from \"{1}\""
 msgstr "To start, we'll be playing: \"{0}\" from \"{1}\""
 
-#: .\muse\muse.py:46
+#: .\muse\muse.py:150
 msgid "Next up, we'll be playing: \"{0}\" from \"{1}\""
 msgstr "Next up, we'll be playing: \"{0}\" from \"{1}\""
 
-#: .\muse\muse.py:83
+#: .\muse\muse.py:156
+msgid "This one is a new track."
+msgstr "This one is a new track."
+
+#: .\muse\muse.py:193
 msgid "First let's hear about {0}"
 msgstr "First let's hear about {0}"
 
-#: .\muse\muse.py:85
+#: .\muse\muse.py:195
 msgid "But first, let's hear about {0}."
 msgstr "But first, let's hear about {0}."
 
-#: .\muse\prompter.py:23
+#: .\muse\playback.py:182
+msgid "Sleeping for seconds"
+msgstr "Sleeping for seconds"
+
+#: .\muse\prompter.py:22
 msgid "weather"
 msgstr "weather"
 
-#: .\muse\prompter.py:25
+#: .\muse\prompter.py:24
 msgid "news"
 msgstr "news"
 
-#: .\muse\prompter.py:29
+#: .\muse\prompter.py:28
 msgid "joke"
 msgstr "joke"
 
-#: .\muse\prompter.py:31
+#: .\muse\prompter.py:30
 msgid "fact"
 msgstr "fact"
 
-#: .\muse\prompter.py:33
+#: .\muse\prompter.py:32
 msgid "fable"
 msgstr "fable"
 
-#: .\muse\prompter.py:35
+#: .\muse\prompter.py:34
 msgid "truth and lie"
 msgstr "truth and lie"
 
-#: .\muse\prompter.py:37
+#: .\muse\prompter.py:36
 msgid "aphorism"
 msgstr "aphorism"
 
-#: .\muse\prompter.py:39
+#: .\muse\prompter.py:38
 msgid "poem"
 msgstr "poem"
 
-#: .\muse\prompter.py:41
+#: .\muse\prompter.py:40
 msgid "quote"
 msgstr "quote"
 
-#: .\muse\prompter.py:43
+#: .\muse\prompter.py:42
 msgid "tongue twister"
 msgstr "tongue twister"
 
-#: .\muse\prompter.py:45
+#: .\muse\prompter.py:44
 msgid "motivation"
 msgstr "motivation"
 
-#: .\muse\prompter.py:47
+#: .\muse\prompter.py:46
 msgid "calendar"
 msgstr "calendar"
 
-#: .\muse\prompter.py:49
+#: .\muse\prompter.py:48
 msgid "more about the next track"
 msgstr "more about the next track"
 
-#: .\muse\prompter.py:51
+#: .\muse\prompter.py:50
 msgid "more about the last track"
 msgstr "more about the last track"
 
-#: .\muse\prompter.py:53
+#: .\muse\prompter.py:52
 msgid "random wiki article"
 msgstr "random wiki article"
+
+#: .\muse\prompter.py:54
+msgid "funny story"
+msgstr "funny story"
+
+#: .\ui\search_window.py:29
+msgid "Search Library"
+msgstr "Search Library"
+
+#: .\ui\search_window.py:135
+msgid "Details"
+msgstr "Details"
+
+#: .\ui\track_details_window.py:41 .\ui\weather_window.py:38
+msgid "Update"
+msgstr "Update"
+
+#: .\ui\track_details_window.py:85
+msgid "Track Details"
+msgstr "Track Details"
 
 #: .\utils\job_queue.py:33
 msgid " (Pending runs: {0})"

@@ -132,7 +132,7 @@ class SearchWindow:
             self.add_label(composer_label, track.composer, row=row, column=4)
             self.composer_list.append(composer_label)
 
-            open_details_btn = Button(self.results_frame.viewPort, text=_("Detaiols"))
+            open_details_btn = Button(self.results_frame.viewPort, text=_("Details"))
             self.open_details_btn_list.append(open_details_btn)
             open_details_btn.grid(row=row, column=5)
             def open_details_task_handler(event, self=self, audio_track=track):

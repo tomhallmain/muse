@@ -264,7 +264,4 @@ class ImslpSouper():
                 Utils.log_red(f"{url} - {e}")
 
 
-if __name__ == "__main__":
-    ImslpSouper.get_wiki_tables("https://en.wikipedia.org/wiki/List_of_compositions_by_George_Frideric_Handel")
-
 

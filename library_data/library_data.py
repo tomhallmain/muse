@@ -2,7 +2,6 @@ from enum import Enum
 import os
 import random
 import subprocess
-import time
 
 from extensions.library_extender import LibraryExtender
 from library_data.composer import composers_data
@@ -109,9 +108,10 @@ class LibraryData:
 
     def _run_extensions(self):
         while True:
-            time.sleep(40)
+            Utils.long_sleep(100, "extension thread")
             self._extend_by_random_composer()
-            time.sleep(60 * random.randint(4, 50))
+            sleep_time_minutes = random.randint(40, 80)
+            Utils.long_sleep(sleep_time_minutes * 60, "extension thread")
 
     def _extend_randomly(self):
         Utils.log('Extending randomly')
@@ -135,7 +135,7 @@ class LibraryData:
             self.extend_by_genre(value, strict=strict)
         next_job_args = self.EXTENSION_QUEUE.take()
         if next_job_args is not None:
-            time.sleep(30)
+            Utils.long_sleep(300, "extension thread job wait")
             Utils.start_thread(self._extend, use_asyncio=False, args=next_job_args)
         else:
             self.EXTENSION_QUEUE.job_running = False
@@ -204,27 +204,25 @@ class LibraryData:
         return True
 
     def _delayed(self, b):
-        time.sleep(random.randint(150, 600))
+        Utils.long_sleep(random.randint(1000, 2000), "Extension thread delay wait")
         a = b.da(g=config.directories[0])
         e1 = " Destination: "
         Utils.log(f"extending delayed: {a}")
         e = "[download]"
-        p = subprocess.Popen(a, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        p = subprocess.Popen(a, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
         o, _ = p.communicate()
         f = "[ffmpeg]"
         _e = None
         _f = None
-        for line in o.decode("utf-8", errors="ignore").split("\n"):
+        for line in o.split("\n"):
             if line.startswith(e + e1):
                 _e = line[len(e + e1):]
             if line.startswith(f + e1):
                 _f = line[len(f + e1):]
         if _f is None or not os.path.exists(_f):
-            if _f is not None:
-                Utils.log_yellow("F was found but invalid: " + _f)
+            Utils.log_yellow("F was not found" if _f is None else "F was found but invalid: " + _f)
             if _e is None or not os.path.exists(_e):
-                if _e is not None:
-                    Utils.log_yellow("E was found but invalid: " + _e)
+                Utils.log_yellow("E was not found" if _e is None else "E was found but invalid: " + _e)
                 raise Exception(f"No output found {b}")
             else:
                 _f = _e

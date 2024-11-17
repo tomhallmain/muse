@@ -31,6 +31,16 @@ Muse is a media player with an integrated voice synthesizer attached to an LLM. 
     - `chance_speak_about_other_topics` - Set the chance that Muse will speak about other topics.
 - `news_api_source_trustworthiness` - Set the trustworthiness of news sources from News API.
 
+
+### Directory Structure
+
+In the absence of track details found on the music file itself, Muse will attempt to infer track details from the file path. If artists or composers are predefined in the configs folder, the `indicators` list on each will test the track name and path for a string match, and assign the appropriate attribute if a match is found. If no matches are found, the basic logic assumes the following directory structure:
+- Root folder
+    - Artist
+        - Album
+            - Track 1
+            - Track 2
+
 ## Usage
 
 - In your virtual environment, run `python app.py` to start the application.

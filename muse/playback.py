@@ -160,7 +160,8 @@ class Playback:
         self.muse_spot_profiles.append(spot_profile)
         if delayed_prep:
             spot_profile.immediate = True
-            Utils.log("Delayed preparation.")
+            if not first_prep:
+                Utils.log("Delayed preparation.")
             self._run.muse.prepare(spot_profile)
         else:
             Utils.start_thread(self._run.muse.prepare, use_asyncio=False, args=(spot_profile,))

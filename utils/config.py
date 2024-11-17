@@ -4,6 +4,9 @@ import sys
 
 from utils.utils import Utils
 
+root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+configs_dir = os.path.join(root_dir, "configs")
+
 
 class Config:
     CONFIGS_DIR_LOC = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "configs")
@@ -36,6 +39,7 @@ class Config:
         self.coqui_tts_model = ("tts_models/multilingual/multi-dataset/xtts_v2", "Royston Min", "en")
         self.max_chunk_tokens = 200
 
+        self.enable_dynamic_volume = True
         self.enable_library_extender = False
 
         self.server_port = 6000
@@ -64,6 +68,8 @@ class Config:
         self.set_values(str,
             "foreground_color",
             "background_color",
+            "artists_file",
+            "composers_file",
             "open_weather_city",
             "open_weather_api_key",
             "news_api_key",
@@ -77,6 +83,7 @@ class Config:
             "coqui_tts_model",
         )
         self.set_values(bool,
+            "enable_dynamic_volume",
             "enable_library_extender"
         )
         self.set_values(dict,
@@ -126,7 +133,7 @@ class Config:
             if "{HOME}" in filepath:
                 filepath = filepath.strip().replace("{HOME}", os.path.expanduser("~"))
             elif not os.path.isfile(filepath):
-                try_path = os.path.join("configs", filepath)
+                try_path = os.path.join(configs_dir, filepath)
                 if os.path.isfile(try_path):
                     filepath = try_path
             if not os.path.isfile(filepath):
@@ -180,5 +187,7 @@ class Config:
             except Exception:
                 pass
         return subdirectories
+
+
 
 config = Config()

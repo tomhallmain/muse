@@ -26,8 +26,8 @@ class MuseSpotProfile:
     def __init__(self, previous_track, track, last_track_failed, skip_track):
         self.previous_track = previous_track
         self.track = track
-        self.speak_about_prior_track = previous_track is not None and random.random() < self.chance_speak_after_track
-        self.speak_about_upcoming_track = random.random() < self.chance_speak_before_track
+        self.speak_about_prior_track = previous_track is not None and (previous_track._is_extended or random.random() < self.chance_speak_after_track)
+        self.speak_about_upcoming_track = track._is_extended or random.random() < self.chance_speak_before_track
         self.talk_about_something = random.random() < self.chance_speak_about_other_topics
         self.has_already_spoken = False
         self.last_track_failed = last_track_failed
@@ -135,6 +135,11 @@ class Muse:
             dj_remark += _(" by \"{0}\".").format(previous_track.readable_artist())
         else:
             dj_remark += "."
+        if previous_track._is_extended and random.random() < 0.8:
+            if random.random() < 0.5:
+                dj_remark +=  " " + _("That was a new track! How'd you like that?")
+            else:
+                dj_remark = _("That was a new one! How'd you like it?") + " " + dj_remark
         self.say(dj_remark, spot_profile)
 
     def speak_about_upcoming_track(self, spot_profile):
@@ -147,6 +152,8 @@ class Muse:
             dj_remark += _(" by \"{0}\".").format(track.readable_artist())
         else:
             dj_remark += "."
+        if track._is_extended and random.random() < 0.8:
+            dj_remark += " " + _("This one is a new track!")
         self.say(dj_remark, spot_profile)
 
     def get_topic(self, previous_track, excluded_topics=[]):

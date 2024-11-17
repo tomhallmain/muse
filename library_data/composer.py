@@ -3,7 +3,7 @@ import json
 import os
 
 from library_data.work import Work
-
+from utils.config import config
 
 
 class Composer:
@@ -28,8 +28,6 @@ class Composer:
 
 
 
-libary_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)))
-configs_dir = os.path.join(os.path.dirname(libary_dir), 'configs')
 
 
 class ComposersData:
@@ -38,7 +36,7 @@ class ComposersData:
         self._get_composers()
 
     def _get_composers(self):
-        with open(os.path.join(configs_dir,'composers_dict.json'), 'r', encoding="utf-8") as f:
+        with open(config.composers_file, 'r', encoding="utf-8") as f:
             composers = json.load(f)
         for name, composer in composers.items():
             self._composers[name] = Composer.from_json(composer)

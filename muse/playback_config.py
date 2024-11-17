@@ -78,6 +78,7 @@ class PlaybackConfig:
     def next_track(self):
         if self.next_track_override is not None:
             next_track = AudioTrack(self.next_track_override)
+            next_track.set_is_extended()
             self.next_track_override = None
             PlaybackConfig.READY_FOR_EXTENSION = True
             return next_track
@@ -89,7 +90,9 @@ class PlaybackConfig:
 
     def upcoming_track(self):
         if self.next_track_override is not None:
-            return AudioTrack(self.next_track_override)
+            upcoming_track = AudioTrack(self.next_track_override)
+            upcoming_track.set_is_extended()
+            return upcoming_track
         l = self.get_list()
         if len(l) == 0 or self.current_song_index >= len(l):
             return None
