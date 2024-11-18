@@ -1,14 +1,14 @@
-# APPLICATION TRANSLATIONS
+# SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR ORGANIZATION
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2024-11-16 16:11-0500\n"
+"POT-Creation-Date: 2024-11-18 11:17-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Thomas Hall <tomhall.main@gmail.com>\n"
-"Language-Team: de Team <<EMAIL>>\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=cp1252\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -17,97 +17,97 @@ msgstr ""
 
 #: .\app.py:105 .\app.py:167
 msgid "Muse"
-msgstr "Muse"
+msgstr "Musa"
 
 #: .\app.py:109
 msgid "Play"
-msgstr "Spiel"
+msgstr "Jugar"
 
 #: .\app.py:112
 msgid "Next"
-msgstr "Weiter"
+msgstr "Siguiente"
 
 #: .\app.py:115
 msgid "Pause"
-msgstr "Pause"
+msgstr "Pausa"
 
 #: .\app.py:118 .\ui\search_window.py:57 .\ui\search_window.py:143
 #: .\ui\search_window.py:172
 msgid "Search"
-msgstr "Suche"
+msgstr "Buscar"
 
 #: .\app.py:120
 msgid "Stop"
-msgstr "Stopp"
+msgstr "Para"
 
 #: .\app.py:121
 msgid "Text"
-msgstr "Text"
+msgstr "Texto"
 
 #: .\app.py:127
 msgid "Workflow"
-msgstr "Arbeitsablauf"
+msgstr "Flujo de trabajo"
 
 #: .\app.py:134
 msgid "Set Total"
-msgstr "Satz Gesamt"
+msgstr "Total"
 
 #: .\app.py:143
 msgid "Delay Seconds"
-msgstr "Verz\u00f6gerung Sekunden"
+msgstr "Segundos de retraso"
 
 #: .\app.py:150
 msgid "Directory"
-msgstr "Verzeichnis"
+msgstr "Directorio"
 
 #: .\app.py:159
 msgid "Overwrite"
-msgstr "\u00dcberschreiben Sie"
+msgstr "Sobrescribir"
 
 #: .\app.py:163
 msgid "Favorite"
-msgstr "Favorit"
+msgstr "Favoritos"
 
 #: .\app.py:171
 msgid "Volume"
-msgstr "Band"
+msgstr "Volumen"
 
 #: .\app.py:177 .\ui\track_details_window.py:30 .\ui\weather_window.py:25
 #: .\ui\weather_window.py:35 .\ui\weather_window.py:65
 msgid "Weather"
-msgstr "Wetter"
+msgstr "Tiempo"
 
 #: .\app.py:230
 msgid "Confirm Quit"
-msgstr "Beenden best\u00e4tigen"
+msgstr "Confirmar Salir"
 
 #: .\app.py:230
 msgid "Would you like to quit the application?"
-msgstr "M\u00f6chten Sie die Anwendung beenden?"
+msgstr "\u00bfDesea abandonar la aplicaci\u00f3n?"
 
 #: .\app.py:345
 msgid "Confirm Run"
-msgstr "Lauf best\u00e4tigen"
+msgstr "Confirmar ejecuci\u00f3n"
 
 #: .\app.py:346
 msgid "Are you sure you want to proceed?"
-msgstr "Sind Sie sicher, dass Sie fortfahren wollen?"
+msgstr "\u00bfEst\u00e1s seguro de que quieres continuar?"
 
 #: .\app.py:486
 msgid "Error"
-msgstr "Fehler"
+msgstr "Error"
 
 #: .\app.py:570
 msgid " Muse "
-msgstr " Muse "
+msgstr " Musa "
 
 #: .\library_data\audio_track.py:220 .\library_data\audio_track.py:221
 msgid "Number \\1"
-msgstr " Zahl \\1"
+msgstr "Nombre \\1"
 
 #: .\library_data\audio_track.py:222
 msgid "\\1text to speech\\2"
-msgstr "\\1Text-in-Sprache\\2"
+msgstr "\\1texto a voz\\2"
 
 #: .\library_data\audio_track.py:223
 msgid " Opus \\1"
@@ -115,125 +115,125 @@ msgstr " Opus \\1"
 
 #: .\muse\muse.py:133
 msgid "That was \"{0}\" in \"{1}\""
-msgstr "Das war \u201e{0}\u201c aus \u201e{1}\u201c"
+msgstr "Eso fue \u00ab{0}\u00bb en \u00ab{1}\u00bb"
 
 #: .\muse\muse.py:135 .\muse\muse.py:152
 msgid " by \"{0}\"."
-msgstr " von \u201e{0}\u201c."
+msgstr " por \u00ab{2}\u00bb."
 
 #: .\muse\muse.py:140
 msgid "That was a new track. How'd you like that?"
-msgstr "Das war ein neuer Track. Wie hat dir das gefallen?"
+msgstr "Era un tema nuevo. \u00bfQu\u00e9 te pareci\u00f3?"
 
 #: .\muse\muse.py:142
 msgid "That was a new one. How'd you like it?"
-msgstr "Das war eine Neuheit. Wie hat es dir gefallen?"
+msgstr "Ese era nuevo. \u00bfTe gust\u00f3?"
 
 #: .\muse\muse.py:148
 msgid "To start, we'll be playing: \"{0}\" from \"{1}\""
-msgstr "Zu Beginn spielen wir \u201e{0}\u201c aus \u201e{1}\u201c"
+msgstr "Para empezar, vamos a jugar: \u00ab{0}\u00bb de \u00ab{1}\u00bb"
 
 #: .\muse\muse.py:150
 msgid "Next up, we'll be playing: \"{0}\" from \"{1}\""
-msgstr "Als N\u00e4chstes spielen wir \u201e{0}\u201c aus \u201e{1}\u201c"
+msgstr "A continuaci\u00f3n, vamos a jugar: \u00ab{0}\u00bb de \u00ab{1}\u00bb"
 
 #: .\muse\muse.py:156
 msgid "This one is a new track."
-msgstr "Dies ist ein neuer Titel."
+msgstr "Este es un tema nuevo."
 
 #: .\muse\muse.py:193
 msgid "First let's hear about {0}"
-msgstr "Zun\u00e4chst zum Thema \u201e{0}\u201c."
+msgstr "Primero oigamos hablar de {0}"
 
 #: .\muse\muse.py:195
 msgid "But first, let's hear about {0}."
-msgstr "Doch zun\u00e4chst zum Thema \u201e{0}\u201c."
+msgstr "Pero primero, oigamos hablar de {0}"
 
-#: .\muse\playback.py:182
+#: .\muse\playback.py:183
 msgid "Sleeping for seconds"
-msgstr "Schlafen f\u00fcr Sekunden"
+msgstr "Dormir segundos"
 
 #: .\muse\prompter.py:22
 msgid "weather"
-msgstr "Wetter"
+msgstr "tiempo"
 
 #: .\muse\prompter.py:24
 msgid "news"
-msgstr "Nachrichten"
+msgstr "noticias"
 
 #: .\muse\prompter.py:28
 msgid "joke"
-msgstr "Scherz"
+msgstr "broma"
 
 #: .\muse\prompter.py:30
 msgid "fact"
-msgstr "Tatsache"
+msgstr "hecho"
 
 #: .\muse\prompter.py:32
 msgid "fable"
-msgstr "Fabel"
+msgstr "f\u00e1bula"
 
 #: .\muse\prompter.py:34
 msgid "truth and lie"
-msgstr "Wahrheit und L\u00fcge"
+msgstr "verdad y mentira"
 
 #: .\muse\prompter.py:36
 msgid "aphorism"
-msgstr "Aphorismus"
+msgstr "aforismo"
 
 #: .\muse\prompter.py:38
 msgid "poem"
-msgstr "Gedicht"
+msgstr "poema"
 
 #: .\muse\prompter.py:40
 msgid "quote"
-msgstr "Zitat"
+msgstr "cita"
 
 #: .\muse\prompter.py:42
 msgid "tongue twister"
-msgstr "Zungenbrecher"
+msgstr "trabalenguas"
 
 #: .\muse\prompter.py:44
 msgid "motivation"
-msgstr "Motivation"
+msgstr "motivaci\u00f3n"
 
 #: .\muse\prompter.py:46
 msgid "calendar"
-msgstr "Kalender"
+msgstr "calendario"
 
 #: .\muse\prompter.py:48
 msgid "more about the next track"
-msgstr "mehr \u00fcber den n\u00e4chsten Track"
+msgstr "m\u00e1s sobre el pr\u00f3ximo tema"
 
 #: .\muse\prompter.py:50
 msgid "more about the last track"
-msgstr "mehr \u00fcber den letzten Track"
+msgstr "m\u00e1s sobre el \u00faltimo tema"
 
 #: .\muse\prompter.py:52
 msgid "random wiki article"
-msgstr "zuf\u00e4lliger Wiki-Artikel"
+msgstr "art\u00edculo wiki al azar"
 
 #: .\muse\prompter.py:54
 msgid "funny story"
-msgstr "lustige Geschichte"
+msgstr "historia divertida"
 
 #: .\ui\search_window.py:29
 msgid "Search Library"
-msgstr "Bibliothek durchsuchen"
+msgstr "Buscar en la biblioteca"
 
 #: .\ui\search_window.py:135
 msgid "Details"
-msgstr "Einzelheiten"
+msgstr "Detalles"
 
 #: .\ui\track_details_window.py:41 .\ui\weather_window.py:38
 msgid "Update"
-msgstr "Aktualisierung"
+msgstr "Actualizar"
 
 #: .\ui\track_details_window.py:85
 msgid "Track Details"
-msgstr "Details zur Strecke"
+msgstr "Detalles de la pista"
 
-#: .\utils\job_queue.py:33
+#: .\utils\job_queue.py:35
 msgid " (Pending runs: {0})"
-msgstr " (Ausstehende L\u00e4ufe: {0})"
+msgstr " (Ejecuciones pendientes: {0})"
 

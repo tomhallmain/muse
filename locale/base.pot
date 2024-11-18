@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2024-11-16 16:11-0500\n"
+"POT-Creation-Date: 2024-11-18 11:17-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -149,7 +149,7 @@ msgstr ""
 msgid "But first, let's hear about {0}."
 msgstr ""
 
-#: .\muse\playback.py:182
+#: .\muse\playback.py:183
 msgid "Sleeping for seconds"
 msgstr ""
 
@@ -233,7 +233,7 @@ msgstr ""
 msgid "Track Details"
 msgstr ""
 
-#: .\utils\job_queue.py:33
+#: .\utils\job_queue.py:35
 msgid " (Pending runs: {0})"
 msgstr ""
 

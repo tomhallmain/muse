@@ -134,7 +134,7 @@ class TextToSpeechRunner:
                         os.remove(files_to_delete[0])
                         files_to_delete = files_to_delete[1:]
                     except Exception as e:
-                        print(e)
+                        Utils.log_red(e)
                         fail_count += 1
                         time.sleep(0.5)
 
@@ -162,7 +162,7 @@ class TextToSpeechRunner:
         output_path1, output_path_no_unicode = self.get_output_path_no_unicode()
         final_output_path_mp3 = self.get_output_path_mp3(output_path1)
         final_output_path_mp3 = final_output_path_mp3[:-4] + " - TTS.mp3"
-        if os.path.exists(final_output_path_mp3):
+        if os.path.exists(final_output_path_mp3) and not self.overwrite:
             Utils.log("Using existing generation file: " + final_output_path_mp3)
             return
         Utils.log("Generating speech file: " + output_path)
@@ -276,7 +276,7 @@ class TextToSpeechRunner:
         for i in range(len(self.audio_paths)):
             f = self.audio_paths[i]
             args.append(f.replace("\\", "/"))
-            print(f"File {f} was found: {os.path.exists(f)}")
+            Utils.log(f"File {f} was found: {os.path.exists(f)}")
             if i < len(self.audio_paths) - 1:
                 args.append(silence_file.replace("\\", "/"))
         args.append(output_path_no_unicode.replace("\\", "/"))

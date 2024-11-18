@@ -321,7 +321,7 @@ class WikiSouper():
                         break
                 if not link_disallowed:
                     item_links.append(BASE_URL + link2)
-                    print(link2)
+                    Utils.log(link2)
         Utils.log("Total links: " + str(len(item_links)))
         return item_title, item_links
 

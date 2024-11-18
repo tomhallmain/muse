@@ -5,6 +5,7 @@ import os
 from library_data.audio_track import AudioTrack
 from library_data.composer import Composer
 from library_data.library_data import LibraryData, get_playback_config
+from utils.utils import Utils
 
 libary_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)))
 configs_dir = os.path.join(os.path.dirname(libary_dir), 'configs')
@@ -13,7 +14,7 @@ class EntityExtractor:
     def __init__(self):
         self.libary_data = LibraryData()
         self.playback_config = get_playback_config()
-        print(self.playback_config.type)
+        Utils.log(self.playback_config.type)
         self.known_entities_found = {}
 
     def extract(self, audio_track):
@@ -38,10 +39,10 @@ class EntityExtractor:
                 if match not in self.known_entities_found:
                     self.known_entities_found[match] = []
                 self.known_entities_found[match].append(audio_track)
-            # print(audio_track.filepath)
-            # print("Found matches: {}".format(matches))
+            # Utils.log(audio_track.filepath)
+            # Utils.log("Found matches: {}".format(matches))
         else:
-            print(audio_track.album + " - " + audio_track.title + " - No matches found")
+            Utils.log(audio_track.album + " - " + audio_track.title + " - No matches found")
 
         return found_match
 
@@ -58,33 +59,33 @@ class EntityExtractor:
         files = os.listdir(os.path.join(libary_dir, "wiki"))
         not_found_files = []
 
-        print("\n\n-------------------------------------------------------------------------------\n\nFound entities:\n")
+        Utils.log("\n\n-------------------------------------------------------------------------------\n\nFound entities:\n")
         for entity in sorted(self.known_entities_found):
-            print(entity + " - " + str(len(self.known_entities_found[entity])))
+            Utils.log(entity + " - " + str(len(self.known_entities_found[entity])))
             found_file = False
             for f in files:
                 if entity in f:
-                    print("  - " + os.path.basename(f))
+                    Utils.log("  - " + os.path.basename(f))
                     found_file = True
                     break
             if not found_file:
                 not_found_files.append(entity)
             entities_not_found.remove(entity)
 
-        print("\n\n-------------------------------------------------------------------------------\n\nEntities not found:\n")
+        Utils.log("\n\n-------------------------------------------------------------------------------\n\nEntities not found:\n")
 
         for entity in sorted(entities_not_found):
-            print(entity)
+            Utils.log(entity)
             found_file = False
             for f in files:
                 if entity in f:
-                    print("  - " + os.path.basename(f))
+                    Utils.log("  - " + os.path.basename(f))
                     found_file = True
                     break
             if not found_file:
                 not_found_files.append(entity)
 
-        print("\n\n-------------------------------------------------------------------------------\n\nEntities not found in files:\n")
+        Utils.log("\n\n-------------------------------------------------------------------------------\n\nEntities not found in files:\n")
 
         print("[")
         for entity in sorted(not_found_files):

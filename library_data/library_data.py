@@ -175,7 +175,7 @@ class LibraryData:
             counter = 0
             failed = False
             for i in a:
-                print(i.name + " " + i.x())
+                Utils.log("Extension option: " + i.name + " " + i.x())
             while b is None or b.y or (strict and self._strict_test(b, attr, strict)):
                 counter += 1
                 b = random.choice(a)
@@ -187,6 +187,7 @@ class LibraryData:
                     raise Exception(f"Unable to find valid results: {q}")
                 self._simple(q, m=m*2, depth=depth+1)
                 return
+            Utils.log("Selected option: " + b.name + " " + b.x())
             Utils.start_thread(self._delayed, use_asyncio=False, args=(b,))
         else:
             if r is None:

@@ -86,7 +86,7 @@ class r4yiurhfxohzepo:
         try:
             self.j.append(EogfiaqREkb(e))
         except Exception as e:
-            print(e)
+            Utils.log_red(e)
 
     def i(self):
         return len(self.j) > 0
@@ -122,9 +122,9 @@ class LibraryExtender():
             for a in q17[q18]:
                 r.t(a)
         else:
-            print("No results found.")
-            print(q18)
-            print(q17.keys())
+            Utils.log_yellow("No results found.")
+            Utils.log_yellow(q18)
+            Utils.log_yellow(q17.keys())
         return r
 
     @staticmethod

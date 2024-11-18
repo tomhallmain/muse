@@ -1,4 +1,6 @@
 
+from utils.utils import Utils
+
 class JobQueue:
     def __init__(self, name="JobQueue", max_size=50):
         self.name = name
@@ -20,7 +22,7 @@ class JobQueue:
         if len(self.pending_jobs) > self.max_size:
             raise Exception(f"Reached limit of pending runs: {self.max_size} - wait until current run has completed.")
         self.pending_jobs.append(job_args)
-        print(f"JobQueue {self.name} - Added pending job: {job_args}")
+        Utils.log(f"JobQueue {self.name} - Added pending job: {job_args}")
 
     def cancel(self):
         self.pending_jobs = []
