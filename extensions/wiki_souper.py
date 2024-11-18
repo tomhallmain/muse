@@ -8,6 +8,9 @@ from extensions.soup_utils import SoupUtils
 from utils.utils import Utils
 
 
+BASE_URL = "https://en.wikipedia.org"
+WIKI = "/wiki/"
+
 def clean_wiki_text(text):
     if text is None or type(text) != str:
         return text
@@ -15,6 +18,9 @@ def clean_wiki_text(text):
     if text.endswith(']') and "[" in text:
         text = text[:text.index("[")]
     return SoupUtils.clean_html(text)
+
+def get_wiki_link_title(link_text):
+    return clean_wiki_text(link_text.replace(BASE_URL + WIKI, "").replace("_", " "))
 
 
 class WikiTable():
@@ -98,7 +104,7 @@ class WikiCompilationData:
 
     def __init__(self, url, has_tables):
         self._url = url
-        self._name = clean_wiki_text(url.replace("https://en.wikipedia.org/wiki/", "").replace("_", " "))
+        self._name = get_wiki_link_title(url)
         self._sections = []
         self._has_tables = has_tables
 
@@ -136,6 +142,43 @@ class WikiCompilationData:
 
 
 class WikiSouper():
+    disallowed_links = [
+        "Category:",
+        "Category_talk:",
+        "File:",
+        "Help:",
+        "Main_Page",
+        "MediaWiki:",
+        "Portal:",
+        "Special:",
+        "Talk:",
+        "Template:",
+        "User:",
+        "Wikipedia:",
+    ]
+    centuries = [
+        "1st",
+        "2nd",
+        "3rd",
+        "4th",
+        "5th",
+        "6th",
+        "7th",
+        "8th",
+        "9th",
+        "10th",
+        "11th",
+        "12th",
+        "13th",
+        "14th",
+        "15th",
+        "16th",
+        "17th",
+        "18th",
+        "19th",
+        "20th",
+        "21st",
+    ]
 
     @staticmethod
     def get_wiki_main_content(soup):
@@ -259,6 +302,69 @@ class WikiSouper():
             Utils.log_red("Failed urls: ")
             for url, e in failed_urls:
                 Utils.log_red(f"{url} - {e}")
+
+    @staticmethod
+    def get_category_tree_item_links(category_item_link, container_obj):
+        item_title = get_wiki_link_title(category_item_link)
+        if container_obj is not None and item_title in container_obj:
+            return None, None
+        Utils.log("Container category item: " + item_title)
+        item_links = []
+        item_soup = SoupUtils.get_soup(category_item_link)
+        links = SoupUtils.get_links(item_soup)
+        for link2 in links:
+            if link2.startswith(WIKI):
+                link_disallowed = False
+                for disallowed in WikiSouper.disallowed_links:
+                    if WIKI + disallowed in link2:
+                        link_disallowed = True
+                        break
+                if not link_disallowed:
+                    item_links.append(BASE_URL + link2)
+                    print(link2)
+        Utils.log("Total links: " + str(len(item_links)))
+        return item_title, item_links
+
+    @staticmethod
+    def grab_links_for_century_category(links, string, centuries=centuries):
+        for mod in centuries:
+            links.append(f"https://en.wikipedia.org/wiki/Category:{mod}-century_{string}")
+
+
+    @staticmethod
+    def combine_category_tree_item_links(container_obj, links=[]):
+        for link in links:
+            try:
+                title, links = WikiSouper.get_category_tree_item_links(link, container_obj)
+                if links is not None:
+                    container_obj[title] = links
+                    Utils.log(f"Added links: {title}")
+                else:
+                    Utils.log(f"Empty link: {link}")
+            except Exception as e:
+                Utils.log_yellow(f"Failed to download from url: {link}")
+
+
+    @staticmethod
+    def get_wiki_links_container_category(link_template, modifiers=[]):
+        out_obj = {}
+
+        for modifier in modifiers:
+            link = link_template.replace("{0}", modifier)
+            title = get_wiki_link_title(link)
+            Utils.log("Container category: " + title)
+            container = {}
+            out_obj[title] = container
+            soup = SoupUtils.get_soup(link)
+            category_tree_items = SoupUtils.get_elements(class_path=[["tag", "div"], ["class", "CategoryTreeItem"]], parent=soup)
+            for item in category_tree_items:
+                for link1 in SoupUtils.get_links(item):
+                    item_link = BASE_URL + link1
+                    item_title, links = WikiSouper.get_category_tree_item_links(item_link, container)
+                    if links is not None:
+                        container[item_title] = links
+
+        return out_obj
 
 
 if __name__ == "__main__":

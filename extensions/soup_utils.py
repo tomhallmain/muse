@@ -83,3 +83,11 @@ class SoupUtils:
     def get_table_data(table_el):
         return pd.read_html(io.StringIO(str(table_el)))[0]
 
+    @staticmethod
+    def get_links(soup):
+        links  = []
+        for link in soup.find_all('a'):
+            if 'href' in link.attrs:
+                links.append(link['href'])
+        return links
+

@@ -137,9 +137,9 @@ class Muse:
             dj_remark += "."
         if previous_track._is_extended and random.random() < 0.8:
             if random.random() < 0.5:
-                dj_remark +=  " " + _("That was a new track! How'd you like that?")
+                dj_remark +=  " " + _("That was a new track. How'd you like that?")
             else:
-                dj_remark = _("That was a new one! How'd you like it?") + " " + dj_remark
+                dj_remark = _("That was a new one. How'd you like it?") + " " + dj_remark
         self.say(dj_remark, spot_profile)
 
     def speak_about_upcoming_track(self, spot_profile):
@@ -153,7 +153,7 @@ class Muse:
         else:
             dj_remark += "."
         if track._is_extended and random.random() < 0.8:
-            dj_remark += " " + _("This one is a new track!")
+            dj_remark += " " + _("This one is a new track.")
         self.say(dj_remark, spot_profile)
 
     def get_topic(self, previous_track, excluded_topics=[]):

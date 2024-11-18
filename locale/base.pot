@@ -122,11 +122,11 @@ msgid " by \"{0}\"."
 msgstr ""
 
 #: .\muse\muse.py:140
-msgid "That was a new track! How'd you like that?"
+msgid "That was a new track. How'd you like that?"
 msgstr ""
 
 #: .\muse\muse.py:142
-msgid "That was a new one! How'd you like it?"
+msgid "That was a new one. How'd you like it?"
 msgstr ""
 
 #: .\muse\muse.py:148

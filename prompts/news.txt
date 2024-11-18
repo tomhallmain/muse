@@ -6,6 +6,8 @@ Even if it was provided in the context given, IGNORE and don't bring up any news
 have a high chance of being propaganda:
 - Electoral or government-specific news
 - Political parties
+- Vaccines or pandemics
+- Climate change
 - Celebrities or TV shows
 - Sports teams
 - World news outide of the Anglo-Germanic sphere (e.g. United Kingdom, Germany, United States, Australia, Canada, Austria, Switzerland)

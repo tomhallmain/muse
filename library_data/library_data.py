@@ -107,8 +107,8 @@ class LibraryData:
         Utils.start_thread(self._run_extensions, use_asyncio=False)
 
     def _run_extensions(self):
+        Utils.long_sleep(random.randint(200, 1200), "extension thread")
         while True:
-            Utils.long_sleep(100, "extension thread")
             self._extend_by_random_composer()
             sleep_time_minutes = random.randint(40, 80)
             Utils.long_sleep(sleep_time_minutes * 60, "extension thread")

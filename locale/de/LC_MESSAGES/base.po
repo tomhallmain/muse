@@ -123,11 +123,11 @@ msgstr " von \u201e{0}\u201c."
 
 #: .\muse\muse.py:140
 msgid "That was a new track! How'd you like that?"
-msgstr "Das war ein neuer Track! Wie hat dir das gefallen?"
+msgstr "Das war ein neuer Track. Wie hat dir das gefallen?"
 
 #: .\muse\muse.py:142
 msgid "That was a new one! How'd you like it?"
-msgstr "Das war eine Neuheit! Wie hat es dir gefallen?"
+msgstr "Das war eine Neuheit. Wie hat es dir gefallen?"
 
 #: .\muse\muse.py:148
 msgid "To start, we'll be playing: \"{0}\" from \"{1}\""
