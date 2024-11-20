@@ -10,10 +10,11 @@ from muse.run_config import RunConfig
 from utils.config import config
 from utils.job_queue import JobQueue
 from utils.utils import Utils
+from utils.translations import I18N
 
+_ = I18N._
 
 libary_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)))
-configs_dir = os.path.join(os.path.dirname(libary_dir), 'configs')
 
 
 
@@ -81,12 +82,15 @@ class TrackAttribute(Enum):
 
 
 class LibraryData:
+    extension_thread_started = False
     EXTENSION_QUEUE = JobQueue("Extension queue")
+    DELAYED_THREADS = []
 
-    def __init__(self):
+    def __init__(self, callbacks=None):
         self.playback_config = get_playback_config()
         self.audio_track_cache = self.playback_config.get_audio_track_list()
         self.composers = composers_data
+        self.callbacks = callbacks
 
     def do_search(self, library_data_search):
         if not isinstance(library_data_search, LibraryDataSearch):
@@ -101,13 +105,42 @@ class LibraryData:
 
         return library_data_search
 
+    def resolve_track(self, audio_track):
+        # Find any highly similar tracks in the library to this track.
+        pass
 
-    def start_extensions_thread(self):
+    def start_extensions_thread(self, initial_sleep=True):
+        if LibraryData.extension_thread_started:
+            return
         Utils.log('Starting extensions thread')
-        Utils.start_thread(self._run_extensions, use_asyncio=False)
+        Utils.start_thread(self._run_extensions, use_asyncio=False, args=(initial_sleep,))
+        LibraryData.extension_thread_started = True
 
-    def _run_extensions(self):
-        Utils.long_sleep(random.randint(200, 1200), "extension thread")
+    def reset_extension(self):
+        LibraryData.EXTENSION_QUEUE.cancel()
+        closed_one_thread = False
+        for thread in LibraryData.DELAYED_THREADS:
+            thread.terminate()
+            thread.join()
+            closed_one_thread = True
+
+        LibraryData.DELAYED_THREADS = []
+        LibraryData.extension_thread_started = False
+        if closed_one_thread:
+            Utils.log("Reset extension thread.")
+        self.start_extensions_thread()
+
+    def _run_extensions(self, initial_sleep=True):
+        if initial_sleep:
+            time_seconds = random.randint(200, 1200)
+            check_cadence = 150
+            while time_seconds > 0:
+                time_seconds -= check_cadence
+                if time_seconds <= 0:
+                    break
+                if self.callbacks is not None:
+                    self.callbacks.update_extension_status(_("Extension thread waiting for {0} minutes").format(round(float(time_seconds) / 60)))
+                Utils.long_sleep(check_cadence, "extension thread")
         while True:
             self._extend_by_random_composer()
             sleep_time_minutes = random.randint(40, 80)
@@ -187,7 +220,7 @@ class LibraryData:
                     raise Exception(f"Unable to find valid results: {q}")
                 self._simple(q, m=m*2, depth=depth+1)
                 return
-            Utils.log("Selected option: " + b.name + " " + b.x())
+            Utils.log_yellow("Selected option: " + b.name + " " + b.x())
             Utils.start_thread(self._delayed, use_asyncio=False, args=(b,))
         else:
             if r is None:
@@ -204,14 +237,26 @@ class LibraryData:
                     return False
         return True
 
+    def delayed(self, b):
+        thread = Utils.start_thread(self._delayed, use_asyncio=False, args=(b,))
+        LibraryData.DELAYED_THREADS.append(thread)
+
     def _delayed(self, b):
-        Utils.long_sleep(random.randint(1000, 2000), "Extension thread delay wait")
+        time_seconds = random.randint(1000, 2000)
+        check_cadence = 150
+        while time_seconds > 0:
+            time_seconds -= check_cadence
+            if time_seconds <= 0:
+                break
+            if self.callbacks is not None:
+                self.callbacks.update_extension_status(_("Extension \"{0}\" waiting for {1} minutes").format(b.name, round(float(time_seconds) / 60)))
+            Utils.long_sleep(check_cadence, "Extension thread delay wait")
         a = b.da(g=config.directories[0])
         e1 = " Destination: "
-        Utils.log(f"extending delayed: {a}")
+        Utils.log_yellow(f"extending delayed: {a}")
         e = "[download]"
         p = subprocess.Popen(a, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-        o, _ = p.communicate()
+        o, __ = p.communicate()
         f = "[ffmpeg]"
         _e = None
         _f = None
@@ -227,7 +272,7 @@ class LibraryData:
                 raise Exception(f"No output found {b}")
             else:
                 _f = _e
-        PlaybackConfig.force_extension(_f)
+        PlaybackConfig.assign_extension(_f)
 
     def s(self, q, x=1):
         Utils.log(f"s: {q}")

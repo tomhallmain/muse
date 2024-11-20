@@ -8,7 +8,6 @@ from library_data.library_data import LibraryData, get_playback_config
 from utils.utils import Utils
 
 libary_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)))
-configs_dir = os.path.join(os.path.dirname(libary_dir), 'configs')
 
 class EntityExtractor:
     def __init__(self):

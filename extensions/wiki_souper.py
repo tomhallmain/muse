@@ -40,6 +40,30 @@ class WikiTable():
     def has_data(self):
         return len(self.df) != 0
 
+    def get_rows(self):
+        return self.df.values.tolist()
+    
+    def get_single_line_row_value(self, row=0, col=1):
+        return self.df.iat[row, col]
+
+    def is_invalid_table(self):
+        rows = self.get_rows()
+        if len(rows) == 0:
+            return True
+        first_row = rows[0]
+        if len(first_row) > 1:
+            maybe_header_table_value = first_row[1]
+            if maybe_header_table_value is not None and type(maybe_header_table_value) == str:
+                if maybe_header_table_value.startswith("This section"):
+                    return True
+                if maybe_header_table_value.startswith("This article"):
+                    return True
+                if maybe_header_table_value.startswith("You can help"):
+                    return True
+                if maybe_header_table_value.startswith("This list is manually maintained"):
+                    return True
+        return False
+
     @staticmethod
     def from_json(json):
         return pd.read_json(io.StringIO(json))
@@ -80,6 +104,24 @@ class WikiSection():
                 return True
         return False
 
+    def is_valid(self):
+        return self._header and len(self._header) > 0 and self._header not in ["See also"]
+
+    def verify_cleanliness(self):
+        cleanliness_types = set()
+        for table in self._tables:
+            if table.is_invalid_table():
+                # Utils.log(self._header + " - Table is invalid")
+                cleanliness_types.add(2)
+                continue
+            rows = table.get_rows()
+            if len(rows) < 4:
+                # Utils.log(self._header + " - Table is too small: \n" + str(rows))
+                cleanliness_types.add(1)
+                continue
+            cleanliness_types.add(0)
+        return sorted(list(cleanliness_types))
+
     def json(self):
         return {
             "header": self._header,
@@ -118,6 +160,14 @@ class WikiCompilationData:
             if section.has_data():
                 return True
         return False
+
+    def verify_cleanliness(self):
+        cleanliness_types = set()
+        for section in self._sections:
+            scores = section.verify_cleanliness()
+            for score in scores:
+                cleanliness_types.add(score)
+        return sorted(list(cleanliness_types))
 
     def json(self):
         return {

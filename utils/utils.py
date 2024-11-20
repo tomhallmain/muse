@@ -84,6 +84,7 @@ class Utils:
 
         thread.daemon = True  # Daemon threads exit when the main process does
         thread.start()
+        return thread
 
     @staticmethod
     def periodic(run_obj, sleep_attr="", run_attr=None):

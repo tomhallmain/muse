@@ -102,7 +102,7 @@ class PlaybackConfig:
         self.next_track_override = new_file
 
     @staticmethod
-    def force_extension(new_file):
+    def assign_extension(new_file):
         while not PlaybackConfig.READY_FOR_EXTENSION:
             Utils.log("Waiting for config to accept extension...")
             time.sleep(5)

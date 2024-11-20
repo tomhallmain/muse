@@ -31,7 +31,7 @@ class Run:
         self.callbacks = callbacks
         self.playback = None
         self.muse = Muse(self.args)
-        self.library_data = LibraryData()
+        self.library_data = LibraryData(callbacks)
 
     def is_infinite(self):
         return self.args.total == -1
@@ -41,6 +41,9 @@ class Run:
 
     def pause(self):
         self.playback.pause()
+
+    def switch_extension(self):
+        self.library_data.reset_extension()
 
     def run(self, playback_config):
         if config.enable_library_extender:

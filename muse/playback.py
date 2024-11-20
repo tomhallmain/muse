@@ -162,9 +162,9 @@ class Playback:
             spot_profile.immediate = True
             if not first_prep:
                 Utils.log("Delayed preparation.")
-            self._run.muse.prepare(spot_profile)
+            self._run.muse.prepare(spot_profile, self.callbacks.update_muse_text)
         else:
-            Utils.start_thread(self._run.muse.prepare, use_asyncio=False, args=(spot_profile,))
+            Utils.start_thread(self._run.muse.prepare, use_asyncio=False, args=(spot_profile, self.callbacks.update_muse_text))
 
     def register_new_song(self):
         Utils.log(f"Playing track file: {self.track.filepath}")
@@ -180,7 +180,7 @@ class Playback:
     def delay(self):
         if self.has_played_first_track and not self.last_track_failed:
             if Globals.DELAY_TIME_SECONDS > 4:
-                self.callbacks.track_details_callback(_("Sleeping for seconds"))
+                self.callbacks.track_details_callback(_("Sleeping for seconds") + ": " + str(Globals.DELAY_TIME_SECONDS))
             delay_timer = 0
             while not self.skip_delay and delay_timer < Globals.DELAY_TIME_SECONDS:
                 sleep(0.5)

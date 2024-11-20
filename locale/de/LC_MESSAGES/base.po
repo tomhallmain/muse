@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2024-11-16 16:11-0500\n"
+"POT-Creation-Date: 2024-11-20 15:07-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Thomas Hall <tomhall.main@gmail.com>\n"
 "Language-Team: de Team <<EMAIL>>\n"
@@ -15,89 +15,105 @@ msgstr ""
 "Generated-By: pygettext.py 1.5\n"
 
 
-#: .\app.py:105 .\app.py:167
+#: .\app.py:109 .\app.py:179
 msgid "Muse"
 msgstr "Muse"
 
-#: .\app.py:109
+#: .\app.py:113
 msgid "Play"
 msgstr "Spiel"
 
-#: .\app.py:112
+#: .\app.py:116
 msgid "Next"
 msgstr "Weiter"
 
-#: .\app.py:115
+#: .\app.py:119
 msgid "Pause"
 msgstr "Pause"
 
-#: .\app.py:118 .\ui\search_window.py:57 .\ui\search_window.py:143
+#: .\app.py:122 .\ui\search_window.py:57 .\ui\search_window.py:143
 #: .\ui\search_window.py:172
 msgid "Search"
 msgstr "Suche"
 
-#: .\app.py:120
+#: .\app.py:124
 msgid "Stop"
 msgstr "Stopp"
 
-#: .\app.py:121
+#: .\app.py:125
 msgid "Text"
 msgstr "Text"
 
-#: .\app.py:127
+#: .\app.py:126
+msgid "Extension"
+msgstr "Erweiterung"
+
+#: .\app.py:129
+msgid "Track"
+msgstr "Titel"
+
+#: .\app.py:132
+msgid "Spot Details"
+msgstr "Details zur Stelle"
+
+#: .\app.py:135
+msgid "Extension Status"
+msgstr "Stand der Erweiterung"
+
+#: .\app.py:139
 msgid "Workflow"
 msgstr "Arbeitsablauf"
 
-#: .\app.py:134
+#: .\app.py:146
 msgid "Set Total"
 msgstr "Satz Gesamt"
 
-#: .\app.py:143
+#: .\app.py:155
 msgid "Delay Seconds"
 msgstr "Verz\u00f6gerung Sekunden"
 
-#: .\app.py:150
+#: .\app.py:162
 msgid "Directory"
 msgstr "Verzeichnis"
 
-#: .\app.py:159
+#: .\app.py:171
 msgid "Overwrite"
 msgstr "\u00dcberschreiben Sie"
 
-#: .\app.py:163
+#: .\app.py:175
 msgid "Favorite"
 msgstr "Favorit"
 
-#: .\app.py:171
+#: .\app.py:183
 msgid "Volume"
 msgstr "Band"
 
-#: .\app.py:177 .\ui\track_details_window.py:30 .\ui\weather_window.py:25
+#: .\app.py:189 .\ui\track_details_window.py:30 .\ui\weather_window.py:25
 #: .\ui\weather_window.py:35 .\ui\weather_window.py:65
 msgid "Weather"
 msgstr "Wetter"
 
-#: .\app.py:230
+#: .\app.py:242
 msgid "Confirm Quit"
 msgstr "Beenden best\u00e4tigen"
 
-#: .\app.py:230
+#: .\app.py:242
 msgid "Would you like to quit the application?"
 msgstr "M\u00f6chten Sie die Anwendung beenden?"
 
-#: .\app.py:345
+#: .\app.py:357
 msgid "Confirm Run"
 msgstr "Lauf best\u00e4tigen"
 
-#: .\app.py:346
+#: .\app.py:358
 msgid "Are you sure you want to proceed?"
 msgstr "Sind Sie sicher, dass Sie fortfahren wollen?"
 
-#: .\app.py:486
+#: .\app.py:508
 msgid "Error"
 msgstr "Fehler"
 
-#: .\app.py:570
+#: .\app.py:593
 msgid " Muse "
 msgstr " Muse "
 
@@ -113,43 +129,83 @@ msgstr "\\1Text-in-Sprache\\2"
 msgid " Opus \\1"
 msgstr " Opus \\1"
 
-#: .\muse\muse.py:133
+#: .\library_data\library_data.py:142
+msgid "Extension thread waiting for {0} minutes"
+msgstr "Erweiterungs-Thread wartet auf {0} Minuten"
+
+#: .\library_data\library_data.py:252
+msgid "Extension \"{0}\" waiting for {1} minutes"
+msgstr "Erweiterung \u201e{0}\u201c wartet seit {1} Minuten"
+
+#: .\muse\muse.py:49 .\muse\muse.py:57
+msgid "Track: "
+msgstr "Titel: "
+
+#: .\muse\muse.py:51 .\muse\muse.py:58
+msgid "Previous Track: "
+msgstr "Vorheriger Titel: "
+
+#: .\muse\muse.py:53
+msgid "Talking about: "
+msgstr "Sprechen \u00fcber: "
+
+#: .\muse\muse.py:57
+msgid "No track"
+msgstr "Kein Titel"
+
+#: .\muse\muse.py:58
+msgid "No previous track"
+msgstr "Kein vorheriger Titel"
+
+#: .\muse\muse.py:60
+msgid "Speaking about prior track"
+msgstr "Apropos vorherige Titel"
+
+#: .\muse\muse.py:62
+msgid "Speaking about upcoming track"
+msgstr "\u00dcber den kommenden Titel sprechen"
+
+#: .\muse\muse.py:64
+msgid "Talking about something"
+msgstr "\u00dcber etwas sprechen"
+
+#: .\muse\muse.py:148
 msgid "That was \"{0}\" in \"{1}\""
 msgstr "Das war \u201e{0}\u201c aus \u201e{1}\u201c"
 
-#: .\muse\muse.py:135 .\muse\muse.py:152
+#: .\muse\muse.py:150 .\muse\muse.py:167
 msgid " by \"{0}\"."
 msgstr " von \u201e{0}\u201c."
 
-#: .\muse\muse.py:140
+#: .\muse\muse.py:155
 msgid "That was a new track. How'd you like that?"
 msgstr "Das war ein neuer Track. Wie hat dir das gefallen?"
 
-#: .\muse\muse.py:142
+#: .\muse\muse.py:157
 msgid "That was a new one. How'd you like it?"
 msgstr "Das war eine Neuheit. Wie hat es dir gefallen?"
 
-#: .\muse\muse.py:148
+#: .\muse\muse.py:163
 msgid "To start, we'll be playing: \"{0}\" from \"{1}\""
 msgstr "Zu Beginn spielen wir \u201e{0}\u201c aus \u201e{1}\u201c"
 
-#: .\muse\muse.py:150
+#: .\muse\muse.py:165
 msgid "Next up, we'll be playing: \"{0}\" from \"{1}\""
 msgstr "Als N\u00e4chstes spielen wir \u201e{0}\u201c aus \u201e{1}\u201c"
 
-#: .\muse\muse.py:156
+#: .\muse\muse.py:171
 msgid "This one is a new track."
 msgstr "Dies ist ein neuer Titel."
 
-#: .\muse\muse.py:193
+#: .\muse\muse.py:209
 msgid "First let's hear about {0}"
 msgstr "Zun\u00e4chst zum Thema \u201e{0}\u201c."
 
-#: .\muse\muse.py:195
+#: .\muse\muse.py:211
 msgid "But first, let's hear about {0}."
 msgstr "Doch zun\u00e4chst zum Thema \u201e{0}\u201c."
 
-#: .\muse\playback.py:182
+#: .\muse\playback.py:183
 msgid "Sleeping for seconds"
 msgstr "Schlafen f\u00fcr Sekunden"
 
@@ -233,7 +289,7 @@ msgstr "Aktualisierung"
 msgid "Track Details"
 msgstr "Details zur Strecke"
 
-#: .\utils\job_queue.py:33
+#: .\utils\job_queue.py:35
 msgid " (Pending runs: {0})"
 msgstr " (Ausstehende L\u00e4ufe: {0})"
 

@@ -34,7 +34,7 @@ Muse is a media player with an integrated voice synthesizer attached to an LLM. 
 
 ### Directory Structure
 
-In the absence of track details found on the music file itself, Muse will attempt to infer track details from the file path. If artists or composers are predefined in the configs folder, the `indicators` list on each will test the track name and path for a string match, and assign the appropriate attribute if a match is found. If no matches are found, the basic logic assumes the following directory structure:
+In the absence of track details found on the music file itself, Muse will attempt to infer track details from the file path. If artists or composers are predefined in the library_data/data folder, the `indicators` list on each will test the track name and path for a string match, and assign the appropriate attribute if a match is found. If no matches are found, the basic logic assumes the following directory structure:
 - Root folder
     - Artist
         - Album

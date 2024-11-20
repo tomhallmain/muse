@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2024-11-18 11:17-0500\n"
+"POT-Creation-Date: 2024-11-20 15:07-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,89 +15,105 @@ msgstr ""
 "Generated-By: pygettext.py 1.5\n"
 
 
-#: .\app.py:105 .\app.py:167
+#: .\app.py:109 .\app.py:179
 msgid "Muse"
 msgstr ""
 
-#: .\app.py:109
+#: .\app.py:113
 msgid "Play"
 msgstr ""
 
-#: .\app.py:112
+#: .\app.py:116
 msgid "Next"
 msgstr ""
 
-#: .\app.py:115
+#: .\app.py:119
 msgid "Pause"
 msgstr ""
 
-#: .\app.py:118 .\ui\search_window.py:57 .\ui\search_window.py:143
+#: .\app.py:122 .\ui\search_window.py:57 .\ui\search_window.py:143
 #: .\ui\search_window.py:172
 msgid "Search"
 msgstr ""
 
-#: .\app.py:120
+#: .\app.py:124
 msgid "Stop"
 msgstr ""
 
-#: .\app.py:121
+#: .\app.py:125
 msgid "Text"
 msgstr ""
 
-#: .\app.py:127
+#: .\app.py:126
+msgid "Extension"
+msgstr ""
+
+#: .\app.py:129
+msgid "Track"
+msgstr ""
+
+#: .\app.py:132
+msgid "Spot Details"
+msgstr ""
+
+#: .\app.py:135
+msgid "Extension Status"
+msgstr ""
+
+#: .\app.py:139
 msgid "Workflow"
 msgstr ""
 
-#: .\app.py:134
+#: .\app.py:146
 msgid "Set Total"
 msgstr ""
 
-#: .\app.py:143
+#: .\app.py:155
 msgid "Delay Seconds"
 msgstr ""
 
-#: .\app.py:150
+#: .\app.py:162
 msgid "Directory"
 msgstr ""
 
-#: .\app.py:159
+#: .\app.py:171
 msgid "Overwrite"
 msgstr ""
 
-#: .\app.py:163
+#: .\app.py:175
 msgid "Favorite"
 msgstr ""
 
-#: .\app.py:171
+#: .\app.py:183
 msgid "Volume"
 msgstr ""
 
-#: .\app.py:177 .\ui\track_details_window.py:30 .\ui\weather_window.py:25
+#: .\app.py:189 .\ui\track_details_window.py:30 .\ui\weather_window.py:25
 #: .\ui\weather_window.py:35 .\ui\weather_window.py:65
 msgid "Weather"
 msgstr ""
 
-#: .\app.py:230
+#: .\app.py:242
 msgid "Confirm Quit"
 msgstr ""
 
-#: .\app.py:230
+#: .\app.py:242
 msgid "Would you like to quit the application?"
 msgstr ""
 
-#: .\app.py:345
+#: .\app.py:357
 msgid "Confirm Run"
 msgstr ""
 
-#: .\app.py:346
+#: .\app.py:358
 msgid "Are you sure you want to proceed?"
 msgstr ""
 
-#: .\app.py:486
+#: .\app.py:508
 msgid "Error"
 msgstr ""
 
-#: .\app.py:570
+#: .\app.py:593
 msgid " Muse "
 msgstr ""
 
@@ -113,39 +129,79 @@ msgstr ""
 msgid " Opus \\1"
 msgstr ""
 
-#: .\muse\muse.py:133
-msgid "That was \"{0}\" in \"{1}\""
+#: .\library_data\library_data.py:142
+msgid "Extension thread waiting for {0} minutes"
 msgstr ""
 
-#: .\muse\muse.py:135 .\muse\muse.py:152
-msgid " by \"{0}\"."
+#: .\library_data\library_data.py:252
+msgid "Extension \"{0}\" waiting for {1} minutes"
 msgstr ""
 
-#: .\muse\muse.py:140
-msgid "That was a new track. How'd you like that?"
+#: .\muse\muse.py:49 .\muse\muse.py:57
+msgid "Track: "
 msgstr ""
 
-#: .\muse\muse.py:142
-msgid "That was a new one. How'd you like it?"
+#: .\muse\muse.py:51 .\muse\muse.py:58
+msgid "Previous Track: "
+msgstr ""
+
+#: .\muse\muse.py:53
+msgid "Talking about: "
+msgstr ""
+
+#: .\muse\muse.py:57
+msgid "No track"
+msgstr ""
+
+#: .\muse\muse.py:58
+msgid "No previous track"
+msgstr ""
+
+#: .\muse\muse.py:60
+msgid "Speaking about prior track"
+msgstr ""
+
+#: .\muse\muse.py:62
+msgid "Speaking about upcoming track"
+msgstr ""
+
+#: .\muse\muse.py:64
+msgid "Talking about something"
 msgstr ""
 
 #: .\muse\muse.py:148
+msgid "That was \"{0}\" in \"{1}\""
+msgstr ""
+
+#: .\muse\muse.py:150 .\muse\muse.py:167
+msgid " by \"{0}\"."
+msgstr ""
+
+#: .\muse\muse.py:155
+msgid "That was a new track. How'd you like that?"
+msgstr ""
+
+#: .\muse\muse.py:157
+msgid "That was a new one. How'd you like it?"
+msgstr ""
+
+#: .\muse\muse.py:163
 msgid "To start, we'll be playing: \"{0}\" from \"{1}\""
 msgstr ""
 
-#: .\muse\muse.py:150
+#: .\muse\muse.py:165
 msgid "Next up, we'll be playing: \"{0}\" from \"{1}\""
 msgstr ""
 
-#: .\muse\muse.py:156
+#: .\muse\muse.py:171
 msgid "This one is a new track."
 msgstr ""
 
-#: .\muse\muse.py:193
+#: .\muse\muse.py:209
 msgid "First let's hear about {0}"
 msgstr ""
 
-#: .\muse\muse.py:195
+#: .\muse\muse.py:211
 msgid "But first, let's hear about {0}."
 msgstr ""
 

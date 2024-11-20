@@ -6,6 +6,7 @@ from utils.utils import Utils
 
 root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 configs_dir = os.path.join(root_dir, "configs")
+library_data_dir = os.path.join(root_dir, "library_data", "data")
 
 
 class Config:
@@ -136,6 +137,10 @@ class Config:
                 try_path = os.path.join(configs_dir, filepath)
                 if os.path.isfile(try_path):
                     filepath = try_path
+                else:
+                    try_path = os.path.join(library_data_dir, filepath)
+                    if os.path.isfile(try_path):
+                        filepath = try_path
             if not os.path.isfile(filepath):
                 raise Exception(f"Invalid location provided for {key}: {filepath}")
             return filepath

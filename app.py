@@ -92,7 +92,11 @@ class App():
         self.runner_app_config = self.load_info_cache()
         self.config_history_index = 0
         self.current_run = Run(RunConfig())
-        self.app_actions = AppActions(self.update_track_text, self.update_muse_text, self.update_progress_bar)
+        self.app_actions = AppActions(
+            self.update_track_text,
+            self.update_muse_text,
+            self.update_progress_bar,
+            self.update_label_extension_status)
 
         # Sidebar
         self.sidebar = Sidebar(self.master)
@@ -119,8 +123,16 @@ class App():
 
         self.cancel_btn = Button(self.sidebar, text=_("Stop"), command=self.cancel)
         self.text_btn = Button(self.sidebar, text=_("Text"), command=self.open_text)
+        self.extension_btn = Button(self.sidebar, text=_("Extension"), command=self.switch_extension)
+
         self.label_song_text = Label(self.sidebar)
-        self.add_label(self.label_song_text, "", sticky=None)
+        self.add_label(self.label_song_text, _("Track"), sticky=None, columnspan=2)
+
+        self.label_muse = Label(self.sidebar)
+        self.add_label(self.label_muse, _("Spot Details"), sticky=None, columnspan=2)
+
+        self.label_extension_status = Label(self.sidebar)
+        self.add_label(self.label_extension_status,  _("Extension Status"), sticky=None, columnspan=2)
 
         # TODO multiselect
         self.label_workflows = Label(self.sidebar)
@@ -355,10 +367,12 @@ class App():
             self.progress_bar.grid(row=1, column=1)
             self.cancel_btn.grid(row=2, column=1)
             self.text_btn.grid(row=3, column=1)
+            self.extension_btn.grid(row=4, column=1)
             self.current_run = Run(args, callbacks=self.app_actions)
             self.current_run.execute()
             self.cancel_btn.grid_forget()
             self.text_btn.grid_forget()
+            self.extension_btn.grid_forget()
             self.destroy_progress_bar()
             self.job_queue.job_running = False
             next_job_args = self.job_queue.take()
@@ -384,6 +398,9 @@ class App():
 
     def cancel(self, event=None):
         self.current_run.cancel()
+
+    def switch_extension(self, event=None):
+        self.current_run.switch_extension()
 
     def get_args(self):
         self.store_info_cache()
@@ -457,6 +474,11 @@ class App():
         self.label_muse["text"]  = text
         self.master.update()
 
+    def update_label_extension_status(self, extension):
+        text = Utils._wrap_text_to_fit_length(extension[:500], 100)
+        self.label_extension_status["text"] = text
+        self.master.update()
+
     # def open_presets_window(self):
     #     top_level = Toplevel(self.master, bg=AppStyle.BG_COLOR)
     #     top_level.title(_("Presets Window"))
@@ -521,8 +543,9 @@ class App():
             toast.destroy()
         Utils.start_thread(self_destruct_after, use_asyncio=False, args=[2])
 
-    def apply_to_grid(self, component, sticky=None, pady=0, interior_column=0, column=0, increment_row_counter=True, columnspan=None):
-        row = self.row_counter0 if column == 0 else self.row_counter1
+    def apply_to_grid(self, component, sticky=None, pady=0, interior_column=0, row=-1, column=0, increment_row_counter=True, columnspan=None):
+        if row == -1:
+            row = self.row_counter0 if column == 0 else self.row_counter1
         if sticky is None:
             if columnspan is None:
                 component.grid(column=interior_column, row=row, pady=pady)
@@ -539,9 +562,9 @@ class App():
             else:
                 self.row_counter1 += 1
 
-    def add_label(self, label_ref, text, sticky=W, pady=0, column=0, columnspan=None, increment_row_counter=True):
+    def add_label(self, label_ref, text, sticky=W, pady=0, row=-1, column=0, columnspan=None, increment_row_counter=True):
         label_ref['text'] = text
-        self.apply_to_grid(label_ref, sticky=sticky, pady=pady, column=column, columnspan=columnspan, increment_row_counter=increment_row_counter)
+        self.apply_to_grid(label_ref, sticky=sticky, pady=pady, row=row, column=column, columnspan=columnspan, increment_row_counter=increment_row_counter)
 
     def add_button(self, button_ref_name, text, command, sidebar=True, interior_column=0, increment_row_counter=True):
         if getattr(self, button_ref_name) is None:

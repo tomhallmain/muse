@@ -2,13 +2,15 @@
 import json
 from urllib import request
 
+from utils.utils import Utils
+
 class LLM:
     ENDPOINT = "http://localhost:11434/api/generate"
 
     def __init__(self, model_name="llama2-uncensored:latest"):
         self.model_name = model_name
 
-    def generate_response(self, query):
+    def generate_response(self, query, timeout=120):
         data = {
             "model": self.model_name,
             "prompt": query,
@@ -20,9 +22,12 @@ class LLM:
             headers={"Content-Type": "application/json"},
             data=data,
         )
-        response = request.urlopen(req).read().decode("utf-8")
-        resp_json = json.loads(response)
-        return resp_json["response"]
+        try:
+            response = request.urlopen(req, timeout=timeout).read().decode("utf-8")
+            resp_json = json.loads(response)
+            return resp_json["response"]
+        except Exception as e:
+            Utils.log_red(f"Failed to generate LLM response: {e}")
 
 
 if __name__ == "__main__":

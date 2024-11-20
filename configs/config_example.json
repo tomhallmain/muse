@@ -50,6 +50,151 @@
             "pattern": " Vol\\.? ?([0-9IVXLM])",
             "replacement": " Volume \\1",
             "simple_replacement": false
+        },
+        {
+            "pattern": "( |^)(IIII|iiii|IV|iv)(\\.)?( |$)",
+            "replacement": "\\1Four \\4",
+            "simple_replacement": false
+        },
+        {
+            "pattern": "( |^)(III|iii)(\\.)?( |$)",
+            "replacement": "\\1Three \\4",
+            "simple_replacement": false
+        },
+        {
+            "pattern": "( |^)(II|ii)(\\.)?( |$)",
+            "replacement": "\\1Two \\4",
+            "simple_replacement": false
+        },
+        {
+            "pattern": "( |^)(I|i)(\\.)( |$)",
+            "replacement": "\\1One \\4",
+            "simple_replacement": false
+        },
+        {
+            "pattern": "( |^)V(\\.)?( |$)",
+            "replacement": "\\1Five \\3",
+            "simple_replacement": false
+        },
+        {
+            "pattern": "( |^)(VI|vi)(\\.)?( |$)",
+            "replacement": "\\1Six \\4",
+            "simple_replacement": false
+        },
+        {
+            "pattern": "( |^)(VII|vii)(\\.)?( |$)",
+            "replacement": "\\1Seven \\4",
+            "simple_replacement": false
+        },
+        {
+            "pattern": "( |^)(VIII|viii)(\\.)?( |$)",
+            "replacement": "\\1Eight \\4",
+            "simple_replacement": false
+        },
+        {
+            "pattern": "( |^)(IX|ix)(\\.)?( |$)",
+            "replacement": "\\1Nine \\4",
+            "simple_replacement": false
+        },
+        {
+            "pattern": "( |^)(X|x)(\\.)?( |$)",
+            "replacement": "\\1Ten \\4",
+            "simple_replacement": false
+        },
+        {
+            "pattern": "( |^)(XI|xi)(\\.)?( |$)",
+            "replacement": "\\1Eleven \\4",
+            "simple_replacement": false
+        },
+        {
+            "pattern": "( |^)(XII|xii)(\\.)?( |$)",
+            "replacement": "\\1Twelve \\4",
+            "simple_replacement": false
+        },
+        {
+            "pattern": "( |^)(XIII|Xiii)(\\.)?( |$)",
+            "replacement": "\\1Thirteen \\4",
+            "simple_replacement": false
+        },
+        {
+            "pattern": "( |^)(XIV|xiv)(\\.)?( |$)",
+            "replacement": "\\1Fourteen \\4",
+            "simple_replacement": false
+        },
+        {
+            "pattern": "( |^)(XV|xv)(\\.)?( |$)",
+            "replacement": "\\1Fifteen \\4",
+            "simple_replacement": false
+        },
+        {
+            "pattern": "( |^)(XVI|xvi)(\\.)?( |$)",
+            "replacement": "\\1Sixteen \\4",
+            "simple_replacement": false
+        },
+        {
+            "pattern": "( |^)(XVII|xvii)(\\.)?( |$)",
+            "replacement": "\\1Seventeen \\4",
+            "simple_replacement": false
+        },
+        {
+            "pattern": "( |^)(XVIII|xviii)(\\.)?( |$)",
+            "replacement": "\\1Eighteen \\4",
+            "simple_replacement": false
+        },
+        {
+            "pattern": "( |^)(XIX|xix)(\\.)?( |$)",
+            "replacement": "\\1Nineteen \\4",
+            "simple_replacement": false
+        },
+        {
+            "pattern": "( |^)(XX|xx)(\\.)?( |$)",
+            "replacement": "\\1Twenty \\4",
+            "simple_replacement": false
+        },
+        {
+            "pattern": "( |^)(XXI|xxi)(\\.)?( |$)",
+            "replacement": "\\1Twenty-one \\4",
+            "simple_replacement": false
+        },
+        {
+            "pattern": "( |^)(XXII|ii)(\\.)?( |$)",
+            "replacement": "\\1Twenty-two \\4",
+            "simple_replacement": false
+        },
+        {
+            "pattern": "( |^)(XXIII|xxiii)(\\.)?( |$)",
+            "replacement": "\\1Twenty-three \\4",
+            "simple_replacement": false
+        },
+        {
+            "pattern": "( |^)(XXIV|xxiv)(\\.)?( |$)",
+            "replacement": "\\1Twenty-four \\4",
+            "simple_replacement": false
+        },
+        {
+            "pattern": "( |^)(XXV|xxv)(\\.)?( |$)",
+            "replacement": "\\1Twenty-five \\4",
+            "simple_replacement": false
+        },
+        {
+            "pattern": "( |^)(XXVI|xxvi)(\\.)?( |$)",
+            "replacement": "\\1Twenty-six \\4",
+            "simple_replacement": false
+        },
+        {
+            "pattern": "( |^)(XXVII|xxvii)(\\.)?( |$)",
+            "replacement": "\\1Twenty-seven \\4",
+            "simple_replacement": false
+        },
+        {
+            "pattern": "( |^)(XXVIII|xxviii)(\\.)?( |$)",
+            "replacement": "\\1Twenty-eight \\4",
+            "simple_replacement": false
+        },
+        {
+            "pattern": "( |^)(XXIX|xxix)(\\.)?( |$)",
+            "replacement": "\\1Twenty-nine \\4",
+            "simple_replacement": false
         }
     ],
     "coqui_tts_model": ["tts_models/multilingual/multi-dataset/xtts_v2", "Royston Min", "en"],

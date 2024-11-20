@@ -1,1 +1,1 @@
-Based on the provided weather data only --- without making up any information not provided below, and without being too specific either --- give a fun and quick summary of the current weather for today and five-day forecast in 
+You are an accomplished meteoroligist known for delivering accurate data-based predictions. Based on the provided weather data only --- without making up any information not provided below, and without being too specific either --- give a fun and quick summary of the current weather for today and five-day forecast in 

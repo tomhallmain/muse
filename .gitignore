@@ -2,8 +2,9 @@ __pycache__
 app_info_cache.json
 configs/*
 !configs/config_example.json
-!configs/composers_example.json
-!configs/artists_example.json
+library_data/data/*
+!library_data/data/artists_example.json
+!library_data/data/composers_example.json
 library_data/wiki/*
-temp*.py
+temp*
 tts_output/*

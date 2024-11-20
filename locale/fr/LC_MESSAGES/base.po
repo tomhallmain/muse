@@ -1,103 +1,119 @@
-# SOME DESCRIPTIVE TITLE.
+# APPLICATION TRANSLATIONS
 # Copyright (C) YEAR ORGANIZATION
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2024-11-18 11:17-0500\n"
+"POT-Creation-Date: 2024-11-20 15:07-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"Last-Translator: Thomas Hall <tomhall.main@gmail.com>\n"
+"Language-Team: fr Team <<EMAIL>>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=cp1252\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: pygettext.py 1.5\n"
 
 
-#: .\app.py:105 .\app.py:167
+#: .\app.py:109 .\app.py:179
 msgid "Muse"
 msgstr "Muse"
 
-#: .\app.py:109
+#: .\app.py:113
 msgid "Play"
 msgstr "Jouer"
 
-#: .\app.py:112
+#: .\app.py:116
 msgid "Next"
 msgstr "Suivant"
 
-#: .\app.py:115
+#: .\app.py:119
 msgid "Pause"
 msgstr "Pause"
 
-#: .\app.py:118 .\ui\search_window.py:57 .\ui\search_window.py:143
+#: .\app.py:122 .\ui\search_window.py:57 .\ui\search_window.py:143
 #: .\ui\search_window.py:172
 msgid "Search"
 msgstr "Recherche"
 
-#: .\app.py:120
+#: .\app.py:124
 msgid "Stop"
 msgstr "Stop"
 
-#: .\app.py:121
+#: .\app.py:125
 msgid "Text"
 msgstr "Texte"
 
-#: .\app.py:127
+#: .\app.py:126
+msgid "Extension"
+msgstr "Extension"
+
+#: .\app.py:129
+msgid "Track"
+msgstr "Piste"
+
+#: .\app.py:132
+msgid "Spot Details"
+msgstr "D\u00e9tails du spot"
+
+#: .\app.py:135
+msgid "Extension Status"
+msgstr "Statut de l'extension"
+
+#: .\app.py:139
 msgid "Workflow"
 msgstr "Flux de travail"
 
-#: .\app.py:134
+#: .\app.py:146
 msgid "Set Total"
 msgstr "Total"
 
-#: .\app.py:143
+#: .\app.py:155
 msgid "Delay Seconds"
 msgstr "D\u00e9lai en secondes"
 
-#: .\app.py:150
+#: .\app.py:162
 msgid "Directory"
 msgstr "Annuaire"
 
-#: .\app.py:159
+#: .\app.py:171
 msgid "Overwrite"
 msgstr "\u00c9craser"
 
-#: .\app.py:163
+#: .\app.py:175
 msgid "Favorite"
 msgstr "Favoris"
 
-#: .\app.py:171
+#: .\app.py:183
 msgid "Volume"
 msgstr "Volume"
 
-#: .\app.py:177 .\ui\track_details_window.py:30 .\ui\weather_window.py:25
+#: .\app.py:189 .\ui\track_details_window.py:30 .\ui\weather_window.py:25
 #: .\ui\weather_window.py:35 .\ui\weather_window.py:65
 msgid "Weather"
 msgstr "M\u00e9t\u00e9o"
 
-#: .\app.py:230
+#: .\app.py:242
 msgid "Confirm Quit"
 msgstr "Confirmer Quitter"
 
-#: .\app.py:230
+#: .\app.py:242
 msgid "Would you like to quit the application?"
 msgstr "Souhaitez-vous quitter l'application ?"
 
-#: .\app.py:345
+#: .\app.py:357
 msgid "Confirm Run"
 msgstr "Confirmer l'ex\u00e9cution"
 
-#: .\app.py:346
+#: .\app.py:358
 msgid "Are you sure you want to proceed?"
 msgstr "\u00cates-vous s\u00fbr de vouloir continuer ?"
 
-#: .\app.py:486
+#: .\app.py:508
 msgid "Error"
 msgstr "Erreur"
 
-#: .\app.py:570
+#: .\app.py:593
 msgid " Muse "
 msgstr " Muse "
 
@@ -113,39 +129,79 @@ msgstr "\\1synth\u00e8se vocale\\2"
 msgid " Opus \\1"
 msgstr " Opus \\1"
 
-#: .\muse\muse.py:133
+#: .\library_data\library_data.py:142
+msgid "Extension thread waiting for {0} minutes"
+msgstr "Le thread d'extension attend {0} minutes"
+
+#: .\library_data\library_data.py:252
+msgid "Extension \"{0}\" waiting for {1} minutes"
+msgstr "Extension \u00ab {0} \u00bb en attente depuis {1} minutes"
+
+#: .\muse\muse.py:49 .\muse\muse.py:57
+msgid "Track: "
+msgstr "Piste : "
+
+#: .\muse\muse.py:51 .\muse\muse.py:58
+msgid "Previous Track: "
+msgstr "Piste pr\u00e9c\u00e9dente : "
+
+#: .\muse\muse.py:53
+msgid "Talking about: "
+msgstr "Parler de : "
+
+#: .\muse\muse.py:57
+msgid "No track"
+msgstr "Pas de piste"
+
+#: .\muse\muse.py:58
+msgid "No previous track"
+msgstr "Pas de piste pr\u00e9c\u00e9dente"
+
+#: .\muse\muse.py:60
+msgid "Speaking about prior track"
+msgstr "\u00c0 propos de la piste pr\u00e9c\u00e9dente"
+
+#: .\muse\muse.py:62
+msgid "Speaking about upcoming track"
+msgstr "\u00c0 propos de le prochaine piste"
+
+#: .\muse\muse.py:64
+msgid "Talking about something"
+msgstr "Parler de quelque chose"
+
+#: .\muse\muse.py:148
 msgid "That was \"{0}\" in \"{1}\""
 msgstr "C'\u00e9tait \u00ab {0} \u00bb dans \u00ab {1} \u00bb"
 
-#: .\muse\muse.py:135 .\muse\muse.py:152
+#: .\muse\muse.py:150 .\muse\muse.py:167
 msgid " by \"{0}\"."
 msgstr " par \u00ab {0} \u00bb"
 
-#: .\muse\muse.py:140
+#: .\muse\muse.py:155
 msgid "That was a new track. How'd you like that?"
 msgstr "C'\u00e9tait un nouveau morceau. Qu'en pensez-vous ?"
 
-#: .\muse\muse.py:142
+#: .\muse\muse.py:157
 msgid "That was a new one. How'd you like it?"
 msgstr "C'\u00e9tait un nouveau. Comment l'avez-vous trouv\u00e9 ?"
 
-#: .\muse\muse.py:148
+#: .\muse\muse.py:163
 msgid "To start, we'll be playing: \"{0}\" from \"{1}\""
 msgstr "Pour commencer, nous allons jouer : \u00ab {0} \u00bb de \u00ab {1} \u00bb"
 
-#: .\muse\muse.py:150
+#: .\muse\muse.py:165
 msgid "Next up, we'll be playing: \"{0}\" from \"{1}\""
 msgstr "Prochainement, nous jouerons : \u00ab {0} \u00bb de \u00ab {1} \u00bb"
 
-#: .\muse\muse.py:156
+#: .\muse\muse.py:171
 msgid "This one is a new track."
 msgstr "Il s'agit d'une nouvelle piste."
 
-#: .\muse\muse.py:193
+#: .\muse\muse.py:209
 msgid "First let's hear about {0}"
 msgstr "Tout d'abord, parlons de {0}"
 
-#: .\muse\muse.py:195
+#: .\muse\muse.py:211
 msgid "But first, let's hear about {0}."
 msgstr "Mais d'abord, parlons de  {0}"
 
