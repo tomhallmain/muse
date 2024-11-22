@@ -171,6 +171,9 @@ class Playback:
         self.vlc_media_player = vlc.MediaPlayer(self.track.filepath)
         if self.callbacks.track_details_callback is not None:
             self.callbacks.track_details_callback(self.track)
+        if self.callbacks.update_muse_text is not None:
+            spot_profile = self.get_spot_profile()
+            self.callbacks.update_muse_text(spot_profile.get_ui_text(include_track=False))
 
     def increment_count(self):
         if not self.skip_track:

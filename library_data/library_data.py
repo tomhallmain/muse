@@ -83,6 +83,7 @@ class TrackAttribute(Enum):
 
 class LibraryData:
     extension_thread_started = False
+    extension_thread_delayed_complete = False
     EXTENSION_QUEUE = JobQueue("Extension queue")
     DELAYED_THREADS = []
 
@@ -132,19 +133,27 @@ class LibraryData:
 
     def _run_extensions(self, initial_sleep=True):
         if initial_sleep:
-            time_seconds = random.randint(200, 1200)
+            sleep_time_seconds = random.randint(200, 1200)
             check_cadence = 150
-            while time_seconds > 0:
-                time_seconds -= check_cadence
-                if time_seconds <= 0:
+            while sleep_time_seconds > 0:
+                sleep_time_seconds -= check_cadence
+                if sleep_time_seconds <= 0:
                     break
                 if self.callbacks is not None:
-                    self.callbacks.update_extension_status(_("Extension thread waiting for {0} minutes").format(round(float(time_seconds) / 60)))
+                    self.callbacks.update_extension_status(_("Extension thread waiting for {0} minutes").format(round(float(sleep_time_seconds) / 60)))
                 Utils.long_sleep(check_cadence, "extension thread")
         while True:
             self._extend_by_random_composer()
+            LibraryData.extension_thread_delayed_complete = False
             sleep_time_minutes = random.randint(40, 80)
-            Utils.long_sleep(sleep_time_minutes * 60, "extension thread")
+            check_cadence = 2
+            while sleep_time_minutes > 0:
+                sleep_time_minutes -= check_cadence
+                if sleep_time_minutes <= 0:
+                    break
+                if LibraryData.extension_thread_delayed_complete and self.callbacks is not None:
+                    self.callbacks.update_extension_status(_("Extension thread waiting for {0} minutes").format(sleep_time_minutes))
+                Utils.long_sleep(check_cadence * 60, "extension thread")
 
     def _extend_randomly(self):
         Utils.log('Extending randomly')
@@ -269,10 +278,12 @@ class LibraryData:
             Utils.log_yellow("F was not found" if _f is None else "F was found but invalid: " + _f)
             if _e is None or not os.path.exists(_e):
                 Utils.log_yellow("E was not found" if _e is None else "E was found but invalid: " + _e)
+                LibraryData.extension_thread_delayed_complete = True
                 raise Exception(f"No output found {b}")
             else:
                 _f = _e
         PlaybackConfig.assign_extension(_f)
+        LibraryData.extension_thread_delayed_complete = True
 
     def s(self, q, x=1):
         Utils.log(f"s: {q}")

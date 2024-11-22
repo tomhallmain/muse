@@ -220,7 +220,8 @@ class AudioTrack:
         text = re.sub(re.compile(" No. ?([0-9])"), _("Number \\1"), text)
         text = re.sub(re.compile("Nr. ?([0-9])"),  _("Number \\1"), text)
         text = re.sub(re.compile("( |^)TTS( |$)"),   _("\\1text to speech\\2"), text)
-        text = re.sub(re.compile("( o| ?O)p. ([0-9])"), _(" Opus \\1"), text)
+        text = re.sub(re.compile("( o| ?O)p. ([0-9])"), _(" Opus \\2"), text)
+        # TODO replace foreign-language quotes that the TTS model can't handle with normal quotes
         return text
 
     @staticmethod

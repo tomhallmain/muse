@@ -43,13 +43,17 @@ class MuseSpotProfile:
     def update_skip_previous_track_remark(self, skip_track):
         self.skip_previous_track_remark = self.skip_previous_track_remark or skip_track
 
-    def get_ui_text(self):
-        if self.track is None:
-            raise Exception("Track is None")
-        out = _("Track: ") + self.track.title
+    def get_ui_text(self, include_track=True):
+        out = ""
+        if include_track:
+            if self.track is None:
+                raise Exception("Track is None")
+            out = _("Track: ") + self.track.title
         if self.previous_track is not None:
-            out += "\n" + _("Previous Track: ") + self.previous_track.title
-        if self.topic_translated is not None:
+            if include_track:
+                out += "\n"
+            out += _("Previous Track: ") + self.previous_track.title
+        if self.talk_about_something and self.topic_translated is not None:
             out += "\n" + _("Talking about: ") + self.topic_translated
         return out
 
@@ -92,11 +96,11 @@ class Muse:
         else:
             self.voice.prepare_to_say(text)
 
-    def ready_to_prepare(self, cumulative_sleep_seconds, seconds_remaining):
+    def ready_to_prepare(self, cumulative_sleep_seconds, ms_remaining):
         return Muse.enable_preparation \
             and cumulative_sleep_seconds > Muse.preparation_starts_after_seconds_sleep \
             and not self.has_started_prep \
-            and seconds_remaining < int(Muse.preparation_starts_minutes_from_end * 60 * 1000)
+            and ms_remaining < int(Muse.preparation_starts_minutes_from_end * 60 * 1000)
 
     def prepare(self, spot_profile, update_ui_callback=None):
         # TODO Lock both TTS runner queues here
@@ -205,7 +209,7 @@ class Muse:
     def talk_about_something(self, spot_profile):
         if (spot_profile.has_already_spoken and random.random() < 0.75) \
                 or (not spot_profile.has_already_spoken and random.random() < 0.6):
-            if spot_profile.skip_previous_track_remark or spot_profile.previous_track is None:
+            if not spot_profile.has_already_spoken or spot_profile.skip_previous_track_remark or spot_profile.previous_track is None:
                 remark = _("First let's hear about {0}").format(spot_profile.topic_translated)
             else:
                 remark = _("But first, let's hear about {0}.").format(spot_profile.topic_translated)

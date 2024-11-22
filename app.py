@@ -462,9 +462,9 @@ class App():
         if isinstance(audio_track, str):
             text = audio_track
         else:
-            text = "Track: " + audio_track.title + "\nAlbum: " + audio_track.album
+            text = _("Track: ") + audio_track.title + "\n" + _("Album: ") + audio_track.album
             if audio_track.artist is not None:
-                text += "\nArtist: " + audio_track.artist
+                text += "\n" + _("Artist: ") + audio_track.artist
         text = Utils._wrap_text_to_fit_length(text, 100)
         self.label_song_text["text"] = text
         self.master.update()

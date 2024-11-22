@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2024-11-20 15:07-0500\n"
+"POT-Creation-Date: 2024-11-21 13:10-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Thomas Hall <tomhall.main@gmail.com>\n"
 "Language-Team: es Team <<EMAIL>>\n"
@@ -109,6 +109,18 @@ msgstr "Confirmar ejecuci\u00f3n"
 msgid "Are you sure you want to proceed?"
 msgstr "\u00bfEst\u00e1s seguro de que quieres continuar?"
 
+#: .\app.py:465
+msgid "Album: "
+msgstr "\u00c1lbum: "
+
+#: .\app.py:465 .\muse\muse.py:49 .\muse\muse.py:57
+msgid "Track: "
+msgstr "Pista: "
+
+#: .\app.py:467
+msgid "Artist: "
+msgstr "Artista: "
+
 #: .\app.py:508
 msgid "Error"
 msgstr "Error"
@@ -126,20 +138,16 @@ msgid "\\1text to speech\\2"
 msgstr "\\1texto a voz\\2"
 
 #: .\library_data\audio_track.py:223
-msgid " Opus \\1"
-msgstr " Opus \\1"
+msgid " Opus \\2"
+msgstr " Opus \\2"
 
-#: .\library_data\library_data.py:142
+#: .\library_data\library_data.py:143 .\library_data\library_data.py:155
 msgid "Extension thread waiting for {0} minutes"
 msgstr "Hilo de extensi\u00f3n esperando {0} minutos"
 
-#: .\library_data\library_data.py:252
+#: .\library_data\library_data.py:261
 msgid "Extension \"{0}\" waiting for {1} minutes"
 msgstr "Extensi\u00f3n \u00ab{0}\u00bb esperando {1} minutos"
-
-#: .\muse\muse.py:49 .\muse\muse.py:57
-msgid "Track: "
-msgstr "Pista: "
 
 #: .\muse\muse.py:51 .\muse\muse.py:58
 msgid "Previous Track: "
