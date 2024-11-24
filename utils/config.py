@@ -108,7 +108,8 @@ class Config:
                 if sys.platform == "win32" and not d.startswith("C:\\") and not d.startswith("{HOME}"):
                     pass
                 elif not os.path.isdir(d):
-                    self.directories[i] = self.validate_and_set_directory(d, override=True)
+                    d = self.validate_and_set_directory(d, override=True)
+                    self.directories[i] = d if d is None else os.path.normpath(os.path.realpath(d))
             except Exception as e:
                 pass
             i += 1
@@ -192,6 +193,13 @@ class Config:
             except Exception:
                 pass
         return subdirectories
+    
+    def matches_master_directory(self, directory):
+        directory = os.path.normpath(os.path.realpath(directory))
+        for d in self.directories:
+            if d == directory:
+                return True
+        return False
 
 
 

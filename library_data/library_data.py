@@ -4,6 +4,7 @@ import random
 import subprocess
 
 from extensions.library_extender import LibraryExtender
+from extensions.soup_utils import SoupUtils
 from library_data.composer import composers_data
 from muse.playback_config import PlaybackConfig
 from muse.run_config import RunConfig
@@ -229,7 +230,8 @@ class LibraryData:
                     raise Exception(f"Unable to find valid results: {q}")
                 self._simple(q, m=m*2, depth=depth+1)
                 return
-            Utils.log_yellow("Selected option: " + b.name + " " + b.x())
+            name = SoupUtils.clean_html(b.name)
+            Utils.log_yellow(f"Selected option: {name} - {b.x()}")
             Utils.start_thread(self._delayed, use_asyncio=False, args=(b,))
         else:
             if r is None:
@@ -258,7 +260,7 @@ class LibraryData:
             if time_seconds <= 0:
                 break
             if self.callbacks is not None:
-                self.callbacks.update_extension_status(_("Extension \"{0}\" waiting for {1} minutes").format(b.name, round(float(time_seconds) / 60)))
+                self.callbacks.update_extension_status(_("Extension \"{0}\" waiting for {1} minutes").format(SoupUtils.clean_html(b.name), round(float(time_seconds) / 60)))
             Utils.long_sleep(check_cadence, "Extension thread delay wait")
         a = b.da(g=config.directories[0])
         e1 = " Destination: "

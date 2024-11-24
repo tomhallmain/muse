@@ -354,6 +354,78 @@ class Utils:
             raise Exception("File already exists: " + new_filepath)
         return shutil.copy2(existing_filepath, new_filepath)
 
+    @staticmethod
+    def remove_ids(s, min_length=10, fixed_length=None):
+        """
+        Try to determine if a string appears to be a randomized ID following certain logic.
+        """
+        text = s
+        # Check if the string contains at least one lowercase letter, one uppercase letter, and one digit
+        if "[" in s and (any(c.islower() for c in s) and any(c.isupper() for c in s)):
+            # Check if the string does not contain any spaces or special characters
+            if fixed_length is None:
+                regex_string = "\\[[A-Za-z0-9_-]{" + str(min_length) + ",}\\]"
+            else:
+                regex_string = "\\[[A-Za-z0-9_-]{" + str(fixed_length) + "}\\]"
+            offset = 0
+            for match in re.finditer(regex_string, text):
+                maybe_id = match.group()[1:-1]
+                if Utils.is_id(maybe_id):
+                    left = text[:match.start() + offset]
+                    right = text[match.end() + offset:]
+                    original_len = len(maybe_id)
+                    offset_change = 0
+                    text = ""
+                    if left is not None and left.strip() != "":
+                        text += left.strip()
+                    if right is not None and right.strip() != "":
+                        if text != "" and text[-1] != " ":
+                            text += " "
+                            offset_change = 1
+                        text += right.strip()
+                    offset += offset_change - original_len 
+
+        return text
+
+    @staticmethod
+    def is_id(s):
+        # Calculate the frequency of uppercase letters, lowercase letters, and digits
+        upper_count = sum(1 for c in s if c.isupper())
+        lower_count = sum(1 for c in s if c.islower())
+        digit_count = sum(1 for c in s if c.isdigit())
+
+        # print(f"Upper count: {upper_count}")
+        # print(upper_count / len(s))
+        # print(f"Lower count: {lower_count}")
+        # print(lower_count / len(s))
+        # print(f"Digit count: {digit_count}")
+        
+        # Check if the frequency of uppercase letters is at least X% and not more than Y% of the total characters
+        # Check if the frequency of lowercase letters is at least X% and not more than Y% of the total characters
+        # Check if the frequency of digits is at least X% and not more than Y% of the total characters
+
+        if (0.1 <= upper_count / len(s) <= 0.9 
+            and 0.1 <= lower_count / len(s) <= 0.7):
+
+            # Check to see if there are a lot of transitions
+            transitions = 0
+
+            for i in range(len(s) - 1):
+                c0 = s[i]
+                c1 = s[i+1]
+                if (c0.isupper() != c1.isupper()
+                        or c0.isdigit() != c1.isdigit()
+                        or c0.isalnum() != c1.isalnum()):
+                    transitions += 1
+                #     print(c0 + c1 + " < TRANSITION")
+                # else:
+                #     print(c0 + c1)
+
+            if transitions > 1:
+                return True
+            # print(f"transitions: {transitions}, length: {len(s)}")
+        return False
+
 
 if __name__ == "__main__":
     import pickle

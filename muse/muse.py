@@ -127,10 +127,12 @@ class Muse:
     def maybe_dj(self, spot_profile):
         # TODO quality info for songs
         # Release lock on TTS runner for "prior" queue
+        start = time.time()
         self.voice.finish_speaking()
         while not spot_profile.is_prepared:
             time.sleep(1)
             self.voice.finish_speaking()
+        return round(time.time() - start)
 
     def reset(self):
         self.has_started_prep = False
@@ -178,16 +180,12 @@ class Muse:
     def get_topic(self, previous_track, excluded_topics=[]):
         if Prompter.over_n_hours_since_last("weather", n_hours=24):
             topic = "weather"
-            Utils.log("Talking about the weather")
         elif Prompter.over_n_hours_since_last("news", n_hours=96):
             topic = "news"
-            Utils.log("Talking about the news")
         elif Prompter.over_n_hours_since_last("hackernews", n_hours=96):
             topic = "hackernews"
-            Utils.log("Talking about the news")
         else:
             topic = Prompter.get_oldest_topic(excluded_topics=excluded_topics)
-            Utils.log("Talking about topic: " + topic)
 
         if topic in ["hackernews", "news"] and Prompter.under_n_hours_since_last(topic, n_hours=14):
             if topic not in excluded_topics:
@@ -209,13 +207,14 @@ class Muse:
     def talk_about_something(self, spot_profile):
         if (spot_profile.has_already_spoken and random.random() < 0.75) \
                 or (not spot_profile.has_already_spoken and random.random() < 0.6):
-            if not spot_profile.has_already_spoken or spot_profile.skip_previous_track_remark or spot_profile.previous_track is None:
+            if not spot_profile.has_already_spoken:
                 remark = _("First let's hear about {0}").format(spot_profile.topic_translated)
             else:
                 remark = _("But first, let's hear about {0}.").format(spot_profile.topic_translated)
             self.say_at_some_point(remark, spot_profile)
 
         topic = spot_profile.topic
+        Utils.log("Talking about topic: " + topic)
 
         if topic == "weather":
             self.talk_about_weather(config.open_weather_city, spot_profile)

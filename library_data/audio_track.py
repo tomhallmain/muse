@@ -4,6 +4,7 @@ import re
 
 # from ops.artists import Artists
 from library_data.composer import composers_data
+from utils.config import config
 from utils.translations import I18N
 from utils.utils import Utils
 
@@ -49,10 +50,11 @@ dict_keys(['tag_aliases', 'tag_map', 'resolvers', 'singular_keys', 'filename', '
 """
 
 class AudioTrack:
+    music_tag_ignored_tags = ['comment', 'isrc', 'lyrics']
 
     def __init__(self, filepath):
         self.filepath = filepath
-        self.tracktitle = None # TODO merge this with self.title
+        self.tracktitle = None
         self.artist = None
         self.album = None
         self.albumartist = None
@@ -84,12 +86,9 @@ class AudioTrack:
             self.basename = os.path.basename(filepath)
             dirpath1 = os.path.dirname(os.path.abspath(filepath))
             dirpath2 = os.path.dirname(os.path.abspath(dirpath1))
-            basename_dirpath2 = os.path.basename(dirpath2)
-            if basename_dirpath2 != "audio":
-                self.artist = basename_dirpath2
-            else:
-                self.artist = None
             self.album = os.path.basename(dirpath1)
+            if not config.matches_master_directory(dirpath1) and not config.matches_master_directory(dirpath2):
+                self.artist = os.path.basename(dirpath2)
             self.title, self.ext = os.path.splitext(self.basename)
             # NOTE there are cases where a group of artists are combined in a single album or a single artist name, and
             # it may be possible to extract the specific artistic name given properties of the track relative to others
@@ -100,13 +99,17 @@ class AudioTrack:
             try:
                 music_tag_wrapper = music_tag.load_file(filepath)
                 for k in music_tag_wrapper.__dict__["tag_map"].keys():
-                    if not k in ["lyrics", "isrc", "comment"] and not k.startswith("#"):
+                    if not k in AudioTrack.music_tag_ignored_tags and not k.startswith("#"):
                         value = music_tag_wrapper[k].first
                         if value is not None:
                             try:
                                 setattr(self, k, value)
                             except Exception:
                                 pass
+                if self.title is None and self.tracktitle is not None:
+                    self.title = str(self.tracktitle)
+                if self.artist is None and self.albumartist is not None:
+                    self.artist = str(self.albumartist)
             except Exception as e:
                 pass
                 # Utils.log(f"Failed to gather track details for track {self.title}")
@@ -212,7 +215,7 @@ class AudioTrack:
             if self.artist is not None and self.artist.strip() != "":
                 return f"{self.readable_artist()} - {self.readable_title()} - {self.readable_album()}"
             return f"{self.readable_title()} - {self.readable_album()}"            
-        return self.readable_title
+        return self.readable_title()
 
     @staticmethod
     def _prep_track_text(text):
@@ -222,7 +225,7 @@ class AudioTrack:
         text = re.sub(re.compile("( |^)TTS( |$)"),   _("\\1text to speech\\2"), text)
         text = re.sub(re.compile("( o| ?O)p. ([0-9])"), _(" Opus \\2"), text)
         # TODO replace foreign-language quotes that the TTS model can't handle with normal quotes
-        return text
+        return Utils.remove_ids(text)
 
     @staticmethod
     def extract_ints_from_start(s):

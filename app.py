@@ -167,7 +167,7 @@ class App():
                                            *directory_options, command=self.set_directory)
         self.apply_to_grid(self.directory_choice, interior_column=1, sticky=W)
 
-        self.overwrite = BooleanVar(value=self.runner_app_config.overwrite)
+        self.overwrite = BooleanVar(value=True)
         self.overwrite_choice = Checkbutton(self.sidebar, text=_('Overwrite'), variable=self.overwrite)
         self.apply_to_grid(self.overwrite_choice, sticky=W)
 

@@ -1,6 +1,7 @@
 
+from random import randint
 import subprocess
-from time import sleep
+import time
 import vlc
 
 from muse.playback_config import PlaybackConfig
@@ -24,6 +25,7 @@ class Playback:
         self._playback_config = playback_config
         self.callbacks = callbacks
         self._run = run
+        self.muse = run.muse
         self.is_paused = False
         self.skip_track = False
         self.skip_delay = False
@@ -33,9 +35,10 @@ class Playback:
         self.has_played_first_track = False
         self.count = 0
         self.muse_spot_profiles = []
+        self.remaining_delay_seconds = Globals.DELAY_TIME_SECONDS
 
     def has_muse(self):
-        return self._run and self._run.muse is not None
+        return self._run and self._run.args.muse and self.muse is not None and self.muse.voice.can_speak
 
     def get_track(self):
         self.previous_track = self.track
@@ -81,36 +84,51 @@ class Playback:
     def play_one_song(self):
         if self.get_track():
             self.vlc_media_player.play()
-            sleep(0.5)
+            time.sleep(0.5)
             while (self.vlc_media_player.is_playing() or self.is_paused) and not self.skip_track:
-                sleep(0.5)
+                time.sleep(0.5)
             self.vlc_media_player.stop()
         else:
             raise Exception("No tracks in playlist")
 
+    def get_track_length(self):
+        return round(float(vlc.MediaPlayer(self.track.filepath).get_length()) / 1000)
+
+    def set_delay_seconds(self):
+        track_length = self.get_track_length()
+        random_buffer_threshold = round(float(track_length) / randint(5, 10))
+        random_buffer = randint(0, random_buffer_threshold) * (1 if randint(0,1) == 1 else -1)
+        self.remaining_delay_seconds = Globals.DELAY_TIME_SECONDS + random_buffer
+
     def run(self):
         while self.get_track() and not self._run.is_cancelled:
-            if self.has_muse() and self._run.muse.voice.can_speak:
-                if not self.has_played_first_track or not self._run.muse.has_started_prep:
+            self.set_delay_seconds()
+            if self.has_muse():
+                if not self.has_played_first_track or not self.muse.has_started_prep:
                     # First track, or if user skipped before end of last track
-                    self.prepare_muse(first_prep=not self.has_played_first_track, delayed_prep=True)
+                    seconds_passed = self.prepare_muse(first_prep=not self.has_played_first_track, delayed_prep=True)
+                    self.remaining_delay_seconds -= seconds_passed
                 # TODO enable muse to be cancelled when user clicks Next
                 # The user may have requested to skip the last track since the muse profile was created
                 self.get_spot_profile().update_skip_previous_track_remark(self.skip_track)
                 if self.get_spot_profile().is_going_to_say_something():
-                    # TODO handle long delays edge case
-                    self._run.muse.maybe_dj(self.get_spot_profile())
+                    seconds_passed = self.muse.maybe_dj(self.get_spot_profile())
+                    self.remaining_delay_seconds -= seconds_passed
                     self.register_new_song()
-                    # self._run.muse.maybe_dj_prior(self.muse_spot_profile)
+                    # self.muse.maybe_dj_prior(self.muse_spot_profile)
+                    self.delay()
+                    self.update_ui_text()
                 else:
                     self.delay()
                     self.register_new_song()
-                self.reset_muse()
             else:
-                if self._run:
+                if self._run and self._run.muse is not None:
                     Utils.log_yellow("No voice available due to import failure, skipping Muse.")
-                self.delay()
+                if self.has_played_first_track:
+                    self.delay()
+                self.generate_silent_spot_profile()
                 self.register_new_song()
+            self.reset_muse()
 
             self.set_volume()
             self.last_track_failed = False
@@ -118,16 +136,16 @@ class Playback:
             self.skip_track = False
 
             self.vlc_media_player.play()
-            sleep(0.5)
+            time.sleep(0.5)
             cumulative_sleep_seconds = 0.5
             if not self.vlc_media_player.is_playing():
                 self.last_track_failed = True
             while (self.vlc_media_player.is_playing() or self.is_paused) and not self.skip_track:
-                sleep(0.5)
+                time.sleep(0.5)
                 cumulative_sleep_seconds += 0.5
                 seconds_remaining = self.update_progress()
-                if  self._run.muse is not None and \
-                        self._run.muse.ready_to_prepare(cumulative_sleep_seconds, seconds_remaining):
+                if self.has_muse() and \
+                        self.muse.ready_to_prepare(cumulative_sleep_seconds, seconds_remaining):
                     self.prepare_muse()
 
             self.vlc_media_player.stop()
@@ -147,7 +165,7 @@ class Playback:
         return duration - current_time
 
     def reset_muse(self):
-        self._run.muse.reset()
+        self.muse.reset()
         self.muse_spot_profiles.remove(self.get_spot_profile(self.track))
 
     def prepare_muse(self, first_prep=False, delayed_prep=False):
@@ -156,19 +174,29 @@ class Playback:
         # the expected delay.
         next_track = self.track if delayed_prep else self._playback_config.upcoming_track()
         previous_track = None if first_prep else (self.previous_track if delayed_prep else self.track)
-        spot_profile = self._run.muse.get_spot_profile(previous_track, next_track, self.last_track_failed, self.skip_track)
+        spot_profile = self.muse.get_spot_profile(previous_track, next_track, self.last_track_failed, self.skip_track)
         self.muse_spot_profiles.append(spot_profile)
+        start = time.time()
         if delayed_prep:
             spot_profile.immediate = True
             if not first_prep:
                 Utils.log("Delayed preparation.")
-            self._run.muse.prepare(spot_profile, self.callbacks.update_muse_text)
+            self.muse.prepare(spot_profile, self.callbacks.update_muse_text)
         else:
-            Utils.start_thread(self._run.muse.prepare, use_asyncio=False, args=(spot_profile, self.callbacks.update_muse_text))
+            Utils.start_thread(self.muse.prepare, use_asyncio=False, args=(spot_profile, self.callbacks.update_muse_text))
+        return round(time.time() - start)
+
+    def generate_silent_spot_profile(self):
+        previous_track = self.previous_track if self.has_played_first_track else None
+        spot_profile = self.muse.get_spot_profile(previous_track, self.track, self.last_track_failed, self.skip_track)
+        self.muse_spot_profiles.append(spot_profile)
 
     def register_new_song(self):
         Utils.log(f"Playing track file: {self.track.filepath}")
         self.vlc_media_player = vlc.MediaPlayer(self.track.filepath)
+        self.update_ui_text()
+
+    def update_ui_text(self):
         if self.callbacks.track_details_callback is not None:
             self.callbacks.track_details_callback(self.track)
         if self.callbacks.update_muse_text is not None:
@@ -182,11 +210,11 @@ class Playback:
 
     def delay(self):
         if self.has_played_first_track and not self.last_track_failed:
-            if Globals.DELAY_TIME_SECONDS > 4:
-                self.callbacks.track_details_callback(_("Sleeping for seconds") + ": " + str(Globals.DELAY_TIME_SECONDS))
+            if self.remaining_delay_seconds > 4:
+                self.callbacks.track_details_callback(_("Sleeping for seconds") + ": " + str(self.remaining_delay_seconds))
             delay_timer = 0
-            while not self.skip_delay and delay_timer < Globals.DELAY_TIME_SECONDS:
-                sleep(0.5)
+            while not self.skip_delay and delay_timer < self.remaining_delay_seconds:
+                time.sleep(0.5)
                 delay_timer += 0.5
             if self.skip_delay:
                 self.skip_delay = False
