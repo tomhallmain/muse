@@ -108,6 +108,7 @@ class Playback:
                     # First track, or if user skipped before end of last track
                     seconds_passed = self.prepare_muse(first_prep=not self.has_played_first_track, delayed_prep=True)
                     self.remaining_delay_seconds -= seconds_passed
+                # TODO edge case when extension track has been assigned after the preparation for the previously expected upcoming track
                 # TODO enable muse to be cancelled when user clicks Next
                 # The user may have requested to skip the last track since the muse profile was created
                 self.get_spot_profile().update_skip_previous_track_remark(self.skip_track)
@@ -122,7 +123,7 @@ class Playback:
                     self.delay()
                     self.register_new_song()
             else:
-                if self._run and self._run.muse is not None:
+                if self._run and self._run.args.muse and self._run.muse is not None:
                     Utils.log_yellow("No voice available due to import failure, skipping Muse.")
                 if self.has_played_first_track:
                     self.delay()

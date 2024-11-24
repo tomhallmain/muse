@@ -248,6 +248,8 @@ class Muse:
             self.talk_about_random_wiki_article(spot_profile)
         elif topic == "funny_story":
             self.share_a_funny_story(spot_profile)
+        elif topic == "language_learning":
+            self.teach_language(spot_profile)
         else:
             Utils.log_yellow("Unhandled topic: " + topic)
 
@@ -343,3 +345,10 @@ class Muse:
     def share_a_funny_story(self, spot_profile):
         funny_story = self.llm.generate_response(self.prompter.get_prompt("funny_story"))
         self.say_at_some_point(funny_story, spot_profile)
+
+    def teach_language(self, spot_profile):
+        prompt = self.prompter.get_prompt("language_learning")
+        prompt.replace("LANGUAGE", config.muse_language_learning_language)
+        language_response = self.llm.generate_response(prompt)
+        self.say_at_some_point(language_response, spot_profile)
+

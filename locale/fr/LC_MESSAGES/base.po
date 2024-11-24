@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2024-11-21 13:10-0500\n"
+"POT-Creation-Date: 2024-11-24 18:17-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Thomas Hall <tomhall.main@gmail.com>\n"
 "Language-Team: fr Team <<EMAIL>>\n"
@@ -113,7 +113,7 @@ msgstr "\u00cates-vous s\u00fbr de vouloir continuer ?"
 msgid "Album: "
 msgstr "Album : "
 
-#: .\app.py:465 .\muse\muse.py:49 .\muse\muse.py:57
+#: .\app.py:465 .\muse\muse.py:51 .\muse\muse.py:61
 msgid "Track: "
 msgstr "Piste : "
 
@@ -129,91 +129,91 @@ msgstr "Erreur"
 msgid " Muse "
 msgstr " Muse "
 
-#: .\library_data\audio_track.py:220 .\library_data\audio_track.py:221
+#: .\library_data\audio_track.py:223 .\library_data\audio_track.py:224
 msgid "Number \\1"
 msgstr "Nombre \\1"
 
-#: .\library_data\audio_track.py:222
+#: .\library_data\audio_track.py:225
 msgid "\\1text to speech\\2"
 msgstr "\\1synth\u00e8se vocale\\2"
 
-#: .\library_data\audio_track.py:223
+#: .\library_data\audio_track.py:226
 msgid " Opus \\2"
 msgstr " Opus \\2"
 
-#: .\library_data\library_data.py:143 .\library_data\library_data.py:155
+#: .\library_data\library_data.py:144 .\library_data\library_data.py:156
 msgid "Extension thread waiting for {0} minutes"
 msgstr "Le thread d'extension attend {0} minutes"
 
-#: .\library_data\library_data.py:261
+#: .\library_data\library_data.py:263
 msgid "Extension \"{0}\" waiting for {1} minutes"
 msgstr "Extension \u00ab {0} \u00bb en attente depuis {1} minutes"
 
-#: .\muse\muse.py:51 .\muse\muse.py:58
+#: .\muse\muse.py:55 .\muse\muse.py:62
 msgid "Previous Track: "
 msgstr "Piste pr\u00e9c\u00e9dente : "
 
-#: .\muse\muse.py:53
+#: .\muse\muse.py:57
 msgid "Talking about: "
 msgstr "Parler de : "
 
-#: .\muse\muse.py:57
+#: .\muse\muse.py:61
 msgid "No track"
 msgstr "Pas de piste"
 
-#: .\muse\muse.py:58
+#: .\muse\muse.py:62
 msgid "No previous track"
 msgstr "Pas de piste pr\u00e9c\u00e9dente"
 
-#: .\muse\muse.py:60
+#: .\muse\muse.py:64
 msgid "Speaking about prior track"
 msgstr "\u00c0 propos de la piste pr\u00e9c\u00e9dente"
 
-#: .\muse\muse.py:62
+#: .\muse\muse.py:66
 msgid "Speaking about upcoming track"
 msgstr "\u00c0 propos de le prochaine piste"
 
-#: .\muse\muse.py:64
+#: .\muse\muse.py:68
 msgid "Talking about something"
 msgstr "Parler de quelque chose"
 
-#: .\muse\muse.py:148
+#: .\muse\muse.py:154
 msgid "That was \"{0}\" in \"{1}\""
 msgstr "C'\u00e9tait \u00ab {0} \u00bb dans \u00ab {1} \u00bb"
 
-#: .\muse\muse.py:150 .\muse\muse.py:167
+#: .\muse\muse.py:156 .\muse\muse.py:173
 msgid " by \"{0}\"."
 msgstr " par \u00ab {0} \u00bb"
 
-#: .\muse\muse.py:155
+#: .\muse\muse.py:161
 msgid "That was a new track. How'd you like that?"
 msgstr "C'\u00e9tait un nouveau morceau. Qu'en pensez-vous ?"
 
-#: .\muse\muse.py:157
+#: .\muse\muse.py:163
 msgid "That was a new one. How'd you like it?"
 msgstr "C'\u00e9tait un nouveau. Comment l'avez-vous trouv\u00e9 ?"
 
-#: .\muse\muse.py:163
+#: .\muse\muse.py:169
 msgid "To start, we'll be playing: \"{0}\" from \"{1}\""
 msgstr "Pour commencer, nous allons jouer : \u00ab {0} \u00bb de \u00ab {1} \u00bb"
 
-#: .\muse\muse.py:165
+#: .\muse\muse.py:171
 msgid "Next up, we'll be playing: \"{0}\" from \"{1}\""
 msgstr "Prochainement, nous jouerons : \u00ab {0} \u00bb de \u00ab {1} \u00bb"
 
-#: .\muse\muse.py:171
+#: .\muse\muse.py:177
 msgid "This one is a new track."
 msgstr "Il s'agit d'une nouvelle piste."
 
-#: .\muse\muse.py:209
+#: .\muse\muse.py:211
 msgid "First let's hear about {0}"
 msgstr "Tout d'abord, parlons de {0}"
 
-#: .\muse\muse.py:211
+#: .\muse\muse.py:213
 msgid "But first, let's hear about {0}."
 msgstr "Mais d'abord, parlons de  {0}"
 
-#: .\muse\playback.py:183
+#: .\muse\playback.py:215
 msgid "Sleeping for seconds"
 msgstr "Dormir quelques secondes"
 
@@ -280,6 +280,10 @@ msgstr "article wiki al\u00e9atoire"
 #: .\muse\prompter.py:54
 msgid "funny story"
 msgstr "histoire dr\u00f4le"
+
+#: .\muse\prompter.py:56
+msgid "language learning"
+msgstr "l'apprentissage des langues"
 
 #: .\ui\search_window.py:29
 msgid "Search Library"

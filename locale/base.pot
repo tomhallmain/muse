@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2024-11-21 13:09-0500\n"
+"POT-Creation-Date: 2024-11-24 18:17-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -113,7 +113,7 @@ msgstr ""
 msgid "Album: "
 msgstr ""
 
-#: .\app.py:465 .\muse\muse.py:49 .\muse\muse.py:57
+#: .\app.py:465 .\muse\muse.py:51 .\muse\muse.py:61
 msgid "Track: "
 msgstr ""
 
@@ -129,91 +129,91 @@ msgstr ""
 msgid " Muse "
 msgstr ""
 
-#: .\library_data\audio_track.py:220 .\library_data\audio_track.py:221
+#: .\library_data\audio_track.py:223 .\library_data\audio_track.py:224
 msgid "Number \\1"
 msgstr ""
 
-#: .\library_data\audio_track.py:222
+#: .\library_data\audio_track.py:225
 msgid "\\1text to speech\\2"
 msgstr ""
 
-#: .\library_data\audio_track.py:223
+#: .\library_data\audio_track.py:226
 msgid " Opus \\2"
 msgstr ""
 
-#: .\library_data\library_data.py:143 .\library_data\library_data.py:155
+#: .\library_data\library_data.py:144 .\library_data\library_data.py:156
 msgid "Extension thread waiting for {0} minutes"
 msgstr ""
 
-#: .\library_data\library_data.py:261
+#: .\library_data\library_data.py:263
 msgid "Extension \"{0}\" waiting for {1} minutes"
 msgstr ""
 
-#: .\muse\muse.py:51 .\muse\muse.py:58
+#: .\muse\muse.py:55 .\muse\muse.py:62
 msgid "Previous Track: "
 msgstr ""
 
-#: .\muse\muse.py:53
+#: .\muse\muse.py:57
 msgid "Talking about: "
 msgstr ""
 
-#: .\muse\muse.py:57
+#: .\muse\muse.py:61
 msgid "No track"
 msgstr ""
 
-#: .\muse\muse.py:58
+#: .\muse\muse.py:62
 msgid "No previous track"
 msgstr ""
 
-#: .\muse\muse.py:60
+#: .\muse\muse.py:64
 msgid "Speaking about prior track"
 msgstr ""
 
-#: .\muse\muse.py:62
+#: .\muse\muse.py:66
 msgid "Speaking about upcoming track"
 msgstr ""
 
-#: .\muse\muse.py:64
+#: .\muse\muse.py:68
 msgid "Talking about something"
 msgstr ""
 
-#: .\muse\muse.py:148
+#: .\muse\muse.py:154
 msgid "That was \"{0}\" in \"{1}\""
 msgstr ""
 
-#: .\muse\muse.py:150 .\muse\muse.py:167
+#: .\muse\muse.py:156 .\muse\muse.py:173
 msgid " by \"{0}\"."
 msgstr ""
 
-#: .\muse\muse.py:155
+#: .\muse\muse.py:161
 msgid "That was a new track. How'd you like that?"
 msgstr ""
 
-#: .\muse\muse.py:157
+#: .\muse\muse.py:163
 msgid "That was a new one. How'd you like it?"
 msgstr ""
 
-#: .\muse\muse.py:163
+#: .\muse\muse.py:169
 msgid "To start, we'll be playing: \"{0}\" from \"{1}\""
 msgstr ""
 
-#: .\muse\muse.py:165
+#: .\muse\muse.py:171
 msgid "Next up, we'll be playing: \"{0}\" from \"{1}\""
 msgstr ""
 
-#: .\muse\muse.py:171
+#: .\muse\muse.py:177
 msgid "This one is a new track."
 msgstr ""
 
-#: .\muse\muse.py:209
+#: .\muse\muse.py:211
 msgid "First let's hear about {0}"
 msgstr ""
 
-#: .\muse\muse.py:211
+#: .\muse\muse.py:213
 msgid "But first, let's hear about {0}."
 msgstr ""
 
-#: .\muse\playback.py:183
+#: .\muse\playback.py:215
 msgid "Sleeping for seconds"
 msgstr ""
 
@@ -279,6 +279,10 @@ msgstr ""
 
 #: .\muse\prompter.py:54
 msgid "funny story"
+msgstr ""
+
+#: .\muse\prompter.py:56
+msgid "language learning"
 msgstr ""
 
 #: .\ui\search_window.py:29

@@ -33,6 +33,7 @@ class Config:
         self.open_weather_api_key = None
         self.news_api_key = None
         self.news_api_source_trustworthiness = {}
+        self.muse_language_learning_language = "German"
         self.debug = False
 
         self.text_cleaner_ruleset = []

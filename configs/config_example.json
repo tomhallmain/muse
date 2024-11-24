@@ -23,7 +23,7 @@
     "news_api_source_trustworthiness": {
         "bbc-news": 0.5
     },
-    "holiday_api_key": "<KEY>",
+    "muse_language_learning_language": "German",
     "coqui_tts_location": "{HOME}\\TTS-dev",
     "text_cleaner_ruleset": [
         {

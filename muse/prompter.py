@@ -13,7 +13,7 @@ class Prompter:
     TOPICS = ["weather", "news", "hackernews", "joke", "fact", "fable", 
               "truth_and_lie", "aphorism", "poem", "quote", "tongue_twister", 
               "motivation", "calendar", "track_context_prior", "track_context_post",
-              "random_wiki_article", "funny_story"]
+              "random_wiki_article", "funny_story", "language_learning"]
     TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M"
 
     @staticmethod
@@ -52,6 +52,8 @@ class Prompter:
             return _("random wiki article")
         elif topic == "funny_story":
             return _("funny story")
+        elif topic == "language_learning":
+            return  _("language learning")
         else:
             return topic
 
