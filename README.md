@@ -17,6 +17,7 @@ Muse is a media player with an integrated voice synthesizer attached to an LLM. 
 
 ## Configuration
 
+- Set `LANGUAGE` environment variable to desired i18n code. If not supported, the language will default to English.
 - `directories` - Add the paths of any audio or video file directories Muse should be playing to this list.
 - `text_cleaner_ruleset` - Add a dictionary of text cleaning rules to be run on text before Muse speaks it.
 - `coqui_tts_model` - Set the TTS model and speaker to be used by Muse.
@@ -44,4 +45,5 @@ In the absence of track details found on the music file itself, Muse will attemp
 ## Usage
 
 - In your virtual environment, run `python app.py` to start the application.
+
 
