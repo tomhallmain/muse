@@ -25,7 +25,7 @@ class Playback:
         self._playback_config = playback_config
         self.callbacks = callbacks
         self._run = run
-        self.muse = run.muse
+        self.muse = run.muse if run else None
         self.is_paused = False
         self.skip_track = False
         self.skip_delay = False
@@ -39,6 +39,11 @@ class Playback:
 
     def has_muse(self):
         return self._run and self._run.args.muse and self.muse is not None and self.muse.voice.can_speak
+
+    def get_muse(self):
+        if self.muse is None:
+            raise Exception("No Muse instance found")
+        return self.muse
 
     def get_track(self):
         self.previous_track = self.track
@@ -104,7 +109,7 @@ class Playback:
         while self.get_track() and not self._run.is_cancelled:
             self.set_delay_seconds()
             if self.has_muse():
-                if not self.has_played_first_track or not self.muse.has_started_prep:
+                if not self.has_played_first_track or not self.get_muse().has_started_prep:
                     # First track, or if user skipped before end of last track
                     seconds_passed = self.prepare_muse(first_prep=not self.has_played_first_track, delayed_prep=True)
                     self.remaining_delay_seconds -= seconds_passed
@@ -113,7 +118,7 @@ class Playback:
                 # The user may have requested to skip the last track since the muse profile was created
                 self.get_spot_profile().update_skip_previous_track_remark(self.skip_track)
                 if self.get_spot_profile().is_going_to_say_something():
-                    seconds_passed = self.muse.maybe_dj(self.get_spot_profile())
+                    seconds_passed = self.get_muse().maybe_dj(self.get_spot_profile())
                     self.remaining_delay_seconds -= seconds_passed
                     self.register_new_song()
                     # self.muse.maybe_dj_prior(self.muse_spot_profile)
@@ -146,7 +151,7 @@ class Playback:
                 cumulative_sleep_seconds += 0.5
                 seconds_remaining = self.update_progress()
                 if self.has_muse() and \
-                        self.muse.ready_to_prepare(cumulative_sleep_seconds, seconds_remaining):
+                        self.get_muse().ready_to_prepare(cumulative_sleep_seconds, seconds_remaining):
                     self.prepare_muse()
 
             self.vlc_media_player.stop()
@@ -166,7 +171,7 @@ class Playback:
         return duration - current_time
 
     def reset_muse(self):
-        self.muse.reset()
+        self.get_muse().reset()
         self.muse_spot_profiles.remove(self.get_spot_profile(self.track))
 
     def prepare_muse(self, first_prep=False, delayed_prep=False):
@@ -175,21 +180,21 @@ class Playback:
         # the expected delay.
         next_track = self.track if delayed_prep else self._playback_config.upcoming_track()
         previous_track = None if first_prep else (self.previous_track if delayed_prep else self.track)
-        spot_profile = self.muse.get_spot_profile(previous_track, next_track, self.last_track_failed, self.skip_track)
+        spot_profile = self.get_muse().get_spot_profile(previous_track, next_track, self.last_track_failed, self.skip_track)
         self.muse_spot_profiles.append(spot_profile)
         start = time.time()
         if delayed_prep:
             spot_profile.immediate = True
             if not first_prep:
                 Utils.log("Delayed preparation.")
-            self.muse.prepare(spot_profile, self.callbacks.update_muse_text)
+            self.get_muse().prepare(spot_profile, self.callbacks.update_muse_text)
         else:
-            Utils.start_thread(self.muse.prepare, use_asyncio=False, args=(spot_profile, self.callbacks.update_muse_text))
+            Utils.start_thread(self.get_muse().prepare, use_asyncio=False, args=(spot_profile, self.callbacks.update_muse_text))
         return round(time.time() - start)
 
     def generate_silent_spot_profile(self):
         previous_track = self.previous_track if self.has_played_first_track else None
-        spot_profile = self.muse.get_spot_profile(previous_track, self.track, self.last_track_failed, self.skip_track)
+        spot_profile = self.get_muse().get_spot_profile(previous_track, self.track, self.last_track_failed, self.skip_track)
         self.muse_spot_profiles.append(spot_profile)
 
     def register_new_song(self):
