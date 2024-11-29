@@ -11,6 +11,7 @@ class LLM:
         self.model_name = model_name
 
     def generate_response(self, query, timeout=120):
+        Utils.log(f"Asking LLM {self.model_name}:\n{query}")
         data = {
             "model": self.model_name,
             "prompt": query,

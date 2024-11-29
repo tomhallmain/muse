@@ -17,6 +17,7 @@ from muse.run import Run
 from muse.run_config import RunConfig
 from ui.app_actions import AppActions
 from ui.app_style import AppStyle
+from ui.extensions_window import ExtensionsWindow
 from ui.search_window import SearchWindow
 from ui.track_details_window import TrackDetailsWindow
 from ui.weather_window import WeatherWindow
@@ -123,7 +124,7 @@ class App():
 
         self.cancel_btn = Button(self.sidebar, text=_("Stop"), command=self.cancel)
         self.text_btn = Button(self.sidebar, text=_("Text"), command=self.open_text)
-        self.extension_btn = Button(self.sidebar, text=_("Extension"), command=self.switch_extension)
+        self.extension_btn = Button(self.sidebar, text=_("Extension"), command=self.open_extensions_window)
 
         self.label_song_text = Label(self.sidebar)
         self.add_label(self.label_song_text, _("Track"), sticky=None, columnspan=2)
@@ -433,6 +434,12 @@ class App():
             track_details_window = TrackDetailsWindow(self.master, self.app_actions)
         except Exception as e:
             Utils.log_red(f"Exception opening track details window: {e}")
+
+    def open_extensions_window(self):
+        try:
+            extensions_window = ExtensionsWindow(self.master, self.app_actions)
+        except Exception as e:
+            Utils.log_red(f"Exception opening extensions window: {e}")
 
     def open_weather_window(self):
         try:

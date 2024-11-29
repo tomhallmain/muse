@@ -11,10 +11,13 @@
             "BWV",
             "B.W.V."
         ],
-        "dob": null,
-        "dod": null,
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
         "genres": [],
-        "works": []
+        "works": [],
+        "notes": {}
     },
     "Ludwig van Beethoven": {
         "id": 107,
@@ -23,9 +26,12 @@
             "Ludwig van Beethoven",
             "Beethoven"
         ],
-        "dob": null,
-        "dod": null,
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
         "genres": [],
-        "works": []
+        "works": [],
+        "notes": {}
     }
 }

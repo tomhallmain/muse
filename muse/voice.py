@@ -19,14 +19,14 @@ class Voice:
 
     def __init__(self):
         self.can_speak = tts_runner_imported
-        self._tts = TextToSpeechRunner(Voice.MULTI_MODEL, filepath="test", delete_interim_files=False, auto_play=False) if self.can_speak else None
+        self._tts = TextToSpeechRunner(Voice.MULTI_MODEL, filepath="muse_voice", delete_interim_files=False, auto_play=False) if self.can_speak else None
 
     def say(self, text="", topic=""):
         # Say immediately
         if not self.can_speak or self._tts is None:
             Utils.log_yellow("Cannot speak.")
             return
-        temp_tts = TextToSpeechRunner(Voice.MULTI_MODEL, filepath="test", overwrite=True)
+        temp_tts = TextToSpeechRunner(Voice.MULTI_MODEL, filepath="muse_voice", overwrite=True)
         current_time_str = str(datetime.datetime.now().timestamp())
         if "." in current_time_str:
             current_time_str = current_time_str.split(".")[0]

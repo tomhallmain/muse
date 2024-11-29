@@ -1,6 +1,5 @@
 
 from random import randint
-import subprocess
 import time
 import vlc
 
@@ -51,21 +50,6 @@ class Playback:
         if self.track is None or self.track.is_invalid():
             return False
         return True
-
-    def get_song_volume(self):
-        args = ["ffmpeg", "-i", self.track.filepath, "-af", "volumedetect", "-f", "null", "/dev/null"]
-        process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        output, _ = process.communicate()
-        mean_volume_tag = "] mean_volume: "
-        max_volume_tag = "] max_volume: "
-        mean_volume = -99999.0
-        max_volume = -99999.0
-        for line in output.decode("utf-8", errors="ignore").split("\n"):
-            if mean_volume_tag in line:
-                mean_volume = float(line[line.index(mean_volume_tag)+len(mean_volume_tag):-3].strip())
-            if max_volume_tag in line:
-                max_volume = float(line[line.index(max_volume_tag)+len(max_volume_tag):-3].strip())
-        return mean_volume, max_volume
 
     def get_song_quality_info(self):
         # TODO: Get info like bit rate, mono vs stereo, possibly try to infer if it's AI or not
@@ -226,7 +210,7 @@ class Playback:
                 self.skip_delay = False
 
     def set_volume(self):
-        mean_volume, max_volume = self.get_song_volume()
+        mean_volume, max_volume = self.track.get_volume()
         volume = (Globals.DEFAULT_VOLUME_THRESHOLD + 30) if mean_volume < -50 else min(int(Globals.DEFAULT_VOLUME_THRESHOLD + (-1 * mean_volume)), 100)
         Utils.log(f"Mean volume: {mean_volume} Max volume: {max_volume} Setting volume to: {volume}")
         self.vlc_media_player.audio_set_volume(volume)

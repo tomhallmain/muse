@@ -293,7 +293,7 @@ class TextToSpeechRunner:
                 else:
                     self.used_audio_paths.extend(self.audio_paths)
                 self.audio_paths = []
-                return Utils.move_file(mp3_path, output_path[:-4] + " - TTS.mp3")
+                return Utils.move_file(mp3_path, output_path[:-4] + " - TTS.mp3", overwrite_existing=self.overwrite)
             else:
                 self.audio_paths = []
                 raise Exception()

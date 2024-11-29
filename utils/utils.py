@@ -426,6 +426,18 @@ class Utils:
             # print(f"transitions: {transitions}, length: {len(s)}")
         return False
 
+    @staticmethod
+    def sort_dictionary(_dict, key=None):
+        sorted_dict = {}
+        keys_list = list(_dict.keys())
+        if key:
+            keys_list.sort(key=key)
+        else:
+            keys_list.sort()
+        for key in keys_list:
+            sorted_dict[key] = _dict[key]
+        return sorted_dict
+
 
 if __name__ == "__main__":
     import pickle

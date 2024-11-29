@@ -46,11 +46,13 @@ class TextCleanerRuleset:
             rule = TextModifierRule(**rule_config)
             self.add_rule(rule)
             Utils.log(f"Added rule: {rule}")
-
         
     def clean(self, text):
         for rule in self.rules:
             text = rule.apply(text)
+        # Unfortunately, the quote characters from other languages are not well supported by most TTS models.
+        text = text.replace("\u201c", '"').replace('\u201d', '"')
+        text = text.replace("\u00ab", '"').replace('\u00bb', '"')
         return text
 
     def add_rule(self, rule):

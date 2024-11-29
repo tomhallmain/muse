@@ -28,20 +28,23 @@ def get_playback_config():
 
 
 class LibraryDataSearch:
-    def __init__(self, all, title, artist, composer, album, genre, max_results=200):
-        self.all = all
-        self.title = title
-        self.artist = artist
-        self.composer = composer
-        self.album = album
-        self.genre = genre
+    def __init__(self, all, title, artist, composer, album, genre, instrument, max_results=200):
+        self.all = all.lower()
+        self.title = title.lower()
+        self.artist = artist.lower()
+        self.composer = composer.lower()
+        self.album = album.lower()
+        self.genre = genre.lower()
+        self.instrument = instrument.lower()
         self.max_results = max_results
 
         self.results = []
 
     def is_valid(self):
-        for field in [self.all, self.title, self.artist, self.composer, self.album, self.genre]:
-            if field is not None and len(field) > 0 and field.strip()!= "":
+        for name in ["all", "title", "artist", "composer", "album", "genre", "instrument"]:
+            field = getattr(self, name)
+            if field is not None and field.strip()!= "":
+                print(f"{name} - \"{field}\"")
                 return True
         return False
 
@@ -80,6 +83,7 @@ class TrackAttribute(Enum):
     ARTIST = "artist"
     COMPOSER = "composer"
     GENRE = "genre"
+    INSTRUMENT = "instrument"
 
 
 class LibraryData:
@@ -176,6 +180,8 @@ class LibraryData:
             self.extend_by_composer(value)
         if attr == TrackAttribute.GENRE:
             self.extend_by_genre(value, strict=strict)
+        if attr == TrackAttribute.INSTRUMENT:
+            self.extend_by_instrument(value, strict=strict)
         next_job_args = self.EXTENSION_QUEUE.take()
         if next_job_args is not None:
             Utils.long_sleep(300, "extension thread job wait")
@@ -209,6 +215,9 @@ class LibraryData:
     def extend_by_genre(self, genre, strict=False):
         # TODO
         self._simple("music from the genre " + genre, attr=TrackAttribute.GENRE, strict=None)
+
+    def extend_by_instrument(self, instrument, strict=False):
+        self._simple("music for the " + instrument, attr=TrackAttribute.INSTRUMENT, strict=None)
 
     def _simple(self, q, m=6, depth=0, attr=None, strict=None):
         r = self.s(q, m)
@@ -285,6 +294,8 @@ class LibraryData:
             else:
                 _f = _e
         PlaybackConfig.assign_extension(_f)
+        if self.callbacks is not None:
+            self.callbacks.update_extension_status(_("Extension \"{0}\" ready").format(SoupUtils.clean_html(b.name)))
         LibraryData.extension_thread_delayed_complete = True
 
     def s(self, q, x=1):

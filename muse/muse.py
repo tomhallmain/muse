@@ -255,7 +255,6 @@ class Muse:
 
     def talk_about_weather(self, city="Washington", spot_profile=None):
         weather = self.open_weather_api.get_weather_for_city(city)
-        Utils.log(weather)
         weather_summary = self.llm.generate_response(
             self.prompter.get_prompt("weather") + city + ":\n\n" + str(weather))
         self.say_at_some_point(weather_summary, spot_profile)
@@ -338,7 +337,7 @@ class Muse:
             Utils.log("No article found")
             return
         prompt = self.prompter.get_prompt("random_wiki_article")
-        prompt = prompt.replace("ARTICLE", str(article)[:500])
+        prompt = prompt.replace("ARTICLE", str(article)[:1000])
         summary = self.llm.generate_response(prompt)
         self.say_at_some_point(summary, spot_profile)
 
@@ -348,7 +347,7 @@ class Muse:
 
     def teach_language(self, spot_profile):
         prompt = self.prompter.get_prompt("language_learning")
-        prompt.replace("LANGUAGE", config.muse_language_learning_language)
+        prompt = prompt.replace("LANGUAGE", config.muse_language_learning_language)
         language_response = self.llm.generate_response(prompt)
         self.say_at_some_point(language_response, spot_profile)
 

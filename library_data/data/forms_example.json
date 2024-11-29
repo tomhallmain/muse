@@ -1,0 +1,30 @@
+{
+    "sonata": {
+        "name": "sonata",
+        "transliterations": [
+            "sonata"
+        ],
+        "notes": {}
+    },
+    "partsong": {
+        "name": "partsong",
+        "transliterations": [
+            "partsong"
+        ],
+        "notes": {}
+    },
+    "motet": {
+        "name": "motet",
+        "transliterations": [
+            "motet"
+        ],
+        "notes": {}
+    },
+    "cantata": {
+        "name": "cantata",
+        "transliterations": [
+            "cantata"
+        ],
+        "notes": {}
+    }
+}

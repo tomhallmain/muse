@@ -1,6 +1,7 @@
 import glob
 import os
 import re
+import subprocess
 
 # from ops.artists import Artists
 from library_data.composer import composers_data
@@ -66,6 +67,8 @@ class AudioTrack:
         self.genre = None
         self.year = None
         self.compilation = False
+        self.mean_volume = -9999.0
+        self.max_volume = -9999.0
 
         # Unused tags:
         # bitrate : 128000
@@ -178,6 +181,20 @@ class AudioTrack:
             if maybe_track_index is not None and maybe_track_index > 0 and maybe_track_index < 40:
                 self.tracknumber = maybe_track_index
                 self.title = maybe_title
+
+    def get_volume(self):
+        if self.mean_volume < 200:
+            args = ["ffmpeg", "-i", self.filepath, "-af", "volumedetect", "-f", "null", "/dev/null"]
+            process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            output, _ = process.communicate()
+            mean_volume_tag = "] mean_volume: "
+            max_volume_tag = "] max_volume: "
+            for line in output.decode("utf-8", errors="ignore").split("\n"):
+                if mean_volume_tag in line:
+                    self.mean_volume = float(line[line.index(mean_volume_tag)+len(mean_volume_tag):-3].strip())
+                if max_volume_tag in line:
+                    self.max_volume = float(line[line.index(max_volume_tag)+len(max_volume_tag):-3].strip())
+        return self.mean_volume, self.max_volume
 
     def get_track_text_file(self):
         if self.basename is None:

@@ -7,14 +7,18 @@ from utils.utils import Utils
 
 
 class Composer:
-    def __init__(self, id, name, indicators=[], dob=-1, dod=-1, genres=[], works=[]):
+    def __init__(self, id, name, indicators=[], start_date=-1, end_date=-1,
+                 dates_are_lifespan=True, dates_uncertain=False, genres=[], works=[], notes={}):
         self.id = id
         self.name = name
         self.indicators = indicators if len(indicators) > 0 else [name]
-        self.dob = dob
-        self.dod = dod
+        self.start_date = start_date
+        self.end_date = end_date
+        self.dates_are_lifespan = dates_are_lifespan
+        self.dates_uncertain = dates_uncertain
         self.genres = genres
         self.works = works
+        self.notes = notes
 
         for work in works:
             self.add_work(work)

@@ -1,3 +1,5 @@
+from enum import Enum
+
 from tkinter import Toplevel, Label, StringVar, LEFT, W
 from tkinter.ttk import Button, Entry
 
@@ -11,25 +13,34 @@ from utils.utils import Utils
 _ = I18N._
 
 
-class TrackDetailsWindow:
+class ExtensionStrategy(Enum):
+    EXTEND_BY_COMPOSER = "extend by composer"
+    EXTEND_BY_ARTIST = "extend by artist"
+    EXTEND_BY_GENRE = "extend by genre"
+    EXTEND_BY_PROMPT = "extend_by_prompt"
+    EXTEND_BY_SPECIFIC_TAGS = "extend by specific tags"
+
+
+
+
+class ExtensionsWindow:
     '''
     Window to hold track, album, artist data.
     '''
-    AUDIO_TRACK = None
+    CURRENT_EXTENSION_TEXT = _("Extensions")
     COL_0_WIDTH = 150
     top_level = None
 
-    def __init__(self, master, app_actions, audio_track, dimensions="600x600"):
+    def __init__(self, master, app_actions, dimensions="600x600"):
 
         # TODO next and previous buttons to navgiate through albums and other sequences
         # TODO update button to change specific track details
         # TODO update album to change track details for all tracks in shared album
 
-        TrackDetailsWindow.top_level = Toplevel(master, bg=AppStyle.BG_COLOR)
-        TrackDetailsWindow.top_level.geometry(dimensions)
-        TrackDetailsWindow.set_title(_("Track Details"))
-        TrackDetailsWindow.AUDIO_TRACK = audio_track
-        self.master = TrackDetailsWindow.top_level
+        ExtensionsWindow.top_level = Toplevel(master, bg=AppStyle.BG_COLOR)
+        ExtensionsWindow.top_level.geometry(dimensions)
+        ExtensionsWindow.set_title(_("Extensions"))
+        self.master = ExtensionsWindow.top_level
         self.app_actions = app_actions
         self.open_weather_api = OpenWeatherAPI()
 
@@ -38,25 +49,21 @@ class TrackDetailsWindow:
         self.frame.pack(side="top", fill="both", expand=True)
 
         self.update_btn = None
-        self.add_btn("update_btn", _("Update"), self.get_track_data, row=0)
+        self.add_btn("update_btn", _("Update"), self.update, row=0)
 
         self.title = StringVar(self.frame.viewPort)
-        self.title.set(audio_track.title)
         self.title_entry = Entry(self.frame.viewPort, textvariable=self.title)
         self.title_entry.grid(row=1)
 
         self.album = StringVar(self.frame.viewPort)
-        self.album.set(audio_track.album)
         self.album_entry = Entry(self.frame.viewPort, textvariable=self.album)
         self.album_entry.grid(row=2)
 
         self.artist = StringVar(self.frame.viewPort)
-        self.artist.set(audio_track.artist)
         self.artist_entry = Entry(self.frame.viewPort, textvariable=self.artist)
         self.artist_entry.grid(row=3)
 
         self.composer = StringVar(self.frame.viewPort)
-        self.composer.set(audio_track.composer)
         self.composer_entry = Entry(self.frame.viewPort, textvariable=self.composer)
         self.composer_entry.grid(row=4)
 
@@ -68,21 +75,14 @@ class TrackDetailsWindow:
         self.master.bind("<Escape>", self.close_windows)
         self.master.protocol("WM_DELETE_WINDOW", self.close_windows)
         self.frame.after(1, lambda: self.frame.focus_force())
-        Utils.start_thread(self.get_track_data, use_asyncio=False)
+        # Utils.start_thread(self.get_track_data, use_asyncio=False)
 
-    def get_track_data(self):
-        if not TrackDetailsWindow.AUDIO_TRACK:
-            raise Exception("No track selected")
-        self.title.set(TrackDetailsWindow.AUDIO_TRACK.title)
-        self.album.set(TrackDetailsWindow.AUDIO_TRACK.album)
-        self.artist.set(TrackDetailsWindow.AUDIO_TRACK.artist)
-        self.composer.set(TrackDetailsWindow.AUDIO_TRACK.composer)
-        self.set_title(TrackDetailsWindow.AUDIO_TRACK.title)
-        self.master.update()
+    def update(self):
+        pass
 
     @staticmethod
     def set_title(extra_text):
-        TrackDetailsWindow.top_level.title(_("Track Details") + " - " + extra_text)
+        ExtensionsWindow.top_level.title(_("Extensions") + " - " + extra_text)
 
     def close_windows(self, event=None):
         self.master.destroy()
