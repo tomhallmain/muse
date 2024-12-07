@@ -6,8 +6,9 @@ import time
 from extensions.hacker_news_souper import HackerNewsSouper
 from extensions.news_api import NewsAPI
 from extensions.open_weather import OpenWeatherAPI
+from extensions.soup_utils import WebConnectionException
 from extensions.wiki_opensearch_api import WikiOpenSearchAPI
-from extensions.llm import LLM
+from extensions.llm import LLM, LLMResponseException
 from muse.playback import Playback
 from muse.prompter import Prompter
 from muse.voice import Voice
@@ -86,6 +87,9 @@ class Muse:
         self.has_started_prep = False
         self.post_id = "post"
         self.prior_id = "prior"
+        self.last_topic = None
+        self.tracks_since_last_spoke = 0
+        self.tracks_since_last_topic = 0
 
     def get_spot_profile(self, previous_track=None, track=None, last_track_failed=False, skip_track=False):
         return MuseSpotProfile(previous_track, track, last_track_failed, skip_track)
@@ -113,6 +117,9 @@ class Muse:
             if not spot_profile.skip_previous_track_remark:
                 self.maybe_prep_dj_post(spot_profile)
             self.maybe_prep_dj_prior(spot_profile)
+            self.tracks_since_last_spoke = 0
+        else:
+            self.tracks_since_last_spoke += 1
         spot_profile.is_prepared = True
 
     def maybe_prep_dj_prior(self, spot_profile):
@@ -123,6 +130,8 @@ class Muse:
 
         if spot_profile.talk_about_something:
             self.talk_about_something(spot_profile)
+        else:
+            self.tracks_since_last_topic += 1
 
     def maybe_dj(self, spot_profile):
         # TODO quality info for songs
@@ -177,12 +186,17 @@ class Muse:
             dj_remark += " " + _("This one is a new track.")
         self.say_at_some_point(dj_remark, spot_profile)
 
+    def is_recent_topics(self, topics_to_check=[], n=1):
+        if n >= self.tracks_since_last_topic:
+            return False
+        return self.last_topic in topics_to_check
+
     def get_topic(self, previous_track, excluded_topics=[]):
-        if Prompter.over_n_hours_since_last("weather", n_hours=24):
+        if Prompter.over_n_hours_since_last("weather", n_hours=24) and not self.is_recent_topics(["news", "hackernews"], n=3):
             topic = "weather"
-        elif Prompter.over_n_hours_since_last("news", n_hours=96):
+        elif Prompter.over_n_hours_since_last("news", n_hours=96) and not self.is_recent_topics(["weather", "hackernews"], n=3):
             topic = "news"
-        elif Prompter.over_n_hours_since_last("hackernews", n_hours=96):
+        elif Prompter.over_n_hours_since_last("hackernews", n_hours=96) and not self.is_recent_topics(["weather", "news"], n=3):
             topic = "hackernews"
         else:
             topic = Prompter.get_oldest_topic(excluded_topics=excluded_topics)
@@ -190,7 +204,7 @@ class Muse:
         if topic in ["hackernews", "news"] and Prompter.under_n_hours_since_last(topic, n_hours=14):
             if topic not in excluded_topics:
                 excluded_topics.append(topic)
-        
+
         if previous_track is None and topic == "track_context_post":
             if topic not in excluded_topics:
                 excluded_topics.append(topic)
@@ -205,6 +219,8 @@ class Muse:
         spot_profile.topic_translated = self.prompter.translate_topic(spot_profile.topic)
 
     def talk_about_something(self, spot_profile):
+        self.tracks_since_last_topic = 0
+
         if (spot_profile.has_already_spoken and random.random() < 0.75) \
                 or (not spot_profile.has_already_spoken and random.random() < 0.6):
             if not spot_profile.has_already_spoken:
@@ -216,42 +232,53 @@ class Muse:
         topic = spot_profile.topic
         Utils.log("Talking about topic: " + topic)
 
+        func = None
+        args = [spot_profile]
+        kwargs = {}
+
         if topic == "weather":
-            self.talk_about_weather(config.open_weather_city, spot_profile)
+            func = self.talk_about_weather
+            args = [config.open_weather_city, spot_profile]
         elif topic in ["news", "hackernews"]:
-            self.talk_about_news(topic, spot_profile)
+            func = self.talk_about_news
+            args = [topic, spot_profile]
         elif topic == "joke":
-            self.tell_a_joke(spot_profile)
+            func = self.tell_a_joke
         elif topic == "fact":
-            self.share_a_fact(spot_profile)
+            func = self.share_a_fact
         elif topic == "truth_and_lie":
-            self.play_two_truths_and_one_lie(spot_profile)
+            func = self.play_two_truths_and_one_lie
         elif topic == "fable":
-            self.share_a_fable(spot_profile)
+            func = self.share_a_fable
         elif topic == "aphorism":
-            self.share_an_aphorism(spot_profile)
+            func = self.share_an_aphorism
         elif topic == "poem":
-            self.share_a_poem(spot_profile)
+            func = self.share_a_poem
         elif topic == "quote":
-            self.share_a_quote(spot_profile)
+            func = self.share_a_quote
         elif topic == "tongue_twister":
-            self.share_a_tongue_twister(spot_profile)
+            func = self.share_a_tongue_twister
         elif topic == "calendar":
-            self.talk_about_the_calendar(spot_profile)
+            func = self.talk_about_the_calendar
         elif topic == "motivation":
-            self.share_a_motivational_message(spot_profile)
+            func = self.share_a_motivational_message
         elif topic =="track_context_prior":
-            self.talk_about_track_context(spot_profile.track, spot_profile)
+            func = self.talk_about_track_context
+            args = [spot_profile.track, spot_profile]
         elif topic =="track_context_post":
-            self.talk_about_track_context(spot_profile.previous_track, spot_profile)
+            func = self.talk_about_track_context
+            args = [spot_profile.previous_track, spot_profile]
         elif topic == "random_wiki_article":
-            self.talk_about_random_wiki_article(spot_profile)
+            func = self.talk_about_random_wiki_article
         elif topic == "funny_story":
-            self.share_a_funny_story(spot_profile)
+            func = self.share_a_funny_story
         elif topic == "language_learning":
-            self.teach_language(spot_profile)
+            func = self.teach_language
         else:
             Utils.log_yellow("Unhandled topic: " + topic)
+            return
+
+        self._wrap_function(spot_profile, topic, func, args, kwargs)
 
     def talk_about_weather(self, city="Washington", spot_profile=None):
         weather = self.open_weather_api.get_weather_for_city(city)
@@ -350,4 +377,15 @@ class Muse:
         prompt = prompt.replace("LANGUAGE", config.muse_language_learning_language)
         language_response = self.llm.generate_response(prompt)
         self.say_at_some_point(language_response, spot_profile)
+
+    def _wrap_function(self, spot_profile, topic, func, _args=[], _kwargs={}):
+        try:
+            return func(*_args, **_kwargs)
+        except WebConnectionException as e:
+            self.say_at_some_point(_("We're having some technical difficulties in accessing our source for {0}. We'll try again later").format(topic),
+                                   spot_profile)
+        except LLMResponseException as e:
+            self.say_at_some_point(_("It seems our writer for {0} is unexpectedly away at the moment. Did we forget to pay his salary again?").format(topic),
+                                   spot_profile)
+
 

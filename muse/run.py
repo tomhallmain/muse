@@ -43,10 +43,11 @@ class Run:
         self.playback.pause()
 
     def switch_extension(self):
-        self.library_data.reset_extension()
+        if self.args.extend:
+            self.library_data.reset_extension()
 
     def run(self, playback_config):
-        if config.enable_library_extender:
+        if config.enable_library_extender and self.args.extend:
             self.library_data.start_extensions_thread()
         Utils.log(playback_config)
         # confirm_text = f"\n\nPrompt: \"{config.positive}\" (y/n/r/m/n/e/s/[space to quit]): "

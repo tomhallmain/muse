@@ -9,6 +9,11 @@ import re
 from utils.utils import Utils
 
 
+class WebConnectionException(Exception):
+    """Raised on failure to connect HTML"""
+    pass
+
+
 class SoupUtils:
     @staticmethod
     def remove_tags(html_string):
@@ -28,7 +33,7 @@ class SoupUtils:
             soup = BeautifulSoup(html_string, "lxml")
             return soup
         except Exception as e:
-            raise Exception(f"Failed to get HTML for {url}: {e}")
+            raise WebConnectionException(f"Failed to get HTML for {url}: {e}")
 
     @staticmethod
     def get_elements(class_path=[["class","*"]], parent=None):

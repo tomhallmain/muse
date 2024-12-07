@@ -10,6 +10,7 @@ class RunConfig:
         self.directories = self.get("directories")
         self.overwrite = False
         self.muse = True
+        self.extend = True
 
     def get(self, name):
         if isinstance(self.args, dict):

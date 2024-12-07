@@ -17,8 +17,9 @@ class ExtensionStrategy(Enum):
     EXTEND_BY_COMPOSER = "extend by composer"
     EXTEND_BY_ARTIST = "extend by artist"
     EXTEND_BY_GENRE = "extend by genre"
-    EXTEND_BY_PROMPT = "extend_by_prompt"
+    EXTEND_BY_PROMPT = "extend by prompt"
     EXTEND_BY_SPECIFIC_TAGS = "extend by specific tags"
+    EXTEND_BY_LINK_TYPE_A = "extend by link type a" # i.e. provide a link to a forum post with scrapable media content
 
 
 

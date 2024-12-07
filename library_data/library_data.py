@@ -28,7 +28,7 @@ def get_playback_config():
 
 
 class LibraryDataSearch:
-    def __init__(self, all, title, artist, composer, album, genre, instrument, max_results=200):
+    def __init__(self, all="", title="", artist="", composer="", album="", genre="", instrument="", max_results=200):
         self.all = all.lower()
         self.title = title.lower()
         self.artist = artist.lower()
@@ -228,7 +228,7 @@ class LibraryData:
             failed = False
             for i in a:
                 Utils.log("Extension option: " + i.name + " " + i.x())
-            while b is None or b.y or (strict and self._strict_test(b, attr, strict)):
+            while b is None or b.y or self.is_in_library(b) or (strict and self._strict_test(b, attr, strict)):
                 counter += 1
                 b = random.choice(a)
                 if counter > 10:
@@ -247,6 +247,13 @@ class LibraryData:
                 Utils.log_yellow("Tracking too many requests.")
             else:
                 Utils.log_yellow(f'No results found for "{q}"')
+
+    def is_in_library(self, b):
+        if b.w is None or b.w.strip() == "":
+            raise Exception("No ID found: " + str(b.x()))
+        search = LibraryDataSearch(title=b.w)
+        self.do_search(search)
+        return len(search.results) > 0
 
     def _strict_test(self, b, attr, strict):
         if attr is None or strict is None:

@@ -4,6 +4,10 @@ from urllib import request
 
 from utils.utils import Utils
 
+class LLMResponseException(Exception):
+    """Raised when LLM call fails"""
+    pass
+
 class LLM:
     ENDPOINT = "http://localhost:11434/api/generate"
 
@@ -29,6 +33,7 @@ class LLM:
             return resp_json["response"]
         except Exception as e:
             Utils.log_red(f"Failed to generate LLM response: {e}")
+            raise LLMResponseException(f"Failed to generate LLM response: {e}")
 
 
 if __name__ == "__main__":

@@ -177,8 +177,12 @@ class App():
         self.apply_to_grid(self.favorite_choice, sticky=W)
 
         self.muse = BooleanVar(value=self.runner_app_config.muse)
-        self.muse_choice = Checkbutton(self.sidebar, text=_('Muse'), variable=self.muse)
+        self.muse_choice = Checkbutton(self.sidebar, text=_('Muse'), variable=self.muse, command=self.set_muse)
         self.apply_to_grid(self.muse_choice, sticky=W)
+
+        self.extend = BooleanVar(value=self.runner_app_config.muse)
+        self.extend_choice = Checkbutton(self.sidebar, text=_('Extension'), variable=self.extend, command=self.set_extend)
+        self.apply_to_grid(self.extend_choice, sticky=W)
 
         self.label_volume = Label(self.sidebar)
         self.add_label(self.label_volume, _("Volume"), increment_row_counter=False)
@@ -333,6 +337,9 @@ class App():
     def set_muse(self, event=None):
         self.runner_app_config.muse = self.muse.get()
 
+    def set_extend(self, event=None):
+        self.runner_app_config.extend = self.extend.get()
+
     def destroy_progress_bar(self):
         if self.progress_bar is not None:
             self.progress_bar.stop()
@@ -413,6 +420,7 @@ class App():
         args.directories = self.get_directories()
         args.overwrite = self.overwrite.get()
         args.muse = self.muse.get()
+        args.extend = self.extend.get()
 
         args_copy = deepcopy(args)
         return args, args_copy

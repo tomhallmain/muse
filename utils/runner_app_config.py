@@ -12,6 +12,7 @@ class RunnerAppConfig:
         self.directory = "ALL"
         self.overwrite = True
         self.muse = True
+        self.extend = True
 
     def set_from_run_config(self, args):
         pass
@@ -19,7 +20,11 @@ class RunnerAppConfig:
     @staticmethod
     def from_dict(_dict):
         app_config = RunnerAppConfig()
-        app_config.__dict__ = deepcopy(_dict)
+        for key in _dict:
+            if hasattr(app_config, key):
+                setattr(app_config, key, _dict[key])
+            else:
+                raise Exception("Invalid property: " + str(key))
         return app_config
 
     def to_dict(self):
