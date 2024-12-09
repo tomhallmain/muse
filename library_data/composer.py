@@ -1,5 +1,6 @@
 
 import json
+import re
 
 from library_data.work import Work
 from utils.config import config
@@ -26,11 +27,59 @@ class Composer:
     def add_work(self, work):
         self.works.append(Work(work, self))
 
+    def new_note(self, key="New Note", value=""):
+        self.notes[key] = value
+
     @staticmethod
     def from_json(json):
         return Composer(**json)
 
 
+
+class ComposersDataSearch:
+    def __init__(self, composer="", genre="", max_results=200):
+        self.composer = composer.lower()
+        self.genre = genre.lower()
+        self.max_results = max_results
+
+        self.results = []
+
+    def is_valid(self):
+        for name in ["composer", "genre"]:
+            field = getattr(self, name)
+            if field is not None and field.strip()!= "":
+                print(f"{name} - \"{field}\"")
+                return True
+        return False
+
+    def test(self, composer, strict=True):
+        if len(self.results) > self.max_results:
+            return None
+        if len(self.composer) > 0:
+            pattern = re.compile(f"(^|\\W){self.composer}") if strict else ""
+            for indicator in composer.indicators:
+                indicator_lower = indicator.lower()
+                if strict:
+                    if indicator_lower == self.composer or re.search(pattern, indicator_lower):
+                        self.results.append(composer)
+                        return True
+                else:
+                    if self.composer in indicator_lower:
+                        self.results.append(composer)
+                        return True
+        if len(self.genre) > 0 and strict:
+            for genre in composer.genres:
+                genre_lower = genre.lower()
+                if genre_lower == self.composer or self.composer in genre_lower:
+                    self.results.append(composer)
+                    return True
+        return False
+
+    def sort_results_by_indicators(self):
+        self.results.sort(key=lambda composer: len(composer.indicators), reverse=True)
+
+    def get_results(self):
+        return self.results
 
 
 
@@ -69,6 +118,29 @@ class ComposersData:
                     Utils.log("Found composer match on " + audio_track.filepath)
                     matches += [composer.name]
         return matches
+
+    def do_search(self, data_search):
+        if not isinstance(data_search, ComposersDataSearch):
+            raise TypeError('Composers data search must be of type ComposersDataSearch')
+        if not data_search.is_valid():
+            Utils.log_yellow('Invalid search query')
+            return data_search
+
+        full_results = False
+        for composer in self._composers.values():
+            if data_search.test(composer) is None:
+                full_results = True
+                break
+
+        data_search.sort_results_by_indicators() # The composers with the most indicators are probably the most well-known
+
+        if not full_results:
+            for composer in self._composers.values():
+                if not composer in data_search.results and \
+                        data_search.test(composer, strict=False) is None:
+                    break
+
+        return data_search
 
 
 composers_data = ComposersData()

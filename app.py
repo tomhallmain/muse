@@ -17,6 +17,7 @@ from muse.run import Run
 from muse.run_config import RunConfig
 from ui.app_actions import AppActions
 from ui.app_style import AppStyle
+from ui.composers_window import ComposersWindow
 from ui.extensions_window import ExtensionsWindow
 from ui.search_window import SearchWindow
 from ui.track_details_window import TrackDetailsWindow
@@ -94,6 +95,7 @@ class App():
         self.config_history_index = 0
         self.current_run = Run(RunConfig())
         self.app_actions = AppActions(
+            self.update_status_text,
             self.update_track_text,
             self.update_muse_text,
             self.update_progress_bar,
@@ -122,9 +124,15 @@ class App():
         self.search_btn = None
         self.add_button("search_btn", _("Search"), self.open_search_window)
 
+        self.composers_btn = None
+        self.add_button("composers_btn", _("Composers"), self.open_composers_window)
+
         self.cancel_btn = Button(self.sidebar, text=_("Stop"), command=self.cancel)
         self.text_btn = Button(self.sidebar, text=_("Text"), command=self.open_text)
         self.extension_btn = Button(self.sidebar, text=_("Extension"), command=self.open_extensions_window)
+
+        self.label_status = Label(self.sidebar)
+        self.add_label(self.label_status,  _("Status"), sticky=None, columnspan=2)
 
         self.label_song_text = Label(self.sidebar)
         self.add_label(self.label_song_text, _("Track"), sticky=None, columnspan=2)
@@ -430,11 +438,18 @@ class App():
             return
         self.current_run.open_text()
 
+    def open_composers_window(self):
+        try:
+            composers_window = ComposersWindow(self.master, self.app_actions)
+        except Exception as e:
+            Utils.log_red(f"Exception opening composers window: {e}")
+            raise e
+
     def open_search_window(self):
         try:
             search_window = SearchWindow(self.master, self.app_actions)
         except Exception as e:
-            Utils.log_red(f"Exception opening track details window: {e}")
+            Utils.log_red(f"Exception opening search window: {e}")
             raise e
 
     def open_track_details_window(self):
@@ -472,6 +487,11 @@ class App():
                     directories.append(full_path)
                     break
             return directories
+
+    def update_status_text(self, status):
+        text = Utils._wrap_text_to_fit_length(status[:500], 100)
+        self.label_status["text"] = text
+        self.master.update()
 
     def update_track_text(self, audio_track):
         if isinstance(audio_track, str):

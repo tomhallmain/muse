@@ -189,6 +189,7 @@ class Playback:
     def update_ui_text(self):
         if self.callbacks.track_details_callback is not None:
             self.callbacks.track_details_callback(self.track)
+            self.callbacks.update_status_callback("")
         if self.callbacks.update_muse_text is not None:
             spot_profile = self.get_spot_profile()
             self.callbacks.update_muse_text(spot_profile.get_ui_text(include_track=False))
@@ -201,7 +202,8 @@ class Playback:
     def delay(self):
         if self.has_played_first_track and not self.last_track_failed:
             if self.remaining_delay_seconds > 4:
-                self.callbacks.track_details_callback(_("Sleeping for seconds") + ": " + str(self.remaining_delay_seconds))
+                self.callbacks.update_status_callback(_("Sleeping for seconds") + ": " + str(self.remaining_delay_seconds))
+                # TODO set track text to "Upcoming track"
             delay_timer = 0
             while not self.skip_delay and delay_timer < self.remaining_delay_seconds:
                 time.sleep(0.5)

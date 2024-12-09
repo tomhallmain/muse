@@ -149,9 +149,9 @@ class SearchWindow:
             open_details_btn = Button(self.results_frame.viewPort, text=_("Details"))
             self.open_details_btn_list.append(open_details_btn)
             open_details_btn.grid(row=row, column=5)
-            def open_details_task_handler(event, self=self, audio_track=track):
+            def open_details_handler(event, self=self, audio_track=track):
                 self.open_details(audio_track)
-            open_details_btn.bind("<Button-1>", open_details_task_handler)
+            open_details_btn.bind("<Button-1>", open_details_handler)
 
             open_details_btn = None
             self.add_btn("search_btn", _("Search"), self.do_search, row=0)

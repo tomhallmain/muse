@@ -160,7 +160,7 @@ class Utils:
         return str1[x_longest - longest: x_longest]
 
     @staticmethod
-    def is_similar_str(s0, s1):
+    def is_similar_strings(s0, s1):
         l_distance = Utils.string_distance(s0, s1)
         min_len = min(len(s0), len(s1))
         if min_len == len(s0):
@@ -294,21 +294,6 @@ class Utils:
         sound = os.path.join(os.path.dirname(os.path.dirname(__file__)), "lib", "sounds", sound + ".wav")
         import winsound
         winsound.PlaySound(sound, winsound.SND_ASYNC)
-
-    @staticmethod
-    def longest_common_substring(str1, str2):
-        m = [[0] * (1 + len(str2)) for _ in range(1 + len(str1))]
-        longest, x_longest = 0, 0
-        for x in range(1, 1 + len(str1)):
-            for y in range(1, 1 + len(str2)):
-                if str1[x - 1] == str2[y - 1]:
-                    m[x][y] = m[x - 1][y - 1] + 1
-                    if m[x][y] > longest:
-                        longest = m[x][y]
-                        x_longest = x
-                else:
-                    m[x][y] = 0
-        return str1[x_longest - longest: x_longest]
 
     @staticmethod
     def open_file(filepath):
