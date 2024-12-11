@@ -48,6 +48,7 @@ class MediaFileType(Enum):
     WMA = 'WMA'
     OGG_OPUS = 'OGG_OPUS'
     WEBM_VP8 = 'WEBM_VP8'
+    OPUS = 'OPUS'
 
     @classmethod
     def is_media_filetype(cls, filename):

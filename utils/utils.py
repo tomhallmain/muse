@@ -305,7 +305,7 @@ class Utils:
             os.system('xdg-open "%s"' % filepath)
 
     @staticmethod
-    def simple_encode(s="", n=0):
+    def ec(s="", n=0):
         if isinstance(s, str):
             s = bytes(s, "UTF-8")
         elif not isinstance(s, bytes):
@@ -315,7 +315,7 @@ class Utils:
         return s.decode("UTF-8")
 
     @staticmethod
-    def simple_decode(s="", n=0, r=True):
+    def dc(s="", n=0, r=True):
         if isinstance(s, str):
             if r:
                 s = s[::-1]

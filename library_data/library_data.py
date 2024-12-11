@@ -284,10 +284,11 @@ class LibraryData:
         e = "[download]"
         p = subprocess.Popen(a, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
         o, __ = p.communicate()
-        f = "[ffmpeg]"
+        f = "[ExtractAudio]"
         _e = None
         _f = None
         for line in o.split("\n"):
+            print(line)
             if line.startswith(e + e1):
                 _e = line[len(e + e1):]
             if line.startswith(f + e1):
