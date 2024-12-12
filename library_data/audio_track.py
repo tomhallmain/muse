@@ -154,13 +154,22 @@ class AudioTrack:
         return cleaned
 
     def readable_title(self):
-        return AudioTrack._prep_track_text(self.title)
+        prepped = AudioTrack._prep_track_text(self.title)
+        if prepped.strip() == "":
+            return _("Unknown title")
+        return prepped
 
     def readable_album(self):
-        return AudioTrack._prep_track_text(self.album)
-    
+        prepped = AudioTrack._prep_track_text(self.album)
+        if prepped.strip() == "":
+            return _("Unknown album")
+        return prepped
+
     def readable_artist(self):
-        return AudioTrack._prep_track_text(self.artist)
+        prepped = AudioTrack._prep_track_text(self.artist)
+        if prepped.strip() == "":
+            return  _("Unknown artist")
+        return prepped
 
     def is_invalid(self):
         if self.basename is None:
@@ -242,7 +251,8 @@ class AudioTrack:
         text = re.sub(re.compile("( |^)TTS( |$)"),   _("\\1text to speech\\2"), text)
         text = re.sub(re.compile("( o| ?O)p. ([0-9])"), _(" Opus \\2"), text)
         # TODO replace foreign-language quotes that the TTS model can't handle with normal quotes
-        return Utils.remove_ids(text)
+        # NOTE if there is a bracket, it's probably a specific kind of title
+        return Utils.remove_ids(text, in_brackets=("[" in text))
 
     @staticmethod
     def extract_ints_from_start(s):

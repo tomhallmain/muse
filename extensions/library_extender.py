@@ -57,7 +57,7 @@ class EogfiaqREkb:
             self.w = a[q20][q23]
             self.y = False
         q22 = a[q4]
-        self.name = q22[q19]
+        self.n = q22[q19]
         self.d = q22[q21]
 
     def x(self):
@@ -77,7 +77,7 @@ class EogfiaqREkb:
         return a
 
     def __str__(self):
-        return self.name
+        return self.n
 
 
 class r4yiurhfxohzepo:

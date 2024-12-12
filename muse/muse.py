@@ -2,6 +2,7 @@
 import datetime
 import random
 import time
+import traceback
 
 from extensions.hacker_news_souper import HackerNewsSouper
 from extensions.news_api import NewsAPI
@@ -9,6 +10,7 @@ from extensions.open_weather import OpenWeatherAPI
 from extensions.soup_utils import WebConnectionException
 from extensions.wiki_opensearch_api import WikiOpenSearchAPI
 from extensions.llm import LLM, LLMResponseException
+from library_data.blacklist import blacklist, BlacklistException
 from muse.playback import Playback
 from muse.prompter import Prompter
 from muse.voice import Voice
@@ -161,7 +163,7 @@ class Muse:
     def speak_about_previous_track(self, spot_profile):
         previous_track = spot_profile.previous_track
         dj_remark = _("That was \"{0}\" in \"{1}\"").format(previous_track.readable_title(), previous_track.readable_album())
-        if previous_track.artist is not None and previous_track.artist!= "":
+        if previous_track.artist is not None and previous_track.artist!= "" and random.random() < 0.8:
             dj_remark += _(" by \"{0}\".").format(previous_track.readable_artist())
         else:
             dj_remark += "."
@@ -282,7 +284,7 @@ class Muse:
 
     def talk_about_weather(self, city="Washington", spot_profile=None):
         weather = self.open_weather_api.get_weather_for_city(city)
-        weather_summary = self.llm.generate_response(
+        weather_summary = self.generate_text(
             self.prompter.get_prompt("weather") + city + ":\n\n" + str(weather))
         self.say_at_some_point(weather_summary, spot_profile)
 
@@ -291,36 +293,36 @@ class Muse:
             news = self.hacker_news_souper.get_news(total=15)
         else:
             news = self.news_api.get_news(topic=topic)
-        news_summary = self.llm.generate_response(
+        news_summary = self.generate_text(
             self.prompter.get_prompt(topic) + "\n\n" + str(news))
         self.say_at_some_point(news_summary, spot_profile)
 
     def tell_a_joke(self, spot_profile):
-        joke = self.llm.generate_response(self.prompter.get_prompt("joke"))
+        joke = self.generate_text(self.prompter.get_prompt("joke"))
         self.say_at_some_point(joke, spot_profile)
 
     def share_a_fact(self, spot_profile):
-        fact = self.llm.generate_response(self.prompter.get_prompt("fact"))
+        fact = self.generate_text(self.prompter.get_prompt("fact"))
         self.say_at_some_point(fact, spot_profile)
 
     def play_two_truths_and_one_lie(self, spot_profile):
-        resp = self.llm.generate_response(self.prompter.get_prompt("truth_and_lie"))
+        resp = self.generate_text(self.prompter.get_prompt("truth_and_lie"))
         self.say_at_some_point(resp, spot_profile)
 
     def share_a_fable(self, spot_profile):
-        fable = self.llm.generate_response(self.prompter.get_prompt("fable"))
+        fable = self.generate_text(self.prompter.get_prompt("fable"))
         self.say_at_some_point(fable, spot_profile)
 
     def share_an_aphorism(self, spot_profile):
-        aphorism = self.llm.generate_response(self.prompter.get_prompt("aphorism"))
+        aphorism = self.generate_text(self.prompter.get_prompt("aphorism"))
         self.say_at_some_point(aphorism, spot_profile)
 
     def share_a_poem(self, spot_profile):
-        poem = self.llm.generate_response(self.prompter.get_prompt("poem"))
+        poem = self.generate_text(self.prompter.get_prompt("poem"))
         self.say_at_some_point(poem, spot_profile)
     
     def share_a_quote(self, spot_profile):
-        quote = self.llm.generate_response(self.prompter.get_prompt("quote"))
+        quote = self.generate_text(self.prompter.get_prompt("quote"))
         self.say_at_some_point(quote, spot_profile)
 
     def share_a_tongue_twister(self, spot_profile):
@@ -343,11 +345,11 @@ class Muse:
         prompt = self.prompter.get_prompt("calendar")
         prompt = prompt.replace("DATE", today.strftime("%A %B %d %Y"))
         prompt = prompt.replace("TIME", today.strftime("%H:%M"))
-        calendar = self.llm.generate_response(prompt)
+        calendar = self.generate_text(prompt)
         self.say_at_some_point(calendar, spot_profile)
 
     def share_a_motivational_message(self, spot_profile):
-        motivation = self.llm.generate_response(self.prompter.get_prompt("motivation"))
+        motivation = self.generate_text(self.prompter.get_prompt("motivation"))
         self.say_at_some_point(motivation, spot_profile)
 
     def talk_about_track_context(self, track, spot_profile):
@@ -355,7 +357,7 @@ class Muse:
             raise Exception("No track or topic specified")
         prompt = self.prompter.get_prompt(spot_profile.topic)
         prompt = prompt.replace("TRACK_DETAILS", track.get_track_details())
-        track_context = self.llm.generate_response(prompt)
+        track_context = self.generate_text(prompt)
         self.say_at_some_point(track_context, spot_profile)
 
     def talk_about_random_wiki_article(self, spot_profile):
@@ -365,27 +367,53 @@ class Muse:
             return
         prompt = self.prompter.get_prompt("random_wiki_article")
         prompt = prompt.replace("ARTICLE", str(article)[:1000])
-        summary = self.llm.generate_response(prompt)
+        summary = self.generate_text(prompt)
         self.say_at_some_point(summary, spot_profile)
 
     def share_a_funny_story(self, spot_profile):
-        funny_story = self.llm.generate_response(self.prompter.get_prompt("funny_story"))
+        funny_story = self.generate_text(self.prompter.get_prompt("funny_story"))
         self.say_at_some_point(funny_story, spot_profile)
 
     def teach_language(self, spot_profile):
         prompt = self.prompter.get_prompt("language_learning")
         prompt = prompt.replace("LANGUAGE", config.muse_language_learning_language)
-        language_response = self.llm.generate_response(prompt)
+        language_response = self.generate_text(prompt)
         self.say_at_some_point(language_response, spot_profile)
+
+    def generate_text(self, prompt):
+        text = self.llm.generate_response(prompt)
+        blacklist_items = []
+        blacklist_item = blacklist.test(text)
+        attempts = 0
+        while blacklist_item is not None:
+            blacklist_items.append(blacklist_item)
+            text = self.llm.generate_response(prompt)
+            blacklist_item  = blacklist.test(text)
+            attempts += 1
+            if attempts > 5:
+                blacklist_items_str = ", ".join([str(i) for i in blacklist_items])
+                raise BlacklistException(f"Failed to generate text - blacklist items found: {blacklist_items_str}")
+        return text
 
     def _wrap_function(self, spot_profile, topic, func, _args=[], _kwargs={}):
         try:
             return func(*_args, **_kwargs)
         except WebConnectionException as e:
+            Utils.log_red(e)
             self.say_at_some_point(_("We're having some technical difficulties in accessing our source for {0}. We'll try again later").format(topic),
                                    spot_profile)
         except LLMResponseException as e:
+            Utils.log_red(e)
             self.say_at_some_point(_("It seems our writer for {0} is unexpectedly away at the moment. Did we forget to pay his salary again?").format(topic),
                                    spot_profile)
+        except BlacklistException as e:
+            Utils.log_red(e)
+            self.say_at_some_point(_("We've found problems with all of our {0} ideas. Please try again later.").format(topic),
+                                   spot_profile)
+        except Exception as e:
+            Utils.log_red(e)
+            traceback.print_exc()
+            self.say_at_some_point(_("Something went wrong. We'll try to fix it soon."), spot_profile)
+
 
 

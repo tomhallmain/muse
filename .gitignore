@@ -4,6 +4,7 @@ configs/*
 !configs/config_example.json
 library_data/data/*
 !library_data/data/artists_example.json
+library_data/data/blacklist_example.json
 !library_data/data/composers_example.json
 !library_data/data/forms_example.json
 !library_data/data/instruments_example.json

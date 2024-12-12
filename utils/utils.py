@@ -340,22 +340,26 @@ class Utils:
         return shutil.copy2(existing_filepath, new_filepath)
 
     @staticmethod
-    def remove_ids(s, min_length=10, fixed_length=None):
+    def remove_ids(s, min_length=10, fixed_length=None, in_brackets=True):
         """
         Try to determine if a string appears to be a randomized ID following certain logic.
         """
         text = s
         # Check if the string contains at least one lowercase letter, one uppercase letter, and one digit
-        if "[" in s and (any(c.islower() for c in s) and any(c.isupper() for c in s)):
+        if (not in_brackets or "[" in s) and (any(c.islower() for c in s) or any(c.isupper() for c in s) or any(c.isdigit() for c in s)):
             # Check if the string does not contain any spaces or special characters
             if fixed_length is None:
-                regex_string = "\\[[A-Za-z0-9_-]{" + str(min_length) + ",}\\]"
+                regex_string = "[A-Za-z0-9_-]{" + str(min_length) + ",}"
             else:
-                regex_string = "\\[[A-Za-z0-9_-]{" + str(fixed_length) + "}\\]"
+                regex_string = "[A-Za-z0-9_-]{" + str(fixed_length) + "}"
+            if in_brackets:
+                regex_string = "\\[" + regex_string + "\\]"
             offset = 0
             for match in re.finditer(regex_string, text):
                 maybe_id = match.group()[1:-1]
+                print("Maybe id: " + maybe_id)
                 if Utils.is_id(maybe_id):
+                    print("is id: " + maybe_id)
                     left = text[:match.start() + offset]
                     right = text[match.end() + offset:]
                     original_len = len(maybe_id)
@@ -378,6 +382,9 @@ class Utils:
         upper_count = sum(1 for c in s if c.isupper())
         lower_count = sum(1 for c in s if c.islower())
         digit_count = sum(1 for c in s if c.isdigit())
+
+        if float(digit_count) / len(s) > 0.5:
+            return True
 
         # print(f"Upper count: {upper_count}")
         # print(upper_count / len(s))

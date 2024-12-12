@@ -5,6 +5,7 @@ import subprocess
 
 from extensions.library_extender import LibraryExtender
 from extensions.soup_utils import SoupUtils
+from library_data.blacklist import blacklist
 from library_data.composer import composers_data
 from muse.playback_config import PlaybackConfig
 from muse.run_config import RunConfig
@@ -150,7 +151,7 @@ class LibraryData:
         while True:
             self._extend_by_random_composer()
             LibraryData.extension_thread_delayed_complete = False
-            sleep_time_minutes = random.randint(40, 80)
+            sleep_time_minutes = random.randint(60, 90)
             check_cadence = 2
             while sleep_time_minutes > 0:
                 sleep_time_minutes -= check_cadence
@@ -227,8 +228,11 @@ class LibraryData:
             counter = 0
             failed = False
             for i in a:
-                Utils.log("Extension option: " + i.name + " " + i.x())
-            while b is None or b.y or self.is_in_library(b) or (strict and self._strict_test(b, attr, strict)):
+                Utils.log("Extension option: " + i.n + " " + i.x())
+            while (b is None or b.y
+                    or self.is_in_library(b)
+                    or (strict and self._strict_test(b, attr, strict))
+                    or self._is_blacklisted(b)):
                 counter += 1
                 b = random.choice(a)
                 if counter > 10:
@@ -239,7 +243,7 @@ class LibraryData:
                     raise Exception(f"Unable to find valid results: {q}")
                 self._simple(q, m=m*2, depth=depth+1)
                 return
-            name = SoupUtils.clean_html(b.name)
+            name = SoupUtils.clean_html(b.n)
             Utils.log_yellow(f"Selected option: {name} - {b.x()}")
             Utils.start_thread(self._delayed, use_asyncio=False, args=(b,))
         else:
@@ -260,9 +264,20 @@ class LibraryData:
             raise Exception("No strict test attribute specified")
         if attr == TrackAttribute.COMPOSER:
             for indicator in strict.indicators:
-                if indicator.lower() in b.name.lower() or indicator.lower() in b.d.lower():
+                if indicator.lower() in b.n.lower() or indicator.lower() in b.d.lower():
                     return False
         return True
+
+    def _is_blacklisted(self, b):
+        item = blacklist.test(b.n)
+        if item is not None:
+            Utils.log_yellow(f"Blacklisted: {item} ({b.n})")
+            return True
+        item = blacklist.test(b.d)
+        if item is not None:
+            Utils.log_yellow(f"Blacklisted: {item}\n{b.d}")
+            return True
+        return False
 
     def delayed(self, b):
         thread = Utils.start_thread(self._delayed, use_asyncio=False, args=(b,))
@@ -276,7 +291,7 @@ class LibraryData:
             if time_seconds <= 0:
                 break
             if self.callbacks is not None:
-                self.callbacks.update_extension_status(_("Extension \"{0}\" waiting for {1} minutes").format(SoupUtils.clean_html(b.name), round(float(time_seconds) / 60)))
+                self.callbacks.update_extension_status(_("Extension \"{0}\" waiting for {1} minutes").format(SoupUtils.clean_html(b.n), round(float(time_seconds) / 60)))
             Utils.long_sleep(check_cadence, "Extension thread delay wait")
         a = b.da(g=config.directories[0])
         e1 = " Destination: "
@@ -303,7 +318,7 @@ class LibraryData:
                 _f = _e
         PlaybackConfig.assign_extension(_f)
         if self.callbacks is not None:
-            self.callbacks.update_extension_status(_("Extension \"{0}\" ready").format(SoupUtils.clean_html(b.name)))
+            self.callbacks.update_extension_status(_("Extension \"{0}\" ready").format(SoupUtils.clean_html(b.n)))
         LibraryData.extension_thread_delayed_complete = True
 
     def s(self, q, x=1):
