@@ -1,6 +1,7 @@
 import datetime
 
 from extensions.soup_utils import SoupUtils
+from library_data.blacklist import blacklist
 from utils.utils import Utils
 
 
@@ -10,7 +11,7 @@ class HackerNewsItem:
         if len(titleline_links) > 2:
             Utils.log_yellow("Unexpected number of title line links found: " + str(len(titleline_links)))
         elif len(titleline_links) == 1:
-            return # No source == no article
+            return # No source == no item
         elif len(titleline_links) == 0:
             Utils.log_yellow(titleline_el)
             raise Exception("No title line links found: " + str(len(titleline_links)))
@@ -91,10 +92,24 @@ class HackerNewsSouper():
                 hacker_news_item = None
 
         return items
-    
+
+    @staticmethod
+    def get_nonblacklisted_stories(items=[]):
+        headlines = []
+        for item in items:
+            blacklist_items = blacklist.test_all(item.title)
+            if len(blacklist_items) > 0:
+                Utils.log(f"item blacklisted: {item.title} ({blacklist_items})")
+            else:
+                headlines.append(item)
+        return headlines
+
     @staticmethod
     def get_news(total=15):
         news_items = HackerNewsSouper.get_hacker_news_items()
+        news_items = HackerNewsSouper.get_nonblacklisted_stories(news_items)
+        if len(news_items) < 2:
+            raise Exception("Not enough valid news found! Check log for blacklist reasons.")
         out = "Today's top stories from Hacker News:\n"
         counter = 0
         for item in news_items:

@@ -36,6 +36,8 @@ class Config:
         self.muse_language_learning_language = "German"
         self.debug = False
 
+        self.llm_model_name = "wizard-vicuna-uncensored:latest"
+
         self.text_cleaner_ruleset = []
         self.coqui_tts_location = ""
         self.coqui_tts_model = ("tts_models/multilingual/multi-dataset/xtts_v2", "Royston Min", "en")

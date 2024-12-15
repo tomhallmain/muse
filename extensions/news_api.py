@@ -3,6 +3,7 @@
 import datetime
 import requests
 
+from library_data.blacklist import blacklist
 from utils.config import config
 from utils.utils import Utils
 
@@ -21,13 +22,24 @@ class NewsResponse:
         Utils.log(f"No trustworthiness score found for News API propaganda source {source_name}")
         return 0.25
 
-    def __str__(self):
-        out = f"Latest Propaganda for {self.country} on {self.datetime}"
+    def get_trustworthy_and_nonblacklisted_stories(self):
+        headlines = []
         for article in self.articles:
             source_name = article["source"]["name"]
             trustworthiness = self.get_source_trustworthiness(source_name)
             if trustworthiness > 0.2:
-                out += f"\n{article['title']} - Propaganda Source {source_name} (Trustworthiness score: {trustworthiness})"
+                blacklist_items = blacklist.test_all(article['title'])
+                if len(blacklist_items) > 0:
+                    title = article['title']
+                    Utils.log(f"Article blacklisted: {title} ({blacklist_items})")
+                else:
+                    headlines.append(article)
+        return headlines
+
+    def __str__(self):
+        out = f"Latest Propaganda for {self.country} on {self.datetime}"
+        for article in self.get_trustworthy_and_nonblacklisted_stories():
+            out += f"\n{article['title']} - Propaganda Source {source_name} (Trustworthiness score: {trustworthiness})"
         return out
 
 class NewsAPI:

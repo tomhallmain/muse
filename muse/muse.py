@@ -79,7 +79,7 @@ class Muse:
 
     def __init__(self, args):
         self.args = args
-        self.llm = LLM()
+        self.llm = LLM(model_name=config.llm_model_name)
         self.voice = Voice()
         self.open_weather_api = OpenWeatherAPI()
         self.news_api = NewsAPI()
@@ -381,18 +381,25 @@ class Muse:
         self.say_at_some_point(language_response, spot_profile)
 
     def generate_text(self, prompt):
+        blacklisted_items_in_prompt = blacklist.test_all(prompt)
         text = self.llm.generate_response(prompt)
-        blacklist_items = []
-        blacklist_item = blacklist.test(text)
+        generations = []
+        all_blacklist_items = set()
+        blacklist_items = blacklist.test_all(text, excluded_items=blacklisted_items_in_prompt)
         attempts = 0
-        while blacklist_item is not None:
-            blacklist_items.append(blacklist_item)
+        while len(blacklist_items) > 0:
+            blacklist_items_str = ", ".join(sorted([str(i) for i in all_blacklist_items]))
+            Utils.log("Hit blacklisted items: " + blacklist_items_str)
+            Utils.log("Text: " + text)
+            all_blacklist_items.update(set(blacklist_items))
             text = self.llm.generate_response(prompt)
-            blacklist_item  = blacklist.test(text)
+            generations.append(text)
+            blacklist_items = blacklist.test_all(text, excluded_items=blacklisted_items_in_prompt)
             attempts += 1
-            if attempts > 5:
-                blacklist_items_str = ", ".join([str(i) for i in blacklist_items])
-                raise BlacklistException(f"Failed to generate text - blacklist items found: {blacklist_items_str}")
+            if attempts > 10:
+                blacklist_items_str = ", ".join(sorted([str(i) for i in all_blacklist_items]))
+                texts_str = "\n".join(generations)
+                raise BlacklistException(f"Failed to generate text - blacklist items found: {blacklist_items_str}\n{generations}")
         return text
 
     def _wrap_function(self, spot_profile, topic, func, _args=[], _kwargs={}):

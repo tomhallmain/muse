@@ -3,6 +3,9 @@ import re
 
 from utils.config import config
 from utils.utils import Utils
+from utils.translations import I18N
+
+_ = I18N._
 
 
 class TextModifierRule:
@@ -51,8 +54,11 @@ class TextCleanerRuleset:
         for rule in self.rules:
             text = rule.apply(text)
         # Unfortunately, the quote characters from other languages are not well supported by most TTS models.
+        text = text.replace("\u201c", '"').replace('\u201e', '"')
         text = text.replace("\u201c", '"').replace('\u201d', '"')
         text = text.replace("\u00ab", '"').replace('\u00bb', '"')
+        text = re.sub("#+", "#", text)
+        text = re.sub("#()", _("Number \\1"), text)
         return text
 
     def add_rule(self, rule):

@@ -11,7 +11,7 @@ class LLMResponseException(Exception):
 class LLM:
     ENDPOINT = "http://localhost:11434/api/generate"
 
-    def __init__(self, model_name="llama2-uncensored:latest"):
+    def __init__(self, model_name="wizard-vicuna-uncensored:latest"):
         self.model_name = model_name
 
     def generate_response(self, query, timeout=120):

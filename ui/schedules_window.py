@@ -5,7 +5,6 @@ import tkinter.font as fnt
 from tkinter.ttk import Entry, Button
 
 from ui.app_style import AppStyle
-from ui.presets_window import PresetsWindow
 from ui.schedule import PresetTask, Schedule
 from utils.app_info_cache import app_info_cache
 from utils.runner_app_config import RunnerAppConfig

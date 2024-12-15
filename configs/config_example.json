@@ -198,6 +198,7 @@
         }
     ],
     "coqui_tts_model": ["tts_models/multilingual/multi-dataset/xtts_v2", "Royston Min", "en"],
+    "llm_model_name": "wizard-vicuna-uncensored:latest",
     "max_chunk_tokens": 200,
     "enable_library_extender": false
 }

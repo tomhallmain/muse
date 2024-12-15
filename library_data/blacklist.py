@@ -20,11 +20,23 @@ class Blacklist:
             self._blacklist = json.load(f)
         self._patterns = {item: re.compile(r"(^|\W)" + Blacklist.fix_string_pattern(item)) for item in self._blacklist}
 
-    def test(self, s):
+    def test(self, s, excluded_items=[]):
         for item, pattern in self._patterns.items():
+            if len(excluded_items) > 0 and item in excluded_items:
+                continue
             if re.search(pattern, s):
                 return item
         return None
+
+    def test_all(self, s, excluded_items=[]):
+        items = []
+        for item, pattern in self._patterns.items():
+            if len(excluded_items) > 0 and item in excluded_items:
+                continue
+            if re.search(pattern, s):
+                items.append(item)
+        return items
+
 
     @staticmethod
     def fix_string_pattern(s):

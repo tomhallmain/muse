@@ -19,6 +19,7 @@ from ui.app_actions import AppActions
 from ui.app_style import AppStyle
 from ui.composers_window import ComposersWindow
 from ui.extensions_window import ExtensionsWindow
+from ui.schedules_window import SchedulesWindow
 from ui.search_window import SearchWindow
 from ui.track_details_window import TrackDetailsWindow
 from ui.weather_window import WeatherWindow
@@ -126,6 +127,9 @@ class App():
 
         self.composers_btn = None
         self.add_button("composers_btn", _("Composers"), self.open_composers_window)
+
+        self.schedules_btn = None
+        self.add_button("schedules_btn", _("Schedules"), self.open_schedules_window)
 
         self.cancel_btn = Button(self.sidebar, text=_("Stop"), command=self.cancel)
         self.text_btn = Button(self.sidebar, text=_("Text"), command=self.open_text)
@@ -443,6 +447,13 @@ class App():
             composers_window = ComposersWindow(self.master, self.app_actions)
         except Exception as e:
             Utils.log_red(f"Exception opening composers window: {e}")
+            raise e
+
+    def open_schedules_window(self):
+        try:
+            schedules_window = SchedulesWindow(self.master, self.app_actions)
+        except Exception as e:
+            Utils.log_red(f"Exception opening schedules window: {e}")
             raise e
 
     def open_search_window(self):

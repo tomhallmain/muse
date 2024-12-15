@@ -245,6 +245,7 @@ class LibraryData:
                 return
             name = SoupUtils.clean_html(b.n)
             Utils.log_yellow(f"Selected option: {name} - {b.x()}")
+            Utils.log(b.d)
             Utils.start_thread(self._delayed, use_asyncio=False, args=(b,))
         else:
             if r is None:
@@ -269,7 +270,7 @@ class LibraryData:
         return True
 
     def _is_blacklisted(self, b):
-        item = blacklist.test(b.n)
+        item = blacklist.test(SoupUtils.clean_html(b.n))
         if item is not None:
             Utils.log_yellow(f"Blacklisted: {item} ({b.n})")
             return True
