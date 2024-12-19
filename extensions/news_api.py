@@ -39,7 +39,10 @@ class NewsResponse:
     def __str__(self):
         out = f"Latest Propaganda for {self.country} on {self.datetime}"
         for article in self.get_trustworthy_and_nonblacklisted_stories():
-            out += f"\n{article['title']} - Propaganda Source {source_name} (Trustworthiness score: {trustworthiness})"
+            title = article['title']
+            source_name = article['source']['name']
+            trustworthiness = self.get_source_trustworthiness(source_name)
+            out += f"\n{title} - Propaganda Source {source_name} (Trustworthiness score: {trustworthiness})"
         return out
 
 class NewsAPI:

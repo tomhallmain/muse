@@ -29,6 +29,8 @@ class Config:
         self.tongue_twisters_dir = None
         self.artists_file = "artists.json"
         self.composers_file = "composers.json"
+        self.forms_file = "forms.json"
+
         self.open_weather_city = "Washington"
         self.open_weather_api_key = None
         self.news_api_key = None
@@ -74,6 +76,7 @@ class Config:
             "background_color",
             "artists_file",
             "composers_file",
+            "forms_file",
             "open_weather_city",
             "open_weather_api_key",
             "news_api_key",

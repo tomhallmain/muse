@@ -284,16 +284,17 @@ class LibraryData:
         thread = Utils.start_thread(self._delayed, use_asyncio=False, args=(b,))
         LibraryData.DELAYED_THREADS.append(thread)
 
-    def _delayed(self, b):
-        time_seconds = random.randint(1000, 2000)
-        check_cadence = 150
-        while time_seconds > 0:
-            time_seconds -= check_cadence
-            if time_seconds <= 0:
-                break
-            if self.callbacks is not None:
-                self.callbacks.update_extension_status(_("Extension \"{0}\" waiting for {1} minutes").format(SoupUtils.clean_html(b.n), round(float(time_seconds) / 60)))
-            Utils.long_sleep(check_cadence, "Extension thread delay wait")
+    def _delayed(self, b, sleep=True):
+        if sleep:
+            time_seconds = random.randint(1000, 2000)
+            check_cadence = 150
+            while time_seconds > 0:
+                time_seconds -= check_cadence
+                if time_seconds <= 0:
+                    break
+                if self.callbacks is not None:
+                    self.callbacks.update_extension_status(_("Extension \"{0}\" waiting for {1} minutes").format(SoupUtils.clean_html(b.n), round(float(time_seconds) / 60)))
+                Utils.long_sleep(check_cadence, "Extension thread delay wait")
         a = b.da(g=config.directories[0])
         e1 = " Destination: "
         Utils.log_yellow(f"extending delayed: {a}")
@@ -313,14 +314,29 @@ class LibraryData:
             Utils.log_yellow("F was not found" if _f is None else "F was found but invalid: " + _f)
             if _e is None or not os.path.exists(_e):
                 Utils.log_yellow("E was not found" if _e is None else "E was found but invalid: " + _e)
-                LibraryData.extension_thread_delayed_complete = True
-                raise Exception(f"No output found {b}")
+                close_match = self.check_dir_for_close_match(_e)
+                if close_match is not None:
+                    _f = close_match
+                else:
+                    LibraryData.extension_thread_delayed_complete = True
+                    raise Exception(f"No output found {b}")
             else:
                 _f = _e
         PlaybackConfig.assign_extension(_f)
         if self.callbacks is not None:
             self.callbacks.update_extension_status(_("Extension \"{0}\" ready").format(SoupUtils.clean_html(b.n)))
         LibraryData.extension_thread_delayed_complete = True
+
+    def check_dir_for_close_match(self, t):
+        if t is None or t.strip() == "":
+            return None
+        _dir = os.path.abspath(config.directories[0])
+        for f in os.listdir(_dir):
+            filepath = os.path.join(_dir, f)
+            if os.path.isfile(filepath) and Utils.is_similar_strings(f, t):
+                print(f"Found close match: {f}")
+                return filepath
+        return None
 
     def s(self, q, x=1):
         Utils.log(f"s: {q}")
