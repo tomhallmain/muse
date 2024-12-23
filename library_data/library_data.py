@@ -267,6 +267,8 @@ class LibraryData:
             for indicator in strict.indicators:
                 if indicator.lower() in b.n.lower() or indicator.lower() in b.d.lower():
                     return False
+            if "biography" in b.n.lower() or "biography" in b.d.lower():
+                return False
         return True
 
     def _is_blacklisted(self, b):

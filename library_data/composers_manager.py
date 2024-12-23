@@ -16,11 +16,17 @@ def do_print(f, s):
 
 
 class ComposersManager:
-    COMPOSRERS_DICT_LOCATION = os.path.join(os.path.abspath(os.path.dirname(__file__)), "data", "composers.json")
+    COMPOSERS_DICT_LOCATION = os.path.join(os.path.abspath(os.path.dirname(__file__)), "data", "composers.json")
 
     @staticmethod
-    def get_composers_dict():
-        with open(ComposersManager.COMPOSRERS_DICT_LOCATION, "r") as f:
+    def get_composers_dict_location(composers_dict_location=None):
+        if composers_dict_location is None:
+            return ComposersManager.COMPOSERS_DICT_LOCATION
+        return composers_dict_location
+
+    @staticmethod
+    def get_composers_dict(composers_dict_location=None):
+        with open(ComposersManager.get_composers_dict_location(composers_dict_location), "r", encoding="UTF-8") as f:
             composers = json.load(f)
             return composers
 
@@ -32,31 +38,39 @@ class ComposersManager:
         raise Exception("No composer found with ID {0}".format(id))
 
     @staticmethod
-    def quality_check():
-        composers = ComposersManager.get_composers_dict()
+    def quality_check(composers_dict_location=None, print_possible_duplicates=False):
+        composers_dict = ComposersManager.get_composers_dict(ComposersManager.get_composers_dict_location(composers_dict_location))
+
+        # Date values check and Duplicate composer indicators
 
         all_composer_indicators = {}
         all_composer_dates = {}
         duplicate_composer_indicators = {}
+        invalid_name_indicators = []
+        no_indicators_names = []
+        inconsistent_names_and_indicators = []
+        no_date_values = []
+        invalid_dates = []
+        future_dates = []
 
-        for composer, data in composers.items():
+        for composer, data in composers_dict.items():
             composer_id = data["id"]
             composer_name = data["name"]
             indicators = data["indicators"]
             if composer_name.strip() == "" or "\t" in composer_name or composer_name.startswith(" ") or composer_name.endswith(" "):
-                print(f"Composer ID contains invalid space in name: {composer_id} ({composer})")
+                invalid_name_indicators.append((composer_id, composer))
             if len(indicators) == 0:
-                print(f"Composer ID {composer_id} ({composer}) has no indicators")
+                no_indicators_names.append((composer_id, composer))
             if composer_name != composer or composer_name != indicators[0]:
-                print(f"Composer ID {composer_id} has different name and indicators: {composer}")
+                inconsistent_names_and_indicators.append((composer_id, composer))
             start_date = data["start_date"]
             end_date = data["end_date"]
             if start_date is None or end_date is None:
-                print(f"Composer ID {composer_id} ({composer}) has no date values")
+                no_date_values.append((composer_id, composer))
             elif end_date > 0 and start_date > end_date:
-                print(f"Composer ID {composer_id} ({composer}) has invalid start and end dates. Start date ({start_date}) is after end date ({end_date})")
+                invalid_dates.append((composer_id, composer))
             elif start_date > 2024 or end_date > 2024:
-                print(f"Composer ID {composer_id} ({composer}) has invalid date values")
+                future_dates.append((composer_id, composer))
             elif start_date > -1:
                 dates = (start_date, end_date)
                 if dates in all_composer_dates:
@@ -72,20 +86,54 @@ class ComposersManager:
                 else:
                     all_composer_indicators[indicator] = composer_id
 
-        print(f"{len(composers)} composers")
+        if len(invalid_name_indicators) > 0:
+            print("\nComposers contain invalid space in name:")
+            for composer_id, composer in invalid_name_indicators:
+                print(f"Composer ID {composer_id}: {composer}")
+
+        if len(no_indicators_names) > 0:
+            print("\nComposers with no indicators:")
+            for composer_id, composer in no_indicators_names:
+                print(f"Composer ID {composer_id}: {composer}")
+
+        if len(inconsistent_names_and_indicators) > 0:
+            print("\nComposers with inconsistent names and indicators:")
+            for composer_id, composer in inconsistent_names_and_indicators:
+                print(f"Composer ID {composer_id}: {composer}")
+
+        if len(no_date_values) > 0:
+            print("\nComposers with no date values:")
+            for composer_id, composer in no_date_values:
+                print(f"Composer ID {composer_id} {composer}")
+
+        if len(invalid_dates) > 0:
+            print("\nComposers with invalid start or end dates (start date is after end date):")
+            for composer_id, composer in invalid_dates:
+                print(f"Composer ID {composer_id}: {composer}")
+
+        if len(future_dates) > 0:
+            print("\nComposers with invalid future dates:")
+            for composer_id, composer in future_dates:
+                print(f"Composer ID {composer_id}: {composer}")
+
+        print("")
+        print(f"{len(composers_dict)} composers")
         print(f"{len(all_composer_indicators)} all composer indicators")
 
         if len(duplicate_composer_indicators) > 0:
             print("Duplicate indicators found:")
             for indicator, composers in duplicate_composer_indicators.items():
-                composer_names = ", ".join([ComposersManager.get_composer_data(composers, composer)["name"] for composer in composers])
+                composer_names = ", ".join([ComposersManager.get_composer_data(composers_dict, composer)["name"] for composer in composers])
                 print(f"{indicator}: {composer_names}")
 
 
+        # Matching date composers
+
         matching_date_composers = dict(filter((lambda date_composers: len(date_composers[1]) > 1), all_composer_dates.items()))
         matching_date_composers = Utils.sort_dictionary(matching_date_composers, key=lambda dates: dates[0])
+        possible_duplicates = set()
 
-        print("Matching date composers:")
+        print("\nMatching date composers:")
         for dates, composer_ids in matching_date_composers.items():
             possible_duplicates = set()
             for i in range(0, len(composer_ids)):
@@ -93,8 +141,8 @@ class ComposersManager:
                     if i >= j: continue
                     id_i = composer_ids[i]
                     id_j = composer_ids[j]
-                    data_i = ComposersManager.get_composer_data(composers, id_i)
-                    data_j = ComposersManager.get_composer_data(composers, id_j)
+                    data_i = ComposersManager.get_composer_data(composers_dict, id_i)
+                    data_j = ComposersManager.get_composer_data(composers_dict, id_j)
                     name_i = data_i["name"]
                     name_j = data_j["name"]
                     if name_i[0] == name_j[0]:
@@ -109,67 +157,70 @@ class ComposersManager:
                 
                 print(", ".join(sorted(list(all_names))))
 
-            # composer_names = ", ".join([ComposersManager.get_composer_data(composers, composer)["name"] for composer in composer_ids])
-            # print(f"{dates} - {composer_names}")
+        print("")
 
-        # all_composers_data_list = list(composers.values())
-        # all_composers_data_list.sort(key=lambda composer: composer["start_date"] if composer["start_date"] else -1)
+        if print_possible_duplicates:
+            ComposersManager.print_possible_duplicates(composers_dict, possible_duplicates, all_composer_indicators)
 
-        # for i in range(len(all_composers_data_list)):
-        #     data_i = all_composers_data_list[i]
-        #     upper_bound = min(len(all_composers_data_list), i + 20)
-        #     if i == upper_bound or i-1 == upper_bound: break
-        #     name_i = data_i["name"]
-        #     id_i = data_i["id"]
+    @staticmethod
+    def print_possible_duplicates(composers_dict, possible_duplicates, all_composer_indicators):
+        all_composers_data_list = list(composers_dict.values())
+        all_composers_data_list.sort(key=lambda composer: composer["start_date"] if composer["start_date"] else -1)
 
-        #     for j in range(i+1, upper_bound):
-        #         if i >= j: continue
-        #         data_j = all_composers_data_list[j]
-        #         id_j = data_j["id"]
+        for i in range(len(all_composers_data_list)):
+            data_i = all_composers_data_list[i]
+            upper_bound = min(len(all_composers_data_list), i + 20)
+            if i == upper_bound or i-1 == upper_bound: break
+            name_i = data_i["name"]
+            id_i = data_i["id"]
 
-        #         if id_i == id_j: continue
-        #         name_j = data_j["name"]
+            for j in range(i+1, upper_bound):
+                if i >= j: continue
+                data_j = all_composers_data_list[j]
+                id_j = data_j["id"]
 
-        #         if Utils.is_similar_strings(name_i, name_j):
-        #             possible_duplicates.add((id_i, id_j))
+                if id_i == id_j: continue
+                name_j = data_j["name"]
 
-        # all_composer_indicators_list = list(all_composer_indicators.keys())
-        # all_composer_indicators_list.sort()
-        # possible_duplicates = set()
+                if Utils.is_similar_strings(name_i, name_j):
+                    possible_duplicates.add((id_i, id_j))
 
-        # for i in range(len(all_composer_indicators_list)):
-        #     indicator_i = all_composer_indicators_list[i]
-        #     upper_bound = min(len(all_composer_indicators), i + 20)
-        #     if i == upper_bound or i-1 == upper_bound: break
-        #     for j in range(i+1, upper_bound):
-        #         if i >= j: continue
-        #         indicator_j = all_composer_indicators_list[j]
-        #         composer_id_i = all_composer_indicators[indicator_i]
-        #         composer_id_j = all_composer_indicators[indicator_j]
-        #         if composer_id_i == composer_id_j: continue
+        all_composer_indicators_list = list(all_composer_indicators.keys())
+        all_composer_indicators_list.sort()
 
-        #         if Utils.is_similar_strings(indicator_i, indicator_j):
-        #             possible_duplicates.add((composer_id_i, composer_id_j))
+        for i in range(len(all_composer_indicators_list)):
+            indicator_i = all_composer_indicators_list[i]
+            upper_bound = min(len(all_composer_indicators), i + 20)
+            if i == upper_bound or i-1 == upper_bound: break
+            for j in range(i+1, upper_bound):
+                if i >= j: continue
+                indicator_j = all_composer_indicators_list[j]
+                composer_id_i = all_composer_indicators[indicator_i]
+                composer_id_j = all_composer_indicators[indicator_j]
+                if composer_id_i == composer_id_j: continue
 
-        # all_composer_indicators_list.sort(key=lambda n: NameOps.get_name_sort_key(n))
-        # for i in range(len(all_composer_indicators_list)):
-        #     indicator_i = all_composer_indicators_list[i]
-        #     upper_bound = min(len(all_composer_indicators), i + 20)
-        #     if i == upper_bound or i-1 == upper_bound: break
-        #     for j in range(i+1, upper_bound):
-        #         if i <= j: continue
-        #         indicator_j = all_composer_indicators_list[j]
-        #         composer_id_i = all_composer_indicators[indicator_i]
-        #         composer_id_j = all_composer_indicators[indicator_j]
-        #         if composer_id_i == composer_id_j: continue
+                if Utils.is_similar_strings(indicator_i, indicator_j):
+                    possible_duplicates.add((composer_id_i, composer_id_j))
 
-        #         if Utils.is_similar_strings(indicator_i, indicator_j):
-        #             possible_duplicates.add((composer_id_i, composer_id_j))
+        all_composer_indicators_list.sort(key=lambda n: NameOps.get_name_sort_key(n))
+        for i in range(len(all_composer_indicators_list)):
+            indicator_i = all_composer_indicators_list[i]
+            upper_bound = min(len(all_composer_indicators), i + 20)
+            if i == upper_bound or i-1 == upper_bound: break
+            for j in range(i+1, upper_bound):
+                if i <= j: continue
+                indicator_j = all_composer_indicators_list[j]
+                composer_id_i = all_composer_indicators[indicator_i]
+                composer_id_j = all_composer_indicators[indicator_j]
+                if composer_id_i == composer_id_j: continue
+
+                if Utils.is_similar_strings(indicator_i, indicator_j):
+                    possible_duplicates.add((composer_id_i, composer_id_j))
 
         possible_duplicates_list = []
         for (composer_id_i, composer_id_j) in possible_duplicates:
-            composer_data_i = ComposersManager.get_composer_data(composers, composer_id_i)
-            composer_data_j = ComposersManager.get_composer_data(composers, composer_id_j)
+            composer_data_i = ComposersManager.get_composer_data(composers_dict, composer_id_i)
+            composer_data_j = ComposersManager.get_composer_data(composers_dict, composer_id_j)
             possible_duplicates_list.append((composer_data_i, composer_data_j))
 
         possible_duplicates_list.sort(key=lambda x: x[0]["name"])
@@ -273,12 +324,16 @@ class ComposersManager:
             return None, None
 
     @staticmethod
-    def get_composers_with_dates(more_composers_file_loc, composer_date_func=default_composer_date_func):
-        composers_with_dates = {}
+    def get_composers_with_dates_from_file(more_composers_file_loc, composer_date_func=default_composer_date_func):
         with open(more_composers_file_loc, "r", encoding="utf-8") as f:
             more_possible_composers = json.load(f)
+        return get_composers_with_dates(more_possible_composers, composer_date_func)
 
-        for composer in more_possible_composers:
+    @staticmethod
+    def get_composers_with_dates(more_possible_composers_list, composer_date_func=default_composer_date_func):
+        composers_with_dates = {}
+        
+        for composer in more_possible_composers_list:
             name, dates = composer_date_func(composer)
             if name is None:
                 continue
@@ -423,6 +478,8 @@ class ComposersManager:
             return None, False
 
         new_composers_dict = {}
+        count_composers_added = 0
+        count_composers_modified = 0
 
         id_count = ComposersManager.get_max_index(composers_dict) + 1
         for composer in composers_list:
@@ -445,12 +502,15 @@ class ComposersManager:
                         end_date = dates.get_end_date()
                         dates_are_lifespan = dates.is_lifetime()
                         dates_uncertain = dates.is_uncertain
+                composer_modified = False
                 if was_actually_found:
                     if len(new_genres) > 0:
                         genres.extend(new_genres)
                         genres = sorted(list(set(genres)))
+                        composer_modified = True
                     if len(new_notes) > 0:
                         notes = {**notes, **new_notes}
+                        composer_modified = True
               
                 composer_data = {
                     "id": composer_data_orig["id"],
@@ -464,6 +524,8 @@ class ComposersManager:
                     "works": composer_data_orig['works'],
                     "notes": notes
                 }
+                if composer_modified:
+                    count_composer_modified += 1
             else:
                 composer_data_pre = composers_not_found[composer]
                 original_name_from_poster_data = composer_data_pre[0]
@@ -494,11 +556,19 @@ class ComposersManager:
                     "notes": deepcopy(new_notes),
                 }
                 id_count += 1
+                count_composers_added += 1
             new_composers_dict[composer] = composer_data
+
+        print("\n\n")
+        print(f"Count composers added: {count_composers_added}")
+        print(f"Count composers modified: {count_composers_modified}")
+        print("\n")
 
         composers_swap_file = os.path.join(os.path.abspath(os.path.dirname(__file__)), "data", "composers_swap.json")
 
         with open(composers_swap_file, "w", encoding="utf-8") as f:
             json.dump(new_composers_dict, f, indent=4)
+
+        ComposersManager.quality_check(composers_swap_file, print_possible_duplicates=True)
 
 
