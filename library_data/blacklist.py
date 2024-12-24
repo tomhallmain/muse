@@ -3,6 +3,8 @@ import json
 import os
 import re
 
+from utils.config import config
+
 
 class BlacklistException(Exception):
     """Thrown when multiple attemps with the same prompt all fail the blacklist tests."""
@@ -11,12 +13,7 @@ class BlacklistException(Exception):
 
 
 class Blacklist:
-    def __init__(self, path=None):
-        if path is None:
-            library_data_dir = os.path.dirname(os.path.abspath(os.path.realpath(__file__)))
-            path = os.path.join(library_data_dir, "data", "blacklist.json")
-            if not os.path.exists(path):
-                path = os.path.join(library_data_dir, "data", "blacklist_example.json")
+    def __init__(self, path=config.blacklist_file):
         with open(path, "r", encoding="UTF-8") as f:
             self._blacklist = json.load(f)
         self._patterns = {item: re.compile(r"(^|\W)" + Blacklist.fix_string_pattern(item)) for item in self._blacklist}

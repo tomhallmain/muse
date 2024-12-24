@@ -481,14 +481,16 @@
     "humoresque": {
         "name": "humoresque",
         "transliterations": [
-            "humoresque"
+            "humoresque",
+            "humoresca"
         ],
         "notes": {}
     },
     "waltz": {
         "name": "waltz",
         "transliterations": [
-            "waltz"
+            "waltz",
+            "valse"
         ],
         "notes": {}
     },
@@ -520,6 +522,14 @@
             "impromptu"
         ],
         "notes":{}
+    },
+    "variation": {
+        "name":"variation",
+        "transliterations":[
+            "variation",
+            "variatio"
+        ],
+        "notes": {}
     },
     "pavane": {
         "name": "pavane",

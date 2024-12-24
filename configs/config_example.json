@@ -15,6 +15,7 @@
     "artists_file": "artists_example.json",
     "composers_file": "composers_example.json",
     "forms_file": "forms_example.json",
+    "blacklist_file": "blacklist_example.json",
     "enable_dynamic_volume": true,
     "foreground_color": "white",
     "background_color": "#2596BE",
