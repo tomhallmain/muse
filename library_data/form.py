@@ -2,7 +2,6 @@
 import json
 import re
 
-from library_data.work import Work
 from utils.config import config
 from utils.utils import Utils
 
@@ -94,9 +93,11 @@ class FormsData:
 
     def get_forms(self, audio_track):
         matches = []
+        title_lower = audio_track.title.lower()
+        album_lower = audio_track.album.lower() if audio_track.album is not None else ""
         for form in self._forms.values():
             for value in form.transliterations:
-                if value in audio_track.title:
+                if value in title_lower or value in album_lower:
                     matches += [form.name]
         return matches
 

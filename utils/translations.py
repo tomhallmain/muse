@@ -28,6 +28,23 @@ class I18N:
         except Exception:
             return s
 
+    @staticmethod
+    def day_of_the_week(day_index=0):
+        if day_index == 0:
+            return I18N._('Monday')
+        elif day_index == 1:
+            return I18N._('Tuesday')
+        elif day_index == 2:
+            return I18N._('Wednesday')
+        elif day_index == 3:
+            return I18N._('Thursday')
+        elif day_index == 4:
+            return I18N._('Friday')
+        elif day_index == 5:
+            return I18N._('Saturday')
+        else:
+            return I18N._('Sunday')
+
     '''
     NOTE when gathering the translation strings, set _() == to gettext.gettext() instead of the above, and run:
 

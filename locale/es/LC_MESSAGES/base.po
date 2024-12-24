@@ -211,7 +211,7 @@ msgstr "Primero oigamos hablar de {0}"
 
 #: .\muse\muse.py:213
 msgid "But first, let's hear about {0}."
-msgstr "Pero primero, oigamos hablar de {0}"
+msgstr "Pero antes, hablemos de {0}"
 
 #: .\muse\playback.py:215
 msgid "Sleeping for seconds"

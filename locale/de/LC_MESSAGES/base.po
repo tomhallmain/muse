@@ -207,11 +207,11 @@ msgstr "Dies ist ein neuer Titel."
 
 #: .\muse\muse.py:211
 msgid "First let's hear about {0}"
-msgstr "Zun\u00e4chst zum Thema \u201e{0}\u201c."
+msgstr "Zuerst etwas \u00fcber {0}"
 
 #: .\muse\muse.py:213
 msgid "But first, let's hear about {0}."
-msgstr "Doch zun\u00e4chst zum Thema \u201e{0}\u201c."
+msgstr "Doch zun\u00e4chst etwas \u00fcber {0}."
 
 #: .\muse\playback.py:215
 msgid "Sleeping for seconds"

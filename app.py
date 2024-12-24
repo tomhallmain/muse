@@ -15,6 +15,7 @@ from utils.globals import Globals, WorkflowType
 from muse.playback_config import PlaybackConfig
 from muse.run import Run
 from muse.run_config import RunConfig
+from muse.schedules_manager import SchedulesManager
 from ui.app_actions import AppActions
 from ui.app_style import AppStyle
 from ui.composers_window import ComposersWindow
@@ -269,11 +270,13 @@ class App():
                     self.config_history_index -= 1
         app_info_cache.set("config_history_index", self.config_history_index)
         PlaybackConfig.store_directory_cache()
+        SchedulesManager.store_schedules()
         app_info_cache.store()
 
     def load_info_cache(self):
         try:
             PlaybackConfig.load_directory_cache()
+            SchedulesManager.set_schedules()
             self.config_history_index = app_info_cache.get("config_history_index", default_val=0)
             return app_info_cache.get_history_latest()
         except Exception as e:

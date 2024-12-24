@@ -11,6 +11,7 @@ from extensions.soup_utils import WebConnectionException
 from extensions.wiki_opensearch_api import WikiOpenSearchAPI
 from extensions.llm import LLM, LLMResponseException
 from library_data.blacklist import blacklist, BlacklistException
+from muse.schedules_manager import SchedulesManager, ScheduledShutdownException
 from muse.playback import Playback
 from muse.prompter import Prompter
 from muse.voice import Voice
@@ -79,6 +80,7 @@ class Muse:
 
     def __init__(self, args):
         self.args = args
+        self._schedule = SchedulesManager.default_schedule
         self.llm = LLM(model_name=config.llm_model_name)
         self.voice = Voice()
         self.open_weather_api = OpenWeatherAPI()
@@ -147,6 +149,31 @@ class Muse:
 
     def reset(self):
         self.has_started_prep = False
+        self.check_schedules()
+
+    def check_schedules(self):
+        now = datetime.datetime.now()
+        self.check_for_shutdowns(now)
+        active_schedule = SchedulesManager.get_active_schedule(now)
+        if active_schedule is None:
+            raise Exception("Failed to establish active schedule")
+        if self._schedule != active_schedule:
+            Utils.log_yellow(f"Switching DJ to {active_schedule.voice} from {self._schedule.voice} - until {active_schedule.next_end(now)}")
+            self.change_voice(active_schedule.voice)
+        else:
+            Utils.log("No change in schedule")
+        self._schedule = active_schedule
+
+    def change_voice(self, voice_name):
+        self.voice = Voice(voice_name)
+
+    def check_for_shutdowns(self, now):
+        try:
+            SchedulesManager.check_for_shutdown_request(now)
+        except ScheduledShutdownException as e:
+            now_general_word = _("tonight") if now.hour > 19 else _("today")
+            self.voice.say(_("That's it for {0}").format(now_general_word))
+            raise e
 
     def maybe_prep_dj_post(self, spot_profile):
         # TODO quality info for songs
@@ -361,12 +388,22 @@ class Muse:
         self.say_at_some_point(track_context, spot_profile)
 
     def talk_about_random_wiki_article(self, spot_profile):
-        article = self.wiki_search.random_wiki()
-        if article is None or not article.is_valid():
-            Utils.log("No article found")
-            return
+        article_blacklisted = True
+        blacklisted_words_found = set()
+        count = 0
+        while article_blacklisted:
+            article = self.wiki_search.random_wiki()
+            if article is None or not article.is_valid():
+                raise Exception("No valid wiki article found")
+            article_text = str(article)[:2000]
+            blacklist_words = blacklist.test_all(article_text)
+            blacklisted_words_found.update(blacklist_words)
+            article_blacklisted = len(blacklist_words) > 0
+            if count > 10:
+                raise Exception(f"No valid wiki article found after 10 tries. Blacklisted words: {blacklisted_words_found}")
+            count += 1
         prompt = self.prompter.get_prompt("random_wiki_article")
-        prompt = prompt.replace("ARTICLE", str(article)[:1000])
+        prompt = prompt.replace("ARTICLE", str(article)[:2000])
         summary = self.generate_text(prompt)
         self.say_at_some_point(summary, spot_profile)
 
@@ -381,7 +418,12 @@ class Muse:
         self.say_at_some_point(language_response, spot_profile)
 
     def generate_text(self, prompt):
-        blacklisted_items_in_prompt = blacklist.test_all(prompt)
+        prompt_text_to_test = prompt
+        variant_part_marker = "Please give your summary after the provided articles below."
+        if variant_part_marker in prompt_text_to_test:
+            prompt_text_to_test = prompt_text_to_test[prompt_text_to_test.index(variant_part_marker):]
+            prompt_text_to_test = prompt_text_to_test[prompt_text_to_test.index("\n") + 1:]
+        blacklisted_items_in_prompt = blacklist.test_all(prompt_text_to_test)
         text = self.llm.generate_response(prompt)
         generations = []
         all_blacklist_items = set()
@@ -399,7 +441,7 @@ class Muse:
             if attempts > 10:
                 blacklist_items_str = ", ".join(sorted([str(i) for i in all_blacklist_items]))
                 texts_str = "\n".join(generations)
-                raise BlacklistException(f"Failed to generate text - blacklist items found: {blacklist_items_str}\n{generations}")
+                raise BlacklistException(f"Failed to generate text - blacklist items found: {blacklist_items_str}\n{texts_str}")
         return text
 
     def _wrap_function(self, spot_profile, topic, func, _args=[], _kwargs={}):

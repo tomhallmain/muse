@@ -1,8 +1,74 @@
 {
+    "concerto": {
+        "name": "concerto",
+        "transliterations": [
+            "concerto",
+            "konzert",
+            "k\u00f6nzetr"
+        ],
+        "notes": {}
+    },
+    "prelude": {
+        "name": "prelude",
+        "transliterations": [
+            "prelude",
+            "prélude",
+            "präludium",
+            "praeludium",
+            "preludio"
+        ],
+        "notes": {}
+    },
+    "divertimento": {
+        "name": "divertimento",
+        "transliterations": [
+            "divertimento",
+            "divertissement"
+        ],
+        "notes": {}
+    },
     "sonata": {
         "name": "sonata",
         "transliterations": [
-            "sonata"
+            "sonata",
+            "sonate",
+            "sonade",
+            "suonata"
+        ],
+        "notes": {}
+    },
+    "chaconne": {
+        "name": "chaconne",
+        "transliterations": [
+            "chaconne",
+            "chacona",
+            "ciaccona",
+            "ciaccone",
+            "ciaconna"
+        ],
+        "notes": {}
+    },
+    "hispanola": {
+        "name": "hispanola",
+        "transliterations": [
+            "hispanola",
+            "espagnola",
+            "espagnoletta"
+        ],
+        "notes": {}
+    },
+    "chant": {
+        "name": "chant",
+        "transliterations": [
+            "chant",
+            "canto"
+        ],
+        "notes": {}
+    },
+    "partita": {
+        "name": "partita",
+        "transliterations": [
+            "partita"
         ],
         "notes": {}
     },
@@ -20,10 +86,1025 @@
         ],
         "notes": {}
     },
+    "canticle": {
+        "name": "canticle",
+        "transliterations": [
+            "canticle",
+            "cantique"
+        ],
+        "notes": {}
+    },
     "cantata": {
         "name": "cantata",
         "transliterations": [
-            "cantata"
+            "cantata",
+            "cantate"
+        ],
+        "notes": {}
+    },
+    "reel": {
+        "name": "reel",
+        "transliterations": [
+            "reel"
+        ],
+        "notes": {}
+    },
+    "rondo": {
+        "name": "rondo",
+        "transliterations": [
+            "rondo",
+            "round",
+            "rondeau"
+        ],
+        "notes": {}
+    },
+    "recitative": {
+        "name": "recitative",
+        "transliterations": [
+            "recitative",
+            "recitativo"
+        ],
+        "notes": {}
+    },
+    "allemande": {
+        "name": "allemande",
+        "transliterations": [
+            "allemande",
+            "allemagne"
+        ],
+        "notes": {}
+    },
+    "fugue": {
+        "name": "fugue",
+        "transliterations": [
+            "fugue",
+            "fuga",
+            "fuge"
+        ],
+        "notes": {}
+    },
+    "passacaglia": {
+        "name": "passacaglia",
+        "transliterations": [
+            "passacaglia",
+            "passacaglio",
+            "passagaglia",
+            "passacaille",
+            "passacalle"
+        ],
+        "notes": {}
+    },
+    "air": {
+        "name": "air",
+        "transliterations": [
+            "air",
+            "aire"
+        ],
+        "notes": {}
+    },
+    "march": {
+        "name": "march",
+        "transliterations": [
+            "march",
+            "marche"
+        ],
+        "notes": {}
+    },
+    "magnificat": {
+        "name": "magnificat",
+        "transliterations": [
+            "magnificat",
+            "magnifico"
+        ],
+        "notes": {}
+    },
+    "fantasy": {
+        "name": "fantasy",
+        "transliterations": [
+            "fantasy",
+            "fantasia",
+            "fantasie",
+            "fantaisie"
+        ],
+        "notes": {}
+    },
+    "epigraph": {
+        "name": "epigraph",
+        "transliterations": [
+            "epigraph",
+            "epigraf",
+            "épigraph"
+        ],
+        "notes": {}
+    },
+    "call and response":  {
+        "name": "call and response",
+        "transliterations": [
+            "call and response"
+        ],
+        "notes": {}
+    },
+    "aria": {
+        "name": "aria",
+        "transliterations": [
+            "aria"
+        ],
+        "notes": {}
+    },
+    "bouree": {
+        "name": "bouree",
+        "transliterations": [
+            "bouree",
+            "bourée"
+        ],
+        "notes": {}
+    },
+    "sicilienne": {
+        "name": "sicilienne",
+        "transliterations": [
+            "sicilienne"
+        ],
+        "notes": {}
+    },
+    "ballad": {
+        "name": "ballad",
+        "transliterations": [
+            "ballad",
+            "ballade"
+        ],
+        "notes": {}
+    },
+    "ballet": {
+        "name": "ballet",
+        "transliterations": [
+            "ballet"
+        ],
+        "notes": {}
+    },
+    "sarabande": {
+        "name": "sarabande",
+        "transliterations": [
+            "sarabande",
+            "sarabanda",
+            "sarraband"
+        ],
+        "notes": {}
+    },
+    "tarantelle": {
+        "name": "tarantelle",
+        "transliterations": [
+            "tarantelle",
+            "tarantella"
+        ],
+        "notes": {}
+    },
+    "opera": {
+        "name": "opera",
+        "transliterations": [
+            "opera",
+            "act",
+            "akt"
+        ],
+        "notes": {}
+    },
+    "galliarde": {
+        "name": "galliarde",
+        "transliterations": [
+            "galliarde",
+            "galliarda",
+            "galliard",
+            "gagliarda",
+            "gagliarde",
+            "gallarda",
+            "gaillarde"
+        ],
+        "notes": {}
+    },
+    "saltarelle": {
+        "name": "saltarelle",
+        "transliterations": [
+            "saltarelle",
+            "saltarello",
+            "saltarelli"
+        ],
+        "notes": {}
+    },
+    "ricercare": {
+        "name": "ricercare",
+        "transliterations": [
+            "ricercare",
+            "ricercar",
+            "ricercar"
+        ],
+        "notes": {}
+    },
+    "courante": {
+        "name": "courante",
+        "transliterations": [
+            "courante",
+            "corrente"
+        ],
+        "notes": {}
+    },
+    "chorale": {
+         "name": "chorale",
+         "transliterations": [
+             "chorale"
+         ],
+         "notes": {}
+    },
+    "intermezzo": {
+        "name": "intermezzo",
+        "transliterations": [
+            "intermezzo"
+        ],
+        "notes": {}
+    },
+    "overture": {
+        "name": "overture",
+        "transliterations": [
+            "overture",
+            "overtura",
+            "ouverture",
+            "ouvert\u00fcre",
+            "obertura"
+        ],
+        "notes": {}
+    },
+    "lyric piece": {
+        "name":  "lyric piece",
+        "transliterations": [
+            "lyric piece"
+        ],
+        "notes": {}
+    },
+    "romance": {
+        "name":   "romance",
+        "transliterations": [
+            "romance",
+            "romanza",
+            "romanze",
+            "romace"
+        ],
+        "notes": {}
+    },
+    "rigaudon": {
+        "name": "rigaudon",
+        "transliterations": [
+            "rigaudon",
+            "rigadoon"
+        ],
+        "notes": {}
+    },
+    "tafelmusik": {
+        "name": "tafelmusik",
+        "transliterations": [
+            "tafelmusik"
+        ],
+        "notes": {}
+    },
+    "ode": {
+        "name": "ode",
+        "transliterations": [
+            "ode"
+        ],
+        "notes": {}
+    },
+    "suite": {
+        "name": "suite",
+        "transliterations": [
+            "suite"
+        ],
+        "notes": {}
+    },
+    "scherzo": {
+        "name": "scherzo",
+        "transliterations": [
+            "scherzo",
+            "scherzi"
+        ],
+        "notes": {}
+    },
+    "improvisation": {
+        "name": "improvisation",
+        "transliterations": [
+            "improvisation"
+        ],
+        "notes": {}
+    },
+    "elegy": {
+        "name":  "elegy",
+        "transliterations": [
+            "elegy",
+            "elegie"
+        ],
+        "notes": {}
+    },
+    "vespers": {
+        "name": "vespers",
+         "transliterations": [
+             "vespers",
+             "vespera"
+         ],
+         "notes": {}
+    },
+    "toccata": {
+        "name": "toccata",
+        "transliterations": [
+            "toccata",
+            "tochata"
+        ],
+        "notes": {}
+    },
+    "folk song": {
+        "name": "folk song",
+        "transliterations": [
+            "folk song",
+            "folksong"
+        ],
+        "notes": {}
+    },
+    "folk music": {
+        "name": "folk music",
+        "transliterations": [
+            "folk music",
+            "volksmusik"
+        ],
+        "notes": {}
+    },
+    "jig":{
+        "name": "jig",
+        "transliterations": [
+            "jig",
+            "gigue",
+            "giga"
+        ],
+        "notes":{}
+     },
+    "gavotte": {
+        "name": "gavotte",
+        "transliterations": [
+            "gavotte",
+            "gavotta"
+        ],
+        "notes": {}
+    },
+    "minuet": {
+        "name": "minuet",
+        "transliterations": [
+            "minuet",
+            "minuetto",
+            "menuet",
+            "menuett",
+            "menuetto"
+        ],
+        "notes": {}
+    },
+    "lamentation": {
+        "name": "lamentation",
+        "transliterations": [
+            "lamentation",
+            "lamentatio",
+            "lament"
+        ],
+        "notes": {}
+    },
+    "capriccio": {
+        "name": "capriccio",
+        "transliterations": [
+            "capriccio",
+            "caprice",
+            "cappricci"
+        ],
+        "notes": {}
+    },
+    "humoresque": {
+        "name": "humoresque",
+        "transliterations": [
+            "humoresque"
+        ],
+        "notes": {}
+    },
+    "waltz": {
+        "name": "waltz",
+        "transliterations": [
+            "waltz"
+        ],
+        "notes": {}
+    },
+    "polonaise": {
+        "name": "polonaise",
+        "transliterations": [
+            "polonaise"
+        ],
+        "notes": {}
+    },
+    "polka": {
+        "name":"polka",
+        "transliterations": [
+            "polka",
+            "polacca"
+        ],
+        "notes":{}
+    },
+    "promenade": {
+        "name": "promenade",
+        "transliterations":[
+            "promenade"
+        ],
+        "notes":{}
+    },
+    "impromptu": {
+        "name": "impromptu",
+        "transliterations": [
+            "impromptu"
+        ],
+        "notes":{}
+    },
+    "pavane": {
+        "name": "pavane",
+        "transliterations": [
+            "pavane",
+            "pavana",
+            "pavan"
+        ],
+        "notes": {}
+    },
+    "pastorale": {
+        "name": "pastorale",
+        "transliterations": [
+            "pastorale"
+        ],
+        "notes": {}
+    },
+    "requiem": {
+        "name": "requiem",
+        "transliterations": [
+            "requiem"
+        ],
+        "notes": {}
+    },
+    "serenade": {
+        "name": "serenade",
+        "transliterations": [
+            "serenade",
+            "serenata"
+        ],
+        "notes": {}
+    },
+    "sequence": {
+        "name": "sequence",
+        "transliterations": [
+            "sequence"
+        ],
+        "notes":{}
+    },
+    "incendental music": {
+        "name": "incendental music",
+        "transliterations": [
+            "incendental music"
+        ],
+        "notes": {}
+    },
+    "loure": {
+        "name": "loure",
+        "transliterations": [
+            "loure"
+        ],
+        "notes": {}
+    },
+    "tambourin": {
+        "name":"tambourin",
+        "transliterations": [
+            "tambourin"
+        ],
+        "notes":{}
+    },
+    "etude": {
+        "name": "etude",
+        "transliterations": [
+            "etude",
+            "etüde"
+        ],
+        "notes": {}
+    },
+    "nocturne": {
+        "name":  "nocturne",
+        "transliterations": [
+            "nocturne",
+            "notturno"
+        ],
+        "notes": {}
+    },
+    "arabesque": {
+        "name": "arabesque",
+        "transliterations": [
+            "arabesque"
+        ],
+        "notes": {}
+    },
+    "bergamesque": {
+        "name": "bergamesque",
+        "transliterations": [
+             "bergamesque",
+             "bergamasca"
+         ],
+         "notes": {}
+    },
+    "symphonic poem": {
+        "name": "symphonic poem",
+        "transliterations": [
+            "symphonic poem"
+        ],
+        "notes": {}
+    },
+    "symphonic dances": {
+        "name": "symphonic dances",
+        "transliterations": [
+            "symphonic dances"
+        ],
+        "notes": {}
+    },
+    "symphonic sketches": {
+        "name":  "symphonic sketches",
+        "transliterations": [
+            "symphonic sketches",
+            "esquisses symphoniques"
+        ],
+        "notes": {}
+    },
+    "symphony": {
+        "name": "symphony",
+        "transliterations": [
+            "symphony",
+            "symphonie",
+            "symphonia",
+            "sinfonia",
+            "sinfonie"
+        ],
+        "notes": {}
+    },
+    "hymn": {
+        "name":   "hymn",
+        "transliterations": [
+            "hymn",
+            "hymne"
+        ],
+        "notes": {}
+    },
+    "carol": {
+        "name": "carol",
+        "transliterations": [
+            "carol",
+            "carolle",
+            "villancico",
+            "weihnachtslieder",
+            "canti di natale",
+            "chants de noël",
+            "chansons de noël"
+        ],
+        "notes": {}
+    },
+    "prayer": {
+        "name": "player",
+        "transliterations": [
+            "player"
+        ],
+        "notes": {}
+    },
+    "mass": {
+        "name":  "mass",
+        "transliterations": [
+            "mass",
+            "missa",
+            "messa"
+        ],
+        "notes": {}
+    },
+    "madrigal": {
+        "name": "madrigal",
+        "transliterations": [
+            "madrigal"
+        ],
+        "notes": {}
+    },
+    "mystery": {
+        "name": "mystery",
+        "transliterations": [
+            "mystery"
+        ],
+        "notes": {}
+    },
+    "string duet": {
+        "name": "string duet",
+        "transliterations": [
+            "string duet"
+        ],
+        "notes": {}
+    },
+    "string trio": {
+        "name": "string trio",
+        "transliterations": [
+            "string trio"
+        ]
+    },
+    "string quartet": {
+        "name": "string quartet",
+        "transliterations": [
+            "string quartet"
+        ],
+        "notes": {}
+    },
+    "string quintet": {
+        "name": "string quintet",
+        "transliterations": [
+            "string quintet"
+        ],
+        "notes": {}
+    },
+    "string sextet": {
+        "name": "string sextet",
+        "transliterations": [
+            "string sextet"
+        ],
+        "notes": {}
+    },
+    "string septet": {
+        "name": "string septet",
+        "transliterations": [
+            "string septet"
+        ],
+        "notes": {}
+    },
+    "string octet": {
+        "name": "string octet",
+        "transliterations": [
+            "string octet"
+        ],
+        "notes": {}
+    },
+    "string nonet": {
+        "name": "string nonet",
+        "transliterations": [
+            "string nonet"
+        ],
+        "notes": {}
+    },
+    "wind duet": {
+        "name": "wind duet",
+        "transliterations": [
+            "wind duet"
+        ],
+        "notes": {}
+    },
+    "wind trio": {
+        "name": "wind trio",
+        "transliterations": [
+            "wind trio"
+        ],
+        "notes": {}
+    },
+    "wind quartet": {
+        "name": "wind quartet",
+        "transliterations": [
+            "wind quartet"
+        ],
+        "notes": {}
+    },
+    "wind quintet": {
+        "name": "wind quintet",
+        "transliterations": [
+            "wind quintet"
+        ],
+        "notes": {}
+    },
+    "wind sextet": {
+        "name": "wind sextet",
+        "transliterations": [
+            "wind sextet"
+        ],
+        "notes": {}
+    },
+    "wind septet": {
+        "name": "wind septet",
+        "transliterations": [
+            "wind septet"
+        ],
+        "notes": {}
+    },
+    "wind octet": {
+        "name": "wind octet",
+        "transliterations": [
+            "wind octet"
+        ],
+        "notes": {}
+    },
+    "wind nonet": {
+        "name": "wind nonet",
+        "transliterations": [
+            "wind nonet"
+        ],
+        "notes": {}
+    },
+    "brass duet": {
+        "name": "brass duet",
+        "transliterations": [
+            "brass duet"
+        ],
+        "notes": {}
+    },
+    "brass trio": {
+        "name": "brass trio",
+        "transliterations": [
+            "brass trio"
+        ],
+        "notes": {}
+    },
+    "brass quartet": {
+        "name": "brass quartet",
+        "transliterations": [
+            "brass quartet"
+        ],
+        "notes": {}
+    },
+    "brass quintet": {
+        "name": "brass quintet",
+        "transliterations": [
+            "brass quintet"
+        ],
+        "notes": {}
+    },
+    "brass sextet": {
+        "name": "brass sextet",
+        "transliterations": [
+            "brass sextet"
+        ],
+        "notes": {}
+    },
+    "brass septet": {
+        "name": "brass septet",
+        "transliterations": [
+            "brass septet"
+        ],
+        "notes": {}
+    },
+    "brass octet": {
+        "name": "brass octet",
+        "transliterations": [
+            "brass octet"
+        ],
+        "notes": {}
+    },
+    "brass nonet": {
+        "name": "brass nonet",
+        "transliterations": [
+            "brass nonet"
+        ],
+        "notes": {}
+    },
+    "piano trio": {
+        "name": "piano trio",
+        "transliterations": [
+            "piano trio"
+        ],
+        "notes": {}
+    },
+    "piano quartet": {
+        "name": "piano quartet",
+        "transliterations": [
+            "piano quartet"
+        ],
+        "notes": {}
+    },
+    "piano quintet": {
+        "name": "piano quintet",
+        "transliterations": [
+            "piano quintet"
+        ],
+        "notes": {}
+    },
+    "piano sextet": {
+        "name": "piano sextet",
+        "transliterations": [
+            "piano sextet"
+        ],
+        "notes": {}
+    },
+    "piano septet": {
+        "name": "piano septet",
+        "transliterations": [
+            "piano septet"
+        ],
+        "notes": {}
+    },
+    "piano octet": {
+        "name": "piano octet",
+        "transliterations": [
+            "piano octet"
+        ],
+        "notes": {}
+    },
+    "piano nonet": {
+        "name": "piano nonet",
+        "transliterations": [
+            "piano nonet"
+        ],
+        "notes": {}
+    },
+    "flamenco": {
+        "name": "flamenco",
+        "transliterations": [
+            "flamenco"
+        ],
+        "notes": {}
+    },
+    "tango": {
+        "name": "tango",
+        "transliterations": [
+            "tango"
+        ],
+        "notes": {}
+    },
+    "sauterelle": {
+        "name": "sauterelle",
+        "transliterations": [
+            "sauterelle"
+        ],
+        "notes": {}
+    },
+    "galliard": {
+        "name": "galliard",
+        "transliterations": [
+            "galliard",
+            "volta"
+        ],
+        "notes": {}
+    },
+    "song": {
+        "name": "song",
+        "transliterations": [
+            "song",
+            "lied",
+            "chanson",
+            "canzon",
+            "cancion"
+        ],
+        "notes": {}
+    },
+    "dance": {
+        "name": "dance",
+        "transliterations": [
+            "dance",
+            "danse",
+            "danza"
+        ],
+        "notes": {}
+    },
+    "medley": {
+        "name": "medley",
+        "transliterations": [
+            "medley"
+        ],
+        "notes": {}
+    },
+    "choral music": {
+        "name": "choral music",
+        "transliterations": [
+            "choral music"
+        ],
+        "notes": {}
+    },
+    "orchestral music": {
+        "name": "orchestral music",
+        "transliterations": [
+            "orchestral music"
+        ],
+        "notes": {}
+    },
+    "acappella": {
+        "name": "acappella",
+        "transliterations": [
+            "acappella",
+            "cappella"
+        ],
+        "notes": {}
+    },
+    "adagio": {
+        "name": "adagio",
+        "transliterations": [
+            "adagio",
+            "adagietto"
+        ],
+        "notes": {}
+    },
+    "allegro": {
+        "name": "allegro",
+        "transliterations": [
+            "allegro",
+            "allegretto"
+        ],
+        "notes": {}
+    },
+    "largo": {
+        "name": "largo",
+        "transliterations": [
+            "largo",
+            "langsam",
+            "landsam"
+        ],
+        "notes": {}
+    },
+    "lento": {
+        "name": "lento",
+        "transliterations": [
+            "lento",
+            "lente",
+            "lent",
+            "langa"
+        ],
+        "notes": {}
+    },
+    "octet": {
+        "name": "octet",
+        "transliterations": [
+            "octet"
+        ],
+        "notes": {}
+    },
+    "sextet": {
+        "name": "sextet",
+        "transliterations": [
+            "sextet"
+        ],
+        "notes": {}
+    },
+    "quintet": {
+        "name": "quintet",
+        "transliterations": [
+            "quintet"
+        ],
+        "notes": {}
+    },
+    "quartet": {
+        "name": "quartet",
+        "transliterations": [
+            "quartet",
+            "quartett",
+            "quartetto"
+        ],
+        "notes": {}
+    },
+    "trio": {
+        "name": "trio",
+         "transliterations": [
+             "trio"
+         ],
+         "notes": {}
+    },
+    "duet": {
+        "name": "duet",
+        "transliterations": [
+            "duet",
+            "duett",
+            "duetto",
+            "duettino"
+        ],
+        "notes": {}
+    },
+    "andante": {
+        "name": "andante",
+        "transliterations": [
+            "andante",
+            "andantino"
+        ],
+        "notes": {}
+    },
+    "polyphony": {
+        "name": "polyphony",
+        "transliterations": [
+            "polyphony",
+            "polyphonies"
+        ],
+        "notes": {}
+    },
+    "chamber music": {
+        "name": "chamber music",
+        "transliterations": [
+            "chamber music"
+        ],
+        "notes": {}
+    },
+    "blues": {
+        "name": "blues",
+        "transliterations": [
+            "blues"
+        ],
+        "notes": {}
+    },
+    "jazz": {
+        "name": "jazz",
+        "transliterations": [
+            "jazz"
         ],
         "notes": {}
     }

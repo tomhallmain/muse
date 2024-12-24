@@ -105,6 +105,7 @@ class Config:
         self.set_filepaths(
             "artists_file",
             "composers_file",
+            "forms_file",
         )
 
         i = 0
@@ -166,9 +167,8 @@ class Config:
             try:
                 setattr(self, filepath, self.validate_and_set_filepath(filepath))
             except Exception as e:
-                pass
-#                Utils.log_yellow(e)
-#                Utils.log_yellow(f"Failed to set {filepath} from config.json file. Ensure the key is set.")
+               Utils.log_yellow(e)
+               Utils.log_yellow(f"Failed to set {filepath} from config.json file. Ensure the key is set.")
 
     def set_values(self, type, *names):
         for name in names:

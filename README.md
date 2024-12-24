@@ -33,7 +33,7 @@ Muse is a media player with an integrated voice synthesizer attached to an LLM. 
 - `news_api_source_trustworthiness` - Set the trustworthiness of news sources from News API.
 
 
-### Directory Structure
+## Directory Structure
 
 In the absence of track details found on the music file itself, Muse will attempt to infer track details from the file path. If artists or composers are predefined in the library_data/data folder, the `indicators` list on each will test the track name and path for a string match, and assign the appropriate attribute if a match is found. If no matches are found, the basic logic assumes the following directory structure:
 - Root folder
@@ -41,6 +41,10 @@ In the absence of track details found on the music file itself, Muse will attemp
         - Album
             - Track 1
             - Track 2
+
+## Scheduling
+
+A default voice is set for Muse, but any of the Coqui voice options can be used by creating a schedule. In a schedule you can also set an hour for the application to shut down automatically on given days of the week.
 
 ## Usage
 

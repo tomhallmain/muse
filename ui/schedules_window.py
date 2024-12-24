@@ -1,11 +1,13 @@
 import os
 
-from tkinter import Toplevel, Frame, Label, OptionMenu, StringVar, LEFT, W
+from tkinter import Toplevel, Frame, Label, Checkbutton, OptionMenu, StringVar, BooleanVar, LEFT, W
 import tkinter.font as fnt
 from tkinter.ttk import Entry, Button
 
+from muse.schedule import Schedule
+from muse.schedules_manager import schedules_manager
+from tts.speakers import speakers
 from ui.app_style import AppStyle
-from ui.schedule import PresetTask, Schedule
 from utils.app_info_cache import app_info_cache
 from utils.runner_app_config import RunnerAppConfig
 from utils.translations import I18N
@@ -27,109 +29,97 @@ class ScheduleModifyWindow():
 
         self.frame = Frame(self.master)
         self.frame.grid(column=0, row=0)
-        self.frame.columnconfigure(0, weight=9)
+        self.frame.columnconfigure(0, weight=1)
         self.frame.columnconfigure(1, weight=1)
         self.frame.columnconfigure(2, weight=1)
-        self.frame.columnconfigure(3, weight=1)
-        self.frame.columnconfigure(4, weight=1)
 
-        self._label_info = Label(self.frame)
-        self.add_label(self._label_info, _("Modify Schedule"), row=0, wraplength=ScheduleModifyWindow.COL_0_WIDTH)
-
+        self._label_name = Label(self.frame)
+        self.add_label(self._label_name, _("Schedule Name"), row=0, wraplength=ScheduleModifyWindow.COL_0_WIDTH)
         self.new_schedule_name = StringVar(self.master, value=_("New Schedule") if schedule is None else schedule.name)
         self.new_schedule_name_entry = Entry(self.frame, textvariable=self.new_schedule_name, width=50, font=fnt.Font(size=8))
-        self.new_schedule_name_entry.grid(column=1, row=0, sticky="w")
+        self.new_schedule_name_entry.grid(row=0, column=1, sticky="w")
 
         self.add_schedule_btn = None
         self.add_btn("add_schedule_btn", _("Add schedule"), self.finalize_schedule, column=2)
 
-        self.add_preset_task_btn = None
-        self.add_btn("add_preset_task_btn", _("Add Preset Task"), self.add_preset_task, column=3)
+        self.days_of_the_week_var_list = []
+        self.days_of_the_week_widget_list = []
 
-        self.name_var_list = []
-        self.name_widget_list = []
-        self.count_var_list = []
-        self.count_widget_list = []
-        self.delete_task_btn_list = []
-        self.move_down_btn_list = []
+        self.voice_var = StringVar(self.master, value="Royston Min")
+        self.voice_choice = OptionMenu(self.frame, self.voice_var, "Royston Min", *speakers)
+        self.voice_choice.grid(row=2, column=1, sticky=W)
 
-        self.add_widgets()
+        row = 3
+
+        self.all_days_var = BooleanVar(self.master, value=False)
+        self.all_days_widget  = Checkbutton(self.frame, text=_("Every day"), variable=self.all_days_var, command=self._toggle_all_days)
+        self.all_days_widget.grid(row=row, column=0)
+        row += 1
+
+        for i in range(7):
+            days_of_the_week_var = BooleanVar(self.master, value=False)
+            day_text = I18N.day_of_the_week(i)
+            days_of_the_week_widget  = Checkbutton(self.frame, text=day_text, variable=days_of_the_week_var)
+            days_of_the_week_widget.grid(row=row, column=0)
+            self.days_of_the_week_widget_list.append(days_of_the_week_widget)
+            self.days_of_the_week_var_list.append(days_of_the_week_var)
+            row += 1
+
+        self._label_start_time = Label(self.frame)
+        self.add_label(self._label_start_time, _("Start Time"), row=row, wraplength=ScheduleModifyWindow.COL_0_WIDTH)
+        self.start_time_hour_var = StringVar(self.master, value="0")
+        self.start_time_min_var = StringVar(self.master, value="0")
+        self.start_time_hour_choice = OptionMenu(self.frame, self.start_time_hour_var, "0", *list(map(str, range(24))))
+        self.start_time_min_choice = OptionMenu(self.frame, self.start_time_min_var, "0", *list(map(str, range(0, 61, 15))))
+        self.start_time_hour_choice.grid(row=row, column=1)
+        self.start_time_min_choice.grid(row=row, column=2)
+        row += 1
+
+        self._label_end_time = Label(self.frame)
+        self.add_label(self._label_end_time, _("End Time"), row=row, wraplength=ScheduleModifyWindow.COL_0_WIDTH)
+        self.end_time_hour_var = StringVar(self.master, value="0")
+        self.end_time_min_var = StringVar(self.master, value="0")
+        self.end_time_hour_choice = OptionMenu(self.frame, self.end_time_hour_var, "0", *list(map(str, range(24))))
+        self.end_time_min_choice = OptionMenu(self.frame, self.end_time_min_var, "0", *list(map(str, range(0, 61, 15))))
+        self.end_time_hour_choice.grid(row=row, column=1)
+        self.end_time_min_choice.grid(row=row, column=2)
+        row += 1
+
+        self._label_shutdown_time = Label(self.frame)
+        self.add_label(self._label_shutdown_time, _("Shutdown Time"), row=row, wraplength=ScheduleModifyWindow.COL_0_WIDTH)
+        self.shutdown_time_hour_var = StringVar(self.master, value="")
+        self.shutdown_time_min_var = StringVar(self.master, value="")
+        self.shutdown_time_hour_choice = OptionMenu(self.frame, self.shutdown_time_hour_var, "", *list(map(str, range(24))))
+        self.shutdown_time_min_choice = OptionMenu(self.frame, self.shutdown_time_min_var, "", *list(map(str, range(0, 61, 15))))
+        self.shutdown_time_hour_choice.grid(row=row, column=1)
+        self.shutdown_time_min_choice.grid(row=row, column=2)
+        row += 1
+
         self.master.update()
-
-    def add_widgets(self):
-        row = 0
-        base_col = 0
-        preset_options = PresetsWindow.get_preset_names() # TODO handling for no preset set case
-
-        for i in range(len(self.schedule.schedule)):
-            row = i+1
-            preset_task = self.schedule.schedule[i]
-
-            name_var = StringVar(self.master, value=preset_task.name)
-            self.name_var_list.append(name_var)
-            preset_count_var = StringVar(self.master, value=str(preset_task.count_runs))
-            self.count_var_list.append(preset_count_var)
-
-            def set_task(event, self=self, name_var=name_var, preset_count_var=preset_count_var, idx=i):
-                self.schedule.set_preset_task(idx, name_var.get(), preset_count_var.get())
-                self.refresh()
-
-            preset_choice = OptionMenu(self.frame, name_var, preset_task.name, *preset_options, command=set_task)
-            preset_choice.grid(row=row, column=base_col+1, sticky=W)
-            self.name_widget_list.append(preset_choice)
-
-            count_options = [str(i) for i in list(range(101))]
-            count_options.insert(0, "-1")
-            count_choice = OptionMenu(self.frame, preset_count_var, str(preset_task.count_runs), *count_options, command=set_task)
-            count_choice.grid(row=row, column=base_col+2, sticky=W)
-            self.count_widget_list.append(count_choice)
-
-            delete_task_btn = Button(self.frame, text=_("Delete"))
-            self.delete_task_btn_list.append(delete_task_btn)
-            delete_task_btn.grid(row=row, column=base_col+3)
-            def delete_task_handler(event, self=self, idx=i):
-                self.schedule.delete_index(idx)
-                self.refresh()
-            delete_task_btn.bind("<Button-1>", delete_task_handler)
-
-            move_down_btn = Button(self.frame, text=_("Move Down"))
-            self.move_down_btn_list.append(move_down_btn)
-            move_down_btn.grid(row=row, column=base_col+4)
-            def move_down_handler(event, self=self, idx=i):
-                self.schedule.move_index(idx, 1)
-                self.refresh()
-            move_down_btn.bind("<Button-1>", move_down_handler)
-
-    def add_preset_task(self):
-        self.schedule.add_preset_task(PresetTask(PresetsWindow.get_most_recent_preset_name(), 1))
-        self.refresh()
 
     def refresh(self):
-        self.clear_widget_lists()
-        self.add_widgets()
         self.master.update()
 
-    def clear_widget_lists(self):
-        for wgt in self.name_widget_list:
-            wgt.destroy()
-        for wgt in self.count_widget_list:
-            wgt.destroy()
-        for btn in self.delete_task_btn_list:
-            btn.destroy()
-        for btn in self.move_down_btn_list:
-            btn.destroy()
-        self.name_var_list.clear()
-        self.count_var_list.clear()
-        self.name_widget_list = []
-        self.count_widget_list = []
-        self.delete_task_btn_list = []
-        self.move_down_btn_list = []
+    def _toggle_all_days(self):
+        set_to = self.all_days_var.get()
+        for var in self.days_of_the_week_var_list:
+            var.set(set_to)
 
-    def move_index(self, idx, direction_count=1):
-        self.schedule.move_index(idx, direction_count)
+    def get_active_weekday_indices(self):
+        return [i for i, var in enumerate(self.days_of_the_week_var_list) if var.get()]
 
     def finalize_schedule(self, event=None):
         self.schedule.name = self.new_schedule_name.get()
+        self.schedule.voice = self.voice_var.get()
+        self.schedule.weekday_options = self.get_active_weekday_indices()
+        if len(self.schedule.weekday_options) == 0:
+            raise Exception("No days selected")
+        if self.start_time_hour_var.get() != "":
+            self.schedule.set_start_time(int(self.start_time_hour_var.get()), int(self.start_time_min_var.get()))
+        if self.end_time_hour_var.get() != "":
+            self.schedule.set_end_time(int(self.end_time_hour_var.get()), int(self.end_time_min_var.get()))
+        if self.shutdown_time_hour_var.get() != "":
+            self.schedule.set_shutdown_time(int(self.shutdown_time_hour_var.get()), int(self.shutdown_time_min_var.get()))
         self.close_windows()
         self.refresh_callback(self.schedule)
 
@@ -153,75 +143,16 @@ class ScheduleModifyWindow():
 class SchedulesWindow():
     top_level = None
     schedule_modify_window = None
-    current_schedule = Schedule()
-    recent_schedules = []
-    last_set_schedule = None
-
-    schedule_history = []
-    MAX_PRESETS = 50
 
     MAX_HEIGHT = 900
     N_TAGS_CUTOFF = 30
     COL_0_WIDTH = 600
 
     @staticmethod
-    def set_schedules():
-        for schedule_dict in list(app_info_cache.get("recent_schedules", default_val=[])):
-            SchedulesWindow.recent_schedules.append(Schedule.from_dict(schedule_dict))
-        current_schedule_dict = app_info_cache.get("current_schedule", default_val=None)
-        if current_schedule_dict is not None:
-            SchedulesWindow.current_schedule = Schedule.from_dict(current_schedule_dict)
-
-    @staticmethod
-    def store_schedules():
-        schedule_dicts = []
-        for schedule in SchedulesWindow.recent_schedules:
-            schedule_dicts.append(schedule.to_dict())
-        app_info_cache.set("recent_schedules", schedule_dicts)
-        if SchedulesWindow.current_schedule is not None:
-            app_info_cache.set("current_schedule", SchedulesWindow.current_schedule.to_dict())
-
-    @staticmethod
-    def get_schedule_by_name(name):
-        for schedule in SchedulesWindow.recent_schedules:
-            if name == schedule.name:
-                return schedule
-        raise Exception(f"No schedule found with name: {name}. Set it on the Schedules Window.")
-
-    @staticmethod
-    def get_history_schedule(start_index=0):
-        # Get a previous schedule.
-        schedule = None
-        for i in range(len(SchedulesWindow.schedule_history)):
-            if i < start_index:
-                continue
-            schedule = SchedulesWindow.schedule_history[i]
-            break
-        return schedule
-
-    @staticmethod
-    def update_history(schedule):
-        if len(SchedulesWindow.schedule_history) > 0 and \
-                schedule == SchedulesWindow.schedule_history[0]:
-            return
-        SchedulesWindow.schedule_history.insert(0, schedule)
-        if len(SchedulesWindow.schedule_history) > SchedulesWindow.MAX_PRESETS:
-            del SchedulesWindow.schedule_history[-1]
-
-    @staticmethod
     def get_geometry(is_gui=True):
         width = 700
         height = 400
         return f"{width}x{height}"
-
-    @staticmethod
-    def next_schedule(alert_callback):
-        if len(SchedulesWindow.recent_schedules) == 0:
-            alert_callback(_("Not enough schedules found."))
-        next_schedule = SchedulesWindow.recent_schedules[-1]
-        SchedulesWindow.recent_schedules.remove(next_schedule)
-        SchedulesWindow.recent_schedules.insert(0, next_schedule)
-        return next_schedule
 
     def __init__(self, master, toast_callback, runner_app_config=RunnerAppConfig()):
         SchedulesWindow.top_level = Toplevel(master, bg=AppStyle.BG_COLOR)
@@ -230,7 +161,7 @@ class SchedulesWindow():
         self.master = SchedulesWindow.top_level
         self.toast_callback = toast_callback
         self.filter_text = ""
-        self.filtered_schedules = SchedulesWindow.recent_schedules[:]
+        self.filtered_schedules = schedules_manager.recent_schedules[:]
         self.label_list = []
         self.set_schedule_btn_list = []
         self.modify_schedule_btn_list = []
@@ -245,7 +176,7 @@ class SchedulesWindow():
         self.frame.config(bg=AppStyle.BG_COLOR)
 
         self._label_info = Label(self.frame)
-        self.add_label(self._label_info, self.get_current_schedule_label_text(), row=0, wraplength=SchedulesWindow.COL_0_WIDTH)
+        self.add_label(self._label_info, _("Create and modify schedules"), row=0, wraplength=SchedulesWindow.COL_0_WIDTH)
         self.add_schedule_btn = None
         self.add_btn("add_schedule_btn", _("Add schedule"), self.open_schedule_modify_window, column=1)
         self.clear_recent_schedules_btn = None
@@ -270,13 +201,6 @@ class SchedulesWindow():
             self.label_list.append(label_name)
             self.add_label(label_name, str(schedule), row=row, column=base_col, wraplength=SchedulesWindow.COL_0_WIDTH)
 
-            set_schedule_btn = Button(self.frame, text=_("Set"))
-            self.set_schedule_btn_list.append(set_schedule_btn)
-            set_schedule_btn.grid(row=row, column=base_col+1)
-            def set_schedule_handler(event, self=self, schedule=schedule):
-                return self.set_schedule(event, schedule)
-            set_schedule_btn.bind("<Button-1>", set_schedule_handler)
-
             modify_schedule_btn = Button(self.frame, text=_("Modify"))
             self.set_schedule_btn_list.append(modify_schedule_btn)
             modify_schedule_btn.grid(row=row, column=base_col+2)
@@ -297,24 +221,15 @@ class SchedulesWindow():
         SchedulesWindow.schedule_modify_window = ScheduleModifyWindow(self.master, self.refresh_schedules, schedule)
 
     def refresh_schedules(self, schedule):
-        SchedulesWindow.update_history(schedule)
-        if schedule in SchedulesWindow.recent_schedules:
-            SchedulesWindow.recent_schedules.remove(schedule)
-        SchedulesWindow.recent_schedules.insert(0, schedule)
-        self.filtered_schedules = SchedulesWindow.recent_schedules[:]
-        self.set_schedule(schedule)
-
-    def get_current_schedule_label_text(self):
-        return _("Current schedule: {0}").format(SchedulesWindow.current_schedule)
-
-    def set_schedule(self, event=None, schedule=None):
-        SchedulesWindow.current_schedule = schedule
-        self._label_info["text"] = self.get_current_schedule_label_text()
+        schedules_manager.refresh_schedule(schedule)
+        self.filtered_schedules = schedules_manager.recent_schedules[:]
         self.refresh()
 
+    def set_schedule(self, schedule):
+        pass
+
     def delete_schedule(self, event=None, schedule=None):
-        if schedule is not None and schedule in SchedulesWindow.recent_schedules:
-            SchedulesWindow.recent_schedules.remove(schedule)
+        schedules_manager.delete_schedule(schedule)
         self.refresh()
 
     def filter_schedules(self, event):
@@ -349,11 +264,11 @@ class SchedulesWindow():
             print("Filter unset")
             # Restore the list of target directories to the full list
             self.filtered_schedules.clear()
-            self.filtered_schedules = SchedulesWindow.recent_schedules[:]
+            self.filtered_schedules = schedules_manager.recent_schedules[:]
         else:
             temp = []
             return # TODO
-            for schedule in SchedulesWindow.recent_schedules:
+            for schedule in schedules_manager.recent_schedules:
                 if schedule not in temp:
                     if schedule and (f" {self.filter_text}" in schedule.lower() or f"_{self.filter_text}" in schedule.lower()):
                         temp.append(schedule)
@@ -381,8 +296,9 @@ class SchedulesWindow():
         control_key_pressed = (event.state & 0x4) != 0
         alt_key_pressed = (event.state & 0x20000) != 0
         if alt_key_pressed:
-            penultimate_schedule = SchedulesWindow.get_history_schedule(start_index=1)
+            penultimate_schedule = schedules_manager.get_history_schedule(start_index=1)
             if penultimate_schedule is not None and os.path.isdir(penultimate_schedule):
+                pass
                 self.set_schedule(schedule=penultimate_schedule)
         elif len(self.filtered_schedules) == 0 or control_key_pressed:
             self.open_schedule_modify_window()
@@ -390,12 +306,12 @@ class SchedulesWindow():
             if len(self.filtered_schedules) == 1 or self.filter_text.strip() != "":
                 schedule = self.filtered_schedules[0]
             else:
-                schedule = SchedulesWindow.last_set_schedule
+                schedule = schedules_manager.last_set_schedule
             self.set_schedule(schedule=schedule)
 
     def clear_recent_schedules(self, event=None):
         self.clear_widget_lists()
-        SchedulesWindow.recent_schedules.clear()
+        schedules_manager.recent_schedules.clear()
         self.filtered_schedules.clear()
         self.add_schedule_widgets()
         self.master.update()
@@ -415,7 +331,7 @@ class SchedulesWindow():
         self.label_list = []
 
     def refresh(self, refresh_list=True):
-        self.filtered_schedules = SchedulesWindow.recent_schedules[:]
+        self.filtered_schedules = schedules_manager.recent_schedules[:]
         self.clear_widget_lists()
         self.add_schedule_widgets()
         self.master.update()

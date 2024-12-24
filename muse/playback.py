@@ -90,6 +90,8 @@ class Playback:
         self.remaining_delay_seconds = Globals.DELAY_TIME_SECONDS + random_buffer
 
     def run(self):
+        if self.has_muse():
+            self.get_muse().check_schedules()
         while self.get_track() and not self._run.is_cancelled:
             self.set_delay_seconds()
             if self.has_muse():

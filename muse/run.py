@@ -15,9 +15,6 @@ from utils.utils import Utils
 
 _ = I18N._
 
-prompt_list = [
-]
-
 
 class Run:
     def __init__(self, args, callbacks=None):
@@ -50,24 +47,16 @@ class Run:
         if config.enable_library_extender and self.args.extend:
             self.library_data.start_extensions_thread()
         Utils.log(playback_config)
-        # confirm_text = f"\n\nPrompt: \"{config.positive}\" (y/n/r/m/n/e/s/[space to quit]): "
-        confirm = "y" # if Globals.SKIP_CONFIRMATIONS else input(confirm_text)
         self.switching_params = False
-
-        if confirm.lower() == " ": # go to next workflow / redo file
-            return None
-        elif confirm.lower() != "y":
-            return
-
         if self.last_config and playback_config == self.last_config:
             Utils.log("\n\nConfig matches last config. Please modify it or quit.")
-            # if Globals.SKIP_CONFIRMATIONS:
-            #     raise Exception("Invalid state - must select an auto-modifiable config option if using auto run.")
-            # else:
             return
 
-#        if config.prompts_match(self.last_config) or config.validate():
-        self.playback.run()
+        try:
+            self.playback.run()
+        except Exception as e:
+            self.library_data.reset_extension()
+            raise e
 
         self.last_config = deepcopy(self.playback._playback_config)
 
@@ -104,7 +93,6 @@ class Run:
     def execute(self):
         self.is_complete = False
         self.is_cancelled = False
-        # Globals.SKIP_CONFIRMATIONS = self.args.auto_run
         self.load_and_run()
         self.is_complete = True
 

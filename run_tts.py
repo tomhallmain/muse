@@ -7,6 +7,7 @@ text = """Lang schwang der Klang am Hang entlang"""
 preferred_speakers = [
     "Royston Min",
     "Aaron Dreschner",
+    "Sofia Hellen",
 ]
 
 speaker = "Aaron Dreschner"
