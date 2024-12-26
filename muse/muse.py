@@ -78,7 +78,7 @@ class Muse:
     preparation_starts_minutes_from_end = float(config.muse_config["preparation_starts_minutes_from_end"])
     preparation_starts_after_seconds_sleep = int(config.muse_config["preparation_starts_after_seconds_sleep"])
 
-    def __init__(self, args):
+    def __init__(self, args, will_run=False):
         self.args = args
         self._schedule = SchedulesManager.default_schedule
         self.llm = LLM(model_name=config.llm_model_name)
@@ -152,8 +152,8 @@ class Muse:
         self.check_schedules()
 
     def check_schedules(self):
+        self.check_for_shutdowns()
         now = datetime.datetime.now()
-        self.check_for_shutdowns(now)
         active_schedule = SchedulesManager.get_active_schedule(now)
         if active_schedule is None:
             raise Exception("Failed to establish active schedule")
@@ -167,12 +167,13 @@ class Muse:
     def change_voice(self, voice_name):
         self.voice = Voice(voice_name)
 
-    def check_for_shutdowns(self, now):
+    def check_for_shutdowns(self):
+        now = datetime.datetime.now()
         try:
             SchedulesManager.check_for_shutdown_request(now)
         except ScheduledShutdownException as e:
             now_general_word = _("tonight") if now.hour > 19 else _("today")
-            self.voice.say(_("That's it for {0}").format(now_general_word))
+            self.voice.say(_("The scheduled shutdown time has arrived. That's it for {0}.").format(now_general_word))
             raise e
 
     def maybe_prep_dj_post(self, spot_profile):

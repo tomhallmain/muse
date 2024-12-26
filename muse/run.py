@@ -8,6 +8,7 @@ from muse.muse import Muse
 from muse.playback import Playback
 from muse.playback_config import PlaybackConfig
 from muse.run_config import RunConfig
+from muse.schedules_manager import ScheduledShutdownException
 from muse.workflow import WorkflowPrompt
 from utils.config import config
 from utils.translations import I18N
@@ -54,6 +55,9 @@ class Run:
 
         try:
             self.playback.run()
+        except ScheduledShutdownException as e:
+            print("Shutting down main thread! Good-bye.")
+            exit()
         except Exception as e:
             self.library_data.reset_extension()
             raise e

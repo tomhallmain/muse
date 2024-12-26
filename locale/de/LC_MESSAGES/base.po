@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2024-11-24 18:17-0500\n"
+"POT-Creation-Date: 2024-12-26 13:14-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Thomas Hall <tomhall.main@gmail.com>\n"
 "Language-Team: de Team <<EMAIL>>\n"
@@ -15,205 +15,263 @@ msgstr ""
 "Generated-By: pygettext.py 1.5\n"
 
 
-#: .\app.py:109 .\app.py:179
+#: .\app.py:114 .\app.py:193
 msgid "Muse"
 msgstr "Muse"
 
-#: .\app.py:113
+#: .\app.py:118
 msgid "Play"
 msgstr "Spiel"
 
-#: .\app.py:116
+#: .\app.py:121
 msgid "Next"
 msgstr "Weiter"
 
-#: .\app.py:119
+#: .\app.py:124
 msgid "Pause"
 msgstr "Pause"
 
-#: .\app.py:122 .\ui\search_window.py:57 .\ui\search_window.py:143
-#: .\ui\search_window.py:172
+#: .\app.py:127 .\ui\composers_window.py:230 .\ui\composers_window.py:265
+#: .\ui\search_window.py:57 .\ui\search_window.py:157
+#: .\ui\search_window.py:186
 msgid "Search"
 msgstr "Suche"
 
-#: .\app.py:124
+#: .\app.py:130
+msgid "Composers"
+msgstr "Komponisten"
+
+#: .\app.py:133
+msgid "Schedules"
+msgstr "Zeitpl\u00e4ne"
+
+#: .\app.py:135
 msgid "Stop"
 msgstr "Stopp"
 
-#: .\app.py:125
+#: .\app.py:136
 msgid "Text"
 msgstr "Text"
 
-#: .\app.py:126
+#: .\app.py:137 .\app.py:197
 msgid "Extension"
 msgstr "Erweiterung"
 
-#: .\app.py:129
+#: .\app.py:140
+msgid "Status"
+msgstr "Zustand"
+
+#: .\app.py:143
 msgid "Track"
 msgstr "Titel"
 
-#: .\app.py:132
+#: .\app.py:146
 msgid "Spot Details"
 msgstr "Details zur Stelle"
 
-#: .\app.py:135
+#: .\app.py:149
 msgid "Extension Status"
 msgstr "Stand der Erweiterung"
 
-#: .\app.py:139
+#: .\app.py:153
 msgid "Workflow"
 msgstr "Arbeitsablauf"
 
-#: .\app.py:146
+#: .\app.py:160
 msgid "Set Total"
 msgstr "Satz Gesamt"
 
-#: .\app.py:155
+#: .\app.py:169
 msgid "Delay Seconds"
 msgstr "Verz\u00f6gerung Sekunden"
 
-#: .\app.py:162
+#: .\app.py:176
 msgid "Directory"
 msgstr "Verzeichnis"
 
-#: .\app.py:171
+#: .\app.py:185
 msgid "Overwrite"
 msgstr "\u00dcberschreiben Sie"
 
-#: .\app.py:175
+#: .\app.py:189
 msgid "Favorite"
 msgstr "Favorit"
 
-#: .\app.py:183
+#: .\app.py:201
 msgid "Volume"
 msgstr "Band"
 
-#: .\app.py:189 .\ui\track_details_window.py:30 .\ui\weather_window.py:25
-#: .\ui\weather_window.py:35 .\ui\weather_window.py:65
+#: .\app.py:207 .\ui\weather_window.py:25 .\ui\weather_window.py:35
+#: .\ui\weather_window.py:65
 msgid "Weather"
 msgstr "Wetter"
 
-#: .\app.py:242
+#: .\app.py:260
 msgid "Confirm Quit"
 msgstr "Beenden best\u00e4tigen"
 
-#: .\app.py:242
+#: .\app.py:260
 msgid "Would you like to quit the application?"
 msgstr "M\u00f6chten Sie die Anwendung beenden?"
 
-#: .\app.py:357
+#: .\app.py:380
 msgid "Confirm Run"
 msgstr "Lauf best\u00e4tigen"
 
-#: .\app.py:358
+#: .\app.py:381
 msgid "Are you sure you want to proceed?"
 msgstr "Sind Sie sicher, dass Sie fortfahren wollen?"
 
-#: .\app.py:465
+#: .\app.py:514
 msgid "Album: "
 msgstr "Album: "
 
-#: .\app.py:465 .\muse\muse.py:51 .\muse\muse.py:61
+#: .\app.py:514 .\muse\muse.py:55 .\muse\muse.py:65
 msgid "Track: "
 msgstr "Titel: "
 
-#: .\app.py:467
+#: .\app.py:516
 msgid "Artist: "
 msgstr "K\u00fcnstler: "
 
-#: .\app.py:508
+#: .\app.py:557
 msgid "Error"
 msgstr "Fehler"
 
-#: .\app.py:593
+#: .\app.py:642
 msgid " Muse "
 msgstr " Muse "
 
-#: .\library_data\audio_track.py:223 .\library_data\audio_track.py:224
+#: .\library_data\audio_track.py:159
+msgid "Unknown title"
+msgstr "Unbekannter Titel"
+
+#: .\library_data\audio_track.py:165
+msgid "Unknown album"
+msgstr "Unbekanntes Album"
+
+#: .\library_data\audio_track.py:171
+msgid "Unknown artist"
+msgstr "Unbekannter K\u00fcnstler"
+
+#: .\library_data\audio_track.py:249 .\library_data\audio_track.py:250
+#: .\tts\text_cleaner_ruleset.py:61
 msgid "Number \\1"
 msgstr " Zahl \\1"
 
-#: .\library_data\audio_track.py:225
+#: .\library_data\audio_track.py:251
 msgid "\\1text to speech\\2"
 msgstr "\\1Text-in-Sprache\\2"
 
-#: .\library_data\audio_track.py:226
+#: .\library_data\audio_track.py:252
 msgid " Opus \\2"
 msgstr " Opus \\2"
 
-#: .\library_data\library_data.py:144 .\library_data\library_data.py:156
+#: .\library_data\library_data.py:149 .\library_data\library_data.py:161
 msgid "Extension thread waiting for {0} minutes"
 msgstr "Erweiterungs-Thread wartet auf {0} Minuten"
 
-#: .\library_data\library_data.py:263
+#: .\library_data\library_data.py:298
 msgid "Extension \"{0}\" waiting for {1} minutes"
 msgstr "Erweiterung \u201e{0}\u201c wartet seit {1} Minuten"
 
-#: .\muse\muse.py:55 .\muse\muse.py:62
+#: .\library_data\library_data.py:329
+msgid "Extension \"{0}\" ready"
+msgstr "Erweiterung \u201e{0}\u201c bereit"
+
+#: .\muse\muse.py:59 .\muse\muse.py:66
 msgid "Previous Track: "
 msgstr "Vorheriger Titel: "
 
-#: .\muse\muse.py:57
+#: .\muse\muse.py:61
 msgid "Talking about: "
 msgstr "Sprechen \u00fcber: "
 
-#: .\muse\muse.py:61
+#: .\muse\muse.py:65
 msgid "No track"
 msgstr "Kein Titel"
 
-#: .\muse\muse.py:62
+#: .\muse\muse.py:66
 msgid "No previous track"
 msgstr "Kein vorheriger Titel"
 
-#: .\muse\muse.py:64
+#: .\muse\muse.py:68
 msgid "Speaking about prior track"
 msgstr "Apropos vorherige Titel"
 
-#: .\muse\muse.py:66
+#: .\muse\muse.py:70
 msgid "Speaking about upcoming track"
 msgstr "\u00dcber den kommenden Titel sprechen"
 
-#: .\muse\muse.py:68
+#: .\muse\muse.py:72
 msgid "Talking about something"
 msgstr "\u00dcber etwas sprechen"
 
-#: .\muse\muse.py:154
+#: .\muse\muse.py:175
+msgid "today"
+msgstr "heute"
+
+#: .\muse\muse.py:175
+msgid "tonight"
+msgstr "heute Abend"
+
+#: .\muse\muse.py:176
+msgid "The scheduled shutdown time has arrived. That's it for {0}."
+msgstr "Die geplante Abschaltzeit ist gekommen. Das war's f\u00fcr {0}."
+
+#: .\muse\muse.py:193
 msgid "That was \"{0}\" in \"{1}\""
 msgstr "Das war \u201e{0}\u201c aus \u201e{1}\u201c"
 
-#: .\muse\muse.py:156 .\muse\muse.py:173
+#: .\muse\muse.py:195 .\muse\muse.py:212
 msgid " by \"{0}\"."
 msgstr " von \u201e{0}\u201c."
 
-#: .\muse\muse.py:161
+#: .\muse\muse.py:200
 msgid "That was a new track. How'd you like that?"
 msgstr "Das war ein neuer Track. Wie hat dir das gefallen?"
 
-#: .\muse\muse.py:163
+#: .\muse\muse.py:202
 msgid "That was a new one. How'd you like it?"
 msgstr "Das war eine Neuheit. Wie hat es dir gefallen?"
 
-#: .\muse\muse.py:169
+#: .\muse\muse.py:208
 msgid "To start, we'll be playing: \"{0}\" from \"{1}\""
 msgstr "Zu Beginn spielen wir \u201e{0}\u201c aus \u201e{1}\u201c"
 
-#: .\muse\muse.py:171
+#: .\muse\muse.py:210
 msgid "Next up, we'll be playing: \"{0}\" from \"{1}\""
 msgstr "Als N\u00e4chstes spielen wir \u201e{0}\u201c aus \u201e{1}\u201c"
 
-#: .\muse\muse.py:177
+#: .\muse\muse.py:216
 msgid "This one is a new track."
 msgstr "Dies ist ein neuer Titel."
 
-#: .\muse\muse.py:211
+#: .\muse\muse.py:257
 msgid "First let's hear about {0}"
 msgstr "Zuerst etwas \u00fcber {0}"
 
-#: .\muse\muse.py:213
+#: .\muse\muse.py:259
 msgid "But first, let's hear about {0}."
 msgstr "Doch zun\u00e4chst etwas \u00fcber {0}."
 
-#: .\muse\playback.py:215
+#: .\muse\muse.py:453
+msgid "We're having some technical difficulties in accessing our source for {0}. We'll try again later"
+msgstr "Wir haben technische Schwierigkeiten beim Zugriff auf unsere Quelle f\u00fcr {0}. Wir werden es sp\u00e4ter noch einmal versuchen"
+
+#: .\muse\muse.py:457
+msgid "It seems our writer for {0} is unexpectedly away at the moment. Did we forget to pay his salary again?"
+msgstr "Es scheint, dass unser Autor f\u00fcr {0} im Moment unerwartet abwesend ist. Haben wir wieder vergessen, sein Gehalt zu zahlen?"
+
+#: .\muse\muse.py:461
+msgid "We've found problems with all of our {0} ideas. Please try again later."
+msgstr "Wir haben bei allen unseren {0} Ideen Probleme gefunden. Bitte versuchen Sie es sp\u00e4ter noch einmal."
+
+#: .\muse\muse.py:466
+msgid "Something went wrong. We'll try to fix it soon."
+msgstr "Da ist etwas schief gelaufen. Wir werden versuchen, es bald zu beheben."
+
+#: .\muse\playback.py:208
 msgid "Sleeping for seconds"
 msgstr "Schlafen f\u00fcr Sekunden"
 
@@ -285,23 +343,185 @@ msgstr "lustige Geschichte"
 msgid "language learning"
 msgstr "Sprachenlernen"
 
+#: .\muse\schedule.py:8 .\ui\schedules_window.py:38
+msgid "New Schedule"
+msgstr "Neuer Zeitplan"
+
+#: .\muse\schedule.py:41
+msgid "Tomorrow"
+msgstr "Morgen"
+
+#: .\muse\schedule.py:65 .\ui\schedules_window.py:55
+msgid "Every day"
+msgstr "Jeden Tag"
+
+#: .\muse\schedule.py:68
+msgid "{0} - DJ: {1} - Days: {2} - Times: {3}-{4} - Shutdown: {5}"
+msgstr "{0} - DJ: {1} - Tage: {2} - Zeiten: {3}-{4} - Abschaltung: {5}"
+
+#: .\muse\schedules_manager.py:62
+msgid "Not enough schedules found."
+msgstr "Es wurden nicht gen\u00fcgend Zeitpl\u00e4ne gefunden."
+
+#: .\ui\composers_window.py:28
+msgid "Modify Preset composer: {0}"
+msgstr "Voreinstellung Komponist \u00e4ndern: {0}"
+
+#: .\ui\composers_window.py:39
+msgid "Modify Composer"
+msgstr "Komponist \u00e4ndern"
+
+#: .\ui\composers_window.py:42
+msgid "Name"
+msgstr "Name"
+
+#: .\ui\composers_window.py:43
+msgid "New Composer"
+msgstr "Neuer Komponist"
+
+#: .\ui\composers_window.py:48
+msgid "Indicators"
+msgstr "Indikatoren"
+
+#: .\ui\composers_window.py:54
+msgid "Start Date"
+msgstr "Anfangsdatum"
+
+#: .\ui\composers_window.py:60
+msgid "End Date"
+msgstr "Enddatum"
+
+#: .\ui\composers_window.py:66 .\ui\composers_window.py:68
+msgid "Dates are lifespan"
+msgstr "Daten sind lebenslang"
+
+#: .\ui\composers_window.py:72
+msgid "Dates uncertain"
+msgstr "Daten ungewiss"
+
+#: .\ui\composers_window.py:74
+msgid "Dates are uncertain"
+msgstr "Daten sind ungewiss"
+
+#: .\ui\composers_window.py:78
+msgid "Genres"
+msgstr "Genren"
+
+#: .\ui\composers_window.py:88
+msgid "Save composer"
+msgstr "Komponist speichern"
+
+#: .\ui\composers_window.py:91
+msgid "Add Preset Task"
+msgstr "Voreingestellte Aufgabe hinzuf\u00fcgen"
+
+#: .\ui\composers_window.py:129
+msgid "New note"
+msgstr "Neue Notiz"
+
+#: .\ui\composers_window.py:191
+msgid "Search Composers"
+msgstr "Suche nach Komponisten"
+
+#: .\ui\composers_window.py:257 .\ui\search_window.py:149
+msgid "Details"
+msgstr "Einzelheiten"
+
+#: .\ui\composers_window.py:290
+msgid "Composer Search"
+msgstr "Komponisten-Suche"
+
+#: .\ui\extensions_window.py:31 .\ui\extensions_window.py:43
+#: .\ui\extensions_window.py:86
+msgid "Extensions"
+msgstr "Erweiterungen"
+
+#: .\ui\extensions_window.py:53 .\ui\track_details_window.py:41
+#: .\ui\weather_window.py:38
+msgid "Update"
+msgstr "Aktualisierung"
+
+#: .\ui\schedules_window.py:28
+msgid "Modify Preset Schedule: {0}"
+msgstr "Voreingestellten Zeitplan \u00e4ndern: {0}"
+
+#: .\ui\schedules_window.py:37
+msgid "Schedule Name"
+msgstr "Zeitplan Name"
+
+#: .\ui\schedules_window.py:43 .\ui\schedules_window.py:181
+msgid "Add schedule"
+msgstr "Zeitplan hinzuf\u00fcgen"
+
+#: .\ui\schedules_window.py:69
+msgid "Start Time"
+msgstr "Anfangszeit"
+
+#: .\ui\schedules_window.py:79
+msgid "End Time"
+msgstr "Endzeit"
+
+#: .\ui\schedules_window.py:89
+msgid "Shutdown Time"
+msgstr "Abschaltzeit"
+
+#: .\ui\schedules_window.py:160
+msgid "Preset Schedules"
+msgstr "Voreingestellte Zeitpl\u00e4ne"
+
+#: .\ui\schedules_window.py:179
+msgid "Create and modify schedules"
+msgstr "Zeitpl\u00e4ne erstellen und \u00e4ndern"
+
+#: .\ui\schedules_window.py:183
+msgid "Clear schedules"
+msgstr "Klare Zeitpl\u00e4ne"
+
+#: .\ui\schedules_window.py:204
+msgid "Modify"
+msgstr "\u00c4ndern"
+
+#: .\ui\schedules_window.py:211
+msgid "Delete"
+msgstr "L\u00f6schen"
+
 #: .\ui\search_window.py:29
 msgid "Search Library"
 msgstr "Bibliothek durchsuchen"
 
-#: .\ui\search_window.py:135
-msgid "Details"
-msgstr "Einzelheiten"
-
-#: .\ui\track_details_window.py:41 .\ui\weather_window.py:38
-msgid "Update"
-msgstr "Aktualisierung"
-
-#: .\ui\track_details_window.py:85
+#: .\ui\track_details_window.py:30 .\ui\track_details_window.py:85
 msgid "Track Details"
 msgstr "Details zur Strecke"
 
 #: .\utils\job_queue.py:35
 msgid " (Pending runs: {0})"
 msgstr " (Ausstehende L\u00e4ufe: {0})"
+
+#: .\utils\translations.py:34
+msgid "Monday"
+msgstr "Montag"
+
+#: .\utils\translations.py:36
+msgid "Tuesday"
+msgstr "Dienstag"
+
+#: .\utils\translations.py:38
+msgid "Wednesday"
+msgstr "Mittwoch"
+
+#: .\utils\translations.py:40
+msgid "Thursday"
+msgstr "Donnerstag"
+
+#: .\utils\translations.py:42
+msgid "Friday"
+msgstr "Freitag"
+
+#: .\utils\translations.py:44
+msgid "Saturday"
+msgstr "Samstag"
+
+#: .\utils\translations.py:46
+msgid "Sunday"
+msgstr "Sonntag"
 

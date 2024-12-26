@@ -94,6 +94,7 @@ class Playback:
             self.get_muse().check_schedules()
         while self.get_track() and not self._run.is_cancelled:
             self.set_delay_seconds()
+            self.get_muse().check_for_shutdowns()
             if self.has_muse():
                 if not self.has_played_first_track or not self.get_muse().has_started_prep:
                     # First track, or if user skipped before end of last track
