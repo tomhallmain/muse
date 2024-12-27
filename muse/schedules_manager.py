@@ -100,11 +100,13 @@ class SchedulesManager:
                     (schedule.start_time == 0 and schedule.end_time == 0):
                 no_specific_times.append(schedule)
         if len(partially_applicable) >= 1:
+            partially_applicable.sort(key=lambda schedule: schedule.calculate_generality())
             schedules_text = "\n".join([str(schedule) for schedule in partially_applicable])
             print(f"Schedules are partially applicable:\n{schedules_text}")
             return partially_applicable[0]
         elif len(no_specific_times) >= 1:
-            schedules_text = "\n".join([str(schedule) for schedule in partially_applicable])
+            no_specific_times.sort(key=lambda schedule: schedule.calculate_generality())
+            schedules_text = "\n".join([str(schedule) for schedule in no_specific_times])
             print(f"Schedules are applicable to today but have no specific times:\n{schedules_text}")
             return no_specific_times[0]
         else:

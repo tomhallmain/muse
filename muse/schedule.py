@@ -48,6 +48,17 @@ class Schedule:
             return self.readable_time(self.shutdown_time)
         else:
             raise Exception("No more available times")
+    
+    def calculate_generality(self):
+        minutes_in_day = 24 * 60
+        if (self.start_time is None or self.start_time == 0) and (self.end_time is None or self.end_time == 0):
+            return float(len(self.weekday_options))
+        elif self.start_time is None or self.start_time == 0:
+            return float(self.end_time) / minutes_in_day
+        elif self.end_time is None or self.end_time == 0:
+            return (minutes_in_day - float(self.start_time)) / minutes_in_day
+        else:
+            return (float(self.end_time) - float(self.start_time)) / minutes_in_day
 
     @staticmethod
     def get_time(hour=0, minute=0):
