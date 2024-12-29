@@ -37,6 +37,7 @@ class Config:
         self.news_api_key = None
         self.news_api_source_trustworthiness = {}
         self.muse_language_learning_language = "German"
+        self.muse_language_learning_language_level = "intermediate"
         self.debug = False
 
         self.llm_model_name = "wizard-vicuna-uncensored:latest"
@@ -82,6 +83,8 @@ class Config:
             "open_weather_city",
             "open_weather_api_key",
             "news_api_key",
+            "muse_language_learning_language",
+            "muse_language_learning_language_level",
         )
         self.set_values(int,
             "max_chunk_tokens",

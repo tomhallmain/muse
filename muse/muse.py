@@ -415,6 +415,10 @@ class Muse:
     def teach_language(self, spot_profile):
         prompt = self.prompter.get_prompt("language_learning")
         prompt = prompt.replace("LANGUAGE", config.muse_language_learning_language)
+        if config.muse_language_learning_language_level is not None and config.muse_language_learning_language_level.strip() != "":
+            prompt = prompt.replace("LEVEL", config.muse_language_learning_language_level)
+        else:
+            prompt = prompt.replace("LEVEL", "basic")
         language_response = self.generate_text(prompt)
         self.say_at_some_point(language_response, spot_profile)
 

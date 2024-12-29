@@ -1,7 +1,6 @@
 
 from copy import deepcopy
 import json
-import math
 import os
 
 
@@ -224,11 +223,12 @@ class ComposersManager:
             possible_duplicates_list.append((composer_data_i, composer_data_j))
 
         possible_duplicates_list.sort(key=lambda x: x[0]["name"])
+        possible_duplicates_dates_not_close = []
 
-        friederich_wilhelms = []
-        giovanni_battistas = []
-        jean_baptistes = []
-        johanns = []
+        friederich_wilhelms = set()
+        giovanni_battistas = set()
+        jean_baptistes = set()
+        johanns = set()
 
         print("Possible duplicates found:")
         for (composer_data_i, composer_data_j) in possible_duplicates_list:
@@ -238,36 +238,49 @@ class ComposersManager:
             name_j = composer_data_j["name"]
             composer_start_i = composer_data_i["start_date"]
             composer_start_j = composer_data_j["start_date"]
-            is_close_dates = ""
+            is_close_dates = True # no way to know if we don't know the dates, so it may be
             if composer_start_i is not None and composer_start_j is not None:
-                is_close_dates = " (dates are not close)"
+                is_close_dates = False
                 if composer_start_i != -1 and composer_start_j != -1:
                     if abs(composer_start_i - composer_start_j) < 20:
-                        is_close_dates = ""
-            if name_i.startswith("Giovanni Battista"):
-                giovanni_battistas.append((composer_data_i, composer_data_j))
-            elif name_i.startswith("Friedrich Wilhelm"):
-                friederich_wilhelms.append((composer_data_i, composer_data_j))
-            elif name_i.startswith("<Jean-Baptiste>"):
-                jean_baptistes.append((composer_data_i, composer_data_j))
-            elif name_i.startswith("Johann"):
-                johanns.append((composer_data_i, composer_data_j))
+                        is_close_dates = True
+            if name_i.startswith("Giovanni Battista") or name_j.startswith("Giovanni Battista"):
+                giovanni_battistas.add(name_i)
+                giovanni_battistas.add(name_j)
+            elif name_i.startswith("Friedrich Wilhelm") or name_j.startswith("Friedrich Wilhelm"):
+                friederich_wilhelms.add(name_i)
+                friederich_wilhelms.add(name_j)
+            elif name_i.startswith("Jean-Baptiste") or name_j.startswith("Jean-Baptiste"):
+                jean_baptistes.add(name_i)
+                jean_baptistes.add(name_j)
+            elif name_i.startswith("Johann") or name_j.startswith("Johann"):
+                johanns.add(name_i)
+                johanns.add(name_j)
             else:
-                print(f"{composer_id_i}: {name_i} <> {composer_id_j}: {name_j}{is_close_dates}")
+                text = f"{composer_id_i}: {name_i} <> {composer_id_j}: {name_j}"
+                if is_close_dates:
+                    print(text)
+                else:
+                    possible_duplicates_dates_not_close.append(text)
+
+
+        print("\nPossible duplicates (dates NOT close)")
+        for text in possible_duplicates_dates_not_close:
+            print(text)
 
         print("\n\n--------------------------------------\n\n")
         print("Friedrich Wilhelm close matches found:")
-        for (composer_data, composer_data2) in friederich_wilhelms:
-            print(f"{composer_data['name']}  <>  {composer_data2['name']}")
+        for name in friederich_wilhelms:
+            print(name)
 
         print("\n\n--------------------------------------\n\n")
         print("Giovanni Battista / Jean-Baptiste / Johann close matches found:")
-        for (composer_data, composer_data2) in giovanni_battistas:
-            print(f"{composer_data['name']}  <>  {composer_data2['name']}")
-        for (composer_data, composer_data2) in jean_baptistes:
-            print(f"{composer_data['name']}  <>  {composer_data2['name']}")
-        for (composer_data, composer_data2) in johanns:
-            print(f"{composer_data['name']}  <>  {composer_data2['name']}")
+        for name in sorted(list(giovanni_battistas)):
+            print(name)
+        for name1 in sorted(list(jean_baptistes)):
+            print(name1)
+        for name2 in sorted(list(johanns)):
+            print(name2)
 
     @staticmethod
     def get_max_index(composers_dict):
@@ -279,16 +292,26 @@ class ComposersManager:
         return m
 
     @staticmethod
-    def is_in_dict(composers_dict, value):
+    def is_in_dict(composers_dict, value, strict=False):
         matches = []
-        for composer_name, data in composers_dict.items():
-            if value in composer_name:
-                matches.append(data)
-                continue
-            for indicator in data["indicators"]:
-                if value in indicator or indicator in value:
+        if strict:
+            for composer_name, data in composers_dict.items():
+                if composer_name == value or composer_name.endswith(" " + value) or (value + " ") in composer_name:
                     matches.append(data)
-                    break
+                    continue
+                for indicator in data["indicators"]:
+                    if indicator == value or indicator.endswith(" " + value) or (value + " ") in indicator or indicator in value:
+                        matches.append(data)
+                        break
+        else:
+            for composer_name, data in composers_dict.items():
+                if value in composer_name:
+                    matches.append(data)
+                    continue
+                for indicator in data["indicators"]:
+                    if value in indicator or indicator in value:
+                        matches.append(data)
+                        break
         return matches
 
     @staticmethod
@@ -327,17 +350,24 @@ class ComposersManager:
     def get_composers_with_dates_from_file(more_composers_file_loc, composer_date_func=default_composer_date_func):
         with open(more_composers_file_loc, "r", encoding="utf-8") as f:
             more_possible_composers = json.load(f)
-        return get_composers_with_dates(more_possible_composers, composer_date_func)
+        return ComposersManager.get_composers_with_dates(more_possible_composers, composer_date_func)
 
     @staticmethod
-    def get_composers_with_dates(more_possible_composers_list, composer_date_func=default_composer_date_func):
+    def get_composers_with_dates(more_possible_composers_obj, composer_date_func=default_composer_date_func):
         composers_with_dates = {}
         
-        for composer in more_possible_composers_list:
-            name, dates = composer_date_func(composer)
-            if name is None:
-                continue
-            composers_with_dates[name] = dates
+        if isinstance(more_possible_composers_obj, dict):
+            for composer_name, other_data in more_possible_composers_obj.items():
+                _, dates = composer_date_func(other_data)
+                if composer_name is None:
+                    continue
+                composers_with_dates[composer_name] = dates
+        elif isinstance(more_possible_composers_obj, list):
+            for composer in more_possible_composers_obj:
+                name, dates = composer_date_func(composer)
+                if name is None:
+                    continue
+                composers_with_dates[name] = dates
  
         return composers_with_dates
 
@@ -363,26 +393,35 @@ class ComposersManager:
         maybe_false_positives = {}
         composers_not_found = []
         for full_name, last_name in full_name_composers.items():
-            data = ComposersManager.is_in_dict(composers_dict, full_name)
+            data = ComposersManager.is_in_dict(composers_dict, full_name, strict=True)
             if len(data) == 1:
                 found[full_name] = data[0]
             elif len(data) > 1:
                 maybe_false_positives[full_name] = data
             else:
-                data = ComposersManager.is_in_dict(composers_dict, last_name)
+                data = ComposersManager.is_in_dict(composers_dict, full_name)
                 if len(data) > 0:
                     maybe_false_positives[full_name] = data
                 else:
-                    composers_not_found.append(full_name)
+                    actual_last_name = NameOps.get_name_sort_key(full_name)
+                    data = ComposersManager.is_in_dict(composers_dict, actual_last_name)
+                    if len(data) > 0:
+                        maybe_false_positives[full_name] = data
+                    else:
+                        composers_not_found.append(full_name)
 
         for name in no_space_composers:
-            data = ComposersManager.is_in_dict(composers_dict, name)
+            data = ComposersManager.is_in_dict(composers_dict, name, strict=True)
             if len(data) == 1:
                 found[name] = data[0]
             elif len(data) > 1:
                 maybe_false_positives[name] = data
             else:
-                composers_not_found.append(name)
+                data = ComposersManager.is_in_dict(composers_dict, name)
+                if len(data) > 0:
+                    maybe_false_positives[name] = data
+                else:
+                    composers_not_found.append(name)
 
         composers_not_found_ii = {}
 
@@ -494,6 +533,7 @@ class ComposersManager:
                 dates_uncertain = composer_data_orig["dates_uncertain"]
                 genres = composer_data_orig["genres"]
                 notes = composer_data_orig["notes"]
+                composer_modified = False
                 if dates is not None:
                     if start_date is not None or end_date is not None:
                         print(f"Maybe conflicting dates found for composer: {composer}")
@@ -502,7 +542,7 @@ class ComposersManager:
                         end_date = dates.get_end_date()
                         dates_are_lifespan = dates.is_lifetime()
                         dates_uncertain = dates.is_uncertain
-                composer_modified = False
+                        composer_modified = True
                 if was_actually_found:
                     if len(new_genres) > 0:
                         genres.extend(new_genres)
@@ -525,7 +565,7 @@ class ComposersManager:
                     "notes": notes
                 }
                 if composer_modified:
-                    count_composer_modified += 1
+                    count_composers_modified += 1
             else:
                 composer_data_pre = composers_not_found[composer]
                 original_name_from_poster_data = composer_data_pre[0]

@@ -877,6 +877,24 @@
         "works": [],
         "notes": {}
     },
+    "Engelhardt von Adelnburg": {
+        "id": 9149,
+        "name": "Engelhardt von Adelnburg",
+        "indicators": [
+            "Engelhardt von Adelnburg"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Thomas Ad\u00e8s": {
         "id": 9,
         "name": "Thomas Ad\u00e8s",
@@ -1453,6 +1471,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Dietmar von Aist": {
+        "id": 9150,
+        "name": "Dietmar von Aist",
+        "indicators": [
+            "Dietmar von Aist"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "John Akar": {
         "id": 5309,
@@ -2104,6 +2140,24 @@
         "works": [],
         "notes": {}
     },
+    "Wilde Alexander": {
+        "id": 9151,
+        "name": "Wilde Alexander",
+        "indicators": [
+            "Wilde Alexander"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Leni Alexander": {
         "id": 5344,
         "name": "Leni Alexander",
@@ -2513,6 +2567,24 @@
         "works": [],
         "notes": {}
     },
+    "Reinmar der Alte": {
+        "id": 9152,
+        "name": "Reinmar der Alte",
+        "indicators": [
+            "Reinmar der Alte"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Johann Ernst Altenburg": {
         "id": 5366,
         "name": "Johann Ernst Altenburg",
@@ -2570,6 +2642,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Konrad von Altstetten": {
+        "id": 9153,
+        "name": "Konrad von Altstetten",
+        "indicators": [
+            "Konrad von Altstetten"
+        ],
+        "start_date": 1320,
+        "end_date": 1327,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Elias Parish Alvars": {
         "id": 5370,
@@ -5323,6 +5413,24 @@
         "works": [],
         "notes": {}
     },
+    "Hartmann von Aue": {
+        "id": 9154,
+        "name": "Hartmann von Aue",
+        "indicators": [
+            "Hartmann von Aue"
+        ],
+        "start_date": 1160,
+        "end_date": 1210,
+        "dates_are_lifespan": true,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Marianna Auenbrugger": {
         "id": 5511,
         "name": "Marianna Auenbrugger",
@@ -5406,6 +5514,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Brunwart von Augheim": {
+        "id": 9155,
+        "name": "Brunwart von Augheim",
+        "indicators": [
+            "Brunwart von Augheim"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Rafa\u0142 Augustyn": {
         "id": 5515,
@@ -6259,6 +6385,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Goeli von Baden": {
+        "id": 9156,
+        "name": "Goeli von Baden",
+        "indicators": [
+            "Goeli von Baden"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Carlo Agostino Badia": {
         "id": 5554,
@@ -12194,6 +12338,24 @@
         "works": [],
         "notes": {}
     },
+    "Bligger II": {
+        "id": 9157,
+        "name": "Bligger II",
+        "indicators": [
+            "Bligger II"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Arthur Bliss": {
         "id": 146,
         "name": "Arthur Bliss",
@@ -13136,6 +13298,24 @@
         "works": [],
         "notes": {}
     },
+    "Boppe von Bonndorf": {
+        "id": 9158,
+        "name": "Boppe von Bonndorf",
+        "indicators": [
+            "Boppe von Bonndorf"
+        ],
+        "start_date": -1,
+        "end_date": 1320,
+        "dates_are_lifespan": true,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Paul Bonneau": {
         "id": 5905,
         "name": "Paul Bonneau",
@@ -13673,6 +13853,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Otto von Botenlauben": {
+        "id": 9159,
+        "name": "Otto von Botenlauben",
+        "indicators": [
+            "Otto von Botenlauben"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "George Botsford": {
         "id": 5936,
@@ -14831,6 +15029,24 @@
         "works": [],
         "notes": {}
     },
+    "Walther von Breisach": {
+        "id": 9160,
+        "name": "Walther von Breisach",
+        "indicators": [
+            "Walther von Breisach"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Clemens Breitenbach": {
         "id": 186,
         "name": "Clemens Breitenbach",
@@ -14872,6 +15088,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Reinmar von Brennenberg": {
+        "id": 9161,
+        "name": "Reinmar von Brennenberg",
+        "indicators": [
+            "Reinmar von Brennenberg"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Bettina Brentano": {
         "id": 5997,
@@ -15935,6 +16169,24 @@
         "works": [],
         "notes": {}
     },
+    "Bruno II": {
+        "id": 9162,
+        "name": "Bruno II",
+        "indicators": [
+            "Bruno II"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Karl Gottfried Brunotte": {
         "id": 6050,
         "name": "Karl Gottfried Brunotte",
@@ -16158,6 +16410,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Buchheim": {
+        "id": 9163,
+        "name": "Buchheim",
+        "indicators": [
+            "Buchheim"
+        ],
+        "start_date": 1260,
+        "end_date": 1290,
+        "dates_are_lifespan": true,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Hans Buchner": {
         "id": 6062,
@@ -16881,6 +17151,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Ulrich von Buwenburg": {
+        "id": 9164,
+        "name": "Ulrich von Buwenburg",
+        "indicators": [
+            "Ulrich von Buwenburg"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Dieterich Buxtehude": {
         "id": 211,
@@ -23920,6 +24208,24 @@
         "works": [],
         "notes": {}
     },
+    "Heinrich von Dettingen": {
+        "id": 9165,
+        "name": "Heinrich von Dettingen",
+        "indicators": [
+            "Heinrich von Dettingen"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Ernst Deurer": {
         "id": 332,
         "name": "Ernst Deurer",
@@ -26177,6 +26483,42 @@
         "works": [],
         "notes": {}
     },
+    "Der D\u00fcring": {
+        "id": 9166,
+        "name": "Der D\u00fcring",
+        "indicators": [
+            "Der D\u00fcring"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
+    "D\u00fcrner": {
+        "id": 9167,
+        "name": "D\u00fcrner",
+        "indicators": [
+            "D\u00fcrner"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Balys Dvarionas": {
         "id": 6498,
         "name": "Balys Dvarionas",
@@ -26727,6 +27069,24 @@
         ],
         "works": [],
         "notes": {}
+    },
+    "Goesli von Ehenhein": {
+        "id": 9168,
+        "name": "Goesli von Ehenhein",
+        "indicators": [
+            "Goesli von Ehenhein"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Margriet Ehlen": {
         "id": 6522,
@@ -27601,9 +27961,13 @@
         "end_date": -1,
         "dates_are_lifespan": false,
         "dates_uncertain": true,
-        "genres": [],
+        "genres": [
+            "codex"
+        ],
         "works": [],
-        "notes": {}
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Rudolf Escher": {
         "id": 6555,
@@ -27947,6 +28311,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Schulmeister von E\u00dflingen": {
+        "id": 9169,
+        "name": "Schulmeister von E\u00dflingen",
+        "indicators": [
+            "Schulmeister von E\u00dflingen"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Jean-Claude \u00c9loy": {
         "id": 1666,
@@ -29208,6 +29590,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Reinmar der Fiedler": {
+        "id": 9170,
+        "name": "Reinmar der Fiedler",
+        "indicators": [
+            "Reinmar der Fiedler"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "John Field": {
         "id": 428,
@@ -30873,20 +31273,43 @@
         "works": [],
         "notes": {}
     },
+    "Heinrich von Frauenberg": {
+        "id": 9171,
+        "name": "Heinrich von Frauenberg",
+        "indicators": [
+            "Heinrich von Frauenberg"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Heinrich von Meissen Frauenlob": {
         "id": 4899,
         "name": "Heinrich von Meissen Frauenlob",
         "indicators": [
             "Heinrich von Meissen Frauenlob",
-            "Meissen Frauenlob, Heinrich von"
+            "Meissen Frauenlob, Heinrich von",
+            "Heinrich Frauenlob"
         ],
         "start_date": 1255,
         "end_date": 1318,
         "dates_are_lifespan": true,
         "dates_uncertain": true,
-        "genres": [],
+        "genres": [
+            "codex"
+        ],
         "works": [],
-        "notes": {}
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Ignaz Fr\u00e4nzl": {
         "id": 6697,
@@ -31028,6 +31451,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Tirol und Fridebrant": {
+        "id": 9172,
+        "name": "Tirol und Fridebrant",
+        "indicators": [
+            "Tirol und Fridebrant"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Ignaz Friedman": {
         "id": 455,
@@ -32606,6 +33047,24 @@
         "works": [],
         "notes": {}
     },
+    "Geltar": {
+        "id": 9173,
+        "name": "Geltar",
+        "indicators": [
+            "Geltar"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Francesco Geminiani": {
         "id": 487,
         "name": "Francesco Geminiani",
@@ -33664,6 +34123,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Wilhelm von Gliers": {
+        "id": 9174,
+        "name": "Wilhelm von Gliers",
+        "indicators": [
+            "Wilhelm von Gliers"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Reinhold Gli\u00e8re": {
         "id": 511,
@@ -35377,6 +35854,24 @@
         "works": [],
         "notes": {}
     },
+    "Alram von Gresten": {
+        "id": 9175,
+        "name": "Alram von Gresten",
+        "indicators": [
+            "Alram von Gresten"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Adolf Greulich": {
         "id": 547,
         "name": "Adolf Greulich",
@@ -36411,6 +36906,24 @@
         "works": [],
         "notes": {}
     },
+    "Ulrich von Gutenburg": {
+        "id": 9176,
+        "name": "Ulrich von Gutenburg",
+        "indicators": [
+            "Ulrich von Gutenburg"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Adolf Gutmann": {
         "id": 571,
         "name": "Adolf Gutmann",
@@ -36568,6 +37081,24 @@
         "works": [],
         "notes": {}
     },
+    "Johannes Hadlaub": {
+        "id": 9177,
+        "name": "Johannes Hadlaub",
+        "indicators": [
+            "Johannes Hadlaub"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Henry Kimball Hadley": {
         "id": 6925,
         "name": "Henry Kimball Hadley",
@@ -36708,6 +37239,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Albrecht von Haigerloch": {
+        "id": 9178,
+        "name": "Albrecht von Haigerloch",
+        "indicators": [
+            "Albrecht von Haigerloch"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Adolphus Hailstork": {
         "id": 6932,
@@ -36980,6 +37529,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Kristan von Hamle": {
+        "id": 9179,
+        "name": "Kristan von Hamle",
+        "indicators": [
+            "Kristan von Hamle"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Marvin Hamlisch": {
         "id": 6945,
@@ -37286,6 +37853,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Henricus de Hardegge": {
+        "id": 9180,
+        "name": "Henricus de Hardegge",
+        "indicators": [
+            "Henricus de Hardegge"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Mike Harding": {
         "id": 6958,
@@ -37746,6 +38331,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Friedrich von Hausen": {
+        "id": 9181,
+        "name": "Friedrich von Hausen",
+        "indicators": [
+            "Friedrich von Hausen"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Miska Hauser": {
         "id": 593,
@@ -38416,6 +39019,60 @@
         "works": [],
         "notes": {}
     },
+    "Henry I, Count of Anhalt": {
+        "id": 9182,
+        "name": "Henry I, Count of Anhalt",
+        "indicators": [
+            "Henry I, Count of Anhalt"
+        ],
+        "start_date": 1170,
+        "end_date": 1252,
+        "dates_are_lifespan": true,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
+    "Henry IV": {
+        "id": 9183,
+        "name": "Henry IV",
+        "indicators": [
+            "Henry IV"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
+    "Henry VI": {
+        "id": 9184,
+        "name": "Henry VI",
+        "indicators": [
+            "Henry VI"
+        ],
+        "start_date": 1165,
+        "end_date": 1197,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Henry VIII, King of England": {
         "id": 6994,
         "name": "Henry VIII, King of England",
@@ -38629,6 +39286,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Herrand II": {
+        "id": 9185,
+        "name": "Herrand II",
+        "indicators": [
+            "Herrand II"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Th. Herrmann": {
         "id": 622,
@@ -39660,6 +40335,60 @@
         "works": [],
         "notes": {}
     },
+    "Bertold IV von Hohenburg": {
+        "id": 9186,
+        "name": "Bertold IV von Hohenburg",
+        "indicators": [
+            "Bertold IV von Hohenburg"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
+    "Konrad von Hohenburg": {
+        "id": 9187,
+        "name": "Konrad von Hohenburg",
+        "indicators": [
+            "Konrad von Hohenburg"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
+    "Burkart von Hohenfels": {
+        "id": 9188,
+        "name": "Burkart von Hohenfels",
+        "indicators": [
+            "Burkart von Hohenfels"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Lee Hoiby": {
         "id": 2391,
         "name": "Lee Hoiby",
@@ -40043,6 +40772,42 @@
         "works": [],
         "notes": {}
     },
+    "Hawardus de Holzwane": {
+        "id": 9189,
+        "name": "Hawardus de Holzwane",
+        "indicators": [
+            "Hawardus de Holzwane"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
+    "Wernher von Homberg": {
+        "id": 9190,
+        "name": "Wernher von Homberg",
+        "indicators": [
+            "Wernher von Homberg"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Sidney Homer": {
         "id": 7051,
         "name": "Sidney Homer",
@@ -40156,6 +40921,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Bernger von Horheim": {
+        "id": 9191,
+        "name": "Bernger von Horheim",
+        "indicators": [
+            "Bernger von Horheim"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "James Horner": {
         "id": 658,
@@ -40787,6 +41570,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Klingsor of Hungary": {
+        "id": 9192,
+        "name": "Klingsor of Hungary",
+        "indicators": [
+            "Klingsor of Hungary"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Michael Hunter": {
         "id": 8953,
@@ -42572,6 +43373,42 @@
         "works": [],
         "notes": {}
     },
+    "Johann I": {
+        "id": 9193,
+        "name": "Johann I",
+        "indicators": [
+            "Johann I"
+        ],
+        "start_date": 1291,
+        "end_date": 1350,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
+    "von Johansdorf": {
+        "id": 9194,
+        "name": "von Johansdorf",
+        "indicators": [
+            "von Johansdorf"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Gunnar Johansen": {
         "id": 7151,
         "name": "Gunnar Johansen",
@@ -42585,6 +43422,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "John I, Duke of Brabant": {
+        "id": 9195,
+        "name": "John I, Duke of Brabant",
+        "indicators": [
+            "John I, Duke of Brabant"
+        ],
+        "start_date": 1253,
+        "end_date": 1294,
+        "dates_are_lifespan": true,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Alan John": {
         "id": 7152,
@@ -43605,6 +44460,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Der Kanzler": {
+        "id": 9196,
+        "name": "Der Kanzler",
+        "indicators": [
+            "Der Kanzler"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Artur Kapp": {
         "id": 7194,
@@ -44834,6 +45707,42 @@
         "works": [],
         "notes": {}
     },
+    "Konrad II von Kirchberg": {
+        "id": 9197,
+        "name": "Konrad II von Kirchberg",
+        "indicators": [
+            "Konrad II von Kirchberg"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
+    "Konrad III von Kirchberg": {
+        "id": 9198,
+        "name": "Konrad III von Kirchberg",
+        "indicators": [
+            "Konrad III von Kirchberg"
+        ],
+        "start_date": 1281,
+        "end_date": 1315,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Leon Kirchner": {
         "id": 7248,
         "name": "Leon Kirchner",
@@ -45253,6 +46162,24 @@
         "works": [],
         "notes": {}
     },
+    "Walther von Klingen": {
+        "id": 9199,
+        "name": "Walther von Klingen",
+        "indicators": [
+            "Walther von Klingen"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Karl Klingler": {
         "id": 763,
         "name": "Karl Klingler",
@@ -45267,6 +46194,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Berthold Steinmar von Klingnau": {
+        "id": 9200,
+        "name": "Berthold Steinmar von Klingnau",
+        "indicators": [
+            "Berthold Steinmar von Klingnau"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Karl Emanuel Klitzsch": {
         "id": 7263,
@@ -45324,6 +46269,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Friedrich der Knecht": {
+        "id": 9201,
+        "name": "Friedrich der Knecht",
+        "indicators": [
+            "Friedrich der Knecht"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Justin Heinrich Knecht": {
         "id": 7266,
@@ -45828,6 +46791,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Konrad, der Schenk von Landeck": {
+        "id": 9202,
+        "name": "Konrad, der Schenk von Landeck",
+        "indicators": [
+            "Konrad, der Schenk von Landeck"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Karol de Kontski": {
         "id": 775,
@@ -46650,9 +47631,13 @@
         "end_date": 1849,
         "dates_are_lifespan": true,
         "dates_uncertain": false,
-        "genres": [],
+        "genres": [
+            "codex"
+        ],
         "works": [],
-        "notes": {}
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Rodolphe Kreutzer": {
         "id": 7309,
@@ -47332,6 +48317,42 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Wachsmut von K\u00fcnzingen": {
+        "id": 9203,
+        "name": "Wachsmut von K\u00fcnzingen",
+        "indicators": [
+            "Wachsmut von K\u00fcnzingen"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
+    "von K\u00fcrenberg": {
+        "id": 9204,
+        "name": "von K\u00fcrenberg",
+        "indicators": [
+            "von K\u00fcrenberg"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Mikhail Kvadri": {
         "id": 832,
@@ -49641,6 +50662,24 @@
         "works": [],
         "notes": {}
     },
+    "Friedrich von Leiningen": {
+        "id": 9205,
+        "name": "Friedrich von Leiningen",
+        "indicators": [
+            "Friedrich von Leiningen"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Barry Leitch": {
         "id": 8990,
         "name": "Barry Leitch",
@@ -50624,6 +51663,42 @@
         "works": [],
         "notes": {}
     },
+    "Ulrich von Liechtenstein": {
+        "id": 9206,
+        "name": "Ulrich von Liechtenstein",
+        "indicators": [
+            "Ulrich von Liechtenstein"
+        ],
+        "start_date": 1200,
+        "end_date": 1275,
+        "dates_are_lifespan": true,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
+    "Burggraf von Lienz": {
+        "id": 9207,
+        "name": "Burggraf von Lienz",
+        "indicators": [
+            "Burggraf von Lienz"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Thurlow Lieurance": {
         "id": 7459,
         "name": "Thurlow Lieurance",
@@ -50808,6 +51883,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Schenk von Limpurg": {
+        "id": 9208,
+        "name": "Schenk von Limpurg",
+        "indicators": [
+            "Schenk von Limpurg"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Paul Lincke": {
         "id": 7467,
@@ -51163,6 +52256,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Der Litschauer": {
+        "id": 9209,
+        "name": "Der Litschauer",
+        "indicators": [
+            "Der Litschauer"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Giulio Litta": {
         "id": 7485,
@@ -52273,6 +53384,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Kristan von Luppin": {
+        "id": 9210,
+        "name": "Kristan von Luppin",
+        "indicators": [
+            "Kristan von Luppin"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Filippo de Lurano": {
         "id": 7534,
@@ -53916,6 +55045,24 @@
         "works": [],
         "notes": {}
     },
+    "Marner": {
+        "id": 9211,
+        "name": "Marner",
+        "indicators": [
+            "Marner"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Mikl\u00f3s Maros": {
         "id": 7598,
         "name": "Mikl\u00f3s Maros",
@@ -55333,6 +56480,60 @@
         "works": [],
         "notes": {}
     },
+    "Heinrich von Mei\u00dfen": {
+        "id": 9212,
+        "name": "Heinrich von Mei\u00dfen",
+        "indicators": [
+            "Heinrich von Mei\u00dfen"
+        ],
+        "start_date": 1215,
+        "end_date": 1288,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
+    "Junge Mei\u00dfner": {
+        "id": 9213,
+        "name": "Junge Mei\u00dfner",
+        "indicators": [
+            "Junge Mei\u00dfner"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
+    "Alte Mei\u00dfner": {
+        "id": 9214,
+        "name": "Alte Mei\u00dfner",
+        "indicators": [
+            "Alte Mei\u00dfner"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Alessandro Melani": {
         "id": 7654,
         "name": "Alessandro Melani",
@@ -55811,6 +57012,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Walther von Metze": {
+        "id": 9215,
+        "name": "Walther von Metze",
+        "indicators": [
+            "Walther von Metze"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Wilhelm Meves": {
         "id": 990,
@@ -57494,6 +58713,24 @@
         "works": [],
         "notes": {}
     },
+    "Heinrich von Morungen": {
+        "id": 9216,
+        "name": "Heinrich von Morungen",
+        "indicators": [
+            "Heinrich von Morungen"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Ignaz Moscheles": {
         "id": 1020,
         "name": "Ignaz Moscheles",
@@ -57979,6 +59216,24 @@
         "works": [],
         "notes": {}
     },
+    "von Munegiur": {
+        "id": 9217,
+        "name": "von Munegiur",
+        "indicators": [
+            "von Munegiur"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Ian Munro": {
         "id": 7752,
         "name": "Ian Munro",
@@ -58036,6 +59291,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Heinrich von der Mure": {
+        "id": 9218,
+        "name": "Heinrich von der Mure",
+        "indicators": [
+            "Heinrich von der Mure"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Gilles Mureau": {
         "id": 7755,
@@ -58110,6 +59383,24 @@
         ],
         "works": [],
         "notes": {}
+    },
+    "Wachsmut von M\u00fchlhausen": {
+        "id": 9219,
+        "name": "Wachsmut von M\u00fchlhausen",
+        "indicators": [
+            "Wachsmut von M\u00fchlhausen"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Adolf M\u00fcller Sr.": {
         "id": 7757,
@@ -58838,6 +60129,24 @@
         "works": [],
         "notes": {}
     },
+    "Gottfried von Neifen": {
+        "id": 9220,
+        "name": "Gottfried von Neifen",
+        "indicators": [
+            "Gottfried von Neifen"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Havelock Nelson": {
         "id": 7778,
         "name": "Havelock Nelson",
@@ -58978,6 +60287,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Rudolf von Neuenburg": {
+        "id": 9221,
+        "name": "Rudolf von Neuenburg",
+        "indicators": [
+            "Rudolf von Neuenburg"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Franz Neuhofer": {
         "id": 1052,
@@ -59504,6 +60831,24 @@
         "works": [],
         "notes": {}
     },
+    "Niune": {
+        "id": 9222,
+        "name": "Niune",
+        "indicators": [
+            "Niune"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Guillaume-Gabriel Nivers": {
         "id": 7806,
         "name": "Guillaume-Gabriel Nivers",
@@ -59856,6 +61201,24 @@
         "works": [],
         "notes": {}
     },
+    "Kol von N\u00fcssen": {
+        "id": 9223,
+        "name": "Kol von N\u00fcssen",
+        "indicators": [
+            "Kol von N\u00fcssen"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Ervin Nyiregyh\u00e1zi": {
         "id": 7824,
         "name": "Ervin Nyiregyh\u00e1zi",
@@ -59941,6 +61304,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Von Obernburg": {
+        "id": 9224,
+        "name": "Von Obernburg",
+        "indicators": [
+            "Von Obernburg"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Charles Oberth\u00fcr": {
         "id": 7828,
@@ -60819,19 +62200,41 @@
         "works": [],
         "notes": {}
     },
-    "Otto": {
-        "id": 7857,
-        "name": "Otto",
+    "Otto IV": {
+        "id": 9225,
+        "name": "Otto IV",
         "indicators": [
-            "Otto"
+            "Otto IV"
+        ],
+        "start_date": 1266,
+        "end_date": 1308,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
+    "Otto III": {
+        "id": 9226,
+        "name": "Otto III",
+        "indicators": [
+            "Otto III"
         ],
         "start_date": -1,
         "end_date": -1,
         "dates_are_lifespan": false,
         "dates_uncertain": true,
-        "genres": [],
+        "genres": [
+            "codex"
+        ],
         "works": [],
-        "notes": {}
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Crist\u00f3bal Oudrid": {
         "id": 7858,
@@ -63176,6 +64579,24 @@
         "works": [],
         "notes": {}
     },
+    "Pfeffel": {
+        "id": 9227,
+        "name": "Pfeffel",
+        "indicators": [
+            "Pfeffel"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Georges Pfeiffer": {
         "id": 7949,
         "name": "Georges Pfeiffer",
@@ -65007,6 +66428,24 @@
         "works": [],
         "notes": {}
     },
+    "Henryk IV Probus": {
+        "id": 9228,
+        "name": "Henryk IV Probus",
+        "indicators": [
+            "Henryk IV Probus"
+        ],
+        "start_date": 1258,
+        "end_date": 1290,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Simon Proctor": {
         "id": 8015,
         "name": "Simon Proctor",
@@ -66167,6 +67606,24 @@
         "works": [],
         "notes": {}
     },
+    "Albrecht Marschall von Rapperswil": {
+        "id": 9229,
+        "name": "Albrecht Marschall von Rapperswil",
+        "indicators": [
+            "Albrecht Marschall von Rapperswil"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Andreas Raselius": {
         "id": 8067,
         "name": "Andreas Raselius",
@@ -66293,6 +67750,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "von Raute": {
+        "id": 9230,
+        "name": "von Raute",
+        "indicators": [
+            "von Raute"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Maurice Ravel": {
         "id": 1193,
@@ -66727,6 +68202,24 @@
         "works": [],
         "notes": {}
     },
+    "Regenbogen": {
+        "id": 9231,
+        "name": "Regenbogen",
+        "indicators": [
+            "Regenbogen"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Max Reger": {
         "id": 1201,
         "name": "Max Reger",
@@ -66954,6 +68447,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Hesso von Reinach": {
+        "id": 9232,
+        "name": "Hesso von Reinach",
+        "indicators": [
+            "Hesso von Reinach"
+        ],
+        "start_date": 1234,
+        "end_date": 1275,
+        "dates_are_lifespan": true,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Alexander Reinagle": {
         "id": 8093,
@@ -67273,15 +68784,20 @@
         "id": 1219,
         "name": "Neidhart von Reuental",
         "indicators": [
-            "Neidhart von Reuental"
+            "Neidhart von Reuental",
+            "Neidhart"
         ],
         "start_date": 1180,
         "end_date": 1240,
         "dates_are_lifespan": true,
         "dates_uncertain": false,
-        "genres": [],
+        "genres": [
+            "codex"
+        ],
         "works": [],
-        "notes": {}
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Peter Reulein": {
         "id": 8102,
@@ -69017,6 +70533,24 @@
         "works": [],
         "notes": {}
     },
+    "Kunz von Rosenheim": {
+        "id": 9233,
+        "name": "Kunz von Rosenheim",
+        "indicators": [
+            "Kunz von Rosenheim"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Johann Rosenm\u00fcller": {
         "id": 5098,
         "name": "Johann Rosenm\u00fcller",
@@ -69289,6 +70823,24 @@
         "works": [],
         "notes": {}
     },
+    "Rost, Kirchherr zu Sarnen": {
+        "id": 9234,
+        "name": "Rost, Kirchherr zu Sarnen",
+        "indicators": [
+            "Rost, Kirchherr zu Sarnen"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Nino Rota": {
         "id": 1256,
         "name": "Nino Rota",
@@ -69302,6 +70854,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Rudolf von Rotenburg": {
+        "id": 9235,
+        "name": "Rudolf von Rotenburg",
+        "indicators": [
+            "Rudolf von Rotenburg"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Johann Christoph Rothe": {
         "id": 8182,
@@ -69614,6 +71184,24 @@
         "works": [],
         "notes": {}
     },
+    "Herr Rubin": {
+        "id": 9236,
+        "name": "Herr Rubin",
+        "indicators": [
+            "Herr Rubin"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Nikolai Rubinstein": {
         "id": 8193,
         "name": "Nikolai Rubinstein",
@@ -69698,6 +71286,24 @@
         "works": [],
         "notes": {}
     },
+    "Rudolph II": {
+        "id": 9237,
+        "name": "Rudolph II",
+        "indicators": [
+            "Rudolph II"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Ernst Rudorff": {
         "id": 1264,
         "name": "Ernst Rudorff",
@@ -69755,6 +71361,24 @@
         "works": [],
         "notes": {}
     },
+    "Heinrich von Rugge": {
+        "id": 9238,
+        "name": "Heinrich von Rugge",
+        "indicators": [
+            "Heinrich von Rugge"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Giovanni Maria Ruggieri": {
         "id": 8196,
         "name": "Giovanni Maria Ruggieri",
@@ -69797,6 +71421,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Rumslant": {
+        "id": 9239,
+        "name": "Rumslant",
+        "indicators": [
+            "Rumslant"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Jake Runestad": {
         "id": 8197,
@@ -70025,6 +71667,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Rubin von R\u00fcdeger": {
+        "id": 9240,
+        "name": "Rubin von R\u00fcdeger",
+        "indicators": [
+            "Rubin von R\u00fcdeger"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Philipp R\u00fcfer": {
         "id": 1278,
@@ -70264,6 +71924,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "von Sachsendorf": {
+        "id": 9241,
+        "name": "von Sachsendorf",
+        "indicators": [
+            "von Sachsendorf"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Nicholas Sackman": {
         "id": 8213,
@@ -71356,6 +73034,42 @@
         "works": [],
         "notes": {}
     },
+    "Eberhard von Sax": {
+        "id": 9242,
+        "name": "Eberhard von Sax",
+        "indicators": [
+            "Eberhard von Sax"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
+    "Heinrich von Sax": {
+        "id": 9243,
+        "name": "Heinrich von Sax",
+        "indicators": [
+            "Heinrich von Sax"
+        ],
+        "start_date": 1235,
+        "end_date": 1289,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Robert Saxton": {
         "id": 8246,
         "name": "Robert Saxton",
@@ -71627,6 +73341,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "von Scharpfenberg": {
+        "id": 9244,
+        "name": "von Scharpfenberg",
+        "indicators": [
+            "von Scharpfenberg"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Xaver Scharwenka": {
         "id": 1313,
@@ -72565,6 +74297,42 @@
         "works": [],
         "notes": {}
     },
+    "tugendhafte Schreiber": {
+        "id": 9245,
+        "name": "tugendhafte Schreiber",
+        "indicators": [
+            "tugendhafte Schreiber"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
+    "Rudolf der Schreiber": {
+        "id": 9246,
+        "name": "Rudolf der Schreiber",
+        "indicators": [
+            "Rudolf der Schreiber"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Robin Schreiber": {
         "id": 1338,
         "name": "Robin Schreiber",
@@ -72936,6 +74704,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Hiltbolt von Schwangau": {
+        "id": 9247,
+        "name": "Hiltbolt von Schwangau",
+        "indicators": [
+            "Hiltbolt von Schwangau"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Joseph Schwantner": {
         "id": 8294,
@@ -73774,6 +75560,60 @@
         "works": [],
         "notes": {}
     },
+    "Dietmar der Setzer": {
+        "id": 9248,
+        "name": "Dietmar der Setzer",
+        "indicators": [
+            "Dietmar der Setzer"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
+    "Meinloh von Sevelingen": {
+        "id": 9249,
+        "name": "Meinloh von Sevelingen",
+        "indicators": [
+            "Meinloh von Sevelingen"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
+    "Leuthold von Seven": {
+        "id": 9250,
+        "name": "Leuthold von Seven",
+        "indicators": [
+            "Leuthold von Seven"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Doc Severinsen": {
         "id": 8320,
         "name": "Doc Severinsen",
@@ -74544,6 +76384,24 @@
         "works": [],
         "notes": {}
     },
+    "Sigeher": {
+        "id": 9251,
+        "name": "Sigeher",
+        "indicators": [
+            "Sigeher"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Albert Sikl\u00f3s": {
         "id": 8353,
         "name": "Albert Sikl\u00f3s",
@@ -74785,6 +76643,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Ulrich von Singenberg": {
+        "id": 9252,
+        "name": "Ulrich von Singenberg",
+        "indicators": [
+            "Ulrich von Singenberg"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Edmund Singer": {
         "id": 1388,
@@ -75649,6 +77525,24 @@
         "works": [],
         "notes": {}
     },
+    "Friedrich von Sonnenburg": {
+        "id": 9253,
+        "name": "Friedrich von Sonnenburg",
+        "indicators": [
+            "Friedrich von Sonnenburg"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Fernando Sor": {
         "id": 1402,
         "name": "Fernando Sor",
@@ -75946,6 +77840,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Spervogel": {
+        "id": 9254,
+        "name": "Spervogel",
+        "indicators": [
+            "Spervogel"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Johann Speth": {
         "id": 8413,
@@ -76286,6 +78198,24 @@
         "works": [],
         "notes": {}
     },
+    "Von Stamheim": {
+        "id": 9255,
+        "name": "Von Stamheim",
+        "indicators": [
+            "Von Stamheim"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Anton Stamitz": {
         "id": 8425,
         "name": "Anton Stamitz",
@@ -76454,6 +78384,42 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Hartmann I von Starkenberg": {
+        "id": 9256,
+        "name": "Hartmann I von Starkenberg",
+        "indicators": [
+            "Hartmann I von Starkenberg"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
+    "Hartmann II von Starkenberg": {
+        "id": 9257,
+        "name": "Hartmann II von Starkenberg",
+        "indicators": [
+            "Hartmann II von Starkenberg"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Joseph Starzer": {
         "id": 8431,
@@ -76804,6 +78770,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Heinrich III von Stevening": {
+        "id": 9258,
+        "name": "Heinrich III von Stevening",
+        "indicators": [
+            "Heinrich III von Stevening"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Christopher Stevens": {
         "id": 9099,
@@ -77331,6 +79315,24 @@
         "works": [],
         "notes": {}
     },
+    "Gottfried von Stra\u00dfburg": {
+        "id": 9259,
+        "name": "Gottfried von Stra\u00dfburg",
+        "indicators": [
+            "Gottfried von Stra\u00dfburg"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Ernst Streben": {
         "id": 1449,
         "name": "Ernst Streben",
@@ -77386,6 +79388,42 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Heinrich II von Stretlingen": {
+        "id": 9260,
+        "name": "Heinrich II von Stretlingen",
+        "indicators": [
+            "Heinrich II von Stretlingen"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
+    "Heinrich III von Stretlingen": {
+        "id": 9261,
+        "name": "Heinrich III von Stretlingen",
+        "indicators": [
+            "Heinrich III von Stretlingen"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Alessandro Striggio": {
         "id": 5150,
@@ -77706,6 +79744,24 @@
         "works": [],
         "notes": {}
     },
+    "Konrad von Suonegge": {
+        "id": 9262,
+        "name": "Konrad von Suonegge",
+        "indicators": [
+            "Konrad von Suonegge"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Franz von Supp\u00e9": {
         "id": 3275,
         "name": "Franz von Supp\u00e9",
@@ -77850,6 +79906,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "S\u00fc\u00dfkind": {
+        "id": 9263,
+        "name": "S\u00fc\u00dfkind",
+        "indicators": [
+            "S\u00fc\u00dfkind"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Johan Svendsen": {
         "id": 1464,
@@ -78430,6 +80504,24 @@
         "works": [],
         "notes": {}
     },
+    "Leuthold von Tal": {
+        "id": 9264,
+        "name": "Leuthold von Tal",
+        "indicators": [
+            "Leuthold von Tal"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Josef Tal": {
         "id": 1475,
         "name": "Josef Tal",
@@ -78563,23 +80655,9 @@
         "id": 9107,
         "name": "Hirokazu \u201cHip\u201d Tanaka",
         "indicators": [
-            "Hirokazu \u201cHip\u201d Tanaka"
-        ],
-        "start_date": null,
-        "end_date": null,
-        "dates_are_lifespan": true,
-        "dates_uncertain": false,
-        "genres": [
-            "video_game"
-        ],
-        "works": [],
-        "notes": {}
-    },
-    "Hirokazu 'Hip' Tanaka": {
-        "id": 9108,
-        "name": "Hirokazu 'Hip' Tanaka",
-        "indicators": [
-            "Hirokazu 'Hip' Tanaka"
+            "Hirokazu \u201cHip\u201d Tanaka",
+            "Hirokazu \"Hip\" Tanaka",
+            "Hirokazu Tanaka"
         ],
         "start_date": null,
         "end_date": null,
@@ -78680,9 +80758,13 @@
         "end_date": 1270,
         "dates_are_lifespan": true,
         "dates_uncertain": false,
-        "genres": [],
+        "genres": [
+            "codex"
+        ],
         "works": [],
-        "notes": {}
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Alexandre Tansman": {
         "id": 8505,
@@ -79324,6 +81406,24 @@
         "works": [],
         "notes": {}
     },
+    "Heinrich Teschler": {
+        "id": 9265,
+        "name": "Heinrich Teschler",
+        "indicators": [
+            "Heinrich Teschler"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Melchior Teschner": {
         "id": 8528,
         "name": "Melchior Teschner",
@@ -79365,6 +81465,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Wernher von Teufen": {
+        "id": 9266,
+        "name": "Wernher von Teufen",
+        "indicators": [
+            "Wernher von Teufen"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "George Thalben-Ball": {
         "id": 8531,
@@ -80080,6 +82198,24 @@
         "works": [],
         "notes": {}
     },
+    "Kraft von Toggenburg": {
+        "id": 9267,
+        "name": "Kraft von Toggenburg",
+        "indicators": [
+            "Kraft von Toggenburg"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Camillo Togni": {
         "id": 8557,
         "name": "Camillo Togni",
@@ -80572,6 +82708,24 @@
         "works": [],
         "notes": {}
     },
+    "Trostberg": {
+        "id": 9268,
+        "name": "Trostberg",
+        "indicators": [
+            "Trostberg"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Arnold Trowell": {
         "id": 1516,
         "name": "Arnold Trowell",
@@ -80817,6 +82971,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Otto vom Turne": {
+        "id": 9269,
+        "name": "Otto vom Turne",
+        "indicators": [
+            "Otto vom Turne"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "William Turner": {
         "id": 8583,
@@ -81945,6 +84117,24 @@
         "works": [],
         "notes": {}
     },
+    "Heinrich von Veldeke": {
+        "id": 9270,
+        "name": "Heinrich von Veldeke",
+        "indicators": [
+            "Heinrich von Veldeke"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Jacob ter Veldhuis": {
         "id": 8633,
         "name": "Jacob ter Veldhuis",
@@ -82890,9 +85080,13 @@
         "end_date": 1230,
         "dates_are_lifespan": true,
         "dates_uncertain": false,
-        "genres": [],
+        "genres": [
+            "codex"
+        ],
         "works": [],
-        "notes": {}
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Georg Joseph Vogler": {
         "id": 5184,
@@ -82951,6 +85145,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Diepold V von Vohburg": {
+        "id": 9271,
+        "name": "Diepold V von Vohburg",
+        "indicators": [
+            "Diepold V von Vohburg"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Robert Voisey": {
         "id": 8674,
@@ -83063,6 +85275,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "G\u00fcnther von dem Vorste": {
+        "id": 9272,
+        "name": "G\u00fcnther von dem Vorste",
+        "indicators": [
+            "G\u00fcnther von dem Vorste"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Jan V\u00e1clav Hugo Vo\u0159\u00ed\u0161ek": {
         "id": 5186,
@@ -83796,6 +86026,24 @@
         "works": [],
         "notes": {}
     },
+    "Jakob von Wart": {
+        "id": 9273,
+        "name": "Jakob von Wart",
+        "indicators": [
+            "Jakob von Wart"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Franz Xaver Schnyder von Wartensee": {
         "id": 8708,
         "name": "Franz Xaver Schnyder von Wartensee",
@@ -84355,6 +86603,24 @@
         "works": [],
         "notes": {}
     },
+    "Heinrich Hetzbold von Wei\u00dfensee": {
+        "id": 9274,
+        "name": "Heinrich Hetzbold von Wei\u00dfensee",
+        "indicators": [
+            "Heinrich Hetzbold von Wei\u00dfensee"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Dan Welcher": {
         "id": 8726,
         "name": "Dan Welcher",
@@ -84411,6 +86677,24 @@
         "works": [],
         "notes": {}
     },
+    "Wenceslaus II": {
+        "id": 9275,
+        "name": "Wenceslaus II",
+        "indicators": [
+            "Wenceslaus II"
+        ],
+        "start_date": 1271,
+        "end_date": 1305,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Johann Baptist Wendling": {
         "id": 8728,
         "name": "Johann Baptist Wendling",
@@ -84425,6 +86709,24 @@
         "works": [],
         "notes": {}
     },
+    "Buchard von Wengen": {
+        "id": 9276,
+        "name": "Buchard von Wengen",
+        "indicators": [
+            "Buchard von Wengen"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Hermann Wenzel": {
         "id": 1584,
         "name": "Hermann Wenzel",
@@ -84438,6 +86740,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Hug von Werbenwag": {
+        "id": 9277,
+        "name": "Hug von Werbenwag",
+        "indicators": [
+            "Hug von Werbenwag"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Andreas Werckmeister": {
         "id": 8729,
@@ -84508,6 +86828,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Bruder Wernher": {
+        "id": 9278,
+        "name": "Bruder Wernher",
+        "indicators": [
+            "Bruder Wernher"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Richard Wernick": {
         "id": 8732,
@@ -85080,6 +87418,24 @@
         "works": [],
         "notes": {}
     },
+    "Wiesloch": {
+        "id": 9279,
+        "name": "Wiesloch",
+        "indicators": [
+            "Wiesloch"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Paul Wiggert": {
         "id": 1601,
         "name": "Paul Wiggert",
@@ -85293,6 +87649,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "William III": {
+        "id": 9280,
+        "name": "William III",
+        "indicators": [
+            "William III"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Grace Williams": {
         "id": 8756,
@@ -85648,6 +88022,60 @@
         "works": [],
         "notes": {}
     },
+    "Winli": {
+        "id": 9281,
+        "name": "Winli",
+        "indicators": [
+            "Winli"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
+    "Der Winsbeke": {
+        "id": 9282,
+        "name": "Der Winsbeke",
+        "indicators": [
+            "Der Winsbeke"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
+    "Die Winsbekin": {
+        "id": 9283,
+        "name": "Die Winsbekin",
+        "indicators": [
+            "Die Winsbekin"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Peter von Winter": {
         "id": 5207,
         "name": "Peter von Winter",
@@ -85677,6 +88105,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Ulrich von Winterstetten": {
+        "id": 9284,
+        "name": "Ulrich von Winterstetten",
+        "indicators": [
+            "Ulrich von Winterstetten"
+        ],
+        "start_date": -1,
+        "end_date": -1,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Austin Wintory": {
         "id": 8771,
@@ -86354,9 +88800,13 @@
         "end_date": 1287,
         "dates_are_lifespan": true,
         "dates_uncertain": true,
-        "genres": [],
+        "genres": [
+            "codex"
+        ],
         "works": [],
-        "notes": {}
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Arnold van Wyk": {
         "id": 8791,
@@ -88008,6 +90458,24 @@
         "genres": [],
         "works": [],
         "notes": {}
+    },
+    "Reinmar von Zweter": {
+        "id": 9285,
+        "name": "Reinmar von Zweter",
+        "indicators": [
+            "Reinmar von Zweter"
+        ],
+        "start_date": null,
+        "end_date": null,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
     },
     "Ellen Taaffe Zwilich": {
         "id": 3498,

@@ -1,7 +1,7 @@
 import re
 
 class LifeDates():
-    non_numeric_chars = re.compile(r"[^0-9\-]+")
+    non_numeric_chars = re.compile(r"[^0-9\-–]+")
 
     def __init__(self, dates_string):
         self.dates_string = dates_string
@@ -46,7 +46,7 @@ class LifeDates():
             if "fl. " in dates_string:
                 self.active_start = int(cleaned_dates)
                 self.is_uncertain = True
-            elif "d." in dates_string:
+            elif "d." in dates_string or "died" in dates_string:
                 self.dod = int(cleaned_dates)
                 self.is_uncertain = True
             else:
@@ -58,7 +58,16 @@ class LifeDates():
         s = s.replace(".", "")
         if remove_dash:
             s = s.replace("-", "")
-        return re.sub(LifeDates.non_numeric_chars, "", s)
+        s = re.sub(LifeDates.non_numeric_chars, "", s)
+        while s.startswith("-"):
+            s = s[1:]
+        while s.endswith("-"):
+            s = s[:-1]
+        while s.startswith("–"):
+            s = s[1:]
+        while s.endswith("–"):
+            s = s[:-1]
+        return s
 
     def is_valid(self):
         if self.dob == -1 and self.dod == -1 and self.active_start == -1 and self.active_end == -1:

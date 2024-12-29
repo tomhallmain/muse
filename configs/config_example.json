@@ -26,6 +26,7 @@
         "bbc-news": 0.5
     },
     "muse_language_learning_language": "German",
+    "muse_language_learning_language_level": "intermediate",
     "coqui_tts_location": "{HOME}\\TTS-dev",
     "text_cleaner_ruleset": [
         {

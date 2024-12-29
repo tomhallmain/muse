@@ -1,6 +1,7 @@
 
 from muse.schedule import Schedule
 from utils.app_info_cache import app_info_cache
+from utils.utils import Utils
 
 class ScheduledShutdownException(Exception):
     """Exception raised when a scheduled shutdown is requested."""
@@ -86,11 +87,11 @@ class SchedulesManager:
         no_specific_times = []
         for schedule in SchedulesManager.recent_schedules:
             if not schedule.enabled or day_index not in schedule.weekday_options:
-                print(f"Skipping schedule {schedule} - today is index {day_index} - schedule weekday options {schedule.weekday_options}")
+                Utils.log(f"Skipping schedule {schedule} - today is index {day_index} - schedule weekday options {schedule.weekday_options}")
                 continue
             if schedule.start_time is not None and schedule.start_time < current_time:
                 if schedule.end_time is not None and schedule.end_time > current_time:
-                    print(f"Schedule {schedule} is applicable")
+                    Utils.log(f"Schedule {schedule} is applicable")
                     return schedule
                 else:
                     partially_applicable.append(schedule)
@@ -102,12 +103,12 @@ class SchedulesManager:
         if len(partially_applicable) >= 1:
             partially_applicable.sort(key=lambda schedule: schedule.calculate_generality())
             schedules_text = "\n".join([str(schedule) for schedule in partially_applicable])
-            print(f"Schedules are partially applicable:\n{schedules_text}")
+            Utils.log(f"Schedules are partially applicable:\n{schedules_text}")
             return partially_applicable[0]
         elif len(no_specific_times) >= 1:
             no_specific_times.sort(key=lambda schedule: schedule.calculate_generality())
             schedules_text = "\n".join([str(schedule) for schedule in no_specific_times])
-            print(f"Schedules are applicable to today but have no specific times:\n{schedules_text}")
+            Utils.log(f"Schedules are applicable to today but have no specific times:\n{schedules_text}")
             return no_specific_times[0]
         else:
             return SchedulesManager.default_schedule
