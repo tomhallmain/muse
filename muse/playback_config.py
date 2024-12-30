@@ -1,10 +1,10 @@
 import datetime
 import os
 import glob
-import random
 import time
 
 from library_data.audio_track import AudioTrack
+from muse.playlist import Playlist
 from utils.app_info_cache import app_info_cache
 from utils.config import config
 from utils.globals import MediaFileType, WorkflowType
@@ -30,12 +30,14 @@ class PlaybackConfig:
         PlaybackConfig.DIRECTORIES_CACHE = app_info_cache.get("directories_cache", default_val={})
 
     def __init__(self, args=None, override_dir=None):
-        self.current_song_index = -1
         self.total = int(args.total) if args else -1
         self.type = WorkflowType[args.workflow_tag] if args else WorkflowType.RANDOM
         self.directories = args.directories if args else ([override_dir] if override_dir else [])
         self.overwrite = args.overwrite if args else False
-        self.list = []
+        self.enable_dynamic_volume = args.enable_dynamic_volume if args else True
+        self.enable_long_track_splitting  = args.enable_long_track_splitting if args else False
+        self.long_track_splitting_time_cutoff_minutes = args.long_track_splitting_time_cutoff_minutes if args else 20
+        self.list = Playlist()
         self.next_track_override = None
         PlaybackConfig.OPEN_CONFIGS.append(self)
 
@@ -43,7 +45,7 @@ class PlaybackConfig:
         return 1
 
     def get_list(self):
-        if len(self.list) != 0:
+        if self.list.is_valid():
             return self.list
         l = []
         count = 0
@@ -52,20 +54,16 @@ class PlaybackConfig:
                 if MediaFileType.is_media_filetype(f):
                     l += [os.path.join(directory, f)]
                     count += 1
-                    if count > 5000:
+                    if count > 100000:
                         break
                 elif os.path.isfile(f) and config.debug:
                     Utils.log("Skipping non-media file: " + f)
-        self.list = l
-        if self.type == WorkflowType.RANDOM:
-            random.shuffle(self.list)
-        elif self.type == WorkflowType.SEQUENCE:
-            self.list.sort()
+        self.list = Playlist(l, self.type)
         return self.list
 
     def get_audio_track_list(self):
         Utils.log("Building audio track cache")
-        return [AudioTrack(t) for t in self.get_list()]
+        return [AudioTrack(t) for t in self.get_list().in_sequence]
 
     def _get_directory_files(self, directory):
         if directory not in PlaybackConfig.DIRECTORIES_CACHE or self.overwrite:
@@ -83,10 +81,7 @@ class PlaybackConfig:
             PlaybackConfig.READY_FOR_EXTENSION = True
             return next_track
         l = self.get_list()
-        if len(l) == 0 or self.current_song_index >= len(l):
-            return None
-        self.current_song_index += 1
-        return AudioTrack(l[self.current_song_index])
+        return l.next_track()
 
     def upcoming_track(self):
         if self.next_track_override is not None:
@@ -94,9 +89,7 @@ class PlaybackConfig:
             upcoming_track.set_is_extended()
             return upcoming_track
         l = self.get_list()
-        if len(l) == 0 or self.current_song_index >= len(l):
-            return None
-        return AudioTrack(l[self.current_song_index + 1])
+        return l.upcoming_track()
 
     def set_next_track_override(self, new_file):
         self.next_track_override = new_file

@@ -3,7 +3,7 @@ from utils.globals import Globals, WorkflowType # must import first
 
 class RunConfig:
 
-    def __init__(self, args=None):
+    def __init__(self, args=None, placeholder=False):
         self.args = args
         self.workflow_tag = WorkflowType.RANDOM.name
         self.total = '-1'
@@ -11,6 +11,10 @@ class RunConfig:
         self.overwrite = False
         self.muse = True
         self.extend = True
+        self.enable_dynamic_volume = True
+        self.enable_long_track_splitting  = False
+        self.long_track_splitting_time_cutoff_minutes = 20
+        self.placeholder = placeholder
 
     def get(self, name):
         if isinstance(self.args, dict):

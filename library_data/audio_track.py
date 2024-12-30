@@ -1,7 +1,9 @@
 import glob
 import os
+import random
 import re
 import subprocess
+import tempfile
 
 # from ops.artists import Artists
 from library_data.composer import composers_data
@@ -52,6 +54,17 @@ dict_keys(['tag_aliases', 'tag_map', 'resolvers', 'singular_keys', 'filename', '
 
 class AudioTrack:
     music_tag_ignored_tags = ['comment', 'isrc', 'lyrics']
+    non_numeric_chars = re.compile(r"[^0-9\.\-]+")
+    temp_directory = tempfile.TemporaryDirectory(prefix="tmp_muse")
+    ffprobe_available = None
+
+    @staticmethod
+    def cleanup_temp_directory():
+        try:
+            AudioTrack.temp_directory.cleanup()
+        except Exception as e:
+            print(e)
+
 
     def __init__(self, filepath):
         self.filepath = filepath
@@ -69,11 +82,11 @@ class AudioTrack:
         self.compilation = False
         self.mean_volume = -9999.0
         self.max_volume = -9999.0
+        self.length = -1.0
 
         # Unused tags:
         # bitrate : 128000
         # codec : mp4a.40.2
-        # length : 241.78938775510204
         # channels : 2
         # bitspersample : 16
         # samplerate : 44100
@@ -113,6 +126,9 @@ class AudioTrack:
                     self.title = str(self.tracktitle)
                 if self.artist is None and self.albumartist is not None:
                     self.artist = str(self.albumartist)
+                length_value = music_tag_wrapper["#length"].first
+                if length_value is not None:
+                    self.length = float(length_value)
             except Exception as e:
                 pass
                 # Utils.log(f"Failed to gather track details for track {self.title}")
@@ -205,6 +221,103 @@ class AudioTrack:
                     self.max_volume = float(line[line.index(max_volume_tag)+len(max_volume_tag):-3].strip())
         return self.mean_volume, self.max_volume
 
+    def open_track_location(self):
+        Utils.open_file_location(self.filepath)
+
+    def detect_silence_times(self, noise_threshold=0.001, duration=2):
+        silence_times = []
+        args  = ["ffmpeg", "-i", self.filepath, "-af", f"silencedetect=n={noise_threshold}:d={duration}", "-f", "null", "/dev/null"]
+        process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+        output, _ = process.communicate()
+        silence_interval = []
+        for line in output.split("\n"):
+            print(line)
+            if "silencedetect @" in line and "] " in line:
+                print("found silence")
+                if len(silence_interval) == 0:
+                    if "silence_start: " in line:
+                        _, text = line.split("] ")
+                        start_value = re.sub(AudioTrack.non_numeric_chars, "", text[len("silence_start: "):])
+                        silence_interval.append(float(start_value))
+                elif "silence_end: " in line:
+                    print("found silence end")
+                    _, text = line.split("] ")
+                    if " | " in line:
+                        end_text, duration_text = text.split(" | ")
+                    else:
+                        end_text = text
+                        duration_text = ""
+                    end_value = re.sub(AudioTrack.non_numeric_chars, "", end_text[len("silence_end: "):])
+                    silence_interval.append(float(end_value))
+                    if duration_text != "":
+                        duration_value = re.sub(AudioTrack.non_numeric_chars, "", duration_text[len("silence_duration: "):])
+                        silence_interval.append(float(duration_value))
+                    silence_times.append(list(silence_interval))
+                    print(silence_times)
+                    silence_interval.clear()
+        return silence_times
+
+    def extract_non_silent_track_parts(self, select_random_track=True):
+        silence_times = self.detect_silence_times()
+        if len(silence_times) == 0:
+            return None
+        track_paths = []
+        if select_random_track:
+            idx = random.randint(0, len(silence_times))
+            random_track = random.choice(silence_times)
+            track_path = self.get_track_part_path(start=random_track[0], end=random_track[1], idx=idx+1, total=len(silence_times))
+            track_paths.append(track_path)
+        else:
+            for idx in range(len(silence_times)):
+                random_track = silence_times[idx]
+                track_path = self.get_track_part_path(start=random_track[0], end=random_track[1], idx=idx+1, total=len(silence_times))
+                track_paths.append(track_path)
+        return track_paths
+
+    def get_track_part_path(self, start=-1, end=-1, idx=-1, total=-1):
+        if start == -1 or end == -1 or start > end:
+            raise Exception(f"Invalid start and end values provided for get_track_part_path: {start}, {end}")
+        if idx == -1 or total == -1:
+            temp_basename = f"{self.basename} part.{self.ext}"
+        else:
+            temp_basename = f"{self.basename} ({idx}-{total}){self.ext}"
+        temp_filepath = os.path.join(AudioTrack.temp_directory.name, temp_basename)
+        args  = ["ffmpeg", "-i", self.filepath, "-ss", f"{start}", "-to", f"{end}", "-c:a", "copy", temp_filepath]
+        process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+        output, _ = process.communicate()
+        for line in output.split("\n"):
+            print(line)
+        return temp_filepath
+
+    def set_track_length(self):
+        if AudioTrack.ffprobe_available is None:
+            AudioTrack.ffprobe_available = Utils.executable_available("ffprobe")
+        if AudioTrack.ffprobe_available:
+            args = ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", self.filepath]
+            process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+            output, _ = process.communicate()
+            for line in output.split("\n"):
+                self.length = float(line[:-1])
+                return self.length
+        else:
+            args = ["ffmpeg", "-i", self.filepath]
+            p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            stdout, stderr = p.communicate()
+            for line in stderr.split("\n"):
+                if "Duration: " in line and ", start:" in line:
+                    duration_value = line[line.find("Duration: ") + len("Duration: "):line.find(", start:")]
+                    sexagesimal_time_vals = duration_value.split(":")
+                    duration_seconds = int(sexagesimal_time_vals[0]) * 3600 + int(sexagesimal_time_vals[1]) * 60 + float(sexagesimal_time_vals[2])
+                    self.length = duration_seconds
+                    return self.length
+        Utils.log_red(f"Failed to get track length: {self.filepath}")
+        return self.length
+
+    def get_track_length(self):
+        if self.length == -1:
+            return self.set_track_length()
+        return self.length
+
     def get_track_text_file(self):
         if self.basename is None:
             return None
@@ -296,6 +409,3 @@ class AudioTrack:
         return hash(self.filepath)
 
 
-if __name__ == "__main__":
-    Utils.log(AudioTrack(r"D:\iTunes Music\András Schiff\Bach, J.S._ 6 French Suites BWV 812-817 - Italian Concerto\1-01 French Suite No. 1 In D Minor, BWV 812_ I. Allemande.m4a").title)
-    Utils.log(AudioTrack(r"D:\iTunes Music\conductor Evgeny Svetlanov\Symphony No. 3\03 5th Movement_ Lustig En Tempo Und.m4a").title)

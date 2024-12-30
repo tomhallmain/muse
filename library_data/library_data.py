@@ -335,7 +335,7 @@ class LibraryData:
         _dir = os.path.abspath(config.directories[0])
         for f in os.listdir(_dir):
             filepath = os.path.join(_dir, f)
-            if os.path.isfile(filepath) and Utils.is_similar_strings(f, t, True):
+            if os.path.isfile(filepath) and Utils.is_similar_strings(filepath, t, True):
                 Utils.log(f"Found close match: {f}")
                 return filepath
         return None

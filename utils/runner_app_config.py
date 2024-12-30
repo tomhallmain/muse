@@ -13,6 +13,9 @@ class RunnerAppConfig:
         self.overwrite = True
         self.muse = True
         self.extend = True
+        self.enable_dynamic_volume = True
+        self.enable_long_track_splitting = False
+        self.long_track_splitting_time_cutoff_minutes  = 20
 
     def set_from_run_config(self, args):
         pass

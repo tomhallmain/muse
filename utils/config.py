@@ -49,6 +49,8 @@ class Config:
 
         self.enable_dynamic_volume = True
         self.enable_library_extender = False
+        self.enable_long_track_splitting = False
+        self.long_track_splitting_time_cutoff_minutes = 20
 
         self.server_port = 6000
         self.server_password = "<PASSWORD>"
@@ -88,6 +90,7 @@ class Config:
         )
         self.set_values(int,
             "max_chunk_tokens",
+            "long_track_splitting_time_cutoff_minutes"
         )
         self.set_values(list,
             "directories",
@@ -96,7 +99,8 @@ class Config:
         )
         self.set_values(bool,
             "enable_dynamic_volume",
-            "enable_library_extender"
+            "enable_library_extender",
+            "enable_long_track_splitting",
         )
         self.set_values(dict,
             "muse_config",

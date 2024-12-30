@@ -95,13 +95,14 @@ class App():
 #        self.job_queue_preset_schedules = JobQueue("Preset Schedules")
         self.runner_app_config = self.load_info_cache()
         self.config_history_index = 0
-        self.current_run = Run(RunConfig())
+        self.current_run = Run(RunConfig(placeholder=True))
         self.app_actions = AppActions(
             self.update_status_text,
             self.update_track_text,
             self.update_muse_text,
             self.update_progress_bar,
-            self.update_label_extension_status)
+            self.update_label_extension_status,
+            self.on_closing)
 
         # Sidebar
         self.sidebar = Sidebar(self.master)
@@ -255,13 +256,11 @@ class App():
         #         Utils.log_yellow(f"Error stopping server: {e}")
         self.master.destroy()
 
-
     def quit(self, event=None):
         res = self.alert(_("Confirm Quit"), _("Would you like to quit the application?"), kind="askokcancel")
         if res == messagebox.OK or res == True:
             Utils.log("Exiting application")
             self.on_closing()
-
 
     def store_info_cache(self):
         if self.runner_app_config is not None:

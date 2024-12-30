@@ -307,6 +307,10 @@ class Utils:
             os.system('xdg-open "%s"' % filepath)
 
     @staticmethod
+    def executable_available(path):
+        return shutil.which(path) is not None
+
+    @staticmethod
     def ec(s="", n=0):
         if isinstance(s, str):
             s = bytes(s, "UTF-8")
