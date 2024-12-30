@@ -27,7 +27,7 @@ class Playlist:
         return AudioTrack(next_track_path)
 
     def upcoming_track(self):
-        if len(self.in_sequence) == 0 or self.current_song_index >= len(self.in_sequence):
+        if len(self.in_sequence) == 0 or (self.current_song_index + 1) >= len(self.in_sequence):
             return None
-        return AudioTrack(self.in_sequence[self.current_song_index])
+        return AudioTrack(self.in_sequence[self.current_song_index + 1])
 
