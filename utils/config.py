@@ -25,6 +25,7 @@ class Config:
             "chance_speak_before_track": 0.3,
             "chance_speak_about_other_topics": 0.3,
         }
+        self.save_tts_output_topics = ["language_learning", "poem", "random_wiki_article", "aphorism"]
         self.prompts_directory = "prompts"
         self.tongue_twisters_dir = None
         self.artists_file = "artists.json"
@@ -96,6 +97,7 @@ class Config:
             "directories",
             "text_cleaner_ruleset",
             "coqui_tts_model",
+            "save_tts_output_topics",
         )
         self.set_values(bool,
             "enable_dynamic_volume",

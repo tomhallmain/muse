@@ -10,6 +10,7 @@
         "chance_speak_before_track": 0.3,
         "chance_speak_about_other_topics": 0.2
     },
+    "save_tts_output_topics": ["language_learning", "poem", "random_wiki_article", "aphorism"],
     "prompts_directory": "prompts",
     "tongue_twisters_dir": "",
     "artists_file": "artists_example.json",

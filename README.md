@@ -30,6 +30,7 @@ Muse is a media player with an integrated voice synthesizer attached to an LLM. 
     - `chance_speak_after_track` - Set the chance that Muse will speak after each track identifying the previous song or other media.
     - `chance_speak_before_track` - Set the chance that Muse will speak before each track identifying the upcoming song or other media.
     - `chance_speak_about_other_topics` - Set the chance that Muse will speak about other topics.
+- `save_tts_output_topics` - Set the topics to retain MP3 files for in the `tts_ouput` directory.
 - `news_api_source_trustworthiness` - Set the trustworthiness of news sources from News API.
 
 

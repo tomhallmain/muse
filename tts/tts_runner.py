@@ -223,21 +223,21 @@ class TextToSpeechRunner:
             self.speech_queue.job_running = True
             Utils.start_thread(self.play_async, use_asyncio=False, args=[output_path])
 
-    def speak(self, text):
+    def speak(self, text, save_mp3=False):
         for chunk in Chunker.get_str_chunks(text):
             Utils.log("-------------------\n" + chunk)
             self._speak(chunk)
         while self.speech_queue.job_running:
             time.sleep(0.5)
-        self.combine_audio_files()
+        self.combine_audio_files(save_mp3)
 
-    def speak_file(self, filepath, split_on_each_line=False):
+    def speak_file(self, filepath, save_mp3=True, split_on_each_line=False):
         for chunk in Chunker.get_chunks(filepath, split_on_each_line):
             Utils.log("-------------------\n" + chunk)
             self._speak(chunk)
         while self.speech_queue.job_running:
             time.sleep(0.5)
-        self.combine_audio_files()
+        self.combine_audio_files(save_mp3)
 
     def convert_to_mp3(self, file_path):
         if not os.path.exists(file_path):
@@ -269,7 +269,7 @@ class TextToSpeechRunner:
             raise Exception("Invalid number of seconds for silence: " + str(seconds))
         return os.path.join(TextToSpeechRunner.lib_sounds, "silence_" + str(seconds) + "_sec.wav")
 
-    def combine_audio_files(self):
+    def combine_audio_files(self, save_mp3=False):
         output_path, output_path_no_unicode = self.get_output_path_no_unicode()
         silence_file = TextToSpeechRunner.get_silence_file(seconds=2)
         args = ["sox"]
@@ -285,7 +285,8 @@ class TextToSpeechRunner:
             completed_process = subprocess.run(args)
             if completed_process.returncode == 0:
                 Utils.log("Combined audio files: " + output_path)
-                mp3_path = self.convert_to_mp3(output_path_no_unicode)
+                if save_mp3:
+                    mp3_path = self.convert_to_mp3(output_path_no_unicode)
                 os.remove(output_path_no_unicode)
                 if self.delete_interim_files:
                     for f in self.audio_paths:
@@ -293,7 +294,10 @@ class TextToSpeechRunner:
                 else:
                     self.used_audio_paths.extend(self.audio_paths)
                 self.audio_paths = []
-                return Utils.move_file(mp3_path, output_path[:-4] + " - TTS.mp3", overwrite_existing=self.overwrite)
+                if save_mp3:
+                    return Utils.move_file(mp3_path, output_path[:-4] + " - TTS.mp3", overwrite_existing=self.overwrite)
+                else:
+                    return output_path
             else:
                 self.audio_paths = []
                 raise Exception()

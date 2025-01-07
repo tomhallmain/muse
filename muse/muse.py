@@ -98,11 +98,12 @@ class Muse:
     def get_spot_profile(self, previous_track=None, track=None, last_track_failed=False, skip_track=False):
         return MuseSpotProfile(previous_track, track, last_track_failed, skip_track)
 
-    def say_at_some_point(self, text, spot_profile):
+    def say_at_some_point(self, text, spot_profile, topic):
+        save_mp3 = topic in config.save_tts_output_topics
         if spot_profile.immediate:
-            self.voice.say(text)
+            self.voice.say(text, save_mp3=save_mp3)
         else:
-            self.voice.prepare_to_say(text)
+            self.voice.prepare_to_say(text, save_mp3=save_mp3)
 
     def ready_to_prepare(self, cumulative_sleep_seconds, ms_remaining):
         return Muse.enable_preparation \
@@ -200,7 +201,7 @@ class Muse:
                 dj_remark +=  " " + _("That was a new track. How'd you like that?")
             else:
                 dj_remark = _("That was a new one. How'd you like it?") + " " + dj_remark
-        self.say_at_some_point(dj_remark, spot_profile)
+        self.say_at_some_point(dj_remark, spot_profile, None)
 
     def speak_about_upcoming_track(self, spot_profile):
         track = spot_profile.track
@@ -214,7 +215,7 @@ class Muse:
             dj_remark += "."
         if track._is_extended and random.random() < 0.8:
             dj_remark += " " + _("This one is a new track.")
-        self.say_at_some_point(dj_remark, spot_profile)
+        self.say_at_some_point(dj_remark, spot_profile, None)
 
     def is_recent_topics(self, topics_to_check=[], n=1):
         if n >= self.tracks_since_last_topic:
@@ -257,7 +258,7 @@ class Muse:
                 remark = _("First let's hear about {0}").format(spot_profile.topic_translated)
             else:
                 remark = _("But first, let's hear about {0}.").format(spot_profile.topic_translated)
-            self.say_at_some_point(remark, spot_profile)
+            self.say_at_some_point(remark, spot_profile, None)
 
         topic = spot_profile.topic
         Utils.log("Talking about topic: " + topic)
@@ -314,7 +315,7 @@ class Muse:
         weather = self.open_weather_api.get_weather_for_city(city)
         weather_summary = self.generate_text(
             self.prompter.get_prompt("weather") + city + ":\n\n" + str(weather))
-        self.say_at_some_point(weather_summary, spot_profile)
+        self.say_at_some_point(weather_summary, spot_profile, "weather")
 
     def talk_about_news(self, topic=None, spot_profile=None):
         if topic == "hackernews":
@@ -323,11 +324,11 @@ class Muse:
             news = self.news_api.get_news(topic=topic)
         news_summary = self.generate_text(
             self.prompter.get_prompt(topic) + "\n\n" + str(news))
-        self.say_at_some_point(news_summary, spot_profile)
+        self.say_at_some_point(news_summary, spot_profile, topic)
 
     def tell_a_joke(self, spot_profile):
         joke = self.generate_text(self.prompter.get_prompt("joke"))
-        self.say_at_some_point(joke, spot_profile)
+        self.say_at_some_point(joke, spot_profile, "joke")
 
     def share_a_fact(self, spot_profile):
         fact = self.generate_text(self.prompter.get_prompt("fact"))
@@ -335,23 +336,23 @@ class Muse:
 
     def play_two_truths_and_one_lie(self, spot_profile):
         resp = self.generate_text(self.prompter.get_prompt("truth_and_lie"))
-        self.say_at_some_point(resp, spot_profile)
+        self.say_at_some_point(resp, spot_profile, "truth and lie")
 
     def share_a_fable(self, spot_profile):
         fable = self.generate_text(self.prompter.get_prompt("fable"))
-        self.say_at_some_point(fable, spot_profile)
+        self.say_at_some_point(fable, spot_profile, "fable")
 
     def share_an_aphorism(self, spot_profile):
         aphorism = self.generate_text(self.prompter.get_prompt("aphorism"))
-        self.say_at_some_point(aphorism, spot_profile)
+        self.say_at_some_point(aphorism, spot_profile, "aphorism")
 
     def share_a_poem(self, spot_profile):
         poem = self.generate_text(self.prompter.get_prompt("poem"))
-        self.say_at_some_point(poem, spot_profile)
+        self.say_at_some_point(poem, spot_profile, "poem")
     
     def share_a_quote(self, spot_profile):
         quote = self.generate_text(self.prompter.get_prompt("quote"))
-        self.say_at_some_point(quote, spot_profile)
+        self.say_at_some_point(quote, spot_profile, "quote")
 
     def share_a_tongue_twister(self, spot_profile):
         # TODO need to fix this up for the prepare case
@@ -374,11 +375,11 @@ class Muse:
         prompt = prompt.replace("DATE", today.strftime("%A %B %d %Y"))
         prompt = prompt.replace("TIME", today.strftime("%H:%M"))
         calendar = self.generate_text(prompt)
-        self.say_at_some_point(calendar, spot_profile)
+        self.say_at_some_point(calendar, spot_profile, "calendar")
 
     def share_a_motivational_message(self, spot_profile):
         motivation = self.generate_text(self.prompter.get_prompt("motivation"))
-        self.say_at_some_point(motivation, spot_profile)
+        self.say_at_some_point(motivation, spot_profile, "motivation")
 
     def talk_about_track_context(self, track, spot_profile):
         if spot_profile.track is None or spot_profile.topic is None:
@@ -386,7 +387,7 @@ class Muse:
         prompt = self.prompter.get_prompt(spot_profile.topic)
         prompt = prompt.replace("TRACK_DETAILS", track.get_track_details())
         track_context = self.generate_text(prompt)
-        self.say_at_some_point(track_context, spot_profile)
+        self.say_at_some_point(track_context, spot_profile, None)
 
     def talk_about_random_wiki_article(self, spot_profile):
         article_blacklisted = True
@@ -406,11 +407,11 @@ class Muse:
         prompt = self.prompter.get_prompt("random_wiki_article")
         prompt = prompt.replace("ARTICLE", str(article)[:2000])
         summary = self.generate_text(prompt)
-        self.say_at_some_point(summary, spot_profile)
+        self.say_at_some_point(summary, spot_profile, "random_wiki_article")
 
     def share_a_funny_story(self, spot_profile):
         funny_story = self.generate_text(self.prompter.get_prompt("funny_story"))
-        self.say_at_some_point(funny_story, spot_profile)
+        self.say_at_some_point(funny_story, spot_profile, "funny_story")
 
     def teach_language(self, spot_profile):
         prompt = self.prompter.get_prompt("language_learning")
@@ -420,7 +421,7 @@ class Muse:
         else:
             prompt = prompt.replace("LEVEL", "basic")
         language_response = self.generate_text(prompt)
-        self.say_at_some_point(language_response, spot_profile)
+        self.say_at_some_point(language_response, spot_profile, "language_learning")
 
     def generate_text(self, prompt):
         prompt_text_to_test = prompt
@@ -455,19 +456,19 @@ class Muse:
         except WebConnectionException as e:
             Utils.log_red(e)
             self.say_at_some_point(_("We're having some technical difficulties in accessing our source for {0}. We'll try again later").format(topic),
-                                   spot_profile)
+                                   spot_profile, None)
         except LLMResponseException as e:
             Utils.log_red(e)
             self.say_at_some_point(_("It seems our writer for {0} is unexpectedly away at the moment. Did we forget to pay his salary again?").format(topic),
-                                   spot_profile)
+                                   spot_profile, None)
         except BlacklistException as e:
             Utils.log_red(e)
             self.say_at_some_point(_("We've found problems with all of our {0} ideas. Please try again later.").format(topic),
-                                   spot_profile)
+                                   spot_profile, None)
         except Exception as e:
             Utils.log_red(e)
             traceback.print_exc()
-            self.say_at_some_point(_("Something went wrong. We'll try to fix it soon."), spot_profile)
+            self.say_at_some_point(_("Something went wrong. We'll try to fix it soon."), spot_profile, None)
 
 
 
