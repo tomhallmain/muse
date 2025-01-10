@@ -86,8 +86,16 @@ class SchedulesManager:
         partially_applicable = []
         no_specific_times = []
         for schedule in SchedulesManager.recent_schedules:
-            if not schedule.enabled or day_index not in schedule.weekday_options:
+            skip = False
+            if not schedule.enabled:
+                skip = True
+            if schedule.shutdown_time is not None and schedule.voice == SchedulesManager.default_schedule.voice:
+                Utils.log(f"Skipping schedule {schedule} - a shutdown time is set on this schedule and it is assumed to be for shutdown purposes only.")
+                skip = True
+            if day_index not in schedule.weekday_options:
                 Utils.log(f"Skipping schedule {schedule} - today is index {day_index} - schedule weekday options {schedule.weekday_options}")
+                skip = True
+            if skip:
                 continue
             if schedule.start_time is not None and schedule.start_time < current_time:
                 if schedule.end_time is not None and schedule.end_time > current_time:
@@ -112,6 +120,29 @@ class SchedulesManager:
             return no_specific_times[0]
         else:
             return SchedulesManager.default_schedule
+
+    @staticmethod
+    def get_next_weekday_index_for_voice(voice, datetime):
+        assert voice is not None
+        voice_schedules = []
+        for schedule in SchedulesManager.recent_schedules:
+            if schedule.enabled and schedule.voice == voice:
+                voice_schedules.append(schedule)
+        if len(voice_schedules) == 0:
+            return None
+        voice_schedules.sort(key=lambda schedule: schedule.start_time * (1+SchedulesManager.get_closest_weekday_index_to_datetime(schedule, datetime)))
+        return voice_schedules[0]
+
+    @staticmethod
+    def get_closest_weekday_index_to_datetime(schedule, datetime):
+        assert isinstance(schedule, Schedule) and datetime is not None
+        datetime_index = datetime.weekday()
+        for i in schedule.weekday_options:
+            if i >= datetime_index:
+                return i - datetime_index
+        for i in schedule.weekday_options:
+            return i + 7 - datetime_index
+        raise Exception("Invalid schedule, no weekday options found")
 
     @staticmethod
     def check_for_shutdown_request(datetime):

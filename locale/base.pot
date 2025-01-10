@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2024-12-26 13:13-0500\n"
+"POT-Creation-Date: 2025-01-09 22:33-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Generated-By: pygettext.py 1.5\n"
 
 
-#: .\app.py:114 .\app.py:193
+#: .\app.py:115 .\app.py:193 .\ui\playback_config_window.py:83
 msgid "Muse"
 msgstr ""
 
@@ -73,7 +73,7 @@ msgstr ""
 msgid "Extension Status"
 msgstr ""
 
-#: .\app.py:153
+#: .\app.py:153 .\ui\playback_config_window.py:87
 msgid "Workflow"
 msgstr ""
 
@@ -85,7 +85,7 @@ msgstr ""
 msgid "Delay Seconds"
 msgstr ""
 
-#: .\app.py:176
+#: .\app.py:176 .\ui\playback_config_window.py:94
 msgid "Directory"
 msgstr ""
 
@@ -106,64 +106,64 @@ msgstr ""
 msgid "Weather"
 msgstr ""
 
-#: .\app.py:260
+#: .\app.py:259
 msgid "Confirm Quit"
 msgstr ""
 
-#: .\app.py:260
+#: .\app.py:259
 msgid "Would you like to quit the application?"
 msgstr ""
 
-#: .\app.py:380
+#: .\app.py:378
 msgid "Confirm Run"
 msgstr ""
 
-#: .\app.py:381
+#: .\app.py:379
 msgid "Are you sure you want to proceed?"
 msgstr ""
 
-#: .\app.py:514
+#: .\app.py:512
 msgid "Album: "
 msgstr ""
 
-#: .\app.py:514 .\muse\muse.py:55 .\muse\muse.py:65
+#: .\app.py:512 .\muse\muse.py:55 .\muse\muse.py:65
 msgid "Track: "
 msgstr ""
 
-#: .\app.py:516
+#: .\app.py:514
 msgid "Artist: "
 msgstr ""
 
-#: .\app.py:557
+#: .\app.py:555
 msgid "Error"
 msgstr ""
 
-#: .\app.py:642
+#: .\app.py:640
 msgid " Muse "
 msgstr ""
 
-#: .\library_data\audio_track.py:159
+#: .\library_data\audio_track.py:175
 msgid "Unknown title"
 msgstr ""
 
-#: .\library_data\audio_track.py:165
+#: .\library_data\audio_track.py:181
 msgid "Unknown album"
 msgstr ""
 
-#: .\library_data\audio_track.py:171
+#: .\library_data\audio_track.py:187
 msgid "Unknown artist"
 msgstr ""
 
-#: .\library_data\audio_track.py:249 .\library_data\audio_track.py:250
+#: .\library_data\audio_track.py:362 .\library_data\audio_track.py:363
 #: .\tts\text_cleaner_ruleset.py:61
 msgid "Number \\1"
 msgstr ""
 
-#: .\library_data\audio_track.py:251
+#: .\library_data\audio_track.py:364
 msgid "\\1text to speech\\2"
 msgstr ""
 
-#: .\library_data\audio_track.py:252
+#: .\library_data\audio_track.py:365
 msgid " Opus \\2"
 msgstr ""
 
@@ -207,67 +207,83 @@ msgstr ""
 msgid "Talking about something"
 msgstr ""
 
-#: .\muse\muse.py:175
+#: .\muse\muse.py:170
+msgid "Hello, I'm {0}"
+msgstr ""
+
+#: .\muse\muse.py:181
 msgid "today"
 msgstr ""
 
-#: .\muse\muse.py:175
+#: .\muse\muse.py:181
 msgid "tonight"
 msgstr ""
 
-#: .\muse\muse.py:176
+#: .\muse\muse.py:182
 msgid "The scheduled shutdown time has arrived. That's it for {0}."
 msgstr ""
 
-#: .\muse\muse.py:193
+#: .\muse\muse.py:186
+msgid "Tomorrow you'll hear from {0}."
+msgstr ""
+
+#: .\muse\muse.py:190
+msgid "The next time I'll be on is next week, at the same time."
+msgstr ""
+
+#: .\muse\muse.py:192
+msgid "I'll be on again this coming {0}."
+msgstr ""
+
+#: .\muse\muse.py:209
 msgid "That was \"{0}\" in \"{1}\""
 msgstr ""
 
-#: .\muse\muse.py:195 .\muse\muse.py:212
+#: .\muse\muse.py:211 .\muse\muse.py:228
 msgid " by \"{0}\"."
 msgstr ""
 
-#: .\muse\muse.py:200
+#: .\muse\muse.py:216
 msgid "That was a new track. How'd you like that?"
 msgstr ""
 
-#: .\muse\muse.py:202
+#: .\muse\muse.py:218
 msgid "That was a new one. How'd you like it?"
 msgstr ""
 
-#: .\muse\muse.py:208
+#: .\muse\muse.py:224
 msgid "To start, we'll be playing: \"{0}\" from \"{1}\""
 msgstr ""
 
-#: .\muse\muse.py:210
+#: .\muse\muse.py:226
 msgid "Next up, we'll be playing: \"{0}\" from \"{1}\""
 msgstr ""
 
-#: .\muse\muse.py:216
+#: .\muse\muse.py:232
 msgid "This one is a new track."
 msgstr ""
 
-#: .\muse\muse.py:257
+#: .\muse\muse.py:273
 msgid "First let's hear about {0}"
 msgstr ""
 
-#: .\muse\muse.py:259
+#: .\muse\muse.py:275
 msgid "But first, let's hear about {0}."
 msgstr ""
 
-#: .\muse\muse.py:453
+#: .\muse\muse.py:473
 msgid "We're having some technical difficulties in accessing our source for {0}. We'll try again later"
 msgstr ""
 
-#: .\muse\muse.py:457
+#: .\muse\muse.py:477
 msgid "It seems our writer for {0} is unexpectedly away at the moment. Did we forget to pay his salary again?"
 msgstr ""
 
-#: .\muse\muse.py:461
+#: .\muse\muse.py:481
 msgid "We've found problems with all of our {0} ideas. Please try again later."
 msgstr ""
 
-#: .\muse\muse.py:466
+#: .\muse\muse.py:486
 msgid "Something went wrong. We'll try to fix it soon."
 msgstr ""
 
@@ -351,15 +367,15 @@ msgstr ""
 msgid "Tomorrow"
 msgstr ""
 
-#: .\muse\schedule.py:65 .\ui\schedules_window.py:55
+#: .\muse\schedule.py:76 .\ui\schedules_window.py:55
 msgid "Every day"
 msgstr ""
 
-#: .\muse\schedule.py:68
+#: .\muse\schedule.py:79
 msgid "{0} - DJ: {1} - Days: {2} - Times: {3}-{4} - Shutdown: {5}"
 msgstr ""
 
-#: .\muse\schedules_manager.py:62
+#: .\muse\schedules_manager.py:63
 msgid "Not enough schedules found."
 msgstr ""
 

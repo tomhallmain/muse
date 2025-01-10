@@ -113,7 +113,6 @@ class App():
         self.sidebar.grid(column=0, row=self.row_counter0)
         self.label_title = Label(self.sidebar)
         self.add_label(self.label_title, _("Muse"), sticky=None, columnspan=2)
-        ## TODO change above label to be software-agnostic
 
         self.run_btn = None
         self.add_button("run_btn", _("Play"), self.run)
