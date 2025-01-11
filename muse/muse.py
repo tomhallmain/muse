@@ -167,7 +167,7 @@ class Muse:
 
     def change_voice(self, voice_name):
         self.voice = Voice(voice_name)
-        self.voice.prepare_to_say(_("Hello, I'm {0}").format(self._schedule.voice))
+        self.voice.prepare_to_say(_("Hello, I'm {0}").format(voice_name))
 
     def check_for_shutdowns(self):
         now = datetime.datetime.now()
@@ -180,7 +180,7 @@ class Muse:
     def sign_off(self, now):
         now_general_word = _("tonight") if (now.hour < 5 or now.hour > 19) else _("today")
         self.voice.say(_("The scheduled shutdown time has arrived. That's it for {0}.").format(now_general_word))
-        tomorrow = datetime.date.today() + datetime.timedelta(days = 1)
+        tomorrow = datetime.datetime(now.year, now.month, now.day + 1, hour=7, tzinfo=now.tzinfo)
         tomorrow_schedule = SchedulesManager.get_active_schedule(tomorrow)
         if tomorrow_schedule is not None and tomorrow_schedule.voice != self._schedule.voice:
             self.voice.say(_("Tomorrow you'll hear from {0}.").format(tomorrow_schedule.voice))
