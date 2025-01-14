@@ -47,9 +47,8 @@ class Playback:
     def get_track(self):
         self.previous_track = self.track
         self.track = self._playback_config.next_track()
-        if self.track is None or self.track.is_invalid():
-            return False
-        return True
+        # print(f"Playback.get_track() - self.track = {self.track} {self.track.is_invalid()}")
+        return self.track is not None and not self.track.is_invalid()
 
     def get_song_quality_info(self):
         # TODO: Get info like bit rate, mono vs stereo, possibly try to infer if it's AI or not
@@ -72,6 +71,7 @@ class Playback:
 
     def play_one_song(self):
         if self.get_track():
+            self.register_new_song()
             self.vlc_media_player.play()
             time.sleep(0.5)
             while (self.vlc_media_player.is_playing() or self.is_paused) and not self.skip_track:
@@ -149,11 +149,8 @@ class Playback:
     def update_progress(self):
         duration = self.vlc_media_player.get_length()
         current_time = self.vlc_media_player.get_time()
-        if self.callbacks.update_progress_callback is not None:
-            if duration > 0:
-                progress = int((current_time / duration) * 100)
-            else:
-                progress = 0
+        if self.callbacks is not None and self.callbacks.update_progress_callback is not None:
+            progress = int((current_time / duration) * 100) if duration > 0 else 0
             self.callbacks.update_progress_callback(progress, current_time, duration)
         return duration - current_time
 
@@ -174,9 +171,9 @@ class Playback:
             spot_profile.immediate = True
             if not first_prep:
                 Utils.log("Delayed preparation.")
-            self.get_muse().prepare(spot_profile, self.callbacks.update_muse_text)
+            self.get_muse().prepare(spot_profile, self.callbacks.update_muse_text if self.callbacks else None)
         else:
-            Utils.start_thread(self.get_muse().prepare, use_asyncio=False, args=(spot_profile, self.callbacks.update_muse_text))
+            Utils.start_thread(self.get_muse().prepare, use_asyncio=False, args=(spot_profile, self.callbacks.update_muse_text if self.callbacks else None))
         return round(time.time() - start)
 
     def generate_silent_spot_profile(self):
@@ -190,6 +187,8 @@ class Playback:
         self.update_ui_text()
 
     def update_ui_text(self):
+        if self.callbacks is None:
+            return
         if self.callbacks.track_details_callback is not None:
             self.callbacks.track_details_callback(self.track)
             self.callbacks.update_status_callback("")
@@ -204,7 +203,7 @@ class Playback:
 
     def delay(self):
         if self.has_played_first_track and not self.last_track_failed:
-            if self.remaining_delay_seconds > 4:
+            if self.remaining_delay_seconds > 4 and self.callbacks is not None:
                 self.callbacks.update_status_callback(_("Sleeping for seconds") + ": " + str(self.remaining_delay_seconds))
                 # TODO set track text to "Upcoming track"
             delay_timer = 0

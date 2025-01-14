@@ -10,6 +10,7 @@ _ = I18N._
 
 
 class Prompter:
+    # TODO track_context_post is not saving hisory properly, figure out why this is happening
     TOPICS = ["weather", "news", "hackernews", "joke", "fact", "fable", 
               "truth_and_lie", "aphorism", "poem", "quote", "tongue_twister", 
               "motivation", "calendar", "track_context_prior", "track_context_post",

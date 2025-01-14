@@ -131,7 +131,7 @@ class SchedulesManager:
         if len(voice_schedules) == 0:
             return None
         voice_schedules.sort(key=lambda schedule: schedule.start_time * (1+SchedulesManager.get_closest_weekday_index_to_datetime(schedule, datetime)))
-        return voice_schedules[0]
+        return SchedulesManager.get_closest_weekday_index_to_datetime(voice_schedules[0], datetime)
 
     @staticmethod
     def get_closest_weekday_index_to_datetime(schedule, datetime):
