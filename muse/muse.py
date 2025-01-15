@@ -248,12 +248,10 @@ class Muse:
         else:
             topic = Prompter.get_oldest_topic(excluded_topics=excluded_topics)
 
-        if topic in ["hackernews", "news"] and Prompter.under_n_hours_since_last(topic, n_hours=14):
-            if topic not in excluded_topics:
+        if topic not in excluded_topics:
+            if topic in ["hackernews", "news"] and Prompter.under_n_hours_since_last(topic, n_hours=14):
                 excluded_topics.append(topic)
-
-        if previous_track is None and topic == "track_context_post":
-            if topic not in excluded_topics:
+            if previous_track is None and topic == "track_context_post":
                 excluded_topics.append(topic)
 
         while topic in excluded_topics:
@@ -311,10 +309,10 @@ class Muse:
             func = self.share_a_motivational_message
         elif topic =="track_context_prior":
             func = self.talk_about_track_context
-            args = [spot_profile.track, spot_profile]
+            args = [spot_profile.track, spot_profile, "track_context_prior"]
         elif topic =="track_context_post":
             func = self.talk_about_track_context
-            args = [spot_profile.previous_track, spot_profile]
+            args = [spot_profile.previous_track, spot_profile, "track_context_post"]
         elif topic == "random_wiki_article":
             func = self.talk_about_random_wiki_article
         elif topic == "funny_story":
@@ -396,10 +394,10 @@ class Muse:
         motivation = self.generate_text(self.prompter.get_prompt("motivation"))
         self.say_at_some_point(motivation, spot_profile, "motivation")
 
-    def talk_about_track_context(self, track, spot_profile):
-        if spot_profile.track is None or spot_profile.topic is None:
+    def talk_about_track_context(self, track, spot_profile, topic):
+        if spot_profile.track is None or spot_profile.topic is None or topic is None:
             raise Exception("No track or topic specified")
-        prompt = self.prompter.get_prompt(spot_profile.topic)
+        prompt = self.prompter.get_prompt(topic)
         prompt = prompt.replace("TRACK_DETAILS", track.get_track_details())
         track_context = self.generate_text(prompt)
         self.say_at_some_point(track_context, spot_profile, None)

@@ -44,6 +44,12 @@ class PlaybackConfig:
     def maximum_plays(self):
         return 1
 
+    def length(self):
+        return self.get_list().size()
+    
+    def reamining_count(self):
+        return self.get_list().remaining_count()
+
     def get_list(self):
         if self.list.is_valid():
             return self.list

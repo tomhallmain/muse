@@ -14,6 +14,12 @@ class Playlist:
         self.played_tracks = []
         self.current_song_index = -1
 
+    def size(self):
+        return len(self.all_tracks)
+
+    def remaining_count(self):
+        return len(self.pending_tracks)
+
     def is_valid(self):
         return len(self.all_tracks) > 0
 

@@ -130,18 +130,18 @@ class SchedulesManager:
                 voice_schedules.append(schedule)
         if len(voice_schedules) == 0:
             return None
-        voice_schedules.sort(key=lambda schedule: schedule.start_time * (1+SchedulesManager.get_closest_weekday_index_to_datetime(schedule, datetime)))
+        voice_schedules.sort(key=lambda schedule: schedule.start_time * (1+SchedulesManager.get_closest_weekday_index_to_datetime(schedule, datetime, total_days=True)))
         return SchedulesManager.get_closest_weekday_index_to_datetime(voice_schedules[0], datetime)
 
     @staticmethod
-    def get_closest_weekday_index_to_datetime(schedule, datetime):
+    def get_closest_weekday_index_to_datetime(schedule, datetime, total_days=False):
         assert isinstance(schedule, Schedule) and datetime is not None
         datetime_index = datetime.weekday()
         for i in schedule.weekday_options:
             if i >= datetime_index:
-                return i - datetime_index
+                return i
         for i in schedule.weekday_options:
-            return i + 7 - datetime_index
+            return i + 7 if total_days else i
         raise Exception("Invalid schedule, no weekday options found")
 
     @staticmethod
