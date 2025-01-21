@@ -51,6 +51,7 @@ class Config:
         self.enable_dynamic_volume = True
         self.enable_library_extender = False
         self.enable_long_track_splitting = False
+        self.show_videos_in_main_window = False
         self.long_track_splitting_time_cutoff_minutes = 20
 
         self.server_port = 6000

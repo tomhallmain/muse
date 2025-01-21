@@ -217,11 +217,7 @@ class TextToSpeechRunner:
         output_path = self.generate_output_path()
         self.audio_paths.append(output_path)
         self.generate_speech_file(text, output_path)
-        if not self.auto_play or self.speech_queue.has_pending() or self.speech_queue.job_running:
-            self.speech_queue.add(output_path)
-        else:
-            self.speech_queue.job_running = True
-            Utils.start_thread(self.play_async, use_asyncio=False, args=[output_path])
+        self.add_speech_file_to_queue(output_path)
 
     def speak(self, text, save_mp3=False):
         for chunk in Chunker.get_str_chunks(text):
@@ -303,6 +299,14 @@ class TextToSpeechRunner:
                 raise Exception()
         except Exception as e:
             raise Exception("Error combining audio files")
+
+    def add_speech_file_to_queue(self, filepath):
+        if not self.auto_play or self.speech_queue.has_pending() or self.speech_queue.job_running:
+            self.speech_queue.add(filepath)
+        else:
+            self.speech_queue.job_running = True
+            Utils.start_thread(self.play_async, use_asyncio=False, args=[filepath])
+
 
 def main(model, text):
     runner = TextToSpeechRunner(model)

@@ -110,7 +110,7 @@ class Playback:
                     self.register_new_song()
                     # self.muse.maybe_dj_prior(self.muse_spot_profile)
                     self.delay()
-                    self.update_ui_text()
+                    self.update_ui()
                 else:
                     self.delay()
                     self.register_new_song()
@@ -184,9 +184,9 @@ class Playback:
     def register_new_song(self):
         Utils.log(f"Playing track file: {self.track.filepath}")
         self.vlc_media_player = vlc.MediaPlayer(self.track.filepath)
-        self.update_ui_text()
+        self.update_ui()
 
-    def update_ui_text(self):
+    def update_ui(self):
         if self.callbacks is None:
             return
         if self.callbacks.track_details_callback is not None:
@@ -195,6 +195,8 @@ class Playback:
         if self.callbacks.update_muse_text is not None:
             spot_profile = self.get_spot_profile()
             self.callbacks.update_muse_text(spot_profile.get_ui_text(include_track=False))
+        if self.callbacks.update_album_artwork is not None:
+            self.callbacks.update_album_artwork(image_filepath=self.track.get_album_artwork())
 
     def increment_count(self):
         if not self.skip_track:

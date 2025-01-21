@@ -60,3 +60,11 @@ class Voice:
             return
         self._tts.await_pending_speech_jobs()
 
+
+    def add_speech_file_to_queue(self, filepath):
+        if not self.can_speak or self._tts is None:
+            Utils.log_yellow("Cannot speak.")
+            return
+        self._tts.add_speech_file_to_queue(filepath)
+
+

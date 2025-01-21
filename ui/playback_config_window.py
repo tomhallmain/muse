@@ -1,9 +1,6 @@
 from copy import deepcopy
-import signal
-import time
-import traceback
 
-from tkinter import messagebox, Toplevel, Frame, Label, Checkbutton, Text, StringVar, BooleanVar, Scale, END, HORIZONTAL, NW, BOTH, YES, N, E, W
+from tkinter import messagebox, Toplevel, Frame, Label, Checkbutton, Text, StringVar, BooleanVar, Scale, W
 from tkinter.constants import W
 import tkinter.font as fnt
 from tkinter.ttk import Button, Entry, OptionMenu, Scale
@@ -11,16 +8,11 @@ from tkinter.ttk import Button, Entry, OptionMenu, Scale
 from utils.globals import Globals, WorkflowType
 
 from muse.playback_config import PlaybackConfig
-from muse.run import Run
 from muse.run_config import RunConfig
-from muse.schedules_manager import SchedulesManager
-from ui.app_style import AppStyle
 from utils.app_info_cache import app_info_cache
 from utils.config import config
 from utils.globals import WorkflowType
-from utils.runner_app_config import RunnerAppConfig
 from utils.translations import I18N
-from utils.utils import Utils
 
 _ = I18N._
 
@@ -63,26 +55,47 @@ class ProgressListener:
         self.update_func(context, percent_complete)
 
 
-class PlaybackConfigWindow():
+class PlaylistWindow():
     '''
     UI for defining specific playbacks / playlists.
     '''
+    named_playlist_configs = {}
 
-    def __init__(self, master):
+    @staticmethod
+    def load_named_playlist_configs():
+        PlaylistWindow.named_playlist_configs = app_info_cache.get('named_playlist_configs', {})
+
+    @staticmethod
+    def store_named_playlist_configs():
+        app_info_cache.set('named_playlist_configs', PlaylistWindow.named_playlist_configs)
+
+    def __init__(self, master, runner_app_config):
         self.master = master
         self.master.protocol("WM_DELETE_WINDOW", self.on_closing)
+        self.runner_app_config = runner_app_config
+
+        self.main = Frame(self.master)
+        self.main.columnconfigure(0, weight=1)
+        self.main.columnconfigure(1, weight=1)
+        self.main.grid(column=0, row=0)
 
         # Sidebar
-        self.sidebar = Sidebar(self.master)
+        self.sidebar = Sidebar(self.main)
         self.sidebar.columnconfigure(0, weight=1)
-        self.sidebar.columnconfigure(0, weight=1)
+        self.sidebar.columnconfigure(1, weight=1)
         self.row_counter0 = 0
         self.row_counter1 = 0
         self.sidebar.grid(column=0, row=self.row_counter0)
-        self.label_title = Label(self.sidebar)
-        self.add_label(self.label_title, _("Muse"), sticky=None, columnspan=2)
 
-        # TODO multiselect
+        self.label_title = Label(self.sidebar)
+        self.add_label(self.label_title, _("Playlist Config"), sticky=None, columnspan=2)
+
+        self.label_saved_playlist = Label(self.sidebar)
+        self.add_label(self.label_saved_playlist, _("Saved Playlists"), increment_row_counter=False)
+        self.named_playlist_config = StringVar()
+        self.named_playlist_choice = OptionMenu(self.sidebar, self.named_playlist_config, *list(PlaylistWindow.named_playlist_configs.keys()), command=self.set_playlist_config)
+        self.apply_to_grid(self.named_playlist_choice, interior_column=1, sticky=W)
+
         self.label_workflows = Label(self.sidebar)
         self.add_label(self.label_workflows, _("Workflow"), increment_row_counter=False)
         self.workflow = StringVar(master)
@@ -102,23 +115,13 @@ class PlaybackConfigWindow():
         self.master.update()
 
     def on_closing(self):
-        self.store_info_cache()
+        # self.store_info_cache()
         # if self.server is not None:
         #     try:
         #         self.server.stop()
         #     except Exception as e:
         #         Utils.log_yellow(f"Error stopping server: {e}")
         self.master.destroy()
-
-    def load_info_cache(self):
-        try:
-            PlaybackConfig.load_directory_cache()
-            SchedulesManager.set_schedules()
-            self.config_history_index = app_info_cache.get("config_history_index", default_val=0)
-            return app_info_cache.get_history_latest()
-        except Exception as e:
-            Utils.log_red(e)
-            return RunnerAppConfig()
 
     def set_widget_value(self, widget, value):
         if isinstance(widget, Scale):

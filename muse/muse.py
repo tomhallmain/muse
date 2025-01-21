@@ -1,5 +1,6 @@
 
 import datetime
+import os
 import random
 import time
 import traceback
@@ -182,13 +183,15 @@ class Muse:
         self.voice.prepare_to_say(_("The scheduled shutdown time has arrived. That's it for {0}.").format(now_general_word))
         tomorrow = datetime.datetime(now.year, now.month, now.day + 1, hour=7, tzinfo=now.tzinfo)
         tomorrow_schedule = SchedulesManager.get_active_schedule(tomorrow)
-        if tomorrow_schedule is not None and tomorrow_schedule.voice != self._schedule.voice:
+        if tomorrow_schedule is not None:
             self.voice.prepare_to_say(_("Tomorrow you'll hear from {0}.").format(tomorrow_schedule.voice))
             next_weekday_for_this_voice = SchedulesManager.get_next_weekday_index_for_voice(self._schedule.voice, tomorrow)
             if next_weekday_for_this_voice is not None:
                 if next_weekday_for_this_voice == now.weekday():
                     self.voice.prepare_to_say(_("The next time I'll be on is next week, at the same time."))
-                else:
+                elif tomorrow_schedule.voice == self._schedule.voice and next_weekday_for_this_voice == tomorrow.weekday():
+                    self.voice.prepare_to_say(_("I'll be on tomorrow."))
+                elif len(self._schedule.weekday_options) < 7:
                     self.voice.prepare_to_say(_("I'll be on again this coming {0}.").format(I18N.day_of_the_week(next_weekday_for_this_voice)))
         self.voice.finish_speaking()
         self._schedule = tomorrow_schedule
@@ -373,13 +376,17 @@ class Muse:
             raise Exception("No tongue twister directory specified")
         Utils.log(f"Playing tongue twister from {config.tongue_twisters_dir}")
         playback = Playback.new_playback(config.tongue_twisters_dir)
+        tongue_twister_track = playback._playback_config.next_track()
+        if tongue_twister_track is None or not os.path.exists(tongue_twister_track.filepath):
+            raise Exception(f"Invalid tongue twister file: {tongue_twister_track}")
         Prompter.update_history("tongue_twister")
-        try:
-            playback.play_one_song()
-        except Exception as e:
-            Utils.log_red("Error playing tongue twister: " + str(e))
-            Utils.log(playback._playback_config.directories)
-            Utils.log(playback._playback_config.list)
+        self.voice.add_speech_file_to_queue(tongue_twister_track.filepath)
+        # try:
+        #     playback.play_one_song()
+        # except Exception as e:
+        #     Utils.log_red("Error playing tongue twister: " + str(e))
+        #     Utils.log(playback._playback_config.directories)
+        #     Utils.log(playback._playback_config.list)
 
     def talk_about_the_calendar(self, spot_profile):
         # TODO talk about tomorrow as well, or the upcoming week

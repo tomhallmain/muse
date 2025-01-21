@@ -20,6 +20,14 @@ try:
 except ImportError as e:
     Utils.log_yellow("No music tag support: %s" % str(e))
 
+has_imported_mutagen = False
+try:
+    from mutagen import File
+    from mutagen.mp4 import MP4Cover
+    has_imported_mutagen = True
+except ImportError as e:
+    Utils.log_yellow("No mutagen (album artwork) support: %s" % str(e))
+
 
 """
 See music-tag README: https://github.com/KristoforMaynard/music-tag
@@ -53,7 +61,7 @@ dict_keys(['tag_aliases', 'tag_map', 'resolvers', 'singular_keys', 'filename', '
 """
 
 class AudioTrack:
-    music_tag_ignored_tags = ['comment', 'isrc', 'lyrics']
+    music_tag_ignored_tags = ['comment', 'isrc', 'lyrics', 'artwork']
     non_numeric_chars = re.compile(r"[^0-9\.\-]+")
     temp_directory = tempfile.TemporaryDirectory(prefix="tmp_muse")
     ffprobe_available = None
@@ -83,6 +91,7 @@ class AudioTrack:
         self.mean_volume = -9999.0
         self.max_volume = -9999.0
         self.length = -1.0
+        self.artwork = None
 
         # Unused tags:
         # bitrate : 128000
@@ -355,6 +364,33 @@ class AudioTrack:
                 return f"{self.readable_artist()} - {self.readable_title()} - {self.readable_album()}"
             return f"{self.readable_title()} - {self.readable_album()}"            
         return self.readable_title()
+
+    def get_album_artwork(self):
+        # music-tags libary may have already set this attribute
+        if self.artwork is None:
+            # mutagen for special cases
+            try:
+                _file = File(self.filepath) # mutagen
+                for k, v in _file.tags.items():
+                    if type(v) == list and type(v[0]) == MP4Cover:
+                        self.artwork = bytes(v[0])
+                        Utils.log("found artwork in MP4Cover mutagen tag type.")
+                        break
+                if self.artwork is None:
+                    self.artwork = _file.tags['APIC:'].data
+                    Utils.log("found artwork by accessing APIC frame")
+            except Exception as e:
+                Utils.log_yellow(f"Album artwork not found: {e}")
+            if self.artwork is None:
+                return None
+        try:
+            image_path = os.path.join(AudioTrack.temp_directory.name, 'image.jpg')
+            with open(image_path, 'wb') as img:
+                img.write(self.artwork) # write artwork to new image
+            return image_path
+        except Exception as e:
+            Utils.log_red(f"Could not write album artwork to temp file: {e}")
+            return None
 
     @staticmethod
     def _prep_track_text(text):

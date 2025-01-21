@@ -20,6 +20,8 @@ from ui.app_actions import AppActions
 from ui.app_style import AppStyle
 from ui.composers_window import ComposersWindow
 from ui.extensions_window import ExtensionsWindow
+from ui.media_frame import MediaFrame
+from ui.playback_config_window import PlaylistWindow
 from ui.schedules_window import SchedulesWindow
 from ui.search_window import SearchWindow
 from ui.track_details_window import TrackDetailsWindow
@@ -102,6 +104,7 @@ class App():
             self.update_muse_text,
             self.update_progress_bar,
             self.update_label_extension_status,
+            self.update_album_artwork,
             self.on_closing)
 
         # Sidebar
@@ -206,6 +209,8 @@ class App():
         self.weather_btn = None
         self.add_button("weather_btn", _("Weather"), self.open_weather_window)
 
+        self.media_frame = MediaFrame(self.master, fill_canvas=True)
+
         self.master.bind("<Control-Return>", self.run)
         self.master.bind("<Shift-R>", self.run)
         self.master.bind("<Prior>", lambda event: self.one_config_away(change=1))
@@ -232,6 +237,7 @@ class App():
                                      == AppStyle.DARK_THEME) and to_theme != AppStyle.LIGHT_THEME
         self.master.config(bg=AppStyle.BG_COLOR)
         self.sidebar.config(bg=AppStyle.BG_COLOR)
+        self.media_frame.set_background_color(AppStyle.BG_COLOR)
         for name, attr in self.__dict__.items():
             if isinstance(attr, Label):
                 attr.config(bg=AppStyle.BG_COLOR, fg=AppStyle.FG_COLOR)
@@ -268,12 +274,14 @@ class App():
                     self.config_history_index -= 1
         app_info_cache.set("config_history_index", self.config_history_index)
         PlaybackConfig.store_directory_cache()
+        PlaylistWindow.store_named_playlist_configs()
         SchedulesManager.store_schedules()
         app_info_cache.store()
 
     def load_info_cache(self):
         try:
             PlaybackConfig.load_directory_cache()
+            PlaylistWindow.load_named_playlist_configs()
             SchedulesManager.set_schedules()
             self.config_history_index = app_info_cache.get("config_history_index", default_val=0)
             return app_info_cache.get_history_latest()
@@ -476,6 +484,12 @@ class App():
         except Exception as e:
             Utils.log_red(f"Exception opening extensions window: {e}")
 
+    def open_playlist_window(self):
+        try:
+            playlist_window = PlaylistWindow(self.master, self.app_actions)
+        except Exception as e:
+            Utils.log_red(f"Exception opening playlist window: {e}")
+
     def open_weather_window(self):
         try:
             weather_window = WeatherWindow(self.master, self.app_actions)
@@ -525,6 +539,9 @@ class App():
         text = Utils._wrap_text_to_fit_length(extension[:500], 100)
         self.label_extension_status["text"] = text
         self.master.update()
+
+    def update_album_artwork(self, image_filepath):
+        self.media_frame.show_image(image_filepath)
 
     # def open_presets_window(self):
     #     top_level = Toplevel(self.master, bg=AppStyle.BG_COLOR)
@@ -641,7 +658,7 @@ if __name__ == "__main__":
         #root.iconbitmap(bitmap=r"icon.ico")
         # icon = PhotoImage(file=os.path.join(assets, "icon.png"))
         # root.iconphoto(False, icon)
-        root.geometry("700x500")
+        root.geometry("900x500")
         # root.attributes('-fullscreen', True)
         root.resizable(1, 1)
         root.columnconfigure(0, weight=1)
