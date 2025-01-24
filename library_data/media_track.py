@@ -28,6 +28,14 @@ try:
 except ImportError as e:
     Utils.log_yellow("No mutagen (album artwork) support: %s" % str(e))
 
+from pymediainfo import MediaInfo
+
+def has_video_stream(file_path):
+    media_info = MediaInfo.parse(file_path)
+    for track in media_info.tracks:
+        if track.track_type == "Video":
+            return True
+    return False
 
 """
 See music-tag README: https://github.com/KristoforMaynard/music-tag
@@ -60,17 +68,16 @@ Look at "mfile" info on music_tag.mp4.Mp4File object as well.
 dict_keys(['tag_aliases', 'tag_map', 'resolvers', 'singular_keys', 'filename', 'mfile'])
 """
 
-class AudioTrack:
+class MediaTrack:
     music_tag_ignored_tags = ['comment', 'isrc', 'lyrics', 'artwork']
     non_numeric_chars = re.compile(r"[^0-9\.\-]+")
     temp_directory = tempfile.TemporaryDirectory(prefix="tmp_muse")
     ffprobe_available = None
-    video_types = [".gif", ".mp4", ".mkv", ".webm", ".avi", ".mov", ".wmv", ".flv", ".mpeg", ".m4a"]
 
     @staticmethod
     def cleanup_temp_directory():
         try:
-            AudioTrack.temp_directory.cleanup()
+            MediaTrack.temp_directory.cleanup()
         except Exception as e:
             print(e)
 
@@ -126,7 +133,7 @@ class AudioTrack:
             try:
                 music_tag_wrapper = music_tag.load_file(filepath)
                 for k in music_tag_wrapper.__dict__["tag_map"].keys():
-                    if not k in AudioTrack.music_tag_ignored_tags and not k.startswith("#"):
+                    if not k in MediaTrack.music_tag_ignored_tags and not k.startswith("#"):
                         value = music_tag_wrapper[k].first
                         if value is not None:
                             try:
@@ -181,19 +188,19 @@ class AudioTrack:
         return cleaned
 
     def readable_title(self):
-        prepped = AudioTrack._prep_track_text(self.title)
+        prepped = MediaTrack._prep_track_text(self.title)
         if prepped.strip() == "":
             return _("Unknown title")
         return prepped
 
     def readable_album(self):
-        prepped = AudioTrack._prep_track_text(self.album)
+        prepped = MediaTrack._prep_track_text(self.album)
         if prepped.strip() == "":
             return _("Unknown album")
         return prepped
 
     def readable_artist(self):
-        prepped = AudioTrack._prep_track_text(self.artist)
+        prepped = MediaTrack._prep_track_text(self.artist)
         if prepped.strip() == "":
             return  _("Unknown artist")
         return prepped
@@ -211,7 +218,7 @@ class AudioTrack:
     def set_track_index(self):
         # NOTE there may be some cases where the track index is actually a number in the title, need a better way to handle these
         if self.title is not None and len(self.title) > 0 and self.title[0].isdigit():
-            maybe_album_index, maybe_track_index, maybe_title = AudioTrack.extract_ints_from_start(self.title)
+            maybe_album_index, maybe_track_index, maybe_title = MediaTrack.extract_ints_from_start(self.title)
             if maybe_album_index is not None and maybe_album_index > 0 and maybe_album_index < 15:
                 self.discnumber = maybe_album_index
             if maybe_track_index is not None and maybe_track_index > 0 and maybe_track_index < 40:
@@ -248,7 +255,7 @@ class AudioTrack:
                 if len(silence_interval) == 0:
                     if "silence_start: " in line:
                         _, text = line.split("] ")
-                        start_value = re.sub(AudioTrack.non_numeric_chars, "", text[len("silence_start: "):])
+                        start_value = re.sub(MediaTrack.non_numeric_chars, "", text[len("silence_start: "):])
                         silence_interval.append(float(start_value))
                 elif "silence_end: " in line:
                     print("found silence end")
@@ -258,10 +265,10 @@ class AudioTrack:
                     else:
                         end_text = text
                         duration_text = ""
-                    end_value = re.sub(AudioTrack.non_numeric_chars, "", end_text[len("silence_end: "):])
+                    end_value = re.sub(MediaTrack.non_numeric_chars, "", end_text[len("silence_end: "):])
                     silence_interval.append(float(end_value))
                     if duration_text != "":
-                        duration_value = re.sub(AudioTrack.non_numeric_chars, "", duration_text[len("silence_duration: "):])
+                        duration_value = re.sub(MediaTrack.non_numeric_chars, "", duration_text[len("silence_duration: "):])
                         silence_interval.append(float(duration_value))
                     silence_times.append(list(silence_interval))
                     print(silence_times)
@@ -292,7 +299,7 @@ class AudioTrack:
             temp_basename = f"{self.basename} part.{self.ext}"
         else:
             temp_basename = f"{self.basename} ({idx}-{total}){self.ext}"
-        temp_filepath = os.path.join(AudioTrack.temp_directory.name, temp_basename) # TODO this is causing the temp directory cleanup to fail probably, need to fix
+        temp_filepath = os.path.join(MediaTrack.temp_directory.name, temp_basename) # TODO this is causing the temp directory cleanup to fail probably, need to fix
         args  = ["ffmpeg", "-i", self.filepath, "-ss", f"{start}", "-to", f"{end}", "-c:a", "copy", temp_filepath]
         process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
         output, _ = process.communicate()
@@ -301,9 +308,9 @@ class AudioTrack:
         return temp_filepath
 
     def set_track_length(self):
-        if AudioTrack.ffprobe_available is None:
-            AudioTrack.ffprobe_available = Utils.executable_available("ffprobe")
-        if AudioTrack.ffprobe_available:
+        if MediaTrack.ffprobe_available is None:
+            MediaTrack.ffprobe_available = Utils.executable_available("ffprobe")
+        if MediaTrack.ffprobe_available:
             args = ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", self.filepath]
             process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
             output, _ = process.communicate()
@@ -369,11 +376,7 @@ class AudioTrack:
 
     def get_is_video(self):
         if self.is_video is None:
-            for ext in AudioTrack.video_types:
-                if self.filepath.endswith(ext):
-                    self.is_video = True
-                    return True
-            self.is_video = False
+            self.is_video = has_video_stream(self.filepath)
         return self.is_video
 
     def get_album_artwork(self):
@@ -397,7 +400,7 @@ class AudioTrack:
             if self.artwork is None:
                 return None
         try:
-            image_path = os.path.join(AudioTrack.temp_directory.name, 'image.jpg')
+            image_path = os.path.join(MediaTrack.temp_directory.name, 'image.jpg')
             with open(image_path, 'wb') as img:
                 img.write(self.artwork) # write artwork to new image
             return image_path
@@ -442,7 +445,7 @@ class AudioTrack:
         if (s[counter] == "/" or s[counter] == "-") and len(s) > counter + 2 and s[counter+1].isdigit():
             # Track name form: 1-03 Track three from first CD
             maybe_album_index = int(maybe_track_index)
-            _, maybe_track_index, maybe_title = AudioTrack.extract_ints_from_start(s[counter+1:])
+            _, maybe_track_index, maybe_title = MediaTrack.extract_ints_from_start(s[counter+1:])
             if len(maybe_title) > 0:
                 return maybe_album_index, maybe_track_index, maybe_title
 
@@ -452,7 +455,7 @@ class AudioTrack:
         return self.title
 
     def __eq__(self, value: object) -> bool:
-        return isinstance(value, AudioTrack) and self.filepath == value.filepath
+        return isinstance(value, MediaTrack) and self.filepath == value.filepath
 
     def __hash__(self):
         return hash(self.filepath)

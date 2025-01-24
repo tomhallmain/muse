@@ -1,6 +1,6 @@
 import random
 
-from library_data.audio_track import AudioTrack
+from library_data.media_track import MediaTrack
 from utils.globals import WorkflowType
 
 
@@ -30,10 +30,10 @@ class Playlist:
         next_track_path = self.in_sequence[self.current_song_index]
         self.pending_tracks.remove(next_track_path)
         self.played_tracks.append(next_track_path)
-        return AudioTrack(next_track_path)
+        return MediaTrack(next_track_path)
 
     def upcoming_track(self):
         if len(self.in_sequence) == 0 or (self.current_song_index + 1) >= len(self.in_sequence):
             return None
-        return AudioTrack(self.in_sequence[self.current_song_index + 1])
+        return MediaTrack(self.in_sequence[self.current_song_index + 1])
 

@@ -2,7 +2,7 @@
 import json
 import os
 
-from library_data.audio_track import AudioTrack
+from library_data.media_track import MediaTrack
 from library_data.composer import Composer
 from library_data.library_data import LibraryData, get_playback_config
 from utils.utils import Utils
@@ -51,7 +51,7 @@ class EntityExtractor:
         tracks_with_no_matches = []
 
         for song_filepath in self.playback_config.get_list():
-            if not self.extract(AudioTrack(song_filepath)):
+            if not self.extract(MediaTrack(song_filepath)):
                 tracks_with_no_matches.append(song_filepath)
 
         entities_not_found = self.libary_data.composers.get_composer_names()

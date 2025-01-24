@@ -3,7 +3,7 @@ from copy import deepcopy
 import time
 import traceback
 
-from library_data.audio_track import AudioTrack
+from library_data.media_track import MediaTrack
 from library_data.library_data import LibraryData
 from muse.muse import Muse
 from muse.playback import Playback
@@ -66,14 +66,14 @@ class Run:
 
         try:
             self.get_playback().run()
-            AudioTrack.cleanup_temp_directory()
+            MediaTrack.cleanup_temp_directory()
         except ScheduledShutdownException as e:
-            AudioTrack.cleanup_temp_directory()
+            MediaTrack.cleanup_temp_directory()
             if self.callbacks is not None:
                 print("Shutting down main thread! Good-bye.")
                 self.callbacks.shutdown_callback()
         except Exception as e:
-            AudioTrack.cleanup_temp_directory()
+            MediaTrack.cleanup_temp_directory()
             self.get_library_data().reset_extension()
             raise e
 

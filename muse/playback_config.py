@@ -3,7 +3,7 @@ import os
 import glob
 import time
 
-from library_data.audio_track import AudioTrack
+from library_data.media_track import MediaTrack
 from muse.playlist import Playlist
 from utils.app_info_cache import app_info_cache
 from utils.config import config
@@ -69,7 +69,7 @@ class PlaybackConfig:
 
     def get_audio_track_list(self):
         Utils.log("Building audio track cache")
-        return [AudioTrack(t) for t in self.get_list().in_sequence]
+        return [MediaTrack(t) for t in self.get_list().in_sequence]
 
     def _get_directory_files(self, directory):
         if directory not in PlaybackConfig.DIRECTORIES_CACHE or self.overwrite:
@@ -81,7 +81,7 @@ class PlaybackConfig:
 
     def next_track(self):
         if self.next_track_override is not None:
-            next_track = AudioTrack(self.next_track_override)
+            next_track = MediaTrack(self.next_track_override)
             next_track.set_is_extended()
             self.next_track_override = None
             PlaybackConfig.READY_FOR_EXTENSION = True
@@ -91,7 +91,7 @@ class PlaybackConfig:
 
     def upcoming_track(self):
         if self.next_track_override is not None:
-            upcoming_track = AudioTrack(self.next_track_override)
+            upcoming_track = MediaTrack(self.next_track_override)
             upcoming_track.set_is_extended()
             return upcoming_track
         l = self.get_list()
