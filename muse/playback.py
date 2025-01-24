@@ -1,9 +1,10 @@
-
+import platform
 from random import randint
 import time
 import vlc
 
 from muse.playback_config import PlaybackConfig
+from utils.config import config
 from utils.globals import Globals
 from utils.utils import Utils
 from utils.translations import I18N
@@ -184,7 +185,17 @@ class Playback:
     def register_new_song(self):
         Utils.log(f"Playing track file: {self.track.filepath}")
         self.vlc_media_player = vlc.MediaPlayer(self.track.filepath)
+        if self.track.get_is_video():
+            self.ensure_video_frame()
         self.update_ui()
+
+    def ensure_video_frame(self):
+        if not config.play_videos_in_separate_window:
+            # set the window id where to render VLC's video output
+            if platform.system() == 'Windows':
+                self.vlc_media_player.set_hwnd(self.callbacks.get_media_frame_handle())
+            else:
+                self.vlc_media_player.set_xwindow(self.callbacks.get_media_frame_handle()) # this line messes up windows
 
     def update_ui(self):
         if self.callbacks is None:

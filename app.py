@@ -97,6 +97,7 @@ class App():
 #        self.job_queue_preset_schedules = JobQueue("Preset Schedules")
         self.runner_app_config = self.load_info_cache()
         self.config_history_index = 0
+        self.fullscreen = False
         self.current_run = Run(RunConfig(placeholder=True))
         self.app_actions = AppActions(
             self.update_status_text,
@@ -105,6 +106,7 @@ class App():
             self.update_progress_bar,
             self.update_label_extension_status,
             self.update_album_artwork,
+            self.get_media_frame_handle,
             self.on_closing)
 
         # Sidebar
@@ -213,6 +215,8 @@ class App():
 
         self.master.bind("<Control-Return>", self.run)
         self.master.bind("<Shift-R>", self.run)
+        self.master.bind("<F11>", self.toggle_fullscreen)
+        self.master.bind("<Shift-F>", lambda e: self.check_focus(e, self.toggle_fullscreen))
         self.master.bind("<Prior>", lambda event: self.one_config_away(change=1))
         self.master.bind("<Next>", lambda event: self.one_config_away(change=-1))
         self.master.bind("<Home>", lambda event: self.first_config())
@@ -542,15 +546,14 @@ class App():
 
     def update_album_artwork(self, image_filepath):
         self.media_frame.show_image(image_filepath)
+    
+    def get_media_frame_handle(self):
+        return self.media_frame.winfo_id()
 
-    # def open_presets_window(self):
-    #     top_level = Toplevel(self.master, bg=AppStyle.BG_COLOR)
-    #     top_level.title(_("Presets Window"))
-    #     top_level.geometry(PresetsWindow.get_geometry(is_gui=True))
-    #     try:
-    #         presets_window = PresetsWindow(top_level, self.toast, self.construct_preset, self.set_widgets_from_preset)
-    #     except Exception as e:
-    #         self.handle_error(str(e), title="Presets Window Error")
+    def toggle_fullscreen(self, event=None):
+        self.fullscreen = not self.fullscreen
+        self.master.attributes("-fullscreen", self.fullscreen)
+        self.sidebar.grid_remove() if self.fullscreen and self.sidebar.winfo_ismapped() else self.sidebar.grid()
 
     def alert(self, title, message, kind="info", hidemain=True) -> None:
         if kind not in ("error", "warning", "info"):

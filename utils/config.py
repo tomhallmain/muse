@@ -53,6 +53,7 @@ class Config:
         self.enable_long_track_splitting = False
         self.show_videos_in_main_window = False
         self.long_track_splitting_time_cutoff_minutes = 20
+        self.play_videos_in_separate_window = False
 
         self.server_port = 6000
         self.server_password = "<PASSWORD>"
@@ -104,6 +105,7 @@ class Config:
             "enable_dynamic_volume",
             "enable_library_extender",
             "enable_long_track_splitting",
+            "play_videos_in_separate_window",
         )
         self.set_values(dict,
             "muse_config",

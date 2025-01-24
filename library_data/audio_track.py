@@ -65,6 +65,7 @@ class AudioTrack:
     non_numeric_chars = re.compile(r"[^0-9\.\-]+")
     temp_directory = tempfile.TemporaryDirectory(prefix="tmp_muse")
     ffprobe_available = None
+    video_types = [".gif", ".mp4", ".mkv", ".webm", ".avi", ".mov", ".wmv", ".flv", ".mpeg", ".m4a"]
 
     @staticmethod
     def cleanup_temp_directory():
@@ -106,6 +107,7 @@ class AudioTrack:
         self.searchable_composer = None
         self.searchable_genre = None
         self._is_extended = False
+        self.is_video = None
 
         if self.filepath is not None and self.filepath != "":
             self.basename = os.path.basename(filepath)
@@ -290,7 +292,7 @@ class AudioTrack:
             temp_basename = f"{self.basename} part.{self.ext}"
         else:
             temp_basename = f"{self.basename} ({idx}-{total}){self.ext}"
-        temp_filepath = os.path.join(AudioTrack.temp_directory.name, temp_basename)
+        temp_filepath = os.path.join(AudioTrack.temp_directory.name, temp_basename) # TODO this is causing the temp directory cleanup to fail probably, need to fix
         args  = ["ffmpeg", "-i", self.filepath, "-ss", f"{start}", "-to", f"{end}", "-c:a", "copy", temp_filepath]
         process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
         output, _ = process.communicate()
@@ -365,9 +367,20 @@ class AudioTrack:
             return f"{self.readable_title()} - {self.readable_album()}"            
         return self.readable_title()
 
+    def get_is_video(self):
+        if self.is_video is None:
+            for ext in AudioTrack.video_types:
+                if self.filepath.endswith(ext):
+                    self.is_video = True
+                    return True
+            self.is_video = False
+        return self.is_video
+
     def get_album_artwork(self):
         # music-tags libary may have already set this attribute
         if self.artwork is None:
+            if self.get_is_video():
+                return None
             # mutagen for special cases
             try:
                 _file = File(self.filepath) # mutagen
