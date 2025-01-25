@@ -31,6 +31,7 @@ class Config:
         self.artists_file = "artists.json"
         self.composers_file = "composers.json"
         self.forms_file = "forms.json"
+        self.instruments_file = "instruments.json"
         self.blacklist_file = "blacklist.json"
 
         self.open_weather_city = "Washington"
@@ -85,6 +86,7 @@ class Config:
             "artists_file",
             "composers_file",
             "forms_file",
+            "instruments_file",
             "blacklist_file",
             "open_weather_city",
             "open_weather_api_key",
@@ -122,6 +124,7 @@ class Config:
             "artists_file",
             "composers_file",
             "forms_file",
+            "instruments_file",
             "blacklist_file",
         )
 

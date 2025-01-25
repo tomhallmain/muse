@@ -96,7 +96,6 @@ class App():
         self.master.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.progress_bar = None
         self.job_queue = JobQueue("Playlist Runs")
-#        self.job_queue_preset_schedules = JobQueue("Preset Schedules")
         self.runner_app_config = self.load_info_cache()
         self.config_history_index = 0
         self.fullscreen = False

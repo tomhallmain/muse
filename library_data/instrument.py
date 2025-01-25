@@ -7,13 +7,14 @@ from utils.utils import Utils
 
 
 class Instrument:
-    def __init__(self, name, transliterations=[], notes={}):
+    def __init__(self, name):
         self.name = name
-        self.transliterations = transliterations if len(transliterations) > 0 else [name]
-        self.notes = notes
+        # TODO transliterations and notes
+        # self.transliterations = transliterations if len(transliterations) > 0 else [name]
+        # self.notes = notes
 
-    def new_note(self, key="New Note", value=""):
-        self.notes[key] = value
+    # def new_note(self, key="New Note", value=""):
+        # self.notes[key] = value
 
     @staticmethod
     def from_json(json):
@@ -36,25 +37,35 @@ class InstrumentsDataSearch:
                 return True
         return False
 
-    def test(self, composer, strict=True):
+    def test(self, instrument, strict=True):
         if len(self.results) > self.max_results:
             return None
         if len(self.instrument) > 0:
-            pattern = re.compile(f"(^|\\W){self.instrument}") if strict else ""
-            for indicator in composer.transliterations:
-                indicator_lower = indicator.lower()
-                if strict:
-                    if indicator_lower == self.instrument or re.search(pattern, indicator_lower):
-                        self.results.append(composer)
-                        return True
-                else:
-                    if self.instrument in indicator_lower:
-                        self.results.append(composer)
-                        return True
+            instrument_lower = instrument.lower()
+            if strict:
+                pattern = re.compile(f"(^|\\W){self.instrument}")
+                if instrument_lower == self.instrument or re.search(pattern, instrument_lower):
+                    self.results.append(instrument)
+                    return True
+            else:
+                if self.instrument in instrument_lower:
+                    self.results.append(instrument)
+                    return True
+            # for indicator in instrument.transliterations:
+            #     indicator_lower = indicator.lower()
+            #     if strict:
+            #         if indicator_lower == self.instrument or re.search(pattern, indicator_lower):
+            #             self.results.append(instrument)
+            #             return True
+            #     else:
+            #         if self.instrument in indicator_lower:
+            #             self.results.append(instrument)
+            #             return True
         return False
 
     def sort_results_by_transliterations(self):
-        self.results.sort(key=lambda composer: len(composer.transliterations), reverse=True)
+        self.results.sort()
+#        self.results.sort(key=lambda instrument: len(instrument.transliterations), reverse=True)
 
     def get_results(self):
         return self.results
@@ -67,10 +78,10 @@ class InstrumentsData:
         self._get_instruments()
 
     def _get_instruments(self):
-        with open(config.forms_file, 'r', encoding="utf-8") as f:
-            forms = json.load(f)
-        for name, form in forms.items():
-            self._instruments[name] = Instrument.from_json(form)
+        with open(config.instruments_file, 'r', encoding="utf-8") as f:
+            instruments = json.load(f)
+        for instrument in instruments:
+            self._instruments[instrument] = Instrument(instrument)
 
     def get_instrument_names(self):
         return [instrument.name for instrument in self._instruments.values()]
@@ -78,20 +89,21 @@ class InstrumentsData:
     def get_data(self, instrument_name):
         if instrument_name in self._instruments:
             return self._instruments[instrument_name]
-        for instrument in self._instruments.values():
-            for value in instrument.transliterations:
-                if instrument_name in value or value in instrument_name:
-                    return instrument
+        for instrument in self._instruments.keys():
+            # for value in instrument.transliterations:
+            if instrument_name in instrument or instrument in instrument_name:
+                return instrument
         return None
 
     def get_instruments(self, audio_track):
         matches = []
         title_lower = audio_track.title.lower()
         album_lower = audio_track.album.lower() if audio_track.album is not None else ""
-        for instrument in self._instruments.values():
-            for value in instrument.transliterations:
-                if value in title_lower or value in album_lower:
-                    matches += [instrument.name]
+        for instrument in self._instruments.keys():
+            # for value in instrument.transliterations:
+                # if value in title_lower or value in album_lower:
+            if instrument in title_lower or instrument in album_lower:
+                matches += [instrument]
         return matches
 
     def do_search(self, data_search):

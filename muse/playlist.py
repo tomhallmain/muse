@@ -6,6 +6,8 @@ from utils.config import config
 from utils.globals import PlaylistSortType
 from utils.utils import Utils
 
+## TODO need a way to exclude certain artists from the smart sort based on recent plays
+
 
 class Playlist:
     recently_played_filepaths = []
@@ -152,7 +154,7 @@ class Playlist:
         # As earlier tracks are reshuffled to the end of the playlist, later tracks 
         # may also have been played recently and thus also need to be reshuffled.
         attempts = 0
-        max_attempts = 10
+        max_attempts = 30
         recently_played_check_count = config.playlist_recently_played_check_count
         swap_list = list(getattr(Playlist, list_attr))
         # if track_attr == "genre":
