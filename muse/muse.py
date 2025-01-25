@@ -180,19 +180,20 @@ class Muse:
 
     def sign_off(self, now):
         now_general_word = _("tonight") if (now.hour < 5 or now.hour > 19) else _("today")
+        tomorrow = datetime.datetime(now.year, now.month, (now.day if now.hour < 5 else now.day + 1), hour=7, tzinfo=now.tzinfo)
         self.voice.prepare_to_say(_("The scheduled shutdown time has arrived. That's it for {0}.").format(now_general_word))
-        tomorrow = datetime.datetime(now.year, now.month, now.day + 1, hour=7, tzinfo=now.tzinfo)
         tomorrow_schedule = SchedulesManager.get_active_schedule(tomorrow)
         if tomorrow_schedule is not None:
-            self.voice.prepare_to_say(_("Tomorrow you'll hear from {0}.").format(tomorrow_schedule.voice))
-            next_weekday_for_this_voice = SchedulesManager.get_next_weekday_index_for_voice(self._schedule.voice, tomorrow)
-            if next_weekday_for_this_voice is not None:
-                if next_weekday_for_this_voice == now.weekday():
-                    self.voice.prepare_to_say(_("The next time I'll be on is next week, at the same time."))
-                elif tomorrow_schedule.voice == self._schedule.voice and next_weekday_for_this_voice == tomorrow.weekday():
-                    self.voice.prepare_to_say(_("I'll be on tomorrow."))
-                elif len(self._schedule.weekday_options) < 7:
-                    self.voice.prepare_to_say(_("I'll be on again this coming {0}.").format(I18N.day_of_the_week(next_weekday_for_this_voice)))
+            if tomorrow_schedule.voice == self._schedule.voice:
+                self.voice.prepare_to_say(_("I'll be on again tomorrow."))
+            else:
+                self.voice.prepare_to_say(_("Tomorrow you'll hear from {0}.").format(tomorrow_schedule.voice))
+                next_weekday_for_this_voice = SchedulesManager.get_next_weekday_index_for_voice(self._schedule.voice, tomorrow)
+                if next_weekday_for_this_voice is not None:
+                    if next_weekday_for_this_voice == now.weekday():
+                        self.voice.prepare_to_say(_("The next time I'll be on is next week, at the same time."))
+                    elif len(self._schedule.weekday_options) < 7:
+                        self.voice.prepare_to_say(_("I'll be on again this coming {0}.").format(I18N.day_of_the_week(next_weekday_for_this_voice)))
         self.voice.finish_speaking()
         self._schedule = tomorrow_schedule
 

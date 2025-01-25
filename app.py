@@ -12,7 +12,8 @@ from ttkthemes import ThemedTk
 
 from utils.globals import Globals, PlaylistSortType
 
-from muse.playback_config import PlaybackConfig
+from library_data.library_data import LibraryData
+from muse.playlist import Playlist
 from muse.run import Run
 from muse.run_config import RunConfig
 from muse.schedules_manager import SchedulesManager
@@ -31,6 +32,7 @@ from utils.config import config
 from utils.globals import PlaylistSortType
 from utils.job_queue import JobQueue
 from utils.runner_app_config import RunnerAppConfig
+from utils.temp_dir import TempDir
 from utils.translations import I18N
 from utils.utils import Utils
 
@@ -205,7 +207,7 @@ class App():
         self.master.bind("<Control-Return>", self.run)
         self.master.bind("<Shift-R>", self.run)
         self.master.bind("<F11>", self.toggle_fullscreen)
-        self.master.bind("<Shift-F>", lambda e: self.check_focus(e, self.toggle_fullscreen))
+        self.master.bind("<Shift-F>", self.toggle_fullscreen)
         self.master.bind("<Prior>", lambda event: self.one_config_away(change=1))
         self.master.bind("<Next>", lambda event: self.one_config_away(change=-1))
         self.master.bind("<Home>", lambda event: self.first_config())
@@ -252,6 +254,7 @@ class App():
         #         self.server.stop()
         #     except Exception as e:
         #         Utils.log_yellow(f"Error stopping server: {e}")
+        TempDir.cleanup()
         self.master.destroy()
 
     def quit(self, event=None):
@@ -266,14 +269,17 @@ class App():
                 if self.config_history_index > 0:
                     self.config_history_index -= 1
         app_info_cache.set("config_history_index", self.config_history_index)
-        PlaybackConfig.store_directory_cache()
+        LibraryData.store_caches()
+        Playlist.store_recently_played_lists()
         PlaylistWindow.store_named_playlist_configs()
         SchedulesManager.store_schedules()
         app_info_cache.store()
 
     def load_info_cache(self):
         try:
-            PlaybackConfig.load_directory_cache()
+            LibraryData.load_directory_cache()
+            LibraryData.load_media_track_cache()
+            Playlist.load_recently_played_lists()
             PlaylistWindow.load_named_playlist_configs()
             SchedulesManager.set_schedules()
             self.config_history_index = app_info_cache.get("config_history_index", default_val=0)
@@ -322,7 +328,6 @@ class App():
         self.set_workflow_type(self.runner_app_config.workflow_type)
         # self.set_widget_value(self.resolutions_box, self.runner_app_config.resolutions)
 
-        self.total.set(str(self.runner_app_config.total))
         self.delay.set(str(self.runner_app_config.delay_time_seconds))
         self.overwrite.set(self.runner_app_config.overwrite)
         self.muse.set(self.runner_app_config.muse)
@@ -427,8 +432,8 @@ class App():
         # self.set_concepts_dir()
         args = RunConfig()
         args.workflow_tag = self.workflow.get()
-        args.total = self.total.get()
-        args.directories = self.get_directories()
+        args.total = "-1"
+        args.is_all_tracks, args.directories = self.get_directories()
         args.overwrite = self.overwrite.get()
         args.muse = self.muse.get()
         args.extend = self.extend.get()
@@ -491,13 +496,13 @@ class App():
         selection = self.directory.get()
         all_dirs = config.get_subdirectories()
         if selection == "ALL":
-            return list(all_dirs.keys())
+            return True, list(all_dirs.keys())
         else:
             for full_path, key in all_dirs.items():
                 if key == selection:
                     directories.append(full_path)
                     break
-            return directories
+            return False, directories
 
     def update_status_text(self, status):
         text = Utils._wrap_text_to_fit_length(status[:500], 100)

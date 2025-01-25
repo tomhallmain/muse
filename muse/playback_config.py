@@ -1,18 +1,14 @@
 import datetime
-import os
-import glob
 import time
 
 from library_data.media_track import MediaTrack
 from muse.playlist import Playlist
-from utils.app_info_cache import app_info_cache
 from utils.config import config
-from utils.globals import MediaFileType, PlaylistSortType
+from utils.globals import PlaylistSortType
 from utils.utils import Utils
 
 
 class PlaybackConfig:
-    DIRECTORIES_CACHE = {}
     LAST_EXTENSION_PLAYED = datetime.datetime.now()
     OPEN_CONFIGS = []
     READY_FOR_EXTENSION = True
@@ -21,15 +17,7 @@ class PlaybackConfig:
     def new_playback_config(override_dir=None):
         return PlaybackConfig(override_dir=override_dir)
 
-    @staticmethod
-    def store_directory_cache():
-        app_info_cache.set("directories_cache", PlaybackConfig.DIRECTORIES_CACHE)
-
-    @staticmethod
-    def load_directory_cache():
-        PlaybackConfig.DIRECTORIES_CACHE = app_info_cache.get("directories_cache", default_val={})
-
-    def __init__(self, args=None, override_dir=None):
+    def __init__(self, args=None, override_dir=None, data_callbacks=None):
         self.total = int(args.total) if args else -1
         self.type = PlaylistSortType[args.workflow_tag] if args else PlaylistSortType.RANDOM
         self.directories = args.directories if args else ([override_dir] if override_dir else [])
@@ -37,7 +25,8 @@ class PlaybackConfig:
         self.enable_dynamic_volume = args.enable_dynamic_volume if args else True
         self.enable_long_track_splitting  = args.enable_long_track_splitting if args else False
         self.long_track_splitting_time_cutoff_minutes = args.long_track_splitting_time_cutoff_minutes if args else 20
-        self.list = Playlist()
+        self.data_callbacks = data_callbacks
+        self.list = Playlist(data_callbacks=self.data_callbacks)
         self.next_track_override = None
         PlaybackConfig.OPEN_CONFIGS.append(self)
 
@@ -53,31 +42,9 @@ class PlaybackConfig:
     def get_list(self):
         if self.list.is_valid():
             return self.list
-        l = []
-        count = 0
-        for directory in self.directories:
-            for f in self._get_directory_files(directory):
-                if MediaFileType.is_media_filetype(f):
-                    l += [os.path.join(directory, f)]
-                    count += 1
-                    if count > 100000:
-                        break
-                elif os.path.isfile(f) and config.debug:
-                    Utils.log("Skipping non-media file: " + f)
-        self.list = Playlist(l, self.type)
+        l = self.data_callbacks.get_all_filepaths(self.directories)
+        self.list = Playlist(l, self.type, data_callbacks=self.data_callbacks)
         return self.list
-
-    def get_audio_track_list(self):
-        Utils.log("Building audio track cache")
-        return [MediaTrack(t) for t in self.get_list().sorted_tracks]
-
-    def _get_directory_files(self, directory):
-        if directory not in PlaybackConfig.DIRECTORIES_CACHE or self.overwrite:
-            files = glob.glob(os.path.join(directory, "**/*"), recursive = True)
-            PlaybackConfig.DIRECTORIES_CACHE[directory] = files
-        else:
-            files = PlaybackConfig.DIRECTORIES_CACHE[directory]
-        return files
 
     def next_track(self):
         if self.next_track_override is not None:

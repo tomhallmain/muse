@@ -1,15 +1,21 @@
 from enum import Enum
+import glob
 import os
+import pickle
 import random
 import subprocess
+import threading
 
 from extensions.library_extender import LibraryExtender
 from extensions.soup_utils import SoupUtils
 from library_data.blacklist import blacklist
 from library_data.composer import composers_data
+from library_data.library_data_callbacks import LibraryDataCallbacks
+from library_data.media_track import MediaTrack
 from muse.playback_config import PlaybackConfig
-from muse.run_config import RunConfig
+from utils.app_info_cache import app_info_cache
 from utils.config import config
+from utils.globals import MediaFileType
 from utils.job_queue import JobQueue
 from utils.utils import Utils
 from utils.translations import I18N
@@ -17,15 +23,6 @@ from utils.translations import I18N
 _ = I18N._
 
 libary_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)))
-
-
-
-def get_playback_config():
-    run_config = RunConfig()
-    run_config.workflow_tag = "SEQUENCE"
-    run_config.directories = list(config.get_subdirectories().keys())
-    PlaybackConfig.load_directory_cache()
-    return PlaybackConfig(run_config)
 
 
 class LibraryDataSearch:
@@ -90,14 +87,85 @@ class TrackAttribute(Enum):
 class LibraryData:
     extension_thread_started = False
     extension_thread_delayed_complete = False
+    DIRECTORIES_CACHE = {}
+    MEDIA_TRACK_CACHE = {}
+    all_tracks = [] # this list should be contained within the values of MEDIA_TRACK_CACHE, but may not be equivalent to the values
     EXTENSION_QUEUE = JobQueue("Extension queue")
     DELAYED_THREADS = []
+    get_tracks_lock = threading.Lock()
 
-    def __init__(self, callbacks=None):
-        self.playback_config = get_playback_config()
-        self.audio_track_cache = self.playback_config.get_audio_track_list()
+    @staticmethod
+    def store_caches():
+        app_info_cache.set("directories_cache", LibraryData.DIRECTORIES_CACHE)
+        try:
+            with open("app_media_track_cache", "wb") as f:
+                pickle.dump(LibraryData.MEDIA_TRACK_CACHE,  f)
+        except Exception as e:
+            Utils.log_red(e)
+
+    @staticmethod
+    def load_directory_cache():
+        LibraryData.DIRECTORIES_CACHE = app_info_cache.get("directories_cache", default_val={})
+    
+    @staticmethod
+    def load_media_track_cache():
+        try:
+            with open("app_media_track_cache", "rb") as f:
+                LibraryData.MEDIA_TRACK_CACHE = pickle.load(f)
+        except FileNotFoundError as e:
+            Utils.log("No media track cache found, creating new one")
+
+    @staticmethod
+    def get_directory_files(directory, overwrite=False):
+        if directory not in LibraryData.DIRECTORIES_CACHE or overwrite:
+            files = glob.glob(os.path.join(directory, "**/*"), recursive = True)
+            LibraryData.DIRECTORIES_CACHE[directory] = files
+        else:
+            files = LibraryData.DIRECTORIES_CACHE[directory]
+        return files
+
+    @staticmethod
+    def get_all_filepaths(directories):
+        l = []
+        count = 0
+        for directory in directories:
+            for f in LibraryData.get_directory_files(directory):
+                if MediaFileType.is_media_filetype(f):
+                    l += [os.path.join(directory, f)]
+                    count += 1
+                    if count > 100000:
+                        break
+                elif config.debug and os.path.isfile(f):
+                    Utils.log("Skipping non-media file: " + f)
+        return l
+
+    @staticmethod
+    def get_all_tracks():
+        with LibraryData.get_tracks_lock:
+            if len(LibraryData.all_tracks) == 0:
+                all_directories = config.get_all_directories()
+                LibraryData.all_tracks = [LibraryData.get_track(f) for f in LibraryData.get_all_filepaths(all_directories)]
+            return LibraryData.all_tracks
+
+    @staticmethod
+    def get_track(filepath):
+        if filepath in LibraryData.MEDIA_TRACK_CACHE:
+            return LibraryData.MEDIA_TRACK_CACHE[filepath]
+        else:
+            track = MediaTrack(filepath)
+            LibraryData.MEDIA_TRACK_CACHE[filepath] = track
+            return track
+
+
+    def __init__(self, ui_callbacks=None):
+        LibraryData.load_directory_cache()
         self.composers = composers_data
-        self.callbacks = callbacks
+        self.ui_callbacks = ui_callbacks
+        self.data_callbacks = LibraryDataCallbacks(
+            LibraryData.get_all_filepaths,
+            LibraryData.get_all_tracks,
+            LibraryData.get_track,
+        )
 
     def do_search(self, library_data_search):
         if not isinstance(library_data_search, LibraryDataSearch):
@@ -106,7 +174,7 @@ class LibraryData:
             Utils.log_yellow('Invalid search query')
             return library_data_search
 
-        for audio_track in self.audio_track_cache:
+        for audio_track in LibraryData.get_all_tracks():
             if library_data_search.test(audio_track) is None:
                 break
 
@@ -120,6 +188,7 @@ class LibraryData:
         if LibraryData.extension_thread_started:
             return
         Utils.log('Starting extensions thread')
+        LibraryData.get_all_tracks()
         Utils.start_thread(self._run_extensions, use_asyncio=False, args=(initial_sleep,))
         LibraryData.extension_thread_started = True
 
@@ -145,8 +214,8 @@ class LibraryData:
                 sleep_time_seconds -= check_cadence
                 if sleep_time_seconds <= 0:
                     break
-                if self.callbacks is not None:
-                    self.callbacks.update_extension_status(_("Extension thread waiting for {0} minutes").format(round(float(sleep_time_seconds) / 60)))
+                if self.ui_callbacks is not None:
+                    self.ui_callbacks.update_extension_status(_("Extension thread waiting for {0} minutes").format(round(float(sleep_time_seconds) / 60)))
                 Utils.long_sleep(check_cadence, "extension thread")
         while True:
             self._extend_by_random_composer()
@@ -157,8 +226,8 @@ class LibraryData:
                 sleep_time_minutes -= check_cadence
                 if sleep_time_minutes <= 0:
                     break
-                if LibraryData.extension_thread_delayed_complete and self.callbacks is not None:
-                    self.callbacks.update_extension_status(_("Extension thread waiting for {0} minutes").format(sleep_time_minutes))
+                if LibraryData.extension_thread_delayed_complete and self.ui_callbacks is not None:
+                    self.ui_callbacks.update_extension_status(_("Extension thread waiting for {0} minutes").format(sleep_time_minutes))
                 Utils.long_sleep(check_cadence * 60, "extension thread")
 
     def _extend_randomly(self):
@@ -294,8 +363,8 @@ class LibraryData:
                 time_seconds -= check_cadence
                 if time_seconds <= 0:
                     break
-                if self.callbacks is not None:
-                    self.callbacks.update_extension_status(_("Extension \"{0}\" waiting for {1} minutes").format(SoupUtils.clean_html(b.n), round(float(time_seconds) / 60)))
+                if self.ui_callbacks is not None:
+                    self.ui_callbacks.update_extension_status(_("Extension \"{0}\" waiting for {1} minutes").format(SoupUtils.clean_html(b.n), round(float(time_seconds) / 60)))
                 Utils.long_sleep(check_cadence, "Extension thread delay wait")
         a = b.da(g=config.directories[0])
         e1 = " Destination: "
@@ -325,8 +394,8 @@ class LibraryData:
             else:
                 _f = _e
         PlaybackConfig.assign_extension(_f)
-        if self.callbacks is not None:
-            self.callbacks.update_extension_status(_("Extension \"{0}\" ready").format(SoupUtils.clean_html(b.n)))
+        if self.ui_callbacks is not None:
+            self.ui_callbacks.update_extension_status(_("Extension \"{0}\" ready").format(SoupUtils.clean_html(b.n)))
         LibraryData.extension_thread_delayed_complete = True
 
     def check_dir_for_close_match(self, t):

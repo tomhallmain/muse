@@ -3,7 +3,6 @@ from copy import deepcopy
 import time
 import traceback
 
-from library_data.media_track import MediaTrack
 from library_data.library_data import LibraryData
 from muse.muse import Muse
 from muse.playback import Playback
@@ -12,6 +11,7 @@ from muse.run_config import RunConfig
 from muse.schedules_manager import ScheduledShutdownException
 from muse.workflow import WorkflowPrompt
 from utils.config import config
+from utils.temp_dir import TempDir
 from utils.translations import I18N
 from utils.utils import Utils
 
@@ -66,21 +66,21 @@ class Run:
 
         try:
             self.get_playback().run()
-            MediaTrack.cleanup_temp_directory()
+            TempDir.cleanup()
         except ScheduledShutdownException as e:
-            MediaTrack.cleanup_temp_directory()
+            TempDir.cleanup()
             if self.callbacks is not None:
                 print("Shutting down main thread! Good-bye.")
                 self.callbacks.shutdown_callback()
         except Exception as e:
-            MediaTrack.cleanup_temp_directory()
+            TempDir.cleanup()
             self.get_library_data().reset_extension()
             raise e
 
         self.last_config = deepcopy(self.get_playback()._playback_config)
 
     def do_workflow(self, workflow):
-        playback_config = PlaybackConfig(self.args)
+        playback_config = PlaybackConfig(args=self.args, data_callbacks=self.library_data.data_callbacks)
         self.playback = Playback(playback_config, self.callbacks, self)
         self.editing = False
         self.switching_params = False

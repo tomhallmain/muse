@@ -54,6 +54,7 @@ class Config:
         self.show_videos_in_main_window = False
         self.long_track_splitting_time_cutoff_minutes = 20
         self.play_videos_in_separate_window = False
+        self.playlist_recently_played_check_count = 1000
 
         self.server_port = 6000
         self.server_password = "<PASSWORD>"
@@ -93,7 +94,8 @@ class Config:
         )
         self.set_values(int,
             "max_chunk_tokens",
-            "long_track_splitting_time_cutoff_minutes"
+            "long_track_splitting_time_cutoff_minutes",
+            "playlist_recently_played_check_count",
         )
         self.set_values(list,
             "directories",
@@ -214,7 +216,11 @@ class Config:
             except Exception:
                 pass
         return subdirectories
-    
+
+    def get_all_directories(self):
+        subdirectories_map = self.get_subdirectories()
+        return list(subdirectories_map.keys())
+
     def matches_master_directory(self, directory):
         directory = os.path.normpath(os.path.realpath(directory))
         for d in self.directories:

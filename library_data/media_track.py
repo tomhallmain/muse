@@ -3,13 +3,13 @@ import os
 import random
 import re
 import subprocess
-import tempfile
 
 # from ops.artists import Artists
 from library_data.composer import composers_data
 from library_data.form import forms_data
 from library_data.instrument import instruments_data
 from utils.config import config
+from utils.temp_dir import TempDir
 from utils.translations import I18N
 from utils.utils import Utils
 
@@ -73,16 +73,7 @@ dict_keys(['tag_aliases', 'tag_map', 'resolvers', 'singular_keys', 'filename', '
 class MediaTrack:
     music_tag_ignored_tags = ['comment', 'isrc', 'lyrics', 'artwork']
     non_numeric_chars = re.compile(r"[^0-9\.\-]+")
-    temp_directory = tempfile.TemporaryDirectory(prefix="tmp_muse")
     ffprobe_available = None
-
-    @staticmethod
-    def cleanup_temp_directory():
-        try:
-            MediaTrack.temp_directory.cleanup()
-        except Exception as e:
-            print(e)
-
 
     def __init__(self, filepath):
         self.filepath = filepath
@@ -154,7 +145,7 @@ class MediaTrack:
             except Exception as e:
                 pass
                 # Utils.log(f"Failed to gather track details for track {self.title}")
-            
+
             if self.title is not None:
                 self.searchable_title = Utils.ascii_normalize(self.title.lower())
             if self.artist is not None:
@@ -303,7 +294,7 @@ class MediaTrack:
             temp_basename = f"{self.basename} part.{self.ext}"
         else:
             temp_basename = f"{self.basename} ({idx}-{total}){self.ext}"
-        temp_filepath = os.path.join(MediaTrack.temp_directory.name, temp_basename) # TODO this is causing the temp directory cleanup to fail probably, need to fix
+        temp_filepath = TempDir.get().get_filepath(temp_basename)
         args  = ["ffmpeg", "-i", self.filepath, "-ss", f"{start}", "-to", f"{end}", "-c:a", "copy", temp_filepath]
         process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
         output, _ = process.communicate()
@@ -404,13 +395,15 @@ class MediaTrack:
             if self.artwork is None:
                 return None
         try:
-            image_path = os.path.join(MediaTrack.temp_directory.name, 'image.jpg')
-            with open(image_path, 'wb') as img:
-                img.write(self.artwork) # write artwork to new image
-            return image_path
+            # write artwork to new image
+            return TempDir.get().add_file('image.jpg', file_content=self.artwork, write_flags='wb')
         except Exception as e:
             Utils.log_red(f"Could not write album artwork to temp file: {e}")
             return None
+
+    def get_genre(self):
+        # TODO - get genre from file somehow
+        return None
 
     def get_form(self):
         if self.form is None:

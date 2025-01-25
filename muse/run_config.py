@@ -7,6 +7,7 @@ class RunConfig:
         self.args = args
         self.workflow_tag = PlaylistSortType.RANDOM.name
         self.total = '-1'
+        self.is_all_tracks = False
         self.directories = self.get("directories")
         self.overwrite = False
         self.muse = True
