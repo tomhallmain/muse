@@ -7,6 +7,8 @@ import tempfile
 
 # from ops.artists import Artists
 from library_data.composer import composers_data
+from library_data.form import forms_data
+from library_data.instrument import instruments_data
 from utils.config import config
 from utils.translations import I18N
 from utils.utils import Utils
@@ -100,6 +102,8 @@ class MediaTrack:
         self.max_volume = -9999.0
         self.length = -1.0
         self.artwork = None
+        self.form = None
+        self.instrument = None
 
         # Unused tags:
         # bitrate : 128000
@@ -407,6 +411,26 @@ class MediaTrack:
         except Exception as e:
             Utils.log_red(f"Could not write album artwork to temp file: {e}")
             return None
+
+    def get_form(self):
+        if self.form is None:
+            # For now, just save the first form found
+            forms = forms_data.get_forms(self)
+            if len(forms) > 0:
+                self.form = forms[0]
+            else:
+                self.form = ""
+        return self.form
+
+    def get_instrument(self):
+        if self.instrument is None:
+            # For now, just save the first instrument found
+            instruments = instruments_data.get_instruments(self)
+            if len(instruments) > 0:
+                self.instrument = instruments[0]
+            else:
+                self.instrument = ""
+        return self.instrument
 
     @staticmethod
     def _prep_track_text(text):

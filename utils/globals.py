@@ -58,7 +58,16 @@ class MediaFileType(Enum):
                 return True
         return False
 
-class WorkflowType(Enum):
+class PlaylistSortType(Enum):
     RANDOM = 'RANDOM'
     SEQUENCE = 'SEQUENCE'
+    ALBUM_SHUFFLE = 'ALBUM_SHUFFLE'
+    ARTIST_SHUFFLE = 'ARTIST_SHUFFLE'
+    GENRE_SHUFFLE = 'GENRE_SHUFFLE'
+    FORM_SHUFFLE = 'FORM_SHUFFLE'
+    COMPOSER_SHUFFLE = 'COMPOSER_SHUFFLE'
+    INSTRUMENT_SHUFFLE = 'INSTRUMENT_SHUFFLE'
+
+
+
 

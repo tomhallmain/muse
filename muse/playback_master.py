@@ -1,6 +1,6 @@
 
 from utils.app_info_cache import app_info_cache
-from utils.globals import WorkflowType
+from utils.globals import PlaylistSortType
 
 
 class PlaybackMaster:
@@ -27,7 +27,7 @@ class PlaybackMaster:
             self.current_playback_config_index = 0
         self.current_playback_config = self.playback_configs[self.current_playback_config_index]
         next_track = self.current_playback_config.next_track()
-        if self.current_playback_config.type == WorkflowType.RANDOM:
+        if self.current_playback_config.type == PlaylistSortType.RANDOM:
             taper_history_to = min(self.current_playback_config.remaining_count(), PlaybackMaster.playlist_history_max_size)
             while next_track.get_track_details() in PlaybackMaster.playlist_history[:taper_history_to]:
                 next_track = self.current_playback_config.next_track()

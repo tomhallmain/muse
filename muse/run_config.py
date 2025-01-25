@@ -1,11 +1,11 @@
 
-from utils.globals import Globals, WorkflowType # must import first
+from utils.globals import Globals, PlaylistSortType # must import first
 
 class RunConfig:
 
     def __init__(self, args=None, placeholder=False):
         self.args = args
-        self.workflow_tag = WorkflowType.RANDOM.name
+        self.workflow_tag = PlaylistSortType.RANDOM.name
         self.total = '-1'
         self.directories = self.get("directories")
         self.overwrite = False

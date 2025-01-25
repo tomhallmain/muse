@@ -10,7 +10,7 @@ from tkinter.ttk import Button, Entry, OptionMenu, Progressbar, Scale
 from lib.autocomplete_entry import AutocompleteEntry, matches
 from ttkthemes import ThemedTk
 
-from utils.globals import Globals, WorkflowType
+from utils.globals import Globals, PlaylistSortType
 
 from muse.playback_config import PlaybackConfig
 from muse.run import Run
@@ -28,7 +28,7 @@ from ui.track_details_window import TrackDetailsWindow
 from ui.weather_window import WeatherWindow
 from utils.app_info_cache import app_info_cache
 from utils.config import config
-from utils.globals import WorkflowType
+from utils.globals import PlaylistSortType
 from utils.job_queue import JobQueue
 from utils.runner_app_config import RunnerAppConfig
 from utils.translations import I18N
@@ -115,9 +115,7 @@ class App():
         self.sidebar.columnconfigure(0, weight=1)
         self.row_counter0 = 0
         self.row_counter1 = 0
-        self.sidebar.grid(column=0, row=self.row_counter0)
-        self.label_title = Label(self.sidebar)
-        self.add_label(self.label_title, _("Muse"), sticky=None, columnspan=2)
+        self.sidebar.grid(column=0, row=0)
 
         self.run_btn = None
         self.add_button("run_btn", _("Play"), self.run)
@@ -158,17 +156,8 @@ class App():
         self.add_label(self.label_workflows, _("Workflow"), increment_row_counter=False)
         self.workflow = StringVar(master)
         self.workflows_choice = OptionMenu(self.sidebar, self.workflow, self.runner_app_config.workflow_type,
-                                           *WorkflowType.__members__.keys(), command=self.set_workflow_type)
+                                           *PlaylistSortType.__members__.keys(), command=self.set_workflow_type)
         self.apply_to_grid(self.workflows_choice, interior_column=1, sticky=W)
-
-        self.label_total = Label(self.sidebar)
-        self.add_label(self.label_total, _("Set Total"), increment_row_counter=False)
-        self.total = StringVar(master)
-        total_options = [str(i) for i in list(range(-1, 101))]
-        total_options.remove('0')
-        self.total_choice = OptionMenu(self.sidebar, self.total, str(self.runner_app_config.total),
-                                       *total_options, command=self.set_total)
-        self.apply_to_grid(self.total_choice, interior_column=1, sticky=W)
 
         self.label_delay = Label(self.sidebar)
         self.add_label(self.label_delay, _("Delay Seconds"), increment_row_counter=False)
@@ -342,9 +331,6 @@ class App():
         if workflow_tag is None:
             workflow_tag = self.workflow.get()
 
-    def set_total(self, event=None):
-        self.runner_app_config.total = self.total.get()
-
     def set_directory(self, event=None):
         self.runner_app_config.directory = self.directory.get()
 
@@ -499,11 +485,6 @@ class App():
             weather_window = WeatherWindow(self.master, self.app_actions)
         except Exception as e:
             Utils.log_red(f"Exception opening weather window: {e}")
-
-    def get_total(self):
-        total = self.total.get()
-        self.runner_app_config.total = total
-        return total
 
     def get_directories(self):
         directories = []

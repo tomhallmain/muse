@@ -6,7 +6,7 @@ from utils.config import config
 from utils.utils import Utils
 
 
-class Form:
+class Instrument:
     def __init__(self, name, transliterations=[], notes={}):
         self.name = name
         self.transliterations = transliterations if len(transliterations) > 0 else [name]
@@ -17,14 +17,13 @@ class Form:
 
     @staticmethod
     def from_json(json):
-        return Form(**json)
+        return Instrument(**json)
 
 
 
-class FormsDataSearch:
-    def __init__(self, form="", genre="", max_results=200):
-        self.form = form.lower()
-        self.genre = genre.lower()
+class InstrumentsDataSearch:
+    def __init__(self, instrument="", max_results=200):
+        self.instrument = instrument.lower()
         self.max_results = max_results
 
         self.results = []
@@ -37,27 +36,21 @@ class FormsDataSearch:
                 return True
         return False
 
-    def test(self, form, strict=True):
+    def test(self, composer, strict=True):
         if len(self.results) > self.max_results:
             return None
-        if len(self.form) > 0:
-            pattern = re.compile(f"(^|\\W){self.form}") if strict else ""
-            for indicator in form.transliterations:
+        if len(self.instrument) > 0:
+            pattern = re.compile(f"(^|\\W){self.instrument}") if strict else ""
+            for indicator in composer.transliterations:
                 indicator_lower = indicator.lower()
                 if strict:
-                    if indicator_lower == self.form or re.search(pattern, indicator_lower):
-                        self.results.append(form)
+                    if indicator_lower == self.instrument or re.search(pattern, indicator_lower):
+                        self.results.append(composer)
                         return True
                 else:
-                    if self.form in indicator_lower:
-                        self.results.append(form)
+                    if self.instrument in indicator_lower:
+                        self.results.append(composer)
                         return True
-        if len(self.genre) > 0 and strict:
-            for genre in form.genres:
-                genre_lower = genre.lower()
-                if genre_lower == self.form or self.form in genre_lower:
-                    self.results.append(form)
-                    return True
         return False
 
     def sort_results_by_transliterations(self):
@@ -68,62 +61,62 @@ class FormsDataSearch:
 
 
 
-class FormsData:
+class InstrumentsData:
     def __init__(self):
-        self._forms = {}
-        self._get_forms()
+        self._instruments = {}
+        self._get_instruments()
 
-    def _get_forms(self):
+    def _get_instruments(self):
         with open(config.forms_file, 'r', encoding="utf-8") as f:
             forms = json.load(f)
         for name, form in forms.items():
-            self._forms[name] = Form.from_json(form)
+            self._instruments[name] = Instrument.from_json(form)
 
-    def get_form_names(self):
-        return [form.name for form in self._forms.values()]
+    def get_instrument_names(self):
+        return [instrument.name for instrument in self._instruments.values()]
 
-    def get_data(self, form_name):
-        if form_name in self._forms:
-            return self._forms[form_name]
-        for form in self._forms.values():
-            for value in form.transliterations:
-                if form_name in value or value in form_name:
-                    return form
+    def get_data(self, instrument_name):
+        if instrument_name in self._instruments:
+            return self._instruments[instrument_name]
+        for instrument in self._instruments.values():
+            for value in instrument.transliterations:
+                if instrument_name in value or value in instrument_name:
+                    return instrument
         return None
 
-    def get_forms(self, audio_track):
+    def get_instruments(self, audio_track):
         matches = []
         title_lower = audio_track.title.lower()
         album_lower = audio_track.album.lower() if audio_track.album is not None else ""
-        for form in self._forms.values():
-            for value in form.transliterations:
+        for instrument in self._instruments.values():
+            for value in instrument.transliterations:
                 if value in title_lower or value in album_lower:
-                    matches += [form.name]
+                    matches += [instrument.name]
         return matches
 
     def do_search(self, data_search):
-        if not isinstance(data_search, FormsDataSearch):
+        if not isinstance(data_search, InstrumentsDataSearch):
             raise TypeError('Forms data search must be of type FormsDataSearch')
         if not data_search.is_valid():
             Utils.log_yellow('Invalid search query')
             return data_search
 
         full_results = False
-        for form in self._forms.values():
-            if data_search.test(form) is None:
+        for instrument in self._instruments.values():
+            if data_search.test(instrument) is None:
                 full_results = True
                 break
 
         data_search.sort_results_by_transliterations() # The composers with the most transliterations are probably the most well-known
 
         if not full_results:
-            for form in self._forms.values():
-                if not form in data_search.results and \
-                        data_search.test(form, strict=False) is None:
+            for instrument in self._instruments.values():
+                if not instrument in data_search.results and \
+                        data_search.test(instrument, strict=False) is None:
                     break
 
         return data_search
 
 
-forms_data = FormsData()
+instruments_data = InstrumentsData()
 

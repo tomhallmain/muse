@@ -7,7 +7,7 @@ from library_data.media_track import MediaTrack
 from muse.playlist import Playlist
 from utils.app_info_cache import app_info_cache
 from utils.config import config
-from utils.globals import MediaFileType, WorkflowType
+from utils.globals import MediaFileType, PlaylistSortType
 from utils.utils import Utils
 
 
@@ -31,7 +31,7 @@ class PlaybackConfig:
 
     def __init__(self, args=None, override_dir=None):
         self.total = int(args.total) if args else -1
-        self.type = WorkflowType[args.workflow_tag] if args else WorkflowType.RANDOM
+        self.type = PlaylistSortType[args.workflow_tag] if args else PlaylistSortType.RANDOM
         self.directories = args.directories if args else ([override_dir] if override_dir else [])
         self.overwrite = args.overwrite if args else False
         self.enable_dynamic_volume = args.enable_dynamic_volume if args else True
@@ -69,7 +69,7 @@ class PlaybackConfig:
 
     def get_audio_track_list(self):
         Utils.log("Building audio track cache")
-        return [MediaTrack(t) for t in self.get_list().in_sequence]
+        return [MediaTrack(t) for t in self.get_list().sorted_tracks]
 
     def _get_directory_files(self, directory):
         if directory not in PlaybackConfig.DIRECTORIES_CACHE or self.overwrite:

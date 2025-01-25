@@ -5,13 +5,13 @@ from tkinter.constants import W
 import tkinter.font as fnt
 from tkinter.ttk import Button, Entry, OptionMenu, Scale
 
-from utils.globals import Globals, WorkflowType
+from utils.globals import Globals, PlaylistSortType
 
 from muse.playback_config import PlaybackConfig
 from muse.run_config import RunConfig
 from utils.app_info_cache import app_info_cache
 from utils.config import config
-from utils.globals import WorkflowType
+from utils.globals import PlaylistSortType
 from utils.translations import I18N
 
 _ = I18N._
@@ -100,7 +100,7 @@ class PlaylistWindow():
         self.add_label(self.label_workflows, _("Workflow"), increment_row_counter=False)
         self.workflow = StringVar(master)
         self.workflows_choice = OptionMenu(self.sidebar, self.workflow, self.runner_app_config.workflow_type,
-                                           *WorkflowType.__members__.keys(), command=self.set_workflow_type)
+                                           *PlaylistSortType.__members__.keys(), command=self.set_workflow_type)
         self.apply_to_grid(self.workflows_choice, interior_column=1, sticky=W)
 
         self.label_directory = Label(self.sidebar)
