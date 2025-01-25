@@ -82,7 +82,7 @@ class Playlist:
     def is_valid(self):
         return len(self.in_sequence) > 0
 
-    def next_track(self):
+    def next_track(self) -> None | MediaTrack:
         if len(self.sorted_tracks) == 0 or self.current_song_index >= len(self.sorted_tracks):
             return None
         self.current_song_index += 1
@@ -92,10 +92,10 @@ class Playlist:
         Playlist.update_recently_played_lists(next_track)
         return next_track
 
-    def upcoming_track(self):
+    def upcoming_track(self) -> None | MediaTrack:
         if len(self.sorted_tracks) == 0 or (self.current_song_index + 1) >= len(self.sorted_tracks):
             return None
-        return MediaTrack(self.sorted_tracks[self.current_song_index + 1])
+        return self.sorted_tracks[self.current_song_index + 1]
 
     def sort(self):
         if self.sort_type == PlaylistSortType.RANDOM:

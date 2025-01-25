@@ -13,4 +13,5 @@ library_data/data/*
 library_data/prose_data/*
 library_data/wiki/*
 temp*
+!utils/temp_dir.py
 tts_output/*
