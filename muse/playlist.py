@@ -161,7 +161,7 @@ class Playlist:
         #     # Note that genre will have an overriden count of 1 just because it is so broad a grouping.
         #     recently_played_check_count = 1
         earliest_tracks = list(self.sorted_tracks[:recently_played_check_count])
-        if len(getattr(Playlist, list_attr)) >= recently_played_check_count * 2:
+        if self.size() <= recently_played_check_count * 2:
             # The playlist is a short playlist compared to the library, and probably doesn't 
             # have enough tracks to satisfy the check conditions
             return
@@ -170,11 +170,12 @@ class Playlist:
             if getattr(track, track_attr) in swap_list:
                 tracks_to_be_reshuffled.append(track)
         while len(tracks_to_be_reshuffled) > 0:
-            Utils.log(f"Reshuffling playlist recently played track count: {len(tracks_to_be_reshuffled)} (attempt {attempts})")
+            Utils.log(f"Reshuffling playlist recently played track count: {len(tracks_to_be_reshuffled)} (attempt {attempts}) - recently played tracks count = {len(tracks_to_be_reshuffled)}")
             for track in tracks_to_be_reshuffled:
                 self.sorted_tracks.remove(track)
                 self.sorted_tracks.append(track)
             tracks_to_be_reshuffled.clear()
+            earliest_tracks = list(self.sorted_tracks[:recently_played_check_count])
             for track in earliest_tracks:
                 if getattr(track, track_attr) in swap_list:
                     tracks_to_be_reshuffled.append(track)

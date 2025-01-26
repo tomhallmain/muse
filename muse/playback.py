@@ -16,8 +16,8 @@ INSTANCE = vlc.Instance("verbose=-2")
 class Playback:
 
     @staticmethod
-    def new_playback(override_dir=None):
-        config = PlaybackConfig.new_playback_config(override_dir=override_dir)
+    def new_playback(override_dir=None, data_callbacks=None):
+        config = PlaybackConfig.new_playback_config(override_dir=override_dir, data_callbacks=data_callbacks)
         return Playback(config, None, False)
 
     def __init__(self, playback_config, callbacks, run):

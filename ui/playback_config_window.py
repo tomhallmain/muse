@@ -16,8 +16,6 @@ from utils.translations import I18N
 
 _ = I18N._
 
-# TODO figure out why overwrite not working
-
 def set_attr_if_not_empty(text_box):
     current_value = text_box.get()
     if not current_value or current_value == "":

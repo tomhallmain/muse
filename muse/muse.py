@@ -79,7 +79,7 @@ class Muse:
     preparation_starts_minutes_from_end = float(config.muse_config["preparation_starts_minutes_from_end"])
     preparation_starts_after_seconds_sleep = int(config.muse_config["preparation_starts_after_seconds_sleep"])
 
-    def __init__(self, args, will_run=False):
+    def __init__(self, args, will_run=False, data_callbacks=None):
         self.args = args
         self._schedule = SchedulesManager.default_schedule
         self.llm = LLM(model_name=config.llm_model_name)
@@ -95,6 +95,8 @@ class Muse:
         self.last_topic = None
         self.tracks_since_last_spoke = 0
         self.tracks_since_last_topic = 0
+        self.data_callbacks = data_callbacks # The DJ should have access to the music library.
+        assert self.data_callbacks is not None
 
     def get_spot_profile(self, previous_track=None, track=None, last_track_failed=False, skip_track=False):
         return MuseSpotProfile(previous_track, track, last_track_failed, skip_track)
@@ -376,7 +378,7 @@ class Muse:
         if config.tongue_twisters_dir is None or config.tongue_twisters_dir == "":
             raise Exception("No tongue twister directory specified")
         Utils.log(f"Playing tongue twister from {config.tongue_twisters_dir}")
-        playback = Playback.new_playback(config.tongue_twisters_dir)
+        playback = Playback.new_playback(config.tongue_twisters_dir, self.data_callbacks)
         tongue_twister_track = playback._playback_config.next_track()
         if tongue_twister_track is None or not os.path.exists(tongue_twister_track.filepath):
             raise Exception(f"Invalid tongue twister file: {tongue_twister_track}")

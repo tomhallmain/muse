@@ -29,8 +29,8 @@ class Run:
         self.last_config = None
         self.callbacks = callbacks
         self.playback = None
-        self.muse = Muse(self.args)
         self.library_data = None if args.placeholder else LibraryData(callbacks)
+        self.muse = Muse(self.args, data_callbacks=(True if args.placeholder else self.library_data.data_callbacks))
 
     def is_infinite(self):
         return self.args.total == -1

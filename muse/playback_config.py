@@ -14,8 +14,8 @@ class PlaybackConfig:
     READY_FOR_EXTENSION = True
 
     @staticmethod
-    def new_playback_config(override_dir=None):
-        return PlaybackConfig(override_dir=override_dir)
+    def new_playback_config(override_dir=None, data_callbacks=None):
+        return PlaybackConfig(override_dir=override_dir, data_callbacks=data_callbacks)
 
     def __init__(self, args=None, override_dir=None, data_callbacks=None):
         self.total = int(args.total) if args else -1
