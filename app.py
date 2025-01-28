@@ -22,14 +22,14 @@ from ui.app_style import AppStyle
 from ui.composers_window import ComposersWindow
 from ui.extensions_window import ExtensionsWindow
 from ui.media_frame import MediaFrame
-from ui.playback_config_window import PlaylistWindow
+from ui.playlist_window import PlaylistWindow
 from ui.schedules_window import SchedulesWindow
 from ui.search_window import SearchWindow
 from ui.track_details_window import TrackDetailsWindow
 from ui.weather_window import WeatherWindow
 from utils.app_info_cache import app_info_cache
 from utils.config import config
-from utils.globals import PlaylistSortType
+from utils.globals import PlaylistSortType, PlaybackMasterStrategy
 from utils.job_queue import JobQueue
 from utils.runner_app_config import RunnerAppConfig
 from utils.temp_dir import TempDir
@@ -118,11 +118,32 @@ class App():
         self.row_counter1 = 0
         self.sidebar.grid(column=0, row=0)
 
+        self.label_status = Label(self.sidebar)
+        self.add_label(self.label_status, _("Status"), columnspan=3)
+
+        self.label_song_text = Label(self.sidebar)
+        self.add_label(self.label_song_text, _("Track"), columnspan=3)
+
+        self.label_muse = Label(self.sidebar)
+        self.add_label(self.label_muse, _("Spot Details"), columnspan=3)
+
+        self.label_extension_status = Label(self.sidebar)
+        self.add_label(self.label_extension_status, _("Extension Status"), columnspan=3)
+
+        self.label_volume = Label(self.sidebar)
+        self.add_label(self.label_volume, _("Volume"), sticky=None, increment_row_counter=False)
+        self.volume_slider = Scale(self.sidebar, from_=0, to=100, orient=HORIZONTAL, command=self.set_volume)
+        self.set_widget_value(self.volume_slider, Globals.DEFAULT_VOLUME_THRESHOLD)
+        self.apply_to_grid(self.volume_slider, interior_column=2, sticky=W)
+
         self.run_btn = None
         self.add_button("run_btn", _("Play"), self.run)
 
         self.next_btn = None
-        self.add_button("next_btn", _("Next"), self.next)
+        self.add_button("next_btn", _("Next"), self.next, increment_row_counter=False)
+
+        self.next_btn = None
+        self.add_button("next_btn", _("Next Grouping"), self.next_grouping, interior_column=2)
 
         self.pause_btn = None
         self.add_button("pause_btn", _("Pause"), self.pause)
@@ -134,47 +155,36 @@ class App():
         self.add_button("composers_btn", _("Composers"), self.open_composers_window)
 
         self.schedules_btn = None
-        self.add_button("schedules_btn", _("Schedules"), self.open_schedules_window)
+        self.add_button("schedules_btn", _("Schedules"), self.open_schedules_window, increment_row_counter=False)
+
+        self.weather_btn = None
+        self.add_button("weather_btn", _("Weather"), self.open_weather_window, interior_column=2)
 
         self.cancel_btn = Button(self.sidebar, text=_("Stop"), command=self.cancel)
         self.text_btn = Button(self.sidebar, text=_("Text"), command=self.open_text)
         self.extension_btn = Button(self.sidebar, text=_("Extension"), command=self.open_extensions_window)
-
-        self.label_status = Label(self.sidebar)
-        self.add_label(self.label_status,  _("Status"), sticky=None, columnspan=2)
-
-        self.label_song_text = Label(self.sidebar)
-        self.add_label(self.label_song_text, _("Track"), sticky=None, columnspan=2)
-
-        self.label_muse = Label(self.sidebar)
-        self.add_label(self.label_muse, _("Spot Details"), sticky=None, columnspan=2)
-
-        self.label_extension_status = Label(self.sidebar)
-        self.add_label(self.label_extension_status,  _("Extension Status"), sticky=None, columnspan=2)
-
-        # TODO multiselect
-        self.label_workflows = Label(self.sidebar)
-        self.add_label(self.label_workflows, _("Workflow"), increment_row_counter=False)
-        self.workflow = StringVar(master)
-        self.workflows_choice = OptionMenu(self.sidebar, self.workflow, self.runner_app_config.workflow_type,
-                                           *PlaylistSortType.__members__.keys(), command=self.set_workflow_type)
-        self.apply_to_grid(self.workflows_choice, interior_column=1, sticky=W)
 
         self.label_delay = Label(self.sidebar)
         self.add_label(self.label_delay, _("Delay Seconds"), increment_row_counter=False)
         self.delay = StringVar(master)
         self.delay_choice = OptionMenu(self.sidebar, self.delay, str(self.runner_app_config.delay_time_seconds),
                                        *[str(i) for i in list(range(101))], command=self.set_delay)
-        self.apply_to_grid(self.delay_choice, interior_column=1, sticky=W)
+        self.apply_to_grid(self.delay_choice, interior_column=2, sticky=W)
 
-        self.label_directory = Label(self.sidebar)
-        self.add_label(self.label_directory, _("Directory"), increment_row_counter=False)
-        self.directory = StringVar(master)
-        directory_options = ["ALL"]
-        directory_options.extend(list(config.get_subdirectories().values()))
-        self.directory_choice = OptionMenu(self.sidebar, self.directory, str(self.runner_app_config.directory),
-                                           *directory_options, command=self.set_directory)
-        self.apply_to_grid(self.directory_choice, interior_column=1, sticky=W)
+        self.label_playlist_strategy = Label(self.sidebar)
+        self.add_label(self.label_playlist_strategy, _("Playlist"), increment_row_counter=False)
+        self.playlist_strategy = StringVar(master)
+        self.playlist_strategy_choice = OptionMenu(self.sidebar, self.playlist_strategy, str(self.runner_app_config.playback_master_strategy),
+                *PlaybackMasterStrategy.__members__.keys(), command=self.set_playback_master_strategy)
+        self.apply_to_grid(self.playlist_strategy_choice, interior_column=2, sticky=W)
+
+        # TODO multiselect
+        self.label_workflows = Label(self.sidebar)
+        self.add_label(self.label_workflows, _("Playlist Sort"), increment_row_counter=False)
+        self.workflow = StringVar(master)
+        self.workflows_choice = OptionMenu(self.sidebar, self.workflow, self.runner_app_config.workflow_type,
+                                           *PlaylistSortType.__members__.keys(), command=self.set_workflow_type)
+        self.apply_to_grid(self.workflows_choice, interior_column=2, sticky=W)
 
         self.overwrite = BooleanVar(value=True)
         self.overwrite_choice = Checkbutton(self.sidebar, text=_('Overwrite'), variable=self.overwrite)
@@ -191,15 +201,6 @@ class App():
         self.extend = BooleanVar(value=self.runner_app_config.muse)
         self.extend_choice = Checkbutton(self.sidebar, text=_('Extension'), variable=self.extend, command=self.set_extend)
         self.apply_to_grid(self.extend_choice, sticky=W)
-
-        self.label_volume = Label(self.sidebar)
-        self.add_label(self.label_volume, _("Volume"), increment_row_counter=False)
-        self.volume_slider = Scale(self.sidebar, from_=0, to=100, orient=HORIZONTAL, command=self.set_volume)
-        self.set_widget_value(self.volume_slider, Globals.DEFAULT_VOLUME_THRESHOLD)
-        self.apply_to_grid(self.volume_slider, interior_column=1, sticky=W)
-
-        self.weather_btn = None
-        self.add_button("weather_btn", _("Weather"), self.open_weather_window)
 
         self.media_frame = MediaFrame(self.master, fill_canvas=True)
 
@@ -335,8 +336,8 @@ class App():
         if workflow_tag is None:
             workflow_tag = self.workflow.get()
 
-    def set_directory(self, event=None):
-        self.runner_app_config.directory = self.directory.get()
+    def set_playback_master_strategy(self, event=None):
+        self.runner_app_config.playback_master_strategy = self.playlist_strategy.get()
 
     def set_delay(self, event=None):
         self.runner_app_config.delay_time_seconds = self.delay.get()
@@ -387,10 +388,10 @@ class App():
             self.job_queue.job_running = True
             self.destroy_progress_bar()
             self.progress_bar = Progressbar(self.sidebar, orient=HORIZONTAL, length=300, mode='determinate')
-            self.progress_bar.grid(row=1, column=1)
-            self.cancel_btn.grid(row=2, column=1)
-            self.text_btn.grid(row=3, column=1)
-            self.extension_btn.grid(row=4, column=1)
+            self.progress_bar.grid(row=5, column=2)
+            self.cancel_btn.grid(row=7, column=2)
+            self.text_btn.grid(row=8, column=2)
+            self.extension_btn.grid(row=9, column=2)
             self.current_run = Run(args, callbacks=self.app_actions)
             self.current_run.execute()
             self.cancel_btn.grid_forget()
@@ -415,7 +416,10 @@ class App():
 
     def next(self, event=None) -> None:
         self.current_run.next()
-    
+
+    def next_grouping(self, event=None) -> None:
+        self.current_run.next_grouping()
+
     def pause(self, event=None) -> None:
         self.current_run.pause()
 
@@ -492,7 +496,7 @@ class App():
 
     def get_directories(self):
         directories = []
-        selection = self.directory.get()
+        selection = self.playlist_strategy.get()
         all_dirs = config.get_subdirectories()
         if selection == "ALL":
             return True, list(all_dirs.keys())
@@ -646,7 +650,7 @@ if __name__ == "__main__":
         #root.iconbitmap(bitmap=r"icon.ico")
         # icon = PhotoImage(file=os.path.join(assets, "icon.png"))
         # root.iconphoto(False, icon)
-        root.geometry("900x500")
+        root.geometry("1200x600")
         # root.attributes('-fullscreen', True)
         root.resizable(1, 1)
         root.columnconfigure(0, weight=1)

@@ -63,11 +63,37 @@ class PlaylistSortType(Enum):
     SEQUENCE = 'SEQUENCE'
     ALBUM_SHUFFLE = 'ALBUM_SHUFFLE'
     ARTIST_SHUFFLE = 'ARTIST_SHUFFLE'
+    COMPOSER_SHUFFLE = 'COMPOSER_SHUFFLE'
     GENRE_SHUFFLE = 'GENRE_SHUFFLE'
     FORM_SHUFFLE = 'FORM_SHUFFLE'
-    COMPOSER_SHUFFLE = 'COMPOSER_SHUFFLE'
     INSTRUMENT_SHUFFLE = 'INSTRUMENT_SHUFFLE'
 
+    def getter_name_mapping(self):
+        return {
+            self.RANDOM: 'filepath',
+            self.SEQUENCE: None,
+            self.ALBUM_SHUFFLE: 'album',
+            self.ARTIST_SHUFFLE: 'artist',
+            self.COMPOSER_SHUFFLE: 'composer',
+            self.GENRE_SHUFFLE: 'get_genre',
+            self.FORM_SHUFFLE: 'get_form',
+            self.INSTRUMENT_SHUFFLE: 'get_instrument'
+        }[self]
 
+    def grouping_list_name_mapping(self):
+        return {
+            self.RANDOM: 'recently_played_filepaths',
+            self.SEQUENCE: None,
+            self.ALBUM_SHUFFLE: 'recently_played_albums',
+            self.ARTIST_SHUFFLE: 'recently_played_artists',
+            self.COMPOSER_SHUFFLE: 'recently_played_composers',
+            self.GENRE_SHUFFLE: 'recently_played_genres',
+            self.FORM_SHUFFLE: 'recently_played_forms',
+            self.INSTRUMENT_SHUFFLE: 'recently_played_instruments'
+        }[self]
+
+class PlaybackMasterStrategy(Enum):
+    ALL_MUSIC = "ALL_MUSIC"
+    PLAYLIST_CONFIG = "PLAYLIST_CONFIG"
 
 

@@ -1,6 +1,6 @@
 from enum import Enum
 
-from tkinter import Toplevel, Frame, Label, StringVar, LEFT, W
+from tkinter import Toplevel, Frame, Label, StringVar, BooleanVar, Checkbutton, LEFT, W
 from tkinter.ttk import Button, Entry
 
 from lib.tk_scroll_demo import ScrollFrame
@@ -105,6 +105,10 @@ class SearchWindow:
         self.instrument_entry.grid(row=6, column=1)
         self.instrument_entry.bind("<Return>", self.do_search)
 
+        self.overwrite_cache = BooleanVar(self.inner_frame)
+        self._overwrite = Checkbutton(self.inner_frame, text="Overwrite Cache", variable=self.overwrite_cache)
+        self._overwrite.grid(row=7, columnspan=2)
+
         # self.master.bind("<Key>", self.filter_targets)
         # self.master.bind("<Return>", self.do_action)
         self.master.bind("<Escape>", self.close_windows)
@@ -120,8 +124,9 @@ class SearchWindow:
         composer = self.composer.get().strip()
         genre = self.genre.get().strip()
         instrument = self.instrument.get().strip()
-        self.library_data_search = LibraryDataSearch(all, title, artist, composer, album, genre, SearchWindow.MAX_RESULTS)
-        self.library_data.do_search(self.library_data_search)
+        overwrite = self.overwrite_cache.get()
+        self.library_data_search = LibraryDataSearch(all, title, artist, composer, album, genre, instrument, SearchWindow.MAX_RESULTS)
+        self.library_data.do_search(self.library_data_search, overwrite=overwrite)
         self._refresh_widgets()
 
     def add_widgets_for_results(self):

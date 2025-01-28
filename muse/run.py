@@ -38,6 +38,9 @@ class Run:
     def next(self):
         self.get_playback().next()
 
+    def next_grouping(self):
+        self.get_playback().next_grouping()
+
     def pause(self):
         self.get_playback().pause()
     
@@ -57,7 +60,7 @@ class Run:
 
     def run(self, playback_config):
         if config.enable_library_extender and self.args.extend:
-            self.get_library_data().start_extensions_thread()
+            self.get_library_data().start_extensions_thread(overwrite_cache=self.args.overwrite)
         Utils.log(playback_config)
         self.switching_params = False
         if self.last_config and playback_config == self.last_config:

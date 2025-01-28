@@ -70,7 +70,7 @@ class ComposersDataSearch:
         if len(self.genre) > 0 and strict:
             for genre in composer.genres:
                 genre_lower = genre.lower()
-                if genre_lower == self.composer or self.composer in genre_lower:
+                if genre_lower == self.genre or self.genre in genre_lower:
                     self.results.append(composer)
                     return True
         return False

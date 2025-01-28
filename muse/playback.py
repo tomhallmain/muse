@@ -29,6 +29,7 @@ class Playback:
         self.is_paused = False
         self.skip_track = False
         self.skip_delay = False
+        self.skip_grouping = False
         self.track = None
         self.previous_track = ""
         self.last_track_failed = False
@@ -47,7 +48,8 @@ class Playback:
 
     def get_track(self):
         self.previous_track = self.track
-        self.track = self._playback_config.next_track()
+        self.track = self._playback_config.next_track(skip_grouping=self.skip_grouping)
+        self.skip_grouping = False
         # print(f"Playback.get_track() - self.track = {self.track} {self.track.is_invalid()}")
         return self.track is not None and not self.track.is_invalid()
 
@@ -246,6 +248,13 @@ class Playback:
         Utils.log("Skipping ahead to next track.")
         self.skip_track = True
         self.skip_delay = True
+
+    def next_grouping(self):
+        self.vlc_media_player.stop()
+        Utils.log("Skipping ahead to next track.")
+        self.skip_track = True
+        self.skip_delay = True
+        self.skip_grouping = True
 
     def get_track_text_file(self):
         if self.track is None or self.track.is_invalid():

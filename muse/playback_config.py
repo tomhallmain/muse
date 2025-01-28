@@ -42,11 +42,11 @@ class PlaybackConfig:
     def get_list(self):
         if self.list.is_valid():
             return self.list
-        l = self.data_callbacks.get_all_filepaths(self.directories)
+        l = self.data_callbacks.get_all_filepaths(self.directories, self.overwrite)
         self.list = Playlist(l, self.type, data_callbacks=self.data_callbacks)
         return self.list
 
-    def next_track(self):
+    def next_track(self, skip_grouping=False):
         if self.next_track_override is not None:
             next_track = MediaTrack(self.next_track_override)
             next_track.set_is_extended()
@@ -54,7 +54,7 @@ class PlaybackConfig:
             PlaybackConfig.READY_FOR_EXTENSION = True
             return next_track
         l = self.get_list()
-        return l.next_track()
+        return l.next_track(skip_grouping=skip_grouping)
 
     def upcoming_track(self):
         if self.next_track_override is not None:

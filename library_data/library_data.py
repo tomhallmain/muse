@@ -122,14 +122,14 @@ class LibraryData:
             LibraryData.DIRECTORIES_CACHE[directory] = files
         else:
             files = LibraryData.DIRECTORIES_CACHE[directory]
-        return files
+        return list(files)
 
     @staticmethod
-    def get_all_filepaths(directories):
+    def get_all_filepaths(directories, overwrite=False):
         l = []
         count = 0
         for directory in directories:
-            for f in LibraryData.get_directory_files(directory):
+            for f in LibraryData.get_directory_files(directory, overwrite=overwrite):
                 if MediaFileType.is_media_filetype(f):
                     l += [os.path.join(directory, f)]
                     count += 1
@@ -140,11 +140,11 @@ class LibraryData:
         return l
 
     @staticmethod
-    def get_all_tracks():
+    def get_all_tracks(overwrite=False):
         with LibraryData.get_tracks_lock:
-            if len(LibraryData.all_tracks) == 0:
+            if len(LibraryData.all_tracks) == 0 or overwrite:
                 all_directories = config.get_all_directories()
-                LibraryData.all_tracks = [LibraryData.get_track(f) for f in LibraryData.get_all_filepaths(all_directories)]
+                LibraryData.all_tracks = [LibraryData.get_track(f) for f in LibraryData.get_all_filepaths(all_directories, overwrite=overwrite)]
             return LibraryData.all_tracks
 
     @staticmethod
@@ -167,14 +167,14 @@ class LibraryData:
             LibraryData.get_track,
         )
 
-    def do_search(self, library_data_search):
+    def do_search(self, library_data_search, overwrite=False):
         if not isinstance(library_data_search, LibraryDataSearch):
             raise TypeError('Library data search must be of type LibraryDataSearch')
         if not library_data_search.is_valid():
             Utils.log_yellow('Invalid search query')
             return library_data_search
 
-        for audio_track in LibraryData.get_all_tracks():
+        for audio_track in LibraryData.get_all_tracks(overwrite=overwrite):
             if library_data_search.test(audio_track) is None:
                 break
 
@@ -184,11 +184,11 @@ class LibraryData:
         # Find any highly similar tracks in the library to this track.
         pass
 
-    def start_extensions_thread(self, initial_sleep=True):
+    def start_extensions_thread(self, initial_sleep=True, overwrite_cache=False):
         if LibraryData.extension_thread_started:
             return
         Utils.log('Starting extensions thread')
-        LibraryData.get_all_tracks()
+        LibraryData.get_all_tracks(overwrite=overwrite_cache)
         Utils.start_thread(self._run_extensions, use_asyncio=False, args=(initial_sleep,))
         LibraryData.extension_thread_started = True
 
