@@ -90,10 +90,10 @@ class SchedulesManager:
             if not schedule.enabled:
                 skip = True
             if schedule.shutdown_time is not None and schedule.voice == SchedulesManager.default_schedule.voice:
-                Utils.log(f"Skipping schedule {schedule} - a shutdown time is set on this schedule and it is assumed to be for shutdown purposes only.")
+                Utils.log_debug(f"Skipping schedule {schedule} - a shutdown time is set on this schedule and it is assumed to be for shutdown purposes only.")
                 skip = True
             if day_index not in schedule.weekday_options:
-                Utils.log(f"Skipping schedule {schedule} - today is index {day_index} - schedule weekday options {schedule.weekday_options}")
+                Utils.log_debug(f"Skipping schedule {schedule} - today is index {day_index} - schedule weekday options {schedule.weekday_options}")
                 skip = True
             if skip:
                 continue

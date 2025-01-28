@@ -131,9 +131,9 @@ class Playlist:
             return None, None, None
         old_grouping = None
         new_grouping = None
+        upcoming_track = self.sorted_tracks[self.current_song_index + 1] if self.current_song_index < len(self.sorted_tracks) - 1 else None
         if self.sort_type.is_grouping_type():
             current_track = self.sorted_tracks[self.current_song_index] if self.current_song_index > -1 and self.current_song_index < len(self.sorted_tracks) else None
-            upcoming_track = self.sorted_tracks[self.current_song_index + 1] if self.current_song_index < len(self.sorted_tracks) - 1 else None
             if current_track is not None and upcoming_track is not None:
                 attr_getter_name = self.sort_type.getter_name_mapping()
                 upcoming_track_attr = getattr(upcoming_track, attr_getter_name)

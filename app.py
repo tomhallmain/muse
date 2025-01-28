@@ -121,8 +121,17 @@ class App():
         self.label_status = Label(self.sidebar)
         self.add_label(self.label_status, _("Status"), columnspan=3)
 
-        self.label_song_text = Label(self.sidebar)
-        self.add_label(self.label_song_text, _("Track"), columnspan=3)
+        self.label_title_text = Label(self.sidebar)
+        self.add_label(self.label_title_text, _("Title"), columnspan=3)
+
+        self.label_album_text = Label(self.sidebar)
+        self.add_label(self.label_album_text, _("Album"), columnspan=3)
+
+        self.label_artist_text = Label(self.sidebar)
+        self.add_label(self.label_artist_text, _("Artist"), columnspan=3)
+
+        self.label_composer_text = Label(self.sidebar)
+        self.add_label(self.label_composer_text, _("Composer"), columnspan=3)
 
         self.label_muse = Label(self.sidebar)
         self.add_label(self.label_muse, _("Spot Details"), columnspan=3)
@@ -388,10 +397,10 @@ class App():
             self.job_queue.job_running = True
             self.destroy_progress_bar()
             self.progress_bar = Progressbar(self.sidebar, orient=HORIZONTAL, length=300, mode='determinate')
-            self.progress_bar.grid(row=5, column=2)
-            self.cancel_btn.grid(row=7, column=2)
-            self.text_btn.grid(row=8, column=2)
-            self.extension_btn.grid(row=9, column=2)
+            self.progress_bar.grid(row=8, column=2)
+            self.cancel_btn.grid(row=10, column=2)
+            self.text_btn.grid(row=11, column=2)
+            self.extension_btn.grid(row=12, column=2)
             self.current_run = Run(args, callbacks=self.app_actions)
             self.current_run.execute()
             self.cancel_btn.grid_forget()
@@ -514,13 +523,19 @@ class App():
 
     def update_track_text(self, audio_track):
         if isinstance(audio_track, str):
-            text = audio_track
+            title_text = audio_track
+            album_text = ""
+            artist_text = ""
+            composer_text = ""
         else:
-            text = _("Track: ") + audio_track.title + "\n" + _("Album: ") + audio_track.album
-            if audio_track.artist is not None:
-                text += "\n" + _("Artist: ") + audio_track.artist
-        text = Utils._wrap_text_to_fit_length(text, 100)
-        self.label_song_text["text"] = text
+            title_text = _("Track: ") + audio_track.title
+            album_text = (_("Album: ") + audio_track.album) if audio_track.album is not None else ""
+            artist_text = (_("Artist: ") + audio_track.artist) if audio_track.artist is not None else ""
+            composer_text = (_("Composer: ") + audio_track.composer) if audio_track.composer is not None else ""
+        self.label_title_text["text"] = Utils._wrap_text_to_fit_length(title_text, 100)
+        self.label_album_text["text"] = Utils._wrap_text_to_fit_length(album_text, 100)
+        self.label_artist_text["text"]   = Utils._wrap_text_to_fit_length(artist_text, 100)
+        self.label_composer_text["text"] = Utils._wrap_text_to_fit_length(composer_text, 100)
         self.master.update()
 
     def update_muse_text(self, muse_text):
