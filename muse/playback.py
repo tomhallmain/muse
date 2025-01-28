@@ -37,6 +37,9 @@ class Playback:
         self.count = 0
         self.muse_spot_profiles = []
         self.remaining_delay_seconds = Globals.DELAY_TIME_SECONDS
+        # Keep track of grouping i.e. if shuffling by artist, album, composer etc
+        self.old_grouping = None
+        self.new_grouping = None
 
     def has_muse(self):
         return self._run and self._run.args.muse and self.muse is not None and self.muse.voice.can_speak
@@ -48,7 +51,7 @@ class Playback:
 
     def get_track(self):
         self.previous_track = self.track
-        self.track = self._playback_config.next_track(skip_grouping=self.skip_grouping)
+        self.track, self.old_grouping, self.new_grouping = self._playback_config.next_track(skip_grouping=self.skip_grouping)
         self.skip_grouping = False
         # print(f"Playback.get_track() - self.track = {self.track} {self.track.is_invalid()}")
         return self.track is not None and not self.track.is_invalid()
@@ -165,9 +168,13 @@ class Playback:
         # At the moment the local LLM and TTS models are not that fast, so need to start generation
         # for muse before the previous track stops playing, to avoid waiting extra time beyond
         # the expected delay.
-        next_track = self.track if delayed_prep else self._playback_config.upcoming_track()
+        if delayed_prep:
+            next_track = self.track
+        else:
+            next_track, self.old_grouping, self.new_grouping = self._playback_config.upcoming_track()
         previous_track = None if first_prep else (self.previous_track if delayed_prep else self.track)
-        spot_profile = self.get_muse().get_spot_profile(previous_track, next_track, self.last_track_failed, self.skip_track)
+        spot_profile = self.get_muse().get_spot_profile(previous_track, next_track, self.last_track_failed, self.skip_track,
+                                                        self.old_grouping, self.new_grouping, self.get_grouping_readable_name())
         self.muse_spot_profiles.append(spot_profile)
         start = time.time()
         if delayed_prep:
@@ -178,6 +185,12 @@ class Playback:
         else:
             Utils.start_thread(self.get_muse().prepare, use_asyncio=False, args=(spot_profile, self.callbacks.update_muse_text if self.callbacks else None))
         return round(time.time() - start)
+
+    def get_grouping_readable_name(self):
+        try:
+            return self._playback_config.get_list().get_grouping_readable_name()
+        except AttributeError:
+            return ""
 
     def generate_silent_spot_profile(self):
         previous_track = self.previous_track if self.has_played_first_track else None

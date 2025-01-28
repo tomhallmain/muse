@@ -68,6 +68,9 @@ class PlaylistSortType(Enum):
     FORM_SHUFFLE = 'FORM_SHUFFLE'
     INSTRUMENT_SHUFFLE = 'INSTRUMENT_SHUFFLE'
 
+    def is_grouping_type(self):
+        return self not in [PlaylistSortType.RANDOM, PlaylistSortType.SEQUENCE]
+
     def getter_name_mapping(self):
         return {
             self.RANDOM: 'filepath',

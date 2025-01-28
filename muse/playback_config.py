@@ -54,7 +54,8 @@ class PlaybackConfig:
             PlaybackConfig.READY_FOR_EXTENSION = True
             return next_track
         l = self.get_list()
-        return l.next_track(skip_grouping=skip_grouping)
+        next_track, old_grouping, new_grouping = l.next_track(skip_grouping=skip_grouping)
+        return next_track, old_grouping, new_grouping
 
     def upcoming_track(self):
         if self.next_track_override is not None:
@@ -62,7 +63,8 @@ class PlaybackConfig:
             upcoming_track.set_is_extended()
             return upcoming_track
         l = self.get_list()
-        return l.upcoming_track()
+        upcoming_track, old_grouping, new_grouping = l.upcoming_track()
+        return upcoming_track, old_grouping, new_grouping
 
     def set_next_track_override(self, new_file):
         self.next_track_override = new_file

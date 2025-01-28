@@ -4,7 +4,10 @@ from library_data.media_track import MediaTrack
 from utils.app_info_cache import app_info_cache
 from utils.config import config
 from utils.globals import PlaylistSortType
+from utils.translations import I18N
 from utils.utils import Utils
+
+_ = I18N._
 
 ## TODO need a way to exclude certain artists from the smart sort based on recent plays
 
@@ -84,36 +87,64 @@ class Playlist:
     def is_valid(self):
         return len(self.in_sequence) > 0
 
-    def next_track(self, skip_grouping=False) -> None | MediaTrack:
+    def next_track(self, skip_grouping=False):
         if len(self.sorted_tracks) == 0 or self.current_song_index >= len(self.sorted_tracks):
-            return None
+            return None, None, None
+        old_grouping = None
+        new_grouping = None
         self.current_song_index += 1
         next_track = self.sorted_tracks[self.current_song_index]
         self.pending_tracks.remove(next_track.filepath)
         self.played_tracks.append(next_track.filepath)
-        if skip_grouping:
+        if skip_grouping or self.sort_type.is_grouping_type():
             previous_track = None if self.current_song_index == 0 else self.sorted_tracks[self.current_song_index - 1]
             attr_getter_name = self.sort_type.getter_name_mapping()
             next_track_attr = getattr(next_track, attr_getter_name)
-            previous_track_attr = getattr(previous_track, attr_getter_name)
+            previous_track_attr = getattr(previous_track, attr_getter_name) if previous_track is not None else None
             if callable(next_track_attr):
                 next_track_attr = next_track_attr()
-                previous_track_attr = previous_track_attr()
-            while previous_track_attr == next_track_attr and self.current_song_index < len(self.sorted_tracks) - 1:
-                self.current_song_index += 1
-                next_track = self.sorted_tracks[self.current_song_index]
-                self.pending_tracks.remove(next_track.filepath)
-                self.played_tracks.append(next_track.filepath)
-                next_track_attr = getattr(next_track, attr_getter_name)
-                if callable(next_track_attr):
-                    next_track_attr = next_track_attr()
+                previous_track_attr = previous_track_attr() if previous_track_attr is not None else None
+            if previous_track_attr is not None and previous_track_attr == next_track_attr:
+                if skip_grouping:
+                    old_grouping = previous_track_attr
+                    skip_counter = 0
+                    while previous_track_attr == next_track_attr and self.current_song_index < len(self.sorted_tracks) - 1:
+                        self.current_song_index += 1
+                        next_track = self.sorted_tracks[self.current_song_index]
+                        self.pending_tracks.remove(next_track.filepath)
+                        self.played_tracks.append(next_track.filepath)
+                        next_track_attr = getattr(next_track, attr_getter_name)
+                        if callable(next_track_attr):
+                            next_track_attr = next_track_attr()
+                        new_grouping = next_track_attr
+                        skip_counter += 1
+                    Utils.log(f"Skipped {skip_counter} tracks due to same grouping ({old_grouping} -> {new_grouping})")
+            else:
+                old_grouping = previous_track_attr
+                new_grouping = next_track_attr
+                Utils.log("")
         Playlist.update_recently_played_lists(next_track)
-        return next_track
+        return next_track, old_grouping, new_grouping
 
-    def upcoming_track(self) -> None | MediaTrack:
+    def upcoming_track(self):
         if len(self.sorted_tracks) == 0 or (self.current_song_index + 1) >= len(self.sorted_tracks):
-            return None
-        return self.sorted_tracks[self.current_song_index + 1]
+            return None, None, None
+        old_grouping = None
+        new_grouping = None
+        if self.sort_type.is_grouping_type():
+            current_track = self.sorted_tracks[self.current_song_index] if self.current_song_index > -1 and self.current_song_index < len(self.sorted_tracks) else None
+            upcoming_track = self.sorted_tracks[self.current_song_index + 1] if self.current_song_index < len(self.sorted_tracks) - 1 else None
+            if current_track is not None and upcoming_track is not None:
+                attr_getter_name = self.sort_type.getter_name_mapping()
+                upcoming_track_attr = getattr(upcoming_track, attr_getter_name)
+                current_track_attr = getattr(current_track, attr_getter_name)
+                if callable(upcoming_track_attr):
+                    upcoming_track_attr = upcoming_track_attr()
+                    current_track_attr = current_track_attr()
+                if upcoming_track_attr != current_track_attr:
+                    old_grouping = current_track
+                    new_grouping = upcoming_track
+        return upcoming_track, old_grouping, new_grouping
 
     def sort(self):
         if self.sort_type == PlaylistSortType.RANDOM:
@@ -174,5 +205,22 @@ class Playlist:
                 return max_attempts
         return attempts
 
+    def get_grouping_readable_name(self):
+        if self.sort_type == PlaylistSortType.RANDOM or self.sort_type == PlaylistSortType.SEQUENCE:
+            return None
+        # TODO i18n
+        if self.sort_type == PlaylistSortType.ALBUM_SHUFFLE:
+            return _("Album")
+        if self.sort_type == PlaylistSortType.ARTIST_SHUFFLE:
+            return _("Artist")
+        if self.sort_type == PlaylistSortType.COMPOSER_SHUFFLE:
+            return _("Composer")
+        if self.sort_type == PlaylistSortType.GENRE_SHUFFLE:
+            return _("Genre")
+        if self.sort_type == PlaylistSortType.FORM_SHUFFLE:
+            return _("Form")
+        if self.sort_type == PlaylistSortType.INSTRUMENT_SHUFFLE:
+            return _("Instrument")
+        raise Exception(f"Unknown sort type {self.sort_type}")
 
 

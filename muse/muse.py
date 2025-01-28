@@ -28,7 +28,7 @@ class MuseSpotProfile:
     chance_speak_before_track = config.muse_config["chance_speak_before_track"]
     chance_speak_about_other_topics = config.muse_config["chance_speak_about_other_topics"]
 
-    def __init__(self, previous_track, track, last_track_failed, skip_track):
+    def __init__(self, previous_track, track, last_track_failed, skip_track, old_grouping, new_grouping, grouping_readable_name):
         self.previous_track = previous_track
         self.track = track
         self.speak_about_prior_track = previous_track is not None and (previous_track._is_extended or random.random() < self.chance_speak_after_track)
@@ -41,9 +41,18 @@ class MuseSpotProfile:
         self.is_prepared = False
         self.topic = None
         self.topic_translated = None
+        self.old_grouping = old_grouping
+        self.new_grouping = new_grouping
+        self.grouping_readable_name = grouping_readable_name
+        if old_grouping is not None and new_grouping is not None and old_grouping != new_grouping:
+            self.speak_about_prior_group = previous_track is not None and random.random() < 0.5
+            self.speak_about_upcoming_group = random.random() < 0.9
+        else:
+            self.speak_about_prior_group = False
+            self.speak_about_upcoming_group = False
 
     def is_going_to_say_something(self):
-        return self.speak_about_prior_track or self.speak_about_upcoming_track or self.talk_about_something
+        return self.speak_about_prior_track or self.speak_about_upcoming_track or self.talk_about_something or self.speak_about_prior_group or self.speak_about_upcoming_group
 
     def update_skip_previous_track_remark(self, skip_track):
         self.skip_previous_track_remark = self.skip_previous_track_remark or skip_track
@@ -65,9 +74,9 @@ class MuseSpotProfile:
     def __str__(self):
         out = _("Track: ") + self.track.title if self.track is not None else _("No track")
         out += "\n" + _("Previous Track: ") + self.previous_track.title if self.previous_track is not None else "\n" + _("No previous track")
-        if self.speak_about_prior_track:
+        if self.speak_about_prior_track or self.speak_about_prior_group:
             out += "\n - " + _("Speaking about prior track")
-        if self.speak_about_upcoming_track:
+        if self.speak_about_upcoming_track or self.speak_about_upcoming_group:
             out += "\n - " + _("Speaking about upcoming track")
         if self.talk_about_something:
             out += "\n - " + _("Talking about something")
@@ -98,8 +107,8 @@ class Muse:
         self.data_callbacks = data_callbacks # The DJ should have access to the music library.
         assert self.data_callbacks is not None
 
-    def get_spot_profile(self, previous_track=None, track=None, last_track_failed=False, skip_track=False):
-        return MuseSpotProfile(previous_track, track, last_track_failed, skip_track)
+    def get_spot_profile(self, previous_track=None, track=None, last_track_failed=False, skip_track=False, old_grouping=None, new_grouping=None, grouping_readable_name=None):
+        return MuseSpotProfile(previous_track, track, last_track_failed, skip_track, old_grouping, new_grouping, grouping_readable_name)
 
     def say_at_some_point(self, text, spot_profile, topic):
         save_mp3 = topic in config.save_tts_output_topics
@@ -115,7 +124,6 @@ class Muse:
             and ms_remaining < int(Muse.preparation_starts_minutes_from_end * 60 * 1000)
 
     def prepare(self, spot_profile, update_ui_callback=None):
-        # TODO Lock both TTS runner queues here
         self.has_started_prep = True
         self.set_topic(spot_profile)
         if update_ui_callback is not None:
@@ -135,6 +143,9 @@ class Muse:
         if spot_profile.speak_about_upcoming_track:
             self.speak_about_upcoming_track(spot_profile)
             spot_profile.has_already_spoken = True
+        if spot_profile.speak_about_upcoming_group:
+            self.speak_about_upcoming_group(spot_profile)
+            spot_profile.has_already_spoken  = True
 
         if spot_profile.talk_about_something:
             self.talk_about_something(spot_profile)
@@ -143,7 +154,6 @@ class Muse:
 
     def maybe_dj(self, spot_profile):
         # TODO quality info for songs
-        # Release lock on TTS runner for "prior" queue
         start = time.time()
         self.voice.finish_speaking()
         while not spot_profile.is_prepared:
@@ -203,6 +213,8 @@ class Muse:
         # TODO quality info for songs
         if spot_profile.speak_about_prior_track:
             self.speak_about_previous_track(spot_profile)
+        if spot_profile.speak_about_prior_group:
+            self.speak_about_previous_group(spot_profile)
 
     # def maybe_dj_post(self, spot_profile):
     #     # Release lock on TTS runner for "post" queue
@@ -238,6 +250,19 @@ class Muse:
         if track._is_extended and random.random() < 0.8:
             dj_remark += " " + _("This one is a new track.")
         self.say_at_some_point(dj_remark, spot_profile, None)
+
+    def speak_about_previous_group(self, spot_profile):
+        # TODO i18n
+        previous_group = spot_profile.old_grouping
+        if spot_profile.previous_track is not None:
+            dj_remark = _("We've been listening to a group of tracks from the {0} {1}").format(spot_profile.grouping_readable_name, previous_group)
+            self.say_at_some_point(dj_remark, spot_profile, None)
+
+    def speak_about_upcoming_group(self, spot_profile):
+        new_group = spot_profile.new_grouping
+        if spot_profile.previous_track is not None:
+            dj_remark =  _("We're going to start a new group of tracks from the {0} {1}.").format(spot_profile.grouping_readable_name, new_group)
+            self.say_at_some_point(dj_remark, spot_profile, None)
 
     def is_recent_topics(self, topics_to_check=[], n=1):
         if n >= self.tracks_since_last_topic:

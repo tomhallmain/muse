@@ -26,7 +26,6 @@ class TempDir:
         TempDir.open_directories = {}
 
     def __init__(self, prefix="tmp_muse_"):
-        print("output of tempfile.gettempdir WAS::: " + TempDir.temporary_directory_parent)
         self._prefix = prefix
         self.purge_prefix()
         self._temp_directory = os.path.join(TempDir.temporary_directory_parent, prefix + str(os.urandom(24).hex()))
