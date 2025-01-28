@@ -181,9 +181,9 @@ class Playback:
             spot_profile.immediate = True
             if not first_prep:
                 Utils.log("Delayed preparation.")
-            self.get_muse().prepare(spot_profile, self.callbacks.update_muse_text if self.callbacks else None)
+            self.get_muse().prepare(spot_profile, self.callbacks)
         else:
-            Utils.start_thread(self.get_muse().prepare, use_asyncio=False, args=(spot_profile, self.callbacks.update_muse_text if self.callbacks else None))
+            Utils.start_thread(self.get_muse().prepare, use_asyncio=False, args=(spot_profile, self.callbacks))
         return round(time.time() - start)
 
     def get_grouping_readable_name(self):
@@ -217,10 +217,15 @@ class Playback:
             return
         if self.callbacks.track_details_callback is not None:
             self.callbacks.track_details_callback(self.track)
-            self.callbacks.update_status_callback("")
-        if self.callbacks.update_muse_text is not None:
+            self.callbacks.update_next_up_callback("")
+        if self.callbacks.update_spot_profile_topics_text is not None:
             spot_profile = self.get_spot_profile()
-            self.callbacks.update_muse_text(spot_profile.get_ui_text(include_track=False))
+            if self.callbacks.update_next_up_callback is not None:
+                self.callbacks.update_next_up_callback("")
+            if self.callbacks.update_prior_track_callback is not None:
+                self.callbacks.update_prior_track_callback(spot_profile.get_previous_track_title())
+            if self.callbacks.update_spot_profile_topics_text is not None:
+                self.callbacks.update_spot_profile_topics_text(spot_profile.get_topic_text())
         if self.callbacks.update_album_artwork is not None:
             self.callbacks.update_album_artwork(image_filepath=self.track.get_album_artwork())
 
@@ -232,7 +237,7 @@ class Playback:
     def delay(self):
         if self.has_played_first_track and not self.last_track_failed:
             if self.remaining_delay_seconds > 4 and self.callbacks is not None:
-                self.callbacks.update_status_callback(_("Sleeping for seconds") + ": " + str(self.remaining_delay_seconds))
+                self.callbacks.update_next_up_callback(_("Sleeping for seconds") + ": " + str(self.remaining_delay_seconds), no_title=True)
                 # TODO set track text to "Upcoming track"
             delay_timer = 0
             while not self.skip_delay and delay_timer < self.remaining_delay_seconds:

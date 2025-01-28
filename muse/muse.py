@@ -57,19 +57,16 @@ class MuseSpotProfile:
     def update_skip_previous_track_remark(self, skip_track):
         self.skip_previous_track_remark = self.skip_previous_track_remark or skip_track
 
-    def get_ui_text(self, include_track=True):
-        out = ""
-        if include_track:
-            if self.track is None:
-                raise Exception("Track is None")
-            out = _("Track: ") + self.track.title
-        if self.previous_track is not None:
-            if include_track:
-                out += "\n"
-            out += _("Previous Track: ") + self.previous_track.title
+    def get_upcoming_track_title(self) -> None | str:
+        return None if self.track is None else self.track.title
+
+    def get_previous_track_title(self) -> None | str:
+        return None if self.previous_track is None else self.previous_track.title
+
+    def get_topic_text(self) -> str:
         if self.talk_about_something and self.topic_translated is not None:
-            out += "\n" + _("Talking about: ") + self.topic_translated
-        return out
+            return _("Talking about: ") + self.topic_translated
+        return ""
 
     def __str__(self):
         out = _("Track: ") + self.track.title if self.track is not None else _("No track")
@@ -123,11 +120,16 @@ class Muse:
             and not self.has_started_prep \
             and ms_remaining < int(Muse.preparation_starts_minutes_from_end * 60 * 1000)
 
-    def prepare(self, spot_profile, update_ui_callback=None):
+    def prepare(self, spot_profile, update_ui_callbacks=None):
         self.has_started_prep = True
         self.set_topic(spot_profile)
-        if update_ui_callback is not None:
-            update_ui_callback(spot_profile.get_ui_text())
+        if update_ui_callbacks is not None:
+            if update_ui_callbacks.update_next_up_callback is not None:
+                update_ui_callbacks.update_next_up_callback(spot_profile.get_upcoming_track_title())
+            if update_ui_callbacks.update_prior_track_callback is not None:
+                update_ui_callbacks.update_prior_track_callback(spot_profile.get_previous_track_title())
+            if update_ui_callbacks.update_spot_profile_topics_text is not None:
+                update_ui_callbacks.update_spot_profile_topics_text(spot_profile.get_topic_text())
         if spot_profile.is_going_to_say_something():
             Utils.log_debug(f"Preparing muse:\n{spot_profile}")
             if not spot_profile.skip_previous_track_remark:
@@ -255,13 +257,19 @@ class Muse:
         # TODO i18n
         previous_group = spot_profile.old_grouping
         if spot_profile.previous_track is not None:
-            dj_remark = _("We've been listening to a group of tracks from the {0} {1}").format(spot_profile.grouping_readable_name, previous_group)
+            if spot_profile.previous_track._is_extended:
+                dj_remark = _("After that short interlude, we're back to our {0} shuffle.").format(spot_profile.grouping_readable_name)
+            else:
+                dj_remark = _("We've been listening to a group of tracks from the {0} {1}").format(spot_profile.grouping_readable_name, previous_group)
             self.say_at_some_point(dj_remark, spot_profile, None)
 
     def speak_about_upcoming_group(self, spot_profile):
         new_group = spot_profile.new_grouping
-        if spot_profile.previous_track is not None:
-            dj_remark =  _("We're going to start a new group of tracks from the {0} {1}.").format(spot_profile.grouping_readable_name, new_group)
+        if spot_profile.previous_track is not None and spot_profile.track is not None:
+            if spot_profile.previous_track._is_extended:
+                dj_remark = _("We're listening to a group of tracks from the {0} {1}.").format(spot_profile.grouping_readable_name, spot_profile.previous_group)
+            else:
+                dj_remark = _("We're going to start a new group of tracks from the {0} {1}.").format(spot_profile.grouping_readable_name, new_group)
             self.say_at_some_point(dj_remark, spot_profile, None)
 
     def is_recent_topics(self, topics_to_check=[], n=1):

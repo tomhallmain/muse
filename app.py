@@ -101,9 +101,10 @@ class App():
         self.fullscreen = False
         self.current_run = Run(RunConfig(placeholder=True))
         self.app_actions = AppActions(
-            self.update_status_text,
             self.update_track_text,
-            self.update_muse_text,
+            self.update_next_up_text,
+            self.update_previous_track_text,
+            self.update_spot_profile_topics_text,
             self.update_progress_bar,
             self.update_label_extension_status,
             self.update_album_artwork,
@@ -118,9 +119,6 @@ class App():
         self.row_counter1 = 0
         self.sidebar.grid(column=0, row=0)
 
-        self.label_status = Label(self.sidebar)
-        self.add_label(self.label_status, _("Status"), columnspan=3)
-
         self.label_title_text = Label(self.sidebar)
         self.add_label(self.label_title_text, _("Title"), columnspan=3)
 
@@ -132,6 +130,12 @@ class App():
 
         self.label_composer_text = Label(self.sidebar)
         self.add_label(self.label_composer_text, _("Composer"), columnspan=3)
+
+        self.label_next_up = Label(self.sidebar)
+        self.add_label(self.label_next_up, _("Next Up"), columnspan=3)
+
+        self.label_previous_title = Label(self.sidebar)
+        self.add_label(self.label_previous_title, _("Prior Track"), columnspan=3)
 
         self.label_muse = Label(self.sidebar)
         self.add_label(self.label_muse, _("Spot Details"), columnspan=3)
@@ -397,10 +401,10 @@ class App():
             self.job_queue.job_running = True
             self.destroy_progress_bar()
             self.progress_bar = Progressbar(self.sidebar, orient=HORIZONTAL, length=300, mode='determinate')
-            self.progress_bar.grid(row=8, column=2)
-            self.cancel_btn.grid(row=10, column=2)
-            self.text_btn.grid(row=11, column=2)
-            self.extension_btn.grid(row=12, column=2)
+            self.progress_bar.grid(row=9, column=2)
+            self.cancel_btn.grid(row=11, column=2)
+            self.text_btn.grid(row=12, column=2)
+            self.extension_btn.grid(row=13, column=2)
             self.current_run = Run(args, callbacks=self.app_actions)
             self.current_run.execute()
             self.cancel_btn.grid_forget()
@@ -516,11 +520,6 @@ class App():
                     break
             return False, directories
 
-    def update_status_text(self, status):
-        text = Utils._wrap_text_to_fit_length(status[:500], 100)
-        self.label_status["text"] = text
-        self.master.update()
-
     def update_track_text(self, audio_track):
         if isinstance(audio_track, str):
             title_text = audio_track
@@ -538,13 +537,31 @@ class App():
         self.label_composer_text["text"] = Utils._wrap_text_to_fit_length(composer_text, 100)
         self.master.update()
 
-    def update_muse_text(self, muse_text):
-        text = Utils._wrap_text_to_fit_length(muse_text[:500], 100)
+    def update_next_up_text(self, next_up_text, no_title=False):
+        if next_up_text is None or next_up_text.strip() == "":
+            next_up_text = ""
+        elif not no_title:
+            next_up_text = _("Next Up: ") + next_up_text
+        text = Utils._wrap_text_to_fit_length(next_up_text[:500], 90)
+        self.label_next_up["text"]  = text
+        self.master.update()
+
+    def update_previous_track_text(self, previous_track_text):
+        if previous_track_text is None or previous_track_text.strip() == "":
+            previous_track_text = ""
+        else:
+            previous_track_text = _("Previous Track: ") + previous_track_text
+        text = Utils._wrap_text_to_fit_length(previous_track_text[:500], 90)
+        self.label_previous_title["text"]   = text
+        self.master.update()
+
+    def update_spot_profile_topics_text(self, muse_text):
+        text = Utils._wrap_text_to_fit_length(muse_text[:500], 90)
         self.label_muse["text"]  = text
         self.master.update()
 
     def update_label_extension_status(self, extension):
-        text = Utils._wrap_text_to_fit_length(extension[:500], 100)
+        text = Utils._wrap_text_to_fit_length(extension[:500], 90)
         self.label_extension_status["text"] = text
         self.master.update()
 

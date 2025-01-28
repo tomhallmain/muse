@@ -52,7 +52,7 @@ class PlaybackConfig:
             next_track.set_is_extended()
             self.next_track_override = None
             PlaybackConfig.READY_FOR_EXTENSION = True
-            return next_track
+            return next_track, None, None
         l = self.get_list()
         next_track, old_grouping, new_grouping = l.next_track(skip_grouping=skip_grouping)
         return next_track, old_grouping, new_grouping
@@ -61,7 +61,7 @@ class PlaybackConfig:
         if self.next_track_override is not None:
             upcoming_track = MediaTrack(self.next_track_override)
             upcoming_track.set_is_extended()
-            return upcoming_track
+            return upcoming_track, None, None
         l = self.get_list()
         upcoming_track, old_grouping, new_grouping = l.upcoming_track()
         return upcoming_track, old_grouping, new_grouping
