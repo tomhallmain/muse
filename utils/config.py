@@ -91,6 +91,7 @@ class Config:
             "open_weather_city",
             "open_weather_api_key",
             "news_api_key",
+            "llm_model_name",
             "muse_language_learning_language",
             "muse_language_learning_language_level",
         )
