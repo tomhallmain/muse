@@ -59,6 +59,7 @@ class TextCleanerRuleset:
         text = text.replace("\u00ab", '"').replace('\u00bb', '"')
         text = re.sub("#+", "#", text)
         text = re.sub("#()", _("Number \\1"), text)
+        text = re.sub("(\\*)+", " ", text)
         return text
 
     def add_rule(self, rule):

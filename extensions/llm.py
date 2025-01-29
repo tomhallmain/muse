@@ -38,8 +38,9 @@ class LLM:
             raise LLMResponseException(f"Failed to generate LLM response: {e}")
 
     def _clean_response_for_models(self, response_text):
-        if self.model_name.startswith("deepseek") and response_text.strip().startswith("<think>") and "</think>" in response_text:
-            response_text = response_text[response_text.index("</think>") + len("</think>"):].strip()
+        if self.model_name.startswith("deepseek"):
+            if response_text.strip().startswith("<think>") and "</think>" in response_text:
+                response_text = response_text[response_text.index("</think>") + len("</think>"):].strip()
         return response_text
 
 

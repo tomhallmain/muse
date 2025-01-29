@@ -267,7 +267,7 @@ class Muse:
         new_group = spot_profile.new_grouping
         if spot_profile.previous_track is not None and spot_profile.track is not None:
             if spot_profile.previous_track._is_extended:
-                dj_remark = _("We're listening to a group of tracks from the {0} {1}.").format(spot_profile.grouping_readable_name, spot_profile.previous_group)
+                dj_remark = _("We're listening to a group of tracks from the {0} {1}.").format(spot_profile.grouping_readable_name, new_group)
             else:
                 dj_remark = _("We're going to start a new group of tracks from the {0} {1}.").format(spot_profile.grouping_readable_name, new_group)
             self.say_at_some_point(dj_remark, spot_profile, None)

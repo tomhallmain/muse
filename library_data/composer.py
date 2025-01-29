@@ -114,9 +114,11 @@ class ComposersData:
                         (audio_track.album is not None and value in audio_track.album) or \
                         (audio_track.artist is not None and value in audio_track.artist):
                     matches += [composer.name]
+                    break
                 elif audio_track.composer is not None and value in audio_track.composer:
                     Utils.log("Found composer match on " + audio_track.filepath)
                     matches += [composer.name]
+                    break
         return matches
 
     def do_search(self, data_search):

@@ -142,8 +142,8 @@ class Playlist:
                     upcoming_track_attr = upcoming_track_attr()
                     current_track_attr = current_track_attr()
                 if upcoming_track_attr != current_track_attr:
-                    old_grouping = current_track
-                    new_grouping = upcoming_track
+                    old_grouping = current_track_attr
+                    new_grouping = upcoming_track_attr
         return upcoming_track, old_grouping, new_grouping
 
     def sort(self):
