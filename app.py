@@ -195,11 +195,12 @@ class App():
         self.label_workflows = Label(self.sidebar)
         self.add_label(self.label_workflows, _("Playlist Sort"), increment_row_counter=False)
         self.workflow = StringVar(master)
-        self.workflows_choice = OptionMenu(self.sidebar, self.workflow, self.runner_app_config.workflow_type,
-                                           *PlaylistSortType.__members__.keys(), command=self.set_workflow_type)
+        current_type = PlaylistSortType[self.runner_app_config.workflow_type].get_translation()
+        self.workflows_choice = OptionMenu(self.sidebar, self.workflow, current_type,
+                                           *PlaylistSortType.get_translated_names(), command=self.set_workflow_type)
         self.apply_to_grid(self.workflows_choice, interior_column=2, sticky=W)
 
-        self.overwrite = BooleanVar(value=True)
+        self.overwrite = BooleanVar(value=self.runner_app_config.overwrite)
         self.overwrite_choice = Checkbutton(self.sidebar, text=_('Overwrite'), variable=self.overwrite)
         self.apply_to_grid(self.overwrite_choice, sticky=W)
 
@@ -348,6 +349,7 @@ class App():
     def set_workflow_type(self, event=None, workflow_tag=None):
         if workflow_tag is None:
             workflow_tag = self.workflow.get()
+        self.runner_app_config.workflow_type = PlaylistSortType.get_playlist_sort_type_from_translation(workflow_tag).value
 
     def set_playback_master_strategy(self, event=None):
         self.runner_app_config.playback_master_strategy = self.playlist_strategy.get()
@@ -377,8 +379,8 @@ class App():
             self.progress_bar = None
 
     def run(self, event=None):
-        if self.current_run.is_infinite():
-            self.current_run.cancel()
+        # if self.current_run.is_infinite():
+        #     self.current_run.cancel()
         # if event is not None and self.job_queue_preset_schedules.has_pending():
         #     res = self.alert(_("Confirm Run"),
         #         _("Starting a new run will cancel the current preset schedule. Are you sure you want to proceed?"),
@@ -447,8 +449,8 @@ class App():
         self.set_delay()
         # self.set_concepts_dir()
         args = RunConfig()
-        args.workflow_tag = self.workflow.get()
-        args.total = "-1"
+        args.workflow_tag = PlaylistSortType.get_playlist_sort_type_from_translation(self.workflow.get())
+        args.total = -1
         args.is_all_tracks, args.directories = self.get_directories()
         args.overwrite = self.overwrite.get()
         args.muse = self.muse.get()

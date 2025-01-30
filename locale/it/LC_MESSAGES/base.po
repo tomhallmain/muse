@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2025-01-28 10:36-0500\n"
+"POT-Creation-Date: 2025-01-30 09:01-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Thomas Hall <tomhall.main@gmail.com>\n"
 "Language-Team: it Team <<EMAIL>>\n"
@@ -15,130 +15,158 @@ msgstr ""
 "Generated-By: pygettext.py 1.5\n"
 
 
-#: .\app.py:122
-msgid "Status"
-msgstr "Stato"
+#: .\app.py:123
+msgid "Title"
+msgstr "Titolo"
 
-#: .\app.py:125
-msgid "Track"
-msgstr "Traccia"
+#: .\app.py:126 .\muse\playlist.py:213
+msgid "Album"
+msgstr "Album"
 
-#: .\app.py:128
+#: .\app.py:129 .\muse\playlist.py:215
+msgid "Artist"
+msgstr "Artista"
+
+#: .\app.py:132 .\muse\playlist.py:217
+msgid "Composer"
+msgstr "Compositore"
+
+#: .\app.py:135
+msgid "Next Up"
+msgstr "Prossimamente"
+
+#: .\app.py:138
+msgid "Prior Track"
+msgstr "Traccia precedente"
+
+#: .\app.py:141
 msgid "Spot Details"
 msgstr "Dettagli del spot"
 
-#: .\app.py:131
+#: .\app.py:144
 msgid "Extension Status"
 msgstr "Stato dell'estensione"
 
-#: .\app.py:134
+#: .\app.py:147
 msgid "Volume"
 msgstr "Volume"
 
-#: .\app.py:140
+#: .\app.py:153
 msgid "Play"
 msgstr "Gioco"
 
-#: .\app.py:143
+#: .\app.py:156
 msgid "Next"
 msgstr "Avanti"
 
-#: .\app.py:146
+#: .\app.py:159
 msgid "Next Grouping"
 msgstr "Raggruppamento successivo"
 
-#: .\app.py:149
+#: .\app.py:162
 msgid "Pause"
 msgstr "Pausa"
 
-#: .\app.py:152 .\ui\composers_window.py:230 .\ui\composers_window.py:265
+#: .\app.py:165 .\ui\composers_window.py:230 .\ui\composers_window.py:265
 #: .\ui\search_window.py:57 .\ui\search_window.py:162
 #: .\ui\search_window.py:191
 msgid "Search"
 msgstr "Ricerca"
 
-#: .\app.py:155
+#: .\app.py:168
 msgid "Composers"
 msgstr "Compositori"
 
-#: .\app.py:158
+#: .\app.py:171
 msgid "Schedules"
 msgstr "Orari"
 
-#: .\app.py:161 .\ui\weather_window.py:25 .\ui\weather_window.py:35
+#: .\app.py:174 .\ui\weather_window.py:25 .\ui\weather_window.py:35
 #: .\ui\weather_window.py:65
 msgid "Weather"
 msgstr "Il tempo"
 
-#: .\app.py:163
+#: .\app.py:176
 msgid "Stop"
 msgstr "Stop"
 
-#: .\app.py:164
+#: .\app.py:177
 msgid "Text"
 msgstr "Testo"
 
-#: .\app.py:165 .\app.py:202
+#: .\app.py:178 .\app.py:216
 msgid "Extension"
 msgstr "Estensione"
 
-#: .\app.py:168
+#: .\app.py:181
 msgid "Delay Seconds"
 msgstr "Ritardo secondi"
 
-#: .\app.py:175
+#: .\app.py:188
 msgid "Playlist"
 msgstr "Playlist"
 
-#: .\app.py:183 .\ui\playlist_window.py:98
+#: .\app.py:196 .\ui\playlist_window.py:98
 msgid "Playlist Sort"
 msgstr "Ordinamento della playlist"
 
-#: .\app.py:190
+#: .\app.py:204
 msgid "Overwrite"
 msgstr "Sovrascrivere"
 
-#: .\app.py:194
+#: .\app.py:208
 msgid "Favorite"
 msgstr "Il preferito"
 
-#: .\app.py:198
+#: .\app.py:212
 msgid "Muse"
 msgstr "Musa"
 
-#: .\app.py:261
+#: .\app.py:275
 msgid "Confirm Quit"
 msgstr "Confermare l'uscita"
 
-#: .\app.py:261
+#: .\app.py:275
 msgid "Would you like to quit the application?"
 msgstr "Volete abbandonare l'applicazione?"
 
-#: .\app.py:381
+#: .\app.py:394
 msgid "Confirm Run"
 msgstr "Confermare l'esecuzione"
 
-#: .\app.py:382
+#: .\app.py:395
 msgid "Are you sure you want to proceed?"
 msgstr "\u00c8 sicuro di voler procedere?"
 
-#: .\app.py:519
-msgid "Album: "
-msgstr "Album: "
-
-#: .\app.py:519 .\muse\muse.py:65 .\muse\muse.py:75
+#: .\app.py:530 .\muse\muse.py:72
 msgid "Track: "
 msgstr "Traccia: "
 
-#: .\app.py:521
+#: .\app.py:531
+msgid "Album: "
+msgstr "Album: "
+
+#: .\app.py:532
 msgid "Artist: "
 msgstr "Artista: "
 
-#: .\app.py:564
+#: .\app.py:533
+msgid "Composer: "
+msgstr "Compositore: "
+
+#: .\app.py:544
+msgid "Next Up: "
+msgstr "Prossimamente: "
+
+#: .\app.py:553 .\muse\muse.py:73
+msgid "Previous Track: "
+msgstr "Traccia precedente: "
+
+#: .\app.py:596
 msgid "Error"
 msgstr "Errore"
 
-#: .\app.py:649
+#: .\app.py:681
 msgid " Muse "
 msgstr " Musa "
 
@@ -154,166 +182,158 @@ msgstr "Estensione \u201c{0}\u201d in attesa di {1} minuti"
 msgid "Extension \"{0}\" ready"
 msgstr "Estensione \"{0}\" pronta"
 
-#: .\library_data\media_track.py:188
+#: .\library_data\media_track.py:189
 msgid "Unknown title"
 msgstr "Titolo sconosciuto"
 
-#: .\library_data\media_track.py:194
+#: .\library_data\media_track.py:195
 msgid "Unknown album"
 msgstr "Album sconosciuto"
 
-#: .\library_data\media_track.py:200
+#: .\library_data\media_track.py:201
 msgid "Unknown artist"
 msgstr "Artista sconosciuto"
 
-#: .\library_data\media_track.py:431 .\library_data\media_track.py:432
+#: .\library_data\media_track.py:441 .\library_data\media_track.py:442
 #: .\tts\text_cleaner_ruleset.py:61
 msgid "Number \\1"
 msgstr " Numero \\1"
 
-#: .\library_data\media_track.py:433
+#: .\library_data\media_track.py:443
 msgid "\\1text to speech\\2"
 msgstr "\\1testo a voce\\2"
 
-#: .\library_data\media_track.py:434
+#: .\library_data\media_track.py:444
 msgid " Opus \\2"
 msgstr " Opus \\2"
 
-#: .\muse\muse.py:69 .\muse\muse.py:76
-msgid "Previous Track: "
-msgstr "Traccia precedente: "
-
-#: .\muse\muse.py:71
+#: .\muse\muse.py:68
 msgid "Talking about: "
 msgstr "Parlando di: "
 
-#: .\muse\muse.py:75
+#: .\muse\muse.py:72
 msgid "No track"
 msgstr "Nessuna traccia"
 
-#: .\muse\muse.py:76
+#: .\muse\muse.py:73
 msgid "No previous track"
 msgstr "Nessuna traccia precedente"
 
-#: .\muse\muse.py:78
+#: .\muse\muse.py:75
 msgid "Speaking about prior track"
 msgstr "Parlando della pista precedente"
 
-#: .\muse\muse.py:80
+#: .\muse\muse.py:77
 msgid "Speaking about upcoming track"
 msgstr "Parlando del brano in uscita"
 
-#: .\muse\muse.py:82
+#: .\muse\muse.py:79
 msgid "Talking about something"
 msgstr "Parlare di qualcosa"
 
-#: .\muse\muse.py:180
+#: .\muse\muse.py:185
 msgid "Hello, I'm {0}"
 msgstr "Salve, sono {0}"
 
-#: .\muse\muse.py:191
+#: .\muse\muse.py:196
 msgid "today"
 msgstr "oggi"
 
-#: .\muse\muse.py:191
+#: .\muse\muse.py:196
 msgid "tonight"
 msgstr "stasera"
 
-#: .\muse\muse.py:193
+#: .\muse\muse.py:198
 msgid "The scheduled shutdown time has arrived. That's it for {0}."
 msgstr "\u00c8 arrivato l'orario di spegnimento previsto. Questo \u00e8 tutto per {0}."
 
-#: .\muse\muse.py:197
+#: .\muse\muse.py:202
 msgid "I'll be on again tomorrow."
 msgstr "Sar\u00f2 di nuovo in linea domani."
 
-#: .\muse\muse.py:199
+#: .\muse\muse.py:204
 msgid "Tomorrow you'll hear from {0}."
 msgstr "Domani avrete notizie di {0}."
 
-#: .\muse\muse.py:203
+#: .\muse\muse.py:208
 msgid "The next time I'll be on is next week, at the same time."
 msgstr "La prossima volta che sar\u00f2 in onda sar\u00e0 la settimana prossima, alla stessa ora."
 
-#: .\muse\muse.py:205
+#: .\muse\muse.py:210
 msgid "I'll be on again this coming {0}."
 msgstr "Sar\u00f2 di nuovo in onda il prossimo {0}."
 
-#: .\muse\muse.py:225
+#: .\muse\muse.py:230
 msgid "That was \"{0}\" in \"{1}\""
 msgstr "Era \u201c{0}\u201d in \u201c{1}\u201d"
 
-#: .\muse\muse.py:227 .\muse\muse.py:244
+#: .\muse\muse.py:232 .\muse\muse.py:249
 msgid " by \"{0}\"."
 msgstr " da \u201c{0}\u201d."
 
-#: .\muse\muse.py:232
+#: .\muse\muse.py:237
 msgid "That was a new track. How'd you like that?"
 msgstr "Era un brano nuovo. Ti \u00e8 piaciuto?"
 
-#: .\muse\muse.py:234
+#: .\muse\muse.py:239
 msgid "That was a new one. How'd you like it?"
 msgstr "Questo era nuovo. Ti \u00e8 piaciuta?"
 
-#: .\muse\muse.py:240
+#: .\muse\muse.py:245
 msgid "To start, we'll be playing: \"{0}\" from \"{1}\""
 msgstr "Per iniziare, giocheremo: \u201c{0}\u201d da \u201c{1}\u201d."
 
-#: .\muse\muse.py:242
+#: .\muse\muse.py:247
 msgid "Next up, we'll be playing: \"{0}\" from \"{1}\""
 msgstr "Il prossimo appuntamento \u00e8 con il gioco: \"{0}\" from \"{1}\""
 
-#: .\muse\muse.py:248
+#: .\muse\muse.py:253
 msgid "This one is a new track."
 msgstr "Questo \u00e8 un brano nuovo."
 
-#: .\muse\muse.py:255
+#: .\muse\muse.py:261
+msgid "After that short interlude, we're back to our {0} shuffle."
+msgstr "Dopo questa breve parentesi, torniamo al nostro shuffle {0}."
+
+#: .\muse\muse.py:263
 msgid "We've been listening to a group of tracks from the {0} {1}"
 msgstr "Abbiamo ascoltato un gruppo di brani del {0} {1}"
 
-#: .\muse\muse.py:261
+#: .\muse\muse.py:270
+msgid "We're listening to a group of tracks from the {0} {1}."
+msgstr "Stiamo ascoltando un gruppo di brani del {0} {1}."
+
+#: .\muse\muse.py:272
 msgid "We're going to start a new group of tracks from the {0} {1}."
 msgstr "Inizieremo un nuovo gruppo di tracce dal punto {0} {1}."
 
-#: .\muse\muse.py:300
+#: .\muse\muse.py:311
 msgid "First let's hear about {0}"
 msgstr "Per prima cosa parliamo di {0}"
 
-#: .\muse\muse.py:302
+#: .\muse\muse.py:313
 msgid "But first, let's hear about {0}."
 msgstr "Ma prima parliamo di {0}."
 
-#: .\muse\muse.py:503
+#: .\muse\muse.py:514
 msgid "We're having some technical difficulties in accessing our source for {0}. We'll try again later"
 msgstr "Stiamo riscontrando alcune difficolt\u00e0 tecniche nell'accesso alla nostra fonte per {0}. Riproveremo pi\u00f9 tardi"
 
-#: .\muse\muse.py:507
+#: .\muse\muse.py:518
 msgid "It seems our writer for {0} is unexpectedly away at the moment. Did we forget to pay his salary again?"
 msgstr "Sembra che il nostro scrittore per {0} sia inaspettatamente assente al momento. Abbiamo dimenticato di pagare di nuovo il suo stipendio?"
 
-#: .\muse\muse.py:511
+#: .\muse\muse.py:522
 msgid "We've found problems with all of our {0} ideas. Please try again later."
 msgstr "Abbiamo riscontrato problemi con tutte le nostre idee {0}. Si prega di riprovare pi\u00f9 tardi."
 
-#: .\muse\muse.py:516
+#: .\muse\muse.py:527
 msgid "Something went wrong. We'll try to fix it soon."
 msgstr "Qualcosa \u00e8 andato storto. Cercheremo di risolvere il problema al pi\u00f9 presto."
 
-#: .\muse\playback.py:235
+#: .\muse\playback.py:240
 msgid "Sleeping for seconds"
 msgstr "Dormire per secondi"
-
-#: .\muse\playlist.py:213
-msgid "Album"
-msgstr "Album"
-
-#: .\muse\playlist.py:215
-msgid "Artist"
-msgstr "Artista"
-
-#: .\muse\playlist.py:217
-msgid "Composer"
-msgstr "Compositore"
 
 #: .\muse\playlist.py:219
 msgid "Genre"
@@ -556,6 +576,38 @@ msgstr "Ricerca in biblioteca"
 #: .\ui\track_details_window.py:30 .\ui\track_details_window.py:85
 msgid "Track Details"
 msgstr "Dettagli della traccia"
+
+#: .\utils\globals.py:118
+msgid "Random"
+msgstr "Casuale"
+
+#: .\utils\globals.py:119
+msgid "Sequence"
+msgstr "Sequenza"
+
+#: .\utils\globals.py:120
+msgid "Album Shuffle"
+msgstr "Mischia di albumi"
+
+#: .\utils\globals.py:121
+msgid "Artist Shuffle"
+msgstr "Mischia di artisti"
+
+#: .\utils\globals.py:122
+msgid "Composer Shuffle"
+msgstr "Mischia di compositori"
+
+#: .\utils\globals.py:123
+msgid "Genre Shuffle"
+msgstr "Mischiare i generi"
+
+#: .\utils\globals.py:124
+msgid "Form Shuffle"
+msgstr "Mischiare le forme"
+
+#: .\utils\globals.py:125
+msgid "Instrument Shuffle"
+msgstr "Mischia di strumenti"
 
 #: .\utils\job_queue.py:35
 msgid " (Pending runs: {0})"

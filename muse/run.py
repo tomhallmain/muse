@@ -99,16 +99,16 @@ class Run:
         #     Utils.log("Auto-run mode set.")
         # Utils.log("Running prompt mode: " + str(self.args.prompter_config.prompt_mode))
 
-        workflow_tags = self.args.workflow_tag.split(",")
-        for workflow_tag in workflow_tags:
-            if self.is_cancelled:
-                break
-            workflow = WorkflowPrompt.setup_workflow(workflow_tag)
-            try:
-                self.do_workflow(workflow)
-            except Exception as e:
-                Utils.log(e)
-                traceback.print_exc()
+        # workflow_tags = self.args.workflow_tag.split(",")
+        # for workflow_tag in workflow_tags:
+        # if self.is_cancelled:
+        #     break
+        workflow = WorkflowPrompt.setup_workflow(self.args.workflow_tag)
+        try:
+            self.do_workflow(workflow)
+        except Exception as e:
+            Utils.log(e)
+            traceback.print_exc()
 
     def execute(self):
         self.is_complete = False

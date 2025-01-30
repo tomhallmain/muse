@@ -19,7 +19,7 @@ class PlaybackConfig:
 
     def __init__(self, args=None, override_dir=None, data_callbacks=None):
         self.total = int(args.total) if args else -1
-        self.type = PlaylistSortType[args.workflow_tag] if args else PlaylistSortType.RANDOM
+        self.type = args.workflow_tag if args else PlaylistSortType.RANDOM
         self.directories = args.directories if args else ([override_dir] if override_dir else [])
         self.overwrite = args.overwrite if args else False
         self.enable_dynamic_volume = args.enable_dynamic_volume if args else True

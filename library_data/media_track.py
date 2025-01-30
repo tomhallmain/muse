@@ -3,6 +3,7 @@ import os
 import random
 import re
 import subprocess
+from time import sleep
 
 # from ops.artists import Artists
 from library_data.composer import composers_data
@@ -204,6 +205,15 @@ class MediaTrack:
         if self.basename is None:
             return True
         if not os.path.isfile(self.filepath):
+            # Maybe this file is located on an external or network drive and the connection is
+            # not stable, so try to check a few times just to be sure.
+            attempts = 0
+            while attempts < 10:
+                sleep(0.2)
+                if os.path.isfile(self.filepath):
+                    return False
+                Utils.log_debug("Could not find song file path: " + self.filepath)
+                attempts += 1
             raise Exception("Could not find song file path: " + self.filepath)
         return False
 

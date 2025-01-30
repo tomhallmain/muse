@@ -2,6 +2,10 @@ from enum import Enum
 import os
 
 from utils.config import config
+from utils.translations import I18N
+
+_ = I18N._
+
 
 class Globals:
     HOME = os.path.expanduser("~")
@@ -94,6 +98,50 @@ class PlaylistSortType(Enum):
             self.FORM_SHUFFLE: 'recently_played_forms',
             self.INSTRUMENT_SHUFFLE: 'recently_played_instruments'
         }[self]
+
+    def get_translation(self):
+        types = [
+            PlaylistSortType.RANDOM,
+            PlaylistSortType.SEQUENCE,
+            PlaylistSortType.ALBUM_SHUFFLE,
+            PlaylistSortType.ARTIST_SHUFFLE,
+            PlaylistSortType.COMPOSER_SHUFFLE,
+            PlaylistSortType.GENRE_SHUFFLE,
+            PlaylistSortType.FORM_SHUFFLE,
+            PlaylistSortType.INSTRUMENT_SHUFFLE
+        ]
+        return PlaylistSortType.get_translated_names()[types.index(self)]
+
+    @staticmethod
+    def get_translated_names():
+        return [
+            _('Random'),
+            _('Sequence'),
+            _('Album Shuffle'),
+            _('Artist Shuffle'),
+            _('Composer Shuffle'),
+            _('Genre Shuffle'),
+            _('Form Shuffle'),
+            _('Instrument Shuffle'),
+        ]
+
+    @staticmethod
+    def get_playlist_sort_type_from_translation(translation):
+        types = [
+            PlaylistSortType.RANDOM,
+            PlaylistSortType.SEQUENCE,
+            PlaylistSortType.ALBUM_SHUFFLE,
+            PlaylistSortType.ARTIST_SHUFFLE,
+            PlaylistSortType.COMPOSER_SHUFFLE,
+            PlaylistSortType.GENRE_SHUFFLE,
+            PlaylistSortType.FORM_SHUFFLE,
+            PlaylistSortType.INSTRUMENT_SHUFFLE
+        ]
+        try:
+            return types[PlaylistSortType.get_translated_names().index(translation)]
+        except ValueError:
+            return PlaylistSortType.RANDOM
+
 
 class PlaybackMasterStrategy(Enum):
     ALL_MUSIC = "ALL_MUSIC"

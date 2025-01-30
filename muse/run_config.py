@@ -5,8 +5,8 @@ class RunConfig:
 
     def __init__(self, args=None, placeholder=False):
         self.args = args
-        self.workflow_tag = PlaylistSortType.RANDOM.name
-        self.total = '-1'
+        self.workflow_tag = PlaylistSortType.RANDOM
+        self.total = -1
         self.is_all_tracks = False
         self.directories = self.get("directories")
         self.overwrite = False
