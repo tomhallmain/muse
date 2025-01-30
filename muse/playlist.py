@@ -66,7 +66,7 @@ class Playlist:
         self.sort_type = _type
         self.pending_tracks = list(tracks)
         self.played_tracks = []
-        self.current_song_index = -1
+        self.current_track_index = -1
         self.data_callbacks = data_callbacks
         assert self.data_callbacks is not None and \
                 self.data_callbacks.get_track is not None and \
@@ -88,16 +88,16 @@ class Playlist:
         return len(self.in_sequence) > 0
 
     def next_track(self, skip_grouping=False):
-        if len(self.sorted_tracks) == 0 or self.current_song_index >= len(self.sorted_tracks):
+        if len(self.sorted_tracks) == 0 or self.current_track_index >= len(self.sorted_tracks):
             return None, None, None
         old_grouping = None
         new_grouping = None
-        self.current_song_index += 1
-        next_track = self.sorted_tracks[self.current_song_index]
+        self.current_track_index += 1
+        next_track = self.sorted_tracks[self.current_track_index]
         self.pending_tracks.remove(next_track.filepath)
         self.played_tracks.append(next_track.filepath)
         if skip_grouping or self.sort_type.is_grouping_type():
-            previous_track = None if self.current_song_index == 0 else self.sorted_tracks[self.current_song_index - 1]
+            previous_track = None if self.current_track_index == 0 else self.sorted_tracks[self.current_track_index - 1]
             attr_getter_name = self.sort_type.getter_name_mapping()
             next_track_attr = getattr(next_track, attr_getter_name)
             previous_track_attr = getattr(previous_track, attr_getter_name) if previous_track is not None else None
@@ -108,9 +108,9 @@ class Playlist:
                 if skip_grouping:
                     old_grouping = previous_track_attr
                     skip_counter = 0
-                    while previous_track_attr == next_track_attr and self.current_song_index < len(self.sorted_tracks) - 1:
-                        self.current_song_index += 1
-                        next_track = self.sorted_tracks[self.current_song_index]
+                    while previous_track_attr == next_track_attr and self.current_track_index < len(self.sorted_tracks) - 1:
+                        self.current_track_index += 1
+                        next_track = self.sorted_tracks[self.current_track_index]
                         self.pending_tracks.remove(next_track.filepath)
                         self.played_tracks.append(next_track.filepath)
                         next_track_attr = getattr(next_track, attr_getter_name)
@@ -127,13 +127,13 @@ class Playlist:
         return next_track, old_grouping, new_grouping
 
     def upcoming_track(self):
-        if len(self.sorted_tracks) == 0 or (self.current_song_index + 1) >= len(self.sorted_tracks):
+        if len(self.sorted_tracks) == 0 or (self.current_track_index + 1) >= len(self.sorted_tracks):
             return None, None, None
         old_grouping = None
         new_grouping = None
-        upcoming_track = self.sorted_tracks[self.current_song_index + 1] if self.current_song_index < len(self.sorted_tracks) - 1 else None
+        upcoming_track = self.sorted_tracks[self.current_track_index + 1] if self.current_track_index < len(self.sorted_tracks) - 1 else None
         if self.sort_type.is_grouping_type():
-            current_track = self.sorted_tracks[self.current_song_index] if self.current_song_index > -1 and self.current_song_index < len(self.sorted_tracks) else None
+            current_track = self.sorted_tracks[self.current_track_index] if self.current_track_index > -1 and self.current_track_index < len(self.sorted_tracks) else None
             if current_track is not None and upcoming_track is not None:
                 attr_getter_name = self.sort_type.getter_name_mapping()
                 upcoming_track_attr = getattr(upcoming_track, attr_getter_name)
@@ -145,6 +145,9 @@ class Playlist:
                     old_grouping = current_track_attr
                     new_grouping = upcoming_track_attr
         return upcoming_track, old_grouping, new_grouping
+
+    def current_track(self):
+        return self.sorted_tracks[self.current_track_index]
 
     def sort(self):
         if self.sort_type == PlaylistSortType.RANDOM:

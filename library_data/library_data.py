@@ -166,6 +166,8 @@ class LibraryData:
             LibraryData.get_all_tracks,
             LibraryData.get_track,
         )
+        self.extension_wait_min = 60
+        self.extension_wait_expected_max = 90
 
     def do_search(self, library_data_search, overwrite=False):
         if not isinstance(library_data_search, LibraryDataSearch):
@@ -182,7 +184,7 @@ class LibraryData:
 
     def resolve_track(self, audio_track):
         # Find any highly similar tracks in the library to this track.
-        pass
+        pass # TODO
 
     def start_extensions_thread(self, initial_sleep=True, overwrite_cache=False):
         if LibraryData.extension_thread_started:
@@ -206,6 +208,15 @@ class LibraryData:
             Utils.log("Reset extension thread.")
         self.start_extensions_thread()
 
+    def get_extension_sleep_time(self, min_value, max_value):
+        current_track = PlaybackConfig.get_playing_track()
+        if current_track is not None and current_track.get_track_length() > max_value:
+            length = int(current_track.get_track_length())
+            min_value += length
+            max_value += length
+            Utils.log("Increased extension sleep time for long track, new range: {0}min-{1}min".format(min_value/60, max_value/60))
+        return random.randint(min_value, max_value)
+
     def _run_extensions(self, initial_sleep=True):
         if initial_sleep:
             sleep_time_seconds = random.randint(200, 1200)
@@ -220,7 +231,7 @@ class LibraryData:
         while True:
             self._extend_by_random_composer()
             LibraryData.extension_thread_delayed_complete = False
-            sleep_time_minutes = random.randint(60, 90)
+            sleep_time_minutes = int(self.get_extension_sleep_time(3600, 5400) / 60)
             check_cadence = 2
             while sleep_time_minutes > 0:
                 sleep_time_minutes -= check_cadence
@@ -357,7 +368,7 @@ class LibraryData:
 
     def _delayed(self, b, sleep=True):
         if sleep:
-            time_seconds = random.randint(1000, 2000)
+            time_seconds = self.get_extension_sleep_time(1000, 2000)
             check_cadence = 150
             while time_seconds > 0:
                 time_seconds -= check_cadence

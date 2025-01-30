@@ -14,6 +14,20 @@ class PlaybackConfig:
     READY_FOR_EXTENSION = True
 
     @staticmethod
+    def get_playing_config():
+        for config in PlaybackConfig.OPEN_CONFIGS:
+            if config.playing:
+                return config
+        return None
+
+    @staticmethod
+    def get_playing_track():
+        playing_config = PlaybackConfig.get_playing_config()
+        if not playing_config:
+            return None
+        return playing_config.current_track()
+
+    @staticmethod
     def new_playback_config(override_dir=None, data_callbacks=None):
         return PlaybackConfig(override_dir=override_dir, data_callbacks=data_callbacks)
 
@@ -28,6 +42,7 @@ class PlaybackConfig:
         self.data_callbacks = data_callbacks
         self.list = Playlist(data_callbacks=self.data_callbacks)
         self.next_track_override = None
+        self.playing = False
         PlaybackConfig.OPEN_CONFIGS.append(self)
 
     def maximum_plays(self):
@@ -46,7 +61,11 @@ class PlaybackConfig:
         self.list = Playlist(l, self.type, data_callbacks=self.data_callbacks)
         return self.list
 
+    def set_playing(self, playing=True):
+        self.playing = playing
+
     def next_track(self, skip_grouping=False):
+        self.set_playing()
         if self.next_track_override is not None:
             next_track = MediaTrack(self.next_track_override)
             next_track.set_is_extended()
@@ -65,6 +84,9 @@ class PlaybackConfig:
         l = self.get_list()
         upcoming_track, old_grouping, new_grouping = l.upcoming_track()
         return upcoming_track, old_grouping, new_grouping
+
+    def current_track(self):
+        return self.get_list().current_track()
 
     def set_next_track_override(self, new_file):
         self.next_track_override = new_file
