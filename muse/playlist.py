@@ -240,12 +240,13 @@ class Playlist:
             Utils.log(f"Found {len(extracted)} tracks with attribute {track_attr} equal to {track_attr_to_extract}")
             for track in extracted:
                 self.sorted_tracks.remove(track)
+            index = extracted.index(self.start_track)
+            extracted = extracted[index:] + extracted[:index]
             self.sorted_tracks = extracted + self.sorted_tracks
 
     def get_grouping_readable_name(self):
         if self.sort_type == PlaylistSortType.RANDOM or self.sort_type == PlaylistSortType.SEQUENCE:
             return None
-        # TODO i18n
         if self.sort_type == PlaylistSortType.ALBUM_SHUFFLE:
             return _("Album")
         if self.sort_type == PlaylistSortType.ARTIST_SHUFFLE:
