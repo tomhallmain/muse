@@ -135,9 +135,9 @@ class PlaylistWindow():
         self.set_workflow_type(self.runner_app_config.workflow_type)
         # self.set_widget_value(self.resolutions_box, self.runner_app_config.resolutions)
 
-    def set_workflow_type(self, event=None, workflow_tag=None):
-        if workflow_tag is None:
-            workflow_tag = self.workflow.get()
+    def set_workflow_type(self, event=None, playlist_sort_type=None):
+        if playlist_sort_type is None:
+            playlist_sort_type = self.workflow.get()
 
     def set_directory(self, event=None):
         self.runner_app_config.directory = self.directory.get()
@@ -152,7 +152,7 @@ class PlaylistWindow():
     def get_args(self):
         # self.set_concepts_dir()
         args = RunConfig()
-        args.workflow_tag = self.workflow.get()
+        args.playlist_sort_type = self.workflow.get()
         args.directories = self.get_directories()
 
         args_copy = deepcopy(args)

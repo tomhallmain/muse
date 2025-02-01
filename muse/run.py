@@ -9,7 +9,6 @@ from muse.playback import Playback
 from muse.playback_config import PlaybackConfig
 from muse.run_config import RunConfig
 from muse.schedules_manager import ScheduledShutdownException
-from muse.workflow import WorkflowPrompt
 from utils.config import config
 from utils.temp_dir import TempDir
 from utils.translations import I18N
@@ -21,11 +20,10 @@ _ = I18N._
 class Run:
     def __init__(self, args, callbacks=None):
         self.id = str(time.time())
+        self.is_started = False
         self.is_complete = False
         self.is_cancelled = False
         self.args = args
-        self.editing = False
-        self.switching_params = False
         self.last_config = None
         self.callbacks = callbacks
         self.playback = None
@@ -62,12 +60,12 @@ class Run:
         if config.enable_library_extender and self.args.extend:
             self.get_library_data().start_extensions_thread(overwrite_cache=self.args.overwrite)
         Utils.log(playback_config)
-        self.switching_params = False
         if self.last_config and playback_config == self.last_config:
             Utils.log("\n\nConfig matches last config. Please modify it or quit.")
             return
 
         try:
+            self.is_started = True
             self.get_playback().run()
             TempDir.cleanup()
         except ScheduledShutdownException as e:
@@ -82,11 +80,9 @@ class Run:
 
         self.last_config = deepcopy(self.get_playback()._playback_config)
 
-    def do_workflow(self, workflow):
+    def do_workflow(self):
         playback_config = PlaybackConfig(args=self.args, data_callbacks=self.library_data.data_callbacks)
         self.playback = Playback(playback_config, self.callbacks, self)
-        self.editing = False
-        self.switching_params = False
         self.last_config = None
 
         try:
@@ -95,17 +91,8 @@ class Run:
             pass
 
     def load_and_run(self):
-        # if self.args.auto_run:
-        #     Utils.log("Auto-run mode set.")
-        # Utils.log("Running prompt mode: " + str(self.args.prompter_config.prompt_mode))
-
-        # workflow_tags = self.args.workflow_tag.split(",")
-        # for workflow_tag in workflow_tags:
-        # if self.is_cancelled:
-        #     break
-        workflow = WorkflowPrompt.setup_workflow(self.args.workflow_tag)
         try:
-            self.do_workflow(workflow)
+            self.do_workflow()
         except Exception as e:
             Utils.log(e)
             traceback.print_exc()

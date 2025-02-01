@@ -10,7 +10,9 @@ class AppActions:
                  update_extension_status_callback,
                  update_album_artwork,
                  get_media_frame_handle,
-                 shutdown_callback):
+                 shutdown_callback,
+                 start_play_callback,
+                 ):
         self.track_details_callback = track_details_callback
         self.update_next_up_callback = update_next_up_callback
         self.update_prior_track_callback = update_prior_track_callback
@@ -20,4 +22,5 @@ class AppActions:
         self.update_album_artwork = update_album_artwork
         self.get_media_frame_handle = get_media_frame_handle
         self.shutdown_callback = shutdown_callback
+        self.start_play_callback = start_play_callback
 

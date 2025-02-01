@@ -33,7 +33,7 @@ class PlaybackConfig:
 
     def __init__(self, args=None, override_dir=None, data_callbacks=None):
         self.total = int(args.total) if args else -1
-        self.type = args.workflow_tag if args else PlaylistSortType.RANDOM
+        self.type = args.playlist_sort_type if args else PlaylistSortType.RANDOM
         self.directories = args.directories if args else ([override_dir] if override_dir else [])
         self.overwrite = args.overwrite if args else False
         self.enable_dynamic_volume = args.enable_dynamic_volume if args else True
@@ -41,6 +41,7 @@ class PlaybackConfig:
         self.long_track_splitting_time_cutoff_minutes = args.long_track_splitting_time_cutoff_minutes if args else 20
         self.data_callbacks = data_callbacks
         self.list = Playlist(data_callbacks=self.data_callbacks)
+        self.start_track = args.track if args else None
         self.next_track_override = None
         self.playing = False
         PlaybackConfig.OPEN_CONFIGS.append(self)
@@ -58,7 +59,7 @@ class PlaybackConfig:
         if self.list.is_valid():
             return self.list
         l = self.data_callbacks.get_all_filepaths(self.directories, self.overwrite)
-        self.list = Playlist(l, self.type, data_callbacks=self.data_callbacks)
+        self.list = Playlist(l, self.type, data_callbacks=self.data_callbacks, start_track=self.start_track)
         return self.list
 
     def set_playing(self, playing=True):

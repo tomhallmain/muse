@@ -109,7 +109,9 @@ class App():
             self.update_label_extension_status,
             self.update_album_artwork,
             self.get_media_frame_handle,
-            self.on_closing)
+            self.on_closing,
+            self.start_playback,
+        )
 
         # Sidebar
         self.sidebar = Sidebar(self.master)
@@ -194,11 +196,11 @@ class App():
         # TODO multiselect
         self.label_workflows = Label(self.sidebar)
         self.add_label(self.label_workflows, _("Playlist Sort"), increment_row_counter=False)
-        self.workflow = StringVar(master)
+        self.sort_type = StringVar(master)
         current_type = PlaylistSortType[self.runner_app_config.workflow_type].get_translation()
-        self.workflows_choice = OptionMenu(self.sidebar, self.workflow, current_type,
-                                           *PlaylistSortType.get_translated_names(), command=self.set_workflow_type)
-        self.apply_to_grid(self.workflows_choice, interior_column=2, sticky=W)
+        self.sort_type_choice = OptionMenu(self.sidebar, self.sort_type, current_type,
+                                           *PlaylistSortType.get_translated_names(), command=self.set_playlist_sort_type)
+        self.apply_to_grid(self.sort_type_choice, interior_column=2, sticky=W)
 
         self.overwrite = BooleanVar(value=self.runner_app_config.overwrite)
         self.overwrite_choice = Checkbutton(self.sidebar, text=_('Overwrite'), variable=self.overwrite)
@@ -339,17 +341,17 @@ class App():
     def set_widgets_from_config(self):
         if self.runner_app_config is None:
             raise Exception("No config to set widgets from")
-        self.set_workflow_type(self.runner_app_config.workflow_type)
+        self.set_playlist_sort_type(self.runner_app_config.workflow_type)
         # self.set_widget_value(self.resolutions_box, self.runner_app_config.resolutions)
 
         self.delay.set(str(self.runner_app_config.delay_time_seconds))
         self.overwrite.set(self.runner_app_config.overwrite)
         self.muse.set(self.runner_app_config.muse)
 
-    def set_workflow_type(self, event=None, workflow_tag=None):
-        if workflow_tag is None:
-            workflow_tag = self.workflow.get()
-        self.runner_app_config.workflow_type = PlaylistSortType.get_playlist_sort_type_from_translation(workflow_tag).value
+    def set_playlist_sort_type(self, event=None, playlist_sort_type=None):
+        if playlist_sort_type is None:
+            playlist_sort_type = self.sort_type.get()
+        self.runner_app_config.workflow_type = PlaylistSortType.get_playlist_sort_type_from_translation(playlist_sort_type).value
 
     def set_playback_master_strategy(self, event=None):
         self.runner_app_config.playback_master_strategy = self.playlist_strategy.get()
@@ -378,17 +380,13 @@ class App():
             self.destroy_grid_element("progress_bar")
             self.progress_bar = None
 
-    def run(self, event=None):
-        # if self.current_run.is_infinite():
-        #     self.current_run.cancel()
-        # if event is not None and self.job_queue_preset_schedules.has_pending():
-        #     res = self.alert(_("Confirm Run"),
-        #         _("Starting a new run will cancel the current preset schedule. Are you sure you want to proceed?"),
-        #         kind="warning")
-        #     if res != messagebox.OK:
-        #         return
-        # self.job_queue_preset_schedules.cancel()
-        args, args_copy = self.get_args()
+    def start_playback(self, track=None, playlist_sort_type=None):
+        if playlist_sort_type is not None:
+            self.sort_type.set(playlist_sort_type.get_translation())
+        self.run(track=track)
+
+    def run(self, event=None, track=None):
+        args, args_copy = self.get_args(track=track)
 
         try:
             args.validate()
@@ -430,10 +428,16 @@ class App():
             self.master.update_idletasks()  # Force update of the GUI
 
     def next(self, event=None) -> None:
-        self.current_run.next()
+        if not self.current_run.is_started:
+            self.run()
+        else:
+            self.current_run.next()
 
     def next_grouping(self, event=None) -> None:
-        self.current_run.next_grouping()
+        if not self.current_run.is_started:
+            self.run()
+        else:
+            self.current_run.next_grouping()
 
     def pause(self, event=None) -> None:
         self.current_run.pause()
@@ -444,17 +448,18 @@ class App():
     def switch_extension(self, event=None):
         self.current_run.switch_extension()
 
-    def get_args(self):
+    def get_args(self, track=None):
         self.store_info_cache()
         self.set_delay()
         # self.set_concepts_dir()
         args = RunConfig()
-        args.workflow_tag = PlaylistSortType.get_playlist_sort_type_from_translation(self.workflow.get())
+        args.playlist_sort_type = PlaylistSortType.get_playlist_sort_type_from_translation(self.sort_type.get())
         args.total = -1
         args.is_all_tracks, args.directories = self.get_directories()
         args.overwrite = self.overwrite.get()
         args.muse = self.muse.get()
         args.extend = self.extend.get()
+        args.track = track
 
         args_copy = deepcopy(args)
         return args, args_copy
@@ -513,7 +518,7 @@ class App():
         directories = []
         selection = self.playlist_strategy.get()
         all_dirs = config.get_subdirectories()
-        if selection == "ALL":
+        if selection == "ALL_MUSIC":
             return True, list(all_dirs.keys())
         else:
             for full_path, key in all_dirs.items():

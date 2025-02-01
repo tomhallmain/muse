@@ -61,12 +61,13 @@ class Playlist:
         Playlist.update_list(Playlist.recently_played_forms, track.get_form())
         Playlist.update_list(Playlist.recently_played_instruments, track.get_instrument())
 
-    def __init__(self, tracks=[], _type=PlaylistSortType.SEQUENCE, data_callbacks=None):
+    def __init__(self, tracks=[], _type=PlaylistSortType.SEQUENCE, data_callbacks=None, start_track=None):
         self.in_sequence = list(tracks)
         self.sort_type = _type
         self.pending_tracks = list(tracks)
         self.played_tracks = []
         self.current_track_index = -1
+        self.start_track = start_track
         self.data_callbacks = data_callbacks
         assert self.data_callbacks is not None and \
                 self.data_callbacks.get_track is not None and \
@@ -76,6 +77,7 @@ class Playlist:
         for track_filepath in list(tracks):
             track = self.data_callbacks.get_track(track_filepath)
             self.sorted_tracks.append(track)
+        Utils.log(f"Playlist length: {self.size()}")
         self.sort()
 
     def size(self):
@@ -150,6 +152,8 @@ class Playlist:
         return self.sorted_tracks[self.current_track_index]
 
     def sort(self):
+        attr_getter_name = None
+        list_name_mapping = None
         if self.sort_type == PlaylistSortType.RANDOM:
             random.shuffle(self.sorted_tracks)
         if self.sort_type != PlaylistSortType.SEQUENCE:
@@ -169,6 +173,7 @@ class Playlist:
                     self.sorted_tracks.sort(key=lambda t: (all_attrs_list.index(getattr(t, attr_getter_name)), t.filepath))
             list_name_mapping = self.sort_type.grouping_list_name_mapping()
             self.shuffle_with_memory_for_attr(attr_getter_name, list_name_mapping)
+        self.set_start_track(attr_getter_name)
 
     def shuffle_with_memory_for_attr(self, track_attr, list_attr):
         # Look at the first config.playlist_recently_played_check_count (1000 default)
@@ -207,6 +212,35 @@ class Playlist:
                 Utils.log(f"Hit max attempts limit, too many recently played tracks found in playlist")
                 return max_attempts
         return attempts
+
+    def set_start_track(self, track_attr):
+        if self.start_track is None:
+            return
+        if self.start_track not in self.sorted_tracks:
+            raise Exception("Playlist start track not in playlist!")
+        if self.sort_type == PlaylistSortType.RANDOM:
+            Utils.log(f"Setting playlist start track to {self.start_track}")
+            self.sorted_tracks.remove(self.start_track)
+            self.sorted_tracks.insert(0, self.start_track)
+        elif self.sort_type == PlaylistSortType.SEQUENCE:
+            Utils.log(f"Setting playlist start track to {self.start_track}")
+            index = self.sorted_tracks.index(self.start_track)
+            self.sorted_tracks = self.sorted_tracks[index:] + self.sorted_tracks[:index]
+        else:
+            track_attr_to_extract = getattr(self.start_track, track_attr)
+            is_callable = False
+            if callable(track_attr_to_extract):
+                is_callable = True
+                track_attr_to_extract = track_attr_to_extract()
+            Utils.log(f"Setting playlist start track attribute {track_attr} to {track_attr_to_extract}")
+            if is_callable:
+                extracted = [track for track in self.sorted_tracks if getattr(track, track_attr)() == track_attr_to_extract]
+            else:
+                extracted = [track for track in self.sorted_tracks if getattr(track, track_attr) == track_attr_to_extract]
+            Utils.log(f"Found {len(extracted)} tracks with attribute {track_attr} equal to {track_attr_to_extract}")
+            for track in extracted:
+                self.sorted_tracks.remove(track)
+            self.sorted_tracks = extracted + self.sorted_tracks
 
     def get_grouping_readable_name(self):
         if self.sort_type == PlaylistSortType.RANDOM or self.sort_type == PlaylistSortType.SEQUENCE:

@@ -1,11 +1,11 @@
 
-from utils.globals import Globals, PlaylistSortType # must import first
+from utils.globals import PlaylistSortType # must import first
 
 class RunConfig:
 
     def __init__(self, args=None, placeholder=False):
         self.args = args
-        self.workflow_tag = PlaylistSortType.RANDOM
+        self.playlist_sort_type = PlaylistSortType.RANDOM
         self.total = -1
         self.is_all_tracks = False
         self.directories = self.get("directories")
@@ -16,6 +16,7 @@ class RunConfig:
         self.enable_long_track_splitting  = False
         self.long_track_splitting_time_cutoff_minutes = 20
         self.placeholder = placeholder
+        self.track = None
 
     def get(self, name):
         if isinstance(self.args, dict):

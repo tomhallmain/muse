@@ -26,7 +26,7 @@ libary_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)))
 
 
 class LibraryDataSearch:
-    def __init__(self, all="", title="", artist="", composer="", album="", genre="", instrument="", max_results=200):
+    def __init__(self, all="", title="", artist="", composer="", album="", genre="", instrument="", form="", max_results=200):
         self.all = all.lower()
         self.title = title.lower()
         self.artist = artist.lower()
@@ -34,12 +34,13 @@ class LibraryDataSearch:
         self.album = album.lower()
         self.genre = genre.lower()
         self.instrument = instrument.lower()
+        self.form = form.lower()
         self.max_results = max_results
 
         self.results = []
 
     def is_valid(self):
-        for name in ["all", "title", "artist", "composer", "album", "genre", "instrument"]:
+        for name in ["all", "title", "album", "artist", "composer", "genre", "instrument", "form"]:
             field = getattr(self, name)
             if field is not None and field.strip()!= "":
                 print(f"{name} - \"{field}\"")
@@ -57,22 +58,48 @@ class LibraryDataSearch:
         if len(self.title) > 0 and audio_track.searchable_title is not None and self.title in audio_track.searchable_title:
             self.results.append(audio_track)
             return True
+        if len(self.album) > 0 and audio_track.searchable_album is not None and self.album in audio_track.searchable_album:
+            self.results.append(audio_track)
+            return True
         if len(self.artist) > 0 and audio_track.searchable_artist is not None and self.artist in audio_track.searchable_artist:
             self.results.append(audio_track)
             return True
         if len(self.composer) > 0 and audio_track.searchable_composer is not None and self.composer in audio_track.searchable_composer:
             self.results.append(audio_track)
             return True
-        if len(self.album) > 0 and audio_track.searchable_album is not None and self.album in audio_track.searchable_album:
+        if len(self.genre) > 0 and audio_track.searchable_genre is not None and self.genre in audio_track.searchable_genre:
             self.results.append(audio_track)
             return True
-        if len(self.genre) > 0 and audio_track.searchable_genre is not None and self.genre in audio_track.searchable_genre:
+        if len(self.instrument) > 0 and audio_track.get_instrumet() is not None and self.instrument in audio_track.get_instrumet().lower():
+            self.results.append(audio_track)
+            return True
+        if len(self.form) > 0 and audio_track.get_form() is not None and self.form in audio_track.get_form().lower():
             self.results.append(audio_track)
             return True
         return False
 
     def get_results(self):
         return self.results
+
+    def sort_results_by(self, attr=None):
+        if len(self.results) == 0 or (attr is not None and attr.strip() == ""):
+            return
+        if attr is None:
+            for _attr in ["title", "album", "artist", "composer", "genre", "instrument", "form"]:
+                if len(getattr(self, _attr)) > 0:
+                    if _attr in ["genre", "instrument", "form"]:
+                        attr = "get_" + _attr
+                    else:
+                        attr = _attr
+                    break
+            if attr is None:
+                Utils.log("No sortable attribute in search query.")
+                return
+        attr_test = getattr(self.results[0], attr)
+        if callable(attr_test):
+            self.results.sort(key=lambda t: (getattr(t, attr)(), t.filepath))
+        else:
+            self.results.sort(key=lambda t: (getattr(t, attr), t.filepath))
 
 
 class TrackAttribute(Enum):

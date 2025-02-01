@@ -313,26 +313,33 @@ class MediaTrack:
         return temp_filepath
 
     def set_track_length(self):
+        # TODO ff-executables can't handle special characters in filepaths
         if MediaTrack.ffprobe_available is None:
             MediaTrack.ffprobe_available = Utils.executable_available("ffprobe")
         if MediaTrack.ffprobe_available:
             args = ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", self.filepath]
             process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
             output, _ = process.communicate()
-            for line in output.split("\n"):
-                self.length = float(line[:-1])
-                return self.length
+            try:
+                for line in output.split("\n"):
+                    self.length = float(line[:-1])
+                    return self.length
+            except Exception as e:
+                print(e)
         else:
             args = ["ffmpeg", "-i", self.filepath]
             p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             stdout, stderr = p.communicate()
-            for line in stderr.split("\n"):
-                if "Duration: " in line and ", start:" in line:
-                    duration_value = line[line.find("Duration: ") + len("Duration: "):line.find(", start:")]
-                    sexagesimal_time_vals = duration_value.split(":")
-                    duration_seconds = int(sexagesimal_time_vals[0]) * 3600 + int(sexagesimal_time_vals[1]) * 60 + float(sexagesimal_time_vals[2])
-                    self.length = duration_seconds
-                    return self.length
+            try:
+                for line in stderr.split("\n"):
+                    if "Duration: " in line and ", start:" in line:
+                        duration_value = line[line.find("Duration: ") + len("Duration: "):line.find(", start:")]
+                        sexagesimal_time_vals = duration_value.split(":")
+                        duration_seconds = int(sexagesimal_time_vals[0]) * 3600 + int(sexagesimal_time_vals[1]) * 60 + float(sexagesimal_time_vals[2])
+                        self.length = duration_seconds
+                        return self.length
+            except Exception as e:
+                print(e)
         Utils.log_red(f"Failed to get track length: {self.filepath}")
         return self.length
 
@@ -479,7 +486,7 @@ class MediaTrack:
         return -1, int(maybe_track_index), str(s[counter:])
 
     def __str__(self) -> str:
-        return self.title
+        return str(self.title)
 
     def __eq__(self, value: object) -> bool:
         return isinstance(value, MediaTrack) and self.filepath == value.filepath
