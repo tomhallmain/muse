@@ -1,5 +1,3 @@
-from enum import Enum
-
 from tkinter import Toplevel, Frame, Label, StringVar, BooleanVar, Checkbutton, LEFT, W
 from tkinter.ttk import Button, Entry
 

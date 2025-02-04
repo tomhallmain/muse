@@ -23,6 +23,8 @@ from ui.composers_window import ComposersWindow
 from ui.extensions_window import ExtensionsWindow
 from ui.media_frame import MediaFrame
 from ui.playlist_window import PlaylistWindow
+from ui.preset import Preset
+from ui.presets_window import PresetsWindow
 from ui.schedules_window import SchedulesWindow
 from ui.search_window import SearchWindow
 from ui.track_details_window import TrackDetailsWindow
@@ -96,6 +98,7 @@ class App():
         self.master.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.progress_bar = None
         self.job_queue = JobQueue("Playlist Runs")
+        self.job_queue_preset_schedules = JobQueue("Preset Schedules")
         self.runner_app_config = self.load_info_cache()
         self.config_history_index = 0
         self.fullscreen = False
@@ -109,8 +112,9 @@ class App():
             self.update_label_extension_status,
             self.update_album_artwork,
             self.get_media_frame_handle,
-            self.on_closing,
             self.start_playback,
+            self.on_closing,
+            self.toast,
         )
 
         # Sidebar
@@ -151,8 +155,15 @@ class App():
         self.set_widget_value(self.volume_slider, Globals.DEFAULT_VOLUME_THRESHOLD)
         self.apply_to_grid(self.volume_slider, interior_column=2, sticky=W)
 
+        # Progress bar will be on this row
+        self.row_counter0 += 1
+        self.row_counter1 += 1
+
         self.run_btn = None
-        self.add_button("run_btn", _("Play"), self.run)
+        self.add_button("run_btn", _("Play"), self.run, increment_row_counter=False)
+
+        self.playlists_btn = None
+        self.add_button("playlists_btn", _("Playlists"), self.open_presets_window, interior_column=2)
 
         self.next_btn = None
         self.add_button("next_btn", _("Next"), self.next, increment_row_counter=False)
@@ -402,9 +413,9 @@ class App():
             self.destroy_progress_bar()
             self.progress_bar = Progressbar(self.sidebar, orient=HORIZONTAL, length=300, mode='determinate')
             self.progress_bar.grid(row=9, column=2)
-            self.cancel_btn.grid(row=11, column=2)
-            self.text_btn.grid(row=12, column=2)
-            self.extension_btn.grid(row=13, column=2)
+            self.cancel_btn.grid(row=12, column=2)
+            self.text_btn.grid(row=13, column=2)
+            self.extension_btn.grid(row=14, column=2)
             self.current_run = Run(args, callbacks=self.app_actions)
             self.current_run.execute()
             self.cancel_btn.grid_forget()
@@ -469,6 +480,59 @@ class App():
             return
         self.current_run.open_text()
 
+    def start_run_from_preset(self, preset, manual=True):
+        self.sort_type.set(preset.playlist_sort_type)
+        # if manual:
+        #     self.run_preset_schedule_var.set(False)
+        self.master.update()
+
+    def construct_preset(self, name):
+        args, args_copy = self.get_args()
+        self.runner_app_config.set_from_run_config(args)
+        return Preset.from_runner_app_config(name, self.runner_app_config)
+
+    # def run_preset_schedule(self, override_args={}):
+    #     def run_preset_async():
+    #         self.job_queue_preset_schedules.job_running = True
+    #         starting_total = int(self.total.get())
+    #         schedule = SchedulesWindow.current_schedule
+    #         if schedule is None:
+    #             raise Exception("No Schedule Selected")
+    #         print(f"Running Preset Schedule: {schedule}")
+    #         for preset_task in schedule.get_tasks():
+    #             if not self.job_queue_preset_schedules.has_pending() or not self.run_preset_schedule_var.get() or \
+    #                     (self.current_run is not None and not self.current_run.is_infinite() and self.current_run.is_cancelled):
+    #                 self.job_queue_preset_schedules.cancel()
+    #                 return
+    #             try:
+    #                 preset = PresetsWindow.get_preset_by_name(preset_task.name)
+    #                 print(f"Running Preset Schedule: {preset}")
+    #             except Exception as e:
+    #                 self.handle_error(str(e), "Preset Schedule Error")
+    #                 raise e
+    #             self.set_widgets_from_preset(preset, manual=False)
+    #             self.total.set(str(preset_task.count_runs if preset_task.count_runs > 0 else starting_total))
+    #             self.run()
+    #             # NOTE have to do some special handling here because the runs are still not self-contained,
+    #             # and overwriting widget values may cause the current run to have its settings changed mid-run
+    #             time.sleep(0.1)
+    #             started_run_id = self.current_run.id
+    #             while (self.current_run is not None and started_run_id == self.current_run.id
+    #                     and not self.current_run.is_cancelled and not self.current_run.is_complete):
+    #                 if not self.job_queue_preset_schedules.has_pending() or not self.run_preset_schedule_var.get():
+    #                     self.job_queue_preset_schedules.cancel()
+    #                     return
+    #                 time.sleep(1)
+    #         self.total.set(str(starting_total))
+    #         self.job_queue_preset_schedules.job_running = False
+    #         next_preset_schedule_args = self.job_queue_preset_schedules.take()
+    #         if next_preset_schedule_args is None:
+    #             self.job_queue_preset_schedules.cancel()
+    #         else:
+    #             self.run_preset_schedule(override_args=next_preset_schedule_args)
+
+    #     Utils.start_thread(run_preset_async, use_asyncio=False, args=[])
+
     def open_composers_window(self):
         try:
             composers_window = ComposersWindow(self.master, self.app_actions)
@@ -507,6 +571,12 @@ class App():
             playlist_window = PlaylistWindow(self.master, self.app_actions)
         except Exception as e:
             Utils.log_red(f"Exception opening playlist window: {e}")
+
+    def open_presets_window(self):
+        try:
+            presets_window = PresetsWindow(self.master, self.app_actions, self.construct_preset, self.start_run_from_preset)
+        except Exception as e:
+            Utils.log_red(f"Exception opening presets window: {e}")
 
     def open_weather_window(self):
         try:

@@ -168,6 +168,8 @@ class LibraryData:
 
     @staticmethod
     def get_all_tracks(overwrite=False):
+        if overwrite:
+            LibraryData.MEDIA_TRACK_CACHE = {}
         with LibraryData.get_tracks_lock:
             if len(LibraryData.all_tracks) == 0 or overwrite:
                 all_directories = config.get_all_directories()
