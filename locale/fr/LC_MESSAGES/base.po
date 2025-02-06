@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2025-02-05 17:57-0500\n"
+"POT-Creation-Date: 2025-02-06 10:49-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Thomas Hall <tomhall.main@gmail.com>\n"
 "Language-Team: fr Team <<EMAIL>>\n"
@@ -57,7 +57,7 @@ msgstr "Jouer"
 
 #: .\app.py:166
 msgid "Playlists"
-msgstr ""
+msgstr "Listes de lecture"
 
 #: .\app.py:169
 msgid "Next"
@@ -178,8 +178,8 @@ msgid "Extension thread waiting for {0} minutes"
 msgstr "Le thread d'extension attend {0} minutes"
 
 #: .\library_data\library_data.py:302
-msgid "Extending by random {0}: {1}"
-msgstr ""
+msgid "Coming up soon, we'll be listening to a new track from the {0} {1}."
+msgstr "Bient\u00f4t, nous \u00e9couterons un nouveau morceau du groupe {0} {1}."
 
 #: .\library_data\library_data.py:430
 msgid "Extension \"{0}\" waiting for {1} minutes"
@@ -534,35 +534,35 @@ msgstr "Annuaire"
 
 #: .\ui\presets_window.py:52
 msgid "New Preset (ERROR no presets found)"
-msgstr ""
+msgstr "Nouveau pr\u00e9r\u00e9glage (ERREUR aucun pr\u00e9r\u00e9glage trouv\u00e9)"
 
 #: .\ui\presets_window.py:83
 msgid "Not enough presets found."
-msgstr ""
+msgstr "Pas assez de pr\u00e9r\u00e9glages trouv\u00e9s."
 
 #: .\ui\presets_window.py:93
 msgid "Presets Window"
-msgstr ""
+msgstr "Fen\u00eatre des pr\u00e9r\u00e9glages"
 
 #: .\ui\presets_window.py:114
 msgid "Set a new preset"
-msgstr ""
+msgstr "D\u00e9finir un nouveau pr\u00e9r\u00e9glage"
 
 #: .\ui\presets_window.py:115
 msgid "New Preset"
-msgstr ""
+msgstr "Nouveau pr\u00e9r\u00e9glage"
 
 #: .\ui\presets_window.py:119
 msgid "Add preset"
-msgstr ""
+msgstr "Ajouter un pr\u00e9r\u00e9glage"
 
 #: .\ui\presets_window.py:121
 msgid "Clear presets"
-msgstr ""
+msgstr "Effacer les pr\u00e9r\u00e9glages"
 
 #: .\ui\presets_window.py:139
 msgid "Set"
-msgstr ""
+msgstr "R\u00e9gler"
 
 #: .\ui\presets_window.py:146 .\ui\schedules_window.py:211
 msgid "Delete"
@@ -570,7 +570,7 @@ msgstr "Supprimer"
 
 #: .\ui\presets_window.py:163
 msgid "Invalid preset: {0}"
-msgstr ""
+msgstr "Pr\u00e9r\u00e9glage non valide : {0}"
 
 #: .\ui\schedules_window.py:28
 msgid "Modify Preset Schedule: {0}"
@@ -620,7 +620,7 @@ msgstr "Recherche dans la biblioth\u00e8que"
 #: .\ui\search_window.py:102 .\ui\search_window.py:111
 #: .\ui\search_window.py:120 .\ui\search_window.py:128
 msgid "Sort by"
-msgstr ""
+msgstr "Trier par"
 
 #: .\ui\track_details_window.py:30 .\ui\track_details_window.py:85
 msgid "Track Details"

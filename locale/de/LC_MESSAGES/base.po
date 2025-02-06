@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2025-02-05 17:57-0500\n"
+"POT-Creation-Date: 2025-02-06 10:49-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Thomas Hall <tomhall.main@gmail.com>\n"
 "Language-Team: de Team <<EMAIL>>\n"
@@ -178,8 +178,8 @@ msgid "Extension thread waiting for {0} minutes"
 msgstr "Erweiterungs-Thread wartet auf {0} Minuten"
 
 #: .\library_data\library_data.py:302
-msgid "Extending by random {0}: {1}"
-msgstr "Erweitern um zuf\u00e4llige {0}: {1}"
+msgid "Coming up soon, we'll be listening to a new track from the {0} {1}."
+msgstr "In K\u00fcrze werden wir uns einen neuen Track von {0} {1} anh\u00f6ren."
 
 #: .\library_data\library_data.py:430
 msgid "Extension \"{0}\" waiting for {1} minutes"
@@ -304,7 +304,7 @@ msgstr "Nach diesem kurzen Intermezzo kehren wir zu unserem {0} Shuffle zur\u00f
 
 #: .\muse\muse.py:269
 msgid "We've been listening to a group of tracks from the {0} {1}"
-msgstr "Wir haben uns eine Gruppe von Titeln aus der {0} {1}"
+msgstr "Wir haben uns eine Gruppe von Titeln aus der {0} {1} angeh\u00f6rt"
 
 #: .\muse\muse.py:276
 msgid "We're listening to a group of tracks from the {0} {1}."

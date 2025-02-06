@@ -301,7 +301,7 @@ class LibraryData:
 
         Utils.log(f'Extending by random {attr}: {value}')
         if voice is not None:
-            muse_to_say = _("Extending by random {0}: {1}").format(attr.get_translation(), value)
+            muse_to_say = _("Coming up soon, we'll be listening to a new track from the {0} {1}.").format(attr.get_translation(), value)
             voice.prepare_to_say(muse_to_say, save_for_last=True)
         self.extend(value=value, attr=attr)
 

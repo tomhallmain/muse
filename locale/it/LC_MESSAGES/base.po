@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2025-02-05 17:57-0500\n"
+"POT-Creation-Date: 2025-02-06 10:49-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Thomas Hall <tomhall.main@gmail.com>\n"
 "Language-Team: it Team <<EMAIL>>\n"
@@ -57,7 +57,7 @@ msgstr "Gioco"
 
 #: .\app.py:166
 msgid "Playlists"
-msgstr ""
+msgstr "Elenchi di brani"
 
 #: .\app.py:169
 msgid "Next"
@@ -178,8 +178,8 @@ msgid "Extension thread waiting for {0} minutes"
 msgstr "Thread di estensione in attesa per {0} minuti"
 
 #: .\library_data\library_data.py:302
-msgid "Extending by random {0}: {1}"
-msgstr ""
+msgid "Coming up soon, we'll be listening to a new track from the {0} {1}."
+msgstr "Tra poco ascolteremo un nuovo brano dei {0} {1}."
 
 #: .\library_data\library_data.py:430
 msgid "Extension \"{0}\" waiting for {1} minutes"
@@ -534,35 +534,35 @@ msgstr "Elenco"
 
 #: .\ui\presets_window.py:52
 msgid "New Preset (ERROR no presets found)"
-msgstr ""
+msgstr "Nuova preimpostazione (ERRORE nessuna preimpostazione trovata)"
 
 #: .\ui\presets_window.py:83
 msgid "Not enough presets found."
-msgstr ""
+msgstr "Non sono state trovate abbastanza preimpostazioni."
 
 #: .\ui\presets_window.py:93
 msgid "Presets Window"
-msgstr ""
+msgstr "Finestra delle preimpostazioni"
 
 #: .\ui\presets_window.py:114
 msgid "Set a new preset"
-msgstr ""
+msgstr "Impostare una nuova preimpostazione"
 
 #: .\ui\presets_window.py:115
 msgid "New Preset"
-msgstr ""
+msgstr "Nuova preimpostazione"
 
 #: .\ui\presets_window.py:119
 msgid "Add preset"
-msgstr ""
+msgstr "Aggiungi preimpostazione"
 
 #: .\ui\presets_window.py:121
 msgid "Clear presets"
-msgstr ""
+msgstr "Cancella le preimpostazioni"
 
 #: .\ui\presets_window.py:139
 msgid "Set"
-msgstr ""
+msgstr "Imposta"
 
 #: .\ui\presets_window.py:146 .\ui\schedules_window.py:211
 msgid "Delete"
@@ -570,7 +570,7 @@ msgstr "Cancellare"
 
 #: .\ui\presets_window.py:163
 msgid "Invalid preset: {0}"
-msgstr ""
+msgstr "Preimpostazione non valida: {0}"
 
 #: .\ui\schedules_window.py:28
 msgid "Modify Preset Schedule: {0}"
@@ -620,7 +620,7 @@ msgstr "Ricerca in biblioteca"
 #: .\ui\search_window.py:102 .\ui\search_window.py:111
 #: .\ui\search_window.py:120 .\ui\search_window.py:128
 msgid "Sort by"
-msgstr ""
+msgstr "Ordina per"
 
 #: .\ui\track_details_window.py:30 .\ui\track_details_window.py:85
 msgid "Track Details"

@@ -178,7 +178,7 @@ msgid "Extension thread waiting for {0} minutes"
 msgstr ""
 
 #: .\library_data\library_data.py:302
-msgid "Extending by random {0}: {1}"
+msgid "Coming up soon, we'll be listening to a new track from the {0} {1}."
 msgstr ""
 
 #: .\library_data\library_data.py:430
