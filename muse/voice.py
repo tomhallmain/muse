@@ -39,11 +39,13 @@ class Voice:
             Utils.log_red(e)
             traceback.print_exc()
 
-    def prepare_to_say(self, text="", topic="", save_mp3=False):
+    def prepare_to_say(self, text="", topic="", save_mp3=False, save_for_last=False):
         # Generate speech files from text, but don't play them yet
         if not self.can_speak or self._tts is None:
             Utils.log_yellow("Cannot speak.")
             return
+        if save_for_last:
+            self._tts.await_pending_speech_jobs(run_jobs=False)
         current_time_str = str(datetime.datetime.now().timestamp())
         if "." in current_time_str:
             current_time_str = current_time_str.split(".")[0]

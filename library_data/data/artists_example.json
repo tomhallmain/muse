@@ -7,7 +7,7 @@
             "LSO"
         ],
         "genres": [],
-        "works": []
+        "albums": []
     },
     "Allman Brothers Band": {
         "id": 1,
@@ -17,6 +17,6 @@
             "Allman Brothers"
         ],
         "genres": [],
-        "works": []
+        "albums": []
     }
 }

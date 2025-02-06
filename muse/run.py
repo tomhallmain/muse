@@ -28,7 +28,7 @@ class Run:
         self.callbacks = callbacks
         self.playback = None
         self.library_data = None if args.placeholder else LibraryData(callbacks)
-        self.muse = Muse(self.args, data_callbacks=(True if args.placeholder else self.library_data.data_callbacks))
+        self.muse = Muse(self.args, self.library_data)
 
     def is_infinite(self):
         return self.args.total == -1
@@ -58,7 +58,7 @@ class Run:
 
     def run(self, playback_config):
         if config.enable_library_extender and self.args.extend:
-            self.get_library_data().start_extensions_thread(overwrite_cache=self.args.overwrite)
+            self.muse.start_extensions_thread(overwrite_cache=self.args.overwrite)
         Utils.log(playback_config)
         if self.last_config and playback_config == self.last_config:
             Utils.log("\n\nConfig matches last config. Please modify it or quit.")

@@ -9,6 +9,7 @@ library_data/data/*
 !library_data/data/blacklist_example.json
 !library_data/data/composers_example.json
 !library_data/data/forms_example.json
+!library_data/data/genres_example.json
 !library_data/data/instruments_example.json
 library_data/prose_data/*
 library_data/wiki/*

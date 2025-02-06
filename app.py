@@ -644,7 +644,7 @@ class App():
 
     def update_album_artwork(self, image_filepath):
         self.media_frame.show_image(image_filepath)
-    
+
     def get_media_frame_handle(self):
         return self.media_frame.winfo_id()
 

@@ -119,7 +119,7 @@ class InstrumentsData:
                 full_results = True
                 break
 
-        data_search.sort_results_by_transliterations() # The composers with the most transliterations are probably the most well-known
+        data_search.sort_results_by_transliterations() # The instruments with the most transliterations are probably the most well-known
 
         if not full_results:
             for instrument in self._instruments.values():

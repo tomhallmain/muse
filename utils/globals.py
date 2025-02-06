@@ -148,3 +148,54 @@ class PlaybackMasterStrategy(Enum):
     PLAYLIST_CONFIG = "PLAYLIST_CONFIG"
 
 
+
+class TrackAttribute(Enum):
+    TITLE = "title"
+    ALBUM = "album"
+    ARTIST = "artist"
+    COMPOSER = "composer"
+    GENRE = "genre"
+    FORM = "form"
+    INSTRUMENT = "instrument"
+
+
+    def get_translation(self):
+        types = [
+            TrackAttribute.TITLE,
+            TrackAttribute.ALBUM,
+            TrackAttribute.ARTIST,
+            TrackAttribute.COMPOSER,
+            TrackAttribute.GENRE,
+            TrackAttribute.FORM,
+            TrackAttribute.INSTRUMENT,
+        ]
+        return TrackAttribute.get_translated_names()[types.index(self)]
+
+    @staticmethod
+    def get_translated_names():
+        return [
+            _('Title'),
+            _('Album'),
+            _('Artist'),
+            _('Composer'),
+            _('Genre'),
+            _('Form'),
+            _('Instrument'),
+        ]
+
+    @staticmethod
+    def get_playlist_sort_type_from_translation(translation):
+        types = [
+            TrackAttribute.TITLE,
+            TrackAttribute.ALBUM,
+            TrackAttribute.ARTIST,
+            TrackAttribute.COMPOSER,
+            TrackAttribute.GENRE,
+            TrackAttribute.FORM,
+            TrackAttribute.INSTRUMENT,
+        ]
+        try:
+            return types[TrackAttribute.get_translated_names().index(translation)]
+        except ValueError:
+            return TrackAttribute.ARTIST
+

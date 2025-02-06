@@ -1,0 +1,94 @@
+{
+    "Baroque": {
+        "name": "Baroque",
+        "transliterations": [
+            "Baroque",
+            "baroque"
+        ],
+        "notes": {}
+    },
+    "Ars Nova": {
+        "name": "<NAME>",
+        "transliterations": [
+            "Ars Nova",
+            "ars nova"
+        ],
+        "notes": {}
+    },
+    "Plainchant": {
+        "name": "Plainchant",
+        "transliterations": [
+            "Plainchant",
+            "plainchant",
+            "Gregorian chant"
+        ],
+        "notes": {}
+    },
+    "Opera": {
+        "name": "Opera",
+        "transliterations": [
+            "Opera",
+            "opera"
+        ],
+        "notes": {}
+    },
+    "Romantic Period Classical": {
+        "name": "Romantic Period Classical",
+        "transliterations": [
+            "Romantic Period Classical",
+            "Romantic period"
+        ]
+    },
+    "Drum and Bass": {
+        "name": "Drum and Bass",
+        "transliterations": [
+            "Drum and Bass",
+            "drum and bass",
+            "dnb",
+            "d&b"
+        ],
+        "notes": {}
+    },
+    "EDM": {
+        "name": "EDM",
+        "transliterations": [
+            "EDM",
+            "edm",
+            "Electronic Dance"
+        ],
+        "notes": {}
+    },
+    "Folk": {
+         "name": "Folk",
+         "transliterations": [
+            "Folk",
+            "folk"
+        ],
+        "notes": {}
+    },
+    "Bluegrass": {
+        "name": "Bluegrass",
+        "transliterations": [
+            "Bluegrass",
+            "bluegrass"
+        ],
+        "notes": {}
+    },
+    "Thrash Metal": {
+        "name": "Thrash Metal",
+        "transliterations": [
+            "Thrash Metal",
+            "thrash metal",
+            "thrash",
+            "thrash metal"
+        ]
+    },
+    "Math Rock": {
+        "name": "Math Rock",
+        "transliterations": [
+            "Math Rock",
+            "math rock"
+        ],
+        "notes": {}
+    }
+}

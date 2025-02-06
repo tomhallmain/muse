@@ -8,14 +8,18 @@ import threading
 
 from extensions.library_extender import LibraryExtender
 from extensions.soup_utils import SoupUtils
+from library_data.artist import artists_data
 from library_data.blacklist import blacklist
 from library_data.composer import composers_data
 from library_data.library_data_callbacks import LibraryDataCallbacks
+from library_data.form import forms_data
+from library_data.genre import genre_data
+from library_data.instrument import instruments_data
 from library_data.media_track import MediaTrack
 from muse.playback_config import PlaybackConfig
 from utils.app_info_cache import app_info_cache
 from utils.config import config
-from utils.globals import MediaFileType
+from utils.globals import MediaFileType, TrackAttribute
 from utils.job_queue import JobQueue
 from utils.utils import Utils
 from utils.translations import I18N
@@ -102,15 +106,6 @@ class LibraryDataSearch:
             self.results.sort(key=lambda t: (getattr(t, attr), t.filepath))
 
 
-class TrackAttribute(Enum):
-    TITLE = "title"
-    ALBUM = "album"
-    ARTIST = "artist"
-    COMPOSER = "composer"
-    GENRE = "genre"
-    INSTRUMENT = "instrument"
-
-
 class LibraryData:
     extension_thread_started = False
     extension_thread_delayed_complete = False
@@ -167,9 +162,11 @@ class LibraryData:
         return l
 
     @staticmethod
-    def get_all_tracks(overwrite=False):
+    def get_all_tracks(overwrite=False, ui_callbacks=None):
         if overwrite:
             LibraryData.MEDIA_TRACK_CACHE = {}
+            if ui_callbacks is not None:
+                ui_callbacks.update_extension_status(_("Updating tracks"))
         with LibraryData.get_tracks_lock:
             if len(LibraryData.all_tracks) == 0 or overwrite:
                 all_directories = config.get_all_directories()
@@ -215,12 +212,12 @@ class LibraryData:
         # Find any highly similar tracks in the library to this track.
         pass # TODO
 
-    def start_extensions_thread(self, initial_sleep=True, overwrite_cache=False):
+    def start_extensions_thread(self, initial_sleep=True, overwrite_cache=False, voice=None):
         if LibraryData.extension_thread_started:
             return
         Utils.log('Starting extensions thread')
-        LibraryData.get_all_tracks(overwrite=overwrite_cache)
-        Utils.start_thread(self._run_extensions, use_asyncio=False, args=(initial_sleep,))
+        LibraryData.get_all_tracks(overwrite=overwrite_cache, ui_callbacks=self.ui_callbacks)
+        Utils.start_thread(self._run_extensions, use_asyncio=False, args=(initial_sleep, voice))
         LibraryData.extension_thread_started = True
 
     def reset_extension(self):
@@ -246,7 +243,7 @@ class LibraryData:
             Utils.log("Increased extension sleep time for long track, new range: {0}min-{1}min".format(min_value/60, max_value/60))
         return random.randint(min_value, max_value)
 
-    def _run_extensions(self, initial_sleep=True):
+    def _run_extensions(self, initial_sleep=True, voice=None):
         if initial_sleep:
             sleep_time_seconds = random.randint(200, 1200)
             check_cadence = 150
@@ -258,7 +255,7 @@ class LibraryData:
                     self.ui_callbacks.update_extension_status(_("Extension thread waiting for {0} minutes").format(round(float(sleep_time_seconds) / 60)))
                 Utils.long_sleep(check_cadence, "extension thread")
         while True:
-            self._extend_by_random_composer()
+            self._extend_by_random_attr(voice)
             LibraryData.extension_thread_delayed_complete = False
             sleep_time_minutes = int(self.get_extension_sleep_time(3600, 5400) / 60)
             check_cadence = 2
@@ -270,14 +267,43 @@ class LibraryData:
                     self.ui_callbacks.update_extension_status(_("Extension thread waiting for {0} minutes").format(sleep_time_minutes))
                 Utils.long_sleep(check_cadence * 60, "extension thread")
 
-    def _extend_randomly(self):
-        Utils.log('Extending randomly')
-        pass
+    def _extend_by_random_attr(self, voice=None):
+        extendible_attrs = [
+            TrackAttribute.ARTIST,
+            TrackAttribute.COMPOSER,
+            TrackAttribute.GENRE,
+            TrackAttribute.FORM,
+            TrackAttribute.INSTRUMENT
+        ]
+        if len(artists_data.get_artist_names()) == 0:
+            extendible_attrs.remove(TrackAttribute.ARTIST)
+        if len(composers_data.get_composer_names()) == 0:
+            extendible_attrs.remove(TrackAttribute.COMPOSER)
+        if len(genre_data.get_genre_names()) == 0:
+            extendible_attrs.remove(TrackAttribute.GENRE)
+        if len(forms_data.get_form_names()) == 0:
+            extendible_attrs.remove(TrackAttribute.FORM)
+        if len(instruments_data.get_instrument_names()) == 0:
+            extendible_attrs.remove(TrackAttribute.INSTRUMENT)
+        if len(extendible_attrs) == 0:
+            raise Exception("No extensible attributes found!")
+        attr = random.choice(extendible_attrs)
+        if attr == TrackAttribute.ARTIST:
+            value = random.choice(artists_data.get_artist_names())
+        elif attr == TrackAttribute.COMPOSER:
+            value = random.choice(composers_data.get_composer_names())
+        elif attr == TrackAttribute.GENRE:
+            value = random.choice(genre_data.get_genre_names())
+        elif attr == TrackAttribute.FORM:
+            value = random.choice(forms_data.get_form_names())
+        elif attr == TrackAttribute.INSTRUMENT:
+            value = random.choice(instruments_data.get_instrument_names())
 
-    def _extend_by_random_composer(self):
-        composer = random.choice(composers_data.get_composer_names())
-        Utils.log('Extending by random composer: ' + composer)
-        self.extend(value=composer, attr=TrackAttribute.COMPOSER)
+        Utils.log(f'Extending by random {attr}: {value}')
+        if voice is not None:
+            muse_to_say = _("Extending by random {0}: {1}").format(attr.get_translation(), value)
+            voice.prepare_to_say(muse_to_say, save_for_last=True)
+        self.extend(value=value, attr=attr)
 
     def _extend(self, value="", attr=None, strict=False):
         if attr == TrackAttribute.TITLE:
@@ -292,6 +318,8 @@ class LibraryData:
             self.extend_by_genre(value, strict=strict)
         if attr == TrackAttribute.INSTRUMENT:
             self.extend_by_instrument(value, strict=strict)
+        
+        # Set up the next thread to run another extension
         next_job_args = self.EXTENSION_QUEUE.take()
         if next_job_args is not None:
             Utils.long_sleep(300, "extension thread job wait")
@@ -308,26 +336,23 @@ class LibraryData:
             Utils.start_thread(self._extend, use_asyncio=False, args=args)
 
     def extend_by_title(self, title, strict=False):
-        self._simple(title, attr=TrackAttribute.TITLE, strict=None)
+        self._simple("music title: " + title, attr=TrackAttribute.TITLE, strict=title)
 
     def extend_by_album(self, album, strict=False):
-        self._simple(album, attr=TrackAttribute.ALBUM, strict=None)
+        self._simple("album title: " + album, attr=TrackAttribute.ALBUM, strict=album)
 
     def extend_by_artist(self, artist, strict=False):
-        # TODO
-        self._simple("music by " + artist, attr=TrackAttribute.ARTIST, strict=None)
+        self._simple("music by " + artist, attr=TrackAttribute.ARTIST, strict=artist)
 
     def extend_by_composer(self, composer_name):
         composer = composers_data.get_data(composer_name)
-        # TODO
         self._simple("music by " + composer_name, attr=TrackAttribute.COMPOSER, strict=composer)
 
     def extend_by_genre(self, genre, strict=False):
-        # TODO
-        self._simple("music from the genre " + genre, attr=TrackAttribute.GENRE, strict=None)
+        self._simple("music from the genre " + genre, attr=TrackAttribute.GENRE, strict=genre)
 
-    def extend_by_instrument(self, instrument, strict=False):
-        self._simple("music for the " + instrument, attr=TrackAttribute.INSTRUMENT, strict=None)
+    def extend_by_instrument(self, instrument, genre="Classical", strict=False):
+        self._simple(genre + " music for the " + instrument, attr=TrackAttribute.INSTRUMENT, strict=instrument)
 
     def _simple(self, q, m=6, depth=0, attr=None, strict=None):
         r = self.s(q, m)

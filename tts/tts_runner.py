@@ -187,17 +187,23 @@ class TextToSpeechRunner:
         else:
             self.speech_queue.job_running = False
 
-    def await_pending_speech_jobs(self):
-        while self.speech_queue.has_pending():
-            next_job_output_path = self.speech_queue.take()
-            if next_job_output_path is not None:
-                if os.path.exists(next_job_output_path):
-                    self.play_async(next_job_output_path)
-                else:
-                    Utils.log_red(f"Cannot find speech output path: {next_job_output_path}")
-                while self.speech_queue.job_running:
-                    time.sleep(.5)
-        self.clean()
+    def await_pending_speech_jobs(self, run_jobs=True):
+        if run_jobs:
+            while self.speech_queue.has_pending():
+                next_job_output_path = self.speech_queue.take()
+                if next_job_output_path is not None:
+                    if os.path.exists(next_job_output_path):
+                        self.play_async(next_job_output_path)
+                    else:
+                        Utils.log_red(f"Cannot find speech output path: {next_job_output_path}")
+                    while self.speech_queue.job_running:
+                        time.sleep(.5)
+            self.clean()
+        else:
+            while self.speech_queue.has_pending():
+                time.sleep(.5)
+            while self.speech_queue.job_running:
+                time.sleep(.5)
 
     def stop_pending_jobs(self):
         if TextToSpeechRunner.VLC_MEDIA_PLAYER is not None and \
