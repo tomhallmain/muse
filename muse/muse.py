@@ -12,6 +12,7 @@ from extensions.soup_utils import WebConnectionException
 from extensions.wiki_opensearch_api import WikiOpenSearchAPI
 from extensions.llm import LLM, LLMResponseException
 from library_data.blacklist import blacklist, BlacklistException
+from muse.muse_memory import MuseMemory
 from muse.schedules_manager import SchedulesManager, ScheduledShutdownException
 from muse.playback import Playback
 from muse.prompter import Prompter
@@ -23,63 +24,6 @@ from utils.utils import Utils
 _ = I18N._
 
 
-class MuseSpotProfile:
-    chance_speak_after_track = config.muse_config["chance_speak_after_track"]
-    chance_speak_before_track = config.muse_config["chance_speak_before_track"]
-    chance_speak_about_other_topics = config.muse_config["chance_speak_about_other_topics"]
-
-    def __init__(self, previous_track, track, last_track_failed, skip_track, old_grouping, new_grouping, grouping_readable_name):
-        self.previous_track = previous_track
-        self.track = track
-        self.speak_about_prior_track = previous_track is not None and (previous_track._is_extended or random.random() < self.chance_speak_after_track)
-        self.speak_about_upcoming_track = track._is_extended or random.random() < self.chance_speak_before_track
-        self.talk_about_something = random.random() < self.chance_speak_about_other_topics
-        self.has_already_spoken = False
-        self.last_track_failed = last_track_failed
-        self.skip_previous_track_remark = last_track_failed or skip_track
-        self.immediate = False
-        self.is_prepared = False
-        self.topic = None
-        self.topic_translated = None
-        self.old_grouping = old_grouping
-        self.new_grouping = new_grouping
-        self.grouping_readable_name = grouping_readable_name
-        if old_grouping is not None and new_grouping is not None and old_grouping != new_grouping:
-            self.speak_about_prior_group = previous_track is not None and random.random() < 0.5
-            self.speak_about_upcoming_group = random.random() < 0.9
-        else:
-            self.speak_about_prior_group = False
-            self.speak_about_upcoming_group = False
-
-    def is_going_to_say_something(self):
-        return self.speak_about_prior_track or self.speak_about_upcoming_track or self.talk_about_something or self.speak_about_prior_group or self.speak_about_upcoming_group
-
-    def update_skip_previous_track_remark(self, skip_track):
-        self.skip_previous_track_remark = self.skip_previous_track_remark or skip_track
-
-    def get_upcoming_track_title(self) -> None | str:
-        return None if self.track is None else self.track.title
-
-    def get_previous_track_title(self) -> None | str:
-        return None if self.previous_track is None else self.previous_track.title
-
-    def get_topic_text(self) -> str:
-        if self.talk_about_something and self.topic_translated is not None:
-            return _("Talking about: ") + self.topic_translated
-        return ""
-
-    def __str__(self):
-        out = _("Track: ") + self.track.title if self.track is not None else _("No track")
-        out += "\n" + _("Previous Track: ") + self.previous_track.title if self.previous_track is not None else "\n" + _("No previous track")
-        if self.speak_about_prior_track or self.speak_about_prior_group:
-            out += "\n - " + _("Speaking about prior track")
-        if self.speak_about_upcoming_track or self.speak_about_upcoming_group:
-            out += "\n - " + _("Speaking about upcoming track")
-        if self.talk_about_something:
-            out += "\n - " + _("Talking about something")
-        return out
-
-
 class Muse:
     enable_preparation = config.muse_config["enable_preparation"]
     preparation_starts_minutes_from_end = float(config.muse_config["preparation_starts_minutes_from_end"])
@@ -88,6 +32,7 @@ class Muse:
     def __init__(self, args, library_data):
         self.args = args
         self._schedule = SchedulesManager.default_schedule
+        self.memory = MuseMemory()
         self.llm = LLM(model_name=config.llm_model_name)
         self.voice = Voice()
         self.open_weather_api = OpenWeatherAPI()
@@ -111,7 +56,7 @@ class Muse:
         return self.library_data
 
     def get_spot_profile(self, previous_track=None, track=None, last_track_failed=False, skip_track=False, old_grouping=None, new_grouping=None, grouping_readable_name=None):
-        return MuseSpotProfile(previous_track, track, last_track_failed, skip_track, old_grouping, new_grouping, grouping_readable_name)
+        return self.memory.get_spot_profile(previous_track, track, last_track_failed, skip_track, old_grouping, new_grouping, grouping_readable_name)
 
     def say_at_some_point(self, text, spot_profile, topic):
         save_mp3 = topic in config.save_tts_output_topics
@@ -138,6 +83,8 @@ class Muse:
                 update_ui_callbacks.update_spot_profile_topics_text(spot_profile.get_topic_text())
         if spot_profile.is_going_to_say_something():
             Utils.log_debug(f"Preparing muse:\n{spot_profile}")
+            if spot_profile.say_good_day:
+                self.say_good_day()
             if not spot_profile.skip_previous_track_remark:
                 self.maybe_prep_dj_post(spot_profile)
             self.maybe_prep_dj_prior(spot_profile)
@@ -145,6 +92,20 @@ class Muse:
         else:
             self.tracks_since_last_spoke += 1
         spot_profile.is_prepared = True
+
+    def say_good_day(self):
+        hour = SchedulesManager.get_hour()
+        if hour < 5 or hour > 22:
+            return
+        Utils.log_debug("Saying good day")
+        if hour < 11:
+            self.voice.prepare_to_say(_("Good morning"))
+        elif hour < 13:
+            self.voice.prepare_to_say(_("Good day"))
+        elif hour < 17:
+            self.voice.prepare_to_say(_("Good afternoon"))
+        else:
+            self.voice.prepare_to_say(_("Good evening"))
 
     def maybe_prep_dj_prior(self, spot_profile):
         # TODO quality info for songs

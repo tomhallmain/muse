@@ -154,8 +154,14 @@ class Playlist:
     def sort(self):
         attr_getter_name = None
         list_name_mapping = None
+        do_set_start_track = self.start_track is None
         if self.sort_type == PlaylistSortType.RANDOM:
             random.shuffle(self.sorted_tracks)
+        elif not do_set_start_track:
+            # This will seed a random start track on the sequence
+            # so the sort below will have more randomness.
+            self.start_track = random.choice(self.sorted_tracks)
+            self.set_start_track(attr_getter_name)
         if self.sort_type != PlaylistSortType.SEQUENCE:
             attr_getter_name = self.sort_type.getter_name_mapping()
             if self.sort_type != PlaylistSortType.RANDOM:
@@ -173,7 +179,9 @@ class Playlist:
                     self.sorted_tracks.sort(key=lambda t: (all_attrs_list.index(getattr(t, attr_getter_name)), t.filepath))
             list_name_mapping = self.sort_type.grouping_list_name_mapping()
             self.shuffle_with_memory_for_attr(attr_getter_name, list_name_mapping)
-        self.set_start_track(attr_getter_name)
+        if do_set_start_track:
+            # The user specified a start track, it's not random
+            self.set_start_track(attr_getter_name)
 
     def shuffle_with_memory_for_attr(self, track_attr, list_attr):
         # Look at the first config.playlist_recently_played_check_count (1000 default)

@@ -13,6 +13,7 @@ from ttkthemes import ThemedTk
 from utils.globals import Globals, PlaylistSortType
 
 from library_data.library_data import LibraryData
+from muse.muse_memory import MuseMemory
 from muse.playlist import Playlist
 from muse.run import Run
 from muse.run_config import RunConfig
@@ -296,6 +297,7 @@ class App():
                 if self.config_history_index > 0:
                     self.config_history_index -= 1
         app_info_cache.set("config_history_index", self.config_history_index)
+        MuseMemory.save()
         LibraryData.store_caches()
         Playlist.store_recently_played_lists()
         PlaylistWindow.store_named_playlist_configs()
@@ -304,6 +306,7 @@ class App():
 
     def load_info_cache(self):
         try:
+            MuseMemory.load()
             LibraryData.load_directory_cache()
             LibraryData.load_media_track_cache()
             Playlist.load_recently_played_lists()

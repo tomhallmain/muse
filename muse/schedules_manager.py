@@ -1,4 +1,6 @@
 
+import datetime
+
 from muse.schedule import Schedule
 from utils.app_info_cache import app_info_cache
 from utils.utils import Utils
@@ -161,6 +163,11 @@ class SchedulesManager:
             if schedule.shutdown_time < current_time:
                 return schedule
         return None
+
+    @staticmethod
+    def get_hour():
+        return datetime.datetime.now().hour
+
 
 schedules_manager = SchedulesManager()
 
