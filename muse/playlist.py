@@ -1,13 +1,9 @@
 import random
 
-from library_data.media_track import MediaTrack
 from utils.app_info_cache import app_info_cache
 from utils.config import config
 from utils.globals import PlaylistSortType
-from utils.translations import I18N
 from utils.utils import Utils
-
-_ = I18N._
 
 ## TODO need a way to exclude certain artists from the smart sort based on recent plays
 
@@ -42,24 +38,41 @@ class Playlist:
         app_info_cache.set("recently_played_instruments", Playlist.recently_played_instruments)
 
     @staticmethod
-    def update_list(_list=[], item=""):
+    def update_list(_list=[], item="", sort_type=PlaylistSortType.RANDOM):
         if item is None or item.strip() == "":
             return
         if item in _list:
             _list.remove(item)
         _list.insert(0, item)
-        if len(_list) > config.playlist_recently_played_check_count:
-            del _list[-config.playlist_recently_played_check_count:]
+        check_count = Playlist.get_recently_played_check_count(sort_type)
+        if len(_list) > check_count:
+            del _list[-check_count:]
+
+    @staticmethod
+    def get_recently_played_check_count(sort_type):
+        recently_played_check_count = abs(int(config.playlist_recently_played_check_count))
+        # Note that some groupings will infer an overriden count because they are such broad groupings.
+        if sort_type == PlaylistSortType.GENRE_SHUFFLE:
+            recently_played_check_count = int(max(recently_played_check_count / 1000, 1))
+        elif sort_type == PlaylistSortType.FORM_SHUFFLE:
+            recently_played_check_count = int(max(recently_played_check_count / 150, 1))
+        elif sort_type == PlaylistSortType.INSTRUMENT_SHUFFLE:
+            recently_played_check_count = int(max(recently_played_check_count / 60, 1))
+        elif sort_type == PlaylistSortType.COMPOSER_SHUFFLE:
+            recently_played_check_count = int(max(recently_played_check_count / 2, 1))
+        elif sort_type == PlaylistSortType.ARTIST_SHUFFLE:
+            recently_played_check_count = int(max(recently_played_check_count / 2, 1))
+        return recently_played_check_count
 
     @staticmethod
     def update_recently_played_lists(track):
         Playlist.update_list(Playlist.recently_played_filepaths, track.filepath)
-        Playlist.update_list(Playlist.recently_played_albums, track.album)
-        Playlist.update_list(Playlist.recently_played_artists, track.artist)
-        Playlist.update_list(Playlist.recently_played_composers, track.composer)
-        Playlist.update_list(Playlist.recently_played_genres, track.get_genre())
-        Playlist.update_list(Playlist.recently_played_forms, track.get_form())
-        Playlist.update_list(Playlist.recently_played_instruments, track.get_instrument())
+        Playlist.update_list(Playlist.recently_played_albums, track.album, sort_type=PlaylistSortType.ALBUM_SHUFFLE)
+        Playlist.update_list(Playlist.recently_played_artists, track.artist, sort_type=PlaylistSortType.ARTIST_SHUFFLE)
+        Playlist.update_list(Playlist.recently_played_composers, track.composer, sort_type=PlaylistSortType.COMPOSER_SHUFFLE)
+        Playlist.update_list(Playlist.recently_played_genres, track.get_genre(), sort_type=PlaylistSortType.GENRE_SHUFFLE)
+        Playlist.update_list(Playlist.recently_played_forms, track.get_form(), sort_type=PlaylistSortType.FORM_SHUFFLE)
+        Playlist.update_list(Playlist.recently_played_instruments, track.get_instrument(), sort_type=PlaylistSortType.INSTRUMENT_SHUFFLE)
 
     def __init__(self, tracks=[], _type=PlaylistSortType.SEQUENCE, data_callbacks=None, start_track=None):
         self.in_sequence = list(tracks)
@@ -191,11 +204,8 @@ class Playlist:
         # may also have been played recently and thus also need to be reshuffled.
         attempts = 0
         max_attempts = 30
-        recently_played_check_count = config.playlist_recently_played_check_count
         recently_played_attr_list = getattr(Playlist, list_attr)
-        # if track_attr == "genre":
-        #     # Note that genre will have an overriden count of 1 just because it is so broad a grouping.
-        #     recently_played_check_count = 1
+        recently_played_check_count = Playlist.get_recently_played_check_count(track_attr)
         earliest_tracks = list(self.sorted_tracks[:recently_played_check_count])
         if self.size() <= recently_played_check_count * 2:
             # The playlist is a short playlist compared to the library, and probably doesn't 
@@ -252,21 +262,23 @@ class Playlist:
             extracted = extracted[index:] + extracted[:index]
             self.sorted_tracks = extracted + self.sorted_tracks
 
-    def get_grouping_readable_name(self):
-        if self.sort_type == PlaylistSortType.RANDOM or self.sort_type == PlaylistSortType.SEQUENCE:
-            return None
-        if self.sort_type == PlaylistSortType.ALBUM_SHUFFLE:
-            return _("Album")
-        if self.sort_type == PlaylistSortType.ARTIST_SHUFFLE:
-            return _("Artist")
-        if self.sort_type == PlaylistSortType.COMPOSER_SHUFFLE:
-            return _("Composer")
-        if self.sort_type == PlaylistSortType.GENRE_SHUFFLE:
-            return _("Genre")
-        if self.sort_type == PlaylistSortType.FORM_SHUFFLE:
-            return _("Form")
-        if self.sort_type == PlaylistSortType.INSTRUMENT_SHUFFLE:
-            return _("Instrument")
-        raise Exception(f"Unknown sort type {self.sort_type}")
+    def get_group_count(self, group_text):
+        if self.sort_type == PlaylistSortType.SEQUENCE or self.sort_type == PlaylistSortType.RANDOM:
+            return 1
+        attr_getter_name = self.sort_type.getter_name_mapping()
+        is_callable_attr = attr_getter_name.startswith("get_")
+        def is_matching_group(track):
+            nonlocal group_text
+            nonlocal is_callable_attr
+            nonlocal attr_getter_name
+            if is_callable_attr:
+                return getattr(track, attr_getter_name)() == group_text
+            else:
+                return getattr(track, attr_getter_name) == group_text
+        count = len([t for t in self.sorted_tracks if is_matching_group(t)])
+        Utils.log(f"Group {group_text} has {count} tracks")
+        return count
+
+
 
 

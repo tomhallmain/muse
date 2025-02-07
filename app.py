@@ -4,20 +4,15 @@ import time
 import traceback
 
 from tkinter import messagebox, Toplevel, Frame, Label, Checkbutton, Text, StringVar, BooleanVar, Scale, END, HORIZONTAL, NW, BOTH, YES, N, E, W
-from tkinter.constants import W
 import tkinter.font as fnt
 from tkinter.ttk import Button, Entry, OptionMenu, Progressbar, Scale
 from lib.autocomplete_entry import AutocompleteEntry, matches
 from ttkthemes import ThemedTk
 
-from utils.globals import Globals, PlaylistSortType
+from utils.globals import Globals, PlaylistSortType, PlaybackMasterStrategy
 
-from library_data.library_data import LibraryData
-from muse.muse_memory import MuseMemory
-from muse.playlist import Playlist
 from muse.run import Run
 from muse.run_config import RunConfig
-from muse.schedules_manager import SchedulesManager
 from ui.app_actions import AppActions
 from ui.app_style import AppStyle
 from ui.composers_window import ComposersWindow
@@ -32,8 +27,8 @@ from ui.track_details_window import TrackDetailsWindow
 from ui.weather_window import WeatherWindow
 from utils.app_info_cache import app_info_cache
 from utils.config import config
-from utils.globals import PlaylistSortType, PlaybackMasterStrategy
 from utils.job_queue import JobQueue
+from utils.persistent_data_manager import PersistentDataManager
 from utils.runner_app_config import RunnerAppConfig
 from utils.temp_dir import TempDir
 from utils.translations import I18N
@@ -41,7 +36,6 @@ from utils.utils import Utils
 
 _ = I18N._
 
-# TODO figure out why overwrite not working
 
 def set_attr_if_not_empty(text_box):
     current_value = text_box.get()
@@ -75,6 +69,7 @@ def clear_quotes(s):
         if s.endswith("'"):
             s = s[:-1]
     return s
+
 
 class Sidebar(Frame):
     def __init__(self, master=None, cnf={}, **kw):
@@ -206,8 +201,8 @@ class App():
         self.apply_to_grid(self.playlist_strategy_choice, interior_column=2, sticky=W)
 
         # TODO multiselect
-        self.label_workflows = Label(self.sidebar)
-        self.add_label(self.label_workflows, _("Playlist Sort"), increment_row_counter=False)
+        self.label_sort_type = Label(self.sidebar)
+        self.add_label(self.label_sort_type, _("Playlist Sort"), increment_row_counter=False)
         self.sort_type = StringVar(master)
         current_type = PlaylistSortType[self.runner_app_config.workflow_type].get_translation()
         self.sort_type_choice = OptionMenu(self.sidebar, self.sort_type, current_type,
@@ -297,21 +292,12 @@ class App():
                 if self.config_history_index > 0:
                     self.config_history_index -= 1
         app_info_cache.set("config_history_index", self.config_history_index)
-        MuseMemory.save()
-        LibraryData.store_caches()
-        Playlist.store_recently_played_lists()
-        PlaylistWindow.store_named_playlist_configs()
-        SchedulesManager.store_schedules()
+        PersistentDataManager.store()
         app_info_cache.store()
 
     def load_info_cache(self):
         try:
-            MuseMemory.load()
-            LibraryData.load_directory_cache()
-            LibraryData.load_media_track_cache()
-            Playlist.load_recently_played_lists()
-            PlaylistWindow.load_named_playlist_configs()
-            SchedulesManager.set_schedules()
+            PersistentDataManager.load()
             self.config_history_index = app_info_cache.get("config_history_index", default_val=0)
             return app_info_cache.get_history_latest()
         except Exception as e:
@@ -365,7 +351,7 @@ class App():
     def set_playlist_sort_type(self, event=None, playlist_sort_type=None):
         if playlist_sort_type is None:
             playlist_sort_type = self.sort_type.get()
-        self.runner_app_config.workflow_type = PlaylistSortType.get_playlist_sort_type_from_translation(playlist_sort_type).value
+        self.runner_app_config.workflow_type = PlaylistSortType.get_from_translation(playlist_sort_type).value
 
     def set_playback_master_strategy(self, event=None):
         self.runner_app_config.playback_master_strategy = self.playlist_strategy.get()
@@ -415,7 +401,7 @@ class App():
             self.job_queue.job_running = True
             self.destroy_progress_bar()
             self.progress_bar = Progressbar(self.sidebar, orient=HORIZONTAL, length=300, mode='determinate')
-            self.progress_bar.grid(row=9, column=2)
+            self.progress_bar.grid(row=9, column=0, columnspan=3, sticky="EW")
             self.cancel_btn.grid(row=12, column=2)
             self.text_btn.grid(row=13, column=2)
             self.extension_btn.grid(row=14, column=2)
@@ -467,7 +453,7 @@ class App():
         self.set_delay()
         # self.set_concepts_dir()
         args = RunConfig()
-        args.playlist_sort_type = PlaylistSortType.get_playlist_sort_type_from_translation(self.sort_type.get())
+        args.playlist_sort_type = PlaylistSortType.get_from_translation(self.sort_type.get())
         args.total = -1
         args.is_all_tracks, args.directories = self.get_directories()
         args.overwrite = self.overwrite.get()

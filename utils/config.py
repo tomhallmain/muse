@@ -43,7 +43,7 @@ class Config:
         self.muse_language_learning_language_level = "intermediate"
         self.debug = False
 
-        self.llm_model_name = "wizard-vicuna-uncensored:latest"
+        self.llm_model_name = "deepseek-r1:14b"
 
         self.text_cleaner_ruleset = []
         self.coqui_tts_location = ""

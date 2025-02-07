@@ -43,10 +43,8 @@ class Muse:
         self.has_started_prep = False
         self.post_id = "post"
         self.prior_id = "prior"
-        self.last_topic = None
-        self.tracks_since_last_spoke = 0
-        self.tracks_since_last_topic = 0
         self.library_data = library_data
+        self.get_playlist_callback = None
         if not args.placeholder:
             assert library_data is not None # The DJ should have access to the music library.
 
@@ -55,8 +53,16 @@ class Muse:
             raise Exception("No music library data available")
         return self.library_data
 
-    def get_spot_profile(self, previous_track=None, track=None, last_track_failed=False, skip_track=False, old_grouping=None, new_grouping=None, grouping_readable_name=None):
-        return self.memory.get_spot_profile(previous_track, track, last_track_failed, skip_track, old_grouping, new_grouping, grouping_readable_name)
+    def get_spot_profile(self, previous_track=None, track=None, last_track_failed=False, skip_track=False, old_grouping=None, new_grouping=None, grouping_type=None):
+        return self.memory.get_spot_profile(previous_track, track, last_track_failed, skip_track, old_grouping, new_grouping, grouping_type)
+
+    def set_get_playlist_callback(self, get_playlist_callback):
+        self.get_playlist_callback = get_playlist_callback
+
+    def get_playlist(self):
+        if self.get_playlist_callback is None:
+            raise Exception("Playlist callback was not initialized!")
+        return self.get_playlist_callback()
 
     def say_at_some_point(self, text, spot_profile, topic):
         save_mp3 = topic in config.save_tts_output_topics
@@ -88,38 +94,10 @@ class Muse:
             if not spot_profile.skip_previous_track_remark:
                 self.maybe_prep_dj_post(spot_profile)
             self.maybe_prep_dj_prior(spot_profile)
-            self.tracks_since_last_spoke = 0
+            self.memory.tracks_since_last_spoke = 0
         else:
-            self.tracks_since_last_spoke += 1
+            self.memory.tracks_since_last_spoke += 1
         spot_profile.is_prepared = True
-
-    def say_good_day(self):
-        hour = SchedulesManager.get_hour()
-        if hour < 5 or hour > 22:
-            return
-        Utils.log_debug("Saying good day")
-        if hour < 11:
-            self.voice.prepare_to_say(_("Good morning"))
-        elif hour < 13:
-            self.voice.prepare_to_say(_("Good day"))
-        elif hour < 17:
-            self.voice.prepare_to_say(_("Good afternoon"))
-        else:
-            self.voice.prepare_to_say(_("Good evening"))
-
-    def maybe_prep_dj_prior(self, spot_profile):
-        # TODO quality info for songs
-        if spot_profile.speak_about_upcoming_track:
-            self.speak_about_upcoming_track(spot_profile)
-            spot_profile.has_already_spoken = True
-        if spot_profile.speak_about_upcoming_group:
-            self.speak_about_upcoming_group(spot_profile)
-            spot_profile.has_already_spoken  = True
-
-        if spot_profile.talk_about_something:
-            self.talk_about_something(spot_profile)
-        else:
-            self.tracks_since_last_topic += 1
 
     def maybe_dj(self, spot_profile):
         # TODO quality info for songs
@@ -178,6 +156,20 @@ class Muse:
         self.voice.finish_speaking()
         self._schedule = tomorrow_schedule
 
+    def say_good_day(self):
+        hour = SchedulesManager.get_hour()
+        if hour < 5 or hour > 22:
+            return
+        Utils.log_debug("Saying good day")
+        if hour < 11:
+            self.voice.prepare_to_say(_("Good morning"))
+        elif hour < 13:
+            self.voice.prepare_to_say(_("Good day"))
+        elif hour < 17:
+            self.voice.prepare_to_say(_("Good afternoon"))
+        else:
+            self.voice.prepare_to_say(_("Good evening"))
+
     def maybe_prep_dj_post(self, spot_profile):
         # TODO quality info for songs
         if spot_profile.speak_about_prior_track:
@@ -206,6 +198,19 @@ class Muse:
                 dj_remark = _("That was a new one. How'd you like it?") + " " + dj_remark
         self.say_at_some_point(dj_remark, spot_profile, None)
 
+    def maybe_prep_dj_prior(self, spot_profile):
+        # TODO quality info for songs
+        if spot_profile.speak_about_upcoming_group:
+            self.speak_about_upcoming_group(spot_profile)
+            spot_profile.has_already_spoken = True
+        if spot_profile.speak_about_upcoming_track:
+            self.speak_about_upcoming_track(spot_profile)
+            spot_profile.has_already_spoken = True
+        if spot_profile.talk_about_something:
+            self.talk_about_something(spot_profile)
+        else:
+            self.memory.tracks_since_last_topic += 1
+
     def speak_about_upcoming_track(self, spot_profile):
         track = spot_profile.track
         if spot_profile.previous_track is None:
@@ -221,35 +226,37 @@ class Muse:
         self.say_at_some_point(dj_remark, spot_profile, None)
 
     def speak_about_previous_group(self, spot_profile):
-        # TODO i18n
         previous_group = spot_profile.old_grouping
         if spot_profile.previous_track is not None:
-            if spot_profile.previous_track._is_extended:
-                dj_remark = _("After that short interlude, we're back to our {0} shuffle.").format(spot_profile.grouping_readable_name)
-            else:
-                dj_remark = _("We've been listening to a group of tracks from the {0} {1}").format(spot_profile.grouping_readable_name, previous_group)
-            self.say_at_some_point(dj_remark, spot_profile, None)
+            group_count = self.get_playlist().get_group_count(previous_group)
+            if group_count > 0:
+                if spot_profile.previous_track._is_extended:
+                    dj_remark = _("After that short interlude, we're back to our {0} shuffle.").format(
+                        spot_profile.grouping_type.get_grouping_readable_name())
+                else:
+                    dj_remark = _("We've been listening to a group of tracks from the {0} {1}").format(
+                        spot_profile.grouping_type.get_grouping_readable_name(), previous_group)
+                self.say_at_some_point(dj_remark, spot_profile, None)
 
     def speak_about_upcoming_group(self, spot_profile):
         new_group = spot_profile.new_grouping
         if spot_profile.previous_track is not None and spot_profile.track is not None:
-            if spot_profile.previous_track._is_extended:
-                dj_remark = _("We're listening to a group of tracks from the {0} {1}.").format(spot_profile.grouping_readable_name, new_group)
-            else:
-                dj_remark = _("We're going to start a new group of tracks from the {0} {1}.").format(spot_profile.grouping_readable_name, new_group)
-            self.say_at_some_point(dj_remark, spot_profile, None)
-
-    def is_recent_topics(self, topics_to_check=[], n=1):
-        if n >= self.tracks_since_last_topic:
-            return False
-        return self.last_topic in topics_to_check
+            group_count = self.get_playlist().get_group_count(new_group)
+            if group_count > 0:
+                if spot_profile.previous_track._is_extended:
+                    dj_remark = _("We're listening to a group of tracks from the {0} {1}.").format(
+                        spot_profile.grouping_type.get_grouping_readable_name(), new_group)
+                else:
+                    dj_remark = _("We're going to start a new group of tracks from the {0} {1}.").format(
+                        spot_profile.grouping_type.get_grouping_readable_name(), new_group)
+                self.say_at_some_point(dj_remark, spot_profile, None)
 
     def get_topic(self, previous_track, excluded_topics=[]):
-        if Prompter.over_n_hours_since_last("weather", n_hours=24) and not self.is_recent_topics(["news", "hackernews"], n=3):
+        if Prompter.over_n_hours_since_last("weather", n_hours=24) and not self.memory.is_recent_topics(["news", "hackernews"], n=3):
             topic = "weather"
-        elif Prompter.over_n_hours_since_last("news", n_hours=96) and not self.is_recent_topics(["weather", "hackernews"], n=3):
+        elif Prompter.over_n_hours_since_last("news", n_hours=96) and not self.memory.is_recent_topics(["weather", "hackernews"], n=3):
             topic = "news"
-        elif Prompter.over_n_hours_since_last("hackernews", n_hours=96) and not self.is_recent_topics(["weather", "news"], n=3):
+        elif Prompter.over_n_hours_since_last("hackernews", n_hours=96) and not self.memory.is_recent_topics(["weather", "news"], n=3):
             topic = "hackernews"
         else:
             topic = Prompter.get_oldest_topic(excluded_topics=excluded_topics)
@@ -270,7 +277,7 @@ class Muse:
         spot_profile.topic_translated = self.prompter.translate_topic(spot_profile.topic)
 
     def talk_about_something(self, spot_profile):
-        self.tracks_since_last_topic = 0
+        self.memory.tracks_since_last_topic = 0
 
         if (spot_profile.has_already_spoken and random.random() < 0.75) \
                 or (not spot_profile.has_already_spoken and random.random() < 0.6):

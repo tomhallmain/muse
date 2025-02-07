@@ -5,11 +5,12 @@ import tempfile
 from utils.utils import Utils
 
 class TempDir:
+    prefix = "tmp_muse_"
     temporary_directory_parent = tempfile.gettempdir()
     open_directories = {}
 
     @staticmethod
-    def get(prefix="tmp_muse_"):
+    def get(prefix=prefix):
         if prefix not in TempDir.open_directories:
             temp_dir = TempDir(prefix)
             TempDir.open_directories[prefix] = temp_dir
@@ -25,7 +26,7 @@ class TempDir:
                 Utils.log_red("Failed to delete temp dir: " + directory._temp_directory)
         TempDir.open_directories = {}
 
-    def __init__(self, prefix="tmp_muse_"):
+    def __init__(self, prefix=prefix):
         self._prefix = prefix
         self.purge_prefix()
         self._temp_directory = os.path.join(TempDir.temporary_directory_parent, prefix + str(os.urandom(24).hex()))

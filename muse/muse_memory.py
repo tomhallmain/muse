@@ -41,12 +41,17 @@ class MuseMemory:
         return None if len(MuseMemory.current_session_spot_profiles) <= idx else MuseMemory.current_session_spot_profiles[idx]
 
     def __init__(self):
-        self._recently_played = []
-        self._recently_played_count = 0
+        self.tracks_since_last_topic = 0
+        self.tracks_since_last_spoke = 0
+        self.last_topic = None
 
-    def get_spot_profile(self, previous_track=None, track=None, last_track_failed=False, skip_track=False, old_grouping=None, new_grouping=None, grouping_readable_name=None):
-        previous_spot_profile = MuseMemory.get_previous_session_spot_profile()
-        spot_profile = MuseSpotProfile(previous_track, track, last_track_failed, skip_track, old_grouping, new_grouping, grouping_readable_name,
+    def is_recent_topics(self, topics_to_check=[], n=1):
+        if n >= self.tracks_since_last_topic:
+            return False
+        return self.last_topic in topics_to_check
+
+    def get_spot_profile(self, previous_track=None, track=None, last_track_failed=False, skip_track=False, old_grouping=None, new_grouping=None, grouping_type=None):
+        spot_profile = MuseSpotProfile(previous_track, track, last_track_failed, skip_track, old_grouping, new_grouping, grouping_type,
                                        get_previous_spot_profile_callback=MuseMemory.get_previous_session_spot_profile)
         MuseMemory.update_all_spot_profiles(spot_profile)
         MuseMemory.update_current_session_spot_profiles(spot_profile)

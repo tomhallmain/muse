@@ -11,7 +11,7 @@ class LLMResponseException(Exception):
 class LLM:
     ENDPOINT = "http://localhost:11434/api/generate"
 
-    def __init__(self, model_name="wizard-vicuna-uncensored:latest"):
+    def __init__(self, model_name="deepseek-r1:14b"):
         self.model_name = model_name
         Utils.log(f"Using LLM model: {self.model_name}")
 

@@ -3,23 +3,17 @@ from enum import Enum
 from tkinter import Toplevel, Label, StringVar, LEFT, W
 from tkinter.ttk import Button, Entry
 
+from extensions.extension_manager import ExtensionManager
 from extensions.open_weather import OpenWeatherAPI
 from lib.tk_scroll_demo import ScrollFrame
 from ui.app_style import AppStyle
 from utils.config import config
+from utils.globals import ExtensionStrategy
 from utils.translations import I18N
 from utils.utils import Utils
 
 _ = I18N._
 
-
-class ExtensionStrategy(Enum):
-    EXTEND_BY_COMPOSER = "extend by composer"
-    EXTEND_BY_ARTIST = "extend by artist"
-    EXTEND_BY_GENRE = "extend by genre"
-    EXTEND_BY_PROMPT = "extend by prompt"
-    EXTEND_BY_SPECIFIC_TAGS = "extend by specific tags"
-    EXTEND_BY_LINK_TYPE_A = "extend by link type a" # i.e. provide a link to a forum post with scrapable media content
 
 
 

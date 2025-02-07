@@ -112,6 +112,23 @@ class PlaylistSortType(Enum):
         ]
         return PlaylistSortType.get_translated_names()[types.index(self)]
 
+    def get_grouping_readable_name(self):
+        if self == PlaylistSortType.RANDOM or self == PlaylistSortType.SEQUENCE:
+            return None
+        if self == PlaylistSortType.ALBUM_SHUFFLE:
+            return _("Album")
+        if self == PlaylistSortType.ARTIST_SHUFFLE:
+            return _("Artist")
+        if self == PlaylistSortType.COMPOSER_SHUFFLE:
+            return _("Composer")
+        if self == PlaylistSortType.GENRE_SHUFFLE:
+            return _("Genre")
+        if self == PlaylistSortType.FORM_SHUFFLE:
+            return _("Form")
+        if self == PlaylistSortType.INSTRUMENT_SHUFFLE:
+            return _("Instrument")
+        raise Exception(f"Unhandled sort type {self}")
+
     @staticmethod
     def get_translated_names():
         return [
@@ -126,7 +143,7 @@ class PlaylistSortType(Enum):
         ]
 
     @staticmethod
-    def get_playlist_sort_type_from_translation(translation):
+    def get_from_translation(translation):
         types = [
             PlaylistSortType.RANDOM,
             PlaylistSortType.SEQUENCE,
@@ -158,7 +175,6 @@ class TrackAttribute(Enum):
     FORM = "form"
     INSTRUMENT = "instrument"
 
-
     def get_translation(self):
         types = [
             TrackAttribute.TITLE,
@@ -184,7 +200,7 @@ class TrackAttribute(Enum):
         ]
 
     @staticmethod
-    def get_playlist_sort_type_from_translation(translation):
+    def get_from_translation(translation):
         types = [
             TrackAttribute.TITLE,
             TrackAttribute.ALBUM,
@@ -198,4 +214,63 @@ class TrackAttribute(Enum):
             return types[TrackAttribute.get_translated_names().index(translation)]
         except ValueError:
             return TrackAttribute.ARTIST
+
+
+
+class ExtensionStrategy(Enum):
+    COMPOSER = "extend by composer"
+    ARTIST = "extend by artist"
+    GENRE = "extend by genre"
+    FORM = "extend by form"
+    INSTRUMENT = "extend by instrument"
+    RANDOM = "random"
+    PROMPT = "extend by prompt"
+    SPECIFIC_TAGS = "extend by specific tags"
+    LINK_TYPE_A = "extend by link type a" # i.e. provide a link to a forum post with scrapable media content
+
+    def get_translation(self):
+        types = [
+            ExtensionStrategy.COMPOSER,
+            ExtensionStrategy.ARTIST,
+            ExtensionStrategy.GENRE,
+            ExtensionStrategy.FORM,
+            ExtensionStrategy.INSTRUMENT,
+            ExtensionStrategy.RANDOM,
+            ExtensionStrategy.PROMPT,
+            ExtensionStrategy.SPECIFIC_TAGS,
+            ExtensionStrategy.LINK_TYPE_A,
+        ]
+        return ExtensionStrategy.get_translated_names()[types.index(self)]
+
+    @staticmethod
+    def get_translated_names():
+        return [
+            _('Composer'),
+            _('Artist'),
+            _('Genre'),
+            _('Form'),
+            _('Instrument'),
+            _('Random'),
+            'Prompt',
+            'Specific tags',
+            'Link type A',
+        ]
+
+    @staticmethod
+    def get_from_translation(translation):
+        types = [
+            ExtensionStrategy.COMPOSER,
+            ExtensionStrategy.ARTIST,
+            ExtensionStrategy.GENRE,
+            ExtensionStrategy.FORM,
+            ExtensionStrategy.INSTRUMENT,
+            ExtensionStrategy.RANDOM,
+            ExtensionStrategy.PROMPT,
+            ExtensionStrategy.SPECIFIC_TAGS,
+            ExtensionStrategy.LINK_TYPE_A,
+        ]
+        try:
+            return types[ExtensionStrategy.get_translated_names().index(translation)]
+        except ValueError:
+            return ExtensionStrategy.ARTIST
 

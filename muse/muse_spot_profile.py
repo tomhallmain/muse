@@ -13,7 +13,7 @@ class MuseSpotProfile:
     chance_speak_before_track = config.muse_config["chance_speak_before_track"]
     chance_speak_about_other_topics = config.muse_config["chance_speak_about_other_topics"]
 
-    def __init__(self, previous_track, track, last_track_failed, skip_track, old_grouping, new_grouping, grouping_readable_name, get_previous_spot_profile_callback=None):
+    def __init__(self, previous_track, track, last_track_failed, skip_track, old_grouping, new_grouping, grouping_type, get_previous_spot_profile_callback=None):
         self.previous_track = previous_track
         self.track = track
         self.get_previous_spot_profile_callback = get_previous_spot_profile_callback
@@ -36,7 +36,7 @@ class MuseSpotProfile:
         # the DJ needs to keep track of it and be eager let us know when there a change.
         self.old_grouping = old_grouping
         self.new_grouping = new_grouping
-        self.grouping_readable_name = grouping_readable_name
+        self.grouping_type = grouping_type
         if old_grouping is not None and new_grouping is not None and old_grouping != new_grouping:
             self.speak_about_prior_group = previous_track is not None and random.random() < 0.5
             self.speak_about_upcoming_group = track is not None and random.random() < 0.9

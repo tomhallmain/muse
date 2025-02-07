@@ -20,12 +20,16 @@ class Playback:
         config = PlaybackConfig.new_playback_config(override_dir=override_dir, data_callbacks=data_callbacks)
         return Playback(config, None, False)
 
-    def __init__(self, playback_config, callbacks, run):
+    def __init__(self, playback_config, ui_callbacks=None, run=None):
         self.vlc_media_player = INSTANCE.media_player_new()
         self._playback_config = playback_config
-        self.callbacks = callbacks
+        self.ui_callbacks = ui_callbacks
         self._run = run
-        self.muse = run.muse if run else None
+        if run:
+            self.muse = run.muse
+            self.muse.set_get_playlist_callback(self._playback_config.get_list)
+        else:
+            self.muse = None
         self.is_paused = False
         self.skip_track = False
         self.skip_delay = False
@@ -96,6 +100,7 @@ class Playback:
         self.remaining_delay_seconds = Globals.DELAY_TIME_SECONDS + random_buffer
 
     def run(self):
+        assert self.vlc_media_player is not None
         if self.has_muse():
             self.get_muse().check_schedules()
         while self.get_track() and not self._run.is_cancelled:
@@ -153,11 +158,12 @@ class Playback:
                 break
 
     def update_progress(self):
+        assert self.vlc_media_player is not None
         duration = self.vlc_media_player.get_length()
         current_time = self.vlc_media_player.get_time()
-        if self.callbacks is not None and self.callbacks.update_progress_callback is not None:
+        if self.ui_callbacks is not None and self.ui_callbacks.update_progress_callback is not None:
             progress = int((current_time / duration) * 100) if duration > 0 else 0
-            self.callbacks.update_progress_callback(progress, current_time, duration)
+            self.ui_callbacks.update_progress_callback(progress, current_time, duration)
         return duration - current_time
 
     def reset_muse(self):
@@ -174,21 +180,21 @@ class Playback:
             next_track, self.old_grouping, self.new_grouping = self._playback_config.upcoming_track()
         previous_track = None if first_prep else (self.previous_track if delayed_prep else self.track)
         spot_profile = self.get_muse().get_spot_profile(previous_track, next_track, self.last_track_failed, self.skip_track,
-                                                        self.old_grouping, self.new_grouping, self.get_grouping_readable_name())
+                                                        self.old_grouping, self.new_grouping, self.get_grouping_type())
         self.muse_spot_profiles.append(spot_profile)
         start = time.time()
         if delayed_prep:
             spot_profile.immediate = True
             if not first_prep:
                 Utils.log("Delayed preparation.")
-            self.get_muse().prepare(spot_profile, self.callbacks)
+            self.get_muse().prepare(spot_profile, self.ui_callbacks)
         else:
-            Utils.start_thread(self.get_muse().prepare, use_asyncio=False, args=(spot_profile, self.callbacks))
+            Utils.start_thread(self.get_muse().prepare, use_asyncio=False, args=(spot_profile, self.ui_callbacks))
         return round(time.time() - start)
 
-    def get_grouping_readable_name(self):
+    def get_grouping_type(self):
         try:
-            return self._playback_config.get_list().get_grouping_readable_name()
+            return self._playback_config.get_list().sort_type
         except AttributeError:
             return ""
 
@@ -198,6 +204,7 @@ class Playback:
         self.muse_spot_profiles.append(spot_profile)
 
     def register_new_song(self):
+        assert self.track is not None
         Utils.log(f"Playing track file: {self.track.filepath}")
         self.vlc_media_player = vlc.MediaPlayer(self.track.filepath)
         if self.track.get_is_video():
@@ -206,28 +213,29 @@ class Playback:
 
     def ensure_video_frame(self):
         if not config.play_videos_in_separate_window:
+            assert self.vlc_media_player is not None and self.ui_callbacks is not None
             # set the window id where to render VLC's video output
             if platform.system() == 'Windows':
-                self.vlc_media_player.set_hwnd(self.callbacks.get_media_frame_handle())
+                self.vlc_media_player.set_hwnd(self.ui_callbacks.get_media_frame_handle())
             else:
-                self.vlc_media_player.set_xwindow(self.callbacks.get_media_frame_handle()) # this line messes up windows
+                self.vlc_media_player.set_xwindow(self.ui_callbacks.get_media_frame_handle()) # this line messes up windows
 
     def update_ui(self):
-        if self.callbacks is None:
+        if self.ui_callbacks is None:
             return
-        if self.callbacks.track_details_callback is not None:
-            self.callbacks.track_details_callback(self.track)
-            self.callbacks.update_next_up_callback("")
-        if self.callbacks.update_spot_profile_topics_text is not None:
+        if self.ui_callbacks.track_details_callback is not None:
+            self.ui_callbacks.track_details_callback(self.track)
+            self.ui_callbacks.update_next_up_callback("")
+        if self.ui_callbacks.update_spot_profile_topics_text is not None:
             spot_profile = self.get_spot_profile()
-            if self.callbacks.update_next_up_callback is not None:
-                self.callbacks.update_next_up_callback("")
-            if self.callbacks.update_prior_track_callback is not None:
-                self.callbacks.update_prior_track_callback(spot_profile.get_previous_track_title())
-            if self.callbacks.update_spot_profile_topics_text is not None:
-                self.callbacks.update_spot_profile_topics_text(spot_profile.get_topic_text())
-        if self.callbacks.update_album_artwork is not None:
-            self.callbacks.update_album_artwork(image_filepath=self.track.get_album_artwork())
+            if self.ui_callbacks.update_next_up_callback is not None:
+                self.ui_callbacks.update_next_up_callback("")
+            if self.ui_callbacks.update_prior_track_callback is not None:
+                self.ui_callbacks.update_prior_track_callback(spot_profile.get_previous_track_title())
+            if self.ui_callbacks.update_spot_profile_topics_text is not None:
+                self.ui_callbacks.update_spot_profile_topics_text(spot_profile.get_topic_text())
+        if self.ui_callbacks.update_album_artwork is not None:
+            self.ui_callbacks.update_album_artwork(image_filepath=self.track.get_album_artwork())
 
     def increment_count(self):
         if not self.skip_track:
@@ -236,8 +244,8 @@ class Playback:
 
     def delay(self):
         if self.has_played_first_track and not self.last_track_failed:
-            if self.remaining_delay_seconds > 4 and self.callbacks is not None:
-                self.callbacks.update_next_up_callback(_("Sleeping for seconds") + ": " + str(self.remaining_delay_seconds), no_title=True)
+            if self.remaining_delay_seconds > 4 and self.ui_callbacks is not None:
+                self.ui_callbacks.update_next_up_callback(_("Sleeping for seconds") + ": " + str(self.remaining_delay_seconds), no_title=True)
                 # TODO set track text to "Upcoming track"
             delay_timer = 0
             while not self.skip_delay and delay_timer < self.remaining_delay_seconds:
