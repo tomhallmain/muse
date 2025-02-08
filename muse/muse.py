@@ -290,52 +290,52 @@ class Muse:
             self.say_at_some_point(remark, spot_profile, None)
 
         topic = spot_profile.topic
-        Utils.log("Talking about topic: " + topic)
+        Utils.log(f"Talking about topic: {topic.value}")
 
         func = None
         args = [spot_profile]
         kwargs = {}
 
-        if topic == "weather":
+        if topic == Topic.WEATHER:
             func = self.talk_about_weather
             args = [config.open_weather_city, spot_profile]
-        elif topic in ["news", "hackernews"]:
+        elif topic in [Topic.NEWS, Topic.HACKERNEWS]:
             func = self.talk_about_news
             args = [topic, spot_profile]
-        elif topic == "joke":
+        elif topic == Topic.JOKE:
             func = self.tell_a_joke
-        elif topic == "fact":
+        elif topic == Topic.FACT:
             func = self.share_a_fact
-        elif topic == "truth_and_lie":
+        elif topic == Topic.TRUTH_AND_LIE:
             func = self.play_two_truths_and_one_lie
-        elif topic == "fable":
+        elif topic == Topic.FABLE:
             func = self.share_a_fable
-        elif topic == "aphorism":
+        elif topic == Topic.APHORISM:
             func = self.share_an_aphorism
-        elif topic == "poem":
+        elif topic == Topic.POEM:
             func = self.share_a_poem
-        elif topic == "quote":
+        elif topic == Topic.QUOTE:
             func = self.share_a_quote
-        elif topic == "tongue_twister":
+        elif topic == Topic.TONGUE_TWISTER:
             func = self.share_a_tongue_twister
-        elif topic == "calendar":
+        elif topic == Topic.CALENDAR:
             func = self.talk_about_the_calendar
-        elif topic == "motivation":
+        elif topic == Topic.MOTIVATION:
             func = self.share_a_motivational_message
-        elif topic =="track_context_prior":
+        elif topic == Topic.TRACK_CONTEXT_PRIOR:
             func = self.talk_about_track_context
-            args = [spot_profile.track, spot_profile, "track_context_prior"]
-        elif topic =="track_context_post":
+            args = [spot_profile.track, spot_profile, Topic.TRACK_CONTEXT_PRIOR]
+        elif topic == Topic.TRACK_CONTEXT_POST:
             func = self.talk_about_track_context
-            args = [spot_profile.previous_track, spot_profile, "track_context_post"]
-        elif topic == "random_wiki_article":
+            args = [spot_profile.previous_track, spot_profile, Topic.TRACK_CONTEXT_POST]
+        elif topic == Topic.RANDOM_WIKI_ARTICLE:
             func = self.talk_about_random_wiki_article
-        elif topic == "funny_story":
+        elif topic == Topic.FUNNY_STORY:
             func = self.share_a_funny_story
-        elif topic == "language_learning":
+        elif topic == Topic.LANGUAGE_LEARNING:
             func = self.teach_language
         else:
-            Utils.log_yellow("Unhandled topic: " + topic)
+            Utils.log_yellow(f"Unhandled topic: {topic}")
             return
 
         self._wrap_function(spot_profile, topic, func, args, kwargs)
@@ -343,11 +343,11 @@ class Muse:
     def talk_about_weather(self, city="Washington", spot_profile=None):
         weather = self.open_weather_api.get_weather_for_city(city)
         weather_summary = self.generate_text(
-            self.prompter.get_prompt("weather") + city + ":\n\n" + str(weather))
-        self.say_at_some_point(weather_summary, spot_profile, "weather")
+            self.prompter.get_prompt(Topic.WEATHER) + city + ":\n\n" + str(weather))
+        self.say_at_some_point(weather_summary, spot_profile, Topic.WEATHER)
 
     def talk_about_news(self, topic=None, spot_profile=None):
-        if topic == "hackernews":
+        if topic == Topic.HACKERNEWS:
             news = self.hacker_news_souper.get_news(total=15)
         else:
             news = self.news_api.get_news(topic=topic)
@@ -356,32 +356,33 @@ class Muse:
         self.say_at_some_point(news_summary, spot_profile, topic)
 
     def tell_a_joke(self, spot_profile):
-        joke = self.generate_text(self.prompter.get_prompt("joke"))
-        self.say_at_some_point(joke, spot_profile, "joke")
+        joke = self.generate_text(self.prompter.get_prompt(Topic.JOKE))
+        self.say_at_some_point(joke, spot_profile, Topic.JOKE)
 
     def share_a_fact(self, spot_profile):
-        fact = self.generate_text(self.prompter.get_prompt("fact"))
-        self.say_at_some_point(fact, spot_profile, "fact")
+        fact = self.generate_text(self.prompter.get_prompt(Topic.FACT))
+        self.say_at_some_point(fact, spot_profile, Topic.FACT)
+
 
     def play_two_truths_and_one_lie(self, spot_profile):
-        resp = self.generate_text(self.prompter.get_prompt("truth_and_lie"))
-        self.say_at_some_point(resp, spot_profile, "truth and lie")
+        resp = self.generate_text(self.prompter.get_prompt(Topic.TRUTH_AND_LIE))
+        self.say_at_some_point(resp, spot_profile, Topic.TRUTH_AND_LIE)
 
     def share_a_fable(self, spot_profile):
-        fable = self.generate_text(self.prompter.get_prompt("fable"))
-        self.say_at_some_point(fable, spot_profile, "fable")
+        fable = self.generate_text(self.prompter.get_prompt(Topic.FABLE))
+        self.say_at_some_point(fable, spot_profile, Topic.FABLE)
 
     def share_an_aphorism(self, spot_profile):
-        aphorism = self.generate_text(self.prompter.get_prompt("aphorism"))
-        self.say_at_some_point(aphorism, spot_profile, "aphorism")
+        aphorism = self.generate_text(self.prompter.get_prompt(Topic.APHORISM))
+        self.say_at_some_point(aphorism, spot_profile, Topic.APHORISM)
 
     def share_a_poem(self, spot_profile):
-        poem = self.generate_text(self.prompter.get_prompt("poem"))
-        self.say_at_some_point(poem, spot_profile, "poem")
+        poem = self.generate_text(self.prompter.get_prompt(Topic.POEM))
+        self.say_at_some_point(poem, spot_profile, Topic.POEM)
     
     def share_a_quote(self, spot_profile):
-        quote = self.generate_text(self.prompter.get_prompt("quote"))
-        self.say_at_some_point(quote, spot_profile, "quote")
+        quote = self.generate_text(self.prompter.get_prompt(Topic.QUOTE))
+        self.say_at_some_point(quote, spot_profile, Topic.QUOTE)
 
     def share_a_tongue_twister(self, spot_profile):
         if config.tongue_twisters_dir is None or config.tongue_twisters_dir == "":
@@ -403,15 +404,15 @@ class Muse:
     def talk_about_the_calendar(self, spot_profile):
         # TODO talk about tomorrow as well, or the upcoming week
         today = datetime.datetime.today()
-        prompt = self.prompter.get_prompt("calendar")
+        prompt = self.prompter.get_prompt(Topic.CALENDAR)
         prompt = prompt.replace("DATE", today.strftime("%A %B %d %Y"))
         prompt = prompt.replace("TIME", today.strftime("%H:%M"))
         calendar = self.generate_text(prompt)
-        self.say_at_some_point(calendar, spot_profile, "calendar")
+        self.say_at_some_point(calendar, spot_profile, Topic.CALENDAR)
 
     def share_a_motivational_message(self, spot_profile):
-        motivation = self.generate_text(self.prompter.get_prompt("motivation"))
-        self.say_at_some_point(motivation, spot_profile, "motivation")
+        motivation = self.generate_text(self.prompter.get_prompt(Topic.MOTIVATION))
+        self.say_at_some_point(motivation, spot_profile, Topic.MOTIVATION)
 
     def talk_about_track_context(self, track, spot_profile, topic):
         if spot_profile.track is None or spot_profile.topic is None or topic is None:
@@ -442,18 +443,18 @@ class Muse:
         self.say_at_some_point(summary, spot_profile, "random_wiki_article")
 
     def share_a_funny_story(self, spot_profile):
-        funny_story = self.generate_text(self.prompter.get_prompt("funny_story"))
-        self.say_at_some_point(funny_story, spot_profile, "funny_story")
+        funny_story = self.generate_text(self.prompter.get_prompt(Topic.FUNNY_STORY))
+        self.say_at_some_point(funny_story, spot_profile, Topic.FUNNY_STORY)
 
     def teach_language(self, spot_profile):
-        prompt = self.prompter.get_prompt("language_learning")
+        prompt = self.prompter.get_prompt(Topic.LANGUAGE_LEARNING)
         prompt = prompt.replace("LANGUAGE", config.muse_language_learning_language)
         if config.muse_language_learning_language_level is not None and config.muse_language_learning_language_level.strip() != "":
             prompt = prompt.replace("LEVEL", config.muse_language_learning_language_level)
         else:
             prompt = prompt.replace("LEVEL", "basic")
         language_response = self.generate_text(prompt)
-        self.say_at_some_point(language_response, spot_profile, "language_learning")
+        self.say_at_some_point(language_response, spot_profile, Topic.LANGUAGE_LEARNING)
 
     def start_extensions_thread(self, initial_sleep=True, overwrite_cache=False):
         self.get_library_data().start_extensions_thread(initial_sleep=initial_sleep, overwrite_cache=overwrite_cache, voice=self.voice)

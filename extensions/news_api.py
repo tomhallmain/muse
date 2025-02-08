@@ -55,7 +55,7 @@ class NewsAPI:
     def get_news(self, country="us", topic=None) -> NewsResponse:
         url = f"{self.ENDPOINT}?country={country}&apiKey={NewsAPI.KEY}"
         if topic is not None:
-            url += "&q={}".format(topic)
+            url += "&q={}".format(topic.value)
         news = NewsResponse(requests.get(url).json(), country)
         return news
 
