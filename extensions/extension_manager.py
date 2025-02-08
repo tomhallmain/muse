@@ -87,7 +87,7 @@ class ExtensionManager:
             self._extend_by_random_attr(voice)
             ExtensionManager.extension_thread_delayed_complete = False
             sleep_time_minutes = int(self.get_extension_sleep_time(3600, 5400) / 60)
-            check_cadence = 2
+            check_cadence = 1
             while sleep_time_minutes > 0:
                 sleep_time_minutes -= check_cadence
                 if sleep_time_minutes <= 0:
@@ -97,36 +97,27 @@ class ExtensionManager:
                 Utils.long_sleep(check_cadence * 60, "extension thread")
 
     def _extend_by_random_attr(self, voice=None):
-        extendible_attrs = [
-            TrackAttribute.ARTIST,
-            TrackAttribute.COMPOSER,
-            TrackAttribute.GENRE,
-            TrackAttribute.FORM,
-            TrackAttribute.INSTRUMENT
-        ]
+        extendible_attrs = {
+            TrackAttribute.ARTIST: lambda: random.choice(self.data_callbacks.instance.artists.get_artist_names()),
+            TrackAttribute.COMPOSER: lambda: random.choice(self.data_callbacks.instance.composers.get_composer_names()),
+            TrackAttribute.GENRE: lambda: random.choice(self.data_callbacks.instance.genres.get_genre_names()),
+            TrackAttribute.FORM: lambda: random.choice(self.data_callbacks.instance.forms.get_form_names()),
+            TrackAttribute.INSTRUMENT: lambda: random.choice(self.data_callbacks.instance.instruments.get_instrument_names()),
+        }
         if len(self.data_callbacks.instance.artists.get_artist_names()) == 0:
-            extendible_attrs.remove(TrackAttribute.ARTIST)
+            del extendible_attrs[TrackAttribute.ARTIST]
         if len(self.data_callbacks.instance.composers.get_composer_names()) == 0:
-            extendible_attrs.remove(TrackAttribute.COMPOSER)
+            del extendible_attrs[TrackAttribute.COMPOSER]
         if len(self.data_callbacks.instance.genres.get_genre_names()) == 0:
-            extendible_attrs.remove(TrackAttribute.GENRE)
+            del extendible_attrs[TrackAttribute.GENRE]
         if len(self.data_callbacks.instance.forms.get_form_names()) == 0:
-            extendible_attrs.remove(TrackAttribute.FORM)
+            del extendible_attrs[TrackAttribute.FORM]
         if len(self.data_callbacks.instance.instruments.get_instrument_names()) == 0:
-            extendible_attrs.remove(TrackAttribute.INSTRUMENT)
+            del extendible_attrs[TrackAttribute.INSTRUMENT]
         if len(extendible_attrs) == 0:
             raise Exception("No extensible attributes found!")
-        attr = random.choice(extendible_attrs)
-        if attr == TrackAttribute.ARTIST:
-            value = random.choice(self.data_callbacks.instance.artists.get_artist_names())
-        elif attr == TrackAttribute.COMPOSER:
-            value = random.choice(self.data_callbacks.instance.composers.get_composer_names())
-        elif attr == TrackAttribute.GENRE:
-            value = random.choice(self.data_callbacks.instance.genres.get_genre_names())
-        elif attr == TrackAttribute.FORM:
-            value = random.choice(self.data_callbacks.instance.forms.get_form_names())
-        elif attr == TrackAttribute.INSTRUMENT:
-            value = random.choice(self.data_callbacks.instance.instruments.get_instrument_names())
+        attr = random.choice(list(extendible_attrs.keys()))
+        value = extendible_attrs[attr]()
 
         Utils.log(f'Extending by random {attr}: {value}')
         if voice is not None:
@@ -147,7 +138,7 @@ class ExtensionManager:
             self.extend_by_genre(value, strict=strict)
         if attr == TrackAttribute.INSTRUMENT:
             self.extend_by_instrument(value, strict=strict)
-        
+
         # Set up the next thread to run another extension
         next_job_args = self.EXTENSION_QUEUE.take()
         if next_job_args is not None:
@@ -157,11 +148,12 @@ class ExtensionManager:
             self.EXTENSION_QUEUE.job_running = False
 
     def extend(self, value="", attr=None, strict=False):
-        args=(value, attr, strict)
+        args=[value, attr, strict]
         if self.EXTENSION_QUEUE.has_pending() or self.EXTENSION_QUEUE.job_running:
             self.EXTENSION_QUEUE.add(args)
         else:
             self.EXTENSION_QUEUE.job_running = True
+            print(args)
             Utils.start_thread(self._extend, use_asyncio=False, args=args)
 
     def extend_by_title(self, title, strict=False):
@@ -174,7 +166,7 @@ class ExtensionManager:
         self._simple("music by " + artist, attr=TrackAttribute.ARTIST, strict=artist)
 
     def extend_by_composer(self, composer_name):
-        composer = self.data_callbacks.instance.composers_data.get_data(composer_name)
+        composer = self.data_callbacks.instance.composers.get_data(composer_name)
         self._simple("music by " + composer_name, attr=TrackAttribute.COMPOSER, strict=composer)
 
     def extend_by_genre(self, genre, strict=False):
@@ -204,7 +196,7 @@ class ExtensionManager:
             if failed:
                 if depth > 4:
                     raise Exception(f"Unable to find valid results: {q}")
-                self._simple(q, m=m*2, depth=depth+1)
+                self._simple(q, m=m*2, depth=depth+1, attr=attr, strict=strict)
                 return
             name = SoupUtils.clean_html(b.n)
             Utils.log_yellow(f"Selected option: {name} - {b.x()}")
@@ -244,7 +236,7 @@ class ExtensionManager:
         return False
 
     def delayed(self, b, attr):
-        thread = Utils.start_thread(self._delayed, use_asyncio=False, args=(b, attr,))
+        thread = Utils.start_thread(self._delayed, use_asyncio=False, args=[b, attr,])
         ExtensionManager.DELAYED_THREADS.append(thread)
 
     def _delayed(self, b, attr, sleep=True):

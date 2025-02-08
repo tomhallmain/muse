@@ -18,6 +18,7 @@ from muse.playback import Playback
 from muse.prompter import Prompter
 from muse.voice import Voice
 from utils.config import config
+from utils.globals import Topic
 from utils.translations import I18N
 from utils.utils import Utils
 
@@ -65,7 +66,7 @@ class Muse:
         return self.get_playlist_callback()
 
     def say_at_some_point(self, text, spot_profile, topic):
-        save_mp3 = topic in config.save_tts_output_topics
+        save_mp3 = topic is not None and topic.value in config.save_tts_output_topics
         if spot_profile.immediate:
             self.voice.say(text, save_mp3=save_mp3)
         else:
@@ -229,7 +230,7 @@ class Muse:
         previous_group = spot_profile.old_grouping
         if spot_profile.previous_track is not None:
             group_count = self.get_playlist().get_group_count(previous_group)
-            if group_count > 0:
+            if group_count > 1:
                 if spot_profile.previous_track._is_extended:
                     dj_remark = _("After that short interlude, we're back to our {0} shuffle.").format(
                         spot_profile.grouping_type.get_grouping_readable_name())
@@ -242,7 +243,7 @@ class Muse:
         new_group = spot_profile.new_grouping
         if spot_profile.previous_track is not None and spot_profile.track is not None:
             group_count = self.get_playlist().get_group_count(new_group)
-            if group_count > 0:
+            if group_count > 1:
                 if spot_profile.previous_track._is_extended:
                     dj_remark = _("We're listening to a group of tracks from the {0} {1}.").format(
                         spot_profile.grouping_type.get_grouping_readable_name(), new_group)
@@ -252,19 +253,20 @@ class Muse:
                 self.say_at_some_point(dj_remark, spot_profile, None)
 
     def get_topic(self, previous_track, excluded_topics=[]):
-        if Prompter.over_n_hours_since_last("weather", n_hours=24) and not self.memory.is_recent_topics(["news", "hackernews"], n=3):
-            topic = "weather"
-        elif Prompter.over_n_hours_since_last("news", n_hours=96) and not self.memory.is_recent_topics(["weather", "hackernews"], n=3):
-            topic = "news"
-        elif Prompter.over_n_hours_since_last("hackernews", n_hours=96) and not self.memory.is_recent_topics(["weather", "news"], n=3):
-            topic = "hackernews"
+        excluded_topics = list(excluded_topics)
+        if Prompter.over_n_hours_since_last(Topic.WEATHER, n_hours=24) and not self.memory.is_recent_topics(["news", "hackernews"], n=3):
+            topic = Topic.WEATHER
+        elif Prompter.over_n_hours_since_last(Topic.NEWS, n_hours=96) and not self.memory.is_recent_topics(["weather", "hackernews"], n=3):
+            topic = Topic.NEWS
+        elif Prompter.over_n_hours_since_last(Topic.HACKERNEWS, n_hours=96) and not self.memory.is_recent_topics(["weather", "news"], n=3):
+            topic = Topic.HACKERNEWS
         else:
             topic = Prompter.get_oldest_topic(excluded_topics=excluded_topics)
 
         if topic not in excluded_topics:
-            if topic in ["hackernews", "news"] and Prompter.under_n_hours_since_last(topic, n_hours=14):
+            if topic in [Topic.HACKERNEWS, Topic.NEWS] and Prompter.under_n_hours_since_last(topic, n_hours=14):
                 excluded_topics.append(topic)
-            if previous_track is None and topic == "track_context_post":
+            if previous_track is None and topic == Topic.TRACK_CONTEXT_POST:
                 excluded_topics.append(topic)
 
         while topic in excluded_topics:
@@ -274,7 +276,7 @@ class Muse:
 
     def set_topic(self, spot_profile):
         spot_profile.topic = self.get_topic(spot_profile.previous_track)
-        spot_profile.topic_translated = self.prompter.translate_topic(spot_profile.topic)
+        spot_profile.topic_translated = spot_profile.topic.translate()
 
     def talk_about_something(self, spot_profile):
         self.memory.tracks_since_last_topic = 0

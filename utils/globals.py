@@ -274,3 +274,68 @@ class ExtensionStrategy(Enum):
         except ValueError:
             return ExtensionStrategy.ARTIST
 
+
+class Topic(Enum):
+    WEATHER = "weather"
+    NEWS = "news"
+    HACKERNEWS = "hackernews"
+    JOKE = "joke"
+    FACT = "fact"
+    FABLE = "fable"
+    TRUTH_AND_LIE = "truth_and_lie"
+    APHORISM = "aphorism"
+    POEM = "poem"
+    QUOTE = "quote"
+    TONGUE_TWISTER = "tongue_twister"
+    MOTIVATION = "motivation"
+    CALENDAR = "calendar"
+    TRACK_CONTEXT_PRIOR = "track_context_prior"
+    TRACK_CONTEXT_POST = "track_context_post"
+    RANDOM_WIKI_ARTICLE = "random_wiki_article"
+    FUNNY_STORY = "funny_story"
+    LANGUAGE_LEARNING = "language_learning"
+
+    def translate(self):
+        if self == Topic.WEATHER:
+            return _("weather")
+        elif self == Topic.NEWS:
+            return _("news")
+        elif self == Topic.HACKERNEWS:
+            return "hacker news"
+        elif self == Topic.JOKE:
+            return _("joke")
+        elif self == Topic.FACT:
+            return _("fact")
+        elif self == Topic.FABLE:
+            return _("fable")
+        elif self == Topic.TRUTH_AND_LIE:
+            return _("truth and lie")
+        elif self == Topic.APHORISM:
+            return _("aphorism")
+        elif self == Topic.POEM:
+            return _("poem")
+        elif self == Topic.QUOTE:
+            return _("quote")
+        elif self == Topic.TONGUE_TWISTER:
+            return _("tongue twister")
+        elif self == Topic.MOTIVATION:
+            return _("motivation")
+        elif self == Topic.CALENDAR:
+            return _("calendar")
+        elif self == Topic.TRACK_CONTEXT_PRIOR:
+            return _("more about the next track")
+        elif self == Topic.TRACK_CONTEXT_POST:
+            return _("more about the last track")
+        elif self == Topic.RANDOM_WIKI_ARTICLE:
+            return _("random wiki article")
+        elif self == Topic.FUNNY_STORY:
+            return _("funny story")
+        elif self == Topic.LANGUAGE_LEARNING:
+            return  _("language learning")
+        else:
+            raise Exception(f"unhandled topic: {self}")
+
+    def get_prompt_topic_value(self):
+        if self == Topic.HACKERNEWS:
+            return "news"
+        return str(self.value)

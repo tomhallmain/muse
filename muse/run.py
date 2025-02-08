@@ -58,7 +58,7 @@ class Run:
 
     def run(self, playback_config):
         if config.enable_library_extender and self.args.extend:
-            self.muse.start_extensions_thread(overwrite_cache=self.args.overwrite)
+            self.muse.start_extensions_thread(initial_sleep=True, overwrite_cache=self.args.overwrite)
         Utils.log(playback_config)
         if self.last_config and playback_config == self.last_config:
             Utils.log("\n\nConfig matches last config. Please modify it or quit.")

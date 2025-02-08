@@ -191,7 +191,7 @@ class SearchWindow:
             self.play_btn_list.append(play_btn)
             play_btn.grid(row=row, column=6)
             def play_handler(event, self=self, audio_track=track):
-                print(f"Audio track was: {audio_track}")
+                Utils.log(f"User selected audio track: {audio_track}")
                 self.run_play_callback(audio_track)
             play_btn.bind("<Button-1>", play_handler)
 

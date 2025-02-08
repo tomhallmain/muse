@@ -91,7 +91,8 @@ class Playlist:
             track = self.data_callbacks.get_track(track_filepath)
             self.sorted_tracks.append(track)
         Utils.log(f"Playlist length: {self.size()}")
-        self.sort()
+        if self.size() > 0:
+            self.sort()
 
     def size(self):
         return len(self.in_sequence)
@@ -165,36 +166,36 @@ class Playlist:
         return self.sorted_tracks[self.current_track_index]
 
     def sort(self):
-        attr_getter_name = None
+        grouping_attr_getter_name = None
         list_name_mapping = None
-        do_set_start_track = self.start_track is None
+        do_set_start_track = self.start_track is not None
+        grouping_attr_getter_name = self.sort_type.getter_name_mapping()
         if self.sort_type == PlaylistSortType.RANDOM:
             random.shuffle(self.sorted_tracks)
         elif not do_set_start_track:
             # This will seed a random start track on the sequence
             # so the sort below will have more randomness.
             self.start_track = random.choice(self.sorted_tracks)
-            self.set_start_track(attr_getter_name)
+            self.set_start_track(grouping_attr_getter_name)
         if self.sort_type != PlaylistSortType.SEQUENCE:
-            attr_getter_name = self.sort_type.getter_name_mapping()
             if self.sort_type != PlaylistSortType.RANDOM:
                 attr_set = set()
-                is_callable_attr = attr_getter_name.startswith("get_")
+                is_callable_attr = grouping_attr_getter_name.startswith("get_")
                 for track in self.sorted_tracks:
-                    attr = getattr(track, attr_getter_name)
+                    attr = getattr(track, grouping_attr_getter_name)
                     if is_callable_attr:
                         attr = attr()
                     attr_set.add(attr)
                 all_attrs_list = list(attr_set)
                 if is_callable_attr:
-                    self.sorted_tracks.sort(key=lambda t: (all_attrs_list.index(getattr(t, attr_getter_name)()), t.filepath))
+                    self.sorted_tracks.sort(key=lambda t: (all_attrs_list.index(getattr(t, grouping_attr_getter_name)()), t.filepath))
                 else:
-                    self.sorted_tracks.sort(key=lambda t: (all_attrs_list.index(getattr(t, attr_getter_name)), t.filepath))
+                    self.sorted_tracks.sort(key=lambda t: (all_attrs_list.index(getattr(t, grouping_attr_getter_name)), t.filepath))
             list_name_mapping = self.sort_type.grouping_list_name_mapping()
-            self.shuffle_with_memory_for_attr(attr_getter_name, list_name_mapping)
+            self.shuffle_with_memory_for_attr(grouping_attr_getter_name, list_name_mapping)
         if do_set_start_track:
             # The user specified a start track, it's not random
-            self.set_start_track(attr_getter_name)
+            self.set_start_track(grouping_attr_getter_name)
 
     def shuffle_with_memory_for_attr(self, track_attr, list_attr):
         # Look at the first config.playlist_recently_played_check_count (1000 default)
@@ -231,7 +232,7 @@ class Playlist:
                 return max_attempts
         return attempts
 
-    def set_start_track(self, track_attr):
+    def set_start_track(self, grouping_attr_getter_name):
         if self.start_track is None:
             return
         if self.start_track not in self.sorted_tracks:
@@ -245,17 +246,19 @@ class Playlist:
             index = self.sorted_tracks.index(self.start_track)
             self.sorted_tracks = self.sorted_tracks[index:] + self.sorted_tracks[:index]
         else:
-            track_attr_to_extract = getattr(self.start_track, track_attr)
+            if grouping_attr_getter_name is None:
+                raise Exception(f"Playlist start track attribute {grouping_attr_getter_name} not set!")
+            track_attr_to_extract = getattr(self.start_track, grouping_attr_getter_name)
             is_callable = False
             if callable(track_attr_to_extract):
                 is_callable = True
                 track_attr_to_extract = track_attr_to_extract()
-            Utils.log(f"Setting playlist start track attribute {track_attr} to {track_attr_to_extract}")
+            Utils.log(f"Setting playlist start track attribute {grouping_attr_getter_name} to {track_attr_to_extract}")
             if is_callable:
-                extracted = [track for track in self.sorted_tracks if getattr(track, track_attr)() == track_attr_to_extract]
+                extracted = [track for track in self.sorted_tracks if getattr(track, grouping_attr_getter_name)() == track_attr_to_extract]
             else:
-                extracted = [track for track in self.sorted_tracks if getattr(track, track_attr) == track_attr_to_extract]
-            Utils.log(f"Found {len(extracted)} tracks with attribute {track_attr} equal to {track_attr_to_extract}")
+                extracted = [track for track in self.sorted_tracks if getattr(track, grouping_attr_getter_name) == track_attr_to_extract]
+            Utils.log(f"Found {len(extracted)} tracks with attribute {grouping_attr_getter_name} equal to {track_attr_to_extract}")
             for track in extracted:
                 self.sorted_tracks.remove(track)
             index = extracted.index(self.start_track)
