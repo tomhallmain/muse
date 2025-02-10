@@ -392,14 +392,8 @@ class Muse:
         tongue_twister_track, __, ___ = playback._playback_config.next_track()
         if tongue_twister_track is None or not os.path.exists(tongue_twister_track.filepath):
             raise Exception(f"Invalid tongue twister file: {tongue_twister_track}")
-        Prompter.update_history("tongue_twister")
+        Prompter.update_history(spot_profile.topic)
         self.voice.add_speech_file_to_queue(tongue_twister_track.filepath)
-        # try:
-        #     playback.play_one_song()
-        # except Exception as e:
-        #     Utils.log_red("Error playing tongue twister: " + str(e))
-        #     Utils.log(playback._playback_config.directories)
-        #     Utils.log(playback._playback_config.list)
 
     def talk_about_the_calendar(self, spot_profile):
         # TODO talk about tomorrow as well, or the upcoming week
@@ -437,10 +431,10 @@ class Muse:
             if count > 10:
                 raise Exception(f"No valid wiki article found after 10 tries. Blacklisted words: {blacklisted_words_found}")
             count += 1
-        prompt = self.prompter.get_prompt("random_wiki_article")
+        prompt = self.prompter.get_prompt(Topic.RANDOM_WIKI_ARTICLE)
         prompt = prompt.replace("ARTICLE", str(article)[:2000])
         summary = self.generate_text(prompt)
-        self.say_at_some_point(summary, spot_profile, "random_wiki_article")
+        self.say_at_some_point(summary, spot_profile, Topic.RANDOM_WIKI_ARTICLE)
 
     def share_a_funny_story(self, spot_profile):
         funny_story = self.generate_text(self.prompter.get_prompt(Topic.FUNNY_STORY))
