@@ -26,17 +26,24 @@ logger.addHandler(ch)
 
 class Utils:
     @staticmethod
-    def long_sleep(seconds=0, extra_message=None):
+    def long_sleep(seconds=0, extra_message=None, total=None, print_cadence=1):
         if seconds <= 0:
             return
         if seconds >= 60:
-            minutes  = math.floor(seconds / 60)
+            minutes = math.floor(seconds / 60)
             message = f"Sleeping for {minutes} minutes"
         else:
             message = f"Sleeping for {seconds} seconds"
-        if extra_message is not None:
-            message += f" - {extra_message}"
-        Utils.log(message)
+        if total is None or (print_cadence is not None and total % print_cadence == 0):
+            if total is not None:
+                if total >= 60:
+                    minutes = math.floor(total / 60)
+                    message += f" ({minutes} remaining in total)"
+                else:
+                    message += f" ({total} remaining in total)"
+            if extra_message is not None:
+                message += f" - {extra_message}"
+            Utils.log(message)
         time.sleep(seconds)
 
     @staticmethod

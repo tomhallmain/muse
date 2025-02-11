@@ -1,9 +1,10 @@
 
 import random
-
+import time
 
 from utils.config import config
 from utils.translations import I18N
+from utils.utils import Utils
 
 _ = I18N._
 
@@ -12,6 +13,17 @@ class MuseSpotProfile:
     chance_speak_after_track = config.muse_config["chance_speak_after_track"]
     chance_speak_before_track = config.muse_config["chance_speak_before_track"]
     chance_speak_about_other_topics = config.muse_config["chance_speak_about_other_topics"]
+    min_seconds_between_spots = config.muse_config["min_seconds_between_spots"]
+
+    last_spot_profile_time = None
+
+    @staticmethod
+    def last_spot_profile_more_than_seconds(seconds=min_seconds_between_spots):
+        swap_time = time.time()
+        if MuseSpotProfile.last_spot_profile_time is None:
+            MuseSpotProfile.last_spot_profile_time = swap_time
+            return True
+        return (swap_time - MuseSpotProfile.last_spot_profile_time) > seconds
 
     def __init__(self, previous_track, track, last_track_failed, skip_track, old_grouping, new_grouping, grouping_type, get_previous_spot_profile_callback=None):
         self.previous_track = previous_track
@@ -33,7 +45,7 @@ class MuseSpotProfile:
         self.topic = None
         self.topic_translated = None
         # If the playlist has been sorted by a grouping (e.g. artist, album, composer etc.)
-        # the DJ needs to keep track of it and be eager let us know when there a change.
+        # the DJ needs to keep track of it and be eager to let us know when there a change.
         self.old_grouping = old_grouping
         self.new_grouping = new_grouping
         self.grouping_type = grouping_type
@@ -43,6 +55,7 @@ class MuseSpotProfile:
         else:
             self.speak_about_prior_group = False
             self.speak_about_upcoming_group = False
+        self.override_time_restriction = self.speak_about_prior_track and previous_track._is_extended or self.speak_about_upcoming_track and track._is_extended
 
     def get_previous_spot_profile(self, idx=0):
         if self.get_previous_spot_profile_callback is None:
@@ -50,7 +63,16 @@ class MuseSpotProfile:
         return self.get_previous_spot_profile_callback(idx=idx)
 
     def is_going_to_say_something(self):
-        return self.say_good_day or self.speak_about_prior_track or self.speak_about_upcoming_track or self.talk_about_something or self.speak_about_prior_group or self.speak_about_upcoming_group
+        if self.say_good_day or self.speak_about_prior_group or self.speak_about_upcoming_group:
+            return True
+        no_time_restriction = MuseSpotProfile.last_spot_profile_more_than_seconds()
+        if not no_time_restriction:
+            no_time_restriction = self.override_time_restriction
+            if no_time_restriction:
+                Utils.log("Overriding time restriction on spot profile due to library extension")
+            else:
+                Utils.log("Time restriction applied to current spot profile preparation")
+        return no_time_restriction and (self.speak_about_prior_track or self.speak_about_upcoming_track or self.talk_about_something)
 
     def update_skip_previous_track_remark(self, skip_track):
         self.skip_previous_track_remark = self.skip_previous_track_remark or skip_track

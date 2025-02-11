@@ -30,8 +30,18 @@ Muse is a media player with an integrated voice synthesizer attached to an LLM. 
     - `chance_speak_after_track` - Set the chance that Muse will speak after each track identifying the previous song or other media.
     - `chance_speak_before_track` - Set the chance that Muse will speak before each track identifying the upcoming song or other media.
     - `chance_speak_about_other_topics` - Set the chance that Muse will speak about other topics.
+    - `min_seconds_between_spots` - Sometimes short tracks are played in quick succession. To decreate the chance that Muse will interject in these instances, set this value.
 - `save_tts_output_topics` - Set the topics to retain MP3 files for in the `tts_ouput` directory.
 - `news_api_source_trustworthiness` - Set the trustworthiness of news sources from News API.
+- `artists_file`, `composers_file`, `forms_file`, `genres_file`, `instruments_file`, `blacklist_file` - Modify these and place your desired file in the `library_data/data` directory following the formats in the example files found there.
+- `enable_dynamic_volume` - Attempts to normalize track loudness by reducing or increasing the master volume above the base volume level.
+- `play_videos_in_separate_window` - If the track is a video, play it in a separate window from the main window
+- `playlist_recently_played_check_count` - As each track is played, the attributes are stored in lists of recently-played attributes. Set this to a higher value to reduce the chance that you hear recently-played tracks after a random sort has been applied.
+- `enable_long_track_splitting`, `long_track_splitting_time_cutoff_minutes` - If playing tracks randomly, usually we don't want to dive into a long track. Muse will attempt to detect individual portions of long tracks to play rather than play the entire track to keep things fresh.
+- `muse_language_learning_language`, `muse_language_learning_language_level` - If you are learning a language, set these values to a desired language and language level to have Muse attemp to teach it. Note that Coqui models don't support many languages.
+- `llm_model_name` - The name of the LLM to use, exactly the same as Ollama model name.
+- `text_cleaner_ruleset` - Add rules to this list to edit text before it is spoken by muse.
+- `tongue_twisters_dir` - If using the "tongue_twister" topic, set this to a directory containing audio files of tongue twisters (or any other set of audio files!) for muse to play intermittently.
 
 
 ## Usage

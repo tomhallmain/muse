@@ -82,7 +82,8 @@ class ExtensionManager:
                     break
                 if self.ui_callbacks is not None:
                     self.ui_callbacks.update_extension_status(_("Extension thread waiting for {0} minutes").format(round(float(sleep_time_seconds) / 60)))
-                Utils.long_sleep(check_cadence, "extension thread")
+                Utils.long_sleep(check_cadence, "extension thread", total=sleep_time_seconds, print_cadence=180)
+            Utils.log("Extension thread woke up")
         while True:
             self._extend_by_random_attr(voice)
             ExtensionManager.extension_thread_delayed_complete = False
@@ -94,7 +95,7 @@ class ExtensionManager:
                     break
                 if ExtensionManager.extension_thread_delayed_complete and self.ui_callbacks is not None:
                     self.ui_callbacks.update_extension_status(_("Extension thread waiting for {0} minutes").format(sleep_time_minutes))
-                Utils.long_sleep(check_cadence * 60, "extension thread")
+                Utils.long_sleep(check_cadence * 60, "extension thread", total=sleep_time_minutes * 60, print_cadence=180)
 
     def _extend_by_random_attr(self, voice=None):
         extendible_attrs = {
@@ -157,20 +158,20 @@ class ExtensionManager:
             Utils.start_thread(self._extend, use_asyncio=False, args=args)
 
     def extend_by_title(self, title, strict=False):
-        self._simple("music title: " + title, attr=TrackAttribute.TITLE, strict=title)
+        self._simple("track title: \"" + title + "\"", attr=TrackAttribute.TITLE, strict=title)
 
     def extend_by_album(self, album, strict=False):
-        self._simple("album title: " + album, attr=TrackAttribute.ALBUM, strict=album)
+        self._simple("album title: \"" + album + "\"", attr=TrackAttribute.ALBUM, strict=album)
 
     def extend_by_artist(self, artist, strict=False):
-        self._simple("music by " + artist, attr=TrackAttribute.ARTIST, strict=artist)
+        self._simple("track by " + artist, attr=TrackAttribute.ARTIST, strict=artist)
 
     def extend_by_composer(self, composer_name):
         composer = self.data_callbacks.instance.composers.get_data(composer_name)
-        self._simple("music by " + composer_name, attr=TrackAttribute.COMPOSER, strict=composer)
+        self._simple("music composed by " + composer_name, attr=TrackAttribute.COMPOSER, strict=composer)
 
     def extend_by_genre(self, genre, strict=False):
-        self._simple("music from the genre " + genre, attr=TrackAttribute.GENRE, strict=genre)
+        self._simple("short single piece of music from the genre " + genre, attr=TrackAttribute.GENRE, strict=genre)
 
     def extend_by_instrument(self, instrument, genre="Classical", strict=False):
         self._simple(genre + " music for the " + instrument, attr=TrackAttribute.INSTRUMENT, strict=instrument)
@@ -249,7 +250,7 @@ class ExtensionManager:
                     break
                 if self.ui_callbacks is not None:
                     self.ui_callbacks.update_extension_status(_("Extension \"{0}\" waiting for {1} minutes").format(SoupUtils.clean_html(b.n), round(float(time_seconds) / 60)))
-                Utils.long_sleep(check_cadence, "Extension thread delay wait")
+                Utils.long_sleep(check_cadence, "Extension thread delay wait", total=time_seconds, print_cadence=180)
         a = b.da(g=config.directories[0])
         e1 = " Destination: "
         Utils.log_yellow(f"extending delayed: {a}")

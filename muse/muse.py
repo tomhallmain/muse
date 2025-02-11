@@ -67,10 +67,11 @@ class Muse:
 
     def say_at_some_point(self, text, spot_profile, topic):
         save_mp3 = topic is not None and topic.value in config.save_tts_output_topics
+        topic_str = "" if topic is None else topic.get_translation().replace(" ", "_")
         if spot_profile.immediate:
-            self.voice.say(text, save_mp3=save_mp3)
+            self.voice.say(text, save_mp3=save_mp3, topic=topic_str)
         else:
-            self.voice.prepare_to_say(text, save_mp3=save_mp3)
+            self.voice.prepare_to_say(text, save_mp3=save_mp3, topic=topic_str)
 
     def ready_to_prepare(self, cumulative_sleep_seconds, ms_remaining):
         return Muse.enable_preparation \

@@ -49,32 +49,38 @@ class LibraryDataSearch:
         if len(self.results) > self.max_results:
             return None
         if len(self.all) > 0:
-            for field in [audio_track.searchable_title, audio_track.searchable_artist, audio_track.searchable_composer, audio_track.searchable_album]:
+            for field in [audio_track.searchable_title, audio_track.searchable_artist,
+                          audio_track.searchable_composer, audio_track.searchable_album,
+                          audio_track.searchable_genre, audio_track.get_instrument(), audio_track.get_form()]:
                 if field is not None and self.all in field:
                     self.results.append(audio_track)
                     return True
-        if len(self.title) > 0 and audio_track.searchable_title is not None and self.title in audio_track.searchable_title:
-            self.results.append(audio_track)
-            return True
-        if len(self.album) > 0 and audio_track.searchable_album is not None and self.album in audio_track.searchable_album:
-            self.results.append(audio_track)
-            return True
-        if len(self.artist) > 0 and audio_track.searchable_artist is not None and self.artist in audio_track.searchable_artist:
-            self.results.append(audio_track)
-            return True
-        if len(self.composer) > 0 and audio_track.searchable_composer is not None and self.composer in audio_track.searchable_composer:
-            self.results.append(audio_track)
-            return True
-        if len(self.genre) > 0 and audio_track.searchable_genre is not None and self.genre in audio_track.searchable_genre:
-            self.results.append(audio_track)
-            return True
-        if len(self.instrument) > 0 and audio_track.get_instrumet() is not None and self.instrument in audio_track.get_instrumet().lower():
-            self.results.append(audio_track)
-            return True
-        if len(self.form) > 0 and audio_track.get_form() is not None and self.form in audio_track.get_form().lower():
-            self.results.append(audio_track)
-            return True
-        return False
+        attrs_to_get = []
+        if len(self.title) > 0:
+            attrs_to_get.append(("title", "searchable_title"))
+        if len(self.album) > 0:
+            attrs_to_get.append(("album", "searchable_album"))
+        if len(self.artist) > 0:
+            attrs_to_get.append(("artist", "searchable_artist"))
+        if len(self.composer) > 0:
+            attrs_to_get.append(("composer", "searchable_composer"))
+        if len(self.genre) > 0:
+            attrs_to_get.append(("genre", "searchable_genre"))
+        if len(self.instrument) > 0:
+            attrs_to_get.append(("instrument", "get_instrument"))
+        if len(self.form) > 0:
+            attrs_to_get.append(("form", "get_form"))
+        for search_attr, track_attr in attrs_to_get:
+            track_value = getattr(audio_track, track_attr)
+            if track_attr.startswith("get_"):
+                track_value = track_value()
+            if track_value is None or track_value.strip() == "":
+                continue
+            search_value = self.__dict__[search_attr]
+            if search_value not in track_value:
+                return False
+        self.results.append(audio_track)
+        return True
 
     def get_results(self):
         return self.results
