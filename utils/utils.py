@@ -29,12 +29,19 @@ class Utils:
     def long_sleep(seconds=0, extra_message=None, total=None, print_cadence=1):
         if seconds <= 0:
             return
-        if seconds >= 60:
+        matches_print_cadence = total is not None and print_cadence is not None and total % print_cadence == 0
+        if matches_print_cadence:
+            if print_cadence >= 60:
+                minutes = math.floor(print_cadence / 60)
+                message = f"Sleeping for {minutes} minute cadence"
+            else:
+                message = f"Sleeping for {print_cadence} second cadence"
+        elif seconds >= 60:
             minutes = math.floor(seconds / 60)
             message = f"Sleeping for {minutes} minutes"
         else:
             message = f"Sleeping for {seconds} seconds"
-        if total is None or (print_cadence is not None and total % print_cadence == 0):
+        if total is None or matches_print_cadence:
             if total is not None:
                 if total >= 60:
                     minutes = math.floor(total / 60)

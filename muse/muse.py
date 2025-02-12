@@ -67,7 +67,7 @@ class Muse:
 
     def say_at_some_point(self, text, spot_profile, topic):
         save_mp3 = topic is not None and topic.value in config.save_tts_output_topics
-        topic_str = "" if topic is None else topic.get_translation().replace(" ", "_")
+        topic_str = "" if topic is None else topic.translate().replace(" ", "_")
         if spot_profile.immediate:
             self.voice.say(text, save_mp3=save_mp3, topic=topic_str)
         else:
