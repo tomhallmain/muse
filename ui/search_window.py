@@ -4,6 +4,7 @@ from tkinter.ttk import Button, Entry
 from lib.tk_scroll_demo import ScrollFrame
 from library_data.library_data import LibraryData, LibraryDataSearch
 from ui.app_style import AppStyle
+from utils.app_info_cache import app_info_cache
 from utils.config import config
 from utils.globals import PlaylistSortType
 from utils.translations import I18N
@@ -19,10 +20,30 @@ class SearchWindow:
     '''
     COL_0_WIDTH = 300
     top_level = None
-    MAX_RESULTS = 200
+    MAX_RESULTS = config.max_search_results
+    MAX_RECENT_SEARCHES = config.max_recent_searches
+    recent_searches = []
+
+    @staticmethod
+    def load_recent_searches():
+        recent_searches = app_info_cache.get("recent_searches", [])
+        assert recent_searches is not None
+        for search_json in recent_searches:
+            library_data_search = LibraryDataSearch.from_json(search_json)
+            if library_data_search.is_valid() and library_data_search.stored_results_count > 0:
+                SearchWindow.recent_searches.append(library_data_search)
+            else:
+                Utils.log_yellow(f"Invalid search removed: {search_json}")
+
+    @staticmethod
+    def store_recent_searches():
+        json_searches = []
+        for library_data_search in SearchWindow.recent_searches:
+            if library_data_search.is_valid() and library_data_search.stored_results_count > 0:
+                json_searches.append(library_data_search.to_json())
+        app_info_cache.set("recent_searches", json_searches)
 
     def __init__(self, master, app_actions, dimensions="1550x700"):
-
         SearchWindow.top_level = Toplevel(master, bg=AppStyle.BG_COLOR) 
         SearchWindow.top_level.geometry(dimensions)
         SearchWindow.set_title(_("Search Library"))
@@ -108,7 +129,7 @@ class SearchWindow:
         self.genre_entry = Entry(self.inner_frame, textvariable=self.genre)
         self.genre_entry.grid(row=6, column=1)
         self.genre_entry.bind("<Return>", self.do_search)
-        self.sort_by_genre_button = Button(self.inner_frame, text=_("Sort by"), command=lambda: self.sort_by("get_genre"))
+        self.sort_by_genre_button = Button(self.inner_frame, text=_("Sort by"), command=lambda: self.sort_by("genre"))
         self.sort_by_genre_button.grid(row=6, column=2)
 
         self._instrument_label = Label(self.inner_frame)
@@ -117,15 +138,16 @@ class SearchWindow:
         self.instrument_entry = Entry(self.inner_frame, textvariable=self.instrument)
         self.instrument_entry.grid(row=7, column=1)
         self.instrument_entry.bind("<Return>", self.do_search)
-        self.sort_by_instrument_button = Button(self.inner_frame, text=_("Sort by"), command=lambda: self.sort_by("get_instrument"))
+        self.sort_by_instrument_button = Button(self.inner_frame, text=_("Sort by"), command=lambda: self.sort_by("instrument"))
         self.sort_by_instrument_button.grid(row=7, column=2)
 
         self._form_label = Label(self.inner_frame)
         self.add_label(self._form_label, "Search Form", row=8)
-        self.form  = Entry(self.inner_frame)
-        self.form.grid(row=8, column=1)
-        self.form.bind("<Return>", self.do_search)
-        self.sort_by_form_button = Button(self.inner_frame, text=_("Sort by"), command=lambda: self.sort_by("get_form"))
+        self.form = StringVar(self.inner_frame)
+        self.form_entry = Entry(self.inner_frame)
+        self.form_entry.grid(row=8, column=1)
+        self.form_entry.bind("<Return>", self.do_search)
+        self.sort_by_form_button = Button(self.inner_frame, text=_("Sort by"), command=lambda: self.sort_by("form"))
         self.sort_by_form_button.grid(row=8, column=2)
 
         self.overwrite_cache = BooleanVar(self.inner_frame)
@@ -137,7 +159,66 @@ class SearchWindow:
         self.master.bind("<Escape>", self.close_windows)
         self.master.protocol("WM_DELETE_WINDOW", self.close_windows)
         self.results_frame.after(1, lambda: self.results_frame.focus_force())
-        Utils.start_thread(self.do_search, use_asyncio=False)
+        Utils.start_thread(self.show_recent_searches, use_asyncio=False)
+
+    def show_recent_searches(self):
+        if len(SearchWindow.recent_searches) == 0:
+            self.searching_label = Label(self.results_frame.viewPort)
+            self.add_label(self.searching_label, text=_("No recent searches found."), row=1, column=1)
+            self.title_list.append(self.searching_label)
+            self.master.update()
+            return
+        for i in range(len(SearchWindow.recent_searches)):
+            row = i + 1
+            search = SearchWindow.recent_searches[i]
+            track = self.library_data.get_track(search.selected_track_path)
+            if track is not None:
+                title = track.title
+                album = track.album
+            else:
+                title = _("(No track selected)")
+                album = "--"
+
+            title_label = Label(self.results_frame.viewPort)
+            self.add_label(title_label, title, row=row, column=1, wraplength=200)
+            self.title_list.append(title_label)
+
+            album_label = Label(self.results_frame.viewPort)
+            self.add_label(album_label, album, row=row, column=2, wraplength=200)
+            self.album_list.append(album_label)
+
+            search_label = Label(self.results_frame.viewPort)
+            self.add_label(search_label, str(search), row=row, column=3, wraplength=200)
+            self.artist_list.append(search_label)
+
+            results_count_label = Label(self.results_frame.viewPort)
+            self.add_label(results_count_label, search.get_readable_stored_results_count(), row=row, column=4, wraplength=200)
+            self.composer_list.append(results_count_label)
+
+            search_btn = Button(self.results_frame.viewPort, text=_("Search"))
+            self.open_details_btn_list.append(search_btn)
+            search_btn.grid(row=row, column=5)
+            def search_handler(event, self=self, search=search):
+                self.load_stored_search(library_data_search=search)
+                self._do_search(event)
+            search_btn.bind("<Button-1>", search_handler)
+
+            play_btn = Button(self.results_frame.viewPort, text=_("Play"))
+            self.play_btn_list.append(play_btn)
+            play_btn.grid(row=row, column=6)
+            def play_handler(event, self=self, search=search, track=track):
+                self.load_stored_search(library_data_search=search)
+                self._do_search(event)
+                if track is None:
+                    Utils.log("No specific track defined on search, using first available track.")
+                    track = search.get_first_available_track()
+                    if track is None:
+                        raise Exception("No tracks available on search.")
+                elif track.is_invalid():
+                    raise Exception(f"Invalid track: {track}")
+                self.run_play_callback(track)
+            play_btn.bind("<Button-1>", play_handler)
+        self.master.update()
 
     def do_search(self, event=None):
         all = self.all.get().strip()
@@ -149,15 +230,65 @@ class SearchWindow:
         instrument = self.instrument.get().strip()
         form = self.form.get().strip()
         overwrite = self.overwrite_cache.get()
-        self.library_data_search = LibraryDataSearch(all, title, artist, composer, album, genre, instrument, form, SearchWindow.MAX_RESULTS)
+        self.library_data_search = LibraryDataSearch(all, title=title, album=album,
+                                                     artist=artist, composer=composer,
+                                                     genre=genre, instrument=instrument,
+                                                     form=form, max_results=SearchWindow.MAX_RESULTS)
+        self._do_search(overwrite=overwrite)
+
+    def load_stored_search(self, library_data_search):
+        assert library_data_search is not None
+        self.all.set(library_data_search.all)
+        self.title.set(library_data_search.title)
+        self.album.set(library_data_search.album)
+        self.artist.set(library_data_search.artist)
+        self.composer.set(library_data_search.composer)
+        self.genre.set(library_data_search.genre)
+        self.instrument.set(library_data_search.instrument)
+        self.form.set(library_data_search.form)
+        self.library_data_search = library_data_search
+
+    def _do_search(self, event=None, overwrite=False):
+        assert self.library_data_search is not None
+        self._refresh_widgets(add_results=False)
+        self.searching_label = Label(self.results_frame.viewPort)
+        searching_text = _("Please wait, overwriting cache and searching...") if overwrite else _("Searching...")
+        self.add_label(self.searching_label, text=searching_text, row=1, column=1)
+        self.title_list.append(self.searching_label)
+        self.master.update()
         self.library_data.do_search(self.library_data_search, overwrite=overwrite)
+        self.update_recent_searches()
         self._refresh_widgets()
 
+    def update_recent_searches(self, remove_searches_with_no_selected_filepath=False):
+        assert self.library_data_search is not None
+        if self.library_data_search in SearchWindow.recent_searches:
+            SearchWindow.recent_searches.remove(self.library_data_search)
+        if remove_searches_with_no_selected_filepath:
+            searches_to_remove = []
+            for search in SearchWindow.recent_searches:
+                if (search.selected_track_path == None or search.selected_track_path.strip() == "") and \
+                        search.matches_no_selected_track_path(self.library_data_search):
+                    SearchWindow.recent_searches.remove(search)
+            for search in searches_to_remove:
+                SearchWindow.recent_searches.remove(search)
+        SearchWindow.recent_searches.insert(0, self.library_data_search)
+        if len(SearchWindow.recent_searches) > SearchWindow.MAX_RECENT_SEARCHES:
+            del SearchWindow.recent_searches[-1]
+
     def sort_by(self, attr):
+        assert self.library_data_search is not None
         self.library_data_search.sort_results_by(attr)
         self._refresh_widgets()
 
     def add_widgets_for_results(self):
+        assert self.library_data_search is not None
+        if len(self.library_data_search.results) == 0:
+            self.searching_label = Label(self.results_frame.viewPort)
+            self.add_label(self.searching_label, text=_("No recent searches found."), row=1, column=1)
+            self.title_list.append(self.searching_label)
+            self.master.update()
+            return
         self.library_data_search.sort_results_by()
         results = self.library_data_search.get_results()
         for i in range(len(results)):
@@ -200,10 +331,17 @@ class SearchWindow:
     def open_details(self, track):
         pass
 
-    def run_play_callback(self, track):
+    def run_play_callback(self, track, library_data_search=None):
         if track is None or track.is_invalid():
             raise Exception(f"Invalid track: {track}")
 
+        if library_data_search is None:
+            library_data_search = self.library_data_search
+        assert library_data_search is not None
+        library_data_search.set_selected_track_path(track)
+        # the below argument ensures that stored recent searches will have a selected
+        # filepath if the user selected to play from them.
+        self.update_recent_searches(remove_searches_with_no_selected_filepath=True)
         playlist_sort_type = self.get_playlist_sort_type()
         self.app_actions.start_play_callback(track=track, playlist_sort_type=playlist_sort_type)
 
@@ -222,9 +360,10 @@ class SearchWindow:
             return PlaylistSortType.ALBUM_SHUFFLE
         return PlaylistSortType.RANDOM
 
-    def _refresh_widgets(self):
+    def _refresh_widgets(self, add_results=True):
         self.clear_widget_lists()
-        self.add_widgets_for_results()
+        if add_results:
+            self.add_widgets_for_results()
         self.master.update()
 
     def clear_widget_lists(self):

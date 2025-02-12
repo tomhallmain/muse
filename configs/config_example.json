@@ -25,6 +25,8 @@
     "playlist_recently_played_check_count": 1000,
     "enable_long_track_splitting": false,
     "long_track_splitting_time_cutoff_minutes": 20,
+    "max_search_results": 200,
+    "max_recent_searches": 200,
     "foreground_color": "white",
     "background_color": "#2596BE",
     "open_weather_api_key": "<KEY>",

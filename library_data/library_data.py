@@ -24,30 +24,53 @@ libary_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)))
 
 
 class LibraryDataSearch:
-    def __init__(self, all="", title="", artist="", composer="", album="", genre="", instrument="", form="", max_results=200):
+    def __init__(self, all="", title="", album="", artist="", composer="", genre="", instrument="", form="",
+                 selected_track_path=None, stored_results_count=0, max_results=200):
         self.all = all.lower()
         self.title = title.lower()
+        self.album = album.lower()
         self.artist = artist.lower()
         self.composer = composer.lower()
-        self.album = album.lower()
         self.genre = genre.lower()
         self.instrument = instrument.lower()
         self.form = form.lower()
+        self.stored_results_count = stored_results_count
+        self.selected_track_path = selected_track_path
         self.max_results = max_results
 
         self.results = []
 
     def is_valid(self):
+        all_fields_empty = True
         for name in ["all", "title", "album", "artist", "composer", "genre", "instrument", "form"]:
             field = getattr(self, name)
-            if field is not None and field.strip()!= "":
-                print(f"{name} - \"{field}\"")
-                return True
-        return False
+            if field is not None and field.strip() != "":
+                all_fields_empty = False
+                break
+        if all_fields_empty:
+            return False
+        return self.selected_track_path is None or os.path.isfile(self.selected_track_path)
+
+    def set_stored_results_count(self):
+        self.stored_results_count = len(self.results)
+        Utils.log(f"Stored count for {self}: {self.get_readable_stored_results_count()}")
+
+    def get_readable_stored_results_count(self) -> str:
+        if self.stored_results_count > self.max_results:
+            results_str = f"{self.max_results}+"
+        else:
+            results_str = str(self.stored_results_count)
+        return _("({0} results)").format(results_str)
+
+    def set_selected_track_path(self, track):
+        assert track is not None
+        self.selected_track_path = str(track.filepath)
+        Utils.log(f"Set selected track path on {self}: {self.selected_track_path}")
 
     def test(self, audio_track):
         if len(self.results) > self.max_results:
             return None
+        # NOTE - don't use _get_searchable_track_attr here because would be slower
         if len(self.all) > 0:
             for field in [audio_track.searchable_title, audio_track.searchable_artist,
                           audio_track.searchable_composer, audio_track.searchable_album,
@@ -75,7 +98,7 @@ class LibraryDataSearch:
             if track_attr.startswith("get_"):
                 track_value = track_value()
             if track_value is None or track_value.strip() == "":
-                continue
+               return False
             search_value = self.__dict__[search_attr]
             if search_value not in track_value:
                 return False
@@ -86,24 +109,100 @@ class LibraryDataSearch:
         return self.results
 
     def sort_results_by(self, attr=None):
-        if len(self.results) == 0 or (attr is not None and attr.strip() == ""):
+        if len(self.results) == 0 or attr is None or (attr is not None and attr.strip() == ""):
             return
         if attr is None:
             for _attr in ["title", "album", "artist", "composer", "genre", "instrument", "form"]:
                 if len(getattr(self, _attr)) > 0:
-                    if _attr in ["genre", "instrument", "form"]:
-                        attr = "get_" + _attr
-                    else:
-                        attr = _attr
+                    attr = self._get_searchable_track_attr(_attr)
                     break
             if attr is None:
                 Utils.log("No sortable attribute in search query.")
                 return
+        else:
+            attr = self._get_searchable_track_attr(attr)
         attr_test = getattr(self.results[0], attr)
         if callable(attr_test):
             self.results.sort(key=lambda t: (getattr(t, attr)(), t.filepath))
         else:
-            self.results.sort(key=lambda t: (getattr(t, attr), t.filepath))
+            def convert_none_to_str(value):
+                return "" if value is None else str(value)
+            self.results.sort(key=lambda t: (convert_none_to_str(getattr(t, attr)), t.filepath))
+
+    def _get_searchable_track_attr(self, search_attr) -> str:
+        if search_attr == "title":
+            return "searchable_title"
+        elif search_attr == "album":
+            return "searchable_album"
+        elif search_attr  == "artist":
+            return "searchable_artist"
+        elif search_attr == "composer":
+            return "searchable_composer"
+        elif search_attr == "genre":
+            return "searchable_genre"
+        elif search_attr == "instrument":
+            return "get_instrument"
+        elif search_attr  == "form":
+            return "get_form"
+        else:
+            raise Exception(f"Invalid search attribute: {search_attr}")
+
+    def get_first_available_track(self):
+        for track in self.results:
+            if not track.is_invalid():
+                return track
+        return None
+
+    def __str__(self) -> str:
+        out = ""
+        for _attr in ["all", "title", "album", "artist", "composer", "genre", "instrument", "form"]:
+            if len(getattr(self, _attr)) > 0:
+                out += _attr + ": \"" + getattr(self, _attr) + "\", "
+        return out[:-2]
+
+    def matches_no_selected_track_path(self, value: object) -> bool:
+        if not isinstance(value, LibraryDataSearch):
+            return False
+        for key in self.__dict__.keys():
+            if key not in ("results", "stored_results_count", "selected_track_path") and getattr(value, key) != getattr(self, key):
+                return False
+        return True
+
+    def __eq__(self, value: object) -> bool:
+        if not isinstance(value, LibraryDataSearch):
+            return False
+        for key in self.__dict__.keys():
+            if key not in ("results", "stored_results_count") and getattr(value, key) != getattr(self, key):
+                return False
+        return True
+
+    def __hash__(self):
+        hash = 0
+        for key in self.__dict__.keys():
+            if key not in ("results", "stored_results_count"):
+                hash += getattr(self, key).__hash__()
+        return hash
+
+    def to_json(self):
+        if self.stored_results_count == 0:
+            self.stored_results_count = len(self.results)
+        return {
+            "all": self.all,
+            "title": self.title,
+            "album": self.album,
+            "artist": self.artist,
+            "composer": self.composer,
+            "genre": self.genre,
+            "instrument": self.instrument,
+            "form": self.form,
+            "selected_track_path": self.selected_track_path,
+            "stored_results_count": self.stored_results_count,
+            "max_results": self.max_results,
+        }
+
+    @staticmethod
+    def from_json(json):
+        return LibraryDataSearch(**json)
 
 
 class LibraryData:
@@ -171,9 +270,11 @@ class LibraryData:
             return LibraryData.all_tracks
 
     @staticmethod
-    def get_track(filepath):
+    def get_track(filepath):        
         if filepath in LibraryData.MEDIA_TRACK_CACHE:
             return LibraryData.MEDIA_TRACK_CACHE[filepath]
+        elif filepath is None:
+            return None
         else:
             track = MediaTrack(filepath)
             LibraryData.MEDIA_TRACK_CACHE[filepath] = track
@@ -204,10 +305,13 @@ class LibraryData:
             Utils.log_yellow('Invalid search query')
             return library_data_search
 
+        Utils.log(f"Searching for tracks matching query {library_data_search}")
+
         for audio_track in LibraryData.get_all_tracks(overwrite=overwrite):
             if library_data_search.test(audio_track) is None:
                 break
 
+        library_data_search.set_stored_results_count()
         return library_data_search
 
     def resolve_track(self, audio_track):

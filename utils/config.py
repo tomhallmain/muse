@@ -58,6 +58,8 @@ class Config:
         self.long_track_splitting_time_cutoff_minutes = 20
         self.play_videos_in_separate_window = False
         self.playlist_recently_played_check_count = 1000
+        self.max_search_results = 200
+        self.max_recent_searches = 200
 
         self.server_port = 6000
         self.server_password = "<PASSWORD>"
@@ -102,6 +104,8 @@ class Config:
             "max_chunk_tokens",
             "long_track_splitting_time_cutoff_minutes",
             "playlist_recently_played_check_count",
+            "max_recent_searches",
+            "max_search_results",
         )
         self.set_values(list,
             "directories",

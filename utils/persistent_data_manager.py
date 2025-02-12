@@ -5,6 +5,7 @@ from muse.muse_memory import MuseMemory
 from muse.playlist import Playlist
 from muse.schedules_manager import SchedulesManager
 from ui.playlist_window import PlaylistWindow
+from ui.search_window import SearchWindow
 
 
 class PersistentDataManager:
@@ -16,6 +17,7 @@ class PersistentDataManager:
         PlaylistWindow.store_named_playlist_configs()
         SchedulesManager.store_schedules()
         ExtensionManager.store_extensions()
+        SearchWindow.store_recent_searches()
 
     @staticmethod
     def load():
@@ -26,4 +28,5 @@ class PersistentDataManager:
         PlaylistWindow.load_named_playlist_configs()
         SchedulesManager.set_schedules()
         ExtensionManager.load_extensions()
+        SearchWindow.load_recent_searches()
 
