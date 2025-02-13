@@ -98,7 +98,7 @@ class LibraryDataSearch:
             if track_attr.startswith("get_"):
                 track_value = track_value()
             if track_value is None or track_value.strip() == "":
-               return False
+                return False
             search_value = self.__dict__[search_attr]
             if search_value not in track_value:
                 return False
@@ -270,7 +270,7 @@ class LibraryData:
             return LibraryData.all_tracks
 
     @staticmethod
-    def get_track(filepath):        
+    def get_track(filepath):
         if filepath in LibraryData.MEDIA_TRACK_CACHE:
             return LibraryData.MEDIA_TRACK_CACHE[filepath]
         elif filepath is None:

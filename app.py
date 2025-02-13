@@ -221,9 +221,13 @@ class App():
         self.muse_choice = Checkbutton(self.sidebar, text=_('Muse'), variable=self.muse, command=self.set_muse)
         self.apply_to_grid(self.muse_choice, sticky=W)
 
-        self.extend = BooleanVar(value=self.runner_app_config.muse)
+        self.extend = BooleanVar(value=self.runner_app_config.extend)
         self.extend_choice = Checkbutton(self.sidebar, text=_('Extension'), variable=self.extend, command=self.set_extend)
         self.apply_to_grid(self.extend_choice, sticky=W)
+
+        self.track_splitting = BooleanVar(value=self.runner_app_config.enable_long_track_splitting)
+        self.track_splitting_choice = Checkbutton(self.sidebar, text=_('Enable track splitting'), variable=self.track_splitting, command=self.set_track_splitting)
+        self.apply_to_grid(self.track_splitting_choice, sticky=W)
 
         self.media_frame = MediaFrame(self.master, fill_canvas=True)
 
@@ -373,6 +377,9 @@ class App():
     def set_extend(self, event=None):
         self.runner_app_config.extend = self.extend.get()
 
+    def set_track_splitting(self, event=None):
+        self.runner_app_config.enable_long_track_splitting = self.track_splitting.get()
+
     def destroy_progress_bar(self):
         if self.progress_bar is not None:
             self.progress_bar.stop()
@@ -460,6 +467,7 @@ class App():
         args.muse = self.muse.get()
         args.extend = self.extend.get()
         args.track = track
+        args.enable_long_track_splitting = self.track_splitting.get()
 
         args_copy = deepcopy(args)
         return args, args_copy

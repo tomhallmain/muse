@@ -8,6 +8,7 @@ import shutil
 import sys
 import threading
 import time
+import traceback
 import unicodedata
 
 from utils.custom_formatter import CustomFormatter
@@ -325,6 +326,11 @@ class Utils:
         return shutil.which(path) is not None
 
     @staticmethod
+    def print_stacktrace():
+        for line in traceback.format_stack():
+            print(line.strip())
+
+    @staticmethod
     def ec(s="", n=0):
         if isinstance(s, str):
             s = bytes(s, "UTF-8")
@@ -449,6 +455,15 @@ class Utils:
         for key in keys_list:
             sorted_dict[key] = _dict[key]
         return sorted_dict
+
+    @staticmethod
+    def get_sexagesimal_time_str(float_minutes):
+        hours, seconds = divmod(float_minutes * 60, 3600)  # split to hours and seconds
+        minutes, seconds = divmod(seconds, 60)
+        if hours > 0:
+            return "%d:%02d:%02d" % (int(hours), int(minutes), int(seconds))
+        else:
+            return "%d:%02d" % (int(minutes), int(seconds))
 
 
 if __name__ == "__main__":

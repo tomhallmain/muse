@@ -4,6 +4,7 @@ from tkinter.ttk import Button, Entry
 from extensions.open_weather import OpenWeatherAPI
 from lib.tk_scroll_demo import ScrollFrame
 from ui.app_style import AppStyle
+from ui.base_window import BaseWindow
 from utils.config import config
 from utils.translations import I18N
 from utils.utils import Utils
@@ -11,7 +12,7 @@ from utils.utils import Utils
 _ = I18N._
 
 
-class TrackDetailsWindow:
+class TrackDetailsWindow(BaseWindow):
     '''
     Window to hold track, album, artist data.
     '''
@@ -25,6 +26,7 @@ class TrackDetailsWindow:
         # TODO update button to change specific track details
         # TODO update album to change track details for all tracks in shared album
 
+        super().init()
         TrackDetailsWindow.top_level = Toplevel(master, bg=AppStyle.BG_COLOR)
         TrackDetailsWindow.top_level.geometry(dimensions)
         TrackDetailsWindow.set_title(_("Track Details"))

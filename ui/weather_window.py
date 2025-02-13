@@ -4,6 +4,7 @@ from tkinter.ttk import Button, Entry
 from extensions.open_weather import OpenWeatherAPI
 from lib.tk_scroll_demo import ScrollFrame
 from ui.app_style import AppStyle
+from ui.base_window import BaseWindow
 from utils.config import config
 from utils.translations import I18N
 from utils.utils import Utils
@@ -11,7 +12,7 @@ from utils.utils import Utils
 _ = I18N._
 
 
-class WeatherWindow:
+class WeatherWindow(BaseWindow):
     '''
     Window to show Weather data.
     '''
@@ -20,6 +21,7 @@ class WeatherWindow:
     top_level = None
 
     def __init__(self, master, app_actions, dimensions="600x600"):
+        super().init()
         WeatherWindow.top_level = Toplevel(master, bg=AppStyle.BG_COLOR)
         WeatherWindow.top_level.geometry(dimensions)
         WeatherWindow.set_title(_("Weather"))

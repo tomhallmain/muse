@@ -7,6 +7,7 @@ from extensions.extension_manager import ExtensionManager
 from extensions.open_weather import OpenWeatherAPI
 from lib.tk_scroll_demo import ScrollFrame
 from ui.app_style import AppStyle
+from ui.base_window import BaseWindow
 from utils.config import config
 from utils.globals import ExtensionStrategy
 from utils.translations import I18N
@@ -18,7 +19,7 @@ _ = I18N._
 
 
 
-class ExtensionsWindow:
+class ExtensionsWindow(BaseWindow):
     '''
     Window to hold track, album, artist data.
     '''
@@ -26,51 +27,55 @@ class ExtensionsWindow:
     COL_0_WIDTH = 150
     top_level = None
 
-    def __init__(self, master, app_actions, dimensions="600x600"):
+    def __init__(self, master, runner_app_config):
+        super().init()
+        self.master = master
+        self.master.protocol("WM_DELETE_WINDOW", self.on_closing)
+        self.runner_app_config = runner_app_config
 
-        # TODO next and previous buttons to navgiate through albums and other sequences
-        # TODO update button to change specific track details
-        # TODO update album to change track details for all tracks in shared album
+        self.main = Frame(self.master)
+        self.main.columnconfigure(0, weight=1)
+        self.main.columnconfigure(1, weight=1)
+        self.main.grid(column=0, row=0)
 
-        ExtensionsWindow.top_level = Toplevel(master, bg=AppStyle.BG_COLOR)
-        ExtensionsWindow.top_level.geometry(dimensions)
-        ExtensionsWindow.set_title(_("Extensions"))
-        self.master = ExtensionsWindow.top_level
-        self.app_actions = app_actions
-        self.open_weather_api = OpenWeatherAPI()
+        # Sidebar
+        self.sidebar = Sidebar(self.main)
+        self.sidebar.columnconfigure(0, weight=1)
+        self.sidebar.columnconfigure(1, weight=1)
+        self.row_counter0 = 0
+        self.row_counter1 = 0
+        self.sidebar.grid(column=0, row=self.row_counter0)
 
-        self.has_closed = False
-        self.frame = ScrollFrame(self.master, bg_color=AppStyle.BG_COLOR)
-        self.frame.pack(side="top", fill="both", expand=True)
+        self.label_title = Label(self.sidebar)
+        self.add_label(self.label_title, _("Playlist Config"), sticky=None, columnspan=2)
 
-        self.update_btn = None
-        self.add_btn("update_btn", _("Update"), self.update, row=0)
+        self.label_saved_playlist = Label(self.sidebar)
+        self.add_label(self.label_saved_playlist, _("Saved Playlists"), increment_row_counter=False)
+        self.named_playlist_config = StringVar()
+        self.named_playlist_choice = OptionMenu(self.sidebar, self.named_playlist_config, *list(PlaylistWindow.named_playlist_configs.keys()), command=self.set_playlist_config)
+        self.apply_to_grid(self.named_playlist_choice, interior_column=1, sticky=W)
 
-        self.title = StringVar(self.frame.viewPort)
-        self.title_entry = Entry(self.frame.viewPort, textvariable=self.title)
-        self.title_entry.grid(row=1)
+        self.label_workflows = Label(self.sidebar)
+        self.add_label(self.label_workflows, _("Playlist Sort"), increment_row_counter=False)
+        self.workflow = StringVar(master)
+        self.workflows_choice = OptionMenu(self.sidebar, self.workflow, self.runner_app_config.workflow_type,
+                                           *PlaylistSortType.__members__.keys(), command=self.set_workflow_type)
+        self.apply_to_grid(self.workflows_choice, interior_column=2, sticky=W)
 
-        self.album = StringVar(self.frame.viewPort)
-        self.album_entry = Entry(self.frame.viewPort, textvariable=self.album)
-        self.album_entry.grid(row=2)
+        self.label_directory = Label(self.sidebar)
+        self.add_label(self.label_directory, _("Directory"), increment_row_counter=False)
+        self.directory = StringVar(master)
+        directory_options = ["ALL"]
+        directory_options.extend(list(config.get_subdirectories().values()))
+        self.directory_choice = OptionMenu(self.sidebar, self.directory, str(self.runner_app_config.directory),
+                                           *directory_options, command=self.set_directory)
+        self.apply_to_grid(self.directory_choice, interior_column=1, sticky=W)
 
-        self.artist = StringVar(self.frame.viewPort)
-        self.artist_entry = Entry(self.frame.viewPort, textvariable=self.artist)
-        self.artist_entry.grid(row=3)
+        self.master.update()
 
-        self.composer = StringVar(self.frame.viewPort)
-        self.composer_entry = Entry(self.frame.viewPort, textvariable=self.composer)
-        self.composer_entry.grid(row=4)
-
-        # self._weather_label = Label(self.frame.viewPort)
-        # self.add_label(self._weather_label, "Gathering weather data...", row=2)
-
-        # self.master.bind("<Key>", self.filter_targets)
-        # self.master.bind("<Return>", self.do_action)
-        self.master.bind("<Escape>", self.close_windows)
-        self.master.protocol("WM_DELETE_WINDOW", self.close_windows)
-        self.frame.after(1, lambda: self.frame.focus_force())
-        # Utils.start_thread(self.get_track_data, use_asyncio=False)
+    def on_closing(self):
+        self.master.destroy()
+        self.has_closed = True
 
     def update(self):
         pass
@@ -78,20 +83,4 @@ class ExtensionsWindow:
     @staticmethod
     def set_title(extra_text):
         ExtensionsWindow.top_level.title(_("Extensions") + " - " + extra_text)
-
-    def close_windows(self, event=None):
-        self.master.destroy()
-        self.has_closed = True
-
-    def add_label(self, label_ref, text, row=0, column=0, wraplength=500):
-        label_ref['text'] = text
-        label_ref.grid(column=column, row=row, sticky=W)
-        label_ref.config(wraplength=wraplength, justify=LEFT, bg=AppStyle.BG_COLOR, fg=AppStyle.FG_COLOR)
-
-    def add_btn(self, button_ref_name, text, command, row=0, column=0):
-        if getattr(self, button_ref_name) is None:
-            button = Button(master=self.frame.viewPort, text=text, command=command)
-            setattr(self, button_ref_name, button)
-            button # for some reason this is necessary to maintain the reference?
-            button.grid(row=row, column=column)
 

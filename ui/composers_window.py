@@ -5,6 +5,7 @@ from tkinter.ttk import Button, Entry
 from lib.tk_scroll_demo import ScrollFrame
 from library_data.composer import Composer, ComposersDataSearch, ComposersData
 from ui.app_style import AppStyle
+# from ui.base_window import BaseWindow
 from utils.translations import I18N
 from utils.utils import Utils
 
@@ -12,7 +13,7 @@ _ = I18N._
 
 
 
-class ComposerDetailsWindow:
+class ComposerDetailsWindow():
     '''
     Window to show composer details.
     '''
@@ -20,6 +21,7 @@ class ComposerDetailsWindow:
     COL_0_WIDTH = 600
 
     def __init__(self, master, refresh_callback, composer, dimensions="600x600"):
+        # super().init()
         ComposerDetailsWindow.top_level = Toplevel(master, bg=AppStyle.BG_COLOR)
         ComposerDetailsWindow.top_level.geometry(dimensions)
         self.master = ComposerDetailsWindow.top_level

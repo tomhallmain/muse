@@ -4,6 +4,7 @@ from tkinter.ttk import Button, Entry
 from lib.tk_scroll_demo import ScrollFrame
 from library_data.library_data import LibraryData, LibraryDataSearch
 from ui.app_style import AppStyle
+from ui.base_window import BaseWindow
 from utils.app_info_cache import app_info_cache
 from utils.config import config
 from utils.globals import PlaylistSortType
@@ -13,8 +14,10 @@ from utils.utils import Utils
 _ = I18N._
 
 
+## TODO create a playlist from the search results, instead of simply passing a PlaylistSortType
 
-class SearchWindow:
+
+class SearchWindow(BaseWindow):
     '''
     Window to search media library.
     '''
@@ -44,6 +47,7 @@ class SearchWindow:
         app_info_cache.set("recent_searches", json_searches)
 
     def __init__(self, master, app_actions, dimensions="1550x700"):
+        super().init()
         SearchWindow.top_level = Toplevel(master, bg=AppStyle.BG_COLOR) 
         SearchWindow.top_level.geometry(dimensions)
         SearchWindow.set_title(_("Search Library"))
@@ -156,8 +160,8 @@ class SearchWindow:
 
         # self.master.bind("<Key>", self.filter_targets)
         # self.master.bind("<Return>", self.do_action)
-        self.master.bind("<Escape>", self.close_windows)
-        self.master.protocol("WM_DELETE_WINDOW", self.close_windows)
+        self.master.bind("<Escape>", self.on_closing)
+        self.master.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.results_frame.after(1, lambda: self.results_frame.focus_force())
         Utils.start_thread(self.show_recent_searches, use_asyncio=False)
 
@@ -389,10 +393,6 @@ class SearchWindow:
     @staticmethod
     def set_title(extra_text):
         SearchWindow.top_level.title(_("Search") + " - " + extra_text)
-
-    def close_windows(self, event=None):
-        self.master.destroy()
-        self.has_closed = True
 
     def add_label(self, label_ref, text, row=0, column=0, wraplength=500):
         label_ref['text'] = text

@@ -39,6 +39,7 @@ class PlaybackConfig:
         self.enable_dynamic_volume = args.enable_dynamic_volume if args else True
         self.enable_long_track_splitting  = args.enable_long_track_splitting if args else False
         self.long_track_splitting_time_cutoff_minutes = args.long_track_splitting_time_cutoff_minutes if args else 20
+        self.long_track_splitting_play_all = False
         self.data_callbacks = data_callbacks
         self.list = Playlist(data_callbacks=self.data_callbacks)
         self.start_track = args.track if args else None
@@ -65,7 +66,7 @@ class PlaybackConfig:
     def set_playing(self, playing=True):
         self.playing = playing
 
-    def next_track(self, skip_grouping=False):
+    def next_track(self, skip_grouping=False, places_from_current=0):
         self.set_playing()
         if self.next_track_override is not None:
             next_track = MediaTrack(self.next_track_override)
@@ -74,16 +75,16 @@ class PlaybackConfig:
             PlaybackConfig.READY_FOR_EXTENSION = True
             return next_track, None, None
         l = self.get_list()
-        next_track, old_grouping, new_grouping = l.next_track(skip_grouping=skip_grouping)
+        next_track, old_grouping, new_grouping = l.next_track(skip_grouping=skip_grouping, places_from_current=places_from_current)
         return next_track, old_grouping, new_grouping
 
-    def upcoming_track(self):
+    def upcoming_track(self, places_from_current=1):
         if self.next_track_override is not None:
             upcoming_track = MediaTrack(self.next_track_override)
             upcoming_track.set_is_extended()
             return upcoming_track, None, None
         l = self.get_list()
-        upcoming_track, old_grouping, new_grouping = l.upcoming_track()
+        upcoming_track, old_grouping, new_grouping = l.upcoming_track(places_from_current=places_from_current)
         return upcoming_track, old_grouping, new_grouping
 
     def current_track(self):
@@ -91,6 +92,18 @@ class PlaybackConfig:
 
     def set_next_track_override(self, new_file):
         self.next_track_override = new_file
+
+    def split_track(self, track, do_split_override=True, offset=1):
+        self.get_list().print_upcoming("split_track before")
+        tracks = track.extract_non_silent_track_parts(select_random_track_part=not self.long_track_splitting_play_all)
+        if len(tracks) == 0:
+            # Track split failed for some reason, skip to the next track
+            raise Exception("Track split failed")
+        if do_split_override:
+            self.get_list().insert_upcoming_tracks(tracks, offset=offset)
+            Utils.log(f"Assigned split track overrides: {tracks}")
+        self.get_list().print_upcoming("split_track after")
+        return tracks[0]
 
     @staticmethod
     def assign_extension(new_file):

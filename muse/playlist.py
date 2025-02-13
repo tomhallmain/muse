@@ -79,6 +79,7 @@ class Playlist:
         self.sort_type = _type
         self.pending_tracks = list(tracks)
         self.played_tracks = []
+        self.extensions = []
         self.current_track_index = -1
         self.start_track = start_track
         self.data_callbacks = data_callbacks
@@ -103,17 +104,49 @@ class Playlist:
     def is_valid(self):
         return len(self.in_sequence) > 0
 
-    def next_track(self, skip_grouping=False):
-        if len(self.sorted_tracks) == 0 or self.current_track_index >= len(self.sorted_tracks):
+    def insert_upcoming_tracks(self, tracks, idx=None, offset=1, overwrite_existing_at_index=True):
+        if idx is None:
+            idx = self.current_track_index
+        idx += offset
+        if overwrite_existing_at_index:
+            del self.sorted_tracks[idx]
+        for track in sorted(tracks, reverse=True):
+            self.pending_tracks.insert(0, track) # this list is unordered
+            self.sorted_tracks.insert(idx, track)
+
+    def insert_extension(self, track):
+        self.insert_upcoming_tracks([track], overwrite_existing_at_index=False)
+        self.extensions.append(track)
+
+    def print_upcoming(self, caller=""):
+        print(f"UPCOMING TRACKS (caller {caller})")
+        count = 0
+        for i in range(self.current_track_index - 1, self.current_track_index + 5, 1):
+            track = self.sorted_tracks[i]
+            is_excerpt = "" if track.parent_filepath is None else " (excerpt)"
+            current_track_index_append = " (current track index)" if i == self.current_track_index else ""
+            print(f"{i}{current_track_index_append}: {track}{is_excerpt}")
+            count += 1
+            if count > 5:
+                break
+        return count
+
+    def next_track(self, skip_grouping=False, places_from_current=0):
+        # NOTE - Modifies self.current_track_index and pending / played tracks properties
+        if len(self.sorted_tracks) == 0 or (self.current_track_index + places_from_current) >= len(self.sorted_tracks):
             return None, None, None
+        self.print_upcoming("next_track before")
         old_grouping = None
         new_grouping = None
-        self.current_track_index += 1
-        next_track = self.sorted_tracks[self.current_track_index]
-        self.pending_tracks.remove(next_track.filepath)
-        self.played_tracks.append(next_track.filepath)
+        original_index = int(self.current_track_index)
+        for i in range(1 + places_from_current):
+            self.current_track_index += 1
+            next_track = self.sorted_tracks[self.current_track_index]
+            filepath = next_track.get_parent_filepath()
+            self.pending_tracks.remove(filepath)
+            self.played_tracks.append(filepath)
         if skip_grouping or self.sort_type.is_grouping_type():
-            previous_track = None if self.current_track_index == 0 else self.sorted_tracks[self.current_track_index - 1]
+            previous_track = None if self.current_track_index == 0 else self.sorted_tracks[original_index]
             attr_getter_name = self.sort_type.getter_name_mapping()
             next_track_attr = getattr(next_track, attr_getter_name)
             previous_track_attr = getattr(previous_track, attr_getter_name) if previous_track is not None else None
@@ -127,8 +160,9 @@ class Playlist:
                     while previous_track_attr == next_track_attr and self.current_track_index < len(self.sorted_tracks) - 1:
                         self.current_track_index += 1
                         next_track = self.sorted_tracks[self.current_track_index]
-                        self.pending_tracks.remove(next_track.filepath)
-                        self.played_tracks.append(next_track.filepath)
+                        filepath = next_track.get_parent_filepath()
+                        self.pending_tracks.remove(filepath)
+                        self.played_tracks.append(filepath)
                         next_track_attr = getattr(next_track, attr_getter_name)
                         if callable(next_track_attr):
                             next_track_attr = next_track_attr()
@@ -140,16 +174,26 @@ class Playlist:
                 new_grouping = next_track_attr
                 Utils.log("")
         Playlist.update_recently_played_lists(next_track)
+        self.print_upcoming("next_track after")
         return next_track, old_grouping, new_grouping
 
-    def upcoming_track(self):
-        if len(self.sorted_tracks) == 0 or (self.current_track_index + 1) >= len(self.sorted_tracks):
+    def upcoming_track(self, places_from_current=1):
+        # NOTE - Does not modify playlist properties
+        upcoming_track_index = self.current_track_index + places_from_current
+        if len(self.sorted_tracks) == 0 or (upcoming_track_index) >= len(self.sorted_tracks):
             return None, None, None
+        self.print_upcoming("upcoming_track before")
         old_grouping = None
         new_grouping = None
-        upcoming_track = self.sorted_tracks[self.current_track_index + 1] if self.current_track_index < len(self.sorted_tracks) - 1 else None
+        if upcoming_track_index < len(self.sorted_tracks):
+            upcoming_track = self.sorted_tracks[upcoming_track_index]
+        else:
+            upcoming_track = None
         if self.sort_type.is_grouping_type():
-            current_track = self.sorted_tracks[self.current_track_index] if self.current_track_index > -1 and self.current_track_index < len(self.sorted_tracks) else None
+            if self.current_track_index > -1 and self.current_track_index < len(self.sorted_tracks):
+                current_track = self.sorted_tracks[self.current_track_index]
+            else:
+                current_track = None
             if current_track is not None and upcoming_track is not None:
                 attr_getter_name = self.sort_type.getter_name_mapping()
                 upcoming_track_attr = getattr(upcoming_track, attr_getter_name)
@@ -160,6 +204,7 @@ class Playlist:
                 if upcoming_track_attr != current_track_attr:
                     old_grouping = current_track_attr
                     new_grouping = upcoming_track_attr
+        self.print_upcoming("upcoming_track after")
         return upcoming_track, old_grouping, new_grouping
 
     def current_track(self):

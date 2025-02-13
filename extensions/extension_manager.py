@@ -223,6 +223,7 @@ class ExtensionManager:
                     return False
             if "biography" in b.n.lower() or "biography" in b.d.lower():
                 return False
+            return True
         return strict.strip().lower() in b.n.lower() or strict.strip().lower() in b.d.lower()
 
     def _is_blacklisted(self, b):

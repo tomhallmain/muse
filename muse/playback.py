@@ -1,6 +1,7 @@
 import platform
 from random import randint
 import time
+import traceback
 import vlc
 
 from muse.playback_config import PlaybackConfig
@@ -38,6 +39,9 @@ class Playback:
         self.previous_track = ""
         self.last_track_failed = False
         self.has_played_first_track = False
+        self.did_advance = False # jumped ahead in the playlist occurred due to track splitting errors
+        self.places_from_current = -1 # this many tracks were jumped in the process
+        self.has_attempted_track_split = False
         self.count = 0
         self.muse_spot_profiles = []
         self.remaining_delay_seconds = Globals.DELAY_TIME_SECONDS
@@ -55,29 +59,37 @@ class Playback:
 
     def get_track(self):
         self.previous_track = self.track
-        self.track, self.old_grouping, self.new_grouping = self._playback_config.next_track(skip_grouping=self.skip_grouping)
+        if self.did_advance:
+            self.track, self.old_grouping, self.new_grouping = self._playback_config.next_track(
+                skip_grouping=self.skip_grouping, places_from_current=self.places_from_current)
+        else:
+            self.track, self.old_grouping, self.new_grouping = self._playback_config.next_track(skip_grouping=self.skip_grouping)
         self.skip_grouping = False
-        # print(f"Playback.get_track() - self.track = {self.track} {self.track.is_invalid()}")
+        if not self.has_attempted_track_split:
+            self.track, self.did_advance, self.places_from_current = self.ensure_splittable_track(self.track, True)
+        if self.has_muse() and self.get_muse().has_started_prep:
+            # TODO this seems a bit hacky and is probably not covering all cases.
+            self.has_attempted_track_split = False
         return self.track is not None and not self.track.is_invalid()
 
     def get_song_quality_info(self):
         # TODO: Get info like bit rate, mono vs stereo, possibly try to infer if it's AI or not
         pass
 
-    def get_spot_profile(self, audio_track=None):
-        if audio_track is None:
-            audio_track = self.track
+    def get_spot_profile(self, track=None):
+        if track is None:
+            track = self.track
         for profile in self.muse_spot_profiles:
-            if audio_track == profile.track:
+            if track == profile.track:
                 return profile
         # It is possible for the spot profile to not have been prepared for the next track if the 
         # next track was a late addition due to a forced playback extension. In this case, need
         # to overwrite the "Next" track in the previously generated spot profile with the new one
         for profile in self.muse_spot_profiles:
             if profile.previous_track == self.previous_track:
-                profile.track = audio_track
+                profile.track = track
                 return profile
-        raise Exception(f"No spot profile found for track: {audio_track}")
+        raise Exception(f"No spot profile found for track: {track}")
 
     def play_one_song(self):
         if self.get_track():
@@ -90,14 +102,22 @@ class Playback:
         else:
             raise Exception("No tracks in playlist")
 
-    def get_track_length(self):
-        return round(float(vlc.MediaPlayer(self.track.filepath).get_length()) / 1000)
+    def get_track_length(self, track=None):
+        if track is None:
+            track = self.track
+        assert track is not None
+        # TODO figure out why VLC parsing fails, see temp_test_length.py
+        # length = round(float(vlc.MediaPlayer(track.filepath).get_length()) / 1000)
+        # track.set_track_length(length)
+        length = track.get_track_length()
+        Utils.log(f"Track length: {length} seconds - {track}")
+        return length
 
     def set_delay_seconds(self):
         track_length = self.get_track_length()
-        random_buffer_threshold = round(float(track_length) / randint(5, 10))
+        random_buffer_threshold = max(round(float(track_length) / randint(5, 10)), 40)
         random_buffer = randint(0, random_buffer_threshold) * (1 if randint(0,1) == 1 else -1)
-        self.remaining_delay_seconds = Globals.DELAY_TIME_SECONDS + random_buffer
+        self.remaining_delay_seconds = min(max(1, Globals.DELAY_TIME_SECONDS + random_buffer), Globals.DELAY_TIME_SECONDS * 1.5)
 
     def run(self):
         assert self.vlc_media_player is not None
@@ -109,7 +129,7 @@ class Playback:
             if self.has_muse():
                 if not self.has_played_first_track or not self.get_muse().has_started_prep:
                     # First track, or if user skipped before end of last track
-                    seconds_passed = self.prepare_muse(first_prep=not self.has_played_first_track, delayed_prep=True)
+                    seconds_passed = self.prepare_muse(delayed_prep=True)
                     self.remaining_delay_seconds -= seconds_passed
                 # TODO edge case when extension track has been assigned after the preparation for the previously expected upcoming track
                 # TODO enable muse to be cancelled when user clicks Next
@@ -170,7 +190,7 @@ class Playback:
         self.get_muse().reset()
         self.muse_spot_profiles.remove(self.get_spot_profile(self.track))
 
-    def prepare_muse(self, first_prep=False, delayed_prep=False):
+    def prepare_muse(self, delayed_prep=False):
         # At the moment the local LLM and TTS models are not that fast, so need to start generation
         # for muse before the previous track stops playing, to avoid waiting extra time beyond
         # the expected delay.
@@ -178,19 +198,65 @@ class Playback:
             next_track = self.track
         else:
             next_track, self.old_grouping, self.new_grouping = self._playback_config.upcoming_track()
-        previous_track = None if first_prep else (self.previous_track if delayed_prep else self.track)
+
+        if not self.has_attempted_track_split: # this is alternately covered by self.get_track()
+            next_track, self.did_advance, self.places_from_current = self.ensure_splittable_track(next_track, delayed_prep)
+
+        previous_track = (self.previous_track if delayed_prep else self.track) if self.has_played_first_track else None
         spot_profile = self.get_muse().get_spot_profile(previous_track, next_track, self.last_track_failed, self.skip_track,
                                                         self.old_grouping, self.new_grouping, self.get_grouping_type())
         self.muse_spot_profiles.append(spot_profile)
+
+        # Prepare the spot using the spot profile
         start = time.time()
         if delayed_prep:
             spot_profile.immediate = True
-            if not first_prep:
+            if self.has_played_first_track:
                 Utils.log("Delayed preparation.")
             self.get_muse().prepare(spot_profile, self.ui_callbacks)
         else:
             Utils.start_thread(self.get_muse().prepare, use_asyncio=False, args=(spot_profile, self.ui_callbacks))
+        if delayed_prep:
+            self.has_attempted_track_split = False
         return round(time.time() - start)
+
+    def ensure_splittable_track(self, next_track, delayed_prep):
+        # Handle track splitting
+        next_track, did_split, split_failed = self.split_track_if_needed(next_track)
+        did_advance = bool(did_split)
+        places_from_current = 0
+        if did_split and split_failed:
+            places_from_current = 1 if delayed_prep else 2
+            while did_split and split_failed:
+                next_track, self.old_grouping, self.new_grouping = self._playback_config.upcoming_track(places_from_current=places_from_current)
+                next_track, did_split, split_failed = self.split_track_if_needed(next_track, delayed_prep=delayed_prep)
+                places_from_current += 1
+                if split_failed and places_from_current > (1 if delayed_prep else 5):
+                    Utils.log_red("Failed to split too many tracks in queue!")
+                    break
+            places_from_current -= 1
+        self.has_attempted_track_split = True
+        return next_track, did_advance, places_from_current
+
+    def split_track_if_needed(self, track, delayed_prep=False):
+        if not self._playback_config.enable_long_track_splitting:
+            Utils.log_debug("Split track config option not set")
+            return track, False, False
+        track_length = self.get_track_length(track=track)
+        cutoff_seconds = self._playback_config.long_track_splitting_time_cutoff_minutes * 60
+        offset = 0
+        if track_length > cutoff_seconds:
+            try:
+                Utils.log(f"Trying to split track: {track}")
+                track = self._playback_config.split_track(track=track, do_split_override=True, offset=offset)
+                return track, True, False
+            except Exception as e:
+                traceback.print_exc()
+                Utils.log_yellow(f"Error splitting track: {e}")
+                return track, True, True
+        elif int(track_length) == -1.0 or int(track_length) == 0:
+            Utils.log_yellow(f"Failed to set track length: {track}")
+        return track, False, False
 
     def get_grouping_type(self):
         try:
@@ -277,7 +343,7 @@ class Playback:
 
     def next_grouping(self):
         self.vlc_media_player.stop()
-        Utils.log("Skipping ahead to next track.")
+        Utils.log("Skipping ahead to next track grouping.")
         self.skip_track = True
         self.skip_delay = True
         self.skip_grouping = True

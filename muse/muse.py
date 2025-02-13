@@ -187,6 +187,7 @@ class Muse:
     #     pass
 
     def speak_about_previous_track(self, spot_profile):
+        # TODO have muse mention if the track has been split in the spot.
         previous_track = spot_profile.previous_track
         dj_remark = _("That was \"{0}\" in \"{1}\"").format(previous_track.readable_title(), previous_track.readable_album())
         if previous_track.artist is not None and previous_track.artist!= "" and random.random() < 0.8:
@@ -214,6 +215,7 @@ class Muse:
             self.memory.tracks_since_last_topic += 1
 
     def speak_about_upcoming_track(self, spot_profile):
+        # TODO have muse mention if the track has been split in the spot.
         track = spot_profile.track
         if spot_profile.previous_track is None:
             dj_remark = _("To start, we'll be playing: \"{0}\" from \"{1}\"").format(track.readable_title(), track.readable_album())

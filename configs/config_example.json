@@ -11,7 +11,16 @@
         "chance_speak_about_other_topics": 0.2,
         "min_seconds_between_spots": 180
     },
-    "save_tts_output_topics": ["language_learning", "poem", "random_wiki_article", "aphorism"],
+    "save_tts_output_topics": [
+        "aphorism",
+        "fable",
+        "fact",
+        "funny_story",
+        "language_learning",
+        "poem",
+        "quote",
+        "random_wiki_article"
+    ],
     "prompts_directory": "prompts",
     "tongue_twisters_dir": "",
     "artists_file": "artists_example.json",

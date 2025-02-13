@@ -8,6 +8,7 @@ from muse.schedule import Schedule
 from muse.schedules_manager import schedules_manager
 from tts.speakers import speakers
 from ui.app_style import AppStyle
+from ui.base_window import BaseWindow
 from utils.app_info_cache import app_info_cache
 from utils.runner_app_config import RunnerAppConfig
 from utils.translations import I18N
@@ -15,11 +16,12 @@ from utils.translations import I18N
 _ = I18N._
 
 
-class ScheduleModifyWindow():
+class ScheduleModifyWindow(BaseWindow):
     top_level = None
     COL_0_WIDTH = 600
 
     def __init__(self, master, refresh_callback, schedule, dimensions="600x600"):
+        super().init()
         ScheduleModifyWindow.top_level = Toplevel(master, bg=AppStyle.BG_COLOR)
         ScheduleModifyWindow.top_level.geometry(dimensions)
         self.master = ScheduleModifyWindow.top_level
@@ -140,7 +142,7 @@ class ScheduleModifyWindow():
 
 
 
-class SchedulesWindow():
+class SchedulesWindow(BaseWindow):
     top_level = None
     schedule_modify_window = None
 
@@ -155,6 +157,7 @@ class SchedulesWindow():
         return f"{width}x{height}"
 
     def __init__(self, master, toast_callback, runner_app_config=RunnerAppConfig()):
+        super().init()
         SchedulesWindow.top_level = Toplevel(master, bg=AppStyle.BG_COLOR)
         SchedulesWindow.top_level.geometry(SchedulesWindow.get_geometry())
         SchedulesWindow.top_level.title(_("Preset Schedules"))

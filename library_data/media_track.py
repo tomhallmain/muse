@@ -76,8 +76,9 @@ class MediaTrack:
     non_numeric_chars = re.compile(r"[^0-9\.\-]+")
     ffprobe_available = None
 
-    def __init__(self, filepath):
+    def __init__(self, filepath, parent_filepath=None):
         self.filepath = filepath
+        self.parent_filepath = parent_filepath # for split track parts
         self.tracktitle = None
         self.artist = None
         self.album = None
@@ -171,6 +172,9 @@ class MediaTrack:
             self.title = None
             self.ext = None
 
+    def get_parent_filepath(self):
+        return self.filepath if self.parent_filepath is None else self.parent_filepath
+
     def clean_track_values(self):
         self.title = self.clean_track_value(self.title)
         if self.album is not None:
@@ -248,22 +252,32 @@ class MediaTrack:
         Utils.open_file_location(self.filepath)
 
     def detect_silence_times(self, noise_threshold=0.001, duration=2):
+        # TODO double check that parts at the end aren't being missed (they probably are)
         silence_times = []
         args  = ["ffmpeg", "-i", self.filepath, "-af", f"silencedetect=n={noise_threshold}:d={duration}", "-f", "null", "/dev/null"]
         process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
         output, _ = process.communicate()
-        silence_interval = []
+        silence_interval = [0.0]
         for line in output.split("\n"):
-            print(line)
+            # print(line)
             if "silencedetect @" in line and "] " in line:
-                print("found silence")
-                if len(silence_interval) == 0:
+                # print("found silence")
+                if len(silence_interval) == 0 or (len(silence_interval) == 1 and silence_interval[0] == 0.0):
                     if "silence_start: " in line:
                         _, text = line.split("] ")
-                        start_value = re.sub(MediaTrack.non_numeric_chars, "", text[len("silence_start: "):])
-                        silence_interval.append(float(start_value))
+                        value = float(re.sub(MediaTrack.non_numeric_chars, "", text[len("silence_start: "):]))
+                        if len(silence_interval) == 0 or value > 0.5:
+                            silence_interval.append(value)
+                            if len(silence_interval) == 2:
+                                # Grab the part from the start of track to the first detected
+                                # the duration of the first part should be equal to the first detected silence.
+                                silence_interval.append(silence_interval[1])
+                                silence_times.append(list(silence_interval))
+                                silence_interval.clear()
+                                # set up the next interval
+                                silence_interval.append(value)
                 elif "silence_end: " in line:
-                    print("found silence end")
+                    # print("found silence end")
                     _, text = line.split("] ")
                     if " | " in line:
                         end_text, duration_text = text.split(" | ")
@@ -280,39 +294,48 @@ class MediaTrack:
                     silence_interval.clear()
         return silence_times
 
-    def extract_non_silent_track_parts(self, select_random_track=True):
+    def extract_non_silent_track_parts(self, select_random_track_part=True):
+        # TODO pass parent track properties to the split track MediaTrack objects
         silence_times = self.detect_silence_times()
         if len(silence_times) == 0:
+            Utils.log_yellow("No silence detected, returning original track")
             return None
+        Utils.log(f"Silence times: {silence_times}")
         track_paths = []
-        if select_random_track:
-            idx = random.randint(0, len(silence_times))
-            random_track = random.choice(silence_times)
-            track_path = self.get_track_part_path(start=random_track[0], end=random_track[1], idx=idx+1, total=len(silence_times))
-            track_paths.append(track_path)
+        if select_random_track_part:
+            idx = random.randint(1, len(silence_times))
+            track_anchors = silence_times[idx-1]
+            track_path = self.get_track_part_path(start=track_anchors[0], end=track_anchors[1], idx=idx, total=len(silence_times))
+            track_paths.append(MediaTrack(track_path, parent_filepath=self.filepath))
         else:
             for idx in range(len(silence_times)):
-                random_track = silence_times[idx]
-                track_path = self.get_track_part_path(start=random_track[0], end=random_track[1], idx=idx+1, total=len(silence_times))
-                track_paths.append(track_path)
+                track_anchors = silence_times[idx]
+                track_path = self.get_track_part_path(start=track_anchors[0], end=track_anchors[1], idx=idx+1, total=len(silence_times))
+                track_paths.append(MediaTrack(track_path, parent_filepath=self.filepath))
         return track_paths
 
     def get_track_part_path(self, start=-1, end=-1, idx=-1, total=-1):
         if start == -1 or end == -1 or start > end:
             raise Exception(f"Invalid start and end values provided for get_track_part_path: {start}, {end}")
         if idx == -1 or total == -1:
-            temp_basename = f"{self.basename} part.{self.ext}"
+            temp_basename = f"{self.title} part.{self.ext}"
         else:
-            temp_basename = f"{self.basename} ({idx}-{total}){self.ext}"
+            temp_basename = f"{self.title} ({idx}-{total}){self.ext}"
+        start_time_str = Utils.get_sexagesimal_time_str(start)
+        end_time_str = Utils.get_sexagesimal_time_str(end)
+        Utils.log(f"Creating track part {idx} out of {total} with anchors start={start}, end={end}")
         temp_filepath = TempDir.get().get_filepath(temp_basename)
-        args  = ["ffmpeg", "-i", self.filepath, "-ss", f"{start}", "-to", f"{end}", "-c:a", "copy", temp_filepath]
+        args  = ["ffmpeg", "-i", self.filepath, "-ss", start_time_str, "-to", end_time_str, "-c:a", "copy", temp_filepath]
         process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
         output, _ = process.communicate()
-        for line in output.split("\n"):
-            print(line)
+        # for line in output.split("\n"):
+        #     print(line)
         return temp_filepath
 
-    def set_track_length(self):
+    def set_track_length(self, length_seconds=None):
+        if length_seconds is not None:
+            self.length = float(length_seconds)
+            return self.length
         # TODO ff-executables can't handle special characters in filepaths
         if MediaTrack.ffprobe_available is None:
             MediaTrack.ffprobe_available = Utils.executable_available("ffprobe")
@@ -344,8 +367,9 @@ class MediaTrack:
         return self.length
 
     def get_track_length(self):
-        if self.length == -1:
-            return self.set_track_length()
+        if self.length == -1.0:
+            length = self.set_track_length()
+            Utils.log(f"Track length set: {length} seconds - {self}")
         return self.length
 
     def get_track_text_file(self):
