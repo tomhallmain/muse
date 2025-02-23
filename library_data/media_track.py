@@ -415,7 +415,7 @@ class MediaTrack:
             self.is_video = has_video_stream(self.filepath)
         return self.is_video
 
-    def get_album_artwork(self):
+    def get_album_artwork(self, filename="image"):
         # music-tags libary may have already set this attribute
         if self.artwork is None:
             if self.get_is_video():
@@ -437,7 +437,9 @@ class MediaTrack:
                 return None
         try:
             # write artwork to new image
-            return TempDir.get().add_file('image.jpg', file_content=self.artwork, write_flags='wb')
+            if "." not in filename:
+                filename += ".jpg" # TODO figure out actual image format
+            return TempDir.get().add_file(filename, file_content=self.artwork, write_flags='wb')
         except Exception as e:
             Utils.log_red(f"Could not write album artwork to temp file: {e}")
             return None

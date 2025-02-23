@@ -28,6 +28,8 @@ class MuseSpotProfile:
     def __init__(self, previous_track, track, last_track_failed, skip_track, old_grouping, new_grouping, grouping_type, get_previous_spot_profile_callback=None):
         self.previous_track = previous_track
         self.track = track
+        self.track_overwritten_time = None
+        self.preparation_time = None
         self.get_previous_spot_profile_callback = get_previous_spot_profile_callback
         # say good day on the second spot (i.e. first spot after the first track)
         self.say_good_day = previous_track is not None and self.get_previous_spot_profile().previous_track is None and random.random() < 0.5
@@ -83,10 +85,25 @@ class MuseSpotProfile:
     def get_previous_track_title(self) -> None | str:
         return None if self.previous_track is None else self.previous_track.title
 
+    def set_track_overwritten_time(self):
+        self.track_overwritten_time = time.time()
+
+    def set_preparation_time(self):
+        self.preparation_time = time.time()
+
+    def needs_repreparation(self):
+        return self.is_going_to_say_something() and self.track_overwritten_time is not None and \
+                (not self.is_prepared or self.track_overwritten_time > self.preparation_time)
+
     def get_topic_text(self) -> str:
         if self.talk_about_something and self.topic_translated is not None:
             return _("Talking about: ") + self.topic_translated
         return ""
+
+    def reset(self):
+        self.is_prepared = False
+        self.preparation_time = None
+        self.track_overwritten_time = None
 
     def __str__(self):
         out = _("Track: ") + self.track.title if self.track is not None else _("No track")

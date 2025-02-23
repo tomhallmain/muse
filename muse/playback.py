@@ -85,9 +85,11 @@ class Playback:
         # It is possible for the spot profile to not have been prepared for the next track if the 
         # next track was a late addition due to a forced playback extension. In this case, need
         # to overwrite the "Next" track in the previously generated spot profile with the new one
+        # This can also happen if the user selected to skip to a different group.
         for profile in self.muse_spot_profiles:
             if profile.previous_track == self.previous_track:
                 profile.track = track
+                profile.set_track_overwritten_time()
                 return profile
         raise Exception(f"No spot profile found for track: {track}")
 
@@ -127,8 +129,16 @@ class Playback:
             self.set_delay_seconds()
             self.get_muse().check_for_shutdowns()
             if self.has_muse():
+                if not self.has_played_first_track:
+                    self.update_ui_art_for_muse()
                 if not self.has_played_first_track or not self.get_muse().has_started_prep:
                     # First track, or if user skipped before end of last track
+                    seconds_passed = self.prepare_muse(delayed_prep=True)
+                    self.remaining_delay_seconds -= seconds_passed
+                elif self.get_spot_profile().needs_repreparation():
+                    Utils.log("Spot profile track was overwritten and will be reprepared.")
+#                    self.muse.cancel_preparation()
+#                    self.spot_profile.reset()
                     seconds_passed = self.prepare_muse(delayed_prep=True)
                     self.remaining_delay_seconds -= seconds_passed
                 # TODO edge case when extension track has been assigned after the preparation for the previously expected upcoming track
@@ -136,6 +146,7 @@ class Playback:
                 # The user may have requested to skip the last track since the muse profile was created
                 self.get_spot_profile().update_skip_previous_track_remark(self.skip_track)
                 if self.get_spot_profile().is_going_to_say_something():
+                    self.update_ui_art_for_muse()
                     seconds_passed = self.get_muse().maybe_dj(self.get_spot_profile())
                     self.remaining_delay_seconds -= seconds_passed
                     self.register_new_song()
@@ -143,6 +154,7 @@ class Playback:
                     self.delay()
                     self.update_ui()
                 else:
+                    self.update_ui_art_for_silence()
                     self.delay()
                     self.register_new_song()
             else:
@@ -301,7 +313,24 @@ class Playback:
             if self.ui_callbacks.update_spot_profile_topics_text is not None:
                 self.ui_callbacks.update_spot_profile_topics_text(spot_profile.get_topic_text())
         if self.ui_callbacks.update_album_artwork is not None:
-            self.ui_callbacks.update_album_artwork(image_filepath=self.track.get_album_artwork())
+            album_artwork = self.track.get_album_artwork()
+            if album_artwork is None and not self.track.get_is_video():
+                album_artwork = self._get_random_image_asset(filename_filter="record")
+            self.ui_callbacks.update_album_artwork(image_filepath=album_artwork)
+
+    def update_ui_art_for_muse(self):
+        if self.ui_callbacks.update_album_artwork is not None:
+            album_artwork = self._get_random_image_asset(filename_filter="muse")
+            self.ui_callbacks.update_album_artwork(image_filepath=album_artwork)
+
+    def update_ui_art_for_silence(self):
+        pass
+
+    def _get_random_image_asset(self, filename_filter="record"):
+        if not filename_filter.endswith(".png"):
+            filename_filter += ".*\\.png"
+        filenames = Utils.get_assets_filenames(filename_filter=filename_filter)
+        return Utils.get_asset(filenames[randint(0, len(filenames)-1)])
 
     def increment_count(self):
         if not self.skip_track:
@@ -347,6 +376,11 @@ class Playback:
         self.skip_track = True
         self.skip_delay = True
         self.skip_grouping = True
+
+    def get_current_track_artwork(self):
+        if self.track is None or self.track.is_invalid():
+            raise Exception("Track is invalid.")
+        return self.track.get_album_artwork(filename="copy")
 
     def get_track_text_file(self):
         if self.track is None or self.track.is_invalid():

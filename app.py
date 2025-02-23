@@ -1,9 +1,11 @@
 from copy import deepcopy
+import os
 import signal
 import time
 import traceback
 
-from tkinter import messagebox, Toplevel, Frame, Label, Checkbutton, Text, StringVar, BooleanVar, Scale, END, HORIZONTAL, NW, BOTH, YES, N, E, W
+from tkinter import messagebox, Toplevel, PhotoImage, Frame, Label, Checkbutton, Text, StringVar, BooleanVar, Scale
+from tkinter import END, HORIZONTAL, NW, BOTH, YES, N, E, W
 import tkinter.font as fnt
 from tkinter.ttk import Button, Entry, OptionMenu, Progressbar, Scale
 from lib.autocomplete_entry import AutocompleteEntry, matches
@@ -235,6 +237,7 @@ class App():
         self.master.bind("<Shift-R>", self.run)
         self.master.bind("<F11>", self.toggle_fullscreen)
         self.master.bind("<Shift-F>", self.toggle_fullscreen)
+        self.master.bind("<Control-C>", self.copy_album_art)
         self.master.bind("<Prior>", lambda event: self.one_config_away(change=1))
         self.master.bind("<Next>", lambda event: self.one_config_away(change=-1))
         self.master.bind("<Home>", lambda event: self.first_config())
@@ -454,6 +457,13 @@ class App():
 
     def switch_extension(self, event=None):
         self.current_run.switch_extension()
+
+    def copy_album_art(self, event=None):
+        current_track_artwork_path = self.current_run.get_current_track_artwork()
+        self.master.clipboard_clear()
+        self.master.clipboard_append(current_track_artwork_path)
+        Utils.log(f"Copied to clipboard: {current_track_artwork_path}")
+        self.toast(_("Copied album art to clipboard."))
 
     def get_args(self, track=None):
         self.store_info_cache()
@@ -753,9 +763,9 @@ if __name__ == "__main__":
         # assets = os.path.join(os.path.dirname(os.path.realpath(__file__)), "assets")
         root = ThemedTk(theme="black", themebg="black")
         root.title(_(" Muse "))
-        #root.iconbitmap(bitmap=r"icon.ico")
-        # icon = PhotoImage(file=os.path.join(assets, "icon.png"))
-        # root.iconphoto(False, icon)
+        assets = os.path.join(os.path.dirname(os.path.realpath(__file__)), "assets")
+        icon = PhotoImage(file=os.path.join(assets, "icon.png"))
+        root.iconphoto(False, icon)
         root.geometry("1200x600")
         # root.attributes('-fullscreen', True)
         root.resizable(1, 1)

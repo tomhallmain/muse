@@ -42,6 +42,8 @@ class Muse:
         self.prompter = Prompter()
         self.wiki_search = WikiOpenSearchAPI()
         self.has_started_prep = False
+        self.preparation_id = None # TODO pass a prep ID along with the speech request so things can be deleted before spoke if necessary.
+        self.is_cancelled_prep = False
         self.post_id = "post"
         self.prior_id = "prior"
         self.library_data = library_data
@@ -99,7 +101,19 @@ class Muse:
             self.memory.tracks_since_last_spoke = 0
         else:
             self.memory.tracks_since_last_spoke += 1
+        spot_profile.set_preparation_time()
         spot_profile.is_prepared = True
+
+    def cancel_preparation(self, spot_profile):
+        Utils.log_debug(f"Canceling muse prep:\n{spot_profile}")
+        self.is_cancelled_prep = True
+        if update_ui_callbacks is not None:
+            if update_ui_callbacks.update_next_up_callback is not None:
+                update_ui_callbacks.update_next_up_callback(spot_profile.get_upcoming_track_title())
+            if update_ui_callbacks.update_prior_track_callback is not None:
+                update_ui_callbacks.update_prior_track_callback(spot_profile.get_previous_track_title())
+            if update_ui_callbacks.update_spot_profile_topics_text is not None:
+                update_ui_callbacks.update_spot_profile_topics_text(spot_profile.get_topic_text())
 
     def maybe_dj(self, spot_profile):
         # TODO quality info for songs
@@ -112,10 +126,13 @@ class Muse:
 
     def reset(self):
         self.has_started_prep = False
+        self.is_cancelled_prep = False
         self.check_schedules()
 
     def check_schedules(self):
         self.check_for_shutdowns()
+        if not self.args.muse:
+            return
         now = datetime.datetime.now()
         active_schedule = SchedulesManager.get_active_schedule(now)
         if active_schedule is None:
@@ -136,7 +153,8 @@ class Muse:
         try:
             SchedulesManager.check_for_shutdown_request(now)
         except ScheduledShutdownException as e:
-            self.sign_off(now)
+            if self.args.muse:
+                self.sign_off(now)
             raise e
 
     def sign_off(self, now):

@@ -112,6 +112,10 @@ class Run:
         song_text_filepath = self.get_playback().get_track_text_file()
         Utils.open_file(song_text_filepath)
 
+    def get_current_track_artwork(self):
+        return self.get_playback().get_current_track_artwork()
+
+
 def main(args):
     run = Run(args)
     run.execute()

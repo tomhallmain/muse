@@ -49,6 +49,16 @@
     "coqui_tts_location": "{HOME}\\TTS-dev",
     "text_cleaner_ruleset": [
         {
+            "pattern": "° ?F",
+            "replacement": " degrees Fahrenheit",
+            "simple_replacement": false
+        },
+        {
+            "pattern":  "° ?C",
+            "replacement":  " degrees Celcius",
+            "simple_replacement": false
+        },
+        {
             "pattern": "BWV\\.?([ -])?",
             "replacement": "Bach-Werke-Verzeichnis ",
             "simple_replacement": false

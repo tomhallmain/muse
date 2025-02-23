@@ -21,7 +21,7 @@ class Prompter:
         return int(td.days * (60 * 24) + td.seconds / 60)
 
     @staticmethod
-    def update_history(topic):
+    def update_history(topic, text=""):
         if not isinstance(topic, Topic):
             raise Exception(f"Invalid topic: {topic}")
         app_info_cache.set(topic.value, datetime.datetime.now().strftime(Prompter.TIMESTAMP_FORMAT))

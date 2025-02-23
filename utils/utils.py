@@ -27,6 +27,25 @@ logger.addHandler(ch)
 
 class Utils:
     @staticmethod
+    def get_assets_filenames(filename_filter=None):
+        assets_filenames = os.listdir(Utils.get_assets_dir())
+        if filename_filter is None or filename_filter.strip() == "":
+            return assets_filenames
+        filtered_filenames = []
+        for filename in assets_filenames:
+            if re.match(filename_filter, filename):
+                filtered_filenames.append(filename)
+        return filtered_filenames
+
+    @staticmethod
+    def get_assets_dir():
+        return os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets"))
+
+    @staticmethod
+    def get_asset(filename):
+        return os.path.join(Utils.get_assets_dir(), filename)
+
+    @staticmethod
     def long_sleep(seconds=0, extra_message=None, total=None, print_cadence=1):
         if seconds <= 0:
             return

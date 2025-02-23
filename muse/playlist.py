@@ -119,6 +119,8 @@ class Playlist:
         self.extensions.append(track)
 
     def print_upcoming(self, caller=""):
+        if True: # keep this function for debug purposes
+            return
         print(f"UPCOMING TRACKS (caller {caller})")
         count = 0
         for i in range(self.current_track_index - 1, self.current_track_index + 5, 1):

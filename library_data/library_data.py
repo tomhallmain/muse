@@ -316,6 +316,9 @@ class LibraryData:
 
     def resolve_track(self, audio_track):
         # Find any highly similar tracks in the library to this track.
+        # Especially in the case that two master directories contain the same track files,
+        # we want to prioritise the track in the master directory that contains the
+        # most complete information (album art, lyrics, audio quality, etc).
         pass # TODO
 
     def start_extensions_thread(self, initial_sleep=True, overwrite_cache=False, voice=None):

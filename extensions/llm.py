@@ -16,6 +16,11 @@ class LLM:
         Utils.log(f"Using LLM model: {self.model_name}")
 
     def generate_response(self, query, timeout=120):
+        """
+        Generates a response using the LLM model.
+        """
+        query = self._sanitize_query(query)
+        timeout = self._get_timeout(timeout)
         Utils.log(f"Asking LLM {self.model_name}:\n{query}")
         data = {
             "model": self.model_name,
@@ -43,6 +48,15 @@ class LLM:
                 response_text = response_text[response_text.index("</think>") + len("</think>"):].strip()
         return response_text
 
+    def _sanitize_query(self, query):
+        return query
+
+    def _get_timeout(self, timeout):
+        if self.model_name.startswith("deepseek"):
+            # Deepseek models have a <think> internal prompt mechanism which
+            # can take a while to complete for complex requests.
+            return max(timeout, 200)
+        return timeout
 
 
 if __name__ == "__main__":
