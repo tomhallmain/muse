@@ -4,6 +4,7 @@ from library_data.library_data import LibraryData
 from muse.muse_memory import MuseMemory
 from muse.playlist import Playlist
 from muse.schedules_manager import SchedulesManager
+from ui.composers_window import ComposersWindow
 from ui.playlist_window import PlaylistWindow
 from ui.search_window import SearchWindow
 
@@ -18,6 +19,7 @@ class PersistentDataManager:
         SchedulesManager.store_schedules()
         ExtensionManager.store_extensions()
         SearchWindow.store_recent_searches()
+        ComposersWindow.store_recent_searches()
 
     @staticmethod
     def load():
@@ -29,4 +31,5 @@ class PersistentDataManager:
         SchedulesManager.set_schedules()
         ExtensionManager.load_extensions()
         SearchWindow.load_recent_searches()
+        ComposersWindow.load_recent_searches()
 

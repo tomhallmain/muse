@@ -6,6 +6,7 @@ from lib.tk_scroll_demo import ScrollFrame
 from library_data.composer import Composer, ComposersDataSearch, ComposersData
 from ui.app_style import AppStyle
 # from ui.base_window import BaseWindow
+from utils.app_info_cache import app_info_cache
 from utils.translations import I18N
 from utils.utils import Utils
 
@@ -185,8 +186,26 @@ class ComposersWindow:
     top_level = None
     MAX_RESULTS = 200
     details_window = None
+    recent_searches = []
 
-    def __init__(self, master, app_actions, dimensions="500x600"):
+    @staticmethod
+    def load_recent_searches():
+        # NOTE be sure not to modify the key to "recent_searches" as this is shared with another key.
+        json_searches = app_info_cache.get("recent_composer_searches", [])
+        assert isinstance(json_searches, list)
+        for search_details in json_searches:
+            ComposersWindow.recent_searches.append(ComposersDataSearch(**search_details))
+
+    @staticmethod
+    def store_recent_searches():
+        json_searches = []
+        for search in ComposersWindow.recent_searches:
+            if search.is_valid() and search.stored_results_count > 0:
+                json_searches.append(search.get_dict())
+        app_info_cache.set("recent_composer_searches", json_searches)
+
+
+    def __init__(self, master, app_actions, dimensions="600x600"):
 
         ComposersWindow.top_level = Toplevel(master, bg=AppStyle.BG_COLOR) 
         ComposersWindow.top_level.geometry(dimensions)
@@ -208,8 +227,8 @@ class ComposersWindow:
         self.inner_frame.columnconfigure(1, weight=1)
         self.inner_frame.grid(row=0, column=0, sticky="nsew")
 
-        self.results_frame = ScrollFrame(self.outer_frame, bg_color=AppStyle.BG_COLOR)
-        self.results_frame.grid(row=1, column=0)
+        self.results_frame = ScrollFrame(self.outer_frame, bg_color=AppStyle.BG_COLOR, width=600)
+        self.results_frame.grid(row=1, column=0, sticky="nsew")
 
         self._composer_label = Label(self.inner_frame)
         self.add_label(self._composer_label, "Search Composer", row=0)
@@ -227,6 +246,7 @@ class ComposersWindow:
 
         self.composer_list = []
         self.open_details_btn_list = []
+        self.search_btn_list = []
 
         self.search_btn = None
         self.add_btn("search_btn", _("Search"), self.do_search, row=2)
@@ -236,18 +256,84 @@ class ComposersWindow:
         self.master.bind("<Escape>", self.close_windows)
         self.master.protocol("WM_DELETE_WINDOW", self.close_windows)
         self.results_frame.after(1, lambda: self.results_frame.focus_force())
-        Utils.start_thread(self.do_search, use_asyncio=False)
+        Utils.start_thread(self.show_recent_searches, use_asyncio=False)
+
+
+    def show_recent_searches(self):
+        if len(ComposersWindow.recent_searches) == 0:
+            self.searching_label = Label(self.results_frame.viewPort)
+            self.add_label(self.searching_label, text=_("No recent searches found."), row=1, column=1)
+            self.composer_list.append(self.searching_label)
+            self.master.update()
+            return
+        for i in range(len(ComposersWindow.recent_searches)):
+            row = i + 1
+            search = ComposersWindow.recent_searches[i]
+            if search is None:
+                continue
+
+            title_label = Label(self.results_frame.viewPort)
+            self.add_label(title_label, search.composer, row=row, column=1, wraplength=200)
+            self.composer_list.append(title_label)
+
+            album_label = Label(self.results_frame.viewPort)
+            self.add_label(album_label, search.genre, row=row, column=2, wraplength=200)
+            self.open_details_btn_list.append(album_label)
+
+            results_count_label = Label(self.results_frame.viewPort)
+            self.add_label(results_count_label, search.get_readable_stored_results_count(), row=row, column=3, wraplength=200)
+            self.composer_list.append(results_count_label)
+
+            search_btn = Button(self.results_frame.viewPort, text=_("Search"))
+            self.search_btn_list.append(search_btn)
+            search_btn.grid(row=row, column=4)
+            def search_handler(event, self=self, search=search):
+                self.load_stored_search(composer_data_search=search)
+                self._do_search(event)
+            search_btn.bind("<Button-1>", search_handler)
+
+            # play_btn = Button(self.results_frame.viewPort, text=_("Play"))
+            # self.play_btn_list.append(play_btn)
+            # play_btn.grid(row=row, column=6)
+            # def play_handler(event, self=self, search=search, track=track):
+            #     self.load_stored_search(library_data_search=search)
+            #     self._do_search(event)
+            #     if track is None:
+            #         Utils.log("No specific track defined on search, using first available track.")
+            #         track = search.get_first_available_track()
+            #         if track is None:
+            #             raise Exception("No tracks available on search.")
+            #     elif track.is_invalid():
+            #         raise Exception(f"Invalid track: {track}")
+            #     self.run_play_callback(track)
+            # play_btn.bind("<Button-1>", play_handler)
+        self.master.update()
+
+    def load_stored_search(self, composer_data_search):
+        assert composer_data_search is not None
+        self.composer.set(composer_data_search.composer)
+        self.genre.set(composer_data_search.genre)
+        self.composer_data_search = composer_data_search
 
     def do_search(self, event=None):
         composer = self.composer.get().strip()
         genre = self.genre.get().strip()
         self.composer_data_search = ComposersDataSearch(composer, genre, ComposersWindow.MAX_RESULTS)
+        self._do_search()
+
+    def _do_search(self, event=None):
+        assert self.composer_data_search is not None
+        self._refresh_widgets(add_results=False)
         self.composers_data.do_search(self.composer_data_search)
+        if self.composer_data_search in ComposersWindow.recent_searches:
+            ComposersWindow.recent_searches.remove(self.composer_data_search)
+        ComposersWindow.recent_searches.insert(0, self.composer_data_search)
         self._refresh_widgets()
 
     def add_widgets_for_results(self):
         assert self.composer_data_search is not None
         results = self.composer_data_search.get_results()
+        Utils.log(f"Found {len(results)} results")
         for i in range(len(results)):
             row = i + 1
             composer = results[i]
@@ -274,9 +360,10 @@ class ComposersWindow:
     def refresh(self):
         pass
 
-    def _refresh_widgets(self):
+    def _refresh_widgets(self, add_results=True):
         self.clear_widget_lists()
-        self.add_widgets_for_results()
+        if add_results:
+            self.add_widgets_for_results()
         self.master.update()
 
     def clear_widget_lists(self):
@@ -284,8 +371,11 @@ class ComposersWindow:
             label.destroy()
         for btn in self.open_details_btn_list:
             btn.destroy()
+        for btn in self.search_btn_list:
+            btn.destroy()
         self.composer_list = []
         self.open_details_btn_list = []
+        self.search_btn_list = []
 
     @staticmethod
     def set_title(extra_text):

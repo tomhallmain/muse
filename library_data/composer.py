@@ -4,7 +4,10 @@ import re
 
 from library_data.work import Work
 from utils.config import config
+from utils.translations import I18N
 from utils.utils import Utils
+
+_ = I18N._
 
 
 class Composer:
@@ -37,10 +40,11 @@ class Composer:
 
 
 class ComposersDataSearch:
-    def __init__(self, composer="", genre="", max_results=200):
+    def __init__(self, composer="", genre="", stored_results_count=0, max_results=200):
         self.composer = composer.lower()
         self.genre = genre.lower()
         self.max_results = max_results
+        self.stored_results_count = stored_results_count
 
         self.results = []
 
@@ -50,7 +54,18 @@ class ComposersDataSearch:
             if field is not None and field.strip()!= "":
                 print(f"{name} - \"{field}\"")
                 return True
-        return False
+        return isinstance(self.max_results, int) and self.max_results > 0
+
+    def set_stored_results_count(self):
+        self.stored_results_count = len(self.results)
+        Utils.log(f"Stored count for {self}: {self.get_readable_stored_results_count()}")
+
+    def get_readable_stored_results_count(self) -> str:
+        if self.stored_results_count > self.max_results:
+            results_str = f"{self.max_results}+"
+        else:
+            results_str = str(self.stored_results_count)
+        return _("({0} results)").format(results_str)
 
     def test(self, composer, strict=True):
         if len(self.results) > self.max_results:
@@ -80,6 +95,22 @@ class ComposersDataSearch:
 
     def get_results(self):
         return self.results
+
+    def get_dict(self):
+        return {
+            "composer": self.composer, 
+            "genre": self.genre,
+            "stored_results_count": self.stored_results_count,
+        }
+
+    def __eq__(self, value: object) -> bool:
+        return isinstance(value, ComposersDataSearch) and \
+               self.composer == value.composer and \
+               self.genre == value.genre
+
+    def __hash__(self) -> int:
+        return hash((self.composer, self.genre))
+
 
 
 
@@ -142,6 +173,7 @@ class ComposersData:
                         data_search.test(composer, strict=False) is None:
                     break
 
+        data_search.set_stored_results_count()
         return data_search
 
 

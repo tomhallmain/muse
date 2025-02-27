@@ -1,0 +1,7 @@
+Please create a very short search query of 10 words or less for a specific piece of music for the instrument INSTRUMENT, if possible in the genre GENRE. Ideally this music should not be too famous, or something that most people would have heard. If you can't think of anything specific for the given combination of genre and instrument, try to form the query in a way that would return specific pieces of music for the instrument, instead of compilations or educational content with broad overviews. The query does not have to be grammatically correct, it only has to succeed in generating high-quality results. Only return the genre and text of the search query in JSON form, do not return anything else. Example response for a potentially different instrument:
+
+{
+    "instrument": "violin",
+    "genre": "Baroque",
+    "search_query": "Georg Muffat - Violin Sonata"
+}

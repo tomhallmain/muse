@@ -17,6 +17,7 @@ class RunnerAppConfig:
         self.enable_dynamic_volume = True
         self.enable_long_track_splitting = False
         self.long_track_splitting_time_cutoff_minutes  = 20
+        self.use_system_lang_for_all_topics = True
 
     def set_from_run_config(self, args):
         pass

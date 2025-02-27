@@ -1,3 +1,4 @@
+langcodes[data]
 absl-py==2.1.0
 annotated-types==0.7.0
 anyascii==0.3.2

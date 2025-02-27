@@ -264,7 +264,7 @@ class Playlist:
             if getattr(track, track_attr) in recently_played_attr_list:
                 tracks_to_be_reshuffled.append(track)
         while len(tracks_to_be_reshuffled) > 0:
-            Utils.log(f"Reshuffling playlist recently played track count: {len(tracks_to_be_reshuffled)} (attempt {attempts}) - recently played tracks count = {len(tracks_to_be_reshuffled)}")
+            Utils.log(f"Reshuffling playlist recently played track count: {len(tracks_to_be_reshuffled)} (attempt {attempts})")
             for track in tracks_to_be_reshuffled:
                 self.sorted_tracks.remove(track)
                 self.sorted_tracks.append(track)

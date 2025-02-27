@@ -324,6 +324,18 @@ class Utils:
         return _locale
 
     @staticmethod
+    def get_english_language_name(language_code='en'):
+        if language_code is None or language_code.strip() == "" or language_code == "en":
+            return "English"
+        try:
+            import langcodes
+            language = langcodes.Language.get(language_code)
+            return language.display_name()
+        except Exception as e:
+            Utils.log_red(f"Error while getting language name for code '{language_code}': {e}")
+            return "English"
+
+    @staticmethod
     def play_sound(sound="success"):
         if sys.platform != 'win32':
             return

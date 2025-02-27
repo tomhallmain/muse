@@ -1,0 +1,6 @@
+Please create a very short search query of 10 words or less for a specific piece of music in the genre GENRE. Ideally this music should not be too famous, or something that most people would have heard. The query does not have to be grammatically correct, it only has to succeed in generating high-quality results. Only return the genre and text of the search query in JSON form, do not return anything else. Example response for a potentially different genre:
+
+{
+    "genre": "Baroque",
+    "search_query": "Buxtehude - Nun bitten wir den Heiligen Geist"
+}

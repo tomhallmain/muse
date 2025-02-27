@@ -68,6 +68,17 @@ class Prompter:
             raise Exception(f"Invalid topic: {topic}")
         prompt_topic = topic.get_prompt_topic_value()
         Prompter.update_history(topic)
-        with open(os.path.join(config.prompts_directory, prompt_topic + ".txt"), 'r') as f:
+        return Prompter.get_prompt_static(prompt_topic)
+
+    def get_translation_prompt(self, language_code, language_name_english, prompt):
+        translation_prompt = Prompter.get_prompt_static("translate_" + language_code)
+        translation_prompt = translation_prompt.replace("LANGUAGE", language_name_english)
+        translation_prompt = translation_prompt.replace("PROMPT", prompt)
+        return translation_prompt
+
+    @staticmethod
+    def get_prompt_static(prompt_name):
+        with open(os.path.join(config.prompts_directory, prompt_name + ".txt"), 'r') as f:
             return f.read().strip()
+
 

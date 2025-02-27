@@ -26,6 +26,7 @@ _ = I18N._
 
 
 class Muse:
+    SYSTEM_LANGUAGE_NAME_IN_ENGLISH = Utils.get_english_language_name(Utils.get_default_user_language())
     enable_preparation = config.muse_config["enable_preparation"]
     preparation_starts_minutes_from_end = float(config.muse_config["preparation_starts_minutes_from_end"])
     preparation_starts_after_seconds_sleep = int(config.muse_config["preparation_starts_after_seconds_sleep"])
@@ -364,7 +365,7 @@ class Muse:
     def talk_about_weather(self, city="Washington", spot_profile=None):
         weather = self.open_weather_api.get_weather_for_city(city)
         weather_summary = self.generate_text(
-            self.prompter.get_prompt(Topic.WEATHER) + city + ":\n\n" + str(weather))
+            self.get_prompt(Topic.WEATHER) + city + ":\n\n" + str(weather))
         self.say_at_some_point(weather_summary, spot_profile, Topic.WEATHER)
 
     def talk_about_news(self, topic=None, spot_profile=None):
@@ -373,36 +374,35 @@ class Muse:
         else:
             news = self.news_api.get_news(topic=topic)
         news_summary = self.generate_text(
-            self.prompter.get_prompt(topic) + "\n\n" + str(news))
+            self.get_prompt(topic) + "\n\n" + str(news))
         self.say_at_some_point(news_summary, spot_profile, topic)
 
     def tell_a_joke(self, spot_profile):
-        joke = self.generate_text(self.prompter.get_prompt(Topic.JOKE))
+        joke = self.generate_text(self.get_prompt(Topic.JOKE))
         self.say_at_some_point(joke, spot_profile, Topic.JOKE)
 
     def share_a_fact(self, spot_profile):
-        fact = self.generate_text(self.prompter.get_prompt(Topic.FACT))
+        fact = self.generate_text(self.get_prompt(Topic.FACT))
         self.say_at_some_point(fact, spot_profile, Topic.FACT)
 
-
     def play_two_truths_and_one_lie(self, spot_profile):
-        resp = self.generate_text(self.prompter.get_prompt(Topic.TRUTH_AND_LIE))
+        resp = self.generate_text(self.get_prompt(Topic.TRUTH_AND_LIE))
         self.say_at_some_point(resp, spot_profile, Topic.TRUTH_AND_LIE)
 
     def share_a_fable(self, spot_profile):
-        fable = self.generate_text(self.prompter.get_prompt(Topic.FABLE))
+        fable = self.generate_text(self.get_prompt(Topic.FABLE))
         self.say_at_some_point(fable, spot_profile, Topic.FABLE)
 
     def share_an_aphorism(self, spot_profile):
-        aphorism = self.generate_text(self.prompter.get_prompt(Topic.APHORISM))
+        aphorism = self.generate_text(self.get_prompt(Topic.APHORISM))
         self.say_at_some_point(aphorism, spot_profile, Topic.APHORISM)
 
     def share_a_poem(self, spot_profile):
-        poem = self.generate_text(self.prompter.get_prompt(Topic.POEM))
+        poem = self.generate_text(self.get_prompt(Topic.POEM))
         self.say_at_some_point(poem, spot_profile, Topic.POEM)
     
     def share_a_quote(self, spot_profile):
-        quote = self.generate_text(self.prompter.get_prompt(Topic.QUOTE))
+        quote = self.generate_text(self.get_prompt(Topic.QUOTE))
         self.say_at_some_point(quote, spot_profile, Topic.QUOTE)
 
     def share_a_tongue_twister(self, spot_profile):
@@ -419,20 +419,20 @@ class Muse:
     def talk_about_the_calendar(self, spot_profile):
         # TODO talk about tomorrow as well, or the upcoming week
         today = datetime.datetime.today()
-        prompt = self.prompter.get_prompt(Topic.CALENDAR)
+        prompt = self.get_prompt(Topic.CALENDAR)
         prompt = prompt.replace("DATE", today.strftime("%A %B %d %Y"))
         prompt = prompt.replace("TIME", today.strftime("%H:%M"))
         calendar = self.generate_text(prompt)
         self.say_at_some_point(calendar, spot_profile, Topic.CALENDAR)
 
     def share_a_motivational_message(self, spot_profile):
-        motivation = self.generate_text(self.prompter.get_prompt(Topic.MOTIVATION))
+        motivation = self.generate_text(self.get_prompt(Topic.MOTIVATION))
         self.say_at_some_point(motivation, spot_profile, Topic.MOTIVATION)
 
     def talk_about_track_context(self, track, spot_profile, topic):
         if spot_profile.track is None or spot_profile.topic is None or topic is None:
             raise Exception("No track or topic specified")
-        prompt = self.prompter.get_prompt(topic)
+        prompt = self.get_prompt(topic)
         prompt = prompt.replace("TRACK_DETAILS", track.get_track_details())
         track_context = self.generate_text(prompt)
         self.say_at_some_point(track_context, spot_profile, None)
@@ -452,17 +452,17 @@ class Muse:
             if count > 10:
                 raise Exception(f"No valid wiki article found after 10 tries. Blacklisted words: {blacklisted_words_found}")
             count += 1
-        prompt = self.prompter.get_prompt(Topic.RANDOM_WIKI_ARTICLE)
+        prompt = self.get_prompt(Topic.RANDOM_WIKI_ARTICLE)
         prompt = prompt.replace("ARTICLE", str(article)[:2000])
         summary = self.generate_text(prompt)
         self.say_at_some_point(summary, spot_profile, Topic.RANDOM_WIKI_ARTICLE)
 
     def share_a_funny_story(self, spot_profile):
-        funny_story = self.generate_text(self.prompter.get_prompt(Topic.FUNNY_STORY))
+        funny_story = self.generate_text(self.get_prompt(Topic.FUNNY_STORY))
         self.say_at_some_point(funny_story, spot_profile, Topic.FUNNY_STORY)
 
     def teach_language(self, spot_profile):
-        prompt = self.prompter.get_prompt(Topic.LANGUAGE_LEARNING)
+        prompt = self.get_prompt(Topic.LANGUAGE_LEARNING)
         prompt = prompt.replace("LANGUAGE", config.muse_language_learning_language)
         if config.muse_language_learning_language_level is not None and config.muse_language_learning_language_level.strip() != "":
             prompt = prompt.replace("LEVEL", config.muse_language_learning_language_level)
@@ -474,14 +474,32 @@ class Muse:
     def start_extensions_thread(self, initial_sleep=True, overwrite_cache=False):
         self.get_library_data().start_extensions_thread(initial_sleep=initial_sleep, overwrite_cache=overwrite_cache, voice=self.voice)
 
-    def generate_text(self, prompt):
+    def get_prompt(self, topic):
+        prompt = self.prompter.get_prompt(topic)
+        if not self.args.use_system_language_for_all_topics:
+            return prompt
+        if topic == Topic.LANGUAGE_LEARNING and Muse.SYSTEM_LANGUAGE_NAME_IN_ENGLISH == config.muse_language_learning_language:
+            # Don't replace the whole prompt, it would be trying to teach the same language the prompt is already in.
+            return prompt
+        language_code = Utils.get_default_user_language()
+        if language_code == "en" or language_code not in ["de", "es", "fr", "it"]:
+            Utils.log(f"No translation available for language {language_code} topic {topic}, using English")
+            return prompt
+        try:
+            translation_prompt = self.prompter.get_translation_prompt(language_code, Muse.SYSTEM_LANGUAGE_NAME_IN_ENGLISH, prompt)
+            prompt = self.generate_text(translation_prompt, json_key="prompt")
+        except Exception as e:
+            Utils.log(f"Failed to translate prompt for topic {topic} into language {Muse.SYSTEM_LANGUAGE_NAME_IN_ENGLISH} with error: {e}")
+        return prompt
+
+    def generate_text(self, prompt, json_key=None):
         prompt_text_to_test = prompt
         variant_part_marker = "Please give your summary after the provided articles below."
         if variant_part_marker in prompt_text_to_test:
             prompt_text_to_test = prompt_text_to_test[prompt_text_to_test.index(variant_part_marker):]
             prompt_text_to_test = prompt_text_to_test[prompt_text_to_test.index("\n") + 1:]
         blacklisted_items_in_prompt = blacklist.test_all(prompt_text_to_test)
-        text = self.llm.generate_response(prompt)
+        text = self.llm.ask(prompt, json_key=json_key)
         generations = []
         all_blacklist_items = set()
         blacklist_items = blacklist.test_all(text, excluded_items=blacklisted_items_in_prompt)
@@ -491,7 +509,7 @@ class Muse:
             Utils.log("Hit blacklisted items: " + blacklist_items_str)
             Utils.log("Text: " + text)
             all_blacklist_items.update(set(blacklist_items))
-            text = self.llm.generate_response(prompt)
+            text = self.llm.ask(prompt, json_key=json_key)
             generations.append(text)
             blacklist_items = blacklist.test_all(text, excluded_items=blacklisted_items_in_prompt)
             attempts += 1

@@ -3,9 +3,11 @@ import os
 import random
 import subprocess
 
+from extensions.llm import LLM
 from extensions.library_extender import LibraryExtender
 from extensions.soup_utils import SoupUtils
 from muse.playback_config import PlaybackConfig
+from muse.prompter import Prompter
 from utils.app_info_cache import app_info_cache
 from utils.config import config
 from utils.globals import TrackAttribute, ExtensionStrategy
@@ -38,6 +40,7 @@ class ExtensionManager:
         app_info_cache.set("extensions", list(ExtensionManager.extensions))
 
     def __init__(self, ui_callbacks, data_callbacks):
+        self.llm = LLM()
         self.extension_wait_min = 60
         self.extension_wait_expected_max = 90
         self.ui_callbacks = ui_callbacks
@@ -124,7 +127,7 @@ class ExtensionManager:
         if voice is not None:
             muse_to_say = _("Coming up soon, we'll be listening to a new track from the {0} {1}.").format(attr.get_translation(), value)
             voice.prepare_to_say(muse_to_say, save_for_last=True)
-        self.extend(value=value, attr=attr)
+        self.extend(value=value, attr=attr, strict=True)
 
     def _extend(self, value="", attr=None, strict=False):
         if attr == TrackAttribute.TITLE:
@@ -158,23 +161,30 @@ class ExtensionManager:
             Utils.start_thread(self._extend, use_asyncio=False, args=args)
 
     def extend_by_title(self, title, strict=False):
-        self._simple("track title: \"" + title + "\"", attr=TrackAttribute.TITLE, strict=title)
+        self._simple("track title: \"" + title + "\"", attr=TrackAttribute.TITLE, strict=(title if strict else None))
 
     def extend_by_album(self, album, strict=False):
-        self._simple("album title: \"" + album + "\"", attr=TrackAttribute.ALBUM, strict=album)
+        self._simple("album title: \"" + album + "\"", attr=TrackAttribute.ALBUM, strict=(album if strict else None))
 
     def extend_by_artist(self, artist, strict=False):
-        self._simple("track by " + artist, attr=TrackAttribute.ARTIST, strict=artist)
+        prompt = Prompter.get_prompt_static("search_artist")
+        query = self.llm.generate_json_get_value(prompt.replace("ARTIST", artist), "search_query")
+        self._simple(query, attr=TrackAttribute.ARTIST, strict=(artist if strict else None))
 
     def extend_by_composer(self, composer_name):
         composer = self.data_callbacks.instance.composers.get_data(composer_name)
         self._simple("music composed by " + composer_name, attr=TrackAttribute.COMPOSER, strict=composer)
 
     def extend_by_genre(self, genre, strict=False):
-        self._simple("short single piece of music from the genre " + genre, attr=TrackAttribute.GENRE, strict=genre)
+        prompt = Prompter.get_prompt_static("search_genre")
+        query = self.llm.generate_json_get_value(prompt.replace("GENRE", genre), "search_query")
+        self._simple(query, attr=TrackAttribute.GENRE, strict=(genre if strict else None))
 
     def extend_by_instrument(self, instrument, genre="Classical", strict=False):
-        self._simple(genre + " music for the " + instrument, attr=TrackAttribute.INSTRUMENT, strict=instrument)
+        prompt = Prompter.get_prompt_static("search_instrument")
+        prompt = prompt.replace("INSTRUMENT", instrument).replace("GENRE", genre)
+        query = self.llm.generate_json_get_value(prompt, "search_query")
+        self._simple(query, attr=TrackAttribute.INSTRUMENT, strict=(instrument if strict else None))
 
     def _simple(self, q, m=6, depth=0, attr=None, strict=None):
         r = self.s(q, m)

@@ -231,6 +231,11 @@ class App():
         self.track_splitting_choice = Checkbutton(self.sidebar, text=_('Enable track splitting'), variable=self.track_splitting, command=self.set_track_splitting)
         self.apply_to_grid(self.track_splitting_choice, sticky=W)
 
+        self.use_system_language = BooleanVar(value=self.runner_app_config.use_system_lang_for_all_topics)
+        self.use_system_language_choice = Checkbutton(self.sidebar, text=_('Use system language for all topics'), variable=self.use_system_language, command=self.set_use_system_language)
+        self.apply_to_grid(self.track_splitting_choice, sticky=W)
+
+
         self.media_frame = MediaFrame(self.master, fill_canvas=True)
 
         self.master.bind("<Control-Return>", self.run)
@@ -383,6 +388,9 @@ class App():
     def set_track_splitting(self, event=None):
         self.runner_app_config.enable_long_track_splitting = self.track_splitting.get()
 
+    def set_use_system_language(self, event=None):
+        self.runner_app_config.use_system_lang_for_all_topics = self.use_system_language.get()
+
     def destroy_progress_bar(self):
         if self.progress_bar is not None:
             self.progress_bar.stop()
@@ -478,6 +486,7 @@ class App():
         args.extend = self.extend.get()
         args.track = track
         args.enable_long_track_splitting = self.track_splitting.get()
+        args.use_system_language_for_all_topics = self.use_system_language.get()
 
         args_copy = deepcopy(args)
         return args, args_copy

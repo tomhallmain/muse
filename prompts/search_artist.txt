@@ -1,0 +1,6 @@
+Please create a very short search query of 10 words or less for a specific piece of music or album by the artist ARTIST. Ideally this music should not be too famous, or something that most people would have heard. The query does not have to be grammatically correct, it only has to succeed in generating high-quality results. Only return the text of the artist and search query in JSON form, do not return anything else. Example response for a different artist:
+
+{
+    "artist": "Allman Brothers Band",
+    "search_query": "Allman Brothers - Midnight Rider"
+}
