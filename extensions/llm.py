@@ -65,7 +65,7 @@ class LLM:
             assert(isinstance(json_obj, dict))
             if attr_name not in json_obj:
                 for key in json_obj.keys():
-                    if Utils.is_similar_str(attr_name, key):
+                    if Utils.is_similar_strings(attr_name, key):
                         return json_obj[key]
             return json_obj[attr_name]
         except Exception as e:

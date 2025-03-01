@@ -160,7 +160,7 @@ class Muse:
 
     def sign_off(self, now):
         now_general_word = _("tonight") if (now.hour < 5 or now.hour > 19) else _("today")
-        tomorrow = datetime.datetime(now.year, now.month, (now.day if now.hour < 5 else now.day + 1), hour=7, tzinfo=now.tzinfo)
+        tomorrow = SchedulesManager.get_tomorrow(now)
         self.voice.prepare_to_say(_("The scheduled shutdown time has arrived. That's it for {0}.").format(now_general_word))
         tomorrow_schedule = SchedulesManager.get_active_schedule(tomorrow)
         if tomorrow_schedule is not None:

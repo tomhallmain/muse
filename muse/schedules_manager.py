@@ -21,6 +21,16 @@ class SchedulesManager:
         pass
 
     @staticmethod
+    def get_tomorrow(now):
+       try:
+           return datetime.datetime(now.year, now.month, (now.day if now.hour < 5 else now.day + 1), hour=7, tzinfo=now.tzinfo)
+       except Exception as e:
+           try:
+               return datetime.datetime(now.year, now.month + 1, 1, hour=7, tzinfo=now.tzinfo)
+           except Exception as e:
+               return datetime.datetime(now.year + 1, 1, 1, hour=7, tzinfo=now.tzinfo)
+
+    @staticmethod
     def set_schedules():
         for schedule_dict in list(app_info_cache.get("recent_schedules", default_val=[])):
             SchedulesManager.recent_schedules.append(Schedule.from_dict(schedule_dict))
