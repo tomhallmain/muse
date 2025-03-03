@@ -231,14 +231,14 @@ class ComposersWindow:
         self.results_frame.grid(row=1, column=0, sticky="nsew")
 
         self._composer_label = Label(self.inner_frame)
-        self.add_label(self._composer_label, "Search Composer", row=0)
+        self.add_label(self._composer_label, _("Search Composer"), row=0)
         self.composer = StringVar(self.inner_frame)
         self.composer_entry = Entry(self.inner_frame, textvariable=self.composer)
         self.composer_entry.grid(row=0, column=1)
         self.composer_entry.bind("<Return>", self.do_search)
 
         self._genre_label = Label(self.inner_frame)
-        self.add_label(self._genre_label, "Search Genre", row=1)
+        self.add_label(self._genre_label, _("Search Genre"), row=1)
         self.genre = StringVar(self.inner_frame)
         self.genre_entry = Entry(self.inner_frame, textvariable=self.genre)
         self.genre_entry.grid(row=1, column=1)

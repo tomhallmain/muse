@@ -19,6 +19,7 @@ from ui.app_actions import AppActions
 from ui.app_style import AppStyle
 from ui.composers_window import ComposersWindow
 from ui.extensions_window import ExtensionsWindow
+from ui.favorites_window import FavoritesWindow
 from ui.media_frame import MediaFrame
 from ui.playlist_window import PlaylistWindow
 from ui.preset import Preset
@@ -211,13 +212,16 @@ class App():
                                            *PlaylistSortType.get_translated_names(), command=self.set_playlist_sort_type)
         self.apply_to_grid(self.sort_type_choice, interior_column=2, sticky=W)
 
+        self.favorite = BooleanVar(value=False)
+        self.favorite_choice = Checkbutton(self.sidebar, text=_('Favorite'), variable=self.favorite, command=self.set_favorite)
+        self.apply_to_grid(self.favorite_choice, sticky=W, increment_row_counter=False)
+
+        self.favorites_btn = None
+        self.add_button("favorites_btn", _("Favorites"), self.open_favorites_window, interior_column=2)
+
         self.overwrite = BooleanVar(value=self.runner_app_config.overwrite)
         self.overwrite_choice = Checkbutton(self.sidebar, text=_('Overwrite'), variable=self.overwrite)
         self.apply_to_grid(self.overwrite_choice, sticky=W)
-
-        self.favorite = BooleanVar(value=False)
-        self.favorite_choice = Checkbutton(self.sidebar, text=_('Favorite'), variable=self.favorite)
-        self.apply_to_grid(self.favorite_choice, sticky=W)
 
         self.muse = BooleanVar(value=self.runner_app_config.muse)
         self.muse_choice = Checkbutton(self.sidebar, text=_('Muse'), variable=self.muse, command=self.set_muse)
@@ -234,7 +238,6 @@ class App():
         self.use_system_language = BooleanVar(value=self.runner_app_config.use_system_lang_for_all_topics)
         self.use_system_language_choice = Checkbutton(self.sidebar, text=_('Use system language for all topics'), variable=self.use_system_language, command=self.set_use_system_language)
         self.apply_to_grid(self.track_splitting_choice, sticky=W)
-
 
         self.media_frame = MediaFrame(self.master, fill_canvas=True)
 
@@ -378,6 +381,12 @@ class App():
         if (self.current_run is not None and not self.current_run.is_complete \
                 and self.current_run.playback is not None):
             self.current_run.playback.set_volume()
+
+    def set_favorite(self, event=None):
+        favorited = self.favorite.get()
+        current_track = self.current_run.get_current_track()
+        if current_track is not None:
+            FavoritesWindow.set_favorite(track, favorited)
 
     def set_muse(self, event=None):
         self.runner_app_config.muse = self.muse.get()
@@ -599,6 +608,12 @@ class App():
             weather_window = WeatherWindow(self.master, self.app_actions)
         except Exception as e:
             Utils.log_red(f"Exception opening weather window: {e}")
+
+    def open_favorites_window(self):
+        try:
+            favorites_window = FavoritesWindow(self.master, self.app_actions)
+        except Exception as e:
+            Utils.log_red(f"Exception opening favorites window: {e}")
 
     def get_directories(self):
         directories = []
