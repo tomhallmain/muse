@@ -111,8 +111,9 @@ class Playlist:
         if overwrite_existing_at_index:
             del self.sorted_tracks[idx]
         for track in sorted(tracks, reverse=True):
-            self.pending_tracks.insert(0, track) # this list is unordered
+            self.pending_tracks.insert(0, track.filepath) # this list is unordered
             self.sorted_tracks.insert(idx, track)
+            self.in_sequence.append(track.filepath)
 
     def insert_extension(self, track):
         self.insert_upcoming_tracks([track], overwrite_existing_at_index=False)
@@ -210,7 +211,10 @@ class Playlist:
         return upcoming_track, old_grouping, new_grouping
 
     def current_track(self):
-        return self.sorted_tracks[self.current_track_index]
+        try:
+            return self.sorted_tracks[self.current_track_index]
+        except IndexError:
+            return None
 
     def sort(self):
         grouping_attr_getter_name = None
