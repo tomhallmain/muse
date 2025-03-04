@@ -1,8 +1,5 @@
-
 import os
-
-from utils.app_info_cache import app_info_cache
-from utils.utils import Utils
+from utils import app_info_cache, Utils
 
 
 q1 = '90TUQlTRsR1QKFTYXRmRhpXSWF2V1IjVIpEbNZFazklckZVVD5EVZNnQuJVYW5GV4lVMTtmWrZVRwtmUpZlRiNnRWR2S4dVWUJkbNZlWsVFWxATYwQXbWNDbsZlW50GVxZVMjRjSURFc1smYWhmVOJnTxQ2Sw1mV'

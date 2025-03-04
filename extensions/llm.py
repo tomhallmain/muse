@@ -1,8 +1,11 @@
+"""LLM interface for the Muse application."""
 
+# Standard library imports
 import json
 from urllib import request
 
-from utils.utils import Utils
+# Local imports
+from utils import Utils
 
 class LLMResponseException(Exception):
     """Raised when LLM call fails"""

@@ -30,6 +30,7 @@ from ui.track_details_window import TrackDetailsWindow
 from ui.weather_window import WeatherWindow
 from utils.app_info_cache import app_info_cache
 from utils.config import config
+from utils.ffmpeg_handler import FFmpegHandler
 from utils.job_queue import JobQueue
 from utils.persistent_data_manager import PersistentDataManager
 from utils.runner_app_config import RunnerAppConfig
@@ -292,6 +293,7 @@ class App():
         #         self.server.stop()
         #     except Exception as e:
         #         Utils.log_yellow(f"Error stopping server: {e}")
+        FFmpegHandler.cleanup_cache()
         TempDir.cleanup()
         self.master.destroy()
 

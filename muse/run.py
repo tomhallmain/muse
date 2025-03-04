@@ -10,6 +10,7 @@ from muse.playback_config import PlaybackConfig
 from muse.run_config import RunConfig
 from muse.schedules_manager import ScheduledShutdownException
 from utils.config import config
+from utils.ffmpeg_handler import FFmpegHandler
 from utils.temp_dir import TempDir
 from utils.translations import I18N
 from utils.utils import Utils
@@ -67,13 +68,16 @@ class Run:
         try:
             self.is_started = True
             self.get_playback().run()
+            FFmpegHandler.cleanup_cache()
             TempDir.cleanup()
         except ScheduledShutdownException as e:
+            FFmpegHandler.cleanup_cache()
             TempDir.cleanup()
             if self.callbacks is not None:
                 print("Shutting down main thread! Good-bye.")
                 self.callbacks.shutdown_callback()
         except Exception as e:
+            FFmpegHandler.cleanup_cache()
             TempDir.cleanup()
             self.get_library_data().reset_extension()
             raise e

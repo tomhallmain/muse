@@ -1,11 +1,16 @@
+"""Wikipedia scraping and data processing utilities."""
+
+# Standard library imports
 import io
 import json
 import os
-import pandas as pd
-import time
 
-from extensions.soup_utils import SoupUtils
-from utils.utils import Utils
+# Third party imports
+import pandas as pd
+
+# Local imports
+from extensions import SoupUtils
+from utils import Utils
 
 
 BASE_URL = "https://en.wikipedia.org"
