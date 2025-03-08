@@ -1,3 +1,4 @@
+from copy import deepcopy
 import datetime
 import time
 
@@ -119,3 +120,29 @@ class PlaybackConfig:
 
     def __str__(self) -> str:
         return "PlaybackConfig(type=" + str(self.type) + ", directories=" + str(len(self.directories)) + ")"
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, PlaybackConfig):
+            return False
+
+        return self.type == other.type and self.directories == other.directories \
+            and self.overwrite == other.overwrite and self.enable_dynamic_volume == other.enable_dynamic_volume \
+            and self.enable_long_track_splitting == other.enable_long_track_splitting \
+            and self.long_track_splitting_time_cutoff_minutes == other.long_track_splitting_time_cutoff_minutes \
+            and self.long_track_splitting_play_all == other.long_track_splitting_play_all \
+            and self.start_track == other.start_track
+
+    def __hash__(self) -> int:
+        return hash((self.type, tuple(self.directories), self.overwrite, self.enable_dynamic_volume,
+                     self.enable_long_track_splitting, self.long_track_splitting_time_cutoff_minutes,
+                     self.long_track_splitting_play_all, self.start_track))
+
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            if not k == "data_callbacks" and not k == "list":
+                setattr(result, k, deepcopy(v, memo))
+        return result
+

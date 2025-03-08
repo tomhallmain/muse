@@ -4,17 +4,19 @@ import signal
 import time
 import traceback
 
-from tkinter import messagebox, Toplevel, PhotoImage, Frame, Label, Checkbutton, Text, StringVar, BooleanVar, Scale
-from tkinter import END, HORIZONTAL, NW, BOTH, YES, N, E, W
+from tkinter import (
+    BOTH, END, HORIZONTAL, N, NW, W, E, YES,
+    BooleanVar, Checkbutton, Frame, Label, PhotoImage,
+    StringVar, Text, Toplevel, messagebox
+)
 import tkinter.font as fnt
 from tkinter.ttk import Button, Entry, OptionMenu, Progressbar, Scale
-from lib.autocomplete_entry import AutocompleteEntry, matches
 from ttkthemes import ThemedTk
 
 from utils.globals import Globals, PlaylistSortType, PlaybackMasterStrategy
 
-from muse.run import Run
-from muse.run_config import RunConfig
+# Local imports - UI components
+from lib.autocomplete_entry import AutocompleteEntry, matches
 from ui.app_actions import AppActions
 from ui.app_style import AppStyle
 from ui.composers_window import ComposersWindow
@@ -28,15 +30,23 @@ from ui.schedules_window import SchedulesWindow
 from ui.search_window import SearchWindow
 from ui.track_details_window import TrackDetailsWindow
 from ui.weather_window import WeatherWindow
-from utils.app_info_cache import app_info_cache
-from utils.config import config
-from utils.ffmpeg_handler import FFmpegHandler
-from utils.job_queue import JobQueue
+
+# Core application imports
+from muse.run import Run
+from muse.run_config import RunConfig
+
+# Utils imports
 from utils.persistent_data_manager import PersistentDataManager
-from utils.runner_app_config import RunnerAppConfig
-from utils.temp_dir import TempDir
-from utils.translations import I18N
-from utils.utils import Utils
+from utils import (
+    app_info_cache,
+    config,
+    FFmpegHandler,
+    JobQueue,
+    RunnerAppConfig,
+    TempDir,
+    I18N,
+    Utils
+)
 
 _ = I18N._
 
@@ -359,8 +369,6 @@ class App():
         if self.runner_app_config is None:
             raise Exception("No config to set widgets from")
         self.set_playlist_sort_type(self.runner_app_config.workflow_type)
-        # self.set_widget_value(self.resolutions_box, self.runner_app_config.resolutions)
-
         self.delay.set(str(self.runner_app_config.delay_time_seconds))
         self.overwrite.set(self.runner_app_config.overwrite)
         self.muse.set(self.runner_app_config.muse)
