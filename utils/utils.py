@@ -1,5 +1,6 @@
 import asyncio
 import base64
+from datetime import timedelta
 import logging
 import math
 import re
@@ -495,6 +496,41 @@ class Utils:
             return "%d:%02d:%02d" % (int(hours), int(minutes), int(seconds))
         else:
             return "%d:%02d" % (int(minutes), int(seconds))
+
+    @staticmethod
+    def parse_isod(isostring) -> float:
+        """
+        Parse the ISO8601 duration string as hours, minutes, seconds to seconds
+        Example: "PT3H2M59.989333S"
+        """
+        separators = {
+            "PT": None,
+            "W": "weeks",
+            "D": "days",
+            "H": "hours",
+            "M": "minutes",
+            "S": "seconds",
+        }
+        duration_vals = {}
+        original_isostring = str(isostring)
+        for sep, unit in separators.items():
+            partitioned = isostring.partition(sep)
+            if partitioned[1] == sep:
+                # Matched this unit
+                isostring = partitioned[2]
+                if sep == "PT":
+                    continue # Successful prefix match
+                dur_str = partitioned[0]
+                dur_val = float(dur_str) if "." in dur_str else int(dur_str)
+                duration_vals.update({unit: dur_val})
+            else:
+                if sep == "PT":
+                    raise ValueError("Missing PT prefix: " + original_isostring)
+                else:
+                    # No match for this unit: it's absent
+                    duration_vals.update({unit: 0})
+        td = timedelta(**duration_vals)
+        return td.total_seconds()
 
 
 if __name__ == "__main__":

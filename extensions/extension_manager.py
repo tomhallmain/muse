@@ -30,6 +30,7 @@ class ExtensionManager:
     EXTENSION_QUEUE = JobQueue("Extension queue")
     DELAYED_THREADS = []
     max_extensions_length = 100000
+    minimum_allowed_duration_seconds = 120
 
     @staticmethod
     def load_extensions():
@@ -196,9 +197,10 @@ class ExtensionManager:
             for i in a:
                 Utils.log("Extension option: " + i.n + " " + i.x())
             while (b is None or b.y
-                    or self.is_in_library(b)
-                    or (strict and self._strict_test(b, attr, strict))
-                    or self._is_blacklisted(b)):
+                   or b.xfgi(self.minimum_allowed_duration_seconds)
+                   or self.is_in_library(b)
+                   or (strict and self._strict_test(b, attr, strict))
+                   or self._is_blacklisted(b)):
                 counter += 1
                 b = random.choice(a)
                 if counter > 10:

@@ -9,7 +9,7 @@ import os
 import pandas as pd
 
 # Local imports
-from extensions import SoupUtils
+from extensions.soup_utils import SoupUtils
 from utils import Utils
 
 
