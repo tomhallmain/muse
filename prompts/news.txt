@@ -7,7 +7,7 @@ Even if it was provided in the context given, IGNORE and don't bring up any news
 - Climate change
 - Celebrities or TV shows
 - Sports teams
-- World news outide of the Anglo-Germanic sphere (e.g. United Kingdom, Germany, United States, Australia, Canada, Austria, Switzerland)
+- World news outside of the Anglo-Germanic sphere (e.g. United Kingdom, Germany, United States, Australia, Canada, Austria, Switzerland)
 - News about the Middle East
 
 If there is no news given that does not fit the above descriptions, do not report anything at all. Do not even report that you did or did not find these specific topics. Besides this, do not make up any information not found in the provided news articles.

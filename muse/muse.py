@@ -420,8 +420,8 @@ class Muse:
         # TODO talk about tomorrow as well, or the upcoming week
         today = datetime.datetime.today()
         prompt = self.get_prompt(Topic.CALENDAR)
-        prompt = prompt.replace("DATE", today.strftime("%A %B %d %Y"))
-        prompt = prompt.replace("TIME", today.strftime("%H:%M"))
+        prompt = prompt.replace("{DATE}", today.strftime("%A %B %d %Y"))
+        prompt = prompt.replace("{TIME}", today.strftime("%H:%M"))
         calendar = self.generate_text(prompt)
         self.say_at_some_point(calendar, spot_profile, Topic.CALENDAR)
 
@@ -433,7 +433,7 @@ class Muse:
         if spot_profile.track is None or spot_profile.topic is None or topic is None:
             raise Exception("No track or topic specified")
         prompt = self.get_prompt(topic)
-        prompt = prompt.replace("TRACK_DETAILS", track.get_track_details())
+        prompt = prompt.replace("{TRACK_DETAILS}", track.get_track_details())
         track_context = self.generate_text(prompt)
         self.say_at_some_point(track_context, spot_profile, None)
 
@@ -453,7 +453,7 @@ class Muse:
                 raise Exception(f"No valid wiki article found after 10 tries. Blacklisted words: {blacklisted_words_found}")
             count += 1
         prompt = self.get_prompt(Topic.RANDOM_WIKI_ARTICLE)
-        prompt = prompt.replace("ARTICLE", str(article)[:2000])
+        prompt = prompt.replace("{ARTICLE}", str(article)[:2000])
         summary = self.generate_text(prompt)
         self.say_at_some_point(summary, spot_profile, Topic.RANDOM_WIKI_ARTICLE)
 
@@ -463,11 +463,11 @@ class Muse:
 
     def teach_language(self, spot_profile):
         prompt = self.get_prompt(Topic.LANGUAGE_LEARNING)
-        prompt = prompt.replace("LANGUAGE", config.muse_language_learning_language)
+        prompt = prompt.replace("{LANGUAGE}", config.muse_language_learning_language)
         if config.muse_language_learning_language_level is not None and config.muse_language_learning_language_level.strip() != "":
-            prompt = prompt.replace("LEVEL", config.muse_language_learning_language_level)
+            prompt = prompt.replace("{LEVEL}", config.muse_language_learning_language_level)
         else:
-            prompt = prompt.replace("LEVEL", "basic")
+            prompt = prompt.replace("{LEVEL}", "basic")
         language_response = self.generate_text(prompt)
         self.say_at_some_point(language_response, spot_profile, Topic.LANGUAGE_LEARNING)
 

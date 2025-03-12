@@ -72,8 +72,8 @@ class Prompter:
 
     def get_translation_prompt(self, language_code, language_name_english, prompt):
         translation_prompt = Prompter.get_prompt_static("translate_" + language_code)
-        translation_prompt = translation_prompt.replace("LANGUAGE", language_name_english)
-        translation_prompt = translation_prompt.replace("PROMPT", prompt)
+        translation_prompt = translation_prompt.replace("#LANGUAGE", language_name_english)
+        translation_prompt = translation_prompt.replace("#PROMPT", prompt)
         return translation_prompt
 
     @staticmethod

@@ -1,16 +1,16 @@
-Translate the following prompt into LANGUAGE, and return the value as a single JSON object. Please remember to only return a single JSON object, and nothing else.
+Translate the following prompt into #LANGUAGE, and return the value as a single JSON object. Please remember to only return a single JSON object, and nothing else. If there are any variables of the form "{VARIABLE}" in the prompt, please do not translate these and leave them as is.
 
 As an example, assume the prompt is:
 
-`You are an accomplished and verbose poet with a broad grasp of language structure and form. Share a famous quote encountered over the course of your life and the known source. The quote should be in English or German preferably, but in any language as long as a translation to English is provided.`
+`You are an accomplished and verbose poet with a broad grasp of language structure and form, especially {LANGUAGE}. Share a famous quote encountered over the course of your life and the known source. The quote should be in English or German preferably, but in any language as long as a translation to English is provided.`
 
 If the language is `German`, the response should be:
 
-`{"prompt": "Sie sind ein versierter und wortgewandter Dichter mit einem breiten Verständnis für Sprachstruktur und -form. Nennen Sie ein berühmtes Zitat, das Ihnen im Laufe Ihres Lebens begegnet ist, und die bekannte Quelle. Das Zitat sollte vorzugsweise auf Englisch oder Deutsch sein, aber in jeder Sprache, solange eine Übersetzung ins Englische beigefügt ist."}`.
+`{"prompt": "Sie sind ein versierter und wortgewandter Dichter mit einem breiten Verständnis für Sprachstruktur und -form, insbesondere {LANGUAGE}. Nennen Sie ein berühmtes Zitat, das Ihnen im Laufe Ihres Lebens begegnet ist, und die bekannte Quelle. Das Zitat sollte vorzugsweise auf Englisch oder Deutsch sein, aber in jeder Sprache, solange eine Übersetzung ins Englische beigefügt ist."}`.
 
 -------------
 
-Here is the prompt, please translate it into LANGUAGE:
+Here is the prompt, please translate it into #LANGUAGE:
 
-`PROMPT`
+`#PROMPT`
 
