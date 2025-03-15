@@ -1,5 +1,6 @@
 import os
 import re
+import shutil
 import subprocess
 import unicodedata
 from pathlib import Path
@@ -15,29 +16,38 @@ class FFmpegHandler:
     _filename_cache: Dict[str, str] = {}
     ffprobe_available = Utils.executable_available("ffprobe")
     ffmpeg_available = Utils.executable_available("ffmpeg")
+    # Maximum size for file copying (100MB)
+    MAX_COPY_SIZE = 100 * 1024 * 1024
 
     @staticmethod
     def cleanup_cache():
-        """Remove all symlinks and clear the filename cache."""
+        """Remove all temporary files/symlinks and clear the filename cache."""
         for original, sanitized in FFmpegHandler._filename_cache.items():
             try:
-                if os.path.islink(sanitized):
+                if os.path.exists(sanitized):
                     os.remove(sanitized)
             except Exception as e:
-                Utils.log(f"Error cleaning up symlink {sanitized}: {str(e)}")
+                Utils.log(f"Error cleaning up temporary file {sanitized}: {str(e)}")
         FFmpegHandler._filename_cache.clear()
 
     @staticmethod
     def sanitize_filename(filepath: str) -> str:
         """
         Convert filepath to a safe version that works with ffmpeg.
-        Creates symlinks in TempDir to avoid littering original directories.
-        Caches the result to maintain mapping of sanitized to original names.
+        First tries symlinks, then falls back to copying if the file is small enough.
+        For large files, attempts to use the original path with basic sanitization.
+        
+        Args:
+            filepath: Path to the file to sanitize
+            
+        Returns:
+            Sanitized path that can be used with ffmpeg
         """
         if not FFmpegHandler.ffmpeg_available:
             raise Exception("ffmpeg is not available.")
         if filepath in FFmpegHandler._filename_cache:
             return FFmpegHandler._filename_cache[filepath]
+
         # Convert to Path object for better path handling
         path = Path(filepath)
         # Sanitize the filename
@@ -46,26 +56,56 @@ class FFmpegHandler:
         filename = unicodedata.normalize('NFKD', filename).encode('ASCII', 'ignore').decode('ASCII')
         # Replace problematic characters
         filename = re.sub(r'[^a-zA-Z0-9._-]', '_', filename)
+        
         # Create sanitized path in TempDir
         temp_dir = TempDir.get()
         sanitized_path = temp_dir.get_filepath(filename)
+        
         # If file exists with different case, use a numbered variant
         counter = 1
         while os.path.exists(sanitized_path):
             base, ext = os.path.splitext(filename)
             sanitized_path = temp_dir.get_filepath(f"{base}_{counter}{ext}")
             counter += 1
-        # Create symlink
+
+        # Try to create symlink first (works on Unix, might work on Windows with right permissions)
         try:
             if os.path.exists(sanitized_path):
                 os.remove(sanitized_path)
             os.symlink(filepath, sanitized_path)
             FFmpegHandler._filename_cache[filepath] = sanitized_path
+            return sanitized_path
         except Exception as e:
-            Utils.log(f"Error creating symlink for {filepath}: {str(e)}")
-            # If symlink fails, return original path as fallback
+            if os.name != 'nt':
+                # Symlink creation often fails on Windows
+                Utils.log_yellow(f"Symlink creation failed for {filepath}, trying fallback methods")
+
+        # If symlink fails, check file size before attempting to copy
+        try:
+            file_size = os.path.getsize(filepath)
+            if file_size > FFmpegHandler.MAX_COPY_SIZE:
+                Utils.log_yellow(f"File too large to copy ({file_size / 1024 / 1024:.1f}MB), using original path")
+                # # For large files, try to use the original path if it's already safe
+                # if all(c.isascii() and (c.isalnum() or c in '._-/\\') for c in str(path)):
+                #     return str(path)
+                # # If original path isn't safe, try to use a sanitized version in the same directory
+                # safe_name = re.sub(r'[^a-zA-Z0-9._-]', '_', path.name)
+                # safe_path = path.parent / safe_name
+                # if not os.path.exists(safe_path):
+                #     shutil.move(filepath, safe_path)
+                #     return str(safe_path)
+                # Utils.log_yellow(f"Could not create safe path for large file, attempting to use original path")
+                return filepath
+            
+            # For small files, create a copy - these should be removed upon program exit
+            shutil.copy2(filepath, sanitized_path)
+            FFmpegHandler._filename_cache[filepath] = sanitized_path
+            return sanitized_path
+            
+        except Exception as e:
+            Utils.log(f"Error handling file {filepath}: {str(e)}")
+            # If all else fails, return original path as fallback
             return filepath
-        return sanitized_path
 
     @staticmethod
     def get_volume(filepath: str) -> Tuple[float, float]:

@@ -14,7 +14,7 @@ _ = I18N._
 
 class TrackDetailsWindow(BaseWindow):
     '''
-    Window to hold track, album, artist data.
+    Window to display and edit track metadata.
     '''
     AUDIO_TRACK = None
     COL_0_WIDTH = 150
