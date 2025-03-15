@@ -1,3 +1,4 @@
+from datetime import datetime
 import os
 import re
 import subprocess
@@ -5,6 +6,7 @@ import sys
 import time
 
 import torch
+import music_tag
 
 from utils.config import config
 from utils.job_queue import JobQueue
@@ -226,22 +228,30 @@ class TextToSpeechRunner:
         self.add_speech_file_to_queue(output_path)
 
     def speak(self, text, save_mp3=False):
+        full_text = ""
         for chunk in Chunker.get_str_chunks(text):
             Utils.log("-------------------\n" + chunk)
+            if full_text:
+                full_text += "\n\n"
+            full_text += chunk
             self._speak(chunk)
         while self.speech_queue.job_running:
             time.sleep(0.5)
-        self.combine_audio_files(save_mp3)
+        self.combine_audio_files(save_mp3, text_content=full_text)
 
     def speak_file(self, filepath, save_mp3=True, split_on_each_line=False):
+        full_text = ""
         for chunk in Chunker.get_chunks(filepath, split_on_each_line):
             Utils.log("-------------------\n" + chunk)
+            if full_text:
+                full_text += "\n\n"
+            full_text += chunk
             self._speak(chunk)
         while self.speech_queue.job_running:
             time.sleep(0.5)
-        self.combine_audio_files(save_mp3)
+        self.combine_audio_files(save_mp3, text_content=full_text)
 
-    def convert_to_mp3(self, file_path):
+    def convert_to_mp3(self, file_path, text_content=None):
         if not os.path.exists(file_path):
             raise Exception("File not found: " + file_path)
         output_path = os.path.abspath(os.path.join(os.path.dirname(file_path), os.path.splitext(os.path.basename(file_path))[0] + '.mp3'))
@@ -253,9 +263,42 @@ class TextToSpeechRunner:
             completed_process = subprocess.run(args)
             if completed_process.returncode != 0:
                 raise Exception()
+            self.add_metadata(output_path, text_content)
             return output_path
         except Exception as e:
-            raise Exception("Could not convert file to MP3")
+            raise Exception("Could not convert file to MP3: " + str(e))
+
+    def add_metadata(self, output_path, text_content):
+        # Add metadata if the MP3 file was successfully created
+        try:
+            f = music_tag.load_file(output_path)
+            
+            # Basic track info
+            if text_content and text_content.strip() != "":
+                f['lyrics'] = text_content
+                # Use first line of text as title if available
+                first_line = text_content.split('\n')[0][:50]  # Limit length for title
+                f['tracktitle'] = first_line
+            else:
+                f['tracktitle'] = "Unknown"
+            
+            # Artist and source info
+            speaker_name = self.model[1] if self.model[1] else "Unknown Speaker"
+            f['artist'] = f"{speaker_name} (CoquiAI)"
+            f['album'] = "Muse app output"
+            
+            # Additional metadata for identification
+            f['albumartist'] = "CoquiAI TTS"
+            f['genre'] = "Text-to-Speech"
+            f['comment'] = f"Generated using CoquiAI TTS model: {self.model[0]}"
+            if self.model[2]:  # If language is specified
+                f['comment'] = f"{f['comment']} (Language: {self.model[2]})"
+
+            f['year'] = datetime.now().year
+            f.save()
+            Utils.log(f"Added metadata to {output_path}")
+        except Exception as e:
+            Utils.log_yellow(f"Could not add metadata: {e}")
 
     def get_output_path_no_unicode(self):
         output_path = os.path.join(TextToSpeechRunner.output_directory, self.output_path + '.wav')
@@ -271,7 +314,7 @@ class TextToSpeechRunner:
             raise Exception("Invalid number of seconds for silence: " + str(seconds))
         return os.path.join(TextToSpeechRunner.lib_sounds, "silence_" + str(seconds) + "_sec.wav")
 
-    def combine_audio_files(self, save_mp3=False):
+    def combine_audio_files(self, save_mp3=False, text_content=None):
         output_path, output_path_no_unicode = self.get_output_path_no_unicode()
         silence_file = TextToSpeechRunner.get_silence_file(seconds=2)
         args = ["sox"]
@@ -288,7 +331,7 @@ class TextToSpeechRunner:
             if completed_process.returncode == 0:
                 Utils.log("Combined audio files: " + output_path)
                 if save_mp3:
-                    mp3_path = self.convert_to_mp3(output_path_no_unicode)
+                    mp3_path = self.convert_to_mp3(output_path_no_unicode, text_content=text_content)
                 os.remove(output_path_no_unicode)
                 if self.delete_interim_files:
                     for f in self.audio_paths:
