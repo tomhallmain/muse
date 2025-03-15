@@ -125,6 +125,7 @@ class App():
             self.start_playback,
             self.on_closing,
             self.toast,
+            self.alert,
         )
 
         # Sidebar

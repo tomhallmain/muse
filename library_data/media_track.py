@@ -422,4 +422,94 @@ class MediaTrack:
     def __hash__(self):
         return hash(self.filepath)
 
+    def update_metadata(self, metadata):
+        """
+        Update the track's metadata using music_tag library.
+        
+        Args:
+            metadata (dict): Dictionary containing the metadata to update.
+                           Keys should match music_tag's field names.
+        
+        Returns:
+            bool: True if update was successful, False otherwise
+        """
+        if not has_imported_music_tag:
+            Utils.log_yellow("Cannot update metadata: music_tag library not available")
+            return False
+
+        if self.get_is_video():
+            Utils.log_yellow("Cannot update metadata: track is a video file")
+            return False
+
+        try:
+            # Validate numeric fields
+            year = metadata.get('year')
+            if year and not isinstance(year, int):
+                try:
+                    year = int(year)
+                    if year < 0 or year > 9999:
+                        Utils.log_yellow(f"Invalid year value: {year}")
+                        return False
+                except ValueError:
+                    Utils.log_yellow(f"Invalid year format: {year}")
+                    return False
+
+            track_number = metadata.get('tracknumber')
+            if track_number and not isinstance(track_number, int):
+                try:
+                    track_number = int(track_number)
+                    if track_number < 0:
+                        Utils.log_yellow(f"Invalid track number: {track_number}")
+                        return False
+                except ValueError:
+                    Utils.log_yellow(f"Invalid track number format: {track_number}")
+                    return False
+
+            # Load the file with music_tag
+            mfile = music_tag.load_file(self.filepath)
+
+            # Map our metadata keys to music_tag keys
+            tag_mapping = {
+                'title': 'tracktitle',
+                'album': 'album',
+                'artist': 'artist',
+                'albumartist': 'albumartist',
+                'composer': 'composer',
+                'genre': 'genre',
+                'year': 'year',
+                'tracknumber': 'tracknumber',
+                'totaltracks': 'totaltracks',
+                'discnumber': 'discnumber',
+                'totaldiscs': 'totaldiscs',
+                'lyrics': 'lyrics',
+                'comment': 'comment'
+            }
+
+            # Update each field if it exists in the metadata
+            for our_key, tag_key in tag_mapping.items():
+                if our_key in metadata and metadata[our_key] is not None:
+                    value = metadata[our_key]
+                    if value == "" or value == -1:  # Handle empty strings and default numeric values
+                        continue
+                    try:
+                        mfile[tag_key] = value
+                    except Exception as e:
+                        Utils.log_yellow(f"Failed to update {tag_key}: {str(e)}")
+
+            # Save the changes
+            mfile.save()
+
+            # Update our local object with the new values
+            for our_key, value in metadata.items():
+                if hasattr(self, our_key) and value is not None:
+                    if value != "" and value != -1:  # Only update if not empty/default
+                        setattr(self, our_key, value)
+
+            Utils.log(f"Successfully updated metadata for {self.title}")
+            return True
+
+        except Exception as e:
+            Utils.log_red(f"Failed to update track metadata: {str(e)}")
+            return False
+
 
