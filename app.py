@@ -199,7 +199,6 @@ class App():
 
         self.cancel_btn = Button(self.sidebar, text=_("Stop"), command=self.cancel)
         self.text_btn = Button(self.sidebar, text=_("Text"), command=self.open_text)
-        self.extension_btn = Button(self.sidebar, text=_("Extension"), command=self.open_extensions_window)
 
         self.label_delay = Label(self.sidebar)
         self.add_label(self.label_delay, _("Delay Seconds"), increment_row_counter=False)
@@ -241,7 +240,9 @@ class App():
 
         self.extend = BooleanVar(value=self.runner_app_config.extend)
         self.extend_choice = Checkbutton(self.sidebar, text=_('Extension'), variable=self.extend, command=self.set_extend)
-        self.apply_to_grid(self.extend_choice, sticky=W)
+        self.apply_to_grid(self.extend_choice, sticky=W, increment_row_counter=False)
+        self.extension_btn = None
+        self.add_button("extension_btn", _("Extension"), self.open_extensions_window, interior_column=2)
 
         self.track_splitting = BooleanVar(value=self.runner_app_config.enable_long_track_splitting)
         self.track_splitting_choice = Checkbutton(self.sidebar, text=_('Enable track splitting'), variable=self.track_splitting, command=self.set_track_splitting)

@@ -1,4 +1,5 @@
 
+import datetime
 import os
 import random
 import subprocess
@@ -214,7 +215,7 @@ class ExtensionManager:
             name = SoupUtils.clean_html(b.n)
             Utils.log_yellow(f"Selected option: {name} - {b.x()}")
             Utils.log(b.d)
-            self.delayed(b, attr)
+            self.delayed(b, attr, s=q)
         else:
             if r is None:
                 Utils.log_yellow("Tracking too many requests.")
@@ -249,11 +250,11 @@ class ExtensionManager:
             return True
         return False
 
-    def delayed(self, b, attr):
-        thread = Utils.start_thread(self._delayed, use_asyncio=False, args=[b, attr,])
+    def delayed(self, b, attr, s):
+        thread = Utils.start_thread(self._delayed, use_asyncio=False, args=[b, attr, s,])
         ExtensionManager.DELAYED_THREADS.append(thread)
 
-    def _delayed(self, b, attr, sleep=True):
+    def _delayed(self, b, attr, s, sleep=True):
         if sleep:
             time_seconds = self.get_extension_sleep_time(1000, 2000)
             check_cadence = 150
@@ -293,9 +294,11 @@ class ExtensionManager:
                 _f = _e
         obj = dict(b.u)
         obj["filename"] = _f
+        obj["date"] = datetime.datetime.now().isoformat()
         obj["strategy"] = ExtensionManager.strategy.name
         obj["track_attr"] = attr.name
-        ExtensionManager.extensions.append(b.u)
+        obj["search_query"] = s
+        ExtensionManager.extensions.append(obj)
         PlaybackConfig.assign_extension(_f)
         if self.ui_callbacks is not None:
             self.ui_callbacks.update_extension_status(_("Extension \"{0}\" ready").format(SoupUtils.clean_html(b.n)))
