@@ -16,15 +16,16 @@ class LLM:
 
     def __init__(self, model_name="deepseek-r1:14b"):
         self.model_name = model_name
+        self.context_encodings = {}
         Utils.log(f"Using LLM model: {self.model_name}")
 
-    def ask(self, query, json_key=None, timeout=120):
+    def ask(self, query, json_key=None, timeout=120, context_key=None, preserve_context=False):
         if json_key is None:
-            return self.generate_response(query, timeout=timeout)
+            return self.generate_response(query, timeout=timeout, context_key=context_key, preserve_context=preserve_context)
         else:
-            return self.generate_json_get_value(query, json_key, timeout=timeout)
+            return self.generate_json_get_value(query, json_key, timeout=timeout, context_key=context_key, preserve_context=preserve_context)
 
-    def generate_response(self, query, timeout=120):
+    def generate_response(self, query, timeout=120, context_key=None, preserve_context=False):
         """
         Generates a response using the LLM model.
         """
@@ -36,6 +37,10 @@ class LLM:
             "prompt": query,
             "stream": False,
         }
+        if context_key:
+            if context_key not in self.context_encodings:
+                raise Exception(f"Failed to find context key encoding: {context_key}")
+            data["context"] = self.context_encodings["context"]
         data = json.dumps(data).encode("utf-8")
         req = request.Request(
             LLM.ENDPOINT,
@@ -46,13 +51,19 @@ class LLM:
             response = request.urlopen(req, timeout=timeout).read().decode("utf-8")
             resp_json = json.loads(response)
             response_text = resp_json["response"]
+            if preserve_context:
+                if context_key:
+                    self.context_encodings[context_key] = resp_json["context"]
+                else:
+                    Utils.log_red("Failed to preserve context, context key not provided")
+                    Utils.log_yellow("Query was: " + query)
             return self._clean_response_for_models(response_text)
         except Exception as e:
             Utils.log_red(f"Failed to generate LLM response: {e}")
             raise LLMResponseException(f"Failed to generate LLM response: {e}")
 
-    def generate_json_get_value(self, prompt, attr_name, timeout=120):
-        response = self.generate_response(prompt, timeout=timeout)
+    def generate_json_get_value(self, prompt, attr_name, timeout=120, context_key=None, preserve_context=False):
+        response = self.generate_response(prompt, timeout=timeout, context_key=context_key, preserve_context=preserve_context)
         return self._get_json_attr(response, attr_name)
 
     def _get_json_attr(self, json_str, attr_name):

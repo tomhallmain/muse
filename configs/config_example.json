@@ -9,7 +9,7 @@
         "chance_speak_after_track": 0.2,
         "chance_speak_before_track": 0.3,
         "chance_speak_about_other_topics": 0.2,
-        "min_seconds_between_spots": 180
+        "min_seconds_between_spots": 300
     },
     "save_tts_output_topics": [
         "aphorism",
