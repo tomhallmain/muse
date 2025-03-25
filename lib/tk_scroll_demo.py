@@ -10,12 +10,12 @@ import platform
 # Scrollable Frame Class
 # ************************
 class ScrollFrame(Frame):
-    def __init__(self, parent, bg_color="#ffffff", width=0, height=0):
+    def __init__(self, parent, bg_color="#ffffff", width=0, height=None):
         super().__init__(parent, width=width) # create a frame (self)
 
         self.config(bg=bg_color)
         self.canvas = Canvas(self, borderwidth=0, background=bg_color)              #place canvas on self
-        self.viewPort = Frame(self.canvas, background=bg_color, width=width, height=height)        #place a frame on the canvas, this frame will hold the child widgets 
+        self.viewPort = Frame(self.canvas, background=bg_color, width=width)        #place a frame on the canvas, this frame will hold the child widgets 
         self.vsb = Scrollbar(self, orient="vertical", command=self.canvas.yview)    #place a scrollbar on self 
         self.canvas.configure(width=width-100, height=height, yscrollcommand=self.vsb.set)                          #attach scrollbar action to scroll of canvas
 

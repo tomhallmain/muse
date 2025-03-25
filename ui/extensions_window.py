@@ -111,7 +111,7 @@ class ExtensionsWindow(BaseWindow):
 
         # Create ScrollFrame for the extension list
         self.scroll_frame = ScrollFrame(self.outer_frame, bg_color=AppStyle.BG_COLOR, 
-                                        width=1000, height=800)  # Set initial height
+                                        width=1000, height=800)
         self.scroll_frame.grid(row=0, column=0, sticky="nsew")
 
         # Lists to maintain references to widgets
@@ -267,6 +267,7 @@ class ExtensionsWindow(BaseWindow):
             new_strategy = ExtensionStrategy[self.strategy_var.get()]
             ExtensionManager.strategy = new_strategy
             Utils.log(f"Extension strategy changed to: {new_strategy.name}")
+            ExtensionManager.reset_extension()
         except KeyError:
             Utils.log_yellow(f"Invalid strategy selected: {self.strategy_var.get()}")
 
