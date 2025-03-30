@@ -1,6 +1,6 @@
-
 import datetime
 import os
+import random
 
 from utils.app_info_cache import app_info_cache
 from utils.config import config
@@ -61,7 +61,7 @@ class Prompter:
         return oldest_topic
 
     def __init__(self):
-        pass
+        self.prompts_dir = config.prompts_directory
 
     def get_prompt(self, topic):
         if not isinstance(topic, Topic):
@@ -76,9 +76,48 @@ class Prompter:
         translation_prompt = translation_prompt.replace("#PROMPT", prompt)
         return translation_prompt
 
-    @staticmethod
-    def get_prompt_static(prompt_name):
-        with open(os.path.join(config.prompts_directory, prompt_name + ".txt"), 'r') as f:
-            return f.read().strip()
+    def get_prompt_static(self, prompt_name: str, language_code: str = "en", skip_fallback: bool = False) -> str:
+        """Get a static prompt from the prompts directory with language support."""
+        # First try language-specific path
+        language_path = os.path.join(self.prompts_dir, language_code, f"{prompt_name}.txt")
+        if os.path.exists(language_path):
+            with open(language_path, "r", encoding="utf-8") as f:
+                return f.read()
+                
+        if skip_fallback:
+            raise FileNotFoundError(f"Prompt file not found: {prompt_name}.txt")
+                
+        # Fall back to English if language-specific prompt doesn't exist
+        if language_code != "en":
+            english_path = os.path.join(self.prompts_dir, "en", f"{prompt_name}.txt")
+            if os.path.exists(english_path):
+                with open(english_path, "r", encoding="utf-8") as f:
+                    return f.read()
+                    
+        # If no language-specific or English version exists, try root directory
+        prompt_path = os.path.join(self.prompts_dir, f"{prompt_name}.txt")
+        if os.path.exists(prompt_path):
+            with open(prompt_path, "r", encoding="utf-8") as f:
+                return f.read()
+                
+        raise FileNotFoundError(f"Prompt file not found: {prompt_name}.txt")
+
+    def get_prompt_with_language(self, topic, language_code: str = "en") -> str:
+        """Get a prompt for a topic with language support and fallback."""
+        if not isinstance(topic, Topic):
+            raise Exception(f"Invalid topic: {topic}")
+            
+        prompt_topic = topic.get_prompt_topic_value()
+        Prompter.update_history(topic)
+        
+        try:
+            # Try to get language-specific prompt without fallback
+            return self.get_prompt_static(prompt_topic, language_code, skip_fallback=True)
+        except FileNotFoundError:
+            # If no language-specific prompt exists, use translation approach
+            if language_code != "en":
+                english_prompt = self.get_prompt_static(prompt_topic, "en")
+                return self.get_translation_prompt(language_code, I18N.get_english_language_name(language_code), english_prompt)
+            raise
 
 

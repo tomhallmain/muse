@@ -164,6 +164,10 @@ class Muse:
             day_str = now.strftime("%A")
             date_str = now.strftime("%B %d, %Y")
             
+            # Get language information
+            language_code = Utils.get_default_user_language()
+            language_name = Muse.SYSTEM_LANGUAGE_NAME_IN_ENGLISH
+            
             # Get the persona initialization prompt and format it
             persona_prompt = self.prompter.get_prompt_static("persona_init")
             persona_prompt = persona_prompt.format(
@@ -173,7 +177,9 @@ class Muse:
                 system_prompt=persona.system_prompt,
                 time=time_str,
                 day=day_str,
-                date=date_str
+                date=date_str,
+                language_code=language_code,
+                language_name=language_name
             )
             
             # Make an initial call to seed the context
@@ -183,7 +189,11 @@ class Muse:
             
             # Get a brief introduction from the persona
             intro_prompt = self.prompter.get_prompt_static("persona_intro")
-            intro_prompt = intro_prompt.format(name=persona.name)
+            intro_prompt = intro_prompt.format(
+                name=persona.name,
+                language_code=language_code,
+                language_name=language_name
+            )
             intro_result = self.llm.ask(intro_prompt, context=result.context if result else None)
             if intro_result and intro_result.response:
                 self.voice.prepare_to_say(intro_result.response)
@@ -519,6 +529,10 @@ class Muse:
     def start_extensions_thread(self, initial_sleep=True, overwrite_cache=False):
         self.get_library_data().start_extensions_thread(initial_sleep=initial_sleep, overwrite_cache=overwrite_cache, voice=self.voice)
 
+    def should_use_two_call_approach(self) -> bool:
+        """Determine if we should use the two-call translation approach for added variety."""
+        return random.random() < 0.1  # 10% chance to use two-call approach
+
     def get_prompt(self, topic):
         prompt = self.prompter.get_prompt(topic)
         if not self.args.use_system_language_for_all_topics:
@@ -531,8 +545,12 @@ class Muse:
             Utils.log(f"No translation available for language {language_code} topic {topic}, using English")
             return prompt
         try:
-            translation_prompt = self.prompter.get_translation_prompt(language_code, Muse.SYSTEM_LANGUAGE_NAME_IN_ENGLISH, prompt)
-            prompt = self.generate_text(translation_prompt, json_key="prompt")
+            # Use two-call approach occasionally for added variety
+            if self.should_use_two_call_approach():
+                translation_prompt = self.prompter.get_translation_prompt(language_code, Muse.SYSTEM_LANGUAGE_NAME_IN_ENGLISH, prompt)
+                prompt = self.generate_text(translation_prompt, json_key="prompt")
+            else:
+                prompt = self.prompter.get_prompt_with_language(topic, language_code)
         except Exception as e:
             Utils.log(f"Failed to translate prompt for topic {topic} into language {Muse.SYSTEM_LANGUAGE_NAME_IN_ENGLISH} with error: {e}")
         return prompt

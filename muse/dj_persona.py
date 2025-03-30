@@ -2,7 +2,7 @@
 
 import json
 from dataclasses import dataclass
-from typing import List, Dict, Optional, Tuple
+from typing import List, Dict, Optional, Tuple, Any
 from pathlib import Path
 
 @dataclass
@@ -15,41 +15,56 @@ class DJPersona:
     characteristics: List[str]
     system_prompt: str
     context: Optional[List[int]] = None
+    language: str = "English"
+    language_code: str = "en"
 
     def __post_init__(self):
         if self.context is None:
             self.context = []
+        if self.characteristics is None:
+            self.characteristics = []
+            
+        # Validate language code
+        valid_language_codes = ["en", "de", "es", "fr", "it"]
+        if self.language_code not in valid_language_codes:
+            raise ValueError(f"Invalid language code: {self.language_code}. Must be one of {valid_language_codes}")
 
-    @classmethod
-    def from_dict(cls, data: Dict) -> 'DJPersona':
-        """Create a DJPersona instance from a dictionary."""
-        return cls(
-            name=data['name'],
-            voice_name=data['voice_name'],
-            tone=data['tone'],
-            characteristics=data['characteristics'],
-            system_prompt=data['system_prompt']
-        )
-
-    def to_dict(self) -> Dict:
-        """Convert the DJPersona to a dictionary."""
-        return {
-            'name': self.name,
-            'voice_name': self.voice_name,
-            'tone': self.tone,
-            'characteristics': self.characteristics,
-            'system_prompt': self.system_prompt,
-            'context': self.context
-        }
-
-    def update_context(self, new_context: Optional[List[int]]):
-        """Update the context with a new list of integers from the LLM response."""
-        if new_context is not None:
-            self.context = new_context
+    def update_context(self, new_context: List[int]) -> None:
+        """Update the context with a new list of integers."""
+        self.context = new_context
 
     def get_context(self) -> List[int]:
         """Get the current context."""
         return self.context
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert the persona to a dictionary for serialization."""
+        return {
+            "name": self.name,
+            "voice_name": self.voice_name,
+            "s": self.s,
+            "tone": self.tone,
+            "characteristics": self.characteristics,
+            "system_prompt": self.system_prompt,
+            "context": self.context,
+            "language": self.language,
+            "language_code": self.language_code
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'DJPersona':
+        """Create a persona from a dictionary."""
+        return cls(
+            name=data["name"],
+            voice_name=data["voice_name"],
+            s=data["s"],
+            tone=data["tone"],
+            characteristics=data["characteristics"],
+            system_prompt=data["system_prompt"],
+            context=data.get("context"),
+            language=data.get("language", "English"),
+            language_code=data.get("language_code", "en")
+        )
 
 class DJPersonaManager:
     """Manages DJ personas and their loading/saving."""
