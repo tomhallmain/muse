@@ -1,4 +1,3 @@
-
 import datetime
 import os
 import random
@@ -21,6 +20,7 @@ from utils.config import config
 from utils.globals import Topic
 from utils.translations import I18N
 from utils.utils import Utils
+from muse.dj_persona import DJPersonaManager
 
 _ = I18N._
 
@@ -146,8 +146,54 @@ class Muse:
         self._schedule = active_schedule
 
     def change_voice(self, voice_name):
-        self.voice = Voice(voice_name)
-        self.voice.prepare_to_say(_("Hello, I'm {0}").format(voice_name))
+        """Switch to a new DJ persona by voice name."""
+        # Find the persona with this voice name
+        persona = None
+        for p in MuseMemory.get_persona_manager().personas.values():
+            if p.voice_name == voice_name:
+                persona = p
+                break
+        
+        if persona:
+            MuseMemory.get_persona_manager().set_current_persona(persona.name)
+            self.voice = Voice(persona.voice_name)
+            
+            # Get current time information
+            now = datetime.datetime.now()
+            time_str = now.strftime("%I:%M %p")
+            day_str = now.strftime("%A")
+            date_str = now.strftime("%B %d, %Y")
+            
+            # Get the persona initialization prompt and format it
+            persona_prompt = self.prompter.get_prompt_static("persona_init")
+            persona_prompt = persona_prompt.format(
+                name=persona.name,
+                tone=persona.tone,
+                characteristics=", ".join(persona.characteristics),
+                system_prompt=persona.system_prompt,
+                time=time_str,
+                day=day_str,
+                date=date_str
+            )
+            
+            # Make an initial call to seed the context
+            result = self.llm.ask(persona_prompt, context=None)
+            if result and result.context:
+                MuseMemory.get_persona_manager().update_context(result.context)
+            
+            # Get a brief introduction from the persona
+            intro_prompt = self.prompter.get_prompt_static("persona_intro")
+            intro_prompt = intro_prompt.format(name=persona.name)
+            intro_result = self.llm.ask(intro_prompt, context=result.context if result else None)
+            if intro_result and intro_result.response:
+                self.voice.prepare_to_say(intro_result.response)
+            else:
+                # Fallback to simple greeting if LLM fails
+                self.voice.prepare_to_say(_("Hello, I'm {0}").format(persona.name))
+        else:
+            Utils.log_yellow(f"No persona found for voice {voice_name}, using default voice")
+            self.voice = Voice(voice_name)
+            self.voice.prepare_to_say(_("Hello, I'm your DJ"))
 
     def check_for_shutdowns(self):
         now = datetime.datetime.now()
@@ -433,7 +479,7 @@ class Muse:
         if spot_profile.track is None or spot_profile.topic is None or topic is None:
             raise Exception("No track or topic specified")
         prompt = self.get_prompt(topic)
-        prompt = prompt.replace("{TRACK_DETAILS}", track.get_track_details())
+        prompt = prompt.format(TRACK_DETAILS=track.get_track_details())
         track_context = self.generate_text(prompt)
         self.say_at_some_point(track_context, spot_profile, None)
 
@@ -453,7 +499,7 @@ class Muse:
                 raise Exception(f"No valid wiki article found after 10 tries. Blacklisted words: {blacklisted_words_found}")
             count += 1
         prompt = self.get_prompt(Topic.RANDOM_WIKI_ARTICLE)
-        prompt = prompt.replace("{ARTICLE}", str(article)[:2000])
+        prompt = prompt.format(ARTICLE=str(article)[:2000])
         summary = self.generate_text(prompt)
         self.say_at_some_point(summary, spot_profile, Topic.RANDOM_WIKI_ARTICLE)
 
@@ -463,11 +509,10 @@ class Muse:
 
     def teach_language(self, spot_profile):
         prompt = self.get_prompt(Topic.LANGUAGE_LEARNING)
-        prompt = prompt.replace("{LANGUAGE}", config.muse_language_learning_language)
-        if config.muse_language_learning_language_level is not None and config.muse_language_learning_language_level.strip() != "":
-            prompt = prompt.replace("{LEVEL}", config.muse_language_learning_language_level)
-        else:
-            prompt = prompt.replace("{LEVEL}", "basic")
+        prompt = prompt.format(
+            LANGUAGE=config.muse_language_learning_language,
+            LEVEL=config.muse_language_learning_language_level.strip() if config.muse_language_learning_language_level and config.muse_language_learning_language_level.strip() else "basic"
+        )
         language_response = self.generate_text(prompt)
         self.say_at_some_point(language_response, spot_profile, Topic.LANGUAGE_LEARNING)
 
@@ -492,14 +537,37 @@ class Muse:
             Utils.log(f"Failed to translate prompt for topic {topic} into language {Muse.SYSTEM_LANGUAGE_NAME_IN_ENGLISH} with error: {e}")
         return prompt
 
-    def generate_text(self, prompt, json_key=None):
+    def generate_text(self, prompt, json_key=None, include_time_context=True):
+        """Generate text using the current DJ persona's context."""
+        # Get the current persona's context and system prompt
+        context, system_prompt = MuseMemory.get_persona_manager().get_context_and_system_prompt()
+
+        if include_time_context:
+            # Get current time information
+            now = datetime.datetime.now()
+            
+            # Add time context to the prompt
+            time_context = self.prompter.get_prompt_static("time_context").format(
+                time=now.strftime("%I:%M %p"),
+                day=I18N.day_of_the_week(now.weekday()),
+                date=now.strftime("%B %d, %Y")
+            )
+            prompt = prompt + "\n" + time_context
+        
         prompt_text_to_test = prompt
-        variant_part_marker = "Please give your summary after the provided articles below."
+        variant_part_marker = self.prompter.get_prompt_static("variant_part_marker")
         if variant_part_marker in prompt_text_to_test:
             prompt_text_to_test = prompt_text_to_test[prompt_text_to_test.index(variant_part_marker):]
             prompt_text_to_test = prompt_text_to_test[prompt_text_to_test.index("\n") + 1:]
         blacklisted_items_in_prompt = blacklist.test_all(prompt_text_to_test)
-        text = self.llm.ask(prompt, json_key=json_key)
+        
+        # Use the context and system prompt in the LLM call
+        result = self.llm.ask(prompt, json_key=json_key, context=context, system_prompt=system_prompt)
+        text = result.response if result else ""
+        
+        # Update context with the new context from the response
+        MuseMemory.get_persona_manager().update_context(result.context)
+        
         generations = []
         all_blacklist_items = set()
         blacklist_items = blacklist.test_all(text, excluded_items=blacklisted_items_in_prompt)
@@ -509,7 +577,8 @@ class Muse:
             Utils.log("Hit blacklisted items: " + blacklist_items_str)
             Utils.log("Text: " + text)
             all_blacklist_items.update(set(blacklist_items))
-            text = self.llm.ask(prompt, json_key=json_key)
+            result = self.llm.ask(prompt, json_key=json_key, context=context, system_prompt=system_prompt)
+            text = result.response if result else ""
             generations.append(text)
             blacklist_items = blacklist.test_all(text, excluded_items=blacklisted_items_in_prompt)
             attempts += 1

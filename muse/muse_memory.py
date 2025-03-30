@@ -1,12 +1,15 @@
 import pickle
+from typing import Optional
 
 from muse.muse_spot_profile import MuseSpotProfile
+from muse.dj_persona import DJPersonaManager
 
 class MuseMemory:
     all_spot_profiles = []
     last_session_spot_profiles = []
     current_session_spot_profiles = []
     max_memory_size = 1000
+    persona_manager: Optional[DJPersonaManager] = None
 
     @staticmethod
     def load():
@@ -15,14 +18,22 @@ class MuseMemory:
                 swap = pickle.load(f)
                 MuseMemory.all_spot_profiles = list(swap.all_spot_profiles)
                 MuseMemory.last_session_spot_profiles = list(swap.current_session_spot_profiles)
+                # Initialize persona manager during loading
+                MuseMemory.persona_manager = DJPersonaManager()
         except FileNotFoundError:
-            pass
+            # Initialize persona manager even if no memory file exists
+            MuseMemory.persona_manager = DJPersonaManager()
 
     @staticmethod
     def save():
         with open('muse_memory', 'wb') as f:
             swap = MuseMemory()
             pickle.dump(swap, f)
+
+    @staticmethod
+    def get_persona_manager() -> Optional[DJPersonaManager]:
+        """Get the persona manager instance."""
+        return MuseMemory.persona_manager
 
     @staticmethod
     def update_all_spot_profiles(spot_profile):

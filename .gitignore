@@ -1,6 +1,8 @@
 __pycache__
 *.swp
 .coverage
+.cursorignore
+api.md
 app_info_cache.json
 app_media_track_cache
 configs/*
