@@ -39,8 +39,8 @@ class ScrollFrame(Frame):
     def onCanvasConfigure(self, event):
         '''Reset the canvas window to encompass inner frame when required'''
         canvas_width = event.width
-        canvas_height = event.height
-        self.canvas.itemconfig(self.canvas_window, width=canvas_width, height=canvas_height)            # whenever the size of the canvas changes alter the window region respectively.
+        #canvas_height = event.height # NOTE DON'T SET THIS, IT CAN CAUSE THE CANVAS TO BECOME NON-SCROLLABLE
+        self.canvas.itemconfig(self.canvas_window, width=canvas_width)            # whenever the size of the canvas changes alter the window region respectively.
 
     def onMouseWheel(self, event):                                          # cross platform scroll wheel event
         if platform.system() == 'Windows':

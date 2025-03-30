@@ -52,7 +52,7 @@ class ComposersDataSearch:
         for name in ["composer", "genre"]:
             field = getattr(self, name)
             if field is not None and field.strip()!= "":
-                print(f"{name} - \"{field}\"")
+                #print(f"{name} - \"{field}\"")
                 return True
         return isinstance(self.max_results, int) and self.max_results > 0
 

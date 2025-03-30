@@ -7,7 +7,8 @@
             "LSO"
         ],
         "genres": [],
-        "albums": []
+        "albums": [],
+        "notes": {}
     },
     "Allman Brothers Band": {
         "id": 1,
@@ -17,6 +18,7750 @@
             "Allman Brothers"
         ],
         "genres": [],
-        "albums": []
+        "albums": [],
+        "notes": {}
+    },
+    "Arleen Auger": {
+        "name": "Arleen Auger",
+        "indicators": [
+            "Arleen Auger"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 2
+    },
+    "Anne Az\u00e9ma": {
+        "name": "Anne Az\u00e9ma",
+        "indicators": [
+            "Anne Az\u00e9ma"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 3
+    },
+    "Sol Babitz": {
+        "name": "Sol Babitz",
+        "indicators": [
+            "Sol Babitz"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "American performers of early music"
+        },
+        "id": 4
+    },
+    "Benjamin Bagby": {
+        "name": "Benjamin Bagby",
+        "indicators": [
+            "Benjamin Bagby"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "American performers of early music"
+        },
+        "id": 5
+    },
+    "Robert Barto": {
+        "name": "Robert Barto",
+        "indicators": [
+            "Robert Barto"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "American performers of early music"
+        },
+        "id": 6
+    },
+    "Thomas Binkley": {
+        "name": "Thomas Binkley",
+        "indicators": [
+            "Thomas Binkley"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "American performers of early music"
+        },
+        "id": 7
+    },
+    "Martha Blackman": {
+        "name": "Martha Blackman",
+        "indicators": [
+            "Martha Blackman"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Viol players"
+        },
+        "id": 8
+    },
+    "Vicki Boeckman": {
+        "name": "Vicki Boeckman",
+        "indicators": [
+            "Vicki Boeckman"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 9
+    },
+    "Andrea Brown (soprano)": {
+        "name": "Andrea Brown (soprano)",
+        "indicators": [
+            "Andrea Brown (soprano)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 10
+    },
+    "Timothy Burris": {
+        "name": "Timothy Burris",
+        "indicators": [
+            "Timothy Burris"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "American performers of early music"
+        },
+        "id": 11
+    },
+    "Calliope (band)": {
+        "name": "Calliope (band)",
+        "indicators": [
+            "Calliope (band)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Sackbut players"
+        },
+        "id": 12
+    },
+    "Safford Cape": {
+        "name": "Safford Cape",
+        "indicators": [
+            "Safford Cape"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "American performers of early music"
+        },
+        "id": 13
+    },
+    "Stephanie Chase": {
+        "name": "Stephanie Chase",
+        "indicators": [
+            "Stephanie Chase"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 14
+    },
+    "Joel Cohen (musician)": {
+        "name": "Joel Cohen (musician)",
+        "indicators": [
+            "Joel Cohen (musician)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "American performers of early music"
+        },
+        "id": 15
+    },
+    "Howard Crook": {
+        "name": "Howard Crook",
+        "indicators": [
+            "Howard Crook"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "American performers of early music"
+        },
+        "id": 16
+    },
+    "Alan Curtis (harpsichordist)": {
+        "name": "Alan Curtis (harpsichordist)",
+        "indicators": [
+            "Alan Curtis (harpsichordist)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "American performers of early music"
+        },
+        "id": 17
+    },
+    "Thomas Dunn (musician)": {
+        "name": "Thomas Dunn (musician)",
+        "indicators": [
+            "Thomas Dunn (musician)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "American performers of early music"
+        },
+        "id": 18
+    },
+    "Jill Feldman": {
+        "name": "Jill Feldman",
+        "indicators": [
+            "Jill Feldman"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 19
+    },
+    "Albert Fuller (musician)": {
+        "name": "Albert Fuller (musician)",
+        "indicators": [
+            "Albert Fuller (musician)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "American performers of early music"
+        },
+        "id": 20
+    },
+    "Richard Fuller (pianist)": {
+        "name": "Richard Fuller (pianist)",
+        "indicators": [
+            "Richard Fuller (pianist)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "American performers of early music"
+        },
+        "id": 21
+    },
+    "Vivica Genaux": {
+        "name": "Vivica Genaux",
+        "indicators": [
+            "Vivica Genaux"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 22
+    },
+    "Megan Marie Hart": {
+        "name": "Megan Marie Hart",
+        "indicators": [
+            "Megan Marie Hart"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 23
+    },
+    "Robert Hill (musician)": {
+        "name": "Robert Hill (musician)",
+        "indicators": [
+            "Robert Hill (musician)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "American performers of early music"
+        },
+        "id": 24
+    },
+    "Nicholas Isherwood": {
+        "name": "Nicholas Isherwood",
+        "indicators": [
+            "Nicholas Isherwood"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "American performers of early music"
+        },
+        "id": 25
+    },
+    "Shira Kammen": {
+        "name": "Shira Kammen",
+        "indicators": [
+            "Shira Kammen"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Viol players"
+        },
+        "id": 26
+    },
+    "Ralph Kirkpatrick": {
+        "name": "Ralph Kirkpatrick",
+        "indicators": [
+            "Ralph Kirkpatrick"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "American performers of early music"
+        },
+        "id": 27
+    },
+    "Jeanne Lamon": {
+        "name": "Jeanne Lamon",
+        "indicators": [
+            "Jeanne Lamon"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Baroque-violin players"
+        },
+        "id": 28
+    },
+    "Ingrid Matthews": {
+        "name": "Ingrid Matthews",
+        "indicators": [
+            "Ingrid Matthews"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Baroque-violin players"
+        },
+        "id": 29
+    },
+    "Robert Mealy": {
+        "name": "Robert Mealy",
+        "indicators": [
+            "Robert Mealy"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Baroque-violin players"
+        },
+        "id": 30
+    },
+    "Mitzi Meyerson": {
+        "name": "Mitzi Meyerson",
+        "indicators": [
+            "Mitzi Meyerson"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 31
+    },
+    "Judith Nelson": {
+        "name": "Judith Nelson",
+        "indicators": [
+            "Judith Nelson"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 32
+    },
+    "Paul O'Dette": {
+        "name": "Paul O'Dette",
+        "indicators": [
+            "Paul O'Dette"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Theorbists",
+            "category2": "Archlute players"
+        },
+        "id": 33
+    },
+    "Martin Pearlman": {
+        "name": "Martin Pearlman",
+        "indicators": [
+            "Martin Pearlman"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "American performers of early music"
+        },
+        "id": 34
+    },
+    "Derek Lee Ragin": {
+        "name": "Derek Lee Ragin",
+        "indicators": [
+            "Derek Lee Ragin"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "American performers of early music"
+        },
+        "id": 35
+    },
+    "Frederick Renz": {
+        "name": "Frederick Renz",
+        "indicators": [
+            "Frederick Renz"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "American performers of early music"
+        },
+        "id": 36
+    },
+    "Gwyn Roberts": {
+        "name": "Gwyn Roberts",
+        "indicators": [
+            "Gwyn Roberts"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 37
+    },
+    "Scott Ross (harpsichordist)": {
+        "name": "Scott Ross (harpsichordist)",
+        "indicators": [
+            "Scott Ross (harpsichordist)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "American performers of early music"
+        },
+        "id": 38
+    },
+    "Lee Santana": {
+        "name": "Lee Santana",
+        "indicators": [
+            "Lee Santana"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Theorbists"
+        },
+        "id": 39
+    },
+    "Byron Schenkman": {
+        "name": "Byron Schenkman",
+        "indicators": [
+            "Byron Schenkman"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Founders of early music ensembles"
+        },
+        "id": 40
+    },
+    "John Schneiderman": {
+        "name": "John Schneiderman",
+        "indicators": [
+            "John Schneiderman"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "American performers of early music"
+        },
+        "id": 41
+    },
+    "Stephen Simon": {
+        "name": "Stephen Simon",
+        "indicators": [
+            "Stephen Simon"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "American performers of early music"
+        },
+        "id": 42
+    },
+    "Hopkinson Smith": {
+        "name": "Hopkinson Smith",
+        "indicators": [
+            "Hopkinson Smith"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "American performers of early music"
+        },
+        "id": 43
+    },
+    "Terrell Stone": {
+        "name": "Terrell Stone",
+        "indicators": [
+            "Terrell Stone"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "American performers of early music"
+        },
+        "id": 44
+    },
+    "Stephen Stubbs": {
+        "name": "Stephen Stubbs",
+        "indicators": [
+            "Stephen Stubbs"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "American performers of early music"
+        },
+        "id": 45
+    },
+    "James Taylor (tenor)": {
+        "name": "James Taylor (tenor)",
+        "indicators": [
+            "James Taylor (tenor)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "American performers of early music"
+        },
+        "id": 46
+    },
+    "Barbara Thornton": {
+        "name": "Barbara Thornton",
+        "indicators": [
+            "Barbara Thornton"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 47
+    },
+    "Oleg Timofeyev": {
+        "name": "Oleg Timofeyev",
+        "indicators": [
+            "Oleg Timofeyev"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Viol players"
+        },
+        "id": 48
+    },
+    "James Tyler (musician)": {
+        "name": "James Tyler (musician)",
+        "indicators": [
+            "James Tyler (musician)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "American performers of early music"
+        },
+        "id": 49
+    },
+    "Jory Vinikour": {
+        "name": "Jory Vinikour",
+        "indicators": [
+            "Jory Vinikour"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "American performers of early music"
+        },
+        "id": 50
+    },
+    "Voices of Music": {
+        "name": "Voices of Music",
+        "indicators": [
+            "Voices of Music"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "American performers of early music"
+        },
+        "id": 51
+    },
+    "Lois Wann": {
+        "name": "Lois Wann",
+        "indicators": [
+            "Lois Wann"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 52
+    },
+    "Blanche Winogron": {
+        "name": "Blanche Winogron",
+        "indicators": [
+            "Blanche Winogron"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 53
+    },
+    "Crawford Young": {
+        "name": "Crawford Young",
+        "indicators": [
+            "Crawford Young"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "American performers of early music"
+        },
+        "id": 54
+    },
+    "Lawrence Zazzo": {
+        "name": "Lawrence Zazzo",
+        "indicators": [
+            "Lawrence Zazzo"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "American performers of early music"
+        },
+        "id": 55
+    },
+    "Claudio Di Veroli": {
+        "name": "Claudio Di Veroli",
+        "indicators": [
+            "Claudio Di Veroli"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Italian performers of early music"
+        },
+        "id": 56
+    },
+    "Eduardo Eg\u00fcez": {
+        "name": "Eduardo Eg\u00fcez",
+        "indicators": [
+            "Eduardo Eg\u00fcez"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Theorbists"
+        },
+        "id": 57
+    },
+    "Gabriel Garrido": {
+        "name": "Gabriel Garrido",
+        "indicators": [
+            "Gabriel Garrido"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Argentine performers of early music"
+        },
+        "id": 58
+    },
+    "Mar\u00eda Cristina Kiehr": {
+        "name": "Mar\u00eda Cristina Kiehr",
+        "indicators": [
+            "Mar\u00eda Cristina Kiehr"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 59
+    },
+    "Matthew Baker (bass-baritone)": {
+        "name": "Matthew Baker (bass-baritone)",
+        "indicators": [
+            "Matthew Baker (bass-baritone)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Australian performers of early music"
+        },
+        "id": 60
+    },
+    "Kate Clark (flautist)": {
+        "name": "Kate Clark (flautist)",
+        "indicators": [
+            "Kate Clark (flautist)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Baroque-flute players"
+        },
+        "id": 61
+    },
+    "Winsome Evans": {
+        "name": "Winsome Evans",
+        "indicators": [
+            "Winsome Evans"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 62
+    },
+    "David Hansen (countertenor)": {
+        "name": "David Hansen (countertenor)",
+        "indicators": [
+            "David Hansen (countertenor)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Australian performers of early music"
+        },
+        "id": 63
+    },
+    "Geoffrey Lancaster": {
+        "name": "Geoffrey Lancaster",
+        "indicators": [
+            "Geoffrey Lancaster"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Australian performers of early music"
+        },
+        "id": 64
+    },
+    "Neal Peres Da Costa": {
+        "name": "Neal Peres Da Costa",
+        "indicators": [
+            "Neal Peres Da Costa"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Australian performers of early music"
+        },
+        "id": 65
+    },
+    "Elizabeth Wallfisch": {
+        "name": "Elizabeth Wallfisch",
+        "indicators": [
+            "Elizabeth Wallfisch"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Baroque-violin players"
+        },
+        "id": 66
+    },
+    "Lorenz Duftschmid": {
+        "name": "Lorenz Duftschmid",
+        "indicators": [
+            "Lorenz Duftschmid"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Viol players"
+        },
+        "id": 67
+    },
+    "Miriam Feuersinger": {
+        "name": "Miriam Feuersinger",
+        "indicators": [
+            "Miriam Feuersinger"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Austrian performers of early music"
+        },
+        "id": 68
+    },
+    "Alice Harnoncourt": {
+        "name": "Alice Harnoncourt",
+        "indicators": [
+            "Alice Harnoncourt"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Baroque-violin players"
+        },
+        "id": 69
+    },
+    "Nikolaus Harnoncourt": {
+        "name": "Nikolaus Harnoncourt",
+        "indicators": [
+            "Nikolaus Harnoncourt"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Viol players"
+        },
+        "id": 70
+    },
+    "Eduard Melkus": {
+        "name": "Eduard Melkus",
+        "indicators": [
+            "Eduard Melkus"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Baroque-violin players"
+        },
+        "id": 71
+    },
+    "Nikolaus Newerkla": {
+        "name": "Nikolaus Newerkla",
+        "indicators": [
+            "Nikolaus Newerkla"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Austrian performers of early music"
+        },
+        "id": 72
+    },
+    "Johannes Pramsohler": {
+        "name": "Johannes Pramsohler",
+        "indicators": [
+            "Johannes Pramsohler"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Baroque-violin players"
+        },
+        "id": 73
+    },
+    "Johann Sonnleitner": {
+        "name": "Johann Sonnleitner",
+        "indicators": [
+            "Johann Sonnleitner"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Austrian performers of early music"
+        },
+        "id": 74
+    },
+    "Milan Turkovi\u0107 (musician)": {
+        "name": "Milan Turkovi\u0107 (musician)",
+        "indicators": [
+            "Milan Turkovi\u0107 (musician)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Austrian performers of early music"
+        },
+        "id": 75
+    },
+    "Norbert Zeilberger": {
+        "name": "Norbert Zeilberger",
+        "indicators": [
+            "Norbert Zeilberger"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Austrian performers of early music"
+        },
+        "id": 76
+    },
+    "Philippe Herreweghe": {
+        "name": "Philippe Herreweghe",
+        "indicators": [
+            "Philippe Herreweghe"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Belgian performers of early music"
+        },
+        "id": 77
+    },
+    "Ren\u00e9 Jacobs": {
+        "name": "Ren\u00e9 Jacobs",
+        "indicators": [
+            "Ren\u00e9 Jacobs"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Belgian performers of early music"
+        },
+        "id": 78
+    },
+    "Sophie Karth\u00e4user": {
+        "name": "Sophie Karth\u00e4user",
+        "indicators": [
+            "Sophie Karth\u00e4user"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 79
+    },
+    "Barthold Kuijken": {
+        "name": "Barthold Kuijken",
+        "indicators": [
+            "Barthold Kuijken"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Belgian performers of early music"
+        },
+        "id": 80
+    },
+    "Sigiswald Kuijken": {
+        "name": "Sigiswald Kuijken",
+        "indicators": [
+            "Sigiswald Kuijken"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Baroque-violin players"
+        },
+        "id": 81
+    },
+    "Wieland Kuijken": {
+        "name": "Wieland Kuijken",
+        "indicators": [
+            "Wieland Kuijken"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Viol players"
+        },
+        "id": 82
+    },
+    "Marcel Ponseele": {
+        "name": "Marcel Ponseele",
+        "indicators": [
+            "Marcel Ponseele"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Baroque oboists"
+        },
+        "id": 83
+    },
+    "Patrick Van Goethem": {
+        "name": "Patrick Van Goethem",
+        "indicators": [
+            "Patrick Van Goethem"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Belgian performers of early music"
+        },
+        "id": 84
+    },
+    "Jos Van Immerseel": {
+        "name": "Jos Van Immerseel",
+        "indicators": [
+            "Jos Van Immerseel"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Belgian performers of early music"
+        },
+        "id": 85
+    },
+    "Sofie Vanden Eynde": {
+        "name": "Sofie Vanden Eynde",
+        "indicators": [
+            "Sofie Vanden Eynde"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Theorbists"
+        },
+        "id": 86
+    },
+    "Sophie Watillon": {
+        "name": "Sophie Watillon",
+        "indicators": [
+            "Sophie Watillon"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Viol players"
+        },
+        "id": 87
+    },
+    "Piers Adams": {
+        "name": "Piers Adams",
+        "indicators": [
+            "Piers Adams"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "British performers of early music"
+        },
+        "id": 88
+    },
+    "Martin Best": {
+        "name": "Martin Best",
+        "indicators": [
+            "Martin Best"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "British performers of early music"
+        },
+        "id": 89
+    },
+    "Harry Bicket": {
+        "name": "Harry Bicket",
+        "indicators": [
+            "Harry Bicket"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "British performers of early music"
+        },
+        "id": 90
+    },
+    "Robin Blaze": {
+        "name": "Robin Blaze",
+        "indicators": [
+            "Robin Blaze"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "British performers of early music"
+        },
+        "id": 91
+    },
+    "Tessa Bonner": {
+        "name": "Tessa Bonner",
+        "indicators": [
+            "Tessa Bonner"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 92
+    },
+    "Catherine Bott": {
+        "name": "Catherine Bott",
+        "indicators": [
+            "Catherine Bott"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 93
+    },
+    "Alison Bury": {
+        "name": "Alison Bury",
+        "indicators": [
+            "Alison Bury"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "British performers of early music"
+        },
+        "id": 94
+    },
+    "Andrew Carwood": {
+        "name": "Andrew Carwood",
+        "indicators": [
+            "Andrew Carwood"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "British performers of early music"
+        },
+        "id": 95
+    },
+    "Michael Chance": {
+        "name": "Michael Chance",
+        "indicators": [
+            "Michael Chance"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "British performers of early music"
+        },
+        "id": 96
+    },
+    "Adrian Chandler": {
+        "name": "Adrian Chandler",
+        "indicators": [
+            "Adrian Chandler"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Founders of early music ensembles"
+        },
+        "id": 97
+    },
+    "Harry Christophers": {
+        "name": "Harry Christophers",
+        "indicators": [
+            "Harry Christophers"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Founders of early music ensembles"
+        },
+        "id": 98
+    },
+    "Jennifer Ward Clarke": {
+        "name": "Jennifer Ward Clarke",
+        "indicators": [
+            "Jennifer Ward Clarke"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 99
+    },
+    "Henry Clough": {
+        "name": "Henry Clough",
+        "indicators": [
+            "Henry Clough"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "British performers of early music"
+        },
+        "id": 100
+    },
+    "Micaela Comberti": {
+        "name": "Micaela Comberti",
+        "indicators": [
+            "Micaela Comberti"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Bach musicians"
+        },
+        "id": 101
+    },
+    "Alice Coote": {
+        "name": "Alice Coote",
+        "indicators": [
+            "Alice Coote"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 102
+    },
+    "Rogers Covey-Crump": {
+        "name": "Rogers Covey-Crump",
+        "indicators": [
+            "Rogers Covey-Crump"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "British performers of early music"
+        },
+        "id": 103
+    },
+    "Alison Crum": {
+        "name": "Alison Crum",
+        "indicators": [
+            "Alison Crum"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 104
+    },
+    "Laurence Cummings": {
+        "name": "Laurence Cummings",
+        "indicators": [
+            "Laurence Cummings"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "British performers of early music"
+        },
+        "id": 105
+    },
+    "Sophie Daneman": {
+        "name": "Sophie Daneman",
+        "indicators": [
+            "Sophie Daneman"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 106
+    },
+    "Iestyn Davies": {
+        "name": "Iestyn Davies",
+        "indicators": [
+            "Iestyn Davies"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "British performers of early music"
+        },
+        "id": 107
+    },
+    "Mark Deller": {
+        "name": "Mark Deller",
+        "indicators": [
+            "Mark Deller"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "British performers of early music"
+        },
+        "id": 108
+    },
+    "Arnold Dolmetsch": {
+        "name": "Arnold Dolmetsch",
+        "indicators": [
+            "Arnold Dolmetsch"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "French performers of early music"
+        },
+        "id": 109
+    },
+    "Rudolph Dolmetsch": {
+        "name": "Rudolph Dolmetsch",
+        "indicators": [
+            "Rudolph Dolmetsch"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "British performers of early music"
+        },
+        "id": 110
+    },
+    "Richard Edgar-Wilson": {
+        "name": "Richard Edgar-Wilson",
+        "indicators": [
+            "Richard Edgar-Wilson"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "British performers of early music"
+        },
+        "id": 111
+    },
+    "Richard Egarr": {
+        "name": "Richard Egarr",
+        "indicators": [
+            "Richard Egarr"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Bach musicians"
+        },
+        "id": 112
+    },
+    "John Elwes (tenor)": {
+        "name": "John Elwes (tenor)",
+        "indicators": [
+            "John Elwes (tenor)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "British performers of early music"
+        },
+        "id": 113
+    },
+    "Sarah Francis": {
+        "name": "Sarah Francis",
+        "indicators": [
+            "Sarah Francis"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "British performers of early music"
+        },
+        "id": 114
+    },
+    "John Gamble (musician)": {
+        "name": "John Gamble (musician)",
+        "indicators": [
+            "John Gamble (musician)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "British performers of early music"
+        },
+        "id": 115
+    },
+    "Peter Giles (countertenor)": {
+        "name": "Peter Giles (countertenor)",
+        "indicators": [
+            "Peter Giles (countertenor)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "British performers of early music"
+        },
+        "id": 116
+    },
+    "Jane Glover": {
+        "name": "Jane Glover",
+        "indicators": [
+            "Jane Glover"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 117
+    },
+    "Violet Gordon-Woodhouse": {
+        "name": "Violet Gordon-Woodhouse",
+        "indicators": [
+            "Violet Gordon-Woodhouse"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Bach musicians"
+        },
+        "id": 118
+    },
+    "John Holloway (musician)": {
+        "name": "John Holloway (musician)",
+        "indicators": [
+            "John Holloway (musician)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Baroque-violin players"
+        },
+        "id": 119
+    },
+    "Monica Huggett": {
+        "name": "Monica Huggett",
+        "indicators": [
+            "Monica Huggett"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Baroque-violin players"
+        },
+        "id": 120
+    },
+    "Sam Hughes (musician)": {
+        "name": "Sam Hughes (musician)",
+        "indicators": [
+            "Sam Hughes (musician)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "British performers of early music"
+        },
+        "id": 121
+    },
+    "John Immyns": {
+        "name": "John Immyns",
+        "indicators": [
+            "John Immyns"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "British performers of early music"
+        },
+        "id": 122
+    },
+    "Robert King (conductor)": {
+        "name": "Robert King (conductor)",
+        "indicators": [
+            "Robert King (conductor)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Founders of early music ensembles"
+        },
+        "id": 123
+    },
+    "Nicholas Kraemer": {
+        "name": "Nicholas Kraemer",
+        "indicators": [
+            "Nicholas Kraemer"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Founders of early music ensembles"
+        },
+        "id": 124
+    },
+    "Lewis Lavenu": {
+        "name": "Lewis Lavenu",
+        "indicators": [
+            "Lewis Lavenu"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "British performers of early music"
+        },
+        "id": 125
+    },
+    "Colin Lawson": {
+        "name": "Colin Lawson",
+        "indicators": [
+            "Colin Lawson"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "British performers of early music"
+        },
+        "id": 126
+    },
+    "Raymond Leppard": {
+        "name": "Raymond Leppard",
+        "indicators": [
+            "Raymond Leppard"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "British performers of early music"
+        },
+        "id": 127
+    },
+    "Grant Llewellyn": {
+        "name": "Grant Llewellyn",
+        "indicators": [
+            "Grant Llewellyn"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "British performers of early music"
+        },
+        "id": 128
+    },
+    "Jonathan Manson": {
+        "name": "Jonathan Manson",
+        "indicators": [
+            "Jonathan Manson"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Viol players"
+        },
+        "id": 129
+    },
+    "Barry Mason (musician)": {
+        "name": "Barry Mason (musician)",
+        "indicators": [
+            "Barry Mason (musician)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "British performers of early music"
+        },
+        "id": 130
+    },
+    "Paul McCreesh": {
+        "name": "Paul McCreesh",
+        "indicators": [
+            "Paul McCreesh"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "British performers of early music"
+        },
+        "id": 131
+    },
+    "Davitt Moroney": {
+        "name": "Davitt Moroney",
+        "indicators": [
+            "Davitt Moroney"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "British performers of early music"
+        },
+        "id": 132
+    },
+    "David Munrow": {
+        "name": "David Munrow",
+        "indicators": [
+            "David Munrow"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Founders of early music ensembles"
+        },
+        "id": 133
+    },
+    "Henry Needler": {
+        "name": "Henry Needler",
+        "indicators": [
+            "Henry Needler"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "British performers of early music"
+        },
+        "id": 134
+    },
+    "Roger Norrington": {
+        "name": "Roger Norrington",
+        "indicators": [
+            "Roger Norrington"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "British performers of early music"
+        },
+        "id": 135
+    },
+    "Mark Padmore": {
+        "name": "Mark Padmore",
+        "indicators": [
+            "Mark Padmore"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "British performers of early music"
+        },
+        "id": 136
+    },
+    "Andrew Parrott": {
+        "name": "Andrew Parrott",
+        "indicators": [
+            "Andrew Parrott"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "British performers of early music"
+        },
+        "id": 137
+    },
+    "Ben Parry (musician)": {
+        "name": "Ben Parry (musician)",
+        "indicators": [
+            "Ben Parry (musician)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "British performers of early music"
+        },
+        "id": 138
+    },
+    "Joseph Payne (musician)": {
+        "name": "Joseph Payne (musician)",
+        "indicators": [
+            "Joseph Payne (musician)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "British performers of early music"
+        },
+        "id": 139
+    },
+    "Julian Perkins": {
+        "name": "Julian Perkins",
+        "indicators": [
+            "Julian Perkins"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Bach musicians"
+        },
+        "id": 140
+    },
+    "Rachel Podger": {
+        "name": "Rachel Podger",
+        "indicators": [
+            "Rachel Podger"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Baroque-violin players"
+        },
+        "id": 141
+    },
+    "Stephen Preston (flautist)": {
+        "name": "Stephen Preston (flautist)",
+        "indicators": [
+            "Stephen Preston (flautist)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "British performers of early music"
+        },
+        "id": 142
+    },
+    "Tim Rishton": {
+        "name": "Tim Rishton",
+        "indicators": [
+            "Tim Rishton"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "British performers of early music"
+        },
+        "id": 143
+    },
+    "Deborah Roberts (soprano)": {
+        "name": "Deborah Roberts (soprano)",
+        "indicators": [
+            "Deborah Roberts (soprano)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 144
+    },
+    "Anthony Rooley": {
+        "name": "Anthony Rooley",
+        "indicators": [
+            "Anthony Rooley"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "British performers of early music"
+        },
+        "id": 145
+    },
+    "Lynda Sayce": {
+        "name": "Lynda Sayce",
+        "indicators": [
+            "Lynda Sayce"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 146
+    },
+    "Peter Seivewright": {
+        "name": "Peter Seivewright",
+        "indicators": [
+            "Peter Seivewright"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "British performers of early music"
+        },
+        "id": 147
+    },
+    "Lucie Skeaping": {
+        "name": "Lucie Skeaping",
+        "indicators": [
+            "Lucie Skeaping"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Founders of early music ensembles"
+        },
+        "id": 148
+    },
+    "Ashley Solomon": {
+        "name": "Ashley Solomon",
+        "indicators": [
+            "Ashley Solomon"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "British performers of early music"
+        },
+        "id": 149
+    },
+    "Elin Manahan Thomas": {
+        "name": "Elin Manahan Thomas",
+        "indicators": [
+            "Elin Manahan Thomas"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 150
+    },
+    "Evelyn Tubb": {
+        "name": "Evelyn Tubb",
+        "indicators": [
+            "Evelyn Tubb"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 151
+    },
+    "Matthew Wadsworth": {
+        "name": "Matthew Wadsworth",
+        "indicators": [
+            "Matthew Wadsworth"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "British performers of early music"
+        },
+        "id": 152
+    },
+    "Chris Watson (singer)": {
+        "name": "Chris Watson (singer)",
+        "indicators": [
+            "Chris Watson (singer)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "British performers of early music"
+        },
+        "id": 153
+    },
+    "Clare Wilkinson": {
+        "name": "Clare Wilkinson",
+        "indicators": [
+            "Clare Wilkinson"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 154
+    },
+    "Maria Jane Williams": {
+        "name": "Maria Jane Williams",
+        "indicators": [
+            "Maria Jane Williams"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 155
+    },
+    "Nancy Argenta": {
+        "name": "Nancy Argenta",
+        "indicators": [
+            "Nancy Argenta"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 156
+    },
+    "Elinor Frey": {
+        "name": "Elinor Frey",
+        "indicators": [
+            "Elinor Frey"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 157
+    },
+    "Karina Gauvin": {
+        "name": "Karina Gauvin",
+        "indicators": [
+            "Karina Gauvin"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 158
+    },
+    "Kenneth Gilbert": {
+        "name": "Kenneth Gilbert",
+        "indicators": [
+            "Kenneth Gilbert"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Canadian performers of early music"
+        },
+        "id": 159
+    },
+    "Peter Hannan (composer)": {
+        "name": "Peter Hannan (composer)",
+        "indicators": [
+            "Peter Hannan (composer)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Canadian performers of early music"
+        },
+        "id": 160
+    },
+    "Suzie LeBlanc": {
+        "name": "Suzie LeBlanc",
+        "indicators": [
+            "Suzie LeBlanc"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 161
+    },
+    "Catherine Robbin": {
+        "name": "Catherine Robbin",
+        "indicators": [
+            "Catherine Robbin"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 162
+    },
+    "Hana Bla\u017e\u00edkov\u00e1": {
+        "name": "Hana Bla\u017e\u00edkov\u00e1",
+        "indicators": [
+            "Hana Bla\u017e\u00edkov\u00e1"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 163
+    },
+    "Milan Munclinger": {
+        "name": "Milan Munclinger",
+        "indicators": [
+            "Milan Munclinger"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Czech performers of early music"
+        },
+        "id": 164
+    },
+    "Franti\u0161ek Sl\u00e1ma (musician)": {
+        "name": "Franti\u0161ek Sl\u00e1ma (musician)",
+        "indicators": [
+            "Franti\u0161ek Sl\u00e1ma (musician)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Viol players"
+        },
+        "id": 165
+    },
+    "Jesper B\u00f8je Christensen": {
+        "name": "Jesper B\u00f8je Christensen",
+        "indicators": [
+            "Jesper B\u00f8je Christensen"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Danish performers of early music"
+        },
+        "id": 166
+    },
+    "Lars Ulrik Mortensen": {
+        "name": "Lars Ulrik Mortensen",
+        "indicators": [
+            "Lars Ulrik Mortensen"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Bach musicians"
+        },
+        "id": 167
+    },
+    "Michala Petri": {
+        "name": "Michala Petri",
+        "indicators": [
+            "Michala Petri"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 168
+    },
+    "Kees Boeke (musician)": {
+        "name": "Kees Boeke (musician)",
+        "indicators": [
+            "Kees Boeke (musician)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Dutch performers of early music"
+        },
+        "id": 169
+    },
+    "Dani\u00ebl Br\u00fcggen": {
+        "name": "Dani\u00ebl Br\u00fcggen",
+        "indicators": [
+            "Dani\u00ebl Br\u00fcggen"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Dutch performers of early music"
+        },
+        "id": 170
+    },
+    "Frans Br\u00fcggen": {
+        "name": "Frans Br\u00fcggen",
+        "indicators": [
+            "Frans Br\u00fcggen"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Baroque-flute players"
+        },
+        "id": 171
+    },
+    "Anner Bylsma": {
+        "name": "Anner Bylsma",
+        "indicators": [
+            "Anner Bylsma"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Dutch performers of early music"
+        },
+        "id": 172
+    },
+    "Lucy van Dael": {
+        "name": "Lucy van Dael",
+        "indicators": [
+            "Lucy van Dael"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Baroque-violin players"
+        },
+        "id": 173
+    },
+    "Leo van Doeselaar": {
+        "name": "Leo van Doeselaar",
+        "indicators": [
+            "Leo van Doeselaar"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Dutch performers of early music"
+        },
+        "id": 174
+    },
+    "Bertho Driever": {
+        "name": "Bertho Driever",
+        "indicators": [
+            "Bertho Driever"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Dutch performers of early music"
+        },
+        "id": 175
+    },
+    "Max van Egmond": {
+        "name": "Max van Egmond",
+        "indicators": [
+            "Max van Egmond"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Dutch performers of early music"
+        },
+        "id": 176
+    },
+    "Walter van Hauwe": {
+        "name": "Walter van Hauwe",
+        "indicators": [
+            "Walter van Hauwe"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Dutch performers of early music"
+        },
+        "id": 177
+    },
+    "Ewald Kooiman": {
+        "name": "Ewald Kooiman",
+        "indicators": [
+            "Ewald Kooiman"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Dutch performers of early music"
+        },
+        "id": 178
+    },
+    "Ton Koopman": {
+        "name": "Ton Koopman",
+        "indicators": [
+            "Ton Koopman"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Bach musicians"
+        },
+        "id": 179
+    },
+    "Peter Kooy": {
+        "name": "Peter Kooy",
+        "indicators": [
+            "Peter Kooy"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Dutch performers of early music"
+        },
+        "id": 180
+    },
+    "Paul Leenhouts": {
+        "name": "Paul Leenhouts",
+        "indicators": [
+            "Paul Leenhouts"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Dutch performers of early music"
+        },
+        "id": 181
+    },
+    "Gustav Leonhardt": {
+        "name": "Gustav Leonhardt",
+        "indicators": [
+            "Gustav Leonhardt"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Bach musicians"
+        },
+        "id": 182
+    },
+    "Jaap ter Linden": {
+        "name": "Jaap ter Linden",
+        "indicators": [
+            "Jaap ter Linden"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Dutch performers of early music"
+        },
+        "id": 183
+    },
+    "Jacques Ogg": {
+        "name": "Jacques Ogg",
+        "indicators": [
+            "Jacques Ogg"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Bach musicians"
+        },
+        "id": 184
+    },
+    "Jaap Schr\u00f6der": {
+        "name": "Jaap Schr\u00f6der",
+        "indicators": [
+            "Jaap Schr\u00f6der"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Baroque-violin players"
+        },
+        "id": 185
+    },
+    "Karel van Steenhoven": {
+        "name": "Karel van Steenhoven",
+        "indicators": [
+            "Karel van Steenhoven"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Dutch performers of early music"
+        },
+        "id": 186
+    },
+    "Liuwe Tamminga": {
+        "name": "Liuwe Tamminga",
+        "indicators": [
+            "Liuwe Tamminga"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Dutch performers of early music"
+        },
+        "id": 187
+    },
+    "Margriet Tindemans": {
+        "name": "Margriet Tindemans",
+        "indicators": [
+            "Margriet Tindemans"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Viol players"
+        },
+        "id": 188
+    },
+    "Anneke Uittenbosch": {
+        "name": "Anneke Uittenbosch",
+        "indicators": [
+            "Anneke Uittenbosch"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Dutch performers of early music"
+        },
+        "id": 189
+    },
+    "Marion Verbruggen": {
+        "name": "Marion Verbruggen",
+        "indicators": [
+            "Marion Verbruggen"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 190
+    },
+    "Benjamin Alard": {
+        "name": "Benjamin Alard",
+        "indicators": [
+            "Benjamin Alard"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "French performers of early music"
+        },
+        "id": 191
+    },
+    "\u00c9ric Bellocq": {
+        "name": "\u00c9ric Bellocq",
+        "indicators": [
+            "\u00c9ric Bellocq"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "French performers of early music"
+        },
+        "id": 192
+    },
+    "Michel Bouvard (organist)": {
+        "name": "Michel Bouvard (organist)",
+        "indicators": [
+            "Michel Bouvard (organist)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "French performers of early music"
+        },
+        "id": 193
+    },
+    "Jean Boyer (organist)": {
+        "name": "Jean Boyer (organist)",
+        "indicators": [
+            "Jean Boyer (organist)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "French performers of early music"
+        },
+        "id": 194
+    },
+    "Jean-Pierre Canihac": {
+        "name": "Jean-Pierre Canihac",
+        "indicators": [
+            "Jean-Pierre Canihac"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "French performers of early music"
+        },
+        "id": 195
+    },
+    "William Christie (musician)": {
+        "name": "William Christie (musician)",
+        "indicators": [
+            "William Christie (musician)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Founders of early music ensembles"
+        },
+        "id": 196
+    },
+    "Patrick Coh\u00ebn-Akenine": {
+        "name": "Patrick Coh\u00ebn-Akenine",
+        "indicators": [
+            "Patrick Coh\u00ebn-Akenine"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "French performers of early music"
+        },
+        "id": 197
+    },
+    "Mireille Delunsch": {
+        "name": "Mireille Delunsch",
+        "indicators": [
+            "Mireille Delunsch"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 198
+    },
+    "Carl Dolmetsch": {
+        "name": "Carl Dolmetsch",
+        "indicators": [
+            "Carl Dolmetsch"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "French performers of early music"
+        },
+        "id": 199
+    },
+    "William Dongois": {
+        "name": "William Dongois",
+        "indicators": [
+            "William Dongois"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "French performers of early music"
+        },
+        "id": 200
+    },
+    "Vincent Dumestre": {
+        "name": "Vincent Dumestre",
+        "indicators": [
+            "Vincent Dumestre"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "French performers of early music"
+        },
+        "id": 201
+    },
+    "Thomas Dunford": {
+        "name": "Thomas Dunford",
+        "indicators": [
+            "Thomas Dunford"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "French performers of early music"
+        },
+        "id": 202
+    },
+    "Fran\u00e7ois Fernandez": {
+        "name": "Fran\u00e7ois Fernandez",
+        "indicators": [
+            "Fran\u00e7ois Fernandez"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "French performers of early music"
+        },
+        "id": 203
+    },
+    "V\u00e9ronique Gens": {
+        "name": "V\u00e9ronique Gens",
+        "indicators": [
+            "V\u00e9ronique Gens"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 204
+    },
+    "Emmanuelle Ha\u00efm": {
+        "name": "Emmanuelle Ha\u00efm",
+        "indicators": [
+            "Emmanuelle Ha\u00efm"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 205
+    },
+    "Salom\u00e9 Haller": {
+        "name": "Salom\u00e9 Haller",
+        "indicators": [
+            "Salom\u00e9 Haller"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 206
+    },
+    "Pierre Hanta\u00ef": {
+        "name": "Pierre Hanta\u00ef",
+        "indicators": [
+            "Pierre Hanta\u00ef"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "French performers of early music"
+        },
+        "id": 207
+    },
+    "Philippe Jaroussky": {
+        "name": "Philippe Jaroussky",
+        "indicators": [
+            "Philippe Jaroussky"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "French performers of early music"
+        },
+        "id": 208
+    },
+    "Daniel Lassalle": {
+        "name": "Daniel Lassalle",
+        "indicators": [
+            "Daniel Lassalle"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Sackbut players"
+        },
+        "id": 209
+    },
+    "G\u00e9rard Lesne": {
+        "name": "G\u00e9rard Lesne",
+        "indicators": [
+            "G\u00e9rard Lesne"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "French performers of early music"
+        },
+        "id": 210
+    },
+    "Jean-Claude Malgoire": {
+        "name": "Jean-Claude Malgoire",
+        "indicators": [
+            "Jean-Claude Malgoire"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "French performers of early music"
+        },
+        "id": 211
+    },
+    "B\u00e9atrice Martin (harpsichordist)": {
+        "name": "B\u00e9atrice Martin (harpsichordist)",
+        "indicators": [
+            "B\u00e9atrice Martin (harpsichordist)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "French performers of early music"
+        },
+        "id": 212
+    },
+    "Agn\u00e8s Mellon": {
+        "name": "Agn\u00e8s Mellon",
+        "indicators": [
+            "Agn\u00e8s Mellon"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 213
+    },
+    "Fabrice Millischer": {
+        "name": "Fabrice Millischer",
+        "indicators": [
+            "Fabrice Millischer"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Sackbut players"
+        },
+        "id": 214
+    },
+    "Marc Minkowski": {
+        "name": "Marc Minkowski",
+        "indicators": [
+            "Marc Minkowski"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "French performers of early music"
+        },
+        "id": 215
+    },
+    "Herv\u00e9 Niquet": {
+        "name": "Herv\u00e9 Niquet",
+        "indicators": [
+            "Herv\u00e9 Niquet"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "French performers of early music"
+        },
+        "id": 216
+    },
+    "Patricia Petibon": {
+        "name": "Patricia Petibon",
+        "indicators": [
+            "Patricia Petibon"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 217
+    },
+    "Sandrine Piau": {
+        "name": "Sandrine Piau",
+        "indicators": [
+            "Sandrine Piau"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 218
+    },
+    "Rapha\u00ebl Pichon": {
+        "name": "Rapha\u00ebl Pichon",
+        "indicators": [
+            "Rapha\u00ebl Pichon"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Founders of early music ensembles"
+        },
+        "id": 219
+    },
+    "Iv\u00e8te Piveteau": {
+        "name": "Iv\u00e8te Piveteau",
+        "indicators": [
+            "Iv\u00e8te Piveteau"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 220
+    },
+    "Christophe Rousset": {
+        "name": "Christophe Rousset",
+        "indicators": [
+            "Christophe Rousset"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "French performers of early music"
+        },
+        "id": 221
+    },
+    "H\u00e9l\u00e8ne Schmitt": {
+        "name": "H\u00e9l\u00e8ne Schmitt",
+        "indicators": [
+            "H\u00e9l\u00e8ne Schmitt"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Baroque-violin players"
+        },
+        "id": 222
+    },
+    "Jean-Christophe Spinosi": {
+        "name": "Jean-Christophe Spinosi",
+        "indicators": [
+            "Jean-Christophe Spinosi"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "French performers of early music"
+        },
+        "id": 223
+    },
+    "Valentin Tournet": {
+        "name": "Valentin Tournet",
+        "indicators": [
+            "Valentin Tournet"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Viol players"
+        },
+        "id": 224
+    },
+    "Abegg Trio": {
+        "name": "Abegg Trio",
+        "indicators": [
+            "Abegg Trio"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "German performers of early music"
+        },
+        "id": 225
+    },
+    "Anne Bierwirth": {
+        "name": "Anne Bierwirth",
+        "indicators": [
+            "Anne Bierwirth"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "German performers of early music"
+        },
+        "id": 226
+    },
+    "J\u00f6rg-Andreas B\u00f6tticher": {
+        "name": "J\u00f6rg-Andreas B\u00f6tticher",
+        "indicators": [
+            "J\u00f6rg-Andreas B\u00f6tticher"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "German performers of early music"
+        },
+        "id": 227
+    },
+    "Benjamin Bruns": {
+        "name": "Benjamin Bruns",
+        "indicators": [
+            "Benjamin Bruns"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "German performers of early music"
+        },
+        "id": 228
+    },
+    "J\u00fcrgen Budday": {
+        "name": "J\u00fcrgen Budday",
+        "indicators": [
+            "J\u00fcrgen Budday"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "German performers of early music"
+        },
+        "id": 229
+    },
+    "Gerhart Darmstadt": {
+        "name": "Gerhart Darmstadt",
+        "indicators": [
+            "Gerhart Darmstadt"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "German performers of early music"
+        },
+        "id": 230
+    },
+    "David Erler": {
+        "name": "David Erler",
+        "indicators": [
+            "David Erler"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "German performers of early music"
+        },
+        "id": 231
+    },
+    "J\u00f6rg Fa\u00dfmann": {
+        "name": "J\u00f6rg Fa\u00dfmann",
+        "indicators": [
+            "J\u00f6rg Fa\u00dfmann"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "German performers of early music"
+        },
+        "id": 232
+    },
+    "Thomas Fritzsch": {
+        "name": "Thomas Fritzsch",
+        "indicators": [
+            "Thomas Fritzsch"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "German performers of early music"
+        },
+        "id": 233
+    },
+    "Christian Funke": {
+        "name": "Christian Funke",
+        "indicators": [
+            "Christian Funke"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "German performers of early music"
+        },
+        "id": 234
+    },
+    "Reinhard Goebel": {
+        "name": "Reinhard Goebel",
+        "indicators": [
+            "Reinhard Goebel"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Baroque-violin players"
+        },
+        "id": 235
+    },
+    "Gottfried von der Goltz": {
+        "name": "Gottfried von der Goltz",
+        "indicators": [
+            "Gottfried von der Goltz"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Baroque-violin players"
+        },
+        "id": 236
+    },
+    "Alexander Grychtolik": {
+        "name": "Alexander Grychtolik",
+        "indicators": [
+            "Alexander Grychtolik"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "German performers of early music"
+        },
+        "id": 237
+    },
+    "J\u00f6rg Halubek": {
+        "name": "J\u00f6rg Halubek",
+        "indicators": [
+            "J\u00f6rg Halubek"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "German performers of early music"
+        },
+        "id": 238
+    },
+    "Christoph Hammer": {
+        "name": "Christoph Hammer",
+        "indicators": [
+            "Christoph Hammer"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "German performers of early music"
+        },
+        "id": 239
+    },
+    "Thomas Hengelbrock": {
+        "name": "Thomas Hengelbrock",
+        "indicators": [
+            "Thomas Hengelbrock"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "German performers of early music"
+        },
+        "id": 240
+    },
+    "Bettina Hoffmann (musician)": {
+        "name": "Bettina Hoffmann (musician)",
+        "indicators": [
+            "Bettina Hoffmann (musician)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 241
+    },
+    "Konrad Jungh\u00e4nel": {
+        "name": "Konrad Jungh\u00e4nel",
+        "indicators": [
+            "Konrad Jungh\u00e4nel"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "German performers of early music"
+        },
+        "id": 242
+    },
+    "Rudolf Kelber": {
+        "name": "Rudolf Kelber",
+        "indicators": [
+            "Rudolf Kelber"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "German performers of early music"
+        },
+        "id": 243
+    },
+    "Lutz Kirchhof": {
+        "name": "Lutz Kirchhof",
+        "indicators": [
+            "Lutz Kirchhof"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "German performers of early music"
+        },
+        "id": 244
+    },
+    "Christian Kluttig": {
+        "name": "Christian Kluttig",
+        "indicators": [
+            "Christian Kluttig"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "German performers of early music"
+        },
+        "id": 245
+    },
+    "Tobias Koch (pianist)": {
+        "name": "Tobias Koch (pianist)",
+        "indicators": [
+            "Tobias Koch (pianist)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "German performers of early music"
+        },
+        "id": 246
+    },
+    "Jochen Kowalski": {
+        "name": "Jochen Kowalski",
+        "indicators": [
+            "Jochen Kowalski"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "German performers of early music"
+        },
+        "id": 247
+    },
+    "Mareile Krumbholz": {
+        "name": "Mareile Krumbholz",
+        "indicators": [
+            "Mareile Krumbholz"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "German performers of early music"
+        },
+        "id": 248
+    },
+    "Andreas Martin (lutenist)": {
+        "name": "Andreas Martin (lutenist)",
+        "indicators": [
+            "Andreas Martin (lutenist)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "German performers of early music"
+        },
+        "id": 249
+    },
+    "Dorothee Mields": {
+        "name": "Dorothee Mields",
+        "indicators": [
+            "Dorothee Mields"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 250
+    },
+    "Cornelia Osterwald": {
+        "name": "Cornelia Osterwald",
+        "indicators": [
+            "Cornelia Osterwald"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "German performers of early music"
+        },
+        "id": 251
+    },
+    "Siegfried Pank": {
+        "name": "Siegfried Pank",
+        "indicators": [
+            "Siegfried Pank"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "German performers of early music"
+        },
+        "id": 252
+    },
+    "Hille Perl": {
+        "name": "Hille Perl",
+        "indicators": [
+            "Hille Perl"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 253
+    },
+    "Georg Poplutz": {
+        "name": "Georg Poplutz",
+        "indicators": [
+            "Georg Poplutz"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "German performers of early music"
+        },
+        "id": 254
+    },
+    "Matthias Rexroth": {
+        "name": "Matthias Rexroth",
+        "indicators": [
+            "Matthias Rexroth"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "German performers of early music"
+        },
+        "id": 255
+    },
+    "Karl Richter (conductor)": {
+        "name": "Karl Richter (conductor)",
+        "indicators": [
+            "Karl Richter (conductor)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "German performers of early music"
+        },
+        "id": 256
+    },
+    "Karl Ristenpart": {
+        "name": "Karl Ristenpart",
+        "indicators": [
+            "Karl Ristenpart"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "German performers of early music"
+        },
+        "id": 257
+    },
+    "Wolfgang R\u00fcbsam": {
+        "name": "Wolfgang R\u00fcbsam",
+        "indicators": [
+            "Wolfgang R\u00fcbsam"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "German performers of early music"
+        },
+        "id": 258
+    },
+    "Markus Sch\u00e4fer": {
+        "name": "Markus Sch\u00e4fer",
+        "indicators": [
+            "Markus Sch\u00e4fer"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "German performers of early music"
+        },
+        "id": 259
+    },
+    "Michael Sch\u00e4ffer (lutenist)": {
+        "name": "Michael Sch\u00e4ffer (lutenist)",
+        "indicators": [
+            "Michael Sch\u00e4ffer (lutenist)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "German performers of early music"
+        },
+        "id": 260
+    },
+    "Barbara Schlick": {
+        "name": "Barbara Schlick",
+        "indicators": [
+            "Barbara Schlick"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 261
+    },
+    "Ingrid Schmith\u00fcsen": {
+        "name": "Ingrid Schmith\u00fcsen",
+        "indicators": [
+            "Ingrid Schmith\u00fcsen"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 262
+    },
+    "Andreas Scholl": {
+        "name": "Andreas Scholl",
+        "indicators": [
+            "Andreas Scholl"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "German performers of early music"
+        },
+        "id": 263
+    },
+    "Christine Schornsheim": {
+        "name": "Christine Schornsheim",
+        "indicators": [
+            "Christine Schornsheim"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "German performers of early music"
+        },
+        "id": 264
+    },
+    "Winfried Schrammek": {
+        "name": "Winfried Schrammek",
+        "indicators": [
+            "Winfried Schrammek"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "German performers of early music"
+        },
+        "id": 265
+    },
+    "Anne Schumann": {
+        "name": "Anne Schumann",
+        "indicators": [
+            "Anne Schumann"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "German performers of early music"
+        },
+        "id": 266
+    },
+    "Olga Schwind": {
+        "name": "Olga Schwind",
+        "indicators": [
+            "Olga Schwind"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 267
+    },
+    "Andreas Staier": {
+        "name": "Andreas Staier",
+        "indicators": [
+            "Andreas Staier"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "German performers of early music"
+        },
+        "id": 268
+    },
+    "Franz Vitzthum": {
+        "name": "Franz Vitzthum",
+        "indicators": [
+            "Franz Vitzthum"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "German performers of early music"
+        },
+        "id": 269
+    },
+    "Dominik W\u00f6rner": {
+        "name": "Dominik W\u00f6rner",
+        "indicators": [
+            "Dominik W\u00f6rner"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "German performers of early music"
+        },
+        "id": 270
+    },
+    "Shalev Ad-El": {
+        "name": "Shalev Ad-El",
+        "indicators": [
+            "Shalev Ad-El"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Israeli performers of early music"
+        },
+        "id": 271
+    },
+    "Drora Bruck": {
+        "name": "Drora Bruck",
+        "indicators": [
+            "Drora Bruck"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 272
+    },
+    "Myrna Herzog": {
+        "name": "Myrna Herzog",
+        "indicators": [
+            "Myrna Herzog"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Viol players"
+        },
+        "id": 273
+    },
+    "Elam Rotem": {
+        "name": "Elam Rotem",
+        "indicators": [
+            "Elam Rotem"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Founders of early music ensembles"
+        },
+        "id": 274
+    },
+    "Rinaldo Alessandrini": {
+        "name": "Rinaldo Alessandrini",
+        "indicators": [
+            "Rinaldo Alessandrini"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Italian performers of early music"
+        },
+        "id": 275
+    },
+    "Marco Ambrosini": {
+        "name": "Marco Ambrosini",
+        "indicators": [
+            "Marco Ambrosini"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Italian performers of early music"
+        },
+        "id": 276
+    },
+    "Enrico Baiano": {
+        "name": "Enrico Baiano",
+        "indicators": [
+            "Enrico Baiano"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Italian performers of early music"
+        },
+        "id": 277
+    },
+    "Gloria Banditelli": {
+        "name": "Gloria Banditelli",
+        "indicators": [
+            "Gloria Banditelli"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 278
+    },
+    "Cecilia Bartoli": {
+        "name": "Cecilia Bartoli",
+        "indicators": [
+            "Cecilia Bartoli"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 279
+    },
+    "Simone Bartolini": {
+        "name": "Simone Bartolini",
+        "indicators": [
+            "Simone Bartolini"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Italian performers of early music"
+        },
+        "id": 280
+    },
+    "Fabio Biondi": {
+        "name": "Fabio Biondi",
+        "indicators": [
+            "Fabio Biondi"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Baroque-violin players"
+        },
+        "id": 281
+    },
+    "Giuliano Carmignola": {
+        "name": "Giuliano Carmignola",
+        "indicators": [
+            "Giuliano Carmignola"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Baroque-violin players"
+        },
+        "id": 282
+    },
+    "Paolo Cherici": {
+        "name": "Paolo Cherici",
+        "indicators": [
+            "Paolo Cherici"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Italian performers of early music"
+        },
+        "id": 283
+    },
+    "Mara Galassi": {
+        "name": "Mara Galassi",
+        "indicators": [
+            "Mara Galassi"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 284
+    },
+    "Enrico Gatti": {
+        "name": "Enrico Gatti",
+        "indicators": [
+            "Enrico Gatti"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Baroque-violin players"
+        },
+        "id": 285
+    },
+    "Lorenzo Ghielmi": {
+        "name": "Lorenzo Ghielmi",
+        "indicators": [
+            "Lorenzo Ghielmi"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Italian performers of early music"
+        },
+        "id": 286
+    },
+    "Vittorio Ghielmi": {
+        "name": "Vittorio Ghielmi",
+        "indicators": [
+            "Vittorio Ghielmi"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Viol players"
+        },
+        "id": 287
+    },
+    "Jacopo Gianninoto": {
+        "name": "Jacopo Gianninoto",
+        "indicators": [
+            "Jacopo Gianninoto"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Italian performers of early music"
+        },
+        "id": 288
+    },
+    "Roberta Invernizzi": {
+        "name": "Roberta Invernizzi",
+        "indicators": [
+            "Roberta Invernizzi"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 289
+    },
+    "Massimo Lonardi": {
+        "name": "Massimo Lonardi",
+        "indicators": [
+            "Massimo Lonardi"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Italian performers of early music"
+        },
+        "id": 290
+    },
+    "Andrea Marcon": {
+        "name": "Andrea Marcon",
+        "indicators": [
+            "Andrea Marcon"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Italian performers of early music"
+        },
+        "id": 291
+    },
+    "Matteo Messori": {
+        "name": "Matteo Messori",
+        "indicators": [
+            "Matteo Messori"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Italian performers of early music"
+        },
+        "id": 292
+    },
+    "Riccardo Minasi": {
+        "name": "Riccardo Minasi",
+        "indicators": [
+            "Riccardo Minasi"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Italian performers of early music"
+        },
+        "id": 293
+    },
+    "Sara Mingardo": {
+        "name": "Sara Mingardo",
+        "indicators": [
+            "Sara Mingardo"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 294
+    },
+    "Ugo Nastrucci": {
+        "name": "Ugo Nastrucci",
+        "indicators": [
+            "Ugo Nastrucci"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Theorbists"
+        },
+        "id": 295
+    },
+    "Enrico Onofri": {
+        "name": "Enrico Onofri",
+        "indicators": [
+            "Enrico Onofri"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Italian performers of early music"
+        },
+        "id": 296
+    },
+    "Paolo Pandolfo": {
+        "name": "Paolo Pandolfo",
+        "indicators": [
+            "Paolo Pandolfo"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Viol players"
+        },
+        "id": 297
+    },
+    "Cosimo Stawiarski": {
+        "name": "Cosimo Stawiarski",
+        "indicators": [
+            "Cosimo Stawiarski"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Italian performers of early music"
+        },
+        "id": 298
+    },
+    "Marcello Vitale": {
+        "name": "Marcello Vitale",
+        "indicators": [
+            "Marcello Vitale"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Italian performers of early music"
+        },
+        "id": 299
+    },
+    "Toyohiko Satoh": {
+        "name": "Toyohiko Satoh",
+        "indicators": [
+            "Toyohiko Satoh"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Japanese performers of early music"
+        },
+        "id": 300
+    },
+    "Hidemi Suzuki": {
+        "name": "Hidemi Suzuki",
+        "indicators": [
+            "Hidemi Suzuki"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Japanese performers of early music"
+        },
+        "id": 301
+    },
+    "Masaaki Suzuki": {
+        "name": "Masaaki Suzuki",
+        "indicators": [
+            "Masaaki Suzuki"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Bach musicians"
+        },
+        "id": 302
+    },
+    "Midori Suzuki (soprano)": {
+        "name": "Midori Suzuki (soprano)",
+        "indicators": [
+            "Midori Suzuki (soprano)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 303
+    },
+    "Kazimierz Flatau": {
+        "name": "Kazimierz Flatau",
+        "indicators": [
+            "Kazimierz Flatau"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Polish performers of early music"
+        },
+        "id": 304
+    },
+    "Wanda Landowska": {
+        "name": "Wanda Landowska",
+        "indicators": [
+            "Wanda Landowska"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Bach musicians"
+        },
+        "id": 305
+    },
+    "Jakub J\u00f3zef Orli\u0144ski": {
+        "name": "Jakub J\u00f3zef Orli\u0144ski",
+        "indicators": [
+            "Jakub J\u00f3zef Orli\u0144ski"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Polish performers of early music"
+        },
+        "id": 306
+    },
+    "Lydia Davydova": {
+        "name": "Lydia Davydova",
+        "indicators": [
+            "Lydia Davydova"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 307
+    },
+    "Vyatcheslav Kagan-Paley": {
+        "name": "Vyatcheslav Kagan-Paley",
+        "indicators": [
+            "Vyatcheslav Kagan-Paley"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Russian performers of early music"
+        },
+        "id": 308
+    },
+    "Julia Lezhneva": {
+        "name": "Julia Lezhneva",
+        "indicators": [
+            "Julia Lezhneva"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 309
+    },
+    "Prattica Terza": {
+        "name": "Prattica Terza",
+        "indicators": [
+            "Prattica Terza"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Russian performers of early music"
+        },
+        "id": 310
+    },
+    "Evgeny Sheyko": {
+        "name": "Evgeny Sheyko",
+        "indicators": [
+            "Evgeny Sheyko"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Russian performers of early music"
+        },
+        "id": 311
+    },
+    "Ismael Fern\u00e1ndez de la Cuesta": {
+        "name": "Ismael Fern\u00e1ndez de la Cuesta",
+        "indicators": [
+            "Ismael Fern\u00e1ndez de la Cuesta"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Spanish performers of early music"
+        },
+        "id": 312
+    },
+    "Montserrat Figueras": {
+        "name": "Montserrat Figueras",
+        "indicators": [
+            "Montserrat Figueras"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 313
+    },
+    "Jos\u00e9 Miguel Moreno": {
+        "name": "Jos\u00e9 Miguel Moreno",
+        "indicators": [
+            "Jos\u00e9 Miguel Moreno"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Spanish performers of early music"
+        },
+        "id": 314
+    },
+    "Josetxu Obreg\u00f3n": {
+        "name": "Josetxu Obreg\u00f3n",
+        "indicators": [
+            "Josetxu Obreg\u00f3n"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Spanish performers of early music"
+        },
+        "id": 315
+    },
+    "Eduardo Paniagua": {
+        "name": "Eduardo Paniagua",
+        "indicators": [
+            "Eduardo Paniagua"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Spanish performers of early music"
+        },
+        "id": 316
+    },
+    "Nuria Rial": {
+        "name": "Nuria Rial",
+        "indicators": [
+            "Nuria Rial"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 317
+    },
+    "Jordi Savall": {
+        "name": "Jordi Savall",
+        "indicators": [
+            "Jordi Savall"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Viol players"
+        },
+        "id": 318
+    },
+    "Chiara Banchini": {
+        "name": "Chiara Banchini",
+        "indicators": [
+            "Chiara Banchini"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Baroque-violin players"
+        },
+        "id": 319
+    },
+    "Rudolf Baumgartner": {
+        "name": "Rudolf Baumgartner",
+        "indicators": [
+            "Rudolf Baumgartner"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Swiss performers of early music"
+        },
+        "id": 320
+    },
+    "Diego Fasolis": {
+        "name": "Diego Fasolis",
+        "indicators": [
+            "Diego Fasolis"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Founders of early music ensembles"
+        },
+        "id": 321
+    },
+    "Anne Gallet": {
+        "name": "Anne Gallet",
+        "indicators": [
+            "Anne Gallet"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 322
+    },
+    "Gli Angeli Gen\u00e8ve": {
+        "name": "Gli Angeli Gen\u00e8ve",
+        "indicators": [
+            "Gli Angeli Gen\u00e8ve"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Swiss performers of early music"
+        },
+        "id": 323
+    },
+    "Andr\u00e9 Luy": {
+        "name": "Andr\u00e9 Luy",
+        "indicators": [
+            "Andr\u00e9 Luy"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Swiss performers of early music"
+        },
+        "id": 324
+    },
+    "Patrick Montan": {
+        "name": "Patrick Montan",
+        "indicators": [
+            "Patrick Montan"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Swiss performers of early music"
+        },
+        "id": 325
+    },
+    "Maurice Steger": {
+        "name": "Maurice Steger",
+        "indicators": [
+            "Maurice Steger"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Swiss performers of early music"
+        },
+        "id": 326
+    },
+    "August Wenzinger": {
+        "name": "August Wenzinger",
+        "indicators": [
+            "August Wenzinger"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Viol players"
+        },
+        "id": 327
+    },
+    "Rolf Lislevand": {
+        "name": "Rolf Lislevand",
+        "indicators": [
+            "Rolf Lislevand"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Theorbists"
+        },
+        "id": 328
+    },
+    "Aksel Rykkvin": {
+        "name": "Aksel Rykkvin",
+        "indicators": [
+            "Aksel Rykkvin"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Norwegian performers of early music"
+        },
+        "id": 329
+    },
+    "Romina Basso": {
+        "name": "Romina Basso",
+        "indicators": [
+            "Romina Basso"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 330
+    },
+    "Lisa Beznosiuk": {
+        "name": "Lisa Beznosiuk",
+        "indicators": [
+            "Lisa Beznosiuk"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 331
+    },
+    "Julia Bishop": {
+        "name": "Julia Bishop",
+        "indicators": [
+            "Julia Bishop"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Baroque-violin players"
+        },
+        "id": 332
+    },
+    "Lynne Dawson": {
+        "name": "Lynne Dawson",
+        "indicators": [
+            "Lynne Dawson"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 333
+    },
+    "Ann Hallenberg": {
+        "name": "Ann Hallenberg",
+        "indicators": [
+            "Ann Hallenberg"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 334
+    },
+    "Ruth Holton": {
+        "name": "Ruth Holton",
+        "indicators": [
+            "Ruth Holton"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 335
+    },
+    "Sunhae Im": {
+        "name": "Sunhae Im",
+        "indicators": [
+            "Sunhae Im"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 336
+    },
+    "Emma Kirkby": {
+        "name": "Emma Kirkby",
+        "indicators": [
+            "Emma Kirkby"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 337
+    },
+    "Evangelina Mascardi": {
+        "name": "Evangelina Mascardi",
+        "indicators": [
+            "Evangelina Mascardi"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Theorbists"
+        },
+        "id": 338
+    },
+    "Christina Pluhar": {
+        "name": "Christina Pluhar",
+        "indicators": [
+            "Christina Pluhar"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Theorbists"
+        },
+        "id": 339
+    },
+    "Diana Poulton": {
+        "name": "Diana Poulton",
+        "indicators": [
+            "Diana Poulton"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 340
+    },
+    "Mary Remnant": {
+        "name": "Mary Remnant",
+        "indicators": [
+            "Mary Remnant"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Founders of early music ensembles"
+        },
+        "id": 341
+    },
+    "Carolyn Sampson": {
+        "name": "Carolyn Sampson",
+        "indicators": [
+            "Carolyn Sampson"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 342
+    },
+    "Nathalie Stutzmann": {
+        "name": "Nathalie Stutzmann",
+        "indicators": [
+            "Nathalie Stutzmann"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Women performers of early music"
+        },
+        "id": 343
+    },
+    "Ethel Atwood": {
+        "name": "Ethel Atwood",
+        "indicators": [
+            "Ethel Atwood"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Founders of early music ensembles"
+        },
+        "id": 344
+    },
+    "Laurence Dreyfus": {
+        "name": "Laurence Dreyfus",
+        "indicators": [
+            "Laurence Dreyfus"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Viol players"
+        },
+        "id": 345
+    },
+    "John Eliot Gardiner": {
+        "name": "John Eliot Gardiner",
+        "indicators": [
+            "John Eliot Gardiner"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Founders of early music ensembles"
+        },
+        "id": 346
+    },
+    "Paul Hillier": {
+        "name": "Paul Hillier",
+        "indicators": [
+            "Paul Hillier"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Founders of early music ensembles"
+        },
+        "id": 347
+    },
+    "Christopher Hogwood": {
+        "name": "Christopher Hogwood",
+        "indicators": [
+            "Christopher Hogwood"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Founders of early music ensembles"
+        },
+        "id": 348
+    },
+    "Caroline B. Nichols": {
+        "name": "Caroline B. Nichols",
+        "indicators": [
+            "Caroline B. Nichols"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Founders of early music ensembles"
+        },
+        "id": 349
+    },
+    "Marion Osgood": {
+        "name": "Marion Osgood",
+        "indicators": [
+            "Marion Osgood"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Founders of early music ensembles"
+        },
+        "id": 350
+    },
+    "Peter Phillips (conductor)": {
+        "name": "Peter Phillips (conductor)",
+        "indicators": [
+            "Peter Phillips (conductor)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Founders of early music ensembles"
+        },
+        "id": 351
+    },
+    "Trevor Pinnock": {
+        "name": "Trevor Pinnock",
+        "indicators": [
+            "Trevor Pinnock"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Founders of early music ensembles"
+        },
+        "id": 352
+    },
+    "T\u00f5nu Sepp": {
+        "name": "T\u00f5nu Sepp",
+        "indicators": [
+            "T\u00f5nu Sepp"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Founders of early music ensembles"
+        },
+        "id": 353
+    },
+    "Jeffrey Skidmore": {
+        "name": "Jeffrey Skidmore",
+        "indicators": [
+            "Jeffrey Skidmore"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Founders of early music ensembles"
+        },
+        "id": 354
+    },
+    "Jeannette Sorrell": {
+        "name": "Jeannette Sorrell",
+        "indicators": [
+            "Jeannette Sorrell"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Founders of early music ensembles"
+        },
+        "id": 355
+    },
+    "Early music": {
+        "name": "Early music",
+        "indicators": [
+            "Early music"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 356
+    },
+    "List of early music ensembles": {
+        "name": "List of early music ensembles",
+        "indicators": [
+            "List of early music ensembles"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 357
+    },
+    "A 2 Violes Esgales": {
+        "name": "A 2 Violes Esgales",
+        "indicators": [
+            "A 2 Violes Esgales"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 358
+    },
+    "A Sei Voci": {
+        "name": "A Sei Voci",
+        "indicators": [
+            "A Sei Voci"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 359
+    },
+    "Accademia Daniel": {
+        "name": "Accademia Daniel",
+        "indicators": [
+            "Accademia Daniel"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 360
+    },
+    "Accentus Austria": {
+        "name": "Accentus Austria",
+        "indicators": [
+            "Accentus Austria"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 361
+    },
+    "Akad\u00eamia": {
+        "name": "Akad\u00eamia",
+        "indicators": [
+            "Akad\u00eamia"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 362
+    },
+    "Alamire (consort)": {
+        "name": "Alamire (consort)",
+        "indicators": [
+            "Alamire (consort)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 363
+    },
+    "Alba (Danish music ensemble)": {
+        "name": "Alba (Danish music ensemble)",
+        "indicators": [
+            "Alba (Danish music ensemble)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 364
+    },
+    "Amarcord (ensemble)": {
+        "name": "Amarcord (ensemble)",
+        "indicators": [
+            "Amarcord (ensemble)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 365
+    },
+    "American Bach Soloists": {
+        "name": "American Bach Soloists",
+        "indicators": [
+            "American Bach Soloists"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 366
+    },
+    "American Kantorei": {
+        "name": "American Kantorei",
+        "indicators": [
+            "American Kantorei"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 367
+    },
+    "Arcadia Players": {
+        "name": "Arcadia Players",
+        "indicators": [
+            "Arcadia Players"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 368
+    },
+    "L'Armonia Sonora": {
+        "name": "L'Armonia Sonora",
+        "indicators": [
+            "L'Armonia Sonora"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 369
+    },
+    "Ars Musicae de Barcelona": {
+        "name": "Ars Musicae de Barcelona",
+        "indicators": [
+            "Ars Musicae de Barcelona"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 370
+    },
+    "Ars Nova (Polish ensemble)": {
+        "name": "Ars Nova (Polish ensemble)",
+        "indicators": [
+            "Ars Nova (Polish ensemble)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 371
+    },
+    "Asteria Medievale": {
+        "name": "Asteria Medievale",
+        "indicators": [
+            "Asteria Medievale"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 372
+    },
+    "Atrium Musicae de Madrid": {
+        "name": "Atrium Musicae de Madrid",
+        "indicators": [
+            "Atrium Musicae de Madrid"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 373
+    },
+    "Axivil": {
+        "name": "Axivil",
+        "indicators": [
+            "Axivil"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 374
+    },
+    "Bornus Consort": {
+        "name": "Bornus Consort",
+        "indicators": [
+            "Bornus Consort"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 375
+    },
+    "Boston Camerata": {
+        "name": "Boston Camerata",
+        "indicators": [
+            "Boston Camerata"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 376
+    },
+    "The Brabant Ensemble": {
+        "name": "The Brabant Ensemble",
+        "indicators": [
+            "The Brabant Ensemble"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 377
+    },
+    "Caf\u00e9 Zimmermann (ensemble)": {
+        "name": "Caf\u00e9 Zimmermann (ensemble)",
+        "indicators": [
+            "Caf\u00e9 Zimmermann (ensemble)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 378
+    },
+    "Camerata Trajectina": {
+        "name": "Camerata Trajectina",
+        "indicators": [
+            "Camerata Trajectina"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 379
+    },
+    "Cantilena Antiqua": {
+        "name": "Cantilena Antiqua",
+        "indicators": [
+            "Cantilena Antiqua"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 380
+    },
+    "Capella de la Torre": {
+        "name": "Capella de la Torre",
+        "indicators": [
+            "Capella de la Torre"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 381
+    },
+    "Capella de Ministrers": {
+        "name": "Capella de Ministrers",
+        "indicators": [
+            "Capella de Ministrers"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 382
+    },
+    "Capella Musicale di S. Petronio di Bologna": {
+        "name": "Capella Musicale di S. Petronio di Bologna",
+        "indicators": [
+            "Capella Musicale di S. Petronio di Bologna"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 383
+    },
+    "Capella Regia": {
+        "name": "Capella Regia",
+        "indicators": [
+            "Capella Regia"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 384
+    },
+    "Capilla Pe\u00f1aflorida": {
+        "name": "Capilla Pe\u00f1aflorida",
+        "indicators": [
+            "Capilla Pe\u00f1aflorida"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 385
+    },
+    "Cappella Artemisia": {
+        "name": "Cappella Artemisia",
+        "indicators": [
+            "Cappella Artemisia"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 386
+    },
+    "Cappella Neapolitana": {
+        "name": "Cappella Neapolitana",
+        "indicators": [
+            "Cappella Neapolitana"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 387
+    },
+    "Cappella Mediterranea": {
+        "name": "Cappella Mediterranea",
+        "indicators": [
+            "Cappella Mediterranea"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 388
+    },
+    "Ars Nova Singers": {
+        "name": "Ars Nova Singers",
+        "indicators": [
+            "Ars Nova Singers"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 389
+    },
+    "Solomon's Knot (ensemble)": {
+        "name": "Solomon's Knot (ensemble)",
+        "indicators": [
+            "Solomon's Knot (ensemble)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 390
+    },
+    "Cinquecento (early music group)": {
+        "name": "Cinquecento (early music group)",
+        "indicators": [
+            "Cinquecento (early music group)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 391
+    },
+    "Collegium 1704": {
+        "name": "Collegium 1704",
+        "indicators": [
+            "Collegium 1704"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 392
+    },
+    "Collegium Marianum": {
+        "name": "Collegium Marianum",
+        "indicators": [
+            "Collegium Marianum"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 393
+    },
+    "Collegium Vocale Bydgoszcz": {
+        "name": "Collegium Vocale Bydgoszcz",
+        "indicators": [
+            "Collegium Vocale Bydgoszcz"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 394
+    },
+    "La Compagnia del Madrigale": {
+        "name": "La Compagnia del Madrigale",
+        "indicators": [
+            "La Compagnia del Madrigale"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 395
+    },
+    "Il Complesso Barocco": {
+        "name": "Il Complesso Barocco",
+        "indicators": [
+            "Il Complesso Barocco"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 396
+    },
+    "Concerto Palatino": {
+        "name": "Concerto Palatino",
+        "indicators": [
+            "Concerto Palatino"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 397
+    },
+    "Constantinople (ensemble)": {
+        "name": "Constantinople (ensemble)",
+        "indicators": [
+            "Constantinople (ensemble)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 398
+    },
+    "Diabolus in Musica (ensemble)": {
+        "name": "Diabolus in Musica (ensemble)",
+        "indicators": [
+            "Diabolus in Musica (ensemble)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 399
+    },
+    "Drolls (Russian early music ensemble)": {
+        "name": "Drolls (Russian early music ensemble)",
+        "indicators": [
+            "Drolls (Russian early music ensemble)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 400
+    },
+    "Dufay Collective": {
+        "name": "Dufay Collective",
+        "indicators": [
+            "Dufay Collective"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 401
+    },
+    "Early Music Network": {
+        "name": "Early Music Network",
+        "indicators": [
+            "Early Music Network"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 402
+    },
+    "Early Music New York": {
+        "name": "Early Music New York",
+        "indicators": [
+            "Early Music New York"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 403
+    },
+    "Egidius Kwartet": {
+        "name": "Egidius Kwartet",
+        "indicators": [
+            "Egidius Kwartet"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 404
+    },
+    "Ensemble Cl\u00e9ment Janequin": {
+        "name": "Ensemble Cl\u00e9ment Janequin",
+        "indicators": [
+            "Ensemble Cl\u00e9ment Janequin"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 405
+    },
+    "Ensemble Elyma": {
+        "name": "Ensemble Elyma",
+        "indicators": [
+            "Ensemble Elyma"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 406
+    },
+    "Ensemble f\u00fcr fr\u00fche Musik Augsburg": {
+        "name": "Ensemble f\u00fcr fr\u00fche Musik Augsburg",
+        "indicators": [
+            "Ensemble f\u00fcr fr\u00fche Musik Augsburg"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 407
+    },
+    "Ensemble Jacques Moderne": {
+        "name": "Ensemble Jacques Moderne",
+        "indicators": [
+            "Ensemble Jacques Moderne"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 408
+    },
+    "Ensemble Micrologus": {
+        "name": "Ensemble Micrologus",
+        "indicators": [
+            "Ensemble Micrologus"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 409
+    },
+    "Ensemble Organum": {
+        "name": "Ensemble Organum",
+        "indicators": [
+            "Ensemble Organum"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 410
+    },
+    "Ficta (early music consort)": {
+        "name": "Ficta (early music consort)",
+        "indicators": [
+            "Ficta (early music consort)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 411
+    },
+    "Five Centuries Ensemble": {
+        "name": "Five Centuries Ensemble",
+        "indicators": [
+            "Five Centuries Ensemble"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 412
+    },
+    "Fuoco E Cenere": {
+        "name": "Fuoco E Cenere",
+        "indicators": [
+            "Fuoco E Cenere"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 413
+    },
+    "La Grande Chapelle": {
+        "name": "La Grande Chapelle",
+        "indicators": [
+            "La Grande Chapelle"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 414
+    },
+    "Gregoriana Amsterdam": {
+        "name": "Gregoriana Amsterdam",
+        "indicators": [
+            "Gregoriana Amsterdam"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 415
+    },
+    "Hortus Musicus": {
+        "name": "Hortus Musicus",
+        "indicators": [
+            "Hortus Musicus"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 416
+    },
+    "Ibn B\u00e1ya Ensemble": {
+        "name": "Ibn B\u00e1ya Ensemble",
+        "indicators": [
+            "Ibn B\u00e1ya Ensemble"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 417
+    },
+    "Insula Magica": {
+        "name": "Insula Magica",
+        "indicators": [
+            "Insula Magica"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 418
+    },
+    "Irish Baroque Orchestra": {
+        "name": "Irish Baroque Orchestra",
+        "indicators": [
+            "Irish Baroque Orchestra"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 419
+    },
+    "Johann Rosenm\u00fcller Ensemble": {
+        "name": "Johann Rosenm\u00fcller Ensemble",
+        "indicators": [
+            "Johann Rosenm\u00fcller Ensemble"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 420
+    },
+    "Lauda Musicam of Atlanta": {
+        "name": "Lauda Musicam of Atlanta",
+        "indicators": [
+            "Lauda Musicam of Atlanta"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 421
+    },
+    "London Classical Players": {
+        "name": "London Classical Players",
+        "indicators": [
+            "London Classical Players"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 422
+    },
+    "Magdala (ensemble)": {
+        "name": "Magdala (ensemble)",
+        "indicators": [
+            "Magdala (ensemble)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 423
+    },
+    "Magnificat Baroque Ensemble": {
+        "name": "Magnificat Baroque Ensemble",
+        "indicators": [
+            "Magnificat Baroque Ensemble"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 424
+    },
+    "Mala Punica": {
+        "name": "Mala Punica",
+        "indicators": [
+            "Mala Punica"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 425
+    },
+    "Modo Antiquo": {
+        "name": "Modo Antiquo",
+        "indicators": [
+            "Modo Antiquo"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 426
+    },
+    "Montreal Baroque Orchestra": {
+        "name": "Montreal Baroque Orchestra",
+        "indicators": [
+            "Montreal Baroque Orchestra"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 427
+    },
+    "Music of the Baroque, Chicago": {
+        "name": "Music of the Baroque, Chicago",
+        "indicators": [
+            "Music of the Baroque, Chicago"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 428
+    },
+    "Musica Angelica Baroque Orchestra": {
+        "name": "Musica Angelica Baroque Orchestra",
+        "indicators": [
+            "Musica Angelica Baroque Orchestra"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 429
+    },
+    "M\u00fasica Ficta (Colombian ensemble)": {
+        "name": "M\u00fasica Ficta (Colombian ensemble)",
+        "indicators": [
+            "M\u00fasica Ficta (Colombian ensemble)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 430
+    },
+    "Musica Ficta (Danish ensemble)": {
+        "name": "Musica Ficta (Danish ensemble)",
+        "indicators": [
+            "Musica Ficta (Danish ensemble)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 431
+    },
+    "Musica Ficta (Italian ensemble)": {
+        "name": "Musica Ficta (Italian ensemble)",
+        "indicators": [
+            "Musica Ficta (Italian ensemble)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 432
+    },
+    "Musica Ficta (Spanish ensemble)": {
+        "name": "Musica Ficta (Spanish ensemble)",
+        "indicators": [
+            "Musica Ficta (Spanish ensemble)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 433
+    },
+    "Musica Nova (French ensemble)": {
+        "name": "Musica Nova (French ensemble)",
+        "indicators": [
+            "Musica Nova (French ensemble)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 434
+    },
+    "Musica Reservata (early music group)": {
+        "name": "Musica Reservata (early music group)",
+        "indicators": [
+            "Musica Reservata (early music group)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 435
+    },
+    "Musicians of the King's Road": {
+        "name": "Musicians of the King's Road",
+        "indicators": [
+            "Musicians of the King's Road"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 436
+    },
+    "Los M\u00fasicos de Su Alteza": {
+        "name": "Los M\u00fasicos de Su Alteza",
+        "indicators": [
+            "Los M\u00fasicos de Su Alteza"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 437
+    },
+    "Os M\u00fasicos do Tejo": {
+        "name": "Os M\u00fasicos do Tejo",
+        "indicators": [
+            "Os M\u00fasicos do Tejo"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 438
+    },
+    "La Nef": {
+        "name": "La Nef",
+        "indicators": [
+            "La Nef"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 439
+    },
+    "New Orleans Musica da Camera": {
+        "name": "New Orleans Musica da Camera",
+        "indicators": [
+            "New Orleans Musica da Camera"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 440
+    },
+    "New York Polyphony": {
+        "name": "New York Polyphony",
+        "indicators": [
+            "New York Polyphony"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 441
+    },
+    "New York Pro Musica": {
+        "name": "New York Pro Musica",
+        "indicators": [
+            "New York Pro Musica"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 442
+    },
+    "New York Recorder Guild": {
+        "name": "New York Recorder Guild",
+        "indicators": [
+            "New York Recorder Guild"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 443
+    },
+    "Nova Lux Ensemble": {
+        "name": "Nova Lux Ensemble",
+        "indicators": [
+            "Nova Lux Ensemble"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 444
+    },
+    "Les Paladins (music ensemble)": {
+        "name": "Les Paladins (music ensemble)",
+        "indicators": [
+            "Les Paladins (music ensemble)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 445
+    },
+    "The Parley of Instruments": {
+        "name": "The Parley of Instruments",
+        "indicators": [
+            "The Parley of Instruments"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 446
+    },
+    "Pera Ensemble": {
+        "name": "Pera Ensemble",
+        "indicators": [
+            "Pera Ensemble"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 447
+    },
+    "Pomerium (early music group)": {
+        "name": "Pomerium (early music group)",
+        "indicators": [
+            "Pomerium (early music group)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 448
+    },
+    "Pro Anima": {
+        "name": "Pro Anima",
+        "indicators": [
+            "Pro Anima"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 449
+    },
+    "Pro Musica Antiqua (Polish ensemble)": {
+        "name": "Pro Musica Antiqua (Polish ensemble)",
+        "indicators": [
+            "Pro Musica Antiqua (Polish ensemble)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 450
+    },
+    "Quink Vocal Ensemble": {
+        "name": "Quink Vocal Ensemble",
+        "indicators": [
+            "Quink Vocal Ensemble"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 451
+    },
+    "Quintetto Vocale Italiano": {
+        "name": "Quintetto Vocale Italiano",
+        "indicators": [
+            "Quintetto Vocale Italiano"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 452
+    },
+    "Ricercar Consort": {
+        "name": "Ricercar Consort",
+        "indicators": [
+            "Ricercar Consort"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 453
+    },
+    "The Royal Wind Music": {
+        "name": "The Royal Wind Music",
+        "indicators": [
+            "The Royal Wind Music"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 454
+    },
+    "Les Sacqueboutiers": {
+        "name": "Les Sacqueboutiers",
+        "indicators": [
+            "Les Sacqueboutiers"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 455
+    },
+    "Schola Antiqua of Chicago": {
+        "name": "Schola Antiqua of Chicago",
+        "indicators": [
+            "Schola Antiqua of Chicago"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 456
+    },
+    "Schola Antiqua of New York": {
+        "name": "Schola Antiqua of New York",
+        "indicators": [
+            "Schola Antiqua of New York"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 457
+    },
+    "Schola Antiqua, Madrid": {
+        "name": "Schola Antiqua, Madrid",
+        "indicators": [
+            "Schola Antiqua, Madrid"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 458
+    },
+    "Il Seminario Musicale": {
+        "name": "Il Seminario Musicale",
+        "indicators": [
+            "Il Seminario Musicale"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 459
+    },
+    "Sette Voci": {
+        "name": "Sette Voci",
+        "indicators": [
+            "Sette Voci"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 460
+    },
+    "Sherwood Consort": {
+        "name": "Sherwood Consort",
+        "indicators": [
+            "Sherwood Consort"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 461
+    },
+    "Sinfonia Australis": {
+        "name": "Sinfonia Australis",
+        "indicators": [
+            "Sinfonia Australis"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 462
+    },
+    "Singer Pur": {
+        "name": "Singer Pur",
+        "indicators": [
+            "Singer Pur"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 463
+    },
+    "The Sound and The Fury (vocal ensemble)": {
+        "name": "The Sound and The Fury (vocal ensemble)",
+        "indicators": [
+            "The Sound and The Fury (vocal ensemble)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 464
+    },
+    "Sour Cream (band)": {
+        "name": "Sour Cream (band)",
+        "indicators": [
+            "Sour Cream (band)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 465
+    },
+    "Studio der fr\u00fchen Musik": {
+        "name": "Studio der fr\u00fchen Musik",
+        "indicators": [
+            "Studio der fr\u00fchen Musik"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 466
+    },
+    "Tenet (ensemble)": {
+        "name": "Tenet (ensemble)",
+        "indicators": [
+            "Tenet (ensemble)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 467
+    },
+    "Texas Early Music Project": {
+        "name": "Texas Early Music Project",
+        "indicators": [
+            "Texas Early Music Project"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 468
+    },
+    "Tragicomedia": {
+        "name": "Tragicomedia",
+        "indicators": [
+            "Tragicomedia"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 469
+    },
+    "La Venexiana": {
+        "name": "La Venexiana",
+        "indicators": [
+            "La Venexiana"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 470
+    },
+    "Venice Baroque Orchestra": {
+        "name": "Venice Baroque Orchestra",
+        "indicators": [
+            "Venice Baroque Orchestra"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 471
+    },
+    "Victoria Musicae": {
+        "name": "Victoria Musicae",
+        "indicators": [
+            "Victoria Musicae"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 472
+    },
+    "Les Voix Baroques": {
+        "name": "Les Voix Baroques",
+        "indicators": [
+            "Les Voix Baroques"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 473
+    },
+    "Les Voix Humaines": {
+        "name": "Les Voix Humaines",
+        "indicators": [
+            "Les Voix Humaines"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 474
+    },
+    "Vox Luminis": {
+        "name": "Vox Luminis",
+        "indicators": [
+            "Vox Luminis"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 475
+    },
+    "Waverly Consort": {
+        "name": "Waverly Consort",
+        "indicators": [
+            "Waverly Consort"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Early music groups"
+        },
+        "id": 476
+    },
+    "William Sterndale Bennett": {
+        "name": "William Sterndale Bennett",
+        "indicators": [
+            "William Sterndale Bennett"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Bach musicians"
+        },
+        "id": 477
+    },
+    "E. Power Biggs": {
+        "name": "E. Power Biggs",
+        "indicators": [
+            "E. Power Biggs"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Bach musicians"
+        },
+        "id": 478
+    },
+    "Eleonor Bindman": {
+        "name": "Eleonor Bindman",
+        "indicators": [
+            "Eleonor Bindman"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Bach musicians"
+        },
+        "id": 479
+    },
+    "Ferruccio Busoni": {
+        "name": "Ferruccio Busoni",
+        "indicators": [
+            "Ferruccio Busoni"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Bach musicians"
+        },
+        "id": 480
+    },
+    "John Butt (musician)": {
+        "name": "John Butt (musician)",
+        "indicators": [
+            "John Butt (musician)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Bach musicians"
+        },
+        "id": 481
+    },
+    "Michel Chapuis (organist)": {
+        "name": "Michel Chapuis (organist)",
+        "indicators": [
+            "Michel Chapuis (organist)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Bach musicians"
+        },
+        "id": 482
+    },
+    "Pascal Dubreuil": {
+        "name": "Pascal Dubreuil",
+        "indicators": [
+            "Pascal Dubreuil"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Bach musicians"
+        },
+        "id": 483
+    },
+    "Virgil Fox": {
+        "name": "Virgil Fox",
+        "indicators": [
+            "Virgil Fox"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Bach musicians"
+        },
+        "id": 484
+    },
+    "Glenn Gould": {
+        "name": "Glenn Gould",
+        "indicators": [
+            "Glenn Gould"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Bach musicians"
+        },
+        "id": 485
+    },
+    "Moritz Hauptmann": {
+        "name": "Moritz Hauptmann",
+        "indicators": [
+            "Moritz Hauptmann"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Bach musicians"
+        },
+        "id": 486
+    },
+    "Angela Hewitt": {
+        "name": "Angela Hewitt",
+        "indicators": [
+            "Angela Hewitt"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Bach musicians"
+        },
+        "id": 487
+    },
+    "David Hill (choral director)": {
+        "name": "David Hill (choral director)",
+        "indicators": [
+            "David Hill (choral director)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Bach musicians"
+        },
+        "id": 488
+    },
+    "Otto Jahn": {
+        "name": "Otto Jahn",
+        "indicators": [
+            "Otto Jahn"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Bach musicians"
+        },
+        "id": 489
+    },
+    "Pieter Jan Leusink": {
+        "name": "Pieter Jan Leusink",
+        "indicators": [
+            "Pieter Jan Leusink"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Bach musicians"
+        },
+        "id": 490
+    },
+    "Jacques Loussier": {
+        "name": "Jacques Loussier",
+        "indicators": [
+            "Jacques Loussier"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Bach musicians"
+        },
+        "id": 491
+    },
+    "Felix Mendelssohn": {
+        "name": "Felix Mendelssohn",
+        "indicators": [
+            "Felix Mendelssohn"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Bach musicians"
+        },
+        "id": 492
+    },
+    "Werner Neumann": {
+        "name": "Werner Neumann",
+        "indicators": [
+            "Werner Neumann"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Bach musicians"
+        },
+        "id": 493
+    },
+    "Joshua Rifkin": {
+        "name": "Joshua Rifkin",
+        "indicators": [
+            "Joshua Rifkin"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Bach musicians"
+        },
+        "id": 494
+    },
+    "Andr\u00e1s Schiff": {
+        "name": "Andr\u00e1s Schiff",
+        "indicators": [
+            "Andr\u00e1s Schiff"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Bach musicians"
+        },
+        "id": 495
+    },
+    "Burkard Schliessmann": {
+        "name": "Burkard Schliessmann",
+        "indicators": [
+            "Burkard Schliessmann"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Bach musicians"
+        },
+        "id": 496
+    },
+    "Peter Schreier": {
+        "name": "Peter Schreier",
+        "indicators": [
+            "Peter Schreier"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Bach musicians"
+        },
+        "id": 497
+    },
+    "Hans-Andr\u00e9 Stamm": {
+        "name": "Hans-Andr\u00e9 Stamm",
+        "indicators": [
+            "Hans-Andr\u00e9 Stamm"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Bach musicians"
+        },
+        "id": 498
+    },
+    "Charles Villiers Stanford": {
+        "name": "Charles Villiers Stanford",
+        "indicators": [
+            "Charles Villiers Stanford"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Bach musicians"
+        },
+        "id": 499
+    },
+    "Paul Steinitz": {
+        "name": "Paul Steinitz",
+        "indicators": [
+            "Paul Steinitz"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Bach musicians"
+        },
+        "id": 500
+    },
+    "Rosalyn Tureck": {
+        "name": "Rosalyn Tureck",
+        "indicators": [
+            "Rosalyn Tureck"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Bach musicians"
+        },
+        "id": 501
+    },
+    "Stanley Vann": {
+        "name": "Stanley Vann",
+        "indicators": [
+            "Stanley Vann"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Bach musicians"
+        },
+        "id": 502
+    },
+    "David Willcocks": {
+        "name": "David Willcocks",
+        "indicators": [
+            "David Willcocks"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Bach musicians"
+        },
+        "id": 503
+    },
+    "Christoph Wolff": {
+        "name": "Christoph Wolff",
+        "indicators": [
+            "Christoph Wolff"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Bach musicians"
+        },
+        "id": 504
+    },
+    "Western concert flute#Renaissance (1400\u20131600) and Baroque flutes (1600\u20131760)": {
+        "name": "Western concert flute#Renaissance (1400\u20131600) and Baroque flutes (1600\u20131760)",
+        "indicators": [
+            "Western concert flute#Renaissance (1400\u20131600) and Baroque flutes (1600\u20131760)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Baroque-flute players"
+        },
+        "id": 505
+    },
+    "Emi Ferguson": {
+        "name": "Emi Ferguson",
+        "indicators": [
+            "Emi Ferguson"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Baroque-flute players"
+        },
+        "id": 506
+    },
+    "Peter Holtslag": {
+        "name": "Peter Holtslag",
+        "indicators": [
+            "Peter Holtslag"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Baroque-flute players"
+        },
+        "id": 507
+    },
+    "Gonzalo X. Ruiz": {
+        "name": "Gonzalo X. Ruiz",
+        "indicators": [
+            "Gonzalo X. Ruiz"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Baroque oboists"
+        },
+        "id": 508
+    },
+    "Sackbut": {
+        "name": "Sackbut",
+        "indicators": [
+            "Sackbut"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Sackbut players"
+        },
+        "id": 509
+    },
+    "Susan Addison": {
+        "name": "Susan Addison",
+        "indicators": [
+            "Susan Addison"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Sackbut players"
+        },
+        "id": 510
+    },
+    "Henry George Fischer": {
+        "name": "Henry George Fischer",
+        "indicators": [
+            "Henry George Fischer"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Sackbut players"
+        },
+        "id": 511
+    },
+    "Jerome Lanier": {
+        "name": "Jerome Lanier",
+        "indicators": [
+            "Jerome Lanier"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Sackbut players"
+        },
+        "id": 512
+    },
+    "Hugh Le Caine": {
+        "name": "Hugh Le Caine",
+        "indicators": [
+            "Hugh Le Caine"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Sackbut players"
+        },
+        "id": 513
+    },
+    "Meade Lux Lewis": {
+        "name": "Meade Lux Lewis",
+        "indicators": [
+            "Meade Lux Lewis"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Sackbut players"
+        },
+        "id": 514
+    },
+    "Alberich Mazak": {
+        "name": "Alberich Mazak",
+        "indicators": [
+            "Alberich Mazak"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Sackbut players"
+        },
+        "id": 515
+    },
+    "Theorbo": {
+        "name": "Theorbo",
+        "indicators": [
+            "Theorbo"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Theorbists"
+        },
+        "id": 516
+    },
+    "Leonora Baroni": {
+        "name": "Leonora Baroni",
+        "indicators": [
+            "Leonora Baroni"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Viol players"
+        },
+        "id": 517
+    },
+    "Francesco Bartolomeo Conti": {
+        "name": "Francesco Bartolomeo Conti",
+        "indicators": [
+            "Francesco Bartolomeo Conti"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Theorbists"
+        },
+        "id": 518
+    },
+    "Benedetto Ferrari": {
+        "name": "Benedetto Ferrari",
+        "indicators": [
+            "Benedetto Ferrari"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Theorbists"
+        },
+        "id": 519
+    },
+    "Paulo Galv\u00e3o": {
+        "name": "Paulo Galv\u00e3o",
+        "indicators": [
+            "Paulo Galv\u00e3o"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Theorbists"
+        },
+        "id": 520
+    },
+    "Caspar Kittel": {
+        "name": "Caspar Kittel",
+        "indicators": [
+            "Caspar Kittel"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Theorbists"
+        },
+        "id": 521
+    },
+    "Michel Lambert": {
+        "name": "Michel Lambert",
+        "indicators": [
+            "Michel Lambert"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Theorbists"
+        },
+        "id": 522
+    },
+    "Patrick O'Brien (musician)": {
+        "name": "Patrick O'Brien (musician)",
+        "indicators": [
+            "Patrick O'Brien (musician)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Theorbists"
+        },
+        "id": 523
+    },
+    "Richard Stone (lutenist)": {
+        "name": "Richard Stone (lutenist)",
+        "indicators": [
+            "Richard Stone (lutenist)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Theorbists"
+        },
+        "id": 524
+    },
+    "Christopher Wilke": {
+        "name": "Christopher Wilke",
+        "indicators": [
+            "Christopher Wilke"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Theorbists"
+        },
+        "id": 525
+    },
+    "Viol": {
+        "name": "Viol",
+        "indicators": [
+            "Viol"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Viol players"
+        },
+        "id": 526
+    },
+    "Fretwork (music group)": {
+        "name": "Fretwork (music group)",
+        "indicators": [
+            "Fretwork (music group)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Viol players"
+        },
+        "id": 527
+    },
+    "Phantasm (music group)": {
+        "name": "Phantasm (music group)",
+        "indicators": [
+            "Phantasm (music group)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Viol players"
+        },
+        "id": 528
+    },
+    "Orazio Bassani": {
+        "name": "Orazio Bassani",
+        "indicators": [
+            "Orazio Bassani"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Viol players"
+        },
+        "id": 529
+    },
+    "Sydney Beck": {
+        "name": "Sydney Beck",
+        "indicators": [
+            "Sydney Beck"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Viol players"
+        },
+        "id": 530
+    },
+    "Tina Chancey": {
+        "name": "Tina Chancey",
+        "indicators": [
+            "Tina Chancey"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Viol players"
+        },
+        "id": 531
+    },
+    "Fabrizio Dentice": {
+        "name": "Fabrizio Dentice",
+        "indicators": [
+            "Fabrizio Dentice"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Viol players"
+        },
+        "id": 532
+    },
+    "C\u00e9cile Dolmetsch": {
+        "name": "C\u00e9cile Dolmetsch",
+        "indicators": [
+            "C\u00e9cile Dolmetsch"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Viol players"
+        },
+        "id": 533
+    },
+    "Juan Garc\u00eda de Z\u00e9spedes": {
+        "name": "Juan Garc\u00eda de Z\u00e9spedes",
+        "indicators": [
+            "Juan Garc\u00eda de Z\u00e9spedes"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Viol players"
+        },
+        "id": 534
+    },
+    "J\u00e9r\u00f4me Hanta\u00ef": {
+        "name": "J\u00e9r\u00f4me Hanta\u00ef",
+        "indicators": [
+            "J\u00e9r\u00f4me Hanta\u00ef"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Viol players"
+        },
+        "id": 535
+    },
+    "Johann Christian Hertel": {
+        "name": "Johann Christian Hertel",
+        "indicators": [
+            "Johann Christian Hertel"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Viol players"
+        },
+        "id": 536
+    },
+    "John Hsu (musician)": {
+        "name": "John Hsu (musician)",
+        "indicators": [
+            "John Hsu (musician)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Viol players"
+        },
+        "id": 537
+    },
+    "Tobias Hume": {
+        "name": "Tobias Hume",
+        "indicators": [
+            "Tobias Hume"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Viol players"
+        },
+        "id": 538
+    },
+    "Lloyd Loar": {
+        "name": "Lloyd Loar",
+        "indicators": [
+            "Lloyd Loar"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Viol players"
+        },
+        "id": 539
+    },
+    "Markku Luolajan-Mikkola": {
+        "name": "Markku Luolajan-Mikkola",
+        "indicators": [
+            "Markku Luolajan-Mikkola"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Viol players"
+        },
+        "id": 540
+    },
+    "Susie Napper": {
+        "name": "Susie Napper",
+        "indicators": [
+            "Susie Napper"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Viol players"
+        },
+        "id": 541
+    },
+    "D\u00e1irine N\u00ed Mheadhra": {
+        "name": "D\u00e1irine N\u00ed Mheadhra",
+        "indicators": [
+            "D\u00e1irine N\u00ed Mheadhra"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Viol players"
+        },
+        "id": 542
+    },
+    "Philippe Pierlot": {
+        "name": "Philippe Pierlot",
+        "indicators": [
+            "Philippe Pierlot"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Viol players"
+        },
+        "id": 543
+    },
+    "Peggie Sampson": {
+        "name": "Peggie Sampson",
+        "indicators": [
+            "Peggie Sampson"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Viol players"
+        },
+        "id": 544
+    },
+    "Richard Taruskin": {
+        "name": "Richard Taruskin",
+        "indicators": [
+            "Richard Taruskin"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Viol players"
+        },
+        "id": 545
+    },
+    "Thomas Wimmer (musician)": {
+        "name": "Thomas Wimmer (musician)",
+        "indicators": [
+            "Thomas Wimmer (musician)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Viol players"
+        },
+        "id": 546
+    },
+    "Baroque violin": {
+        "name": "Baroque violin",
+        "indicators": [
+            "Baroque violin"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Baroque-violin players"
+        },
+        "id": 547
+    },
+    "Daphne Godson": {
+        "name": "Daphne Godson",
+        "indicators": [
+            "Daphne Godson"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Baroque-violin players"
+        },
+        "id": 548
+    },
+    "Jin Kim (violinist)": {
+        "name": "Jin Kim (violinist)",
+        "indicators": [
+            "Jin Kim (violinist)"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Baroque-violin players"
+        },
+        "id": 549
+    },
+    "Andrew Manze": {
+        "name": "Andrew Manze",
+        "indicators": [
+            "Andrew Manze"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Baroque-violin players"
+        },
+        "id": 550
+    },
+    "Rachel Barton Pine": {
+        "name": "Rachel Barton Pine",
+        "indicators": [
+            "Rachel Barton Pine"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Baroque-violin players"
+        },
+        "id": 551
+    },
+    "Shunsuke Sato": {
+        "name": "Shunsuke Sato",
+        "indicators": [
+            "Shunsuke Sato"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Baroque-violin players"
+        },
+        "id": 552
+    },
+    "Chouchane Siranossian": {
+        "name": "Chouchane Siranossian",
+        "indicators": [
+            "Chouchane Siranossian"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Baroque-violin players"
+        },
+        "id": 553
+    },
+    "Simon Standage": {
+        "name": "Simon Standage",
+        "indicators": [
+            "Simon Standage"
+        ],
+        "genres": [
+            "Early Music"
+        ],
+        "albums": [],
+        "notes": {
+            "category": "Baroque-violin players"
+        },
+        "id": 554
     }
 }

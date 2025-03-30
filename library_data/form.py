@@ -33,7 +33,7 @@ class FormsDataSearch:
         for name in ["composer", "genre"]:
             field = getattr(self, name)
             if field is not None and field.strip()!= "":
-                print(f"{name} - \"{field}\"")
+                #print(f"{name} - \"{field}\"")
                 return True
         return False
 

@@ -1,14 +1,12 @@
 """Wikipedia scraping and data processing utilities."""
 
-# Standard library imports
 import io
 import json
 import os
+import time
 
-# Third party imports
 import pandas as pd
 
-# Local imports
 from extensions.soup_utils import SoupUtils
 from utils import Utils
 
