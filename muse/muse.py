@@ -32,10 +32,28 @@ class Muse:
 
     def __init__(self, args, library_data):
         self.args = args
-        self._schedule = SchedulesManager.default_schedule
+        now = datetime.datetime.now()
+        self._schedule = SchedulesManager.get_active_schedule(now)
+        if self._schedule is None:
+            raise Exception("Failed to establish active schedule")
         self.memory = MuseMemory()
         self.llm = LLM(model_name=config.llm_model_name)
-        self.voice = Voice()
+        
+        # Get the initial persona from the schedule
+        initial_voice = self._schedule.voice
+        persona = None
+        for p in MuseMemory.get_persona_manager().personas.values():
+            if p.voice_name == initial_voice:
+                persona = p
+                break
+        
+        # Initialize voice with persona if found
+        if persona:
+            MuseMemory.get_persona_manager().set_current_persona(persona.name)
+            self.voice = Voice(persona.voice_name)
+        else:
+            self.voice = Voice(initial_voice)
+            
         self.open_weather_api = OpenWeatherAPI()
         self.news_api = NewsAPI()
         self.hacker_news_souper = HackerNewsSouper()
