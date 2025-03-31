@@ -558,22 +558,33 @@ class Muse:
         prompt = self.prompter.get_prompt_update_history(topic)
         if not self.args.use_system_language_for_all_topics:
             return prompt
-        if topic == Topic.LANGUAGE_LEARNING and Muse.SYSTEM_LANGUAGE_NAME_IN_ENGLISH == config.muse_language_learning_language:
+        
+        # Get the current persona's language code
+        persona = MuseMemory.get_persona_manager().get_current_persona()
+        language_code = persona.language_code if persona else Utils.get_default_user_language()
+        language = Utils.get_english_language_name(persona.language) if persona else Muse.SYSTEM_LANGUAGE_NAME_IN_ENGLISH
+        
+        # Special case for language learning
+        if topic == Topic.LANGUAGE_LEARNING:
             # Don't replace the whole prompt, it would be trying to teach the same language the prompt is already in.
-            return prompt
-        language_code = Utils.get_default_user_language()
+            if persona and language == config.muse_language_learning_language:
+                return prompt
+            language_code = Utils.get_default_user_language()
+        
+        # If language is English or not supported, use English
         if language_code == "en" or language_code not in ["de", "es", "fr", "it"]:
-            Utils.log(f"No translation available for language {language_code} topic {topic}, using English")
+            Utils.log_yellow(f"No translation available for language {language_code} topic {topic}, using English")
             return prompt
+        
         try:
             # Use two-call approach occasionally for added variety
             if self.should_use_two_call_approach():
-                translation_prompt = self.prompter.get_translation_prompt(language_code, Muse.SYSTEM_LANGUAGE_NAME_IN_ENGLISH, prompt)
+                translation_prompt = self.prompter.get_translation_prompt(language_code, language, prompt)
                 prompt = self.generate_text(translation_prompt, json_key="prompt")
             else:
                 prompt = self.prompter.get_prompt_with_language(topic, language_code)
         except Exception as e:
-            Utils.log(f"Failed to translate prompt for topic {topic} into language {Muse.SYSTEM_LANGUAGE_NAME_IN_ENGLISH} with error: {e}")
+            Utils.log(f"Failed to translate prompt for topic {topic} into language {language_code} with error: {e}")
         return prompt
 
     def generate_text(self, prompt, json_key=None, include_time_context=True):

@@ -17,6 +17,7 @@ class Config:
         self.foreground_color = "white"
         self.background_color = "#2596BE"
         self.directories = []
+        self.dj_personas = []
         self.muse_config = {
             "enable_preparation": True,
             "preparation_starts_minutes_from_end": 2,

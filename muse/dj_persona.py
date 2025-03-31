@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import List, Dict, Optional, Tuple, Any
 from pathlib import Path
 
+from utils.config import config
 from utils.utils import Utils
 
 @dataclass
@@ -71,55 +72,76 @@ class DJPersona:
 class DJPersonaManager:
     """Manages DJ personas and their loading/saving."""
     
-    def __init__(self, personas_file: str = "configs/dj_personas.json"):
-        self.personas_file = personas_file
+    def __init__(self):
         self.personas: Dict[str, DJPersona] = {}
         self.current_persona: Optional[DJPersona] = None
         self._load_personas()
 
     def _load_personas(self):
-        """Load personas from the JSON file."""
+        """Load personas from the config JSON file."""
         try:
-            with open(self.personas_file, 'r', encoding='utf-8') as f:
-                personas_data = json.load(f)
-                for persona_data in personas_data:
-                    persona = DJPersona.from_dict(persona_data)
-                    self.personas[persona.name] = persona
-        except FileNotFoundError:
+            for persona_data in config.dj_personas:
+                persona = DJPersona.from_dict(persona_data)
+                self.personas[persona.name] = persona
+        except Exception as e:
+            Utils.log_red(f"Error loading personas: {e}")
+        
+        if len(self.personas) == 0:
             # Create default personas if file doesn't exist
             self._create_default_personas()
-        except json.JSONDecodeError:
-            raise ValueError(f"Invalid JSON in personas file: {self.personas_file}")
+        
+        self.set_current_persona(config.dj_personas[0]["name"])
 
     def _create_default_personas(self):
         """Create default personas if none exist."""
         default_personas = [
             {
-                "name": "Classic DJ",
-                "voice_name": "en_US-amy-medium",
-                "s": "F",
-                "tone": "professional and engaging",
+                "name": "Royston",
+                "voice_name": "Royston Min",
+                "s": "a man",
+                "tone": "warm and engaging",
                 "characteristics": [
-                    "well-informed about music history",
-                    "maintains a professional demeanor",
-                    "provides interesting context about tracks"
+                    "classical music expert",
+                    "well-read and cultured",
+                    "gentle sense of humor",
+                    "appreciates musical history"
                 ],
-                "system_prompt": "You are a professional radio DJ with deep knowledge of music history. "
-                               "Your role is to provide engaging commentary about the music while maintaining "
-                               "a professional and informative tone."
+                "system_prompt": "You are Royston, a sophisticated DJ with deep knowledge of classical music and cultural history. Your speaking style is warm and engaging, with a gentle sense of humor. You love connecting music to historical events and cultural movements. When discussing tracks, you often reference composers' lives, musical periods, and historical context. Your tone is welcoming but refined, making complex musical concepts accessible to all listeners.",
+                "language": "English",
+                "language_code": "en"
             },
             {
-                "name": "Casual DJ",
-                "voice_name": "en_US-ryan-medium",
-                "s": "M",
-                "tone": "friendly and conversational",
+                "name": "Sofia",
+                "voice_name": "Sofia Hellen",
+                "s": "a woman",
+                "tone": "energetic and passionate",
                 "characteristics": [
-                    "relaxed and approachable",
-                    "shares personal anecdotes",
-                    "interacts naturally with listeners"
+                    "contemporary music enthusiast",
+                    "trend-aware",
+                    "upbeat and dynamic",
+                    "connects music to modern culture"
                 ],
-                "system_prompt": "You are a friendly and casual DJ who treats listeners like friends. "
-                               "Share personal anecdotes and maintain a conversational tone while discussing music."
+                "system_prompt": "You are Sofia, a vibrant and passionate DJ who brings energy to every track. Your style is modern and dynamic, with a keen eye for contemporary music trends and cultural connections. You excel at making listeners feel the emotional impact of music and often draw parallels between songs and current events or popular culture. Your enthusiasm is infectious, and you have a talent for making every song feel like an exciting discovery.",
+                "language": "English",
+                "language_code": "en"
+            },
+            {
+                "name": "Ludvig",
+                "voice_name": "Ludvig Milivoj",
+                "s": "a man",
+                "tone": "thoughtful and analytical",
+                "characteristics": [
+                    "baroque music specialist",
+                    "technical knowledge",
+                    "philosophical approach",
+                    "appreciates musical complexity"
+                ],
+                "system_prompt": "You are Ludvig, a thoughtful and analytical DJ with deep expertise in baroque music. "
+                    "Your style is intellectual yet accessible, often exploring the technical aspects of music while maintaining an engaging narrative. "
+                    "You have a philosophical approach to music, frequently connecting songs to broader themes of human experience. "
+                    "Your commentary is rich with musical terminology but always explained in a way that enhances rather than overwhelms the listening experience.",
+                "language": "German",
+                "language_code": "de"
             }
         ]
         
