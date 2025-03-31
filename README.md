@@ -1,4 +1,3 @@
-
 # Muse
 
 Muse is a media player with an integrated voice synthesizer attached to an LLM. Essentially, a robot DJ for your music and other media.
@@ -29,8 +28,8 @@ Muse is a media player with an integrated voice synthesizer attached to an LLM. 
     - `preparation_starts_after_seconds_sleep` - Set the number of seconds into a song to wait before starting text-to-speech generation.
     - `chance_speak_after_track` - Set the chance that Muse will speak after each track identifying the previous song or other media.
     - `chance_speak_before_track` - Set the chance that Muse will speak before each track identifying the upcoming song or other media.
-    - `chance_speak_about_other_topics` - Set the chance that Muse will speak about other topics.
-    - `min_seconds_between_spots` - Sometimes short tracks are played in quick succession. To decreate the chance that Muse will interject in these instances, set this value.
+    - `topic_discussion_chance_factor` - Base probability (0-1) for the DJ to discuss topics between songs. This chance increases over time if the DJ hasn't spoken recently, up to the base rate after 15 minutes of silence.
+    - `min_seconds_between_spots` - Minimum time between DJ spots to prevent too frequent interruptions.
 - `save_tts_output_topics` - Set the topics to retain MP3 files for in the `tts_ouput` directory.
 - `news_api_source_trustworthiness` - Set the trustworthiness of news sources from News API.
 - `artists_file`, `composers_file`, `forms_file`, `genres_file`, `instruments_file`, `blacklist_file` - Modify these and place your desired file in the `library_data/data` directory following the formats in the example files found there.
@@ -42,6 +41,11 @@ Muse is a media player with an integrated voice synthesizer attached to an LLM. 
 - `llm_model_name` - The name of the LLM to use, exactly the same as Ollama model name.
 - `text_cleaner_ruleset` - Add rules to this list to edit text before it is spoken by muse.
 - `tongue_twisters_dir` - If using the "tongue_twister" topic, set this to a directory containing audio files of tongue twisters (or any other set of audio files!) for muse to play intermittently.
+- `prompts_directory` - Directory containing prompts for different topics and languages. Supports:
+  - System prompts in root directory
+  - Language-specific prompts in subdirectories (e.g., 'en/', 'de/')
+  - Automatic translation fallback when language-specific prompts aren't available
+- `dj_personas` - Configure different DJ personas with unique voices, tones, and characteristics. Each persona can have its own language settings. The "voice_name" must match one of the Coqui speakers, see `tts/speakers.py` for the full list.
 
 
 ## Usage

@@ -343,17 +343,27 @@ class Muse:
 
     def get_topic(self, previous_track, excluded_topics=[]):
         excluded_topics = list(excluded_topics)
-        if Prompter.over_n_hours_since_last(Topic.WEATHER, n_hours=24) and not self.memory.is_recent_topics(["news", "hackernews"], n=3):
+        
+        # Add randomness to the time thresholds
+        weather_hours = random.uniform(20, 28)  # 20-28 hours for weather prioritization
+        news_hours = random.uniform(72, 96)    # 3-4 days for news prioritization
+        hackernews_hours = random.uniform(72, 96)  # 3-4 days for hackernews prioritization
+        min_repeat_hours = random.uniform(12, 16)   # 12-16 hours minimum repeat
+        
+        if Prompter.over_n_hours_since_last(Topic.WEATHER, n_hours=weather_hours) and not self.memory.is_recent_topics(["news", "hackernews"], n=3):
             topic = Topic.WEATHER
-        elif Prompter.over_n_hours_since_last(Topic.NEWS, n_hours=96) and not self.memory.is_recent_topics(["weather", "hackernews"], n=3):
+        elif Prompter.over_n_hours_since_last(Topic.NEWS, n_hours=news_hours) and not self.memory.is_recent_topics(["weather", "hackernews"], n=3):
             topic = Topic.NEWS
-        elif Prompter.over_n_hours_since_last(Topic.HACKERNEWS, n_hours=96) and not self.memory.is_recent_topics(["weather", "news"], n=3):
+        elif Prompter.over_n_hours_since_last(Topic.HACKERNEWS, n_hours=hackernews_hours) and not self.memory.is_recent_topics(["weather", "news"], n=3):
             topic = Topic.HACKERNEWS
         else:
+            # Add randomness to topic selection by occasionally skipping the oldest topic
+            if random.random() < 0.3:  # 30% chance to not pick the oldest topic
+                excluded_topics.append(Prompter.get_oldest_topic(excluded_topics=excluded_topics))
             topic = Prompter.get_oldest_topic(excluded_topics=excluded_topics)
 
         if topic not in excluded_topics:
-            if topic in [Topic.HACKERNEWS, Topic.NEWS] and Prompter.under_n_hours_since_last(topic, n_hours=14):
+            if topic in [Topic.HACKERNEWS, Topic.NEWS] and Prompter.under_n_hours_since_last(topic, n_hours=min_repeat_hours):
                 excluded_topics.append(topic)
             if previous_track is None and topic == Topic.TRACK_CONTEXT_POST:
                 excluded_topics.append(topic)

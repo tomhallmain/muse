@@ -23,7 +23,7 @@ class Config:
             "preparation_starts_after_seconds_sleep": 10,
             "chance_speak_after_track": 0.3,
             "chance_speak_before_track": 0.3,
-            "chance_speak_about_other_topics": 0.3,
+            "topic_discussion_chance_factor": 0.2,
             "min_seconds_between_spots": 180,
         }
         self.save_tts_output_topics = ["language_learning", "poem", "random_wiki_article", "aphorism"]

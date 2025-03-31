@@ -1,4 +1,3 @@
-
 import random
 import time
 
@@ -12,7 +11,7 @@ _ = I18N._
 class MuseSpotProfile:
     chance_speak_after_track = config.muse_config["chance_speak_after_track"]
     chance_speak_before_track = config.muse_config["chance_speak_before_track"]
-    chance_speak_about_other_topics = config.muse_config["chance_speak_about_other_topics"]
+    topic_discussion_chance_factor = config.muse_config["topic_discussion_chance_factor"]
     min_seconds_between_spots = config.muse_config["min_seconds_between_spots"]
 
     last_spot_profile_time = None
@@ -37,8 +36,18 @@ class MuseSpotProfile:
         self.speak_about_prior_track = previous_track is not None and (previous_track._is_extended or random.random() < self.chance_speak_after_track)
         # Speak about the upcoming track, even if it's the first one.
         self.speak_about_upcoming_track = track is not None and track._is_extended or random.random() < self.chance_speak_before_track
-        # Skip talking about random stuff if we just started playing, to avoid a long delay.
-        self.talk_about_something = previous_track is not None and random.random() < self.chance_speak_about_other_topics
+        # Modify the talk_about_something probability calculation
+        if previous_track is not None:
+            base_chance = self.topic_discussion_chance_factor
+            time_since_last = time.time() - MuseSpotProfile.last_spot_profile_time if MuseSpotProfile.last_spot_profile_time else self.min_seconds_between_spots
+            # Increase probability up to 4x base chance after 15 minutes of silence
+            # Use minutes instead of seconds for more meaningful adjustment
+            minutes_since_last = time_since_last / 60
+            adjusted_chance = min(base_chance * 4, base_chance * (1 + minutes_since_last / 15))
+            self.talk_about_something = random.random() < adjusted_chance
+        else:
+            # Skip talking about random stuff if we just started playing, to avoid a long delay.
+            self.talk_about_something = False
         self.has_already_spoken = False
         self.last_track_failed = last_track_failed
         self.skip_previous_track_remark = last_track_failed or skip_track
