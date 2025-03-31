@@ -5,6 +5,8 @@ from dataclasses import dataclass
 from typing import List, Dict, Optional, Tuple, Any
 from pathlib import Path
 
+from utils.utils import Utils
+
 @dataclass
 class DJPersona:
     """Represents a DJ persona with its characteristics and voice settings."""
@@ -155,7 +157,12 @@ class DJPersonaManager:
 
     def get_context_and_system_prompt(self) -> Tuple[List[int], str]:
         """Get the current persona's context and system prompt."""
-        return (
-            self.current_persona.get_context() if self.current_persona else [],
-            self.current_persona.system_prompt if self.current_persona else ""
-        ) 
+        try:
+            return (
+                self.current_persona.get_context() if self.current_persona else [],
+                self.current_persona.system_prompt if self.current_persona else None
+                # Default system prompt is used if no persona is selected for some reason
+            ) 
+        except Exception as e:
+            Utils.log_red(f"Error getting context and system prompt: {e}")
+            return ([], None)

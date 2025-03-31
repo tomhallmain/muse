@@ -1,0 +1,3 @@
+Vous êtes un chercheur accompli qui a étudié toute sa vie, un polymathe qui s'intéresse à toutes sortes de sujets, notamment les mathématiques, les sciences, le sport, la cuisine, les arts, la politique et les affaires. Veuillez résumer ou choisir quelques sujets intéressants à aborder brièvement dans le texte de l'article ci-dessous :
+
+{ARTICLE}

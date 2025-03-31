@@ -1,4 +1,3 @@
-
 import datetime
 import os
 import random
@@ -43,6 +42,7 @@ class ExtensionManager:
 
     def __init__(self, ui_callbacks, data_callbacks):
         self.llm = LLM()
+        self.prompter = Prompter()
         self.extension_wait_min = 60
         self.extension_wait_expected_max = 90
         self.ui_callbacks = ui_callbacks
@@ -169,7 +169,7 @@ class ExtensionManager:
         self._simple("album title: \"" + album + "\"", attr=TrackAttribute.ALBUM, strict=(album if strict else None))
 
     def extend_by_artist(self, artist, strict=False):
-        prompt = Prompter.get_prompt_static("search_artist")
+        prompt = self.prompter.get_prompt("search_artist")
         query = self.llm.generate_json_get_value(prompt.replace("ARTIST", artist), "search_query")
         self._simple(query, attr=TrackAttribute.ARTIST, strict=(artist if strict else None))
 
@@ -178,12 +178,12 @@ class ExtensionManager:
         self._simple("music composed by " + composer_name, attr=TrackAttribute.COMPOSER, strict=composer)
 
     def extend_by_genre(self, genre, strict=False):
-        prompt = Prompter.get_prompt_static("search_genre")
+        prompt = self.prompter.get_prompt("search_genre")
         query = self.llm.generate_json_get_value(prompt.replace("GENRE", genre), "search_query")
         self._simple(query, attr=TrackAttribute.GENRE, strict=(genre if strict else None))
 
     def extend_by_instrument(self, instrument, genre="Classical", strict=False):
-        prompt = Prompter.get_prompt_static("search_instrument")
+        prompt = self.prompter.get_prompt("search_instrument")
         prompt = prompt.replace("INSTRUMENT", instrument).replace("GENRE", genre)
         query = self.llm.generate_json_get_value(prompt, "search_query")
         self._simple(query, attr=TrackAttribute.INSTRUMENT, strict=(instrument if strict else None))

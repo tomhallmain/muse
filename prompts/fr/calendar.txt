@@ -1,0 +1,1 @@
+La date est {DATE}. L'heure est {HOUR}. Veuillez soit partager un fait intéressant concernant cette période de l'année / cette date, soit faire une déclaration prospective et rappeler les choses possibles à venir au cours de cette année ou de l'année à venir.

@@ -1,0 +1,1 @@
+La fecha es {DATE}. La hora es {TIME}. Por favor, comparte un hecho interesante sobre esta época del año / fecha o haz una declaración de futuro y recuerda posibles cosas que vendrán en este año o en el próximo.

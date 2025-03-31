@@ -20,7 +20,6 @@ from utils.config import config
 from utils.globals import Topic
 from utils.translations import I18N
 from utils.utils import Utils
-from muse.dj_persona import DJPersonaManager
 
 _ = I18N._
 
@@ -147,63 +146,75 @@ class Muse:
 
     def change_voice(self, voice_name):
         """Switch to a new DJ persona by voice name."""
-        # Find the persona with this voice name
-        persona = None
-        for p in MuseMemory.get_persona_manager().personas.values():
-            if p.voice_name == voice_name:
-                persona = p
-                break
-        
-        if persona:
-            MuseMemory.get_persona_manager().set_current_persona(persona.name)
-            self.voice = Voice(persona.voice_name)
+        try:
+            # Find the persona with this voice name
+            persona = None
+            for p in MuseMemory.get_persona_manager().personas.values():
+                if p.voice_name == voice_name:
+                    persona = p
+                    break
             
-            # Get current time information
-            now = datetime.datetime.now()
-            time_str = now.strftime("%I:%M %p")
-            day_str = now.strftime("%A")
-            date_str = now.strftime("%B %d, %Y")
-            
-            # Get language information
-            language_code = Utils.get_default_user_language()
-            language_name = Muse.SYSTEM_LANGUAGE_NAME_IN_ENGLISH
-            
-            # Get the persona initialization prompt and format it
-            persona_prompt = self.prompter.get_prompt_static("persona_init")
-            persona_prompt = persona_prompt.format(
-                name=persona.name,
-                tone=persona.tone,
-                characteristics=", ".join(persona.characteristics),
-                system_prompt=persona.system_prompt,
-                time=time_str,
-                day=day_str,
-                date=date_str,
-                language_code=language_code,
-                language_name=language_name
-            )
-            
-            # Make an initial call to seed the context
-            result = self.llm.ask(persona_prompt, context=None)
-            if result and result.context:
-                MuseMemory.get_persona_manager().update_context(result.context)
-            
-            # Get a brief introduction from the persona
-            intro_prompt = self.prompter.get_prompt_static("persona_intro")
-            intro_prompt = intro_prompt.format(
-                name=persona.name,
-                language_code=language_code,
-                language_name=language_name
-            )
-            intro_result = self.llm.ask(intro_prompt, context=result.context if result else None)
-            if intro_result and intro_result.response:
-                self.voice.prepare_to_say(intro_result.response)
+            if persona:
+                # Get the current context before switching personas
+                old_context, system_prompt = MuseMemory.get_persona_manager().get_context_and_system_prompt()[0]
+                
+                # Set the new persona
+                MuseMemory.get_persona_manager().set_current_persona(persona.name)
+                self.voice = Voice(persona.voice_name)
+                
+                # Get current time information
+                now = datetime.datetime.now()
+
+                # Get language information
+                language_code = Utils.get_default_user_language()
+                language_name = Muse.SYSTEM_LANGUAGE_NAME_IN_ENGLISH
+                
+                # Get the persona initialization prompt and format it
+                persona_prompt = self.prompter.get_prompt("persona_init", language_code)
+                persona_prompt = persona_prompt.format(
+                    name=persona.name,
+                    sex=persona.s,
+                    tone=persona.tone,
+                    characteristics=", ".join(persona.characteristics),
+                    system_prompt=system_prompt,
+                    time=now.strftime("%I:%M %p"),
+                    day=I18N.day_of_the_week(now.weekday()),
+                    date=now.strftime("%B %d, %Y"),
+                    language_code=language_code,
+                    language_name=language_name
+                )
+                
+                # Make an initial call to seed the context, using the old context
+                result = self.llm.ask(persona_prompt, context=old_context)
+                if result and result.context:
+                    MuseMemory.get_persona_manager().update_context(result.context)
+                
+                # Get a brief introduction from the persona
+                try:
+                    intro_prompt = self.prompter.get_prompt("persona_intro", language_code)
+                    intro_prompt = intro_prompt.format(
+                        name=persona.name,
+                        language_code=language_code,
+                        language_name=language_name
+                    )
+                    intro_result = self.llm.ask(intro_prompt, context=result.context if result else old_context)
+                    if intro_result and intro_result.response:
+                        self.voice.prepare_to_say(intro_result.response)
+                    else:
+                        self.voice.prepare_to_say(_("Hello, I'm {0}").format(persona.name))
+                except Exception as e:
+                    Utils.log_red(f"Failed to generate introduction: {e}")
             else:
-                # Fallback to simple greeting if LLM fails
-                self.voice.prepare_to_say(_("Hello, I'm {0}").format(persona.name))
-        else:
-            Utils.log_yellow(f"No persona found for voice {voice_name}, using default voice")
+                Utils.log_yellow(f"No persona found for voice {voice_name}, using default voice")
+                self.voice = Voice(voice_name)
+                self.voice.prepare_to_say(_("Hello, I'm your DJ"))
+                
+        except Exception as e:
+            Utils.log_red(f"Failed to change voice to {voice_name}: {e}")
+            traceback.print_exc()
+            # Ensure we at least have a working voice
             self.voice = Voice(voice_name)
-            self.voice.prepare_to_say(_("Hello, I'm your DJ"))
+            self.voice.prepare_to_say(_("Hello"))
 
     def check_for_shutdowns(self):
         now = datetime.datetime.now()
@@ -534,7 +545,7 @@ class Muse:
         return random.random() < 0.1  # 10% chance to use two-call approach
 
     def get_prompt(self, topic):
-        prompt = self.prompter.get_prompt(topic)
+        prompt = self.prompter.get_prompt_update_history(topic)
         if not self.args.use_system_language_for_all_topics:
             return prompt
         if topic == Topic.LANGUAGE_LEARNING and Muse.SYSTEM_LANGUAGE_NAME_IN_ENGLISH == config.muse_language_learning_language:
@@ -559,13 +570,19 @@ class Muse:
         """Generate text using the current DJ persona's context."""
         # Get the current persona's context and system prompt
         context, system_prompt = MuseMemory.get_persona_manager().get_context_and_system_prompt()
-
+        
+        # If we have no persona/context, use language-specific default prompt
+        if not system_prompt:
+            Utils.log_yellow("No system prompt available, using default prompt")
+            language_code = Utils.get_default_user_language()
+            system_prompt = self.prompter.get_prompt("default_system_prompt", language_code)
+        
         if include_time_context:
             # Get current time information
             now = datetime.datetime.now()
             
             # Add time context to the prompt
-            time_context = self.prompter.get_prompt_static("time_context").format(
+            time_context = self.prompter.get_prompt("time_context", language_code).format(
                 time=now.strftime("%I:%M %p"),
                 day=I18N.day_of_the_week(now.weekday()),
                 date=now.strftime("%B %d, %Y")
@@ -573,7 +590,7 @@ class Muse:
             prompt = prompt + "\n" + time_context
         
         prompt_text_to_test = prompt
-        variant_part_marker = self.prompter.get_prompt_static("variant_part_marker")
+        variant_part_marker = "----"
         if variant_part_marker in prompt_text_to_test:
             prompt_text_to_test = prompt_text_to_test[prompt_text_to_test.index(variant_part_marker):]
             prompt_text_to_test = prompt_text_to_test[prompt_text_to_test.index("\n") + 1:]

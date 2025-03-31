@@ -1,0 +1,1 @@
+La data è {DATE}. L'ora è {TIME}. Condividete un fatto interessante su questo periodo dell'anno o su questa data, oppure fate una dichiarazione previsionale e ricordate le cose che potrebbero accadere in questo o nel prossimo anno.

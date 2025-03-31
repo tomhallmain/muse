@@ -1,0 +1,1 @@
+Das Datum ist {DATE}. Die Uhrzeit ist {TIME}. Bitte teilen Sie entweder eine interessante Tatsache über diese Jahreszeit/dieses Datum mit oder geben Sie eine vorausschauende Erklärung und Erinnerung an mögliche Dinge, die in diesem oder dem kommenden Jahr kommen werden.

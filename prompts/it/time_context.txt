@@ -1,0 +1,1 @@
+L'ora corrente è {time} il {day}, {date}. 
