@@ -170,7 +170,8 @@ class ExtensionManager:
 
     def extend_by_artist(self, artist, strict=False):
         prompt = self.prompter.get_prompt("search_artist")
-        query = self.llm.generate_json_get_value(prompt.replace("ARTIST", artist), "search_query")
+        result = self.llm.generate_json_get_value(prompt.replace("ARTIST", artist), "search_query")
+        query = result.response if result else artist
         self._simple(query, attr=TrackAttribute.ARTIST, strict=(artist if strict else None))
 
     def extend_by_composer(self, composer_name):
@@ -179,13 +180,15 @@ class ExtensionManager:
 
     def extend_by_genre(self, genre, strict=False):
         prompt = self.prompter.get_prompt("search_genre")
-        query = self.llm.generate_json_get_value(prompt.replace("GENRE", genre), "search_query")
+        result = self.llm.generate_json_get_value(prompt.replace("GENRE", genre), "search_query")
+        query = result.response if result else genre
         self._simple(query, attr=TrackAttribute.GENRE, strict=(genre if strict else None))
 
     def extend_by_instrument(self, instrument, genre="Classical", strict=False):
         prompt = self.prompter.get_prompt("search_instrument")
         prompt = prompt.replace("INSTRUMENT", instrument).replace("GENRE", genre)
-        query = self.llm.generate_json_get_value(prompt, "search_query")
+        result = self.llm.generate_json_get_value(prompt, "search_query")
+        query = result.response if result else f"{instrument} {genre}"
         self._simple(query, attr=TrackAttribute.INSTRUMENT, strict=(instrument if strict else None))
 
     def _simple(self, q, m=6, depth=0, attr=None, strict=None):

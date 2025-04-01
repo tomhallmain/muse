@@ -18,6 +18,7 @@ class Config:
         self.background_color = "#2596BE"
         self.directories = []
         self.dj_personas = []
+        self.dj_persona_refresh_context = False
         self.muse_config = {
             "enable_preparation": True,
             "preparation_starts_minutes_from_end": 2,
@@ -25,7 +26,7 @@ class Config:
             "chance_speak_after_track": 0.3,
             "chance_speak_before_track": 0.3,
             "topic_discussion_chance_factor": 0.2,
-            "min_seconds_between_spots": 180,
+            "min_seconds_between_spots": 500,
         }
         self.save_tts_output_topics = ["language_learning", "poem", "random_wiki_article", "aphorism"]
         self.prompts_directory = "prompts"
@@ -113,12 +114,14 @@ class Config:
             "text_cleaner_ruleset",
             "coqui_tts_model",
             "save_tts_output_topics",
+            "dj_personas",
         )
         self.set_values(bool,
             "enable_dynamic_volume",
             "enable_library_extender",
             "enable_long_track_splitting",
             "play_videos_in_separate_window",
+            "dj_persona_refresh_context",
         )
         self.set_values(dict,
             "muse_config",

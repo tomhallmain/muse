@@ -18,7 +18,11 @@ class MuseMemory:
                 swap = pickle.load(f)
                 MuseMemory.all_spot_profiles = list(swap.all_spot_profiles)
                 MuseMemory.last_session_spot_profiles = list(swap.current_session_spot_profiles)
-                MuseMemory.persona_manager = swap.persona_manager if hasattr(swap, 'persona_manager') else DJPersonaManager()
+                if hasattr(swap, 'persona_manager') and swap.persona_manager is not None:
+                    MuseMemory.persona_manager = swap.persona_manager
+                    MuseMemory.persona_manager.reload_personas()
+                else:
+                    MuseMemory.persona_manager = DJPersonaManager()
         except FileNotFoundError:
             # Initialize persona manager only if no memory file exists
             MuseMemory.persona_manager = DJPersonaManager()

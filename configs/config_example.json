@@ -94,6 +94,7 @@
             "language_code": "de"
         }
     ],
+    "dj_persona_refresh_context": false,
     "text_cleaner_ruleset": [
         {
             "pattern": "° ?F",

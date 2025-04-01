@@ -153,7 +153,7 @@ class Prompter:
             raise Exception(f"Invalid topic: {topic}")
         prompt_topic = topic.get_prompt_topic_value()
         Prompter.update_history(topic)
-        return Prompter.get_prompt(prompt_topic)
+        return self.get_prompt(prompt_topic)
 
     def get_translation_prompt(self, language_code, language_name_english, prompt):
         """Get a prompt for translating content to a specific language.

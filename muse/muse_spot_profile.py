@@ -14,21 +14,12 @@ class MuseSpotProfile:
     topic_discussion_chance_factor = config.muse_config["topic_discussion_chance_factor"]
     min_seconds_between_spots = config.muse_config["min_seconds_between_spots"]
 
-    last_spot_profile_time = None
-
-    @staticmethod
-    def last_spot_profile_more_than_seconds(seconds=min_seconds_between_spots):
-        swap_time = time.time()
-        if MuseSpotProfile.last_spot_profile_time is None:
-            MuseSpotProfile.last_spot_profile_time = swap_time
-            return True
-        return (swap_time - MuseSpotProfile.last_spot_profile_time) > seconds
-
     def __init__(self, previous_track, track, last_track_failed, skip_track, old_grouping, new_grouping, grouping_type, get_previous_spot_profile_callback=None):
         self.previous_track = previous_track
         self.track = track
         self.track_overwritten_time = None
         self.preparation_time = None
+        self.creation_time = time.time()
         self.get_previous_spot_profile_callback = get_previous_spot_profile_callback
         # say good day on the second spot (i.e. first spot after the first track)
         self.say_good_day = previous_track is not None and self.get_previous_spot_profile().previous_track is None and random.random() < 0.5
@@ -39,12 +30,14 @@ class MuseSpotProfile:
         # Modify the talk_about_something probability calculation
         if previous_track is not None:
             base_chance = self.topic_discussion_chance_factor
-            time_since_last = time.time() - MuseSpotProfile.last_spot_profile_time if MuseSpotProfile.last_spot_profile_time else self.min_seconds_between_spots
+            previous_profile = self.get_previous_spot_profile()
+            time_since_last = self.get_time() - previous_profile.get_time() if previous_profile else self.min_seconds_between_spots
             # Increase probability up to 4x base chance after 15 minutes of silence
             # Use minutes instead of seconds for more meaningful adjustment
             minutes_since_last = time_since_last / 60
             adjusted_chance = min(base_chance * 4, base_chance * (1 + minutes_since_last / 15))
             self.talk_about_something = random.random() < adjusted_chance
+            print(f"Talk about something: {self.talk_about_something}, base chance: {base_chance}, adjusted chance: {adjusted_chance}, minutes since last: {minutes_since_last}, previous profile time: {previous_profile.get_time() if previous_profile else 'None'}, current time: {self.creation_time}")
         else:
             # Skip talking about random stuff if we just started playing, to avoid a long delay.
             self.talk_about_something = False
@@ -73,10 +66,14 @@ class MuseSpotProfile:
             raise Exception("Previous spot profile callback was not set properly")
         return self.get_previous_spot_profile_callback(idx=idx)
 
+    def get_time(self):
+        # The spot profile may not have been prepared yet, so use creation time in this case.
+        return self.creation_time if self.preparation_time is None else self.preparation_time
+
     def is_going_to_say_something(self):
         if self.say_good_day or self.speak_about_prior_group or self.speak_about_upcoming_group:
             return True
-        no_time_restriction = MuseSpotProfile.last_spot_profile_more_than_seconds()
+        no_time_restriction = self.last_spot_profile_more_than_seconds(MuseSpotProfile.min_seconds_between_spots)
         if not no_time_restriction:
             no_time_restriction = self.override_time_restriction
             if no_time_restriction:
@@ -124,3 +121,12 @@ class MuseSpotProfile:
         if self.talk_about_something:
             out += "\n - " + _("Talking about something")
         return out
+
+    def last_spot_profile_more_than_seconds(self, seconds=min_seconds_between_spots):
+        """Check if enough time has passed since the last spot profile."""
+        current_time = time.time()
+        # Get the most recent spot profile from the callback
+        last_profile = self.get_previous_spot_profile()
+        if last_profile is None:
+            return True
+        return (current_time - last_profile.get_time()) > seconds

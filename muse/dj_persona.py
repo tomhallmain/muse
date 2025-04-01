@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import List, Dict, Optional, Tuple, Any
 from pathlib import Path
 
+from tts.speakers import speakers
 from utils.config import config
 from utils.utils import Utils
 
@@ -39,6 +40,16 @@ class DJPersona:
     def get_context(self) -> List[int]:
         """Get the current context."""
         return self.context
+
+    def update_from_dict(self, new_data: 'DJPersona', refresh_context=False) -> None:
+        """Update the persona from a new DJPersona object."""
+        for key, value in new_data.__dict__.items():
+            if key == "context" and not refresh_context:
+                # Context needs to be preserved
+                continue
+            current_value = getattr(self, key)
+            if current_value != value:
+                setattr(self, key, value)
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert the persona to a dictionary for serialization."""
@@ -80,17 +91,31 @@ class DJPersonaManager:
     def _load_personas(self):
         """Load personas from the config JSON file."""
         try:
+            print(f"Loading personas from config, count = {len(config.dj_personas)}")
             for persona_data in config.dj_personas:
                 persona = DJPersona.from_dict(persona_data)
-                self.personas[persona.name] = persona
+                self.personas[persona.voice_name] = persona
         except Exception as e:
             Utils.log_red(f"Error loading personas: {e}")
         
         if len(self.personas) == 0:
-            # Create default personas if file doesn't exist
             self._create_default_personas()
         
-        self.set_current_persona(config.dj_personas[0]["name"])
+        self.current_persona = self.personas[list(self.personas.keys())[0]]
+
+    def reload_personas(self):
+        """Reload personas from the config JSON file."""
+        try:
+            print(f"Reloading personas from config, count = {len(config.dj_personas)}")
+            for persona_data in config.dj_personas:
+                persona_new = DJPersona.from_dict(persona_data)
+                if persona_new.voice_name not in self.personas:
+                    self.personas[persona_new.voice_name] = persona_new
+                else:
+                    self.personas[persona_new.voice_name].update_from_dict(
+                        persona_new, refresh_context=config.dj_persona_refresh_context)
+        except Exception as e:
+            Utils.log_red(f"Error reloading personas: {e}")
 
     def _create_default_personas(self):
         """Create default personas if none exist."""
@@ -147,23 +172,19 @@ class DJPersonaManager:
         
         # Create the configs directory if it doesn't exist
         Path("configs").mkdir(exist_ok=True)
-        
-        # Save default personas
-        with open(self.personas_file, 'w', encoding='utf-8') as f:
-            json.dump(default_personas, f, indent=4)
-        
+
         # Load the default personas
         for persona_data in default_personas:
             persona = DJPersona.from_dict(persona_data)
-            self.personas[persona.name] = persona
+            self.personas[persona.voice_name] = persona
 
-    def get_persona(self, name: str) -> Optional[DJPersona]:
-        """Get a persona by name."""
-        return self.personas.get(name)
+    def get_persona(self, voice_name: str) -> Optional[DJPersona]:
+        """Get a persona by voice name."""
+        return self.personas.get(voice_name)
 
-    def set_current_persona(self, name: str) -> Optional[DJPersona]:
-        """Set the current persona by name."""
-        persona = self.get_persona(name)
+    def set_current_persona(self, voice_name: str) -> Optional[DJPersona]:
+        """Set the current persona by voice name."""
+        persona = self.get_persona(voice_name)
         if persona:
             self.current_persona = persona
         return persona

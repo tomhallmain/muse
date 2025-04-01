@@ -32,24 +32,17 @@ class Muse:
 
     def __init__(self, args, library_data):
         self.args = args
-        now = datetime.datetime.now()
-        self._schedule = SchedulesManager.get_active_schedule(now)
+        self._schedule = SchedulesManager.default_schedule
         if self._schedule is None:
             raise Exception("Failed to establish active schedule")
         self.memory = MuseMemory()
         self.llm = LLM(model_name=config.llm_model_name)
         
-        # Get the initial persona from the schedule
         initial_voice = self._schedule.voice
-        persona = None
-        for p in MuseMemory.get_persona_manager().personas.values():
-            if p.voice_name == initial_voice:
-                persona = p
-                break
+        persona = MuseMemory.get_persona_manager().get_persona(initial_voice)
         
-        # Initialize voice with persona if found
         if persona:
-            MuseMemory.get_persona_manager().set_current_persona(persona.name)
+            MuseMemory.get_persona_manager().set_current_persona(persona.voice_name)
             self.voice = Voice(persona.voice_name)
         else:
             self.voice = Voice(initial_voice)
@@ -166,26 +159,22 @@ class Muse:
         """Switch to a new DJ persona by voice name."""
         try:
             # Find the persona with this voice name
-            persona = None
-            for p in MuseMemory.get_persona_manager().personas.values():
-                if p.voice_name == voice_name:
-                    persona = p
-                    break
+            persona = MuseMemory.get_persona_manager().get_persona(voice_name)
             
             if persona:
-                # Get the current context before switching personas
-                old_context, system_prompt = MuseMemory.get_persona_manager().get_context_and_system_prompt()[0]
-                
                 # Set the new persona
                 MuseMemory.get_persona_manager().set_current_persona(persona.name)
                 self.voice = Voice(persona.voice_name)
                 
                 # Get current time information
                 now = datetime.datetime.now()
+                time = now.strftime("%I:%M %p")
+                day = I18N.day_of_the_week(now.weekday())
+                date = now.strftime("%B %d, %Y")
 
                 # Get language information
-                language_code = Utils.get_default_user_language()
-                language_name = Muse.SYSTEM_LANGUAGE_NAME_IN_ENGLISH
+                language_code = persona.language_code
+                language_name = persona.language
                 
                 # Get the persona initialization prompt and format it
                 persona_prompt = self.prompter.get_prompt("persona_init", language_code)
@@ -194,16 +183,16 @@ class Muse:
                     sex=persona.s,
                     tone=persona.tone,
                     characteristics=", ".join(persona.characteristics),
-                    system_prompt=system_prompt,
-                    time=now.strftime("%I:%M %p"),
-                    day=I18N.day_of_the_week(now.weekday()),
-                    date=now.strftime("%B %d, %Y"),
+                    system_prompt=persona.system_prompt,
+                    time=time,
+                    day=day,
+                    date=date,
                     language_code=language_code,
-                    language_name=language_name
+                    language_name=language_name,
                 )
                 
                 # Make an initial call to seed the context, using the old context
-                result = self.llm.ask(persona_prompt, context=old_context)
+                result = self.llm.ask(persona_prompt, context=persona.get_context())
                 if result and result.context:
                     MuseMemory.get_persona_manager().update_context(result.context)
                 
@@ -212,10 +201,13 @@ class Muse:
                     intro_prompt = self.prompter.get_prompt("persona_intro", language_code)
                     intro_prompt = intro_prompt.format(
                         name=persona.name,
+                        time=time,
+                        day=day,
+                        date=date,
                         language_code=language_code,
-                        language_name=language_name
+                        language_name=language_name,
                     )
-                    intro_result = self.llm.ask(intro_prompt, context=result.context if result else old_context)
+                    intro_result = self.llm.ask(intro_prompt, context=result.context if result else persona.get_context())
                     if intro_result and intro_result.response:
                         self.voice.prepare_to_say(intro_result.response)
                     else:
@@ -580,7 +572,7 @@ class Muse:
         # Get the current persona's language code
         persona = MuseMemory.get_persona_manager().get_current_persona()
         language_code = persona.language_code if persona else Utils.get_default_user_language()
-        language = Utils.get_english_language_name(persona.language) if persona else Muse.SYSTEM_LANGUAGE_NAME_IN_ENGLISH
+        language = Utils.get_english_language_name(language_code) if persona else Muse.SYSTEM_LANGUAGE_NAME_IN_ENGLISH
         
         # Special case for language learning
         if topic == Topic.LANGUAGE_LEARNING:
@@ -609,6 +601,7 @@ class Muse:
         """Generate text using the current DJ persona's context."""
         # Get the current persona's context and system prompt
         context, system_prompt = MuseMemory.get_persona_manager().get_context_and_system_prompt()
+        language_code = MuseMemory.get_persona_manager().get_current_persona().language_code
         
         # If we have no persona/context, use language-specific default prompt
         if not system_prompt:
