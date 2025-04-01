@@ -1,9 +1,9 @@
 """DJ Persona management for the Muse application."""
 
-import json
 from dataclasses import dataclass
 from typing import List, Dict, Optional, Tuple, Any
 from pathlib import Path
+import time
 
 from tts.speakers import speakers
 from utils.config import config
@@ -21,6 +21,8 @@ class DJPersona:
     context: Optional[List[int]] = None
     language: str = "English"
     language_code: str = "en"
+    last_hello_time: Optional[float] = None
+    last_signoff_time: Optional[float] = None
 
     def __post_init__(self):
         if self.context is None:
@@ -47,6 +49,12 @@ class DJPersona:
     def update_context(self, new_context: List[int]) -> None:
         """Update the context with a new list of integers."""
         self.context = new_context
+        # Update last signoff time whenever the persona speaks
+        self.set_last_signoff_time()
+
+    def set_last_signoff_time(self) -> None:
+        """Set the last signoff time to the current time."""
+        self.last_signoff_time = time.time()
 
     def get_context(self) -> List[int]:
         """Get the current context."""
@@ -73,7 +81,9 @@ class DJPersona:
             "system_prompt": self.system_prompt,
             "context": self.context,
             "language": self.language,
-            "language_code": self.language_code
+            "language_code": self.language_code,
+            "last_hello_time": self.last_hello_time,
+            "last_signoff_time": self.last_signoff_time
         }
 
     @classmethod
@@ -88,7 +98,9 @@ class DJPersona:
             system_prompt=data["system_prompt"],
             context=data.get("context"),
             language=data.get("language", "English"),
-            language_code=data.get("language_code", "en")
+            language_code=data.get("language_code", "en"),
+            last_hello_time=data.get("last_hello_time"),
+            last_signoff_time=data.get("last_signoff_time")
         )
 
 class DJPersonaManager:

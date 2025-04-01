@@ -3,6 +3,7 @@ import os
 import random
 import time
 import traceback
+from typing import Optional
 
 from extensions.hacker_news_souper import HackerNewsSouper
 from extensions.news_api import NewsAPI
@@ -11,6 +12,7 @@ from extensions.soup_utils import WebConnectionException
 from extensions.wiki_opensearch_api import WikiOpenSearchAPI
 from extensions.llm import LLM, LLMResponseException
 from library_data.blacklist import blacklist, BlacklistException
+from muse.dj_persona import DJPersona
 from muse.muse_memory import MuseMemory
 from muse.schedules_manager import SchedulesManager, ScheduledShutdownException
 from muse.playback import Playback
@@ -166,53 +168,19 @@ class Muse:
                 # Set the new persona
                 MuseMemory.get_persona_manager().set_current_persona(persona.name)
                 self.voice = Voice(persona.voice_name)
-                
-                # Get current time information
-                now = datetime.datetime.now()
-                time = now.strftime("%I:%M %p")
-                day = I18N.day_of_the_week(now.weekday())
-                date = now.strftime("%B %d, %Y")
 
-                # Get language information
-                language_code = persona.language_code
-                language_name = persona.language
-                
-                # Get the persona initialization prompt and format it
-                persona_prompt = self.prompter.get_prompt("persona_init", language_code)
-                persona_prompt = persona_prompt.format(
-                    name=persona.name,
-                    sex=persona.s,
-                    tone=persona.tone,
-                    characteristics=", ".join(persona.characteristics),
-                    system_prompt=persona.system_prompt,
-                    time=time,
-                    day=day,
-                    date=date,
-                    language_code=language_code,
-                    language_name=language_name,
-                )
-                
-                # Make an initial call to seed the context, using the old context
-                result = self.llm.ask(persona_prompt, context=persona.get_context())
-                if result and result.context:
-                    MuseMemory.get_persona_manager().update_context(result.context)
-                
-                # Get a brief introduction from the persona
                 try:
-                    intro_prompt = self.prompter.get_prompt("persona_intro", language_code)
-                    intro_prompt = intro_prompt.format(
-                        name=persona.name,
-                        time=time,
-                        day=day,
-                        date=date,
-                        language_code=language_code,
-                        language_name=language_name,
-                    )
-                    intro_result = self.llm.ask(intro_prompt, context=result.context if result else persona.get_context())
-                    if intro_result and intro_result.response:
-                        self.voice.prepare_to_say(intro_result.response)
-                    else:
-                        self.voice.prepare_to_say(_("Hello, I'm {0}").format(persona.name))
+                    # Determine what type of introduction to use
+                    intro_prompt, init_result = self._get_introduction_prompt(persona)
+                
+                    if intro_prompt:
+                        intro_result = self.llm.ask(intro_prompt, context=init_result.context if init_result else persona.get_context())
+                        if intro_result and intro_result.response:
+                            self.voice.prepare_to_say(intro_result.response)
+                            MuseMemory.get_persona_manager().update_context(intro_result.context)
+                        else:
+                            self.voice.prepare_to_say(_("Hello, I'm {0}").format(persona.name))
+                        persona.last_hello_time = time.time()
                 except Exception as e:
                     Utils.log_red(f"Failed to generate introduction: {e}")
             else:
@@ -253,6 +221,7 @@ class Muse:
                     elif len(self._schedule.weekday_options) < 7:
                         self.voice.prepare_to_say(_("I'll be on again this coming {0}.").format(I18N.day_of_the_week(next_weekday_for_this_voice)))
         self.voice.finish_speaking()
+        MuseMemory.get_persona_manager().get_current_persona().set_last_signoff_time()
         self._schedule = tomorrow_schedule
 
     def say_good_day(self):
@@ -680,6 +649,89 @@ class Muse:
             Utils.log_red(e)
             traceback.print_exc()
             self.say_at_some_point(_("Something went wrong. We'll try to fix it soon."), spot_profile, None)
+
+    def _get_introduction_prompt(self, persona: Optional[DJPersona] = None) -> tuple[Optional[str], Optional[LLMResult]]:
+        """Determine what type of introduction to use based on timing of last interactions, initialize the persona, and return the prompt.
+        
+        Returns:
+            tuple[Optional[str], Optional[LLMResult]]: A tuple containing:
+                - The formatted introduction prompt (or None if no introduction needed)
+                - The LLM result from persona initialization
+        """
+        if not persona:
+            return None, None
+
+        
+        # NOTE the below needs to happen before "persona_init" prompt because
+        # `persona.update_context` will set the last signoff time
+        intro_type = self._determine_intro_type(persona)
+        if intro_type is None:
+            return None, None
+
+        # Get current time information
+        now = datetime.datetime.now()
+        time = now.strftime("%I:%M %p")
+        day = I18N.day_of_the_week(now.weekday())
+        date = now.strftime("%B %d, %Y")
+
+        # Get language information
+        language_code = persona.language_code
+        language_name = persona.language
+        
+        # Get the persona initialization prompt and format it
+        persona_prompt = self.prompter.get_prompt("persona_init", language_code)
+        persona_prompt = persona_prompt.format(
+            name=persona.name,
+            sex=persona.s,
+            tone=persona.tone,
+            characteristics=", ".join(persona.characteristics),
+            system_prompt=persona.system_prompt,
+            time=time,
+            day=day,
+            date=date,
+            language_code=language_code,
+            language_name=language_name,
+        )
+        
+        # Make an initial call to seed the context, using the old context
+        result = self.llm.ask(persona_prompt, context=persona.get_context())
+        if result and result.context:
+            MuseMemory.get_persona_manager().update_context(result.context)
+
+        # Get the appropriate introduction prompt
+        intro_prompt = self.prompter.get_prompt(f"persona_{intro_type}", language_code)
+        format_args = {
+            "name": persona.name,
+            "time": time,
+            "day": day,
+            "date": date,
+            "language_code": language_code,
+            "language_name": language_name,
+        }
+        if intro_type == "reintro":
+            last_tuned_in_str = self._get_last_tuned_in_str(persona)
+            format_args["last_signoff"] = last_tuned_in_str
+        intro_prompt = intro_prompt.format(**format_args)
+        return intro_prompt, result
+
+    def _determine_intro_type(self, persona: DJPersona) -> str:
+        now_time = time.time()
+        last_hello = persona.last_hello_time or 0
+        last_signoff = persona.last_signoff_time or 0
+
+        # If neither hello nor signoff has been said recently, or it's been a long time
+        if last_hello == 0 or (now_time - last_hello > 6 * 3600 and now_time - last_signoff > 6 * 3600):
+            return "intro"  
+        # If hello hasn't been said recently but signoff was recent (1-6 hours ago)
+        elif now_time - last_hello > 6 * 3600 and 1 * 3600 < now_time - last_signoff < 6 * 3600:
+            return "reintro"
+        else:
+            # If both hello and signoff were recent, don't say anything
+            return None
+
+    def _get_last_tuned_in_str(self, last_signoff):
+        last_tuned_in_str = I18N.time_ago(last_signoff)
+        return last_tuned_in_str
 
 
 
