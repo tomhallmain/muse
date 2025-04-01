@@ -32,6 +32,17 @@ class DJPersona:
         valid_language_codes = ["en", "de", "es", "fr", "it"]
         if self.language_code not in valid_language_codes:
             raise ValueError(f"Invalid language code: {self.language_code}. Must be one of {valid_language_codes}")
+        
+        if self.voice_name not in speakers:
+            try: 
+                for speaker in speakers:
+                    if Utils.is_similar_strings(speaker, self.voice_name):
+                        Utils.log_yellow(f"Found similar voice name \"{self.voice_name}\", using valid speaker name \"{speaker}\" instead")
+                        self.voice_name = speaker
+                        break
+            except Exception as e:
+                Utils.log_red(f"Error validating voice name: {e}")
+                raise ValueError(f"Invalid voice name: {self.voice_name}. Must be one of {list(speakers.keys())}")
 
     def update_context(self, new_context: List[int]) -> None:
         """Update the context with a new list of integers."""
