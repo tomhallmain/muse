@@ -27,10 +27,12 @@ class MuseSpotProfile:
         self.speak_about_prior_track = previous_track is not None and (previous_track._is_extended or random.random() < self.chance_speak_after_track)
         # Speak about the upcoming track, even if it's the first one.
         self.speak_about_upcoming_track = track is not None and track._is_extended or random.random() < self.chance_speak_before_track
+        # Track whether this spot profile resulted in actual speech
+        self.was_spoken = False
         # Modify the talk_about_something probability calculation
         if previous_track is not None:
             base_chance = self.topic_discussion_chance_factor
-            previous_profile = self.get_previous_spot_profile()
+            previous_profile = self.get_last_spoken_profile()
             time_since_last = self.get_time() - previous_profile.get_time() if previous_profile else self.min_seconds_between_spots
             # Increase probability up to 4x base chance after 15 minutes of silence
             # Use minutes instead of seconds for more meaningful adjustment
@@ -64,7 +66,8 @@ class MuseSpotProfile:
     def get_previous_spot_profile(self, idx=0):
         if self.get_previous_spot_profile_callback is None:
             raise Exception("Previous spot profile callback was not set properly")
-        return self.get_previous_spot_profile_callback(idx=idx)
+        Utils.log_debug(f"Getting previous spot profile: idx={idx}, creation_time={self.creation_time}")
+        return self.get_previous_spot_profile_callback(idx=idx, creation_time=self.creation_time)
 
     def get_time(self):
         # The spot profile may not have been prepared yet, so use creation time in this case.
@@ -122,11 +125,26 @@ class MuseSpotProfile:
             out += "\n - " + _("Talking about something")
         return out
 
+    def get_last_spoken_profile(self):
+        """Get the most recent spot profile where the DJ actually spoke.
+        
+        Returns:
+            MuseSpotProfile or None: The most recent spot profile where was_spoken is True, or None if none found
+        """
+        Utils.log_debug("Starting get_last_spoken_profile")
+        profile = self.get_previous_spot_profile()
+        idx = 1
+        while profile is not None and not profile.was_spoken:
+            Utils.log_debug(f"Looking for spoken profile: idx={idx}, was_spoken={profile.was_spoken}")
+            idx += 1
+            profile = self.get_previous_spot_profile(idx=idx)
+        Utils.log_debug(f"Found last spoken profile: {profile is not None}")
+        return profile
+
     def last_spot_profile_more_than_seconds(self, seconds=min_seconds_between_spots):
-        """Check if enough time has passed since the last spot profile."""
+        """Check if enough time has passed since the last spot profile where the DJ spoke."""
         current_time = time.time()
-        # Get the most recent spot profile from the callback
-        last_profile = self.get_previous_spot_profile()
+        last_profile = self.get_last_spoken_profile()
         if last_profile is None:
             return True
         return (current_time - last_profile.get_time()) > seconds

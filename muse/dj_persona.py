@@ -106,7 +106,7 @@ class DJPersonaManager:
     def reload_personas(self):
         """Reload personas from the config JSON file."""
         try:
-            print(f"Reloading personas from config, count = {len(config.dj_personas)}")
+            Utils.log(f"Reloading personas from config, count = {len(config.dj_personas)}")
             for persona_data in config.dj_personas:
                 persona_new = DJPersona.from_dict(persona_data)
                 if persona_new.voice_name not in self.personas:

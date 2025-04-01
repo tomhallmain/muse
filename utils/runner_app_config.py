@@ -9,8 +9,8 @@ class RunnerAppConfig:
         self.total = "-1"
         self.delay_time_seconds = "5"
         self.volume = 60.0
-        self.playback_master_strategy = "ALL"
-        self.directory = "ALL"
+        self.playback_master_strategy = "ALL_MUSIC"
+        self.directory = "ALL_MUSIC"
         self.overwrite = True
         self.muse = True
         self.extend = True

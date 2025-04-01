@@ -219,7 +219,7 @@ class LibraryData:
             with open("app_media_track_cache", "wb") as f:
                 pickle.dump(LibraryData.MEDIA_TRACK_CACHE,  f)
         except Exception as e:
-            Utils.log_red(e)
+            Utils.log_red(f"Error storing media track cache: {e}")
 
     @staticmethod
     def load_directory_cache():

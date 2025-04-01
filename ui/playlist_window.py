@@ -103,7 +103,7 @@ class PlaylistWindow(BaseWindow):
         self.label_directory = Label(self.sidebar)
         self.add_label(self.label_directory, _("Directory"), increment_row_counter=False)
         self.directory = StringVar(master)
-        directory_options = ["ALL"]
+        directory_options = ["ALL_MUSIC"]
         directory_options.extend(list(config.get_subdirectories().values()))
         self.directory_choice = OptionMenu(self.sidebar, self.directory, str(self.runner_app_config.directory),
                                            *directory_options, command=self.set_directory)
@@ -155,7 +155,7 @@ class PlaylistWindow(BaseWindow):
         directories = []
         selection = self.directory.get()
         all_dirs = config.get_subdirectories()
-        if selection == "ALL":
+        if selection == "ALL_MUSIC":
             return list(all_dirs.keys())
         else:
             for full_path, key in all_dirs.items():

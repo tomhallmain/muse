@@ -3,6 +3,8 @@ from typing import Optional
 
 from muse.dj_persona import DJPersonaManager
 from muse.muse_spot_profile import MuseSpotProfile
+from utils import Utils
+
 
 class MuseMemory:
     all_spot_profiles = []
@@ -26,6 +28,8 @@ class MuseMemory:
         except FileNotFoundError:
             # Initialize persona manager only if no memory file exists
             MuseMemory.persona_manager = DJPersonaManager()
+        except Exception as e:
+            Utils.log(f"Error loading memory: {e}")
 
     @staticmethod
     def save():
@@ -53,8 +57,50 @@ class MuseMemory:
             MuseMemory.current_session_spot_profiles = MuseMemory.current_session_spot_profiles[:MuseMemory.max_memory_size]
 
     @staticmethod
-    def get_previous_session_spot_profile(idx=0):
-        return None if len(MuseMemory.current_session_spot_profiles) <= idx else MuseMemory.current_session_spot_profiles[idx]
+    def get_previous_session_spot_profile(idx=0, creation_time=None):
+        """Get the previous spot profile at the given index that was created before the specified time.
+        
+        Args:
+            idx (int): The index of the profile to retrieve, starting from the most recent less than creation time (0 = most recent)
+            creation_time (float, optional): If provided, only return profiles created before this time
+            
+        Returns:
+            MuseSpotProfile or None: The previous spot profile if found and valid, None otherwise
+        """
+        Utils.log_debug(f"get_previous_session_spot_profile called: idx={idx}, creation_time={creation_time}, list_length={len(MuseMemory.current_session_spot_profiles)}")
+        
+        # Check if requested index is beyond list length
+        if len(MuseMemory.current_session_spot_profiles) <= idx:
+            Utils.log_debug("Index beyond list length, returning None")
+            return None
+            
+        # If no creation time specified, return profile at requested index
+        if creation_time is None:
+            Utils.log_debug(f"Returning profile at index {idx}")
+            return MuseMemory.current_session_spot_profiles[idx]
+            
+        # Find first profile created before the given creation time
+        base_idx = idx
+        while base_idx < len(MuseMemory.current_session_spot_profiles):
+            profile = MuseMemory.current_session_spot_profiles[base_idx]
+            Utils.log_debug(f"Checking profile at {base_idx}: creation_time={profile.creation_time}, target_time={creation_time}")
+            if profile.creation_time < creation_time:
+                break
+            base_idx += 1
+            
+        # If no profile found before creation time, return None
+        if base_idx >= len(MuseMemory.current_session_spot_profiles):
+            Utils.log_debug("No profile found before creation time, returning None")
+            return None
+            
+        # Return profile at (base_idx + requested_idx) if it exists
+        target_idx = base_idx + idx
+        if target_idx >= len(MuseMemory.current_session_spot_profiles):
+            Utils.log_debug(f"Target index {target_idx} beyond list length, returning None")
+            return None
+            
+        Utils.log_debug(f"Returning profile at target index {target_idx}")
+        return MuseMemory.current_session_spot_profiles[target_idx]
 
     def __init__(self):
         self.tracks_since_last_topic = 0

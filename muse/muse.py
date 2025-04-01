@@ -106,6 +106,7 @@ class Muse:
             Utils.log_debug(f"Preparing muse:\n{spot_profile}")
             if spot_profile.say_good_day:
                 self.say_good_day()
+                spot_profile.was_spoken = True
             if not spot_profile.skip_previous_track_remark:
                 self.maybe_prep_dj_post(spot_profile)
             self.maybe_prep_dj_prior(spot_profile)
@@ -272,8 +273,10 @@ class Muse:
         # TODO quality info for songs
         if spot_profile.speak_about_prior_track:
             self.speak_about_previous_track(spot_profile)
+            spot_profile.was_spoken = True
         if spot_profile.speak_about_prior_group:
             self.speak_about_previous_group(spot_profile)
+            spot_profile.was_spoken = True
 
     # def maybe_dj_post(self, spot_profile):
     #     # Release lock on TTS runner for "post" queue
@@ -302,11 +305,14 @@ class Muse:
         if spot_profile.speak_about_upcoming_group:
             self.speak_about_upcoming_group(spot_profile)
             spot_profile.has_already_spoken = True
+            spot_profile.was_spoken = True
         if spot_profile.speak_about_upcoming_track:
             self.speak_about_upcoming_track(spot_profile)
             spot_profile.has_already_spoken = True
+            spot_profile.was_spoken = True
         if spot_profile.talk_about_something:
             self.talk_about_something(spot_profile)
+            spot_profile.was_spoken = True
         else:
             self.memory.tracks_since_last_topic += 1
 
