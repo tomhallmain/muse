@@ -4,10 +4,31 @@ import sys
 from pathlib import Path
 from dataclasses import dataclass
 from typing import Optional, List, Any
+from utils.globals import PlaylistSortType
 
 # Add the project root directory to the Python path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
+
+class MockArgs:
+    """Mock command line arguments for testing."""
+    def __init__(self):
+        self.enable_preparation = True
+        self.enable_dynamic_volume = True
+        self.enable_long_track_splitting = False
+        self.long_track_splitting_time_cutoff_minutes = 20
+        self.total = -1
+        self.playlist_sort_type = PlaylistSortType.RANDOM
+        self.directories = None
+        self.overwrite = False
+        self.track = None
+        self.placeholder = False
+
+@pytest.fixture
+def mock_args():
+    """Provide mock command line arguments for testing."""
+    args = MockArgs()
+    return args
 
 @dataclass
 class MockMediaTrack:

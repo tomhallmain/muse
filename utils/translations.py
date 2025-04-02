@@ -45,6 +45,30 @@ class I18N:
         else:
             return I18N._('Sunday')
 
+    @staticmethod
+    def time_ago(seconds: float) -> tuple[int, str]:
+        """Convert seconds into a human-readable time difference.
+        
+        Returns:
+            tuple[int, str]: A tuple containing:
+                - The number of time units
+                - The translated time unit (e.g. "hours", "minutes", etc.)
+        """
+        if seconds < 60:
+            return int(seconds), I18N._("seconds")
+        elif seconds < 3600:
+            return int(seconds / 60), I18N._("minutes")
+        elif seconds < 86400:
+            return int(seconds / 3600), I18N._("hours")
+        elif seconds < 604800:
+            return int(seconds / 86400), I18N._("days")
+        elif seconds < 2592000:
+            return int(seconds / 604800), I18N._("weeks")
+        elif seconds < 31536000:
+            return int(seconds / 2592000), I18N._("months")
+        else:
+            return int(seconds / 31536000), I18N._("years")
+
     '''
     NOTE when gathering the translation strings, set _() == to gettext.gettext() instead of the above, and run:
 

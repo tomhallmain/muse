@@ -23,12 +23,15 @@ class DJPersona:
     language_code: str = "en"
     last_hello_time: Optional[float] = None
     last_signoff_time: Optional[float] = None
+    is_mock: bool = False
 
     def __post_init__(self):
         if self.context is None:
             self.context = []
         if self.characteristics is None:
             self.characteristics = []
+        if not hasattr(self, "is_mock"):
+            self.is_mock = False
             
         # Validate language code
         valid_language_codes = ["en", "de", "es", "fr", "it"]
@@ -109,6 +112,7 @@ class DJPersonaManager:
     def __init__(self):
         self.personas: Dict[str, DJPersona] = {}
         self.current_persona: Optional[DJPersona] = None
+        self.allow_mock_personas = False
         self._load_personas()
 
     def _load_personas(self):
@@ -137,6 +141,11 @@ class DJPersonaManager:
                 else:
                     self.personas[persona_new.voice_name].update_from_dict(
                         persona_new, refresh_context=config.dj_persona_refresh_context)
+            # Remove mock personas
+            for name, persona in self.personas.items():
+                if persona.is_mock:
+                    Utils.log_yellow(f"Removing mock persona: {name}")
+                    del self.personas[name]
         except Exception as e:
             Utils.log_red(f"Error reloading personas: {e}")
 
@@ -203,7 +212,27 @@ class DJPersonaManager:
 
     def get_persona(self, voice_name: str) -> Optional[DJPersona]:
         """Get a persona by voice name."""
-        return self.personas.get(voice_name)
+        persona = self.personas.get(voice_name)
+        if persona:
+            return persona
+        else:
+            if self.allow_mock_personas:
+                Utils.log_yellow(f"Mock persona not found, creating new: {voice_name}")
+                persona = DJPersona(
+                    name=voice_name,
+                    voice_name=voice_name,
+                    s="a man",
+                    tone="neutral",
+                    characteristics=[],
+                    system_prompt="",
+                    language="English",
+                    language_code="en"
+                )
+                self.personas[voice_name] = persona
+                return persona
+            else:
+                Utils.log_red(f"Persona not found: {voice_name}")
+                return None
 
     def set_current_persona(self, voice_name: str) -> Optional[DJPersona]:
         """Set the current persona by voice name."""

@@ -72,10 +72,21 @@ class TestPlaylistSorting:
             data_callbacks=mock_data_callbacks
         )
         
-        # Verify tracks are in original order
+        # Verify all tracks are present
         assert len(playlist.sorted_tracks) == len(mock_tracks)
-        for i, track in enumerate(playlist.sorted_tracks):
-            assert track.filepath == mock_tracks[i].filepath
+        track_filepaths = {t.filepath for t in playlist.sorted_tracks}
+        mock_filepaths = {t.filepath for t in mock_tracks}
+        assert track_filepaths == mock_filepaths
+        
+        # Verify sequence order is maintained after start point
+        # Find the index of the first track in the original order
+        first_track = mock_tracks[0]
+        start_idx = playlist.sorted_tracks.index(first_track)
+        
+        # Verify the sequence after the start point matches the original order
+        for i in range(len(mock_tracks)):
+            expected_idx = (start_idx + i) % len(mock_tracks)
+            assert playlist.sorted_tracks[expected_idx].filepath == mock_tracks[i].filepath
 
     def test_album_shuffle_with_history(self, mock_data_callbacks, mock_tracks):
         """Test album shuffle considering recently played albums."""

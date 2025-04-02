@@ -1,32 +1,15 @@
 import pytest
-from pathlib import Path
-from dataclasses import dataclass
-from muse import Muse, MuseSpotProfile, Playback, PlaybackConfig, Playlist
+from muse import Muse, MuseSpotProfile, PlaybackConfig, Playlist
 from utils.globals import PlaylistSortType
 from library_data.media_track import MediaTrack
 
-@dataclass
-class MockArgs:
-    """Mock command line arguments for testing."""
-    enable_preparation: bool = True
-    enable_dynamic_volume: bool = True
-    enable_long_track_splitting: bool = False
-    long_track_splitting_time_cutoff_minutes: int = 20
-    total: int = -1
-    playlist_sort_type: str = PlaylistSortType.RANDOM
-    directories: list = None
-    overwrite: bool = False
-    track: str = None
-    placeholder: bool = False
-
 @pytest.mark.unit
 class TestMuse:
-    def test_muse_creation(self, mock_data_callbacks):
+    def test_muse_creation(self, mock_data_callbacks, mock_args):
         """Test basic Muse instance creation."""
-        args = MockArgs()
-        muse = Muse(args=args, library_data=mock_data_callbacks)
+        muse = Muse(args=mock_args, library_data=mock_data_callbacks)
         assert isinstance(muse, Muse)
-        assert muse.args == args
+        assert muse.args == mock_args
         assert muse.library_data == mock_data_callbacks
 
 @pytest.mark.unit
@@ -52,8 +35,25 @@ class TestMuseSpot:
         assert not profile_single.last_track_failed
         assert not profile_single.has_already_spoken
 
-        def get_previous_spot_profile_callback(idx=0):
-            return profile_single
+        # Create a chain of mock profiles
+        mock_chain = []
+        for i in range(3):  # Create 3 profiles in the chain
+            profile = MuseSpotProfile(
+                previous_track=None,
+                track=track1,
+                last_track_failed=False,
+                skip_track=False,
+                old_grouping=None,
+                new_grouping=None,
+                grouping_type=None
+            )
+            profile.was_spoken = True  # Mark all as spoken
+            mock_chain.append(profile)
+
+        def get_previous_spot_profile_callback(idx=0, creation_time=None):
+            if idx >= len(mock_chain):
+                return None  # Return None when we've reached the end of the chain
+            return mock_chain[idx]
         
         # Test with both previous and current track
         profile_both = MuseSpotProfile(

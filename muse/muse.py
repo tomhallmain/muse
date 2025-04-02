@@ -10,7 +10,7 @@ from extensions.news_api import NewsAPI
 from extensions.open_weather import OpenWeatherAPI
 from extensions.soup_utils import WebConnectionException
 from extensions.wiki_opensearch_api import WikiOpenSearchAPI
-from extensions.llm import LLM, LLMResponseException
+from extensions.llm import LLM, LLMResponseException, LLMResult
 from library_data.blacklist import blacklist, BlacklistException
 from muse.dj_persona import DJPersona
 from muse.muse_memory import MuseMemory
@@ -661,10 +661,9 @@ class Muse:
         if not persona:
             return None, None
 
-        
         # NOTE the below needs to happen before "persona_init" prompt because
         # `persona.update_context` will set the last signoff time
-        intro_type = self._determine_intro_type(persona)
+        intro_type = self._determine_intro_type(time.time(), persona)
         if intro_type is None:
             return None, None
 
@@ -714,24 +713,42 @@ class Muse:
         intro_prompt = intro_prompt.format(**format_args)
         return intro_prompt, result
 
-    def _determine_intro_type(self, persona: DJPersona) -> str:
-        now_time = time.time()
+    def _determine_intro_type(self, now_time: float, persona: DJPersona) -> str:
         last_hello = persona.last_hello_time or 0
         last_signoff = persona.last_signoff_time or 0
 
         # If neither hello nor signoff has been said recently, or it's been a long time
         if last_hello == 0 or (now_time - last_hello > 6 * 3600 and now_time - last_signoff > 6 * 3600):
             return "intro"  
+        
+        # Check if the time difference spans across sleeping hours
+        last_signoff_dt = datetime.datetime.fromtimestamp(last_signoff)
+        now_dt = datetime.datetime.fromtimestamp(now_time)
+        
+        # If the time difference is less than 12 hours but greater than 4 hours and 
+        # spans across sleeping hours (11 PM to 6 AM), treat it as a long absence
+        if ((4 * 3600) < (now_time - last_signoff) < (12 * 3600) and 
+                ((last_signoff_dt.hour >= 23 or last_signoff_dt.hour < 6) and
+                 (now_dt.hour > 4 and now_dt.hour < 10))):
+            return "intro"
+            
         # If hello hasn't been said recently but signoff was recent (1-6 hours ago)
-        elif now_time - last_hello > 6 * 3600 and 1 * 3600 < now_time - last_signoff < 6 * 3600:
+        elif now_time - last_hello > 2 * 3600 and 1 * 3600 < now_time - last_signoff <= 6 * 3600:
             return "reintro"
         else:
             # If both hello and signoff were recent, don't say anything
             return None
 
-    def _get_last_tuned_in_str(self, last_signoff):
-        last_tuned_in_str = I18N.time_ago(last_signoff)
-        return last_tuned_in_str
+    def _get_last_tuned_in_str(self, persona: DJPersona) -> str:
+        """Get a human-readable string describing when the listener last tuned in.
+        
+        Returns:
+            str: A translated string like "The listener last tuned in 2 hours ago"
+        """
+        last_signoff = persona.last_signoff_time or 0
+        time_diff = time.time() - last_signoff
+        num_units, unit = I18N.time_ago(time_diff)
+        return _("The listener last tuned in {0} {1} ago").format(num_units, unit)
 
 
 
