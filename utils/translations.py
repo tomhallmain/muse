@@ -25,8 +25,6 @@ class I18N:
             return I18N.translate.gettext(s)
         except KeyError:
             return s
-        except Exception:
-            return s
 
     @staticmethod
     def day_of_the_week(day_index=0):

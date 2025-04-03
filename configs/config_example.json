@@ -8,7 +8,7 @@
         "preparation_starts_after_seconds_sleep": 10,
         "chance_speak_after_track": 0.2,
         "chance_speak_before_track": 0.3,
-        "topic_discussion_chance_factor": 0.15,
+        "topic_discussion_chance_factor": 0.10,
         "min_seconds_between_spots": 500
     },
     "save_tts_output_topics": [
@@ -98,12 +98,18 @@
     "text_cleaner_ruleset": [
         {
             "pattern": "° ?F",
-            "replacement": " degrees Fahrenheit",
+            "replacement": {
+                "en": " degrees Fahrenheit",
+                "de": " Grad Fahrenheit"
+            },
             "simple_replacement": false
         },
         {
             "pattern":  "° ?C",
-            "replacement":  " degrees Celcius",
+            "replacement": {
+                "en": " degrees Fahrenheit",
+                "de": " Grad Fahrenheit"
+            },
             "simple_replacement": false
         },
         {

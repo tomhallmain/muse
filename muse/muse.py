@@ -80,13 +80,24 @@ class Muse:
             raise Exception("Playlist callback was not initialized!")
         return self.get_playlist_callback()
 
+    def get_locale(self):
+        persona = MuseMemory.get_persona_manager().get_current_persona()
+        if persona is not None:
+            return persona.language_code
+        return I18N.locale
+
     def say_at_some_point(self, text, spot_profile, topic):
         save_mp3 = topic is not None and topic.value in config.save_tts_output_topics
         topic_str = "" if topic is None else topic.translate().replace(" ", "_")
+        locale = self.get_locale()
         if spot_profile.immediate:
-            self.voice.say(text, save_mp3=save_mp3, topic=topic_str)
+            self.voice.say(text, topic=topic_str, save_mp3=save_mp3, locale=locale)
         else:
-            self.voice.prepare_to_say(text, save_mp3=save_mp3, topic=topic_str)
+            self.voice.prepare_to_say(text, topic=topic_str, save_mp3=save_mp3, locale=locale)
+
+    def prepare_to_say(self, text, topic="", save_mp3=False):
+        locale = self.get_locale()
+        self.voice.prepare_to_say(text, topic=topic, save_mp3=save_mp3, locale=locale)
 
     def ready_to_prepare(self, cumulative_sleep_seconds, ms_remaining):
         return Muse.enable_preparation \
@@ -176,24 +187,24 @@ class Muse:
                     if intro_prompt:
                         intro_result = self.llm.ask(intro_prompt, context=init_result.context if init_result else persona.get_context())
                         if intro_result and intro_result.response:
-                            self.voice.prepare_to_say(intro_result.response)
+                            self.voice.prepare_to_say(intro_result.response, locale=persona.language_code)
                             MuseMemory.get_persona_manager().update_context(intro_result.context)
                         else:
-                            self.voice.prepare_to_say(_("Hello, I'm {0}").format(persona.name))
+                            self.voice.prepare_to_say(_("Hello, I'm {0}").format(persona.name), locale=persona.language_code)
                         persona.last_hello_time = time.time()
                 except Exception as e:
                     Utils.log_red(f"Failed to generate introduction: {e}")
             else:
                 Utils.log_yellow(f"No persona found for voice {voice_name}, using default voice")
                 self.voice = Voice(voice_name)
-                self.voice.prepare_to_say(_("Hello, I'm your DJ"))
+                self.voice.prepare_to_say(_("Hello, I'm your DJ"), locale=I18N.locale)
                 
         except Exception as e:
             Utils.log_red(f"Failed to change voice to {voice_name}: {e}")
             traceback.print_exc()
             # Ensure we at least have a working voice
             self.voice = Voice(voice_name)
-            self.voice.prepare_to_say(_("Hello"))
+            self.voice.prepare_to_say(_("Hello"), locale=I18N.locale)
 
     def check_for_shutdowns(self):
         now = datetime.datetime.now()
@@ -207,19 +218,19 @@ class Muse:
     def sign_off(self, now):
         now_general_word = _("tonight") if (now.hour < 5 or now.hour > 19) else _("today")
         tomorrow = SchedulesManager.get_tomorrow(now)
-        self.voice.prepare_to_say(_("The scheduled shutdown time has arrived. That's it for {0}.").format(now_general_word))
+        self.prepare_to_say(_("The scheduled shutdown time has arrived. That's it for {0}.").format(now_general_word))
         tomorrow_schedule = SchedulesManager.get_active_schedule(tomorrow)
         if tomorrow_schedule is not None:
             if tomorrow_schedule.voice == self._schedule.voice:
-                self.voice.prepare_to_say(_("I'll be on again tomorrow."))
+                self.prepare_to_say(_("I'll be on again tomorrow."))
             else:
-                self.voice.prepare_to_say(_("Tomorrow you'll hear from {0}.").format(tomorrow_schedule.voice))
+                self.prepare_to_say(_("Tomorrow you'll hear from {0}.").format(tomorrow_schedule.voice))
                 next_weekday_for_this_voice = SchedulesManager.get_next_weekday_index_for_voice(self._schedule.voice, tomorrow)
                 if next_weekday_for_this_voice is not None:
                     if next_weekday_for_this_voice == now.weekday():
-                        self.voice.prepare_to_say(_("The next time I'll be on is next week, at the same time."))
+                        self.prepare_to_say(_("The next time I'll be on is next week, at the same time."))
                     elif len(self._schedule.weekday_options) < 7:
-                        self.voice.prepare_to_say(_("I'll be on again this coming {0}.").format(I18N.day_of_the_week(next_weekday_for_this_voice)))
+                        self.prepare_to_say(_("I'll be on again this coming {0}.").format(I18N.day_of_the_week(next_weekday_for_this_voice)))
         self.voice.finish_speaking()
         MuseMemory.get_persona_manager().get_current_persona().set_last_signoff_time()
         self._schedule = tomorrow_schedule
@@ -230,13 +241,13 @@ class Muse:
             return
         Utils.log_debug("Saying good day")
         if hour < 11:
-            self.voice.prepare_to_say(_("Good morning"))
+            self.prepare_to_say(_("Good morning"))
         elif hour < 13:
-            self.voice.prepare_to_say(_("Good day"))
+            self.prepare_to_say(_("Good day"))
         elif hour < 17:
-            self.voice.prepare_to_say(_("Good afternoon"))
+            self.prepare_to_say(_("Good afternoon"))
         else:
-            self.voice.prepare_to_say(_("Good evening"))
+            self.prepare_to_say(_("Good evening"))
 
     def maybe_prep_dj_post(self, spot_profile):
         # TODO quality info for songs

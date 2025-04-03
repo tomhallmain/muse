@@ -39,8 +39,8 @@ class Chunker:
     cleaner = TextCleanerRuleset()
 
     @staticmethod
-    def _clean(text):
-        cleaned = Chunker.cleaner.clean(text)
+    def _clean(text, locale=None):
+        cleaned = Chunker.cleaner.clean(text, locale)
         if Chunker.count_tokens(cleaned) > 200 and cleaned.startswith("\"") and cleaned.endswith("\""):
             # The sentence segmentation algorithm does not break on quotes even if they are long.
             return cleaned[1:-1]
@@ -51,18 +51,18 @@ class Chunker:
         return bool(re.search(r'\w', text))
 
     @staticmethod
-    def _yield_chunks(lines_iterable, is_str=False, split_on_each_line=False):
+    def _yield_chunks(lines_iterable, is_str=False, split_on_each_line=False, locale=None):
         last_chunk = ""
         chunk = ""
         for line in lines_iterable:
             if split_on_each_line:
                 if Chunker.contains_alphanumeric(line):
-                    yield Chunker._clean(line.strip())
+                    yield Chunker._clean(line.strip(), locale)
                 continue
             if line.strip() == "":
                 if chunk.strip() != "":
                     if Chunker.contains_alphanumeric(chunk):
-                        yield Chunker._clean(chunk.strip())
+                        yield Chunker._clean(chunk.strip(), locale)
                 last_chunk = chunk
                 chunk = ""
                 continue
@@ -73,7 +73,7 @@ class Chunker:
             chunk += line
         if chunk != last_chunk and chunk.strip() != "":
             if Chunker.contains_alphanumeric(chunk):
-                yield Chunker._clean(chunk.strip())
+                yield Chunker._clean(chunk.strip(), locale)
 
     @staticmethod
     def count_tokens(chunk):
@@ -85,8 +85,8 @@ class Chunker:
         return [" ".join(chunk_tokens[i: i + size]) for i in range(0, len(chunk_tokens), size)]
 
     @staticmethod
-    def yield_chunks(lines_iterable, is_str=False, split_on_each_line=False):
-        for chunk in Chunker._yield_chunks(lines_iterable, is_str=is_str, split_on_each_line=split_on_each_line):
+    def yield_chunks(lines_iterable, is_str=False, split_on_each_line=False, locale=None):
+        for chunk in Chunker._yield_chunks(lines_iterable, is_str=is_str, split_on_each_line=split_on_each_line, locale=locale):
             if Chunker.count_tokens(chunk) > Chunker.MAX_CHUNK_TOKENS:
                 for subchunk in Chunker.split_tokens(chunk, size=Chunker.MAX_CHUNK_TOKENS - 1):
                     yield subchunk
@@ -94,13 +94,13 @@ class Chunker:
                 yield chunk
 
     @staticmethod
-    def get_chunks(filepath, split_on_each_line=False):
+    def get_chunks(filepath, split_on_each_line=False, locale=None):
         with open(filepath, 'r', encoding="utf8") as f:
-            yield from Chunker.yield_chunks(f, split_on_each_line=split_on_each_line)
+            yield from Chunker.yield_chunks(f, split_on_each_line=split_on_each_line, locale=locale)
 
     @staticmethod
-    def get_str_chunks(text, split_on_each_line=False):
-        yield from Chunker.yield_chunks(text.split("\n"), is_str=True, split_on_each_line=split_on_each_line)
+    def get_str_chunks(text, split_on_each_line=False, locale=None):
+        yield from Chunker.yield_chunks(text.split("\n"), is_str=True, split_on_each_line=split_on_each_line, locale=locale)
 
 
 
@@ -227,9 +227,9 @@ class TextToSpeechRunner:
         self.generate_speech_file(text, output_path)
         self.add_speech_file_to_queue(output_path)
 
-    def speak(self, text, save_mp3=False):
+    def speak(self, text, save_mp3=False, locale=None):
         full_text = ""
-        for chunk in Chunker.get_str_chunks(text):
+        for chunk in Chunker.get_str_chunks(text, locale=locale):
             Utils.log("-------------------\n" + chunk)
             if full_text:
                 full_text += "\n\n"
@@ -239,9 +239,9 @@ class TextToSpeechRunner:
             time.sleep(0.5)
         self.combine_audio_files(save_mp3, text_content=full_text)
 
-    def speak_file(self, filepath, save_mp3=True, split_on_each_line=False):
+    def speak_file(self, filepath, save_mp3=True, split_on_each_line=False, locale=None):
         full_text = ""
-        for chunk in Chunker.get_chunks(filepath, split_on_each_line):
+        for chunk in Chunker.get_chunks(filepath, split_on_each_line, locale=locale):
             Utils.log("-------------------\n" + chunk)
             if full_text:
                 full_text += "\n\n"

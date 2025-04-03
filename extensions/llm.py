@@ -73,18 +73,19 @@ class LLMResult:
 
 class LLM:
     ENDPOINT = "http://localhost:11434/api/generate"
+    DEFAULT_TIMEOUT = 180
 
     def __init__(self, model_name="deepseek-r1:14b"):
         self.model_name = model_name
         Utils.log(f"Using LLM model: {self.model_name}")
 
-    def ask(self, query, json_key=None, timeout=120, context=None, system_prompt=None):
+    def ask(self, query, json_key=None, timeout=DEFAULT_TIMEOUT, context=None, system_prompt=None):
         """Ask the LLM a question and optionally extract a JSON value."""
         if json_key is not None:
             return self.generate_json_get_value(query, json_key, timeout=timeout, context=context, system_prompt=system_prompt)
         return self.generate_response(query, timeout=timeout, context=context, system_prompt=system_prompt)
 
-    def generate_response(self, query, timeout=120, context=None, system_prompt=None):
+    def generate_response(self, query, timeout=DEFAULT_TIMEOUT, context=None, system_prompt=None):
         """Generate a response from the LLM."""
         query = self._sanitize_query(query)
         timeout = self._get_timeout(timeout)
@@ -124,7 +125,7 @@ class LLM:
             Utils.log_red(f"Failed to generate LLM response: {e}")
             raise LLMResponseException(f"Failed to generate LLM response: {e}")
 
-    def generate_json_get_value(self, query, json_key, timeout=120, context=None, system_prompt=None):
+    def generate_json_get_value(self, query, json_key, timeout=DEFAULT_TIMEOUT, context=None, system_prompt=None):
         """Generate a response and extract a specific JSON value."""
         result = self.generate_response(query, timeout=timeout, context=context, system_prompt=system_prompt)
         return result._get_json_attr(json_key)
@@ -142,11 +143,11 @@ class LLM:
     def _sanitize_query(self, query):
         return query
 
-    def _get_timeout(self, timeout):
+    def _get_timeout(self, timeout=DEFAULT_TIMEOUT):
         if self._is_thinking_model():
             # Thinking models have internal prompt mechanisms which
             # can take a while to complete for complex requests.
-            return max(timeout, 200)
+            return max(timeout, 300)
         return timeout
 
 

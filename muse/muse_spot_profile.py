@@ -64,6 +64,9 @@ class MuseSpotProfile:
         self.override_time_restriction = self.speak_about_prior_track and previous_track._is_extended or self.speak_about_upcoming_track and track._is_extended
 
     def get_previous_spot_profile(self, idx=0):
+        """Get the last spot profile that was actually spoken.
+
+        NOTE: Currently this is set during preparation but at some point it could be a callback via the Muse Voice instance."""
         if self.get_previous_spot_profile_callback is None:
             raise Exception("Previous spot profile callback was not set properly")
         Utils.log_debug(f"Getting previous spot profile: idx={idx}, creation_time={self.creation_time}")
