@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2025-04-02 13:11-0400\n"
+"POT-Creation-Date: 2025-04-03 18:00-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -167,7 +167,7 @@ msgstr ""
 msgid "Copied album art to clipboard."
 msgstr ""
 
-#: .\app.py:650 .\muse\muse_spot_profile.py:118
+#: .\app.py:650 .\muse\muse_spot_profile.py:121
 msgid "Track: "
 msgstr ""
 
@@ -187,7 +187,7 @@ msgstr ""
 msgid "Next Up: "
 msgstr ""
 
-#: .\app.py:673 .\muse\muse_spot_profile.py:119
+#: .\app.py:673 .\muse\muse_spot_profile.py:122
 msgid "Previous Track: "
 msgstr ""
 
@@ -236,7 +236,7 @@ msgid "Unknown artist"
 msgstr ""
 
 #: .\library_data\media_track.py:376 .\library_data\media_track.py:377
-#: .\tts\text_cleaner_ruleset.py:61
+#: .\tts\text_cleaner_ruleset.py:78
 msgid "Number \\1"
 msgstr ""
 
@@ -248,155 +248,163 @@ msgstr ""
 msgid " Opus \\2"
 msgstr ""
 
-#: .\muse\muse.py:182
+#: .\muse\dj_persona.py:71
+msgid "a man"
+msgstr ""
+
+#: .\muse\dj_persona.py:73
+msgid "a woman"
+msgstr ""
+
+#: .\muse\muse.py:193
 msgid "Hello, I'm {0}"
 msgstr ""
 
-#: .\muse\muse.py:189
+#: .\muse\muse.py:200
 msgid "Hello, I'm your DJ"
 msgstr ""
 
-#: .\muse\muse.py:196
+#: .\muse\muse.py:207
 msgid "Hello"
 msgstr ""
 
-#: .\muse\muse.py:208
+#: .\muse\muse.py:219
 msgid "today"
 msgstr ""
 
-#: .\muse\muse.py:208
+#: .\muse\muse.py:219
 msgid "tonight"
 msgstr ""
 
-#: .\muse\muse.py:210
+#: .\muse\muse.py:221
 msgid "The scheduled shutdown time has arrived. That's it for {0}."
 msgstr ""
 
-#: .\muse\muse.py:214
+#: .\muse\muse.py:225
 msgid "I'll be on again tomorrow."
 msgstr ""
 
-#: .\muse\muse.py:216
+#: .\muse\muse.py:227
 msgid "Tomorrow you'll hear from {0}."
 msgstr ""
 
-#: .\muse\muse.py:220
+#: .\muse\muse.py:231
 msgid "The next time I'll be on is next week, at the same time."
 msgstr ""
 
-#: .\muse\muse.py:222
+#: .\muse\muse.py:233
 msgid "I'll be on again this coming {0}."
 msgstr ""
 
-#: .\muse\muse.py:233
+#: .\muse\muse.py:244
 msgid "Good morning"
 msgstr ""
 
-#: .\muse\muse.py:235
+#: .\muse\muse.py:246
 msgid "Good day"
 msgstr ""
 
-#: .\muse\muse.py:237
+#: .\muse\muse.py:248
 msgid "Good afternoon"
 msgstr ""
 
-#: .\muse\muse.py:239
+#: .\muse\muse.py:250
 msgid "Good evening"
 msgstr ""
 
-#: .\muse\muse.py:260
+#: .\muse\muse.py:271
 msgid "That was \"{0}\" in \"{1}\""
 msgstr ""
 
-#: .\muse\muse.py:262 .\muse\muse.py:296
+#: .\muse\muse.py:273 .\muse\muse.py:307
 msgid " by \"{0}\"."
 msgstr ""
 
-#: .\muse\muse.py:267
+#: .\muse\muse.py:278
 msgid "That was a new track. How'd you like that?"
 msgstr ""
 
-#: .\muse\muse.py:269
+#: .\muse\muse.py:280
 msgid "That was a new one. How'd you like it?"
 msgstr ""
 
-#: .\muse\muse.py:292
+#: .\muse\muse.py:303
 msgid "To start, we'll be playing: \"{0}\" from \"{1}\""
 msgstr ""
 
-#: .\muse\muse.py:294
+#: .\muse\muse.py:305
 msgid "Next up, we'll be playing: \"{0}\" from \"{1}\""
 msgstr ""
 
-#: .\muse\muse.py:300
+#: .\muse\muse.py:311
 msgid "This one is a new track."
 msgstr ""
 
-#: .\muse\muse.py:309
+#: .\muse\muse.py:320
 msgid "After that short interlude, we're back to our {0} shuffle."
 msgstr ""
 
-#: .\muse\muse.py:312
+#: .\muse\muse.py:323
 msgid "We've been listening to a group of tracks from the {0} {1}"
 msgstr ""
 
-#: .\muse\muse.py:322
+#: .\muse\muse.py:333
 msgid "We're listening to a group of tracks from the {0} {1}."
 msgstr ""
 
-#: .\muse\muse.py:325
+#: .\muse\muse.py:336
 msgid "We're going to start a new group of tracks from the {0} {1}."
 msgstr ""
 
-#: .\muse\muse.py:371
+#: .\muse\muse.py:382
 msgid "First let's hear about {0}"
 msgstr ""
 
-#: .\muse\muse.py:373
+#: .\muse\muse.py:384
 msgid "But first, let's hear about {0}."
 msgstr ""
 
-#: .\muse\muse.py:638
+#: .\muse\muse.py:649
 msgid "We're having some technical difficulties in accessing our source for {0}. We'll try again later"
 msgstr ""
 
-#: .\muse\muse.py:642
+#: .\muse\muse.py:653
 msgid "It seems our writer for {0} is unexpectedly away at the moment. Did we forget to pay his salary again?"
 msgstr ""
 
-#: .\muse\muse.py:646
+#: .\muse\muse.py:657
 msgid "We've found problems with all of our {0} ideas. Please try again later."
 msgstr ""
 
-#: .\muse\muse.py:651
+#: .\muse\muse.py:662
 msgid "Something went wrong. We'll try to fix it soon."
 msgstr ""
 
-#: .\muse\muse.py:751
+#: .\muse\muse.py:762
 msgid "The listener last tuned in {0} {1} ago"
 msgstr ""
 
-#: .\muse\muse_spot_profile.py:109
+#: .\muse\muse_spot_profile.py:112
 msgid "Talking about: "
 msgstr ""
 
-#: .\muse\muse_spot_profile.py:118
+#: .\muse\muse_spot_profile.py:121
 msgid "No track"
 msgstr ""
 
-#: .\muse\muse_spot_profile.py:119
+#: .\muse\muse_spot_profile.py:122
 msgid "No previous track"
 msgstr ""
 
-#: .\muse\muse_spot_profile.py:121
+#: .\muse\muse_spot_profile.py:124
 msgid "Speaking about prior track"
 msgstr ""
 
-#: .\muse\muse_spot_profile.py:123
+#: .\muse\muse_spot_profile.py:126
 msgid "Speaking about upcoming track"
 msgstr ""
 
-#: .\muse\muse_spot_profile.py:125
+#: .\muse\muse_spot_profile.py:128
 msgid "Talking about something"
 msgstr ""
 
@@ -937,59 +945,59 @@ msgstr ""
 msgid " (Pending runs: {0})"
 msgstr ""
 
-#: .\utils\translations.py:34
+#: .\utils\translations.py:32
 msgid "Monday"
 msgstr ""
 
-#: .\utils\translations.py:36
+#: .\utils\translations.py:34
 msgid "Tuesday"
 msgstr ""
 
-#: .\utils\translations.py:38
+#: .\utils\translations.py:36
 msgid "Wednesday"
 msgstr ""
 
-#: .\utils\translations.py:40
+#: .\utils\translations.py:38
 msgid "Thursday"
 msgstr ""
 
-#: .\utils\translations.py:42
+#: .\utils\translations.py:40
 msgid "Friday"
 msgstr ""
 
-#: .\utils\translations.py:44
+#: .\utils\translations.py:42
 msgid "Saturday"
 msgstr ""
 
-#: .\utils\translations.py:46
+#: .\utils\translations.py:44
 msgid "Sunday"
 msgstr ""
 
-#: .\utils\translations.py:58
+#: .\utils\translations.py:56
 msgid "seconds"
 msgstr ""
 
-#: .\utils\translations.py:60
+#: .\utils\translations.py:58
 msgid "minutes"
 msgstr ""
 
-#: .\utils\translations.py:62
+#: .\utils\translations.py:60
 msgid "hours"
 msgstr ""
 
-#: .\utils\translations.py:64
+#: .\utils\translations.py:62
 msgid "days"
 msgstr ""
 
-#: .\utils\translations.py:66
+#: .\utils\translations.py:64
 msgid "weeks"
 msgstr ""
 
-#: .\utils\translations.py:68
+#: .\utils\translations.py:66
 msgid "months"
 msgstr ""
 
-#: .\utils\translations.py:70
+#: .\utils\translations.py:68
 msgid "years"
 msgstr ""
 

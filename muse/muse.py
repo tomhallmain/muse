@@ -41,10 +41,10 @@ class Muse:
         self.llm = LLM(model_name=config.llm_model_name)
         
         initial_voice = self._schedule.voice
-        persona = MuseMemory.get_persona_manager().get_persona(initial_voice)
+        persona = self.memory.get_persona_manager().get_persona(initial_voice)
         
         if persona:
-            MuseMemory.get_persona_manager().set_current_persona(persona.voice_name)
+            self.memory.get_persona_manager().set_current_persona(persona.voice_name)
             self.voice = Voice(persona.voice_name)
         else:
             self.voice = Voice(initial_voice)
@@ -80,8 +80,11 @@ class Muse:
             raise Exception("Playlist callback was not initialized!")
         return self.get_playlist_callback()
 
+    def get_current_persona(self):
+        return self.memory.get_persona_manager().get_current_persona()
+
     def get_locale(self):
-        persona = MuseMemory.get_persona_manager().get_current_persona()
+        persona = self.get_current_persona()
         if persona is not None:
             return persona.language_code
         return I18N.locale
@@ -173,11 +176,11 @@ class Muse:
         """Switch to a new DJ persona by voice name."""
         try:
             # Find the persona with this voice name
-            persona = MuseMemory.get_persona_manager().get_persona(voice_name)
+            persona = self.memory.get_persona_manager().get_persona(voice_name)
             
             if persona:
                 # Set the new persona
-                MuseMemory.get_persona_manager().set_current_persona(persona.name)
+                self.memory.get_persona_manager().set_current_persona(persona.voice_name)
                 self.voice = Voice(persona.voice_name)
 
                 try:
@@ -188,7 +191,7 @@ class Muse:
                         intro_result = self.llm.ask(intro_prompt, context=init_result.context if init_result else persona.get_context())
                         if intro_result and intro_result.response:
                             self.voice.prepare_to_say(intro_result.response, locale=persona.language_code)
-                            MuseMemory.get_persona_manager().update_context(intro_result.context)
+                            self.memory.get_persona_manager().update_context(intro_result.context)
                         else:
                             self.voice.prepare_to_say(_("Hello, I'm {0}").format(persona.name), locale=persona.language_code)
                         persona.last_hello_time = time.time()
@@ -232,7 +235,7 @@ class Muse:
                     elif len(self._schedule.weekday_options) < 7:
                         self.prepare_to_say(_("I'll be on again this coming {0}.").format(I18N.day_of_the_week(next_weekday_for_this_voice)))
         self.voice.finish_speaking()
-        MuseMemory.get_persona_manager().get_current_persona().set_last_signoff_time()
+        self.get_current_persona().set_last_signoff_time()
         self._schedule = tomorrow_schedule
 
     def say_good_day(self):
@@ -556,7 +559,7 @@ class Muse:
             return prompt
         
         # Get the current persona's language code
-        persona = MuseMemory.get_persona_manager().get_current_persona()
+        persona = self.get_current_persona()
         language_code = persona.language_code if persona else Utils.get_default_user_language()
         language = Utils.get_english_language_name(language_code) if persona else Muse.SYSTEM_LANGUAGE_NAME_IN_ENGLISH
         
@@ -586,8 +589,8 @@ class Muse:
     def generate_text(self, prompt, json_key=None, include_time_context=True):
         """Generate text using the current DJ persona's context."""
         # Get the current persona's context and system prompt
-        context, system_prompt = MuseMemory.get_persona_manager().get_context_and_system_prompt()
-        language_code = MuseMemory.get_persona_manager().get_current_persona().language_code
+        context, system_prompt = self.memory.get_persona_manager().get_context_and_system_prompt()
+        language_code = self.get_current_persona().language_code
         
         # If we have no persona/context, use language-specific default prompt
         if not system_prompt:
@@ -619,7 +622,7 @@ class Muse:
         text = result.response if result else ""
         
         # Update context with the new context from the response
-        MuseMemory.get_persona_manager().update_context(result.context)
+        self.memory.get_persona_manager().update_context(result.context)
         
         generations = []
         all_blacklist_items = set()
@@ -680,7 +683,6 @@ class Muse:
 
         # Get current time information
         now = datetime.datetime.now()
-        time = now.strftime("%I:%M %p")
         day = I18N.day_of_the_week(now.weekday())
         date = now.strftime("%B %d, %Y")
 
@@ -696,7 +698,7 @@ class Muse:
             tone=persona.tone,
             characteristics=", ".join(persona.characteristics),
             system_prompt=persona.system_prompt,
-            time=time,
+            time=now.strftime("%I:%M %p"),
             day=day,
             date=date,
             language_code=language_code,
@@ -706,13 +708,13 @@ class Muse:
         # Make an initial call to seed the context, using the old context
         result = self.llm.ask(persona_prompt, context=persona.get_context())
         if result and result.context:
-            MuseMemory.get_persona_manager().update_context(result.context)
+            self.memory.get_persona_manager().update_context(result.context)
 
         # Get the appropriate introduction prompt
         intro_prompt = self.prompter.get_prompt(f"persona_{intro_type}", language_code)
         format_args = {
             "name": persona.name,
-            "time": time,
+            "time": now.strftime("%I:%M %p"),
             "day": day,
             "date": date,
             "language_code": language_code,
@@ -729,7 +731,7 @@ class Muse:
         last_signoff = persona.last_signoff_time or 0
 
         # If neither hello nor signoff has been said recently, or it's been a long time
-        if last_hello == 0 or (now_time - last_hello > 6 * 3600 and now_time - last_signoff > 6 * 3600):
+        if last_hello == 0 or last_signoff == 0 or (now_time - last_hello > 6 * 3600 and now_time - last_signoff > 6 * 3600):
             return "intro"  
         
         # Check if the time difference spans across sleeping hours
@@ -756,10 +758,11 @@ class Muse:
         Returns:
             str: A translated string like "The listener last tuned in 2 hours ago"
         """
-        last_signoff = persona.last_signoff_time or 0
-        time_diff = time.time() - last_signoff
-        num_units, unit = I18N.time_ago(time_diff)
-        return _("The listener last tuned in {0} {1} ago").format(num_units, unit)
+        if persona.last_signoff_time:
+            time_diff = time.time() - persona.last_signoff_time
+            num_units, unit = I18N.time_ago(time_diff)
+            return _("The listener last tuned in {0} {1} ago").format(num_units, unit)
+        return None
 
 
 

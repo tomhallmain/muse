@@ -8,6 +8,9 @@ import time
 from tts.speakers import speakers
 from utils.config import config
 from utils.utils import Utils
+from utils.translations import I18N
+
+_ = I18N._
 
 @dataclass
 class DJPersona:
@@ -23,6 +26,7 @@ class DJPersona:
     language_code: str = "en"
     last_hello_time: Optional[float] = None
     last_signoff_time: Optional[float] = None
+    artwork_paths: Optional[List[str]] = None
     is_mock: bool = False
 
     def __post_init__(self):
@@ -48,6 +52,18 @@ class DJPersona:
             except Exception as e:
                 Utils.log_red(f"Error validating voice name: {e}")
                 raise ValueError(f"Invalid voice name: {self.voice_name}. Must be one of {list(speakers.keys())}")
+        
+        if self.artwork_paths is not None:
+            test_paths = list(self.artwork_paths)
+            for path in test_paths:
+                if not Path(path).exists():
+                    test_paths.remove(path)
+                    Utils.log_yellow(f"Artwork path \"{path}\" does not exist, removing it")
+            if len(test_paths) == 0:
+                Utils.log_red(f"No valid artwork paths found for persona \"{self.name}\", using default artwork")
+                self.artwork_paths = None
+            else:
+                self.artwork_paths = test_paths
 
     def update_context(self, new_context: List[int]) -> None:
         """Update the context with a new list of integers."""
@@ -62,6 +78,17 @@ class DJPersona:
     def get_context(self) -> List[int]:
         """Get the current context."""
         return self.context
+
+    def get_s(self) -> str:
+        if self.s is None or self.s.upper() == "M":
+            return _("a man")
+        elif self.s.upper() == "F" or self.s.upper() == "W":
+            return _("a woman")
+        else:
+            return self.s
+
+    def get_artwork_paths(self) -> Optional[List[str]]:
+        return self.artwork_paths if hasattr(self, "artwork_paths") else None
 
     def update_from_dict(self, new_data: 'DJPersona', refresh_context=False) -> None:
         """Update the persona from a new DJPersona object."""
@@ -216,7 +243,7 @@ class DJPersonaManager:
         if persona:
             return persona
         else:
-            if self.allow_mock_personas:
+            if hasattr(self, "allow_mock_personas") and self.allow_mock_personas:
                 Utils.log_yellow(f"Mock persona not found, creating new: {voice_name}")
                 persona = DJPersona(
                     name=voice_name,

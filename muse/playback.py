@@ -320,15 +320,28 @@ class Playback:
 
     def update_ui_art_for_muse(self):
         if self.ui_callbacks.update_album_artwork is not None:
-            album_artwork = self._get_random_image_asset(filename_filter="muse")
+            filename_filter = ["muse__"] # Default filter
+            persona = self.get_muse().get_current_persona()
+            if persona is not None:
+                if persona.get_artwork_paths() is not None and len(persona.get_artwork_paths()) > 0:
+                    random_artwork_path = persona.get_artwork_paths()[randint(0, len(persona.get_artwork_paths())-1)]
+                    self.ui_callbacks.update_album_artwork(image_filepath=random_artwork_path)
+                    return
+                if persona.s is None or persona.s.upper() == "M":
+                    filename_filter.append("muse_m")
+                elif persona.s.upper() == "F" or persona.s.upper() == "W":
+                    filename_filter.append("muse_f")
+            album_artwork = self._get_random_image_asset(filename_filter=filename_filter)
             self.ui_callbacks.update_album_artwork(image_filepath=album_artwork)
 
     def update_ui_art_for_silence(self):
+        # TODO add silence artwork
         pass
 
-    def _get_random_image_asset(self, filename_filter="record"):
-        if not filename_filter.endswith(".png"):
-            filename_filter += ".*\\.png"
+    def _get_random_image_asset(self, filename_filter=["record"]):
+        for filter in filename_filter:
+            if not filter.endswith(".png"):
+                filter += ".*\\.png"
         filenames = Utils.get_assets_filenames(filename_filter=filename_filter)
         return Utils.get_asset(filenames[randint(0, len(filenames)-1)])
 

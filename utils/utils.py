@@ -30,12 +30,14 @@ class Utils:
     @staticmethod
     def get_assets_filenames(filename_filter=None):
         assets_filenames = os.listdir(Utils.get_assets_dir())
-        if filename_filter is None or filename_filter.strip() == "":
+        if filename_filter is None or len(filename_filter) == 0:
             return assets_filenames
         filtered_filenames = []
         for filename in assets_filenames:
-            if re.match(filename_filter, filename):
-                filtered_filenames.append(filename)
+            for filter in filename_filter:
+                if re.match(filter, filename):
+                    filtered_filenames.append(filename)
+                    break
         return filtered_filenames
 
     @staticmethod
