@@ -1,6 +1,6 @@
 import asyncio
 import base64
-from datetime import timedelta
+from datetime import timedelta, datetime
 import logging
 import math
 import re
@@ -11,6 +11,7 @@ import threading
 import time
 import traceback
 import unicodedata
+from pathlib import Path
 
 from utils.custom_formatter import CustomFormatter
 
@@ -25,6 +26,18 @@ ch.setLevel(logging.DEBUG)
 ch.setFormatter(CustomFormatter())
 logger.addHandler(ch)
 
+# Create log file in ApplicationData
+appdata_dir = os.getenv('APPDATA') if sys.platform == 'win32' else os.path.expanduser('~/.local/share')
+log_dir = Path(appdata_dir) / 'muse' / 'logs'
+log_dir.mkdir(parents=True, exist_ok=True)
+date_str = datetime.now().strftime("%Y-%m-%d")
+log_file = log_dir / f'muse_{date_str}.log'
+
+# Add file handler
+fh = logging.FileHandler(log_file, mode='w+', encoding='utf-8')
+fh.setLevel(logging.DEBUG)
+fh.setFormatter(CustomFormatter())
+logger.addHandler(fh)
 
 class Utils:
     @staticmethod
@@ -533,6 +546,16 @@ class Utils:
                     duration_vals.update({unit: 0})
         td = timedelta(**duration_vals)
         return td.total_seconds()
+
+    @staticmethod
+    def get_log_file():
+        """Get the path to the log file."""
+        return str(log_file)
+
+    @staticmethod
+    def open_log_file():
+        """Open the log file in the default text editor."""
+        Utils.open_file(str(log_file))
 
 
 if __name__ == "__main__":

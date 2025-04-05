@@ -1,12 +1,11 @@
 """LLM interface for the Muse application."""
 
-# Standard library imports
 import json
 from urllib import request
 from dataclasses import dataclass
 from typing import Optional, List
+import random  # Add this at the top with other standard library imports
 
-# Local imports
 from utils import Utils
 
 
@@ -20,6 +19,7 @@ class LLMResult:
     """Encapsulates the response data from an Ollama LLM call."""
     response: str
     context: Optional[List[int]]
+    context_provided: bool
     created_at: str
     done: bool
     done_reason: Optional[str]
@@ -31,11 +31,12 @@ class LLMResult:
     eval_duration: int
 
     @classmethod
-    def from_json(cls, data: dict) -> 'LLMResult':
+    def from_json(cls, data: dict, context_provided=False) -> 'LLMResult':
         """Create a LLMResult instance from the JSON response data."""
         return cls(
             response=data.get("response", ""),
             context=data.get("context", None),
+            context_provided=context_provided,
             created_at=data.get("created_at", ""),
             done=data.get("done", False),
             done_reason=data.get("done_reason", ""),
@@ -74,18 +75,19 @@ class LLMResult:
 class LLM:
     ENDPOINT = "http://localhost:11434/api/generate"
     DEFAULT_TIMEOUT = 180
+    DEFAULT_SYSTEM_PROMPT_DROP_RATE = 0.9  # 90% chance to drop system prompt
 
     def __init__(self, model_name="deepseek-r1:14b"):
         self.model_name = model_name
         Utils.log(f"Using LLM model: {self.model_name}")
 
-    def ask(self, query, json_key=None, timeout=DEFAULT_TIMEOUT, context=None, system_prompt=None):
+    def ask(self, query, json_key=None, timeout=DEFAULT_TIMEOUT, context=None, system_prompt=None, system_prompt_drop_rate=DEFAULT_SYSTEM_PROMPT_DROP_RATE):
         """Ask the LLM a question and optionally extract a JSON value."""
         if json_key is not None:
-            return self.generate_json_get_value(query, json_key, timeout=timeout, context=context, system_prompt=system_prompt)
-        return self.generate_response(query, timeout=timeout, context=context, system_prompt=system_prompt)
+            return self.generate_json_get_value(query, json_key, timeout=timeout, context=context, system_prompt=system_prompt, system_prompt_drop_rate=system_prompt_drop_rate)
+        return self.generate_response(query, timeout=timeout, context=context, system_prompt=system_prompt, system_prompt_drop_rate=system_prompt_drop_rate)
 
-    def generate_response(self, query, timeout=DEFAULT_TIMEOUT, context=None, system_prompt=None):
+    def generate_response(self, query, timeout=DEFAULT_TIMEOUT, context=None, system_prompt=None, system_prompt_drop_rate=DEFAULT_SYSTEM_PROMPT_DROP_RATE):
         """Generate a response from the LLM."""
         query = self._sanitize_query(query)
         timeout = self._get_timeout(timeout)
@@ -107,8 +109,12 @@ class LLM:
         if context is not None:
             data["context"] = context
             
-        if system_prompt is not None:
+        # Randomly decide whether to include system prompt
+        if system_prompt is not None and random.random() > system_prompt_drop_rate:
             data["system"] = system_prompt
+            Utils.log_debug("Including system prompt in LLM request")
+        elif system_prompt is not None:
+            Utils.log_debug("Dropping system prompt from LLM request")
             
         req = request.Request(
             LLM.ENDPOINT,
@@ -118,16 +124,16 @@ class LLM:
         try:
             response = request.urlopen(req, timeout=timeout).read().decode("utf-8")
             resp_json = json.loads(response)
-            result = LLMResult.from_json(resp_json)
+            result = LLMResult.from_json(resp_json, context_provided=context is not None)
             result.response = self._clean_response_for_models(result.response)
             return result
         except Exception as e:
             Utils.log_red(f"Failed to generate LLM response: {e}")
             raise LLMResponseException(f"Failed to generate LLM response: {e}")
 
-    def generate_json_get_value(self, query, json_key, timeout=DEFAULT_TIMEOUT, context=None, system_prompt=None):
+    def generate_json_get_value(self, query, json_key, timeout=DEFAULT_TIMEOUT, context=None, system_prompt=None, system_prompt_drop_rate=DEFAULT_SYSTEM_PROMPT_DROP_RATE):
         """Generate a response and extract a specific JSON value."""
-        result = self.generate_response(query, timeout=timeout, context=context, system_prompt=system_prompt)
+        result = self.generate_response(query, timeout=timeout, context=context, system_prompt=system_prompt, system_prompt_drop_rate=system_prompt_drop_rate)
         return result._get_json_attr(json_key)
 
     def _is_thinking_model(self) -> bool:

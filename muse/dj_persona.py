@@ -5,6 +5,7 @@ from typing import List, Dict, Optional, Tuple, Any
 from pathlib import Path
 import time
 
+from extensions.llm import LLMResult
 from tts.speakers import speakers
 from utils.config import config
 from utils.utils import Utils
@@ -272,10 +273,18 @@ class DJPersonaManager:
         """Get the current persona."""
         return self.current_persona
 
-    def update_context(self, new_context: Optional[List[int]]):
+    def update_context(self, llm_result: Optional[LLMResult]):
         """Update the current persona's context with new context from LLM response."""
         if self.current_persona:
-            self.current_persona.update_context(new_context)
+            if llm_result:
+                if llm_result.context_provided:
+                    # NOTE context may not have been provided to the LLM query
+                    # initialily, so if we updated using this context it would be
+                    # wiping the old context.
+                    self.current_persona.update_context(llm_result.context)
+                else:
+                    # Update last signoff time whenever the persona speaks
+                    self.current_persona.set_last_signoff_time()
 
     def get_context_and_system_prompt(self) -> Tuple[List[int], str]:
         """Get the current persona's context and system prompt."""

@@ -264,6 +264,7 @@ class App():
         self.master.bind("<Home>", lambda event: self.first_config())
         self.master.bind("<End>", lambda event: self.first_config(end=True))
         self.master.bind("<Control-q>", self.quit)
+        self.master.bind("<Control-l>", lambda event: Utils.open_log_file())
         self.toggle_theme()
         self.master.update()
         # self.close_autocomplete_popups()

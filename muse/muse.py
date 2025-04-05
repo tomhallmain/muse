@@ -177,7 +177,7 @@ class Muse:
         try:
             # Find the persona with this voice name
             persona = self.memory.get_persona_manager().get_persona(voice_name)
-            
+
             if persona:
                 # Set the new persona
                 self.memory.get_persona_manager().set_current_persona(persona.voice_name)
@@ -186,12 +186,13 @@ class Muse:
                 try:
                     # Determine what type of introduction to use
                     intro_prompt, init_result = self._get_introduction_prompt(persona)
-                
+
                     if intro_prompt:
-                        intro_result = self.llm.ask(intro_prompt, context=init_result.context if init_result else persona.get_context())
+                        context = init_result.context if init_result and init_result.context_provided else persona.get_context()
+                        intro_result = self.llm.ask(intro_prompt, context=context)
                         if intro_result and intro_result.response:
                             self.voice.prepare_to_say(intro_result.response, locale=persona.language_code)
-                            self.memory.get_persona_manager().update_context(intro_result.context)
+                            self.memory.get_persona_manager().update_context(intro_result)
                         else:
                             self.voice.prepare_to_say(_("Hello, I'm {0}").format(persona.name), locale=persona.language_code)
                         persona.last_hello_time = time.time()
@@ -622,7 +623,7 @@ class Muse:
         text = result.response if result else ""
         
         # Update context with the new context from the response
-        self.memory.get_persona_manager().update_context(result.context)
+        self.memory.get_persona_manager().update_context(result)
         
         generations = []
         all_blacklist_items = set()
@@ -708,7 +709,7 @@ class Muse:
         # Make an initial call to seed the context, using the old context
         result = self.llm.ask(persona_prompt, context=persona.get_context())
         if result and result.context:
-            self.memory.get_persona_manager().update_context(result.context)
+            self.memory.get_persona_manager().update_context(result)
 
         # Get the appropriate introduction prompt
         intro_prompt = self.prompter.get_prompt(f"persona_{intro_type}", language_code)

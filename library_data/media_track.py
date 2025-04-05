@@ -308,7 +308,7 @@ class MediaTrack:
     def get_track_details(self):
         if self.album is not None and self.album.strip() != "":
             if self.artist is not None and self.artist.strip() != "":
-                return f"{self.readable_artist()} - {self.readable_title()} - {self.readable_album()}"
+                return f"{self.readable_title()} - {self.readable_album()} - {self.readable_artist()}"
             return f"{self.readable_title()} - {self.readable_album()}"            
         return self.readable_title()
 
