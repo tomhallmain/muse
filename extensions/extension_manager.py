@@ -31,6 +31,7 @@ class ExtensionManager:
     DELAYED_THREADS = []
     max_extensions_length = 100000
     minimum_allowed_duration_seconds = 120
+    extension_thread = None
 
     @staticmethod
     def load_extensions():
@@ -50,22 +51,36 @@ class ExtensionManager:
 
     def start_extensions_thread(self, initial_sleep=True, overwrite_cache=False, voice=None):
         Utils.log('Starting extensions thread')
-        Utils.start_thread(self._run_extensions, use_asyncio=False, args=(initial_sleep, voice))
+        if ExtensionManager.extension_thread is not None and ExtensionManager.extension_thread.is_alive():
+            Utils.log('Extension thread already running')
+            return
+        ExtensionManager.extension_thread = Utils.start_thread(self._run_extensions, use_asyncio=False, args=(initial_sleep, voice))
         ExtensionManager.extension_thread_started = True
 
-    def reset_extension(self):
+    def reset_extension(self, restart_thread=True):
         ExtensionManager.EXTENSION_QUEUE.cancel()
         closed_one_thread = False
-        for thread in ExtensionManager.DELAYED_THREADS:
-            thread.terminate()
-            thread.join()
+        
+        # Clean up main extension thread
+        if ExtensionManager.extension_thread is not None and ExtensionManager.extension_thread.is_alive():
+            ExtensionManager.extension_thread.terminate()
+            ExtensionManager.extension_thread.join()
+            ExtensionManager.extension_thread = None
             closed_one_thread = True
+            
+        # Clean up delayed threads
+        for thread in ExtensionManager.DELAYED_THREADS:
+            if thread.is_alive():
+                thread.terminate()
+                thread.join()
+                closed_one_thread = True
 
         ExtensionManager.DELAYED_THREADS = []
         ExtensionManager.extension_thread_started = False
         if closed_one_thread:
             Utils.log("Reset extension thread.")
-        self.start_extensions_thread()
+        if restart_thread:
+            self.start_extensions_thread()
 
     def get_extension_sleep_time(self, min_value, max_value):
         current_track = PlaybackConfig.get_playing_track()

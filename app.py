@@ -399,7 +399,7 @@ class App():
         favorited = self.favorite.get()
         current_track = self.current_run.get_current_track()
         if current_track is not None:
-            FavoritesWindow.set_favorite(track, favorited)
+            FavoritesWindow.set_favorite(current_track, favorited)
 
     def set_muse(self, event=None):
         self.runner_app_config.muse = self.muse.get()
@@ -423,9 +423,10 @@ class App():
     def start_playback(self, track=None, playlist_sort_type=None):
         if playlist_sort_type is not None:
             self.sort_type.set(playlist_sort_type.get_translation())
-        self.run(track=track)
+        override_scheduled = self.current_run is not None and not self.current_run.is_placeholder()
+        self.run(track=track, override_scheduled=override_scheduled)
 
-    def run(self, event=None, track=None):
+    def run(self, event=None, track=None, override_scheduled=False):
         args, args_copy = self.get_args(track=track)
 
         try:
@@ -436,6 +437,12 @@ class App():
                 kind="warning")
             if res != messagebox.OK:
                 return None
+        
+        if override_scheduled:
+            # Use case: The user has selected a track from the search results, and we want 
+            # to run it immediately without waiting for the scheduled run to complete.
+            self.cancel()
+            time.sleep(2) # short delay to ensure the cancel has time to take effect
 
         def run_async(args) -> None:
             self.job_queue.job_running = True
@@ -456,7 +463,7 @@ class App():
             if next_job_args:
                 Utils.start_thread(run_async, use_asyncio=False, args=[next_job_args])
 
-        if self.job_queue.has_pending():
+        if not override_scheduled and self.job_queue.has_pending():
             self.job_queue.add(args)
         else:
             self.runner_app_config.set_from_run_config(args_copy)

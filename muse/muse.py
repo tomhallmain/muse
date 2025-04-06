@@ -61,6 +61,7 @@ class Muse:
         self.prior_id = "prior"
         self.library_data = library_data
         self.get_playlist_callback = None
+        self._last_checked_schedules = None
         if not args.placeholder:
             assert library_data is not None # The DJ should have access to the music library.
 
@@ -92,15 +93,18 @@ class Muse:
     def say_at_some_point(self, text, spot_profile, topic):
         save_mp3 = topic is not None and topic.value in config.save_tts_output_topics
         topic_str = "" if topic is None else topic.translate().replace(" ", "_")
-        locale = self.get_locale()
         if spot_profile.immediate:
-            self.voice.say(text, topic=topic_str, save_mp3=save_mp3, locale=locale)
+            self.say(text, topic=topic_str, save_mp3=save_mp3)
         else:
-            self.voice.prepare_to_say(text, topic=topic_str, save_mp3=save_mp3, locale=locale)
+            self.prepare_to_say(text, topic=topic_str, save_mp3=save_mp3)
 
-    def prepare_to_say(self, text, topic="", save_mp3=False):
-        locale = self.get_locale()
-        self.voice.prepare_to_say(text, topic=topic, save_mp3=save_mp3, locale=locale)
+    def say(self, text, topic="", save_mp3=False, locale=None):
+        locale = locale if locale is not None else self.get_locale()
+        self.voice.say(text=text, topic=topic, save_mp3=save_mp3, locale=locale)
+
+    def prepare_to_say(self, text, topic="", save_mp3=False, locale=None):
+        locale = locale if locale is not None else self.get_locale()
+        self.voice.prepare_to_say(text=text, topic=topic, save_mp3=save_mp3, locale=locale)
 
     def ready_to_prepare(self, cumulative_sleep_seconds, ms_remaining):
         return Muse.enable_preparation \
@@ -165,12 +169,16 @@ class Muse:
         active_schedule = SchedulesManager.get_active_schedule(now)
         if active_schedule is None:
             raise Exception("Failed to establish active schedule")
-        if self._schedule != active_schedule:
-            Utils.log_yellow(f"Switching DJ to {active_schedule.voice} from {self._schedule.voice} - until {active_schedule.next_end(now)}")
+        if self._schedule != active_schedule or self._last_checked_schedules is None:
+            if self._last_checked_schedules is None:
+                Utils.log_yellow(f"Starting with DJ {active_schedule.voice} - until {active_schedule.next_end(now)}")
+            else:
+                Utils.log_yellow(f"Switching DJ to {active_schedule.voice} from {self._schedule.voice} - until {active_schedule.next_end(now)}")
             self.change_voice(active_schedule.voice)
         else:
             Utils.log("No change in schedule")
         self._schedule = active_schedule
+        self._last_checked_schedules = datetime.datetime.now()
 
     def change_voice(self, voice_name):
         """Switch to a new DJ persona by voice name."""
@@ -191,24 +199,25 @@ class Muse:
                         context = init_result.context if init_result and init_result.context_provided else persona.get_context()
                         intro_result = self.llm.ask(intro_prompt, context=context)
                         if intro_result and intro_result.response:
-                            self.voice.prepare_to_say(intro_result.response, locale=persona.language_code)
+                            self.say(intro_result.response, locale=persona.language_code)
                             self.memory.get_persona_manager().update_context(intro_result)
                         else:
-                            self.voice.prepare_to_say(_("Hello, I'm {0}").format(persona.name), locale=persona.language_code)
+                            self.say(_("Hello, I'm {0}").format(persona.name), locale=persona.language_code)
                         persona.last_hello_time = time.time()
                 except Exception as e:
                     Utils.log_red(f"Failed to generate introduction: {e}")
+                    self.say(_("Hello, I'm your DJ"), locale=I18N.locale)
             else:
                 Utils.log_yellow(f"No persona found for voice {voice_name}, using default voice")
                 self.voice = Voice(voice_name)
-                self.voice.prepare_to_say(_("Hello, I'm your DJ"), locale=I18N.locale)
+                self.say(_("Hello, I'm your DJ"), locale=I18N.locale)
                 
         except Exception as e:
             Utils.log_red(f"Failed to change voice to {voice_name}: {e}")
             traceback.print_exc()
             # Ensure we at least have a working voice
             self.voice = Voice(voice_name)
-            self.voice.prepare_to_say(_("Hello"), locale=I18N.locale)
+            self.say(_("Hello"), locale=I18N.locale)
 
     def check_for_shutdowns(self):
         now = datetime.datetime.now()
@@ -695,7 +704,7 @@ class Muse:
         persona_prompt = self.prompter.get_prompt("persona_init", language_code)
         persona_prompt = persona_prompt.format(
             name=persona.name,
-            sex=persona.s,
+            sex=persona.s, # TODO - need to translate since this is a key only
             tone=persona.tone,
             characteristics=", ".join(persona.characteristics),
             system_prompt=persona.system_prompt,
@@ -733,6 +742,7 @@ class Muse:
 
         # If neither hello nor signoff has been said recently, or it's been a long time
         if last_hello == 0 or last_signoff == 0 or (now_time - last_hello > 6 * 3600 and now_time - last_signoff > 6 * 3600):
+            Utils.log_debug("intro case 1: last_hello: {0}, last_signoff: {1}, now_time: {2}".format(last_hello, last_signoff, now_time))
             return "intro"  
         
         # Check if the time difference spans across sleeping hours
@@ -744,13 +754,16 @@ class Muse:
         if ((4 * 3600) < (now_time - last_signoff) < (12 * 3600) and 
                 ((last_signoff_dt.hour >= 23 or last_signoff_dt.hour < 6) and
                  (now_dt.hour > 4 and now_dt.hour < 10))):
+            Utils.log_debug("intro case 2: last_hello: {0}, last_signoff: {1}, now_time: {2}".format(last_hello, last_signoff, now_time))
             return "intro"
             
         # If hello hasn't been said recently but signoff was recent (1-6 hours ago)
         elif now_time - last_hello > 2 * 3600 and 1 * 3600 < now_time - last_signoff <= 6 * 3600:
+            Utils.log_debug("reintro: last_hello: {0}, last_signoff: {1}, now_time: {2}".format(last_hello, last_signoff, now_time))
             return "reintro"
         else:
             # If both hello and signoff were recent, don't say anything
+            Utils.log_debug("no intro: last_hello: {0}, last_signoff: {1}, now_time: {2}".format(last_hello, last_signoff, now_time))
             return None
 
     def _get_last_tuned_in_str(self, persona: DJPersona) -> str:

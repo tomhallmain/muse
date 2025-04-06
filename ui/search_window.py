@@ -80,6 +80,7 @@ class SearchWindow(BaseWindow):
         self.composer_list = []
         self.open_details_btn_list = []
         self.play_btn_list = []
+        self.remove_btn_list = []
 
         self.search_btn = None
         self.add_btn("search_btn", _("Search"), self.do_search, row=0)
@@ -222,6 +223,13 @@ class SearchWindow(BaseWindow):
                     raise Exception(f"Invalid track: {track}")
                 self.run_play_callback(track)
             play_btn.bind("<Button-1>", play_handler)
+
+            remove_btn = Button(self.results_frame.viewPort, text=_("Remove"))
+            self.remove_btn_list.append(remove_btn)
+            remove_btn.grid(row=row, column=7)
+            def remove_handler(event, self=self, search=search):
+                self.remove_search(search)
+            remove_btn.bind("<Button-1>", remove_handler)
         self.master.update()
 
     def do_search(self, event=None):
@@ -364,6 +372,14 @@ class SearchWindow(BaseWindow):
             return PlaylistSortType.ALBUM_SHUFFLE
         return PlaylistSortType.RANDOM
 
+    def remove_search(self, search):
+        assert search is not None
+        if search in SearchWindow.recent_searches:
+            SearchWindow.recent_searches.remove(search)
+        self.store_recent_searches()
+        self.clear_widget_lists()
+        self.show_recent_searches()
+
     def _refresh_widgets(self, add_results=True):
         self.clear_widget_lists()
         if add_results:
@@ -383,12 +399,15 @@ class SearchWindow(BaseWindow):
             btn.destroy()
         for btn in self.play_btn_list:
             btn.destroy()
+        for btn in self.remove_btn_list:
+            btn.destroy()
         self.title_list = []
         self.artist_list = []
         self.album_list = []
         self.composer_list = []
         self.open_details_btn_list = []
         self.play_btn_list = []
+        self.remove_btn_list = []
 
     @staticmethod
     def set_title(extra_text):

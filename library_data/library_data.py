@@ -327,8 +327,8 @@ class LibraryData:
         LibraryData.get_all_tracks(overwrite=overwrite_cache, ui_callbacks=self.ui_callbacks)
         self.extension_manager.start_extensions_thread(initial_sleep, overwrite_cache, voice)
 
-    def reset_extension(self):
-        self.extension_manager.reset_extension()
+    def reset_extension(self, restart_thread=True):
+        self.extension_manager.reset_extension(restart_thread=restart_thread)
 
     def is_in_library(self, title="", album="", artist="", composer="", form="", genre="", instrument=""):
         search = LibraryDataSearch(title=title, album=album, artist=artist, composer=composer, form=form, genre=genre, instrument=instrument)

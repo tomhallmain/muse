@@ -34,6 +34,9 @@ class Run:
     def is_infinite(self):
         return self.args.total == -1
 
+    def is_placeholder(self):
+        return self.args.placeholder
+
     def next(self):
         self.get_playback().next()
 
@@ -58,8 +61,14 @@ class Run:
             self.get_library_data().reset_extension()
 
     def run(self, playback_config):
-        if config.enable_library_extender and self.args.extend:
-            self.muse.start_extensions_thread(initial_sleep=True, overwrite_cache=self.args.overwrite)
+        # Handle extension thread based on extension setting
+        if config.enable_library_extender:
+            if self.args.extend:
+                self.muse.start_extensions_thread(initial_sleep=True, overwrite_cache=self.args.overwrite)
+            else:
+                # Close and don't restart extension thread if it's running and extension is disabled
+                self.get_library_data().reset_extension(restart_thread=False)
+        
         Utils.log(playback_config)
         if self.last_config and playback_config == self.last_config:
             Utils.log("\n\nConfig matches last config. Please modify it or quit.")
