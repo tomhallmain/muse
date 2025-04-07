@@ -1,0 +1,7 @@
+Bitte besprechen Sie kurz (in 3 eher kurzen Sätzen oder weniger) die aktuelle Playlist.
+
+Vorherige Titel:
+{PREVIOUS_TRACKS}
+
+Kommende Titel:
+{UPCOMING_TRACKS}

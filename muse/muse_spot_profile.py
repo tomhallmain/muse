@@ -14,21 +14,50 @@ class MuseSpotProfile:
     topic_discussion_chance_factor = config.muse_config["topic_discussion_chance_factor"]
     min_seconds_between_spots = config.muse_config["min_seconds_between_spots"]
 
-    def __init__(self, previous_track, track, last_track_failed, skip_track, old_grouping, new_grouping, grouping_type, get_previous_spot_profile_callback=None):
+    # Class-level track history management
+    _track_history = []  # List of (track, timestamp) tuples
+    _spoken_about_tracks = set()  # Set of tracks that have been spoken about
+    _max_track_history = 100  # Maximum number of tracks to keep in history
+    _max_spoken_tracks = 100  # Maximum number of spoken tracks to remember
+
+    def __init__(self, previous_track,
+                 track,
+                 last_track_failed,
+                 skip_track,
+                 old_grouping,
+                 new_grouping,
+                 grouping_type, 
+                 get_previous_spot_profile_callback=None,
+                 get_upcoming_tracks_callback=None):
         self.previous_track = previous_track
         self.track = track
         self.track_overwritten_time = None
         self.preparation_time = None
         self.creation_time = time.time()
         self.get_previous_spot_profile_callback = get_previous_spot_profile_callback
+        self.get_upcoming_tracks_callback = get_upcoming_tracks_callback
+        
+        # Update track history if this is a new track
+        if track and (not self._track_history or self._track_history[-1][0] != track):
+            self._track_history.append((track, time.time()))
+            if len(self._track_history) > self._max_track_history:
+                self._track_history = self._track_history[-self._max_track_history:]
+        
         # say good day on the second spot (i.e. first spot after the first track)
         self.say_good_day = previous_track is not None and self.get_previous_spot_profile().previous_track is None and random.random() < 0.5
+        
+        # Determine if this is the first track in a session
+        self.is_first_track = previous_track is None and not self._track_history
+        
         # Speak about the previous track as long as there is one.
         self.speak_about_prior_track = previous_track is not None and (previous_track._is_extended or random.random() < self.chance_speak_after_track)
+        
         # Speak about the upcoming track, even if it's the first one.
         self.speak_about_upcoming_track = track is not None and track._is_extended or random.random() < self.chance_speak_before_track
+        
         # Track whether this spot profile resulted in actual speech
         self.was_spoken = False
+        
         # Modify the talk_about_something probability calculation
         if previous_track is not None:
             base_chance = self.topic_discussion_chance_factor
@@ -43,6 +72,7 @@ class MuseSpotProfile:
         else:
             # Skip talking about random stuff if we just started playing, to avoid a long delay.
             self.talk_about_something = False
+            
         self.has_already_spoken = False
         self.last_track_failed = last_track_failed
         self.skip_previous_track_remark = last_track_failed or skip_track
@@ -50,6 +80,7 @@ class MuseSpotProfile:
         self.is_prepared = False
         self.topic = None
         self.topic_translated = None
+        
         # If the playlist has been sorted by a grouping (e.g. artist, album, composer etc.)
         # the DJ needs to keep track of it and be eager to let us know when there a change.
         self.old_grouping = old_grouping
@@ -61,7 +92,58 @@ class MuseSpotProfile:
         else:
             self.speak_about_prior_group = False
             self.speak_about_upcoming_group = False
+            
         self.override_time_restriction = self.speak_about_prior_track and previous_track._is_extended or self.speak_about_upcoming_track and track._is_extended
+
+    @classmethod
+    def get_previous_tracks(cls, count=1):
+        """Get the previous n tracks from the track history."""
+        previous_tracks = []
+        if count <= 0:
+            return previous_tracks
+        previous_tracks = [t for t, _ in cls._track_history[-count:]]
+        previous_tracks = [(t, t in cls._spoken_about_tracks) for t in previous_tracks]
+        return previous_tracks
+
+    def get_upcoming_tracks(self, count=1):
+        """Get the next n tracks and their spoken status from the playlist using the callback."""
+        upcoming_tracks = []
+        if count <= 0:
+            return upcoming_tracks
+        if self.get_upcoming_tracks_callback:
+            upcoming_tracks = self.get_upcoming_tracks_callback(count)
+            upcoming_tracks = [(t, t in self._spoken_about_tracks) for t in upcoming_tracks]
+        return upcoming_tracks
+
+    @classmethod
+    def has_spoken_about_track(cls, track):
+        """Check if the DJ has recently spoken about this track."""
+        return track in cls._spoken_about_tracks
+
+    @classmethod
+    def mark_track_as_spoken(cls, track):
+        """Mark a track as having been spoken about."""
+        cls._spoken_about_tracks.add(track)
+        if len(cls._spoken_about_tracks) > cls._max_spoken_tracks:
+            # Remove oldest tracks from the set
+            cls._spoken_about_tracks = set(list(cls._spoken_about_tracks)[-cls._max_spoken_tracks:])
+
+    @classmethod
+    def is_start_of_session(cls):
+        """Determine if this is the start of a new session."""
+        return not cls._track_history
+
+    @classmethod
+    def clear_session(cls):
+        """Clear the session data."""
+        cls._track_history = []
+        cls._spoken_about_tracks = set()
+
+    def unset_non_historical_fields(self):
+        """Clear fields that are not needed for historical reference."""
+        self.get_previous_spot_profile_callback = None
+        self.get_upcoming_tracks_callback = None        
+        self.topic_translated = None        
 
     def get_previous_spot_profile(self, idx=0):
         """Get the last spot profile that was actually spoken.
@@ -159,3 +241,5 @@ class MuseSpotProfile:
         if last_profile is None:
             return True
         return (current_time - last_profile.get_time()) > seconds
+
+        

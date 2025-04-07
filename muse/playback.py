@@ -203,6 +203,7 @@ class Playback:
         self.muse_spot_profiles.remove(self.get_spot_profile(self.track))
 
     def prepare_muse(self, delayed_prep=False):
+        """Prepare the DJ for the next track."""
         # At the moment the local LLM and TTS models are not that fast, so need to start generation
         # for muse before the previous track stops playing, to avoid waiting extra time beyond
         # the expected delay.
@@ -215,8 +216,18 @@ class Playback:
             next_track, self.did_advance, self.places_from_current = self.ensure_splittable_track(next_track, delayed_prep)
 
         previous_track = (self.previous_track if delayed_prep else self.track) if self.has_played_first_track else None
-        spot_profile = self.get_muse().get_spot_profile(previous_track, next_track, self.last_track_failed, self.skip_track,
-                                                        self.old_grouping, self.new_grouping, self.get_grouping_type())
+
+        # Get the spot profile with the upcoming tracks callback
+        spot_profile = self.get_muse().get_spot_profile(
+            previous_track, 
+            next_track, 
+            self.last_track_failed, 
+            self.skip_track,
+            self.old_grouping, 
+            self.new_grouping, 
+            self.get_grouping_type(),
+            get_upcoming_tracks_callback=self._playback_config.get_list().get_upcoming_tracks
+        )
         self.muse_spot_profiles.append(spot_profile)
 
         # Prepare the spot using the spot profile

@@ -70,8 +70,10 @@ class Muse:
             raise Exception("No music library data available")
         return self.library_data
 
-    def get_spot_profile(self, previous_track=None, track=None, last_track_failed=False, skip_track=False, old_grouping=None, new_grouping=None, grouping_type=None):
-        return self.memory.get_spot_profile(previous_track, track, last_track_failed, skip_track, old_grouping, new_grouping, grouping_type)
+    def get_spot_profile(self, previous_track=None, track=None, last_track_failed=False, skip_track=False,
+                         old_grouping=None, new_grouping=None, grouping_type=None, get_upcoming_tracks_callback=None):
+        return self.memory.get_spot_profile(previous_track, track, last_track_failed, skip_track,
+                                            old_grouping, new_grouping, grouping_type, get_upcoming_tracks_callback)
 
     def set_get_playlist_callback(self, get_playlist_callback):
         self.get_playlist_callback = get_playlist_callback
@@ -291,6 +293,7 @@ class Muse:
                 dj_remark +=  " " + _("That was a new track. How'd you like that?")
             else:
                 dj_remark = _("That was a new one. How'd you like it?") + " " + dj_remark
+        spot_profile.mark_track_as_spoken(previous_track)
         self.say_at_some_point(dj_remark, spot_profile, None)
 
     def maybe_prep_dj_prior(self, spot_profile):
@@ -320,6 +323,7 @@ class Muse:
             dj_remark += _(" by \"{0}\".").format(track.readable_artist())
         else:
             dj_remark += "."
+        spot_profile.mark_track_as_spoken(track)
         if track._is_extended and random.random() < 0.8:
             dj_remark += " " + _("This one is a new track.")
         self.say_at_some_point(dj_remark, spot_profile, None)
@@ -436,6 +440,8 @@ class Muse:
         elif topic == Topic.TRACK_CONTEXT_POST:
             func = self.talk_about_track_context
             args = [spot_profile.previous_track, spot_profile, Topic.TRACK_CONTEXT_POST]
+        elif topic == Topic.PLAYLIST_CONTEXT:
+            func = self.talk_about_playlist_context
         elif topic == Topic.RANDOM_WIKI_ARTICLE:
             func = self.talk_about_random_wiki_article
         elif topic == Topic.FUNNY_STORY:
@@ -522,6 +528,16 @@ class Muse:
         prompt = prompt.format(TRACK_DETAILS=track.get_track_details())
         track_context = self.generate_text(prompt)
         self.say_at_some_point(track_context, spot_profile, None)
+
+    def talk_about_playlist_context(self, spot_profile):
+        # Counts are higher for upcoming tracks to bias the response towards what to expect next.
+        previous_tracks = spot_profile.get_previous_tracks(count=random.randint(1, 5))
+        upcoming_tracks = spot_profile.get_upcoming_tracks(count=random.randint(3, 8))
+        prompt = self.get_prompt(Topic.PLAYLIST_CONTEXT)
+        prompt = prompt.format(PREVIOUS_TRACKS="\n".join([f" - {t.get_track_details()}{' [already mentioned]' if was_spoken else ''}" for t, was_spoken in previous_tracks]),
+                               UPCOMING_TRACKS="\n".join([f" - {t.get_track_details()}{' [already mentioned]' if was_spoken else ''}" for t, was_spoken in upcoming_tracks]))
+        playlist_context = self.generate_text(prompt)
+        self.say_at_some_point(playlist_context, spot_profile, Topic.PLAYLIST_CONTEXT)
 
     def talk_about_random_wiki_article(self, spot_profile):
         article_blacklisted = True

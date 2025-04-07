@@ -134,6 +134,10 @@ class Playlist:
                 break
         return count
 
+    def get_upcoming_tracks(self, count=1):
+        # NOTE: This returns the state of upcoming tracks assuming that no grouping will be skipped.
+        return self.sorted_tracks[self.current_track_index + 1:self.current_track_index + 1 + count]
+
     def next_track(self, skip_grouping=False, places_from_current=0):
         # NOTE - Modifies self.current_track_index and pending / played tracks properties
         if len(self.sorted_tracks) == 0 or (self.current_track_index + places_from_current) >= len(self.sorted_tracks):

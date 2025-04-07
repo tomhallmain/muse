@@ -1,9 +1,41 @@
+from dataclasses import dataclass
 import pickle
-from typing import Optional
+import time
+import gc
+from typing import Optional, Dict
 
 from muse.dj_persona import DJPersonaManager
 from muse.muse_spot_profile import MuseSpotProfile
 from utils import Utils
+
+
+@dataclass
+class SpotProfileSnapshot:
+    """A memory-efficient snapshot of a spot profile's essential data."""
+    creation_time: float
+    previous_track_title: Optional[str]
+    current_track_title: Optional[str]
+    was_spoken: bool
+    topic: Optional[str]
+    topic_translated: Optional[str]
+    grouping_type: Optional[str]
+    old_grouping: Optional[str]
+    new_grouping: Optional[str]
+
+    @classmethod
+    def from_spot_profile(cls, profile: MuseSpotProfile) -> 'SpotProfileSnapshot':
+        """Create a snapshot from a full spot profile."""
+        return cls(
+            creation_time=profile.creation_time,
+            previous_track_title=profile.previous_track.title if profile.previous_track else None,
+            current_track_title=profile.track.title if profile.track else None,
+            was_spoken=profile.was_spoken,
+            topic=profile.topic,
+            topic_translated=profile.topic_translated,
+            grouping_type=profile.grouping_type,
+            old_grouping=profile.old_grouping,
+            new_grouping=profile.new_grouping
+        )
 
 
 class MuseMemory:
@@ -11,7 +43,9 @@ class MuseMemory:
     last_session_spot_profiles = []
     current_session_spot_profiles = []
     max_memory_size = 1000
+    max_historical_snapshots = 5000  # Maximum number of historical spot profile snapshots to keep
     persona_manager: Optional[DJPersonaManager] = None
+    _historical_snapshots: Dict[float, SpotProfileSnapshot] = {}  # Keyed by creation_time
 
     @staticmethod
     def load():
@@ -25,8 +59,10 @@ class MuseMemory:
                     MuseMemory.persona_manager.reload_personas()
                 else:
                     MuseMemory.persona_manager = DJPersonaManager()
+                # Load historical snapshots if they exist
+                if hasattr(swap, '_historical_snapshots'):
+                    MuseMemory._historical_snapshots = swap._historical_snapshots
         except FileNotFoundError:
-            # Initialize persona manager only if no memory file exists
             MuseMemory.persona_manager = DJPersonaManager()
         except Exception as e:
             Utils.log(f"Error loading memory: {e}")
@@ -35,23 +71,56 @@ class MuseMemory:
     def save():
         with open('muse_memory', 'wb') as f:
             swap = MuseMemory()
-            # Ensure the persona manager is included in what gets pickled
             swap.persona_manager = MuseMemory.persona_manager
+            swap._historical_snapshots = MuseMemory._historical_snapshots
             pickle.dump(swap, f)
 
     @staticmethod
     def get_persona_manager() -> Optional[DJPersonaManager]:
-        """Get the persona manager instance."""
         return MuseMemory.persona_manager
 
     @staticmethod
-    def update_all_spot_profiles(spot_profile):
+    def update_all_spot_profiles(spot_profile: MuseSpotProfile):
+        """Update the spot profiles list and maintain historical snapshots."""
+        # Clean up the previous spot profile if it exists
+        previous_profile = MuseMemory.all_spot_profiles[0]
+        # Clear fields that are no longer needed
+        previous_profile.unset_non_historical_fields()
+        # Force garbage collection of the cleared objects
+        gc.collect()
+
+        # Add to current profiles
         MuseMemory.all_spot_profiles.insert(0, spot_profile)
         if len(MuseMemory.all_spot_profiles) > MuseMemory.max_memory_size:
+            # Convert excess profiles to snapshots before removing
+            for profile in MuseMemory.all_spot_profiles[MuseMemory.max_memory_size:]:
+                MuseMemory._add_historical_snapshot(profile)
             MuseMemory.all_spot_profiles = MuseMemory.all_spot_profiles[:MuseMemory.max_memory_size]
 
     @staticmethod
-    def update_current_session_spot_profiles(spot_profile):
+    def _add_historical_snapshot(profile: MuseSpotProfile):
+        """Add a spot profile snapshot to historical storage."""
+        snapshot = SpotProfileSnapshot.from_spot_profile(profile)
+        MuseMemory._historical_snapshots[profile.creation_time] = snapshot
+        
+        # Purge old snapshots if we exceed the limit
+        if len(MuseMemory._historical_snapshots) > MuseMemory.max_historical_snapshots:
+            # Remove oldest snapshots
+            oldest_times = sorted(MuseMemory._historical_snapshots.keys())[:-MuseMemory.max_historical_snapshots]
+            for time_key in oldest_times:
+                del MuseMemory._historical_snapshots[time_key]
+
+    @staticmethod
+    def purge_old_snapshots(days_old: int = 30):
+        """Purge historical snapshots older than the specified number of days."""
+        cutoff_time = time.time() - (days_old * 24 * 3600)
+        MuseMemory._historical_snapshots = {
+            k: v for k, v in MuseMemory._historical_snapshots.items()
+            if k > cutoff_time
+        }
+
+    @staticmethod
+    def update_current_session_spot_profiles(spot_profile: MuseSpotProfile):
         MuseMemory.current_session_spot_profiles.insert(0, spot_profile)
         if len(MuseMemory.current_session_spot_profiles) > MuseMemory.max_memory_size:
             MuseMemory.current_session_spot_profiles = MuseMemory.current_session_spot_profiles[:MuseMemory.max_memory_size]
@@ -112,9 +181,11 @@ class MuseMemory:
             return False
         return self.last_topic in topics_to_check
 
-    def get_spot_profile(self, previous_track=None, track=None, last_track_failed=False, skip_track=False, old_grouping=None, new_grouping=None, grouping_type=None):
+    def get_spot_profile(self, previous_track=None, track=None, last_track_failed=False, skip_track=False,
+                         old_grouping=None, new_grouping=None, grouping_type=None):
         spot_profile = MuseSpotProfile(previous_track, track, last_track_failed, skip_track, old_grouping, new_grouping, grouping_type,
-                                       get_previous_spot_profile_callback=MuseMemory.get_previous_session_spot_profile)
+                                       get_previous_spot_profile_callback=MuseMemory.get_previous_session_spot_profile,
+                                       get_upcoming_tracks_callback=None)
         MuseMemory.update_all_spot_profiles(spot_profile)
         MuseMemory.update_current_session_spot_profiles(spot_profile)
         return spot_profile

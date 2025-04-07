@@ -1,0 +1,7 @@
+Veuillez décrire brièvement (en 3 phrases courtes ou moins) la liste de lecture actuelle.
+
+Pistes précédentes :
+{PREVIOUS_TRACKS}
+
+Pistes à venir :
+{UPCOMING_TRACKS}

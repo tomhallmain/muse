@@ -1,0 +1,7 @@
+Por favor, comente brevemente (en 3 frases algo cortas o menos) la lista de reproducción actual.
+
+Temas anteriores:
+{PREVIOUS_TRACKS}
+
+Próximos temas:
+{UPCOMING_TRACKS}

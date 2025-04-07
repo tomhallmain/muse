@@ -1,0 +1,7 @@
+Please briefly (in 3 somewhat short sentences or less) discuss the current playlist.
+
+Previous tracks:
+{PREVIOUS_TRACKS}
+
+Upcoming tracks:
+{UPCOMING_TRACKS}

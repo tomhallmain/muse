@@ -1,0 +1,7 @@
+Si prega di discutere brevemente (in 3 frasi piuttosto brevi o meno) la playlist attuale.
+
+Brani precedenti:
+{PREVIOUS_TRACKS}
+
+Brani in arrivo:
+{UPCOMING_TRACKS}
