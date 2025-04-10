@@ -3,7 +3,7 @@ import os
 import random
 import time
 import traceback
-from typing import Optional
+from typing import Optional, List, Callable
 
 from extensions.hacker_news_souper import HackerNewsSouper
 from extensions.news_api import NewsAPI
@@ -12,6 +12,7 @@ from extensions.soup_utils import WebConnectionException
 from extensions.wiki_opensearch_api import WikiOpenSearchAPI
 from extensions.llm import LLM, LLMResponseException, LLMResult
 from library_data.blacklist import blacklist, BlacklistException
+from library_data.media_track import MediaTrack
 from muse.dj_persona import DJPersona
 from muse.muse_memory import MuseMemory
 from muse.schedules_manager import SchedulesManager, ScheduledShutdownException
@@ -163,7 +164,7 @@ class Muse:
         self.is_cancelled_prep = False
         self.check_schedules()
 
-    def check_schedules(self):
+    def check_schedules(self, get_upcoming_tracks_callback=None):
         self.check_for_shutdowns()
         if not self.args.muse:
             return
@@ -176,13 +177,13 @@ class Muse:
                 Utils.log_yellow(f"Starting with DJ {active_schedule.voice} - until {active_schedule.next_end(now)}")
             else:
                 Utils.log_yellow(f"Switching DJ to {active_schedule.voice} from {self._schedule.voice} - until {active_schedule.next_end(now)}")
-            self.change_voice(active_schedule.voice)
+            self.change_voice(active_schedule.voice, get_upcoming_tracks_callback)
         else:
             Utils.log("No change in schedule")
         self._schedule = active_schedule
         self._last_checked_schedules = datetime.datetime.now()
 
-    def change_voice(self, voice_name):
+    def change_voice(self, voice_name, get_upcoming_tracks_callback=None):
         """Switch to a new DJ persona by voice name."""
         try:
             # Find the persona with this voice name
@@ -195,7 +196,7 @@ class Muse:
 
                 try:
                     # Determine what type of introduction to use
-                    intro_prompt, init_result = self._get_introduction_prompt(persona)
+                    intro_prompt, init_result = self._get_introduction_prompt(persona, get_upcoming_tracks_callback)
 
                     if intro_prompt:
                         context = init_result.context if init_result and init_result.context_provided else persona.get_context()
@@ -282,6 +283,7 @@ class Muse:
 
     def speak_about_previous_track(self, spot_profile):
         # TODO have muse mention if the track has been split in the spot.
+        # TODO make this better with new spot_profile methods to get more previous tracks
         previous_track = spot_profile.previous_track
         dj_remark = _("That was \"{0}\" in \"{1}\"").format(previous_track.readable_title(), previous_track.readable_album())
         if previous_track.artist is not None and previous_track.artist!= "" and random.random() < 0.8:
@@ -314,6 +316,7 @@ class Muse:
 
     def speak_about_upcoming_track(self, spot_profile):
         # TODO have muse mention if the track has been split in the spot.
+        # TODO make this better with new spot_profile methods to get more upcoming tracks
         track = spot_profile.track
         if spot_profile.previous_track is None:
             dj_remark = _("To start, we'll be playing: \"{0}\" from \"{1}\"").format(track.readable_title(), track.readable_album())
@@ -361,6 +364,7 @@ class Muse:
         weather_hours = random.uniform(20, 28)  # 20-28 hours for weather prioritization
         news_hours = random.uniform(72, 96)    # 3-4 days for news prioritization
         hackernews_hours = random.uniform(72, 96)  # 3-4 days for hackernews prioritization
+        playlist_context_hours = random.uniform(0, 4) 
         min_repeat_hours = random.uniform(12, 16)   # 12-16 hours minimum repeat
         
         if Prompter.over_n_hours_since_last(Topic.WEATHER, n_hours=weather_hours) and not self.memory.is_recent_topics(["news", "hackernews"], n=3):
@@ -369,6 +373,10 @@ class Muse:
             topic = Topic.NEWS
         elif Prompter.over_n_hours_since_last(Topic.HACKERNEWS, n_hours=hackernews_hours) and not self.memory.is_recent_topics(["weather", "news"], n=3):
             topic = Topic.HACKERNEWS
+        elif (Prompter.over_n_hours_since_last(Topic.PLAYLIST_CONTEXT, n_hours=playlist_context_hours) 
+                and not self.memory.is_recent_topics(["weather", "news", "hackernews"], n=1)
+                and not self.memory.is_recent_topics(["playlist_context"], n=5)):
+            topic = Topic.PLAYLIST_CONTEXT
         else:
             # Add randomness to topic selection by occasionally skipping the oldest topic
             if random.random() < 0.3:  # 30% chance to not pick the oldest topic
@@ -690,9 +698,15 @@ class Muse:
             traceback.print_exc()
             self.say_at_some_point(_("Something went wrong. We'll try to fix it soon."), spot_profile, None)
 
-    def _get_introduction_prompt(self, persona: Optional[DJPersona] = None) -> tuple[Optional[str], Optional[LLMResult]]:
+    def _get_introduction_prompt(self, persona: Optional[DJPersona],
+                                 get_upcoming_tracks_callback: Optional[Callable[[int], List[MediaTrack]]] = None
+                                ) -> tuple[Optional[str], Optional[LLMResult]]:
         """Determine what type of introduction to use based on timing of last interactions, initialize the persona, and return the prompt.
         
+        Args:
+            persona: The DJ persona to use for the introduction
+            get_upcoming_tracks_callback: Optional callback to get upcoming tracks
+            
         Returns:
             tuple[Optional[str], Optional[LLMResult]]: A tuple containing:
                 - The formatted introduction prompt (or None if no introduction needed)
@@ -720,7 +734,7 @@ class Muse:
         persona_prompt = self.prompter.get_prompt("persona_init", language_code)
         persona_prompt = persona_prompt.format(
             name=persona.name,
-            sex=persona.s, # TODO - need to translate since this is a key only
+            sex=persona.get_s(),
             tone=persona.tone,
             characteristics=", ".join(persona.characteristics),
             system_prompt=persona.system_prompt,
@@ -736,6 +750,19 @@ class Muse:
         if result and result.context:
             self.memory.get_persona_manager().update_context(result)
 
+        # Get starting tracks if callback is provided
+        starting_tracks_str = ""
+        if get_upcoming_tracks_callback:
+            try:
+                # Get a random number of upcoming tracks (between 3 and 8)
+                upcoming_tracks = get_upcoming_tracks_callback(random.randint(3, 8))
+                if upcoming_tracks:
+                    upcoming_tracks_str = "\n".join([f" - {t.get_track_details()}" for t in upcoming_tracks])
+                Utils.log(f"Starting intro with tracks:\n{upcoming_tracks_str}")
+                starting_tracks_str = _("Starting tracks:") + "\n" + upcoming_tracks_str
+            except Exception as e:
+                Utils.log(f"Error getting upcoming tracks: {e}")
+
         # Get the appropriate introduction prompt
         intro_prompt = self.prompter.get_prompt(f"persona_{intro_type}", language_code)
         format_args = {
@@ -745,6 +772,7 @@ class Muse:
             "date": date,
             "language_code": language_code,
             "language_name": language_name,
+            "starting_tracks": starting_tracks_str,
         }
         if intro_type == "reintro":
             last_tuned_in_str = self._get_last_tuned_in_str(persona)

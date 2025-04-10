@@ -58,29 +58,44 @@ class ExtensionManager:
         ExtensionManager.extension_thread_started = True
 
     def reset_extension(self, restart_thread=True):
-        ExtensionManager.EXTENSION_QUEUE.cancel()
-        closed_one_thread = False
-        
-        # Clean up main extension thread
-        if ExtensionManager.extension_thread is not None and ExtensionManager.extension_thread.is_alive():
-            ExtensionManager.extension_thread.terminate()
-            ExtensionManager.extension_thread.join()
-            ExtensionManager.extension_thread = None
-            closed_one_thread = True
+        """Reset the extension system, optionally restarting the thread."""
+        try:
+            ExtensionManager.EXTENSION_QUEUE.cancel()
+            closed_one_thread = False
             
-        # Clean up delayed threads
-        for thread in ExtensionManager.DELAYED_THREADS:
-            if thread.is_alive():
-                thread.terminate()
-                thread.join()
+            # Clean up main extension thread
+            if ExtensionManager.extension_thread is not None and ExtensionManager.extension_thread.is_alive():
+                # Set a flag to signal the thread to stop
+                ExtensionManager.extension_thread.should_stop = True
+                ExtensionManager.extension_thread.join(timeout=5.0)  # Wait up to 5 seconds
+                if ExtensionManager.extension_thread.is_alive():
+                    Utils.log_warning("Extension thread did not terminate gracefully")
+                    # Force cleanup of the thread
+                    ExtensionManager.extension_thread = None
                 closed_one_thread = True
+                
+            # Clean up delayed threads
+            for thread in ExtensionManager.DELAYED_THREADS:
+                if thread.is_alive():
+                    # Set a flag to signal the thread to stop
+                    thread.should_stop = True
+                    thread.join(timeout=5.0)  # Wait up to 5 seconds
+                    if thread.is_alive():
+                        Utils.log_warning("Delayed thread did not terminate gracefully")
+                    closed_one_thread = True
 
-        ExtensionManager.DELAYED_THREADS = []
-        ExtensionManager.extension_thread_started = False
-        if closed_one_thread:
-            Utils.log("Reset extension thread.")
-        if restart_thread:
-            self.start_extensions_thread()
+            ExtensionManager.DELAYED_THREADS = []
+            ExtensionManager.extension_thread_started = False
+            if closed_one_thread:
+                Utils.log("Reset extension thread.")
+            if restart_thread:
+                self.start_extensions_thread()
+        except Exception as e:
+            Utils.log_red(f"Error during extension reset: {str(e)}")
+            # Ensure we don't leave the system in an inconsistent state
+            ExtensionManager.extension_thread = None
+            ExtensionManager.DELAYED_THREADS = []
+            ExtensionManager.extension_thread_started = False
 
     def get_extension_sleep_time(self, min_value, max_value):
         current_track = PlaybackConfig.get_playing_track()

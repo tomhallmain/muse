@@ -82,12 +82,13 @@ class MuseMemory:
     @staticmethod
     def update_all_spot_profiles(spot_profile: MuseSpotProfile):
         """Update the spot profiles list and maintain historical snapshots."""
-        # Clean up the previous spot profile if it exists
-        previous_profile = MuseMemory.all_spot_profiles[0]
-        # Clear fields that are no longer needed
-        previous_profile.unset_non_historical_fields()
-        # Force garbage collection of the cleared objects
-        gc.collect()
+        if len(MuseMemory.all_spot_profiles) > 0:
+            # Clean up the previous spot profile if it exists
+            previous_profile = MuseMemory.all_spot_profiles[0]
+            # Clear fields that are no longer needed
+            previous_profile.unset_non_historical_fields()
+            # Force garbage collection of the cleared objects
+            gc.collect()
 
         # Add to current profiles
         MuseMemory.all_spot_profiles.insert(0, spot_profile)
@@ -182,10 +183,10 @@ class MuseMemory:
         return self.last_topic in topics_to_check
 
     def get_spot_profile(self, previous_track=None, track=None, last_track_failed=False, skip_track=False,
-                         old_grouping=None, new_grouping=None, grouping_type=None):
+                         old_grouping=None, new_grouping=None, grouping_type=None, get_upcoming_tracks_callback=None):
         spot_profile = MuseSpotProfile(previous_track, track, last_track_failed, skip_track, old_grouping, new_grouping, grouping_type,
                                        get_previous_spot_profile_callback=MuseMemory.get_previous_session_spot_profile,
-                                       get_upcoming_tracks_callback=None)
+                                       get_upcoming_tracks_callback=get_upcoming_tracks_callback)
         MuseMemory.update_all_spot_profiles(spot_profile)
         MuseMemory.update_current_session_spot_profiles(spot_profile)
         return spot_profile

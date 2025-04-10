@@ -15,6 +15,7 @@ _ = I18N._
 
 
 ## TODO create a playlist from the search results, instead of simply passing a PlaylistSortType
+## TODO improve search with multi-level filtering on the same attribute - see C:\Scripts\search_music.py
 
 
 class SearchWindow(BaseWindow):

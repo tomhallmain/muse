@@ -168,13 +168,25 @@ class TextToSpeechRunner:
             Utils.log("Using existing generation file: " + final_output_path_mp3)
             return
         Utils.log("Generating speech file: " + output_path)
-        # Init TTS with the target model name
-        tts = TTS(model_name=self.model[0], progress_bar=False).to(device)
-        # Run TTS
-        tts.tts_to_file(text=text,
-                        speaker=self.model[1],
-                        file_path=output_path,
-                        language=self.model[2])
+        try:
+            # Init TTS with the target model name
+            tts = TTS(model_name=self.model[0], progress_bar=False).to(device)
+            # Run TTS with error handling
+            try:
+                tts.tts_to_file(text=text,
+                              speaker=self.model[1],
+                              file_path=output_path,
+                              language=self.model[2])
+            except Exception as e:
+                Utils.log_red(f"TTS generation failed: {str(e)}")
+                # Check if the file was created despite the error
+                if not os.path.exists(output_path):
+                    raise Exception("TTS failed to generate audio file")
+                # If file exists, we can continue despite the error
+                Utils.log("TTS generated file despite error, continuing...")
+        except Exception as e:
+            Utils.log_red(f"TTS initialization failed: {str(e)}")
+            raise
 
     def play_async(self, filepath):
         self.speech_queue.job_running = True

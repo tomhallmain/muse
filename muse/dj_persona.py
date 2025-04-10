@@ -149,7 +149,10 @@ class DJPersonaManager:
             print(f"Loading personas from config, count = {len(config.dj_personas)}")
             for persona_data in config.dj_personas:
                 persona = DJPersona.from_dict(persona_data)
-                self.personas[persona.voice_name] = persona
+                if persona.voice_name not in self.personas:
+                    self.personas[persona.voice_name] = persona
+                else:
+                    Utils.log_yellow(f"Persona already exists, skipping: {persona.voice_name}")
         except Exception as e:
             Utils.log_red(f"Error loading personas: {e}")
         

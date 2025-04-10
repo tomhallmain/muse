@@ -228,7 +228,7 @@ class MuseSpotProfile:
             profile = self.get_previous_spot_profile(idx=idx)
             iterations += 1
             if iterations >= max_iterations:
-                Utils.log_error(f"Failsafe triggered: get_last_spoken_profile exceeded {max_iterations} iterations")
+                Utils.log_red(f"Failsafe triggered: get_last_spoken_profile exceeded {max_iterations} iterations")
                 return None
                 
         Utils.log_debug(f"Found last spoken profile: {profile is not None} {profile.get_time() if profile else ''}")

@@ -124,7 +124,7 @@ class Playback:
     def run(self):
         assert self.vlc_media_player is not None
         if self.has_muse():
-            self.get_muse().check_schedules()
+            self.get_muse().check_schedules(self._get_upcoming_tracks_callback())
         while self.get_track() and not self._run.is_cancelled:
             self.set_delay_seconds()
             self.get_muse().check_for_shutdowns()
@@ -226,7 +226,7 @@ class Playback:
             self.old_grouping, 
             self.new_grouping, 
             self.get_grouping_type(),
-            get_upcoming_tracks_callback=self._playback_config.get_list().get_upcoming_tracks
+            get_upcoming_tracks_callback=self._get_upcoming_tracks_callback()
         )
         self.muse_spot_profiles.append(spot_profile)
 
@@ -289,7 +289,9 @@ class Playback:
 
     def generate_silent_spot_profile(self):
         previous_track = self.previous_track if self.has_played_first_track else None
-        spot_profile = self.get_muse().get_spot_profile(previous_track, self.track, self.last_track_failed, self.skip_track)
+        spot_profile = self.get_muse().get_spot_profile(
+                previous_track, self.track, self.last_track_failed, self.skip_track,
+                get_coming_tracks_callback=self._get_upcoming_tracks_callback())
         self.muse_spot_profiles.append(spot_profile)
 
     def register_new_song(self):
@@ -410,3 +412,7 @@ class Playback:
         if self.track is None or self.track.is_invalid():
             return None
         return self.track.get_track_text_file()
+
+    def _get_upcoming_tracks_callback(self):
+        return self._playback_config.get_list().get_upcoming_tracks
+
