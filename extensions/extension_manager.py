@@ -69,7 +69,7 @@ class ExtensionManager:
                 ExtensionManager.extension_thread.should_stop = True
                 ExtensionManager.extension_thread.join(timeout=5.0)  # Wait up to 5 seconds
                 if ExtensionManager.extension_thread.is_alive():
-                    Utils.log_warning("Extension thread did not terminate gracefully")
+                    Utils.log_yellow("Extension thread did not terminate gracefully")
                     # Force cleanup of the thread
                     ExtensionManager.extension_thread = None
                 closed_one_thread = True
@@ -81,7 +81,7 @@ class ExtensionManager:
                     thread.should_stop = True
                     thread.join(timeout=5.0)  # Wait up to 5 seconds
                     if thread.is_alive():
-                        Utils.log_warning("Delayed thread did not terminate gracefully")
+                        Utils.log_yellow("Delayed thread did not terminate gracefully")
                     closed_one_thread = True
 
             ExtensionManager.DELAYED_THREADS = []

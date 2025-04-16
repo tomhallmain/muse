@@ -8,6 +8,7 @@ from muse.muse import Muse
 from muse.playback import Playback
 from muse.playback_config import PlaybackConfig
 from muse.run_config import RunConfig
+from muse.run_context import RunContext, UserAction
 from muse.schedules_manager import ScheduledShutdownException
 from utils.config import config
 from utils.ffmpeg_handler import FFmpegHandler
@@ -23,13 +24,13 @@ class Run:
         self.id = str(time.time())
         self.is_started = False
         self.is_complete = False
-        self.is_cancelled = False
         self.args = args
         self.last_config = None
         self.callbacks = callbacks
-        self.playback = None
         self.library_data = None if args.placeholder else LibraryData(callbacks)
-        self.muse = Muse(self.args, self.library_data)
+        self._run_context = RunContext()
+        self.muse = Muse(self.args, self.library_data, self._run_context)
+        self._playback = None
 
     def is_infinite(self):
         return self.args.total == -1
@@ -38,18 +39,22 @@ class Run:
         return self.args.placeholder
 
     def next(self):
-        self.get_playback().next()
+        """Skip to the next track."""
+        self._run_context.update_action(UserAction.SKIP_TRACK)
+        self.get_playback().stop()
 
     def next_grouping(self):
-        self.get_playback().next_grouping()
+        """Skip to the next grouping."""
+        self._run_context.update_action(UserAction.SKIP_GROUPING)
+        self.get_playback().stop()
 
     def pause(self):
+        """Pause playback."""
+        self._run_context.update_action(UserAction.PAUSE)
         self.get_playback().pause()
     
     def get_playback(self):
-        if self.playback is None:
-            raise Exception("Playback was not initalized.")
-        return self.playback
+        return self._playback
 
     def get_library_data(self):
         if self.library_data is None:
@@ -95,7 +100,7 @@ class Run:
 
     def do_workflow(self):
         playback_config = PlaybackConfig(args=self.args, data_callbacks=self.library_data.data_callbacks)
-        self.playback = Playback(playback_config, self.callbacks, self)
+        self._playback = Playback(playback_config, self.callbacks, self)
         self.last_config = None
 
         try:
@@ -112,14 +117,15 @@ class Run:
 
     def execute(self):
         self.is_complete = False
-        self.is_cancelled = False
+        self._run_context.reset()  # Reset context at start of execution
         self.load_and_run()
         self.is_complete = True
 
     def cancel(self):
+        """Cancel all operations."""
         Utils.log("Canceling...")
-        self.is_cancelled = True
-        self.get_playback().next()
+        self._run_context.update_action(UserAction.CANCEL)
+        self.get_playback().stop()
 
     def open_text(self):
         song_text_filepath = self.get_playback().get_track_text_file()
@@ -130,6 +136,22 @@ class Run:
 
     def get_current_track_artwork(self):
         return self.get_playback().get_current_track_artwork()
+
+    def get_run_context(self) -> RunContext:
+        """Get the current run context."""
+        return self._run_context
+
+    def reset_run_context(self) -> None:
+        """Reset the run context to its default state."""
+        self._run_context.reset()
+
+    def is_cancelled(self) -> bool:
+        """Check if the run has been cancelled.
+        
+        Returns:
+            bool: True if a CANCEL action exists in the run context, False otherwise
+        """
+        return self._run_context.was_cancelled()
 
 
 def main(args):

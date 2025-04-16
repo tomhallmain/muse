@@ -33,8 +33,14 @@ class Muse:
     preparation_starts_minutes_from_end = float(config.muse_config["preparation_starts_minutes_from_end"])
     preparation_starts_after_seconds_sleep = int(config.muse_config["preparation_starts_after_seconds_sleep"])
 
-    def __init__(self, args, library_data):
+    def __init__(self, args, library_data, run_context):
         self.args = args
+        self.library_data = library_data
+        self._run_context = run_context
+        if not args.placeholder:
+            assert self.library_data is not None # The DJ should have access to the music library.
+            assert self._run_context is not None
+
         self._schedule = SchedulesManager.default_schedule
         if self._schedule is None:
             raise Exception("Failed to establish active schedule")
@@ -46,9 +52,9 @@ class Muse:
         
         if persona:
             self.memory.get_persona_manager().set_current_persona(persona.voice_name)
-            self.voice = Voice(persona.voice_name)
+            self.voice = Voice(persona.voice_name, run_context=self._run_context)
         else:
-            self.voice = Voice(initial_voice)
+            self.voice = Voice(initial_voice, run_context=self._run_context)
             
         self.open_weather_api = OpenWeatherAPI()
         self.news_api = NewsAPI()
@@ -60,11 +66,8 @@ class Muse:
         self.is_cancelled_prep = False
         self.post_id = "post"
         self.prior_id = "prior"
-        self.library_data = library_data
         self.get_playlist_callback = None
         self._last_checked_schedules = None
-        if not args.placeholder:
-            assert library_data is not None # The DJ should have access to the music library.
 
     def get_library_data(self):
         if self.library_data is None:
@@ -139,7 +142,7 @@ class Muse:
         spot_profile.set_preparation_time()
         spot_profile.is_prepared = True
 
-    def cancel_preparation(self, spot_profile):
+    def cancel_preparation(self, spot_profile, update_ui_callbacks=None):
         Utils.log_debug(f"Canceling muse prep:\n{spot_profile}")
         self.is_cancelled_prep = True
         if update_ui_callbacks is not None:
@@ -151,6 +154,7 @@ class Muse:
                 update_ui_callbacks.update_spot_profile_topics_text(spot_profile.get_topic_text())
 
     def maybe_dj(self, spot_profile):
+        """If the DJ is prepared and will speak, wait for the speech queue to clear, then return immediately."""
         # TODO quality info for songs
         start = time.time()
         self.voice.finish_speaking()
@@ -192,7 +196,7 @@ class Muse:
             if persona:
                 # Set the new persona
                 self.memory.get_persona_manager().set_current_persona(persona.voice_name)
-                self.voice = Voice(persona.voice_name)
+                self.voice = Voice(persona.voice_name, run_context=self._run_context)
 
                 try:
                     # Determine what type of introduction to use
@@ -212,14 +216,14 @@ class Muse:
                     self.say(_("Hello, I'm your DJ"), locale=I18N.locale)
             else:
                 Utils.log_yellow(f"No persona found for voice {voice_name}, using default voice")
-                self.voice = Voice(voice_name)
+                self.voice = Voice(voice_name, run_context=self._run_context)
                 self.say(_("Hello, I'm your DJ"), locale=I18N.locale)
                 
         except Exception as e:
             Utils.log_red(f"Failed to change voice to {voice_name}: {e}")
             traceback.print_exc()
             # Ensure we at least have a working voice
-            self.voice = Voice(voice_name)
+            self.voice = Voice(voice_name, run_context=self._run_context)
             self.say(_("Hello"), locale=I18N.locale)
 
     def check_for_shutdowns(self):
@@ -273,13 +277,6 @@ class Muse:
         if spot_profile.speak_about_prior_group:
             self.speak_about_previous_group(spot_profile)
             spot_profile.was_spoken = True
-
-    # def maybe_dj_post(self, spot_profile):
-    #     # Release lock on TTS runner for "post" queue
-    #     if spot_profile.skip_previous_track_remark:
-    #         # TODO cancel the pending "post" queue
-    #         return
-    #     pass
 
     def speak_about_previous_track(self, spot_profile):
         # TODO have muse mention if the track has been split in the spot.
@@ -747,8 +744,12 @@ class Muse:
         
         # Make an initial call to seed the context, using the old context
         result = self.llm.ask(persona_prompt, context=persona.get_context())
-        if result and result.context:
-            self.memory.get_persona_manager().update_context(result)
+        if result:
+            if result.context:
+                self.memory.get_persona_manager().update_context(result)
+        else:
+            Utils.log_yellow(f"Result was None for {persona.name} initial persona prompt, possibly due to user skip.")
+            return None, None
 
         # Get starting tracks if callback is provided
         starting_tracks_str = ""

@@ -1,10 +1,12 @@
 """LLM interface for the Muse application."""
 
 import json
-from urllib import request
 from dataclasses import dataclass
-from typing import Optional, List
 import random  # Add this at the top with other standard library imports
+import threading
+import time
+from typing import Optional, List
+from urllib import request
 
 from utils import Utils
 
@@ -76,19 +78,27 @@ class LLM:
     ENDPOINT = "http://localhost:11434/api/generate"
     DEFAULT_TIMEOUT = 180
     DEFAULT_SYSTEM_PROMPT_DROP_RATE = 0.9  # 90% chance to drop system prompt
+    CHECK_INTERVAL = 0.1  # How often to check for cancellation
 
-    def __init__(self, model_name="deepseek-r1:14b"):
+    def __init__(self, model_name="deepseek-r1:14b", run_context=None):
         self.model_name = model_name
+        self.run_context = run_context
+        self._cancelled = False
+        self._result = None
+        self._exception = None
+        self._thread = None
         Utils.log(f"Using LLM model: {self.model_name}")
 
     def ask(self, query, json_key=None, timeout=DEFAULT_TIMEOUT, context=None, system_prompt=None, system_prompt_drop_rate=DEFAULT_SYSTEM_PROMPT_DROP_RATE):
         """Ask the LLM a question and optionally extract a JSON value."""
+        Utils.log_debug(f"LLM.ask called with query length: {len(query)}, json_key: {json_key}")
         if json_key is not None:
             return self.generate_json_get_value(query, json_key, timeout=timeout, context=context, system_prompt=system_prompt, system_prompt_drop_rate=system_prompt_drop_rate)
-        return self.generate_response(query, timeout=timeout, context=context, system_prompt=system_prompt, system_prompt_drop_rate=system_prompt_drop_rate)
+        return self.generate_response_async(query, timeout=timeout, context=context, system_prompt=system_prompt, system_prompt_drop_rate=system_prompt_drop_rate)
 
     def generate_response(self, query, timeout=DEFAULT_TIMEOUT, context=None, system_prompt=None, system_prompt_drop_rate=DEFAULT_SYSTEM_PROMPT_DROP_RATE):
         """Generate a response from the LLM."""
+        Utils.log_debug(f"LLM.generate_response called with query length: {len(query)}")
         query = self._sanitize_query(query)
         timeout = self._get_timeout(timeout)
         Utils.log(f"Asking LLM {self.model_name}:\n{query}")
@@ -108,6 +118,7 @@ class LLM:
         
         if context is not None:
             data["context"] = context
+            Utils.log_debug(f"Adding context to LLM request, length: {len(context)}")
             
         # Randomly decide whether to include system prompt
         if system_prompt is not None and random.random() > system_prompt_drop_rate:
@@ -122,19 +133,76 @@ class LLM:
             data=json.dumps(data).encode("utf-8"),
         )
         try:
+            Utils.log_debug("Making LLM request...")
             response = request.urlopen(req, timeout=timeout).read().decode("utf-8")
             resp_json = json.loads(response)
             result = LLMResult.from_json(resp_json, context_provided=context is not None)
             result.response = self._clean_response_for_models(result.response)
+            Utils.log_debug(f"LLM response received, length: {len(result.response)}")
             return result
         except Exception as e:
             Utils.log_red(f"Failed to generate LLM response: {e}")
             raise LLMResponseException(f"Failed to generate LLM response: {e}")
 
+    def generate_response_async(self, query, timeout=DEFAULT_TIMEOUT, context=None, system_prompt=None, system_prompt_drop_rate=DEFAULT_SYSTEM_PROMPT_DROP_RATE):
+        """Generate a response from the LLM in a separate thread with cancellation support."""
+        Utils.log_debug(f"LLM.generate_response_async called with query length: {len(query)}")
+        self._cancelled = False
+        self._result = None
+        self._exception = None
+        self._thread = None
+
+        def run_generation():
+            try:
+                Utils.log_debug("Starting LLM generation in thread")
+                result = self.generate_response(query, timeout, context, system_prompt, system_prompt_drop_rate)
+                if not self._cancelled:
+                    self._result = result
+                    Utils.log_debug("LLM generation completed successfully")
+                else:
+                    Utils.log_debug("LLM generation cancelled before completion")
+            except Exception as e:
+                self._exception = e
+                Utils.log_red(f"Exception in LLM generation thread: {e}")
+
+        # Start the generation in a separate thread
+        self._thread = threading.Thread(target=run_generation)
+        self._thread.daemon = True  # Make it a daemon thread so it won't prevent program exit
+        self._thread.start()
+        Utils.log("LLM generation thread started")
+
+        # Wait for completion or cancellation
+        try:
+            while self._thread and self._thread.is_alive():
+                if self.run_context and self.run_context.should_skip():
+                    Utils.log_debug("Cancelling LLM generation due to skip request")
+                    self._cancelled = True
+                    # Give the thread a moment to clean up
+                    self._thread.join(timeout=1.0)
+                    if self._thread.is_alive():
+                        Utils.log_red("Thread did not terminate gracefully, forcing cleanup")
+                    self._thread = None  # Force cleanup even if thread is still alive
+                    return None
+                time.sleep(self.CHECK_INTERVAL)
+        except Exception as e:
+            self._exception = e
+            Utils.log_red(f"Exception while monitoring LLM thread: {e}")
+        finally:
+            self._thread = None  # Clean up thread reference when done
+
+        # Handle the result
+        if self._exception:
+            Utils.log_red(f"Failed to generate LLM response: {self._exception}")
+            raise LLMResponseException(f"Failed to generate LLM response: {self._exception}")
+        
+        return self._result
+
     def generate_json_get_value(self, query, json_key, timeout=DEFAULT_TIMEOUT, context=None, system_prompt=None, system_prompt_drop_rate=DEFAULT_SYSTEM_PROMPT_DROP_RATE):
         """Generate a response and extract a specific JSON value."""
-        result = self.generate_response(query, timeout=timeout, context=context, system_prompt=system_prompt, system_prompt_drop_rate=system_prompt_drop_rate)
-        return result._get_json_attr(json_key)
+        self.generate_response_async(query, timeout=timeout, context=context, system_prompt=system_prompt, system_prompt_drop_rate=system_prompt_drop_rate)
+        if self._result is None:
+            raise LLMResponseException("Failed to generate LLM response - Result is None")
+        return self._result._get_json_attr(json_key)
 
     def _is_thinking_model(self) -> bool:
         """Check if the current model is a thinking model that uses internal prompts."""
@@ -155,6 +223,20 @@ class LLM:
             # can take a while to complete for complex requests.
             return max(timeout, 300)
         return timeout
+
+    def cancel_generation(self):
+        """Cancel any ongoing LLM generation."""
+        Utils.log("Cancelling LLM generation")
+        if self._thread and self._thread.is_alive():
+            self._cancelled = True
+            self._thread.join(timeout=1.0)
+            if self._thread.is_alive():
+                Utils.log("Thread did not terminate gracefully, forcing cleanup")
+            self._thread = None  # Force cleanup even if thread is still alive
+
+    def __del__(self):
+        """Ensure cleanup on object destruction."""
+        self.cancel_generation()
 
 
 if __name__ == "__main__":

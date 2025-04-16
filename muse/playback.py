@@ -5,6 +5,7 @@ import traceback
 import vlc
 
 from muse.playback_config import PlaybackConfig
+from muse.run_context import RunContext
 from utils.config import config
 from utils.globals import Globals
 from utils.utils import Utils
@@ -29,18 +30,18 @@ class Playback:
         if run:
             self.muse = run.muse
             self.muse.set_get_playlist_callback(self._playback_config.get_list)
+            self._run_context = run.get_run_context()
         else:
             self.muse = None
-        self.is_paused = False
-        self.skip_track = False
-        self.skip_delay = False
-        self.skip_grouping = False
+            self._run_context = RunContext()  # Create a new RunContext if no run provided
+        
+        # Track state
         self.track = None
         self.previous_track = ""
         self.last_track_failed = False
         self.has_played_first_track = False
-        self.did_advance = False # jumped ahead in the playlist occurred due to track splitting errors
-        self.places_from_current = -1 # this many tracks were jumped in the process
+        self.did_advance = False  # jumped ahead in the playlist occurred due to track splitting errors
+        self.places_from_current = -1  # this many tracks were jumped in the process
         self.has_attempted_track_split = False
         self.count = 0
         self.muse_spot_profiles = []
@@ -61,10 +62,10 @@ class Playback:
         self.previous_track = self.track
         if self.did_advance:
             self.track, self.old_grouping, self.new_grouping = self._playback_config.next_track(
-                skip_grouping=self.skip_grouping, places_from_current=self.places_from_current)
+                skip_grouping=self._run_context.skip_grouping, places_from_current=self.places_from_current)
         else:
-            self.track, self.old_grouping, self.new_grouping = self._playback_config.next_track(skip_grouping=self.skip_grouping)
-        self.skip_grouping = False
+            self.track, self.old_grouping, self.new_grouping = self._playback_config.next_track(skip_grouping=self._run_context.skip_grouping)
+        self._run_context.skip_grouping = False
         if not self.has_attempted_track_split:
             self.track, self.did_advance, self.places_from_current = self.ensure_splittable_track(self.track, True)
         if self.has_muse() and self.get_muse().has_started_prep:
@@ -98,7 +99,7 @@ class Playback:
             self.register_new_song()
             self.vlc_media_player.play()
             time.sleep(0.5)
-            while (self.vlc_media_player.is_playing() or self.is_paused) and not self.skip_track:
+            while (self.vlc_media_player.is_playing() or self._run_context.is_paused) and not self._run_context.skip_track:
                 time.sleep(0.5)
             self.vlc_media_player.stop()
         else:
@@ -124,27 +125,27 @@ class Playback:
     def run(self):
         assert self.vlc_media_player is not None
         if self.has_muse():
+            if not self.has_played_first_track:
+                self.update_ui_art_for_muse()
             self.get_muse().check_schedules(self._get_upcoming_tracks_callback())
-        while self.get_track() and not self._run.is_cancelled:
+        while self.get_track() and not self._run.is_cancelled():
             self.set_delay_seconds()
             self.get_muse().check_for_shutdowns()
             if self.has_muse():
-                if not self.has_played_first_track:
-                    self.update_ui_art_for_muse()
                 if not self.has_played_first_track or not self.get_muse().has_started_prep:
                     # First track, or if user skipped before end of last track
                     seconds_passed = self.prepare_muse(delayed_prep=True)
                     self.remaining_delay_seconds -= seconds_passed
                 elif self.get_spot_profile().needs_repreparation():
                     Utils.log("Spot profile track was overwritten and will be reprepared.")
-#                    self.muse.cancel_preparation()
-#                    self.spot_profile.reset()
+                    # self.muse.cancel_preparation()
+                    # self.spot_profile.reset()
                     seconds_passed = self.prepare_muse(delayed_prep=True)
                     self.remaining_delay_seconds -= seconds_passed
                 # TODO edge case when extension track has been assigned after the preparation for the previously expected upcoming track
                 # TODO enable muse to be cancelled when user clicks Next
                 # The user may have requested to skip the last track since the muse profile was created
-                self.get_spot_profile().update_skip_previous_track_remark(self.skip_track)
+                self.get_spot_profile().update_skip_previous_track_remark(self._run_context.skip_track)
                 if self.get_spot_profile().is_going_to_say_something():
                     self.update_ui_art_for_muse()
                     seconds_passed = self.get_muse().maybe_dj(self.get_spot_profile())
@@ -168,15 +169,15 @@ class Playback:
 
             self.set_volume()
             self.last_track_failed = False
-            self.is_paused = False
-            self.skip_track = False
+            self._run_context.is_paused = False
+            self._run_context.skip_track = False
 
             self.vlc_media_player.play()
             time.sleep(0.5)
             cumulative_sleep_seconds = 0.5
             if not self.vlc_media_player.is_playing():
                 self.last_track_failed = True
-            while (self.vlc_media_player.is_playing() or self.is_paused) and not self.skip_track:
+            while (self.vlc_media_player.is_playing() or self._run_context.is_paused) and not self._run_context.skip_track:
                 time.sleep(0.5)
                 cumulative_sleep_seconds += 0.5
                 seconds_remaining = self.update_progress()
@@ -222,7 +223,7 @@ class Playback:
             previous_track, 
             next_track, 
             self.last_track_failed, 
-            self.skip_track,
+            self._run_context.skip_track,
             self.old_grouping, 
             self.new_grouping, 
             self.get_grouping_type(),
@@ -290,7 +291,7 @@ class Playback:
     def generate_silent_spot_profile(self):
         previous_track = self.previous_track if self.has_played_first_track else None
         spot_profile = self.get_muse().get_spot_profile(
-                previous_track, self.track, self.last_track_failed, self.skip_track,
+                previous_track, self.track, self.last_track_failed, self._run_context.skip_track,
                 get_coming_tracks_callback=self._get_upcoming_tracks_callback())
         self.muse_spot_profiles.append(spot_profile)
 
@@ -359,7 +360,7 @@ class Playback:
         return Utils.get_asset(filenames[randint(0, len(filenames)-1)])
 
     def increment_count(self):
-        if not self.skip_track:
+        if not self._run_context.skip_track:
             self.count += 1
         return bool(self._playback_config.total > -1 and self.count > self._playback_config.total)
 
@@ -369,11 +370,10 @@ class Playback:
                 self.ui_callbacks.update_next_up_callback(_("Sleeping for seconds") + ": " + str(self.remaining_delay_seconds), no_title=True)
                 # TODO set track text to "Upcoming track"
             delay_timer = 0
-            while not self.skip_delay and delay_timer < self.remaining_delay_seconds:
+            while not self._run_context.skip_delay and delay_timer < self.remaining_delay_seconds:
                 time.sleep(0.5)
                 delay_timer += 0.5
-            if self.skip_delay:
-                self.skip_delay = False
+            self._run_context.skip_delay = False
 
     def set_volume(self):
         mean_volume, max_volume = self.track.get_volume()
@@ -384,24 +384,12 @@ class Playback:
 
     def pause(self):
         self.vlc_media_player.pause()
-        self.is_paused = True
 
-    def unpause(self):
+    def resume(self):
         self.vlc_media_player.play()
-        self.is_paused = False
 
-    def next(self):
+    def stop(self):
         self.vlc_media_player.stop()
-        Utils.log("Skipping ahead to next track.")
-        self.skip_track = True
-        self.skip_delay = True
-
-    def next_grouping(self):
-        self.vlc_media_player.stop()
-        Utils.log("Skipping ahead to next track grouping.")
-        self.skip_track = True
-        self.skip_delay = True
-        self.skip_grouping = True
 
     def get_current_track_artwork(self):
         if self.track is None or self.track.is_invalid():
@@ -415,4 +403,5 @@ class Playback:
 
     def _get_upcoming_tracks_callback(self):
         return self._playback_config.get_list().get_upcoming_tracks
+
 

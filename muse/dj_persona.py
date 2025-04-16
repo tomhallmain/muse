@@ -68,16 +68,24 @@ class DJPersona:
 
     def update_context(self, new_context: List[int]) -> None:
         """Update the context with a new list of integers."""
+        old_context_len = len(self.context) if self.context else 0
         self.context = new_context
         # Update last signoff time whenever the persona speaks
         self.set_last_signoff_time()
+        Utils.log(f"Updated context for {self.name}: {old_context_len} -> {len(new_context)} tokens")
 
     def set_last_signoff_time(self) -> None:
         """Set the last signoff time to the current time."""
+        old_time = self.last_signoff_time
         self.last_signoff_time = time.time()
+        if old_time:
+            Utils.log(f"Updated last signoff time for {self.name}: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(old_time))} -> {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(self.last_signoff_time))}")
+        else:
+            Utils.log(f"Set initial signoff time for {self.name}: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(self.last_signoff_time))}")
 
     def get_context(self) -> List[int]:
         """Get the current context."""
+        Utils.log(f"Retrieved context for {self.name}: {len(self.context)} tokens")
         return self.context
 
     def get_s(self) -> str:
@@ -103,6 +111,7 @@ class DJPersona:
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert the persona to a dictionary for serialization."""
+        Utils.log(f"Serializing {self.name} persona with {len(self.context)} tokens of context")
         return {
             "name": self.name,
             "voice_name": self.voice_name,
@@ -120,6 +129,8 @@ class DJPersona:
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'DJPersona':
         """Create a persona from a dictionary."""
+        context_len = len(data.get("context", []))
+        Utils.log(f"Deserializing {data['name']} persona with {context_len} tokens of context")
         return cls(
             name=data["name"],
             voice_name=data["voice_name"],

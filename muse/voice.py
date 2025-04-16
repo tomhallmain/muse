@@ -1,4 +1,3 @@
-
 import datetime
 import traceback
 
@@ -17,18 +16,27 @@ except Exception as e:
 class Voice:
     MULTI_MODEL = "tts_models/multilingual/multi-dataset/xtts_v2"
 
-    def __init__(self, coqui_named_voice="Royston Min"):
+    def __init__(self, coqui_named_voice="Royston Min", run_context=None):
         self.can_speak = tts_runner_imported
         self._coqui_named_voice = coqui_named_voice
         self.model_args = (Voice.MULTI_MODEL, self._coqui_named_voice, "en")
-        self._tts = TextToSpeechRunner(self.model_args, filepath="muse_voice", delete_interim_files=False, auto_play=False) if self.can_speak else None
+        self.run_context = run_context
+        if self.can_speak:
+            self._tts = TextToSpeechRunner(self.model_args,
+                                           filepath="muse_voice",
+                                           delete_interim_files=False,
+                                           auto_play=False,
+                                           run_context=self.run_context)
+        else:
+            self._tts = None
 
     def say(self, text="", topic="", save_mp3=False, locale=None):
         # Say immediately
         if not self.can_speak or self._tts is None:
             Utils.log_yellow("Cannot speak.")
             return
-        temp_tts = TextToSpeechRunner(self.model_args, filepath="muse_voice", overwrite=True)
+        Utils.log(f"Saying: {text}")
+        temp_tts = TextToSpeechRunner(self.model_args, filepath="muse_voice", overwrite=True, run_context=self.run_context)
         current_time_str = str(datetime.datetime.now().timestamp())
         if "." in current_time_str:
             current_time_str = current_time_str.split(".")[0]
@@ -44,6 +52,7 @@ class Voice:
         if not self.can_speak or self._tts is None:
             Utils.log_yellow("Cannot speak.")
             return
+        Utils.log(f"Preparing to say: {text}")
         if save_for_last:
             self._tts.await_pending_speech_jobs(run_jobs=False)
         current_time_str = str(datetime.datetime.now().timestamp())
@@ -61,7 +70,6 @@ class Voice:
             Utils.log_yellow("Cannot speak.")
             return
         self._tts.await_pending_speech_jobs()
-
 
     def add_speech_file_to_queue(self, filepath):
         if not self.can_speak or self._tts is None:

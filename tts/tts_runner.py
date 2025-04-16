@@ -111,7 +111,7 @@ class TextToSpeechRunner:
     output_directory = os.path.join(os.path.dirname(os.path.dirname(__file__)), "tts_output")
     lib_sounds = os.path.join(os.path.dirname(os.path.dirname(__file__)), "lib", "sounds")
 
-    def __init__(self, model, filepath="test", overwrite=False, delete_interim_files=True, auto_play=True):
+    def __init__(self, model, filepath="test", overwrite=False, delete_interim_files=True, auto_play=True, run_context=None):
         self.speech_queue = JobQueue("Speech Queue")
         self.output_path = os.path.splitext(os.path.basename(filepath))[0]
         self.output_path_normalized = Utils.ascii_normalize(self.output_path)
@@ -122,6 +122,7 @@ class TextToSpeechRunner:
         self.used_audio_paths = []
         self.delete_interim_files = delete_interim_files if auto_play else False
         self.auto_play = auto_play
+        self.run_context = run_context
 
     def clean(self):
         if len(self.used_audio_paths) > 0:
@@ -189,10 +190,14 @@ class TextToSpeechRunner:
             raise
 
     def play_async(self, filepath):
+        if self.run_context and self.run_context.should_skip():
+            return
         self.speech_queue.job_running = True
         TextToSpeechRunner._play(filepath)
         time.sleep(1)
         while (TextToSpeechRunner.VLC_MEDIA_PLAYER.is_playing()):
+            if self.run_context and self.run_context.should_skip():
+                return
             time.sleep(.1)
         next_job_output_path = self.speech_queue.take()
         if next_job_output_path is not None and os.path.exists(next_job_output_path):
@@ -202,6 +207,8 @@ class TextToSpeechRunner:
             self.speech_queue.job_running = False
 
     def await_pending_speech_jobs(self, run_jobs=True):
+        if self.run_context and self.run_context.should_skip():
+            return
         if run_jobs:
             while self.speech_queue.has_pending():
                 next_job_output_path = self.speech_queue.take()
@@ -240,6 +247,8 @@ class TextToSpeechRunner:
         self.add_speech_file_to_queue(output_path)
 
     def speak(self, text, save_mp3=False, locale=None):
+        if self.run_context and self.run_context.should_skip():
+            return
         full_text = ""
         for chunk in Chunker.get_str_chunks(text, locale=locale):
             Utils.log("-------------------\n" + chunk)
@@ -248,10 +257,14 @@ class TextToSpeechRunner:
             full_text += chunk
             self._speak(chunk)
         while self.speech_queue.job_running:
+            if self.run_context and self.run_context.should_skip():
+                return
             time.sleep(0.5)
         self.combine_audio_files(save_mp3, text_content=full_text)
 
     def speak_file(self, filepath, save_mp3=True, split_on_each_line=False, locale=None):
+        if self.run_context and self.run_context.should_skip():
+            return
         full_text = ""
         for chunk in Chunker.get_chunks(filepath, split_on_each_line, locale=locale):
             Utils.log("-------------------\n" + chunk)
@@ -260,6 +273,8 @@ class TextToSpeechRunner:
             full_text += chunk
             self._speak(chunk)
         while self.speech_queue.job_running:
+            if self.run_context and self.run_context.should_skip():
+                return
             time.sleep(0.5)
         self.combine_audio_files(save_mp3, text_content=full_text)
 

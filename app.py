@@ -392,8 +392,8 @@ class App():
         self.runner_app_config.volume = self.volume_slider.get()
         Globals.set_volume(int(self.runner_app_config.volume))
         if (self.current_run is not None and not self.current_run.is_complete \
-                and self.current_run.playback is not None):
-            self.current_run.playback.set_volume()
+                and self.current_run.get_playback() is not None):
+            self.current_run.get_playback().set_volume()
 
     def set_favorite(self, event=None):
         favorited = self.favorite.get()
@@ -521,7 +521,7 @@ class App():
         return args, args_copy
 
     def open_text(self):
-        if self.current_run is None or self.current_run.is_complete or self.current_run.is_cancelled:
+        if self.current_run is None or self.current_run.is_complete or self.current_run.is_cancelled():
             return
         self.current_run.open_text()
 
@@ -546,7 +546,7 @@ class App():
     #         print(f"Running Preset Schedule: {schedule}")
     #         for preset_task in schedule.get_tasks():
     #             if not self.job_queue_preset_schedules.has_pending() or not self.run_preset_schedule_var.get() or \
-    #                     (self.current_run is not None and not self.current_run.is_infinite() and self.current_run.is_cancelled):
+    #                     (self.current_run is not None and not self.current_run.is_infinite() and self.current_run.is_cancelled()):
     #                 self.job_queue_preset_schedules.cancel()
     #                 return
     #             try:
@@ -563,7 +563,7 @@ class App():
     #             time.sleep(0.1)
     #             started_run_id = self.current_run.id
     #             while (self.current_run is not None and started_run_id == self.current_run.id
-    #                     and not self.current_run.is_cancelled and not self.current_run.is_complete):
+    #                     and not self.current_run.is_cancelled() and not self.current_run.is_complete):
     #                 if not self.job_queue_preset_schedules.has_pending() or not self.run_preset_schedule_var.get():
     #                     self.job_queue_preset_schedules.cancel()
     #                     return
