@@ -352,3 +352,17 @@ class ExtensionManager:
     def s(self, q, x=1):
         Utils.log(f"s: {q}")
         return LibraryExtender.isyMOLB_(q, m=x)
+
+    @staticmethod
+    def get_extension_detailsfor_track(media_track=None):
+        if media_track is None:
+            return None
+        try:
+            filepath = media_track.filepath
+            for extension in ExtensionManager.extensions:
+                if extension["filename"] == filepath:
+                    return extension
+        except Exception as e:
+            Utils.log_red(f"Error getting extension details for {filepath}: {e}")
+        Utils.log_red(f"No extension details found for {filepath}")
+        return None

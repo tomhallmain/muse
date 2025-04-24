@@ -326,6 +326,9 @@ class Muse:
         spot_profile.mark_track_as_spoken(track)
         if track._is_extended and random.random() < 0.8:
             dj_remark += " " + _("This one is a new track.")
+            # extension_details = ExtensionManager.get_latest_extension_details()
+            # if extension_details is not None:
+            #     dj_remark += " " + _("I searched for: ") + extension_details.search_query
         self.say_at_some_point(dj_remark, spot_profile, None)
 
     def speak_about_previous_group(self, spot_profile):
@@ -660,10 +663,10 @@ class Muse:
         blacklist_items = blacklist.test_all(text, excluded_items=blacklisted_items_in_prompt)
         attempts = 0
         while len(blacklist_items) > 0:
+            all_blacklist_items.update(set(blacklist_items))
             blacklist_items_str = ", ".join(sorted([str(i) for i in all_blacklist_items]))
             Utils.log("Hit blacklisted items: " + blacklist_items_str)
             Utils.log("Text: " + text)
-            all_blacklist_items.update(set(blacklist_items))
             result = self.llm.ask(prompt, json_key=json_key, context=context, system_prompt=system_prompt)
             text = result.response if result else ""
             generations.append(text)

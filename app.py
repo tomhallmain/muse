@@ -23,7 +23,7 @@ from ui.composers_window import ComposersWindow
 from ui.extensions_window import ExtensionsWindow
 from ui.favorites_window import FavoritesWindow
 from ui.media_frame import MediaFrame
-from ui.playlist_window import PlaylistWindow
+from ui.playlist_window import MasterPlaylistWindow
 from ui.preset import Preset
 from ui.presets_window import PresetsWindow
 from ui.schedules_window import SchedulesWindow
@@ -126,6 +126,7 @@ class App():
             self.on_closing,
             self.toast,
             self.alert,
+            self.update_playlist_state,
         )
 
         # Sidebar
@@ -505,7 +506,6 @@ class App():
     def get_args(self, track=None):
         self.store_info_cache()
         self.set_delay()
-        # self.set_concepts_dir()
         args = RunConfig()
         args.playlist_sort_type = PlaylistSortType.get_from_translation(self.sort_type.get())
         args.total = -1
@@ -516,6 +516,7 @@ class App():
         args.track = track
         args.enable_long_track_splitting = self.track_splitting.get()
         args.use_system_language_for_all_topics = self.use_system_language.get()
+        args.playback_master_strategy = self.playlist_strategy.get()
 
         args_copy = deepcopy(args)
         return args, args_copy
@@ -613,7 +614,7 @@ class App():
 
     def open_playlist_window(self):
         try:
-            playlist_window = PlaylistWindow(self.master, self.app_actions)
+            playlist_window = MasterPlaylistWindow(self.master, self.app_actions)
         except Exception as e:
             Utils.log_red(f"Exception opening playlist window: {e}")
 
@@ -800,6 +801,20 @@ class App():
             element.destroy()
             setattr(self, element_ref_name, None)
             self.row_counter0 -= 1
+
+    def update_playlist_state(self, strategy=None, staged_playlist=None):
+        """Update the playlist state, including strategy and staged playlist info."""
+        if strategy is not None:
+            self.playlist_strategy.set(strategy.value)
+            self.runner_app_config.playback_master_strategy = strategy.value
+        
+        if staged_playlist is not None and not self.current_run.is_started:
+            # Update next up text to show staged playlist info
+            next_up_text = _("Staged Playlist: ") + staged_playlist
+            self.update_next_up_text(next_up_text)
+        elif staged_playlist is None and not self.current_run.is_started:
+            # Clear next up text if no playlist is staged
+            self.update_next_up_text("")
 
 
 if __name__ == "__main__":

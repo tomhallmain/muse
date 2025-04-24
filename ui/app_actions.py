@@ -1,5 +1,3 @@
-
-
 class AppActions:
     def __init__(self,
                  track_details_callback,
@@ -14,6 +12,7 @@ class AppActions:
                  shutdown_callback,
                  toast_callback,
                  alert_callback,
+                 update_playlist_state_callback,
                  ):
         self.track_details_callback = track_details_callback
         self.update_next_up_callback = update_next_up_callback
@@ -27,4 +26,5 @@ class AppActions:
         self.start_play_callback = start_play_callback
         self.toast = toast_callback
         self.alert = alert_callback
+        self.update_playlist_state = update_playlist_state_callback
 

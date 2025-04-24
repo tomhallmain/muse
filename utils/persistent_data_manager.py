@@ -5,7 +5,7 @@ from muse.muse_memory import MuseMemory
 from muse.playlist import Playlist
 from muse.schedules_manager import SchedulesManager
 from ui.composers_window import ComposersWindow
-from ui.playlist_window import PlaylistWindow
+from ui.playlist_window import MasterPlaylistWindow
 from ui.search_window import SearchWindow
 
 
@@ -15,7 +15,7 @@ class PersistentDataManager:
         MuseMemory.save()
         LibraryData.store_caches()
         Playlist.store_recently_played_lists()
-        PlaylistWindow.store_named_playlist_configs()
+        MasterPlaylistWindow.store_named_playlist_configs()
         SchedulesManager.store_schedules()
         ExtensionManager.store_extensions()
         SearchWindow.store_recent_searches()
@@ -27,7 +27,7 @@ class PersistentDataManager:
         LibraryData.load_directory_cache()
         LibraryData.load_media_track_cache()
         Playlist.load_recently_played_lists()
-        PlaylistWindow.load_named_playlist_configs()
+        MasterPlaylistWindow.load_named_playlist_configs()
         SchedulesManager.set_schedules()
         ExtensionManager.load_extensions()
         SearchWindow.load_recent_searches()

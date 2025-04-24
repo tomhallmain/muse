@@ -8,7 +8,7 @@ from ui.extensions_window import ExtensionsWindow
 from ui.favorites_window import FavoritesWindow
 from ui.media_frame import MediaFrame
 from ui.network_media_window import NetworkMediaWindow
-from ui.playlist_window import PlaylistWindow
+from ui.playlist_window import MasterPlaylistWindow
 from ui.preset import Preset
 from ui.presets_window import PresetsWindow
 from ui.schedules_window import SchedulesWindow
@@ -25,7 +25,7 @@ __all__ = [
     'FavoritesWindow',
     'MediaFrame',
     'NetworkMediaWindow',
-    'PlaylistWindow',
+    'MasterPlaylistWindow',
     'Preset',
     'PresetsWindow',
     'SchedulesWindow',
