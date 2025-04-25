@@ -4,14 +4,13 @@ from tkinter import Frame, Label, Text, StringVar, Scale, Listbox, Button, Tople
 from tkinter.constants import W
 from tkinter.ttk import OptionMenu, Scale
 
-from utils.globals import PlaylistSortType
+from utils.globals import PlaylistSortType, PlaybackMasterStrategy
 
 from muse.playback_config import PlaybackConfig
 from muse.run_config import RunConfig
 from ui.base_window import BaseWindow
 from utils.app_info_cache import app_info_cache
 from utils.config import config
-from utils.globals import PlaylistSortType
 from utils.translations import I18N
 
 _ = I18N._

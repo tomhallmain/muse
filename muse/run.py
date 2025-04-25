@@ -7,6 +7,7 @@ from library_data.library_data import LibraryData
 from muse.muse import Muse
 from muse.playback import Playback
 from muse.playback_config import PlaybackConfig
+from muse.playback_state import PlaybackStateManager
 from muse.run_config import RunConfig
 from muse.run_context import RunContext, UserAction
 from muse.schedules_manager import ScheduledShutdownException
@@ -81,6 +82,8 @@ class Run:
 
         try:
             self.is_started = True
+            # Set the current config in the state manager
+            PlaybackStateManager.set_current_config(playback_config)
             self.get_playback().run()
             FFmpegHandler.cleanup_cache()
             TempDir.cleanup()
@@ -95,6 +98,9 @@ class Run:
             TempDir.cleanup()
             self.get_library_data().reset_extension()
             raise e
+        finally:
+            # Clear the current config when done
+            PlaybackStateManager.clear_current_config()
 
         self.last_config = deepcopy(self.get_playback()._playback_config)
 
