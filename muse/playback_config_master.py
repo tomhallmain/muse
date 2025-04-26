@@ -45,13 +45,71 @@ class PlaybackConfigMaster:
         if len(self.songs_per_config) != len(self.playback_configs):
             self.songs_per_config = [1] * len(self.playback_configs)
         
+        # Precompute the sequence of configurations and their playlist positions
+        self._precompute_sequence()
+        
         self.current_playback_config = None
         self.current_playback_config_index = -1
+        self.current_sequence_index = -1
         self.played_tracks = []
-        self.songs_played_in_current_config = 0
         self.next_track_override = None
         self.playing = False
         PlaybackConfigMaster.OPEN_CONFIGS.append(self)
+
+    def _precompute_sequence(self):
+        """Precompute the sequence of configurations and their playlist positions."""
+        self.sequence = []
+        max_sequence_length = 100000  # Arbitrary large number
+        
+        # For each configuration, add its songs to the sequence
+        for config_index, config in enumerate(self.playback_configs):
+            for _ in range(self.songs_per_config[config_index]):
+                self.sequence.append((config_index, len(self.sequence)))
+                
+                # Stop if we've reached the maximum sequence length
+                if len(self.sequence) >= max_sequence_length:
+                    return
+
+    def get_master_playlist(self, previous_tracks=100, upcoming_tracks=100):
+        """Get a window of tracks around the current position in the sequence.
+        
+        Args:
+            previous_tracks (int): Number of previous tracks to include (default: 100)
+            upcoming_tracks (int): Number of upcoming tracks to include (default: 100)
+            
+        Returns:
+            tuple: (previous_tracks_list, upcoming_tracks_list)
+        """
+        if not self.sequence:
+            return [], []
+
+        # Calculate the window boundaries
+        sequence_length = len(self.sequence)
+        current_pos = self.current_sequence_index if self.current_sequence_index >= 0 else 0
+        
+        # Get previous tracks
+        prev_start = max(0, current_pos - previous_tracks)
+        prev_tracks = []
+        for i in range(prev_start, current_pos):
+            config_index, _ = self.sequence[i]
+            config = self.playback_configs[config_index]
+            # Get the track that would be played at this position
+            track = config.get_list().get_track_at_position(i - prev_start)
+            if track:
+                prev_tracks.append(track)
+
+        # Get upcoming tracks
+        next_end = min(sequence_length, current_pos + upcoming_tracks + 1)
+        next_tracks = []
+        for i in range(current_pos + 1, next_end):
+            config_index, _ = self.sequence[i]
+            config = self.playback_configs[config_index]
+            # Get the track that would be played at this position
+            track = config.get_list().get_track_at_position(i - current_pos - 1)
+            if track:
+                next_tracks.append(track)
+
+        return prev_tracks, next_tracks
 
     def get_playing_config(self):
         """Get the currently playing configuration."""
@@ -96,12 +154,11 @@ class PlaybackConfigMaster:
             PlaybackConfigMaster.READY_FOR_EXTENSION = True
             return next_track, None, None
 
-        # If we've played all songs from current config, move to next
-        if (self.current_playback_config is None or 
-            self.songs_played_in_current_config >= self.songs_per_config[self.current_playback_config_index]):
-            self.current_playback_config_index = (self.current_playback_config_index + 1) % len(self.playback_configs)
-            self.current_playback_config = self.playback_configs[self.current_playback_config_index]
-            self.songs_played_in_current_config = 0
+        # Move to next position in sequence
+        self.current_sequence_index = (self.current_sequence_index + 1) % len(self.sequence)
+        config_index, _ = self.sequence[self.current_sequence_index]
+        self.current_playback_config = self.playback_configs[config_index]
+        self.current_playback_config_index = config_index
 
         # Get next track from current config
         next_track, old_grouping, new_grouping = self.current_playback_config.next_track(
@@ -138,16 +195,19 @@ class PlaybackConfigMaster:
                 PlaybackConfigMaster.playlist_history.pop()
 
         self.played_tracks.append(next_track)
-        self.songs_played_in_current_config += 1
         return next_track, old_grouping, new_grouping
 
     def upcoming_track(self, places_from_current=1):
-        """Get upcoming track from current configuration."""
+        """Get upcoming track from next configuration."""
         if self.next_track_override is not None:
             return self.next_track_override, None, None
-        if self.current_playback_config:
-            return self.current_playback_config.upcoming_track(places_from_current=places_from_current)
-        return None, None, None
+
+        # Get next position in sequence
+        next_sequence_index = (self.current_sequence_index + 1) % len(self.sequence)
+        config_index, _ = self.sequence[next_sequence_index]
+        next_config = self.playback_configs[config_index]
+        
+        return next_config.upcoming_track(places_from_current=places_from_current)
 
     def current_track(self):
         """Get current track from current configuration."""

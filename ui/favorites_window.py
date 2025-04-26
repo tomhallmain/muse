@@ -13,6 +13,27 @@ from utils.utils import Utils
 _ = I18N._
 
 
+class FavoritesDataSearch:
+    def __init__(self, favorite="", genre="", max_results=200):
+        self.favorite = favorite
+        self.genre = genre
+        self.max_results = max_results
+        self.results = []
+
+    def is_valid(self):
+        return len(self.favorite.strip()) > 0 or len(self.genre.strip()) > 0
+
+    def get_readable_results_count(self):
+        count = len(self.results)
+        if count > self.max_results:
+            results_str = f"{self.max_results}+"
+        else:
+            results_str = str(count)
+        return _("({0} results)").format(results_str)
+
+    def get_results(self):
+        return self.results
+
 
 class FavoritesWindow:
     '''
@@ -22,39 +43,44 @@ class FavoritesWindow:
     top_level = None
     MAX_RESULTS = 200
     details_window = None
-    recent_favorites = []
+    recent_favorites = []  # List of favorited tracks, most recent first
 
     @staticmethod
-    def load_recent_favorites():
-        json_favorites = app_info_cache.get("recent_favorites", [])
+    def load_favorites():
+        json_favorites = app_info_cache.get("favorites", [])
         assert isinstance(json_favorites, list)
-        for path in json_favorites:
-            FavoritesWindow.recent_favorites.append(path)
+        FavoritesWindow.favorites = []
+        for fav_dict in json_favorites:
+            track = MediaTrack(fav_dict["filepath"])
+            FavoritesWindow.favorites.append(track)
 
     @staticmethod
-    def store_recent_favorites():
+    def store_favorites():
         json_favorites = []
-        for search in FavoritesWindow.recent_favorites:
-            if search.is_valid() and search.stored_results_count > 0:
-                json_favorites.append(search.get_dict())
-        app_info_cache.set("recent_favorites", json_favorites)
+        for track in FavoritesWindow.favorites:
+            json_favorites.append({"filepath": track.filepath})
+        app_info_cache.set("favorites", json_favorites)
 
     @staticmethod
     def set_favorite(track, is_favorited=False):
-        track_filepath = track.filepath
         if is_favorited:
-            FavoritesWindow.recent_favorites.insert(0, track_filepath)
+            # Remove if already exists to update recency
+            for existing_track in FavoritesWindow.favorites[:]:
+                if existing_track.filepath == track.filepath:
+                    FavoritesWindow.favorites.remove(existing_track)
+                    break
+            FavoritesWindow.favorites.insert(0, track)  # Add to front (most recent)
         else:
-            for search in FavoritesWindow.recent_favorites[:]:
-                FavoritesWindow.recent_favorites.remove(search)
-        FavoritesWindow.store_recent_favorites()
-
+            for existing_track in FavoritesWindow.favorites[:]:
+                if existing_track.filepath == track.filepath:
+                    FavoritesWindow.favorites.remove(existing_track)
+                    break
+        FavoritesWindow.store_favorites()
 
     def __init__(self, master, app_actions, dimensions="600x600"):
-
         FavoritesWindow.top_level = Toplevel(master, bg=AppStyle.BG_COLOR) 
         FavoritesWindow.top_level.geometry(dimensions)
-        FavoritesWindow.set_title(_("Search Favorites"))
+        FavoritesWindow.set_title(_("Favorites"))
         self.master = FavoritesWindow.top_level
         self.master.resizable(True, True)
         self.app_actions = app_actions
@@ -96,8 +122,6 @@ class FavoritesWindow:
         self.search_btn = None
         self.add_btn("search_btn", _("Search"), self.do_search, row=2)
 
-        # self.master.bind("<Key>", self.filter_targets)
-        # self.master.bind("<Return>", self.do_action)
         self.master.bind("<Escape>", self.close_windows)
         self.master.protocol("WM_DELETE_WINDOW", self.close_windows)
         self.results_frame.after(1, lambda: self.results_frame.focus_force())
@@ -105,74 +129,56 @@ class FavoritesWindow:
 
 
     def show_recent_favorites(self):
-        if len(FavoritesWindow.recent_favorites) == 0:
+        if len(FavoritesWindow.favorites) == 0:
             self.searching_label = Label(self.results_frame.viewPort)
             self.add_label(self.searching_label, text=_("No favorites found."), row=1, column=1)
             self.favorite_list.append(self.searching_label)
             self.master.update()
             return
-        for i in range(len(FavoritesWindow.recent_favorites)):
+        for i in range(len(FavoritesWindow.favorites)):
             row = i + 1
-            search = FavoritesWindow.recent_favorites[i]
-            if search is None:
+            track = FavoritesWindow.favorites[i]
+            if track is None:
                 continue
 
             title_label = Label(self.results_frame.viewPort)
-            self.add_label(title_label, search.favorite, row=row, column=1, wraplength=200)
+            self.add_label(title_label, track.title or track.filepath, row=row, column=1, wraplength=200)
             self.favorite_list.append(title_label)
 
-            album_label = Label(self.results_frame.viewPort)
-            self.add_label(album_label, search.genre, row=row, column=2, wraplength=200)
-            self.open_details_btn_list.append(album_label)
+            genre_label = Label(self.results_frame.viewPort)
+            self.add_label(genre_label, track.genre or "", row=row, column=2, wraplength=200)
+            self.open_details_btn_list.append(genre_label)
 
-            results_count_label = Label(self.results_frame.viewPort)
-            self.add_label(results_count_label, search.get_readable_stored_results_count(), row=row, column=3, wraplength=200)
-            self.favorite_list.append(results_count_label)
+            open_details_btn = Button(self.results_frame.viewPort, text=_("Details"))
+            self.open_details_btn_list.append(open_details_btn)
+            open_details_btn.grid(row=row, column=3)
+            def open_detail_handler(event, self=self, track=track):
+                self.open_details(track)
+            open_details_btn.bind("<Button-1>", open_detail_handler)
 
-            search_btn = Button(self.results_frame.viewPort, text=_("Search"))
-            self.search_btn_list.append(search_btn)
-            search_btn.grid(row=row, column=4)
-            def search_handler(event, self=self, search=search):
-                self.load_stored_search(favorite_data_search=search)
-                self._do_search(event)
-            search_btn.bind("<Button-1>", search_handler)
-
-            # play_btn = Button(self.results_frame.viewPort, text=_("Play"))
-            # self.play_btn_list.append(play_btn)
-            # play_btn.grid(row=row, column=6)
-            # def play_handler(event, self=self, search=search, track=track):
-            #     self.load_stored_search(library_data_search=search)
-            #     self._do_search(event)
-            #     if track is None:
-            #         Utils.log("No specific track defined on search, using first available track.")
-            #         track = search.get_first_available_track()
-            #         if track is None:
-            #             raise Exception("No tracks available on search.")
-            #     elif track.is_invalid():
-            #         raise Exception(f"Invalid track: {track}")
-            #     self.run_play_callback(track)
-            # play_btn.bind("<Button-1>", play_handler)
         self.master.update()
-
-    def load_stored_search(self, favorite_data_search):
-        assert favorite_data_search is not None
-        self.favorite.set(favorite_data_search.favorite)
-        self.genre.set(favorite_data_search.genre)
-        self.favorite_data_search = favorite_data_search
 
     def do_search(self, event=None):
         favorite = self.favorite.get().strip()
         genre = self.genre.get().strip()
-        self.favorite_data_search = favoritesDataSearch(favorite, genre, FavoritesWindow.MAX_RESULTS)
+        self.favorite_data_search = FavoritesDataSearch(favorite, genre, FavoritesWindow.MAX_RESULTS)
         self._do_search()
 
     def _do_search(self, event=None):
         assert self.favorite_data_search is not None
         self._refresh_widgets(add_results=False)
-        self.favorites_data.do_search(self.favorite_data_search)
-        if self.favorite_data_search in FavoritesWindow.recent_favorites:
-            FavoritesWindow.recent_favorites.remove(self.favorite_data_search)
-        FavoritesWindow.recent_favorites.insert(0, self.favorite_data_search)
+        
+        # Filter favorites based on search criteria
+        results = []
+        for track in FavoritesWindow.favorites:
+            if (not self.favorite_data_search.favorite or 
+                self.favorite_data_search.favorite.lower() in (track.title or "").lower()) and \
+               (not self.favorite_data_search.genre or 
+                self.favorite_data_search.genre.lower() in (track.genre or "").lower()):
+                results.append(track)
+        
+        self.favorite_data_search.results = results
+
         self._refresh_widgets()
 
     def add_widgets_for_results(self):
@@ -181,26 +187,27 @@ class FavoritesWindow:
         Utils.log(f"Found {len(results)} results")
         for i in range(len(results)):
             row = i + 1
-            favorite = results[i]
+            track = results[i]
 
-            favorite_label = Label(self.results_frame.viewPort)
-            self.add_label(favorite_label, favorite.name, row=row, column=0)
-            self.favorite_list.append(favorite_label)
+            title_label = Label(self.results_frame.viewPort)
+            self.add_label(title_label, track.title or track.filepath, row=row, column=0)
+            self.favorite_list.append(title_label)
+
+            genre_label = Label(self.results_frame.viewPort)
+            self.add_label(genre_label, track.genre or "", row=row, column=1)
+            self.open_details_btn_list.append(genre_label)
 
             open_details_btn = Button(self.results_frame.viewPort, text=_("Details"))
             self.open_details_btn_list.append(open_details_btn)
-            open_details_btn.grid(row=row, column=1)
-            def open_detail_handler(event, self=self, favorite=favorite):
-                self.open_details(favorite)
+            open_details_btn.grid(row=row, column=2)
+            def open_detail_handler(event, self=self, track=track):
+                self.open_details(track)
             open_details_btn.bind("<Button-1>", open_detail_handler)
 
-            open_details_btn = None
-            self.add_btn("search_btn", _("Search"), self.do_search, row=0)
-
-    def open_details(self, favorite):
+    def open_details(self, track):
         if FavoritesWindow.details_window is not None:
             FavoritesWindow.details_window.master.destroy()
-        FavoritesWindow.details_window = FavoriteWindow(FavoritesWindow.top_level, self.refresh, favorite)
+        FavoritesWindow.details_window = FavoriteWindow(FavoritesWindow.top_level, self.refresh, track)
 
     def refresh(self):
         pass
@@ -208,7 +215,10 @@ class FavoritesWindow:
     def _refresh_widgets(self, add_results=True):
         self.clear_widget_lists()
         if add_results:
-            self.add_widgets_for_results()
+            if self.favorite_data_search is not None and (self.favorite_data_search.favorite or self.favorite_data_search.genre):
+                self.add_widgets_for_results()
+            else:
+                self.show_favorites()
         self.master.update()
 
     def clear_widget_lists(self):
@@ -224,7 +234,7 @@ class FavoritesWindow:
 
     @staticmethod
     def set_title(extra_text):
-        FavoritesWindow.top_level.title(_("favorite Search") + " - " + extra_text)
+        FavoritesWindow.top_level.title(_("Favorites") + " - " + extra_text)
 
     def close_windows(self, event=None):
         self.master.destroy()
