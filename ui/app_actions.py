@@ -1,30 +1,31 @@
-class AppActions:
-    def __init__(self,
-                 track_details_callback,
-                 update_next_up_callback,
-                 update_prior_track_callback,
-                 update_spot_profile_topics_text,
-                 update_progress_callback,
-                 update_extension_status_callback,
-                 update_album_artwork,
-                 get_media_frame_handle,
-                 start_play_callback,
-                 shutdown_callback,
-                 toast_callback,
-                 alert_callback,
-                 update_playlist_state_callback,
-                 ):
-        self.track_details_callback = track_details_callback
-        self.update_next_up_callback = update_next_up_callback
-        self.update_prior_track_callback = update_prior_track_callback
-        self.update_spot_profile_topics_text = update_spot_profile_topics_text
-        self.update_progress_callback = update_progress_callback
-        self.update_extension_status = update_extension_status_callback
-        self.update_album_artwork = update_album_artwork
-        self.get_media_frame_handle = get_media_frame_handle
-        self.shutdown_callback = shutdown_callback
-        self.start_play_callback = start_play_callback
-        self.toast = toast_callback
-        self.alert = alert_callback
-        self.update_playlist_state = update_playlist_state_callback
+from typing import Callable, Dict, Any
 
+class AppActions:
+    REQUIRED_ACTIONS = set([
+        "track_details_callback",
+        "update_next_up_callback",
+        "update_prior_track_callback",
+        "update_spot_profile_topics_text",
+        "update_progress_callback",
+        "update_extension_status",
+        "update_album_artwork",
+        "get_media_frame_handle",
+        "shutdown_callback",
+        "toast",
+        "alert",
+        "update_playlist_state",
+        "update_favorite_status",
+        "get_current_track",
+        "start_play_callback",
+    ])
+
+    def __init__(self, actions: Dict[str, Callable[..., Any]]):
+        missing = self.REQUIRED_ACTIONS - set(actions.keys())
+        if missing:
+            raise ValueError(f"Missing required actions: {missing}")
+        self._actions = actions
+    
+    def __getattr__(self, name):
+        if name in self._actions:
+            return self._actions[name]
+        raise AttributeError(f"Action '{name}' not found")

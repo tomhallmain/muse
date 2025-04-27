@@ -2,7 +2,7 @@ from tkinter import Toplevel, Frame, Label, StringVar, BooleanVar, Checkbutton, 
 from tkinter.ttk import Button, Entry
 
 from lib.tk_scroll_demo import ScrollFrame
-from library_data.library_data import LibraryData, LibraryDataSearch
+from library_data.library_data import LibraryDataSearch
 from ui.app_style import AppStyle
 from ui.base_window import BaseWindow
 from utils.app_info_cache import app_info_cache
@@ -47,7 +47,7 @@ class SearchWindow(BaseWindow):
                 json_searches.append(library_data_search.to_json())
         app_info_cache.set("recent_searches", json_searches)
 
-    def __init__(self, master, app_actions, dimensions="1550x700"):
+    def __init__(self, master, app_actions, library_data, dimensions="1550x700"):
         super().init()
         SearchWindow.top_level = Toplevel(master, bg=AppStyle.BG_COLOR) 
         SearchWindow.top_level.geometry(dimensions)
@@ -57,7 +57,7 @@ class SearchWindow(BaseWindow):
         self.master.grid_rowconfigure(0, weight=1)
         self.master.grid_columnconfigure(0, weight=1)
         self.app_actions = app_actions
-        self.library_data = LibraryData()
+        self.library_data = library_data
         self.library_data_search = None
         self.has_closed = False
 

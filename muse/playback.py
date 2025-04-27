@@ -326,6 +326,8 @@ class Playback:
                 self.ui_callbacks.update_prior_track_callback(spot_profile.get_previous_track_title())
             if self.ui_callbacks.update_spot_profile_topics_text is not None:
                 self.ui_callbacks.update_spot_profile_topics_text(spot_profile.get_topic_text())
+        if self.ui_callbacks.update_favorite_status is not None:
+            self.ui_callbacks.update_favorite_status(self.track)
         if self.ui_callbacks.update_album_artwork is not None:
             album_artwork = self.track.get_album_artwork()
             if album_artwork is None and not self.track.get_is_video():

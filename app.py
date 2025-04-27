@@ -17,6 +17,7 @@ from utils.globals import Globals, PlaylistSortType, PlaybackMasterStrategy
 
 # Local imports - UI components
 from lib.autocomplete_entry import AutocompleteEntry, matches
+from library_data.library_data import LibraryData
 from ui.app_actions import AppActions
 from ui.app_style import AppStyle
 from ui.composers_window import ComposersWindow
@@ -113,21 +114,25 @@ class App():
         self.config_history_index = 0
         self.fullscreen = False
         self.current_run = Run(RunConfig(placeholder=True))
-        self.app_actions = AppActions(
-            self.update_track_text,
-            self.update_next_up_text,
-            self.update_previous_track_text,
-            self.update_spot_profile_topics_text,
-            self.update_progress_bar,
-            self.update_label_extension_status,
-            self.update_album_artwork,
-            self.get_media_frame_handle,
-            self.start_playback,
-            self.on_closing,
-            self.toast,
-            self.alert,
-            self.update_playlist_state,
-        )
+        # Initialize library_data as None for lazy instantiation
+        self._library_data = None
+        self.app_actions = AppActions({
+            "track_details_callback": self.update_track_text,
+            "update_next_up_callback": self.update_next_up_text,
+            "update_prior_track_callback": self.update_previous_track_text,
+            "update_spot_profile_topics_text": self.update_spot_profile_topics_text,
+            "update_progress_callback": self.update_progress_bar,
+            "update_extension_status": self.update_label_extension_status,
+            "update_album_artwork": self.update_album_artwork,
+            "get_media_frame_handle": self.get_media_frame_handle,
+            "start_play_callback": self.start_playback,
+            "shutdown_callback": self.on_closing,
+            "toast": self.toast,
+            "alert": self.alert,
+            "update_playlist_state": self.update_playlist_state,
+            "update_favorite_status": self.update_favorite_status,
+            "get_current_track": self.get_current_track,
+        })
 
         # Sidebar
         self.sidebar = Sidebar(self.master)
@@ -595,7 +600,7 @@ class App():
 
     def open_search_window(self):
         try:
-            search_window = SearchWindow(self.master, self.app_actions)
+            search_window = SearchWindow(self.master, self.app_actions, self.library_data)
         except Exception as e:
             Utils.log_red(f"Exception opening search window: {e}")
             raise e
@@ -632,9 +637,10 @@ class App():
 
     def open_favorites_window(self):
         try:
-            favorites_window = FavoritesWindow(self.master, self.app_actions)
+            favorites_window = FavoritesWindow(self.master, self.app_actions, self.library_data)
         except Exception as e:
             Utils.log_red(f"Exception opening favorites window: {e}")
+            raise e
 
     def get_directories(self):
         directories = []
@@ -815,6 +821,27 @@ class App():
         elif staged_playlist is None and not self.current_run.is_started:
             # Clear next up text if no playlist is staged
             self.update_next_up_text("")
+
+    def update_favorite_status(self, track):
+        """
+        Update the favorite checkbox status based on whether the track matches any favorites.
+        """
+        is_favorited = FavoritesWindow.is_track_favorited(track)
+        if self.favorite.get() != is_favorited:
+            self.favorite.set(is_favorited)
+
+    def get_current_track(self):
+        """Get the current track being played"""
+        if self.current_run and not self.current_run.is_complete:
+            return self.current_run.get_current_track()
+        return None
+
+    @property
+    def library_data(self):
+        """Lazy instantiation of LibraryData"""
+        if self._library_data is None:
+            self._library_data = LibraryData()
+        return self._library_data
 
 
 if __name__ == "__main__":
