@@ -136,6 +136,50 @@ class FavoritesWindow:
                     return True
         return False
 
+    @staticmethod
+    def add_favorite(favorite, is_new=False, app_actions=None, from_favorite_window=True):
+        """Static method to add a favorite to the list.
+        
+        Args:
+            favorite: The Favorite object to add
+            is_new: Whether this is a new favorite
+            app_actions: AppActions instance for showing alerts/toasts
+            
+        Returns:
+            bool: True if the favorite was added successfully or was unchanged, False otherwise
+        """
+        assert app_actions is not None
+        if is_new:
+            # Check if favorite already exists
+            for existing_fav in FavoritesWindow.recent_favorites:
+                if existing_fav.attribute == favorite.attribute and existing_fav.value == favorite.value:
+                    app_actions.alert(_("Favorite Exists"), 
+                                    _("This favorite already exists."))
+                    return False
+        else:
+            # For existing favorites, only check for duplicates if the value has changed
+            for existing_fav in FavoritesWindow.recent_favorites:
+                if existing_fav.attribute == favorite.attribute and existing_fav.value == favorite.value:
+                    if id(existing_fav) != id(favorite):
+                        # Only throw an error if the favorite details have changed but run into a collision
+                        app_actions.alert(_("Favorite Exists"), 
+                                        _("This favorite already exists."))
+                        return False
+                    if not from_favorite_window:
+                        app_actions.alert(_("Favorite Exists"), 
+                                        _("This favorite already exists."))
+                    return True # Nothing to do, same favorite object
+            try:
+                FavoritesWindow.recent_favorites.remove(favorite)
+            except ValueError:
+                pass
+
+        # Add the new favorite or re-insert at the top
+        FavoritesWindow.recent_favorites.insert(0, favorite)
+        FavoritesWindow.store_favorites()
+        app_actions.toast(_("Favorite updated successfully."))
+        return True
+
     def __init__(self, master, app_actions, library_data, dimensions="600x600"):
         FavoritesWindow.top_level = Toplevel(master, bg=AppStyle.BG_COLOR) 
         FavoritesWindow.top_level.geometry(dimensions)
@@ -231,34 +275,10 @@ class FavoritesWindow:
 
     def create_favorite(self, favorite, is_new=False):
         """Create a new favorite or update an existing one"""
-        if is_new:
-            # Check if favorite already exists
-            for existing_fav in FavoritesWindow.recent_favorites:
-                if existing_fav.attribute == favorite.attribute and existing_fav.value == favorite.value:
-                    self.app_actions.alert(_("Favorite Exists"), 
-                                         _("This favorite already exists."))
-                    return False
-        else:
-            # For existing favorites, only check for duplicates if the value has changed
-            for existing_fav in FavoritesWindow.recent_favorites:
-                if existing_fav.attribute == favorite.attribute and existing_fav.value == favorite.value:
-                    if id(existing_fav) != id(favorite):
-                        # Only throw an error if the favorite details have changed but run into a collision
-                        self.app_actions.alert(_("Favorite Exists"), 
-                                             _("This favorite already exists."))
-                        return False
-                    return True # Nothing to do, same favorite object
-            try:
-                FavoritesWindow.recent_favorites.remove(favorite)
-            except ValueError:
-                pass
-
-        # Add the new favorite or re-insert at the top
-        FavoritesWindow.recent_favorites.insert(0, favorite)
-        FavoritesWindow.store_favorites()
-        self.app_actions.toast(_("Favorite updated successfully."))
-        self._refresh_widgets()
-        return True
+        if FavoritesWindow.add_favorite(favorite, is_new, self.app_actions):
+            self._refresh_widgets()
+            return True
+        return False
 
     def show_recent_favorites(self):
         if len(FavoritesWindow.recent_favorites) == 0:

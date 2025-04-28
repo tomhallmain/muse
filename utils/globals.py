@@ -391,3 +391,15 @@ class HistoryType(Enum):
             return types[HistoryType.get_translated_names().index(translation)]
         except ValueError:
             return HistoryType.TRACKS
+
+    def get_track_attribute(self) -> TrackAttribute:
+        """Get the corresponding TrackAttribute for this history type."""
+        return {
+            HistoryType.TRACKS: TrackAttribute.TITLE,
+            HistoryType.ALBUMS: TrackAttribute.ALBUM,
+            HistoryType.ARTISTS: TrackAttribute.ARTIST,
+            HistoryType.COMPOSERS: TrackAttribute.COMPOSER,
+            HistoryType.GENRES: TrackAttribute.GENRE,
+            HistoryType.FORMS: TrackAttribute.FORM,
+            HistoryType.INSTRUMENTS: TrackAttribute.INSTRUMENT
+        }[self]

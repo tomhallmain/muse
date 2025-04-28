@@ -17,6 +17,8 @@ class AppActions:
         "update_favorite_status",
         "get_current_track",
         "start_play_callback",
+        "add_favorite",
+        "open_track_details",
     ])
 
     def __init__(self, actions: Dict[str, Callable[..., Any]]):

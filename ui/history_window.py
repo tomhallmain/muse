@@ -1,12 +1,13 @@
-from tkinter import Toplevel, Frame, Label, StringVar, LEFT, W
+from tkinter import Toplevel, Frame, Label, StringVar, LEFT, RIGHT, W
 from tkinter.ttk import Button, OptionMenu
 
+from utils.globals import HistoryType
+
 from lib.tk_scroll_demo import ScrollFrame
+from muse.playlist import Playlist
 from ui.app_style import AppStyle
 from utils.translations import I18N
 from utils.utils import Utils
-from utils.globals import TrackAttribute, HistoryType
-from muse.playlist import Playlist
 
 _ = I18N._
 
@@ -20,6 +21,7 @@ class HistoryWindow:
     MAX_RESULTS = 200
 
     def __init__(self, master, app_actions, library_data, dimensions="600x600"):
+        Utils.log(f"Opening HistoryWindow with dimensions {dimensions}")
         HistoryWindow.top_level = Toplevel(master, bg=AppStyle.BG_COLOR) 
         HistoryWindow.top_level.geometry(dimensions)
         HistoryWindow.set_title(_("History"))
@@ -62,6 +64,7 @@ class HistoryWindow:
 
     def show_history(self, history_type_translation):
         """Show history for the specified type"""
+        Utils.log(f"Showing history for type: {history_type_translation}")
         self.clear_widgets()
         
         # Convert the translated name back to the enum value
@@ -69,8 +72,10 @@ class HistoryWindow:
         
         # Get the appropriate history list based on type
         history_list = getattr(Playlist, history_type.value)
+        Utils.log(f"Found {len(history_list)} items in history")
 
         if not history_list:
+            Utils.log("No history items found")
             self.add_label(Label(self.results_frame.viewPort), 
                          _("No history found."), row=1, column=1)
             return
@@ -83,13 +88,35 @@ class HistoryWindow:
                 track = self.library_data.get_track(item)
                 if track:
                     display_text = f"{track.title} - {track.artist}"
+                    Utils.log(f"Found track details: {display_text}")
                 else:
                     display_text = item
+                    Utils.log(f"Could not find track details for: {item}")
             else:
                 display_text = item
 
-            label = Label(self.results_frame.viewPort)
-            self.add_label(label, display_text, row=row, column=1, wraplength=200)
+            # Create a frame for each item to hold the label and buttons
+            item_frame = Frame(self.results_frame.viewPort, bg=AppStyle.BG_COLOR)
+            item_frame.grid(row=row, column=0, columnspan=2, sticky="ew", padx=5, pady=2)
+
+            # Add the item label
+            label = Label(item_frame, text=display_text, bg=AppStyle.BG_COLOR, fg=AppStyle.FG_COLOR, wraplength=200)
+            label.pack(side=LEFT, padx=5)
+
+            # Add favorite button
+            favorite_btn = Button(item_frame, text=_("★"), 
+                                command=lambda v=item, t=history_type: self.add_favorite(v, t))
+            favorite_btn.pack(side=RIGHT, padx=5)
+
+            # Add track details button for tracks
+            if history_type == HistoryType.TRACKS and track:
+                details_btn = Button(item_frame, text=_("Details"),
+                                   command=lambda t=track: self.app_actions.open_track_details(t))
+                details_btn.pack(side=RIGHT, padx=5)
+
+    def add_favorite(self, value: str, history_type: HistoryType):
+        """Add the selected item to favorites."""
+        self.app_actions.add_favorite(value, history_type.get_track_attribute())
 
     def clear_widgets(self):
         """Clear all widgets from the results frame"""

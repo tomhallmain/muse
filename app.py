@@ -13,7 +13,7 @@ import tkinter.font as fnt
 from tkinter.ttk import Button, Entry, OptionMenu, Progressbar, Scale
 from ttkthemes import ThemedTk
 
-from utils.globals import Globals, PlaylistSortType, PlaybackMasterStrategy
+from utils.globals import Globals, PlaylistSortType, PlaybackMasterStrategy, TrackAttribute
 
 # Local imports - UI components
 from lib.autocomplete_entry import AutocompleteEntry, matches
@@ -133,6 +133,8 @@ class App():
             "update_playlist_state": self.update_playlist_state,
             "update_favorite_status": self.update_favorite_status,
             "get_current_track": self.get_current_track,
+            "add_favorite": self.add_favorite,
+            "open_track_details": self.open_track_details_window,
         })
 
         # Sidebar
@@ -609,11 +611,12 @@ class App():
             Utils.log_red(f"Exception opening search window: {e}")
             raise e
 
-    def open_track_details_window(self):
+    def open_track_details_window(self, track):
+        """Open the track details window for the given track."""
         try:
-            track_details_window = TrackDetailsWindow(self.master, self.app_actions)
+            track_details_window = TrackDetailsWindow(self.master, self.app_actions, track)
         except Exception as e:
-            Utils.log_red(f"Exception opening track details window: {e}")
+            self.alert(_("Error"), str(e), kind="error")
 
     def open_extensions_window(self):
         try:
@@ -846,6 +849,14 @@ class App():
         if self.current_run and not self.current_run.is_complete:
             return self.current_run.get_current_track()
         return None
+
+    def add_favorite(self, value: str, attribute: TrackAttribute):
+        """Add a favorite for the given value and attribute type."""
+        try:
+            return FavoritesWindow.add_favorite(value, attribute, self.app_actions, from_favorite_window=False)
+        except Exception as e:
+            self.alert(_("Error"), str(e), kind="error")
+            return False
 
     @property
     def library_data(self):
