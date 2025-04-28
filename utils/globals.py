@@ -89,14 +89,14 @@ class PlaylistSortType(Enum):
 
     def grouping_list_name_mapping(self):
         return {
-            self.RANDOM: 'recently_played_filepaths',
+            self.RANDOM: HistoryType.TRACKS,
             self.SEQUENCE: None,
-            self.ALBUM_SHUFFLE: 'recently_played_albums',
-            self.ARTIST_SHUFFLE: 'recently_played_artists',
-            self.COMPOSER_SHUFFLE: 'recently_played_composers',
-            self.GENRE_SHUFFLE: 'recently_played_genres',
-            self.FORM_SHUFFLE: 'recently_played_forms',
-            self.INSTRUMENT_SHUFFLE: 'recently_played_instruments'
+            self.ALBUM_SHUFFLE: HistoryType.ALBUMS,
+            self.ARTIST_SHUFFLE: HistoryType.ARTISTS,
+            self.COMPOSER_SHUFFLE: HistoryType.COMPOSERS,
+            self.GENRE_SHUFFLE: HistoryType.GENRES,
+            self.FORM_SHUFFLE: HistoryType.FORMS,
+            self.INSTRUMENT_SHUFFLE: HistoryType.INSTRUMENTS
         }[self]
 
     def get_translation(self):
@@ -342,3 +342,52 @@ class Topic(Enum):
         if self == Topic.HACKERNEWS:
             return "news"
         return str(self.value)
+
+class HistoryType(Enum):
+    TRACKS = "recently_played_filepaths"
+    ALBUMS = "recently_played_albums"
+    ARTISTS = "recently_played_artists"
+    COMPOSERS = "recently_played_composers"
+    GENRES = "recently_played_genres"
+    FORMS = "recently_played_forms"
+    INSTRUMENTS = "recently_played_instruments"
+
+    def get_translation(self):
+        types = [
+            HistoryType.TRACKS,
+            HistoryType.ALBUMS,
+            HistoryType.ARTISTS,
+            HistoryType.COMPOSERS,
+            HistoryType.GENRES,
+            HistoryType.FORMS,
+            HistoryType.INSTRUMENTS,
+        ]
+        return HistoryType.get_translated_names()[types.index(self)]
+
+    @staticmethod
+    def get_translated_names():
+        return [
+            _('Tracks'),
+            _('Albums'),
+            _('Artists'),
+            _('Composers'),
+            _('Genres'),
+            _('Forms'),
+            _('Instruments'),
+        ]
+
+    @staticmethod
+    def get_from_translation(translation):
+        types = [
+            HistoryType.TRACKS,
+            HistoryType.ALBUMS,
+            HistoryType.ARTISTS,
+            HistoryType.COMPOSERS,
+            HistoryType.GENRES,
+            HistoryType.FORMS,
+            HistoryType.INSTRUMENTS,
+        ]
+        try:
+            return types[HistoryType.get_translated_names().index(translation)]
+        except ValueError:
+            return HistoryType.TRACKS

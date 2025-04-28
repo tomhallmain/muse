@@ -2,7 +2,7 @@ import random
 
 from utils.app_info_cache import app_info_cache
 from utils.config import config
-from utils.globals import PlaylistSortType
+from utils.globals import PlaylistSortType, HistoryType
 from utils.utils import Utils
 
 ## TODO need a way to exclude certain artists from the smart sort based on recent plays
@@ -19,23 +19,13 @@ class Playlist:
 
     @staticmethod
     def load_recently_played_lists():
-        Playlist.recently_played_filepaths = app_info_cache.get("recently_played_filepaths", [])
-        Playlist.recently_played_albums = app_info_cache.get("recently_played_albums", [])
-        Playlist.recently_played_artists = app_info_cache.get("recently_played_artists", [])
-        Playlist.recently_played_composers = app_info_cache.get("recently_played_composers", [])
-        Playlist.recently_played_genres = app_info_cache.get("recently_played_genres", [])
-        Playlist.recently_played_forms = app_info_cache.get("recently_played_forms", [])
-        Playlist.recently_played_instruments = app_info_cache.get("recently_played_instruments", [])
+        for history_type in HistoryType:
+            setattr(Playlist, history_type.value, app_info_cache.get(history_type.value, []))
 
     @staticmethod
     def store_recently_played_lists():
-        app_info_cache.set("recently_played_filepaths", Playlist.recently_played_filepaths)
-        app_info_cache.set("recently_played_albums", Playlist.recently_played_albums)
-        app_info_cache.set("recently_played_artists", Playlist.recently_played_artists)
-        app_info_cache.set("recently_played_composers", Playlist.recently_played_composers)
-        app_info_cache.set("recently_played_genres", Playlist.recently_played_genres)
-        app_info_cache.set("recently_played_forms", Playlist.recently_played_forms)
-        app_info_cache.set("recently_played_instruments", Playlist.recently_played_instruments)
+        for history_type in HistoryType:
+            app_info_cache.set(history_type.value, getattr(Playlist, history_type.value))
 
     @staticmethod
     def update_list(_list=[], item="", sort_type=PlaylistSortType.RANDOM):
@@ -246,13 +236,13 @@ class Playlist:
                     self.sorted_tracks.sort(key=lambda t: (all_attrs_list.index(getattr(t, grouping_attr_getter_name)()), t.filepath))
                 else:
                     self.sorted_tracks.sort(key=lambda t: (all_attrs_list.index(getattr(t, grouping_attr_getter_name)), t.filepath))
-            list_name_mapping = self.sort_type.grouping_list_name_mapping()
-            self.shuffle_with_memory_for_attr(grouping_attr_getter_name, list_name_mapping)
+            history_type = self.sort_type.grouping_list_name_mapping()
+            self.shuffle_with_memory_for_attr(grouping_attr_getter_name, history_type)
         if do_set_start_track:
             # The user specified a start track, it's not random
             self.set_start_track(grouping_attr_getter_name)
 
-    def shuffle_with_memory_for_attr(self, track_attr, list_attr):
+    def shuffle_with_memory_for_attr(self, track_attr: str, history_type: HistoryType):
         # Look at the first config.playlist_recently_played_check_count (1000 default)
         # tracks and ensure they haven't been played recently. If they have, then
         # decide if they need to be reshuffled into a later position in the playlist.
@@ -260,7 +250,7 @@ class Playlist:
         # may also have been played recently and thus also need to be reshuffled.
         attempts = 0
         max_attempts = 30
-        recently_played_attr_list = getattr(Playlist, list_attr)
+        recently_played_attr_list = getattr(Playlist, history_type.value)
         recently_played_check_count = Playlist.get_recently_played_check_count(track_attr)
         earliest_tracks = list(self.sorted_tracks[:recently_played_check_count])
         if self.size() <= recently_played_check_count * 2:

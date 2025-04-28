@@ -23,6 +23,7 @@ from ui.app_style import AppStyle
 from ui.composers_window import ComposersWindow
 from ui.extensions_window import ExtensionsWindow
 from ui.favorites_window import FavoritesWindow
+from ui.history_window import HistoryWindow
 from ui.media_frame import MediaFrame
 from ui.playlist_window import MasterPlaylistWindow
 from ui.preset import Preset
@@ -235,6 +236,9 @@ class App():
 
         self.favorites_btn = None
         self.add_button("favorites_btn", _("Favorites"), self.open_favorites_window, interior_column=2)
+
+        self.history_btn = None
+        self.add_button("history_btn", _("History"), self.open_history_window)
 
         self.overwrite = BooleanVar(value=self.runner_app_config.overwrite)
         self.overwrite_choice = Checkbutton(self.sidebar, text=_('Overwrite'), variable=self.overwrite)
@@ -640,6 +644,13 @@ class App():
             favorites_window = FavoritesWindow(self.master, self.app_actions, self.library_data)
         except Exception as e:
             Utils.log_red(f"Exception opening favorites window: {e}")
+            raise e
+
+    def open_history_window(self):
+        try:
+            history_window = HistoryWindow(self.master, self.app_actions, self.library_data)
+        except Exception as e:
+            Utils.log_red(f"Exception opening history window: {e}")
             raise e
 
     def get_directories(self):
