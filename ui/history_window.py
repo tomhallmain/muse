@@ -1,4 +1,4 @@
-from tkinter import Toplevel, Frame, Label, StringVar, LEFT, RIGHT, W
+from tkinter import Toplevel, Frame, Label, StringVar, LEFT, RIGHT, W, Entry
 from tkinter.ttk import Button, OptionMenu
 
 from utils.globals import HistoryType
@@ -10,6 +10,67 @@ from utils.translations import I18N
 from utils.utils import Utils
 
 _ = I18N._
+
+
+class HistoryDataSearch:
+    def __init__(self, search_term="", max_results=200):
+        self.search_term = search_term.lower()
+        self.max_results = max_results
+        self.results = []
+
+    def is_valid(self):
+        return len(self.search_term.strip()) > 0
+
+    def get_readable_results_count(self):
+        count = len(self.results)
+        if count > self.max_results:
+            results_str = f"{self.max_results}+"
+        else:
+            results_str = str(count)
+        return _("({0} results)").format(results_str)
+
+    def get_results(self):
+        return self.results
+
+    def _get_match_priority(self, search_text: str) -> int:
+        """Get the priority level of a match.
+        
+        Returns:
+            int: 0 for no match, 1 for contains match, 2 for word boundary match, 3 for start match
+        """
+        if not self.search_term:
+            return 0
+            
+        search_text = search_text.lower()
+        
+        # Tier 1: Match at start of string
+        if search_text.startswith(self.search_term):
+            return 3
+            
+        # Tier 2: Match at start of word
+        words = search_text.split()
+        for word in words:
+            if word.startswith(self.search_term):
+                return 2
+                
+        # Tier 3: Contains match
+        if self.search_term in search_text:
+            return 1
+            
+        return 0
+
+    def add_result(self, item, search_text: str):
+        """Add a result with its priority level."""
+        priority = self._get_match_priority(search_text)
+        if priority > 0:
+            self.results.append((priority, item))
+
+    def sort_results(self):
+        """Sort results by priority (highest first) and limit to max_results."""
+        # Sort by priority (descending) and then by the item itself
+        self.results.sort(key=lambda x: (-x[0], x[1]))
+        # Extract just the items, maintaining the sorted order
+        self.results = [item for _, item in self.results[:self.max_results]]
 
 
 class HistoryWindow:
@@ -29,6 +90,7 @@ class HistoryWindow:
         self.master.resizable(True, True)
         self.app_actions = app_actions
         self.library_data = library_data
+        self.history_data_search = None
 
         self.outer_frame = Frame(self.master, bg=AppStyle.BG_COLOR)
         self.outer_frame.rowconfigure(0, weight=1)
@@ -55,12 +117,55 @@ class HistoryWindow:
                                           command=self.show_history)
         self.history_type_menu.grid(row=0, column=1)
 
+        # Add search entry
+        self._search_label = Label(self.inner_frame)
+        self.add_label(self._search_label, _("Search History"), row=1)
+        self.search_term = StringVar(self.inner_frame)
+        self.search_entry = Entry(self.inner_frame, textvariable=self.search_term)
+        self.search_entry.grid(row=1, column=1)
+        self.search_entry.bind("<Return>", self.do_search)
+
+        self.search_btn = None
+        self.add_btn("search_btn", _("Search"), self.do_search, row=2)
+
         self.master.bind("<Escape>", self.close_window)
         self.master.protocol("WM_DELETE_WINDOW", self.close_window)
         self.results_frame.after(1, lambda: self.results_frame.focus_force())
         
         # Show tracks history by default
         self.show_history(HistoryType.TRACKS.get_translation())
+
+    def do_search(self, event=None):
+        search_term = self.search_term.get().strip()
+        self.history_data_search = HistoryDataSearch(search_term, HistoryWindow.MAX_RESULTS)
+        self._do_search()
+
+    def _do_search(self, event=None):
+        assert self.history_data_search is not None
+        self._refresh_widgets(add_results=False)
+        
+        # Get the current history type
+        history_type = HistoryType.get_from_translation(self.history_type_var.get())
+        
+        # Get the appropriate history list based on type
+        history_list = getattr(Playlist, history_type.value)
+        
+        # Filter history based on search criteria
+        for item in history_list:
+            # Get searchable text based on history type
+            if history_type == HistoryType.TRACKS:
+                track = self.library_data.get_track(item)
+                if track:
+                    search_text = f"{track.title} - {track.artist}"
+                else:
+                    search_text = item
+            else:
+                search_text = item
+
+            self.history_data_search.add_result(item, search_text)
+        
+        self.history_data_search.sort_results()
+        self._refresh_widgets()
 
     def show_history(self, history_type_translation):
         """Show history for the specified type"""
@@ -81,14 +186,13 @@ class HistoryWindow:
             return
 
         # Display history items
-        for i, item in enumerate(history_list):
+        for i, item in enumerate(history_list[:HistoryWindow.MAX_RESULTS]):
             row = i + 1
             if history_type == HistoryType.TRACKS:
                 # For tracks, try to get the track details
                 track = self.library_data.get_track(item)
                 if track:
                     display_text = f"{track.title} - {track.artist}"
-                    Utils.log(f"Found track details: {display_text}")
                 else:
                     display_text = item
                     Utils.log(f"Could not find track details for: {item}")
@@ -127,6 +231,61 @@ class HistoryWindow:
         label_ref['text'] = text
         label_ref.grid(column=column, row=row, sticky=W)
         label_ref.config(wraplength=wraplength, justify=LEFT, bg=AppStyle.BG_COLOR, fg=AppStyle.FG_COLOR)
+
+    def add_btn(self, button_ref_name, text, command, row=0, column=0):
+        if getattr(self, button_ref_name) is None:
+            button = Button(master=self.inner_frame, text=text, command=command)
+            setattr(self, button_ref_name, button)
+            button # for some reason this is necessary to maintain the reference?
+            button.grid(row=row, column=column)
+
+    def _refresh_widgets(self, add_results=True):
+        self.clear_widgets()
+        if add_results:
+            if self.history_data_search is not None and self.history_data_search.search_term:
+                self.add_widgets_for_results()
+            else:
+                self.show_history(self.history_type_var.get())
+        self.master.update()
+
+    def add_widgets_for_results(self):
+        assert self.history_data_search is not None
+        results = self.history_data_search.get_results()
+        for i in range(len(results[:HistoryWindow.MAX_RESULTS])):
+            row = i + 1
+            item = results[i]
+
+            # Get the current history type
+            history_type = HistoryType.get_from_translation(self.history_type_var.get())
+            
+            # Get display text based on history type
+            if history_type == HistoryType.TRACKS:
+                track = self.library_data.get_track(item)
+                if track:
+                    display_text = f"{track.title} - {track.artist}"
+                else:
+                    display_text = item
+            else:
+                display_text = item
+
+            # Create a frame for each item to hold the label and buttons
+            item_frame = Frame(self.results_frame.viewPort, bg=AppStyle.BG_COLOR)
+            item_frame.grid(row=row, column=0, columnspan=2, sticky="ew", padx=5, pady=2)
+
+            # Add the item label
+            label = Label(item_frame, text=display_text, bg=AppStyle.BG_COLOR, fg=AppStyle.FG_COLOR, wraplength=200)
+            label.pack(side=LEFT, padx=5)
+
+            # Add favorite button
+            favorite_btn = Button(item_frame, text=_("★"), 
+                                command=lambda v=item, t=history_type: self.add_favorite(v, t))
+            favorite_btn.pack(side=RIGHT, padx=5)
+
+            # Add track details button for tracks
+            if history_type == HistoryType.TRACKS and track:
+                details_btn = Button(item_frame, text=_("Details"),
+                                   command=lambda t=track: self.app_actions.open_track_details(t))
+                details_btn.pack(side=RIGHT, padx=5)
 
     def close_window(self, event=None):
         self.master.destroy()

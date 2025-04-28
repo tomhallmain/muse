@@ -16,7 +16,7 @@ _ = I18N._
 
 class FavoritesDataSearch:
     def __init__(self, favorite="", max_results=200):
-        self.favorite = favorite
+        self.favorite = favorite.lower()
         self.max_results = max_results
         self.results = []
 
@@ -33,6 +33,46 @@ class FavoritesDataSearch:
 
     def get_results(self):
         return self.results
+
+    def _get_match_priority(self, search_text: str) -> int:
+        """Get the priority level of a match.
+        
+        Returns:
+            int: 0 for no match, 1 for contains match, 2 for word boundary match, 3 for start match
+        """
+        if not self.favorite:
+            return 0
+            
+        search_text = search_text.lower()
+        
+        # Tier 1: Match at start of string
+        if search_text.startswith(self.favorite):
+            return 3
+            
+        # Tier 2: Match at start of word
+        words = search_text.split()
+        for word in words:
+            if word.startswith(self.favorite):
+                return 2
+                
+        # Tier 3: Contains match
+        if self.favorite in search_text:
+            return 1
+            
+        return 0
+
+    def add_result(self, favorite, search_text: str):
+        """Add a result with its priority level."""
+        priority = self._get_match_priority(search_text)
+        if priority > 0:
+            self.results.append((priority, favorite))
+
+    def sort_results(self):
+        """Sort results by priority (highest first) and limit to max_results."""
+        # Sort by priority (descending) and then by the favorite value
+        self.results.sort(key=lambda x: (-x[0], x[1].value))
+        # Extract just the favorites, maintaining the sorted order
+        self.results = [favorite for _, favorite in self.results[:self.max_results]]
 
 
 class FavoritesWindow:
@@ -365,7 +405,6 @@ class FavoritesWindow:
         self._refresh_widgets(add_results=False)
         
         # Filter favorites based on search criteria
-        results = []
         for favorite in FavoritesWindow.recent_favorites:
             # Get searchable text based on favorite type
             if favorite.attribute == TrackAttribute.TITLE:
@@ -378,15 +417,13 @@ class FavoritesWindow:
                         if favorite.update_from_track(track):
                             FavoritesWindow.store_favorites()
                             Utils.log(f"Updated favorite for track {favorite.value} with new filepath: {track.filepath}")
-                search_text = favorite.value.lower()
+                search_text = favorite.value
             else:
-                search_text = favorite.value.lower()
+                search_text = favorite.value
 
-            if (not self.favorite_data_search.favorite or 
-                self.favorite_data_search.favorite.lower() in search_text):
-                results.append(favorite)
+            self.favorite_data_search.add_result(favorite, search_text)
         
-        self.favorite_data_search.results = results
+        self.favorite_data_search.sort_results()
         self._refresh_widgets()
 
     def add_widgets_for_results(self):
