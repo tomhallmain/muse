@@ -850,10 +850,14 @@ class App():
             return self.current_run.get_current_track()
         return None
 
-    def add_favorite(self, value: str, attribute: TrackAttribute):
-        """Add a favorite for the given value and attribute type."""
+    def add_favorite(self, favorite):
+        """Add a favorite to the favorites list.
+        
+        Args:
+            favorite: A Favorite object to add
+        """
         try:
-            return FavoritesWindow.add_favorite(value, attribute, self.app_actions, from_favorite_window=False)
+            return FavoritesWindow.add_favorite(favorite, is_new=True, app_actions=self.app_actions, from_favorite_window=False)
         except Exception as e:
             self.alert(_("Error"), str(e), kind="error")
             return False

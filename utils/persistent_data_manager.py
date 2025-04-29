@@ -1,10 +1,10 @@
-
 from extensions.extension_manager import ExtensionManager
 from library_data.library_data import LibraryData
 from muse.muse_memory import MuseMemory
 from muse.playlist import Playlist
 from muse.schedules_manager import SchedulesManager
 from ui.composers_window import ComposersWindow
+from ui.favorites_window import FavoritesWindow
 from ui.playlist_window import MasterPlaylistWindow
 from ui.search_window import SearchWindow
 
@@ -20,6 +20,7 @@ class PersistentDataManager:
         ExtensionManager.store_extensions()
         SearchWindow.store_recent_searches()
         ComposersWindow.store_recent_searches()
+        FavoritesWindow.store_favorites()
 
     @staticmethod
     def load():
@@ -32,4 +33,5 @@ class PersistentDataManager:
         ExtensionManager.load_extensions()
         SearchWindow.load_recent_searches()
         ComposersWindow.load_recent_searches()
+        FavoritesWindow.load_favorites()
 

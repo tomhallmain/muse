@@ -220,7 +220,9 @@ class HistoryWindow:
 
     def add_favorite(self, value: str, history_type: HistoryType):
         """Add the selected item to favorites."""
-        self.app_actions.add_favorite(value, history_type.get_track_attribute())
+        from library_data.favorite import Favorite
+        favorite = Favorite.from_attribute(history_type.get_track_attribute(), value)
+        self.app_actions.add_favorite(favorite)
 
     def clear_widgets(self):
         """Clear all widgets from the results frame"""
