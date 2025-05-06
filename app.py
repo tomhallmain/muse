@@ -725,8 +725,55 @@ class App():
         self.master.attributes("-fullscreen", self.fullscreen)
         self.sidebar.grid_remove() if self.fullscreen and self.sidebar.winfo_ismapped() else self.sidebar.grid()
 
+    def update_playlist_state(self, strategy=None, staged_playlist=None):
+        """Update the playlist state, including strategy and staged playlist info."""
+        if strategy is not None:
+            self.playlist_strategy.set(strategy.value)
+            self.runner_app_config.playback_master_strategy = strategy.value
+        
+        if staged_playlist is not None and not self.current_run.is_started:
+            # Update next up text to show staged playlist info
+            next_up_text = _("Staged Playlist: ") + staged_playlist
+            self.update_next_up_text(next_up_text)
+        elif staged_playlist is None and not self.current_run.is_started:
+            # Clear next up text if no playlist is staged
+            self.update_next_up_text("")
+
+    def update_favorite_status(self, track):
+        """
+        Update the favorite checkbox status based on whether the track matches any favorites.
+        """
+        is_favorited = FavoritesWindow.is_track_favorited(track)
+        if self.favorite.get() != is_favorited:
+            self.favorite.set(is_favorited)
+
+    def get_current_track(self):
+        """Get the current track being played"""
+        if self.current_run and not self.current_run.is_complete:
+            return self.current_run.get_current_track()
+        return None
+
+    def add_favorite(self, favorite):
+        """Add a favorite to the favorites list.
+        
+        Args:
+            favorite: A Favorite object to add
+        """
+        try:
+            return FavoritesWindow.add_favorite(favorite, is_new=True, app_actions=self.app_actions, from_favorite_window=False)
+        except Exception as e:
+            self.alert(_("Error"), str(e), kind="error")
+            return False
+
+    @property
+    def library_data(self):
+        """Lazy instantiation of LibraryData"""
+        if self._library_data is None:
+            self._library_data = LibraryData()
+        return self._library_data
+
     def alert(self, title, message, kind="info", hidemain=True) -> None:
-        if kind not in ("error", "warning", "info"):
+        if kind not in ("error", "warning", "info", "askokcancel"):
             raise ValueError("Unsupported alert kind.")
 
         if kind == "error":
@@ -736,7 +783,10 @@ class App():
         else:
             Utils.log(f"Alert - Title: \"{title}\" Message: {message}")
 
-        show_method = getattr(messagebox, "show{}".format(kind))
+        if kind == "askokcancel":
+            show_method = getattr(messagebox, kind)
+        else:
+            show_method = getattr(messagebox, "show{}".format(kind))
         return show_method(title, message)
 
     def handle_error(self, error_text, title=None, kind="error"):
@@ -821,53 +871,6 @@ class App():
             element.destroy()
             setattr(self, element_ref_name, None)
             self.row_counter0 -= 1
-
-    def update_playlist_state(self, strategy=None, staged_playlist=None):
-        """Update the playlist state, including strategy and staged playlist info."""
-        if strategy is not None:
-            self.playlist_strategy.set(strategy.value)
-            self.runner_app_config.playback_master_strategy = strategy.value
-        
-        if staged_playlist is not None and not self.current_run.is_started:
-            # Update next up text to show staged playlist info
-            next_up_text = _("Staged Playlist: ") + staged_playlist
-            self.update_next_up_text(next_up_text)
-        elif staged_playlist is None and not self.current_run.is_started:
-            # Clear next up text if no playlist is staged
-            self.update_next_up_text("")
-
-    def update_favorite_status(self, track):
-        """
-        Update the favorite checkbox status based on whether the track matches any favorites.
-        """
-        is_favorited = FavoritesWindow.is_track_favorited(track)
-        if self.favorite.get() != is_favorited:
-            self.favorite.set(is_favorited)
-
-    def get_current_track(self):
-        """Get the current track being played"""
-        if self.current_run and not self.current_run.is_complete:
-            return self.current_run.get_current_track()
-        return None
-
-    def add_favorite(self, favorite):
-        """Add a favorite to the favorites list.
-        
-        Args:
-            favorite: A Favorite object to add
-        """
-        try:
-            return FavoritesWindow.add_favorite(favorite, is_new=True, app_actions=self.app_actions, from_favorite_window=False)
-        except Exception as e:
-            self.alert(_("Error"), str(e), kind="error")
-            return False
-
-    @property
-    def library_data(self):
-        """Lazy instantiation of LibraryData"""
-        if self._library_data is None:
-            self._library_data = LibraryData()
-        return self._library_data
 
 
 if __name__ == "__main__":

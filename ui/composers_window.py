@@ -1,4 +1,6 @@
-from tkinter import Toplevel, Frame, Label, Checkbutton, BooleanVar, StringVar, LEFT, W
+import time
+
+from tkinter import Toplevel, Frame, Label, Checkbutton, BooleanVar, StringVar, LEFT, W, messagebox
 import tkinter.font as fnt
 from tkinter.ttk import Button, Entry
 
@@ -21,14 +23,16 @@ class ComposerDetailsWindow():
     top_level = None
     COL_0_WIDTH = 600
 
-    def __init__(self, master, refresh_callback, composer, dimensions="600x600"):
+    def __init__(self, master, composers_window, composer=None, dimensions="600x600"):
         # super().init()
         ComposerDetailsWindow.top_level = Toplevel(master, bg=AppStyle.BG_COLOR)
         ComposerDetailsWindow.top_level.geometry(dimensions)
         self.master = ComposerDetailsWindow.top_level
-        self.refresh_callback = refresh_callback
+        self.composers_window = composers_window
+        self.app_actions = composers_window.app_actions
         self.composer = composer if composer is not None else Composer(None, None)
-        ComposerDetailsWindow.top_level.title(_("Modify Preset composer: {0}").format(self.composer.name))
+        self.is_new = composer is None
+        ComposerDetailsWindow.top_level.title(_("New Composer") if self.is_new else _("Modify Composer: {0}").format(self.composer.name))
 
         self.frame = Frame(self.master)
         self.frame.grid(column=0, row=0)
@@ -87,11 +91,11 @@ class ComposerDetailsWindow():
         # self.works_label.grid(column=8, row=0)
         # TODO button to open search window with this composer searched
 
-        self.add_composer_btn = None
-        self.add_btn("add_composer_btn", _("Save composer"), self.finalize_composer, column=2)
-
-        self.add_preset_task_btn = None
-        self.add_btn("add_preset_task_btn", _("Add Preset Task"), self.add_note, column=3)
+        # Add Notes section
+        self._label_notes = Label(self.frame)
+        self.add_label(self._label_notes, _("Notes"), row=8, wraplength=ComposerDetailsWindow.COL_0_WIDTH)
+        self.add_note_btn = Button(self.frame, text=_("Add Note"), command=self.add_note)
+        self.add_note_btn.grid(row=8, column=1, sticky="w")
 
         self.note_key_list = []
         self.note_key_widget_list = []
@@ -101,10 +105,19 @@ class ComposerDetailsWindow():
         self.move_down_btn_list = []
 
         self.add_widgets()
+
+        self.add_composer_btn = None
+        self.add_btn("add_composer_btn", _("Save"), self.finalize_composer, column=1)
+
+        # Add delete button for existing composers
+        if not self.is_new:
+            self.delete_composer_btn = None
+            self.add_btn("delete_composer_btn", _("Delete"), self.delete_composer, column=2)
+
         self.master.update()
 
     def add_widgets(self):
-        row = 7
+        row = 8
 
         for note_key, note_value in self.composer.notes.items():
             row += 1
@@ -119,6 +132,14 @@ class ComposerDetailsWindow():
             note_value_entry = Entry(self.frame, textvariable=note_value_var, width=50, font=fnt.Font(size=8))
             note_value_entry.grid(column=1, row=row, sticky="w")
             self.note_value_widget_list.append(note_value_entry)
+
+            delete_btn = Button(self.frame, text=_("Delete"))
+            self.delete_task_btn_list.append(delete_btn)
+            delete_btn.grid(row=row, column=2)
+            def delete_handler(event, self=self, key=note_key):
+                self.composer.notes.pop(key)
+                self.refresh()
+            delete_btn.bind("<Button-1>", delete_handler)
 
             # move_down_btn = Button(self.frame, text=_("Move Down"))
             # self.move_down_btn_list.append(move_down_btn)
@@ -138,11 +159,7 @@ class ComposerDetailsWindow():
         self.master.update()
 
     def clear_widget_lists(self):
-        for wgt in self.note_key_list:
-            wgt.destroy()
         for wgt in self.note_key_widget_list:
-            wgt.destroy()
-        for wgt in self.note_value_list:
             wgt.destroy()
         for wgt in self.note_value_widget_list:
             wgt.destroy()
@@ -157,10 +174,89 @@ class ComposerDetailsWindow():
         self.delete_task_btn_list = []
         self.move_down_btn_list = []
 
+    def apply_fixes(self, fixes={}):
+        if fixes:
+            if 'name' in fixes:
+                self.new_composer_name.set(fixes['name'])
+            if 'indicators' in fixes:
+                self.indicators.set(":".join(fixes['indicators']))
+            if 'start_date' in fixes:
+                self.start_date.set(fixes['start_date'])
+            if 'end_date' in fixes:
+                self.end_date.set(fixes['end_date'])
+            self.master.update()
+
     def finalize_composer(self, event=None):
-        self.composer.name = self.new_composer_name.get()
-        self.close_windows()
-        self.refresh_callback(self.composer)
+        # Create a temporary composer with current UI values
+        temp_composer = Composer(
+            id=self.composer.id,
+            name=self.new_composer_name.get(),
+            indicators=[i.strip() for i in self.indicators.get().split(":") if i.strip()],
+            start_date=int(self.start_date.get()) if self.start_date.get().strip() else -1,
+            end_date=int(self.end_date.get()) if self.end_date.get().strip() else -1,
+            dates_are_lifespan=self.dates_are_lifespan.get(),
+            dates_uncertain=self.dates_uncertain.get(),
+            genres=[g.strip() for g in self.genres.get().split(":") if g.strip()]
+        )
+        
+        # Update notes from UI
+        temp_composer.notes = {}
+        for i in range(len(self.note_key_list)):
+            key = self.note_key_list[i].get().strip()
+            value = self.note_value_list[i].get().strip()
+            if key:
+                temp_composer.notes[key] = value
+
+        # Validate composer data and apply fixes
+        is_valid, error_message, fixes = temp_composer.validate()
+
+        # Update UI with any fixes that were applied
+        self.apply_fixes(fixes)
+
+        if not is_valid:
+            self.app_actions.alert(_("Validation Error"), error_message, type="warning")
+            return
+
+        # Check if there are any changes
+        if not self.is_new and temp_composer.to_json() == self.composer.to_json():
+            self.close_windows()
+            return
+
+        # Update the actual composer with the new values
+        self.composer = temp_composer
+
+        # Save the composer
+        success, error_msg = self.composers_window.composers_data.save_composer(self.composer)
+        if success:
+            if fixes:
+                self.app_actions.alert(_("Fixes applied"), "\n".join(fixes.values()), type="info")
+                time.sleep(2)
+
+            self.close_windows()
+            
+            # For new composers, search for them after saving
+            if self.is_new:
+                self.composers_window.composer.set(self.composer.name)
+                self.composers_window.genre.set("")
+                self.composers_window.do_search()
+            else:
+                self.composers_window._refresh_widgets()
+        else:
+            self.app_actions.alert(_("Error"), _("Failed to save composer:") + "\n\n" + error_msg, type="error")
+
+    def delete_composer(self, event=None):
+        """Delete the current composer after confirmation"""
+        res = self.app_actions.alert(_("Delete composer"), 
+                _("Are you sure you want to delete {0}? This action cannot be undone.").format(self.composer.name),
+                kind="askokcancel")
+        if res == messagebox.OK or res == True:
+            # Delete the composer
+            success, error_msg = self.composers_window.composers_data.delete_composer(self.composer)
+            if success:
+                self.close_windows()
+                self.composers_window._refresh_widgets()
+            else:
+                self.app_actions.alert(_("Error"), _("Failed to delete composer:") + "\n\n" + error_msg, type="error")
 
     def close_windows(self, event=None):
         self.master.destroy()
@@ -230,6 +326,11 @@ class ComposersWindow:
         self.results_frame = ScrollFrame(self.outer_frame, bg_color=AppStyle.BG_COLOR, width=600)
         self.results_frame.grid(row=1, column=0, sticky="nsew")
 
+        # Add New Composer button
+        self.new_composer_btn = Button(self.inner_frame, text=_("New Composer"), 
+                                     command=self.new_composer)
+        self.new_composer_btn.grid(row=0, column=2, padx=5)
+
         self._composer_label = Label(self.inner_frame)
         self.add_label(self._composer_label, _("Search Composer"), row=0)
         self.composer = StringVar(self.inner_frame)
@@ -262,7 +363,7 @@ class ComposersWindow:
     def show_recent_searches(self):
         if len(ComposersWindow.recent_searches) == 0:
             self.searching_label = Label(self.results_frame.viewPort)
-            self.add_label(self.searching_label, text=_("No recent searches found."), row=1, column=1)
+            self.add_label(self.searching_label, text=_("No recent searches found."), row=0, column=1)
             self.composer_list.append(self.searching_label)
             self.master.update()
             return
@@ -318,6 +419,13 @@ class ComposersWindow:
     def do_search(self, event=None):
         composer = self.composer.get().strip()
         genre = self.genre.get().strip()
+        
+        # If search is empty or just whitespace, show recent searches
+        if not composer and not genre:
+            self._refresh_widgets(add_results=False)
+            self.show_recent_searches()
+            return
+            
         self.composer_data_search = ComposersDataSearch(composer, genre, ComposersWindow.MAX_RESULTS)
         self._do_search()
 
@@ -355,7 +463,13 @@ class ComposersWindow:
     def open_details(self, composer):
         if ComposersWindow.details_window is not None:
             ComposersWindow.details_window.master.destroy()
-        ComposersWindow.details_window = ComposerDetailsWindow(ComposersWindow.top_level, self.refresh, composer)
+        ComposersWindow.details_window = ComposerDetailsWindow(ComposersWindow.top_level, self, composer)
+
+    def new_composer(self):
+        """Open the composer details window to create a new composer"""
+        if ComposersWindow.details_window is not None:
+            ComposersWindow.details_window.master.destroy()
+        ComposersWindow.details_window = ComposerDetailsWindow(ComposersWindow.top_level, self, None)
 
     def refresh(self):
         pass
@@ -396,4 +510,3 @@ class ComposersWindow:
             setattr(self, button_ref_name, button)
             button # for some reason this is necessary to maintain the reference?
             button.grid(row=row, column=column)
-

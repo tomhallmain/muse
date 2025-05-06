@@ -1,5 +1,6 @@
-
+import datetime
 import json
+import os
 import re
 
 from library_data.work import Work
@@ -27,11 +28,118 @@ class Composer:
         for work in works:
             self.add_work(work)
 
+    def validate(self):
+        """Validate the composer data and fix common issues.
+        
+        Returns:
+            tuple: (bool, str, dict) - (is_valid, error_message, fixes_applied)
+        """
+        fixes = {}
+        
+        # Name validation and fixes
+        if not self.name or self.name.strip() == "":
+            return False, _("Composer name cannot be empty"), fixes
+            
+        # Fix whitespace issues
+        if "\t" in self.name or "  " in self.name or self.name.startswith(" ") or self.name.endswith(" "):
+            self.name = " ".join(self.name.split())  # This handles all whitespace cases
+            fixes['name'] = str(self.name)
+            
+        # Indicators validation and fixes
+        # First clean up any empty or whitespace-only indicators
+        cleaned_indicators = [i.strip() for i in self.indicators if i.strip()]
+        if cleaned_indicators != self.indicators:
+            self.indicators = cleaned_indicators
+            fixes['indicators'] = self.indicators[:]
+            
+        if not self.indicators:
+            self.indicators = [self.name]
+            fixes['indicators'] = self.indicators[:]
+        elif self.name != self.indicators[0]:
+            if self.name in self.indicators:
+                self.indicators.remove(self.name)
+            self.indicators.insert(0, self.name)
+            fixes['indicators'] = self.indicators[:]
+            
+        # Date validation and fixes
+        try:
+            if self.start_date is not None:
+                if type(self.start_date) == str and len(self.start_date) > 0:
+                    if " " in self.start_date or "\t" in self.start_date:
+                        self.start_date = "".join(self.start_date.split())
+                        fixes['start_date'] = str(self.start_date)
+                    while not self.start_date[0].isdigit():
+                        self.start_date = self.start_date[1:]
+                        fixes['start_date'] = str(self.start_date)
+                    while not self.start_date[-1].isdigit():
+                        self.start_date = self.start_date[:-1]
+                        fixes['start_date'] = str(self.start_date)
+                if self.start_date != -1:
+                    self.start_date = int(self.start_date)
+            if self.end_date is not None:
+                if type(self.end_date) == str and len(self.end_date) > 0:
+                    if " " in self.end_date or "\t" in self.end_date:
+                        self.end_date = "".join(self.end_date.split())
+                        fixes['end_date'] = str(self.end_date)
+                    while not self.end_date[0].isdigit():
+                        self.end_date = self.end_date[1:]
+                        fixes['end_date'] = str(self.end_date)
+                    while not self.end_date[-1].isdigit():
+                        self.end_date = self.end_date[:-1]
+                        fixes['end_date'] = str(self.end_date)
+                if self.end_date != -1:
+                    self.end_date = int(self.end_date)
+        except (ValueError, TypeError):
+            return False, _("Dates must be valid integers"), fixes
+            
+        current_year = datetime.datetime.now().year
+        if self.start_date is not None and self.start_date > 0 and self.start_date > current_year:
+            return False, _("Start date cannot be in the future"), fixes
+        if self.end_date is not None and self.end_date > 0 and self.end_date > current_year:
+            return False, _("End date cannot be in the future"), fixes
+            
+        # If both dates are provided, validate their relationship
+        if self.start_date is not None and self.end_date is not None and self.start_date > 0 and self.end_date > 0:
+            if self.start_date > self.end_date:
+                return False, _("Start date cannot be after end date"), fixes
+            
+        return True, "", fixes
+
     def add_work(self, work):
         self.works.append(Work(work, self))
 
     def new_note(self, key="New Note", value=""):
+        """Add a new note, ensuring the key is unique by adding a number suffix if needed.
+        
+        Args:
+            key: The key for the note (default: "New Note")
+            value: The value for the note (default: empty string)
+        """
+        base_key = key
+        counter = 1
+        while key in self.notes:
+            key = f"{base_key} ({counter})"
+            counter += 1
         self.notes[key] = value
+
+    def to_json(self):
+        """Convert the composer to a JSON-serializable dictionary.
+        
+        Returns:
+            dict: A dictionary containing the composer's data in a format suitable for JSON serialization
+        """
+        return {
+            'id': self.id,
+            'name': self.name,
+            'indicators': self.indicators,
+            'start_date': self.start_date,
+            'end_date': self.end_date,
+            'dates_are_lifespan': self.dates_are_lifespan,
+            'dates_uncertain': self.dates_uncertain,
+            'genres': self.genres,
+            'works': self.works,
+            'notes': self.notes
+        }
 
     @staticmethod
     def from_json(json):
@@ -124,6 +232,96 @@ class ComposersData:
             composers = json.load(f)
         for name, composer in composers.items():
             self._composers[name] = Composer.from_json(composer)
+
+    def save_composer(self, composer):
+        """Save a composer to the JSON file.
+        
+        Args:
+            composer: The Composer object to save
+            
+        Returns:
+            tuple: (bool, str) - (success, error_message)
+        """
+        if not composer or not composer.name:
+            return False, _("Invalid composer data")
+            
+        # Create backup of current file
+        backup_file = config.composers_file + '.bak'
+        try:
+            import shutil
+            shutil.copy2(config.composers_file, backup_file)
+            
+            # Update in-memory data
+            self._composers[composer.name] = composer
+            
+            # Convert composers to JSON format
+            composers_json = {}
+            for name, comp in self._composers.items():
+                composers_json[name] = comp.to_json()
+            
+            # Write to file
+            with open(config.composers_file, 'w', encoding="utf-8") as f:
+                json.dump(composers_json, f, indent=4, ensure_ascii=False)
+                
+            # Remove backup if successful
+            import os
+            os.remove(backup_file)
+            return True, ""
+            
+        except Exception as e:
+            error_msg = str(e)
+            Utils.log_red(f"Error saving composer: {error_msg}")
+            # Restore from backup if it exists
+            if os.path.exists(backup_file):
+                shutil.copy2(backup_file, config.composers_file)
+                os.remove(backup_file)
+            return False, error_msg
+
+    def delete_composer(self, composer):
+        """Delete a composer from the JSON file.
+        
+        Args:
+            composer: The Composer object to delete
+            
+        Returns:
+            tuple: (bool, str) - (success, error_message)
+        """
+        if not composer or not composer.name:
+            return False, _("Invalid composer data")
+            
+        # Create backup of current file
+        backup_file = config.composers_file + '.bak'
+        try:
+            import shutil
+            shutil.copy2(config.composers_file, backup_file)
+            
+            # Remove from in-memory data
+            if composer.name in self._composers:
+                self._composers.pop(composer.name)
+            else:
+                return False, _("Composer not found")
+            
+            # Convert composers to JSON format
+            composers_json = {}
+            for name, comp in self._composers.items():
+                composers_json[name] = comp.to_json()
+            
+            # Write to file
+            with open(config.composers_file, 'w', encoding="utf-8") as f:
+                json.dump(composers_json, f, indent=4, ensure_ascii=False)
+                
+            # Remove backup if successful
+            os.remove(backup_file)
+            return True, ""
+            
+        except Exception as e:
+            error_msg = str(e)
+            Utils.log_red(f"Error deleting composer: {error_msg}")
+            # Restore from backup if it exists
+            if os.path.exists(backup_file):
+                shutil.copy2(backup_file, config.composers_file)
+                os.remove(backup_file)
+            return False, error_msg
 
     def get_composer_names(self):
         return [composer.name for composer in self._composers.values()]
