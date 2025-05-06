@@ -307,7 +307,7 @@ class FavoritesWindow:
             FavoritesWindow.details_window.master.destroy()
         FavoritesWindow.details_window = FavoriteWindow(
             FavoritesWindow.top_level, 
-            self.refresh, 
+            self, 
             Favorite.from_attribute(selected_attribute, value),
             self.library_data,
             is_new=True
@@ -467,7 +467,7 @@ class FavoritesWindow:
     def open_details(self, favorite):
         if FavoritesWindow.details_window is not None:
             FavoritesWindow.details_window.master.destroy()
-        FavoritesWindow.details_window = FavoriteWindow(FavoritesWindow.top_level, self.refresh, favorite, self.library_data)
+        FavoritesWindow.details_window = FavoriteWindow(FavoritesWindow.top_level, self, favorite, self.library_data)
 
     def refresh(self):
         self._refresh_widgets()
@@ -517,11 +517,11 @@ class FavoriteWindow:
     """
     Window to view and edit a specific favorite.
     """
-    def __init__(self, master, refresh_callback, favorite, library_data, is_new=False):
+    def __init__(self, master, favorites_window, favorite, library_data, is_new=False):
         self.master = Toplevel(master, bg=AppStyle.BG_COLOR)
         self.master.geometry("400x300")
         self.master.title(_("Favorite Details"))
-        self.refresh_callback = refresh_callback
+        self.favorites_window = favorites_window
         self.favorite = favorite
         self.library_data = library_data
         self.is_new = is_new
@@ -597,12 +597,12 @@ class FavoriteWindow:
         close_btn.pack(side="right", padx=5)
 
     def _confirm_favorite(self):
-        if self.refresh_callback.create_favorite(self.favorite, is_new=self.is_new):
+        if self.favorites_window.create_favorite(self.favorite, is_new=self.is_new):
             self.close()
 
     def _remove_favorite(self):
         if FavoritesWindow.remove_favorite(self.favorite):
-            self.refresh_callback()
+            self.favorites_window.refresh()
         self.close()
 
     def close(self, event=None):
