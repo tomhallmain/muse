@@ -292,7 +292,7 @@ class Playback:
         previous_track = self.previous_track if self.has_played_first_track else None
         spot_profile = self.get_muse().get_spot_profile(
                 previous_track, self.track, self.last_track_failed, self._run_context.skip_track,
-                get_coming_tracks_callback=self._get_upcoming_tracks_callback())
+                get_upcoming_tracks_callback=self._get_upcoming_tracks_callback())
         self.muse_spot_profiles.append(spot_profile)
 
     def register_new_song(self):
