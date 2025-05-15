@@ -1,7 +1,7 @@
 """LLM interface for the Muse application."""
 
-import json
 from dataclasses import dataclass
+import json
 import random  # Add this at the top with other standard library imports
 import threading
 import time
@@ -211,7 +211,7 @@ class LLM:
     def _clean_response_for_models(self, response_text):
         if self._is_thinking_model():
             if response_text.strip().startswith("<think>") and "</think>" in response_text:
-                response_text = response_text[response_text.index("</think>") + len("</think>"):].strip()
+                response_text = response_text[response_text.rfind("</think>") + len("</think>"):].strip()
         return response_text
 
     def _sanitize_query(self, query):
