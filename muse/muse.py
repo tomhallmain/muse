@@ -585,7 +585,7 @@ class Muse:
 
     def should_use_two_call_approach(self) -> bool:
         """Determine if we should use the two-call translation approach for added variety."""
-        return random.random() < 0.1  # 10% chance to use two-call approach
+        return random.random() < 0.05  # 5% chance to use two-call approach - it is very slow
 
     def get_prompt(self, topic):
         prompt = self.prompter.get_prompt_update_history(topic)
@@ -669,10 +669,12 @@ class Muse:
             Utils.log("Text: " + text)
             result = self.llm.ask(prompt, json_key=json_key, context=context, system_prompt=system_prompt)
             text = result.response if result else ""
+            if text.strip() == "":
+                raise LLMResponseException("No response text was generated!")
             generations.append(text)
             blacklist_items = blacklist.test_all(text, excluded_items=blacklisted_items_in_prompt)
             attempts += 1
-            if attempts > 10:
+            if attempts > 2:
                 blacklist_items_str = ", ".join(sorted([str(i) for i in all_blacklist_items]))
                 texts_str = "\n".join(generations)
                 raise BlacklistException(f"Failed to generate text - blacklist items found: {blacklist_items_str}\n{texts_str}")

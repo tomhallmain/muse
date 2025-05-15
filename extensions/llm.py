@@ -212,6 +212,9 @@ class LLM:
         if self._is_thinking_model():
             if response_text.strip().startswith("<think>") and "</think>" in response_text:
                 response_text = response_text[response_text.rfind("</think>") + len("</think>"):].strip()
+            if "<think>" in response_text:
+                # Sometimes the model will return extra misplaced <think> tags in the non-thinking section of the response.
+                response_text = response_text.replace("<think>", "").replace("</think>", "").strip()
         return response_text
 
     def _sanitize_query(self, query):

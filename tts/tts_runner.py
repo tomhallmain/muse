@@ -4,6 +4,7 @@ import re
 import subprocess
 import sys
 import time
+import uuid
 
 import torch
 import music_tag
@@ -39,8 +40,27 @@ class Chunker:
     cleaner = TextCleanerRuleset()
 
     @staticmethod
+    def _clean_xml(text):
+        # Remove XML/HTML tags
+        cleaned = re.sub(r'<[^>]+>', '', text)
+        # Remove any remaining angle brackets
+        cleaned = re.sub(r'[<>]', '', cleaned)
+        return cleaned.strip()
+
+    @staticmethod
+    def _is_entirely_xml(text):
+        # Check if text is entirely wrapped in XML/HTML tags
+        return bool(re.match(r'^\s*<[^>]+>.*</[^>]+>\s*$', text))
+
+    @staticmethod
     def _clean(text, locale=None):
-        cleaned = Chunker.cleaner.clean(text, locale)
+        # First clean XML/HTML
+        cleaned = Chunker._clean_xml(text)
+        # Skip if entirely XML/HTML
+        if Chunker._is_entirely_xml(text) and not Chunker.contains_alphanumeric(cleaned):
+            return None
+        # Apply normal cleaning
+        cleaned = Chunker.cleaner.clean(cleaned, locale)
         if Chunker.count_tokens(cleaned) > 200 and cleaned.startswith("\"") and cleaned.endswith("\""):
             # The sentence segmentation algorithm does not break on quotes even if they are long.
             return cleaned[1:-1]
@@ -103,7 +123,31 @@ class Chunker:
         yield from Chunker.yield_chunks(text.split("\n"), is_str=True, split_on_each_line=split_on_each_line, locale=locale)
 
 
+class TTSSpeakInvocation:
+    _tracking = {}  # Maps invocation_id to TTSSpeakInvocation
 
+    @staticmethod
+    def create() -> 'TTSSpeakInvocation':
+        return TTSSpeakInvocation(str(uuid.uuid4()))
+
+    def __init__(self, invocation_id: str):
+        self.invocation_id = invocation_id
+        self.error_count = 0
+        self.total_chunks = 0
+        self._tracking[invocation_id] = self
+
+    def increment_error(self):
+        self.error_count += 1
+
+    def increment_chunks(self):
+        self.total_chunks += 1
+
+    def all_chunks_failed(self) -> bool:
+        return self.error_count > 0 and self.error_count == self.total_chunks
+
+    def cleanup(self):
+        if self.invocation_id in self._tracking:
+            del self._tracking[self.invocation_id]
 
 class TextToSpeechRunner:
     QUEUES = [] # TODO multiple named queues
@@ -240,43 +284,85 @@ class TextToSpeechRunner:
         TextToSpeechRunner.VLC_MEDIA_PLAYER = vlc.MediaPlayer(filepath)
         TextToSpeechRunner.VLC_MEDIA_PLAYER.play()
 
-    def _speak(self, text):
+    def _speak(self, text, invocation: TTSSpeakInvocation):
         output_path = self.generate_output_path()
-        self.audio_paths.append(output_path)
-        self.generate_speech_file(text, output_path)
-        self.add_speech_file_to_queue(output_path)
+        try:
+            self.generate_speech_file(text, output_path)
+            self.audio_paths.append(output_path)
+            self.add_speech_file_to_queue(output_path)
+        except Exception as e:
+            invocation.increment_error()
+            Utils.log_red(f"TTS generation error: {str(e)}")
+            # Clean up the output file if it was created
+            if os.path.exists(output_path):
+                try:
+                    os.remove(output_path)
+                except:
+                    pass
 
     def speak(self, text, save_mp3=False, locale=None):
         if self.run_context and self.run_context.should_skip():
             return
-        full_text = ""
-        for chunk in Chunker.get_str_chunks(text, locale=locale):
-            Utils.log("-------------------\n" + chunk)
-            if full_text:
-                full_text += "\n\n"
-            full_text += chunk
-            self._speak(chunk)
-        while self.speech_queue.job_running:
-            if self.run_context and self.run_context.should_skip():
-                return
-            time.sleep(0.5)
-        self.combine_audio_files(save_mp3, text_content=full_text)
+            
+        # Check for empty text
+        if not text or not text.strip():
+            raise Exception("Empty text provided to speak method")
+            
+        invocation = TTSSpeakInvocation.create()
+        
+        try:
+            full_text = ""
+            for chunk in Chunker.get_str_chunks(text, locale=locale):
+                Utils.log("-------------------\n" + chunk)
+                if full_text:
+                    full_text += "\n\n"
+                full_text += chunk
+                invocation.increment_chunks()
+                self._speak(chunk, invocation)
+                
+            # Check if all chunks failed
+            if invocation.all_chunks_failed():
+                raise Exception(f"All {invocation.total_chunks} chunks failed to generate speech")
+                
+            while self.speech_queue.job_running:
+                if self.run_context and self.run_context.should_skip():
+                    return
+                time.sleep(0.5)
+            self.combine_audio_files(save_mp3, text_content=full_text)
+        finally:
+            invocation.cleanup()
 
     def speak_file(self, filepath, save_mp3=True, split_on_each_line=False, locale=None):
         if self.run_context and self.run_context.should_skip():
             return
-        full_text = ""
-        for chunk in Chunker.get_chunks(filepath, split_on_each_line, locale=locale):
-            Utils.log("-------------------\n" + chunk)
-            if full_text:
-                full_text += "\n\n"
-            full_text += chunk
-            self._speak(chunk)
-        while self.speech_queue.job_running:
-            if self.run_context and self.run_context.should_skip():
-                return
-            time.sleep(0.5)
-        self.combine_audio_files(save_mp3, text_content=full_text)
+            
+        # Check for empty file
+        if not os.path.exists(filepath) or os.path.getsize(filepath) == 0:
+            raise Exception("Empty or non-existent file provided to speak_file method")
+            
+        invocation = TTSSpeakInvocation.create()
+        
+        try:
+            full_text = ""
+            for chunk in Chunker.get_chunks(filepath, split_on_each_line, locale=locale):
+                Utils.log("-------------------\n" + chunk)
+                if full_text:
+                    full_text += "\n\n"
+                full_text += chunk
+                invocation.increment_chunks()
+                self._speak(chunk, invocation)
+                
+            # Check if all chunks failed
+            if invocation.all_chunks_failed():
+                raise Exception(f"All {invocation.total_chunks} chunks failed to generate speech")
+                
+            while self.speech_queue.job_running:
+                if self.run_context and self.run_context.should_skip():
+                    return
+                time.sleep(0.5)
+            self.combine_audio_files(save_mp3, text_content=full_text)
+        finally:
+            invocation.cleanup()
 
     def convert_to_mp3(self, file_path, text_content=None):
         if not os.path.exists(file_path):
