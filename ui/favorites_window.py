@@ -336,21 +336,19 @@ class FavoritesWindow:
 
             # Get display text based on favorite type
             if favorite.attribute == TrackAttribute.TITLE:
-                # Try to find the track by filepath first
-                track = self.library_data.get_track(favorite.filepath)
-                if not track:
-                    # If not found by filepath, try to find by metadata
-                    track = self._find_track_by_metadata(favorite)
-                    if track:
-                        # Update favorite with new filepath
-                        if favorite.update_from_track(track):
-                            FavoritesWindow.store_favorites()
-                            Utils.log(f"Updated favorite for track {favorite.value} with new filepath: {track.filepath}")
+                # Try to find the track using our safe wrapper
+                # This wrapper handles both filepath and metadata-based lookups,
+                # and updates the favorite's filepath if found by metadata
+                track = self._get_track_for_favorite(favorite)
                 if not track:
                     # Track not found - show as stranded
                     display_text = f"{favorite.value} ({_('File not found')})"
                 else:
-                    display_text = track.title or track.filepath
+                    # Handle empty/whitespace values
+                    title = track.title.strip() if track.title else ""
+                    filepath = track.filepath.strip() if track.filepath else ""
+                    # Utils.log(f"Track display values - title: '{title}', filepath: '{filepath}'")
+                    display_text = title or filepath or _("No title or filepath available")
             else:
                 display_text = f"{favorite.attribute.value}: {favorite.value}"
 
@@ -395,6 +393,37 @@ class FavoritesWindow:
                 return track
         return None
 
+    def _get_track_for_favorite(self, favorite: Favorite):
+        """
+        Safely get a track for a favorite, handling both filepath and title-based lookups.
+        Returns the track if found, None if not found.
+        """
+        if not favorite.filepath:
+            # If no filepath, try to find by metadata
+            track = self._find_track_by_metadata(favorite)
+            if track:
+                # Update favorite with new filepath
+                if favorite.update_from_track(track):
+                    FavoritesWindow.store_favorites()
+                    Utils.log(f"Updated favorite for track {favorite.value} with new filepath: {track.filepath}")
+            return track
+            
+        # Try to get track by filepath
+        track = self.library_data.get_track(favorite.filepath)
+        
+        # Verify the track is valid by checking if it has a title or filepath
+        if track and (track.title or track.filepath):
+            return track
+            
+        # If track is invalid, try to find by metadata
+        track = self._find_track_by_metadata(favorite)
+        if track:
+            # Update favorite with new filepath
+            if favorite.update_from_track(track):
+                FavoritesWindow.store_favorites()
+                Utils.log(f"Updated favorite for track {favorite.value} with new filepath: {track.filepath}")
+        return track
+
     def do_search(self, event=None):
         favorite = self.favorite.get().strip()
         self.favorite_data_search = FavoritesDataSearch(favorite, FavoritesWindow.MAX_RESULTS)
@@ -408,15 +437,13 @@ class FavoritesWindow:
         for favorite in FavoritesWindow.recent_favorites:
             # Get searchable text based on favorite type
             if favorite.attribute == TrackAttribute.TITLE:
-                # Try to find the track
-                track = self.library_data.get_track(favorite.filepath)
+                # Try to find the track using our safe wrapper
+                # This wrapper handles both filepath and metadata-based lookups,
+                # and updates the favorite's filepath if found by metadata
+                track = self._get_track_for_favorite(favorite)
                 if not track:
-                    track = self._find_track_by_metadata(favorite)
-                    if track:
-                        # Update favorite with new filepath
-                        if favorite.update_from_track(track):
-                            FavoritesWindow.store_favorites()
-                            Utils.log(f"Updated favorite for track {favorite.value} with new filepath: {track.filepath}")
+                    Utils.log_red(f"Track not found for favorite {favorite.value}")
+                    continue
                 search_text = favorite.value
             else:
                 search_text = favorite.value
@@ -436,12 +463,19 @@ class FavoritesWindow:
 
             # Get display text based on favorite type
             if favorite.attribute == TrackAttribute.TITLE:
-                track = self.library_data.get_track(favorite.value)
+                # Try to find the track using our safe wrapper
+                # This wrapper handles both filepath and metadata-based lookups,
+                # and updates the favorite's filepath if found by metadata
+                track = self._get_track_for_favorite(favorite)
                 if not track:
                     # Track not found - show as stranded
                     display_text = f"{favorite.value} ({_('File not found')})"
                 else:
-                    display_text = track.title or track.filepath
+                    # Handle empty/whitespace values
+                    title = track.title.strip() if track.title else ""
+                    filepath = track.filepath.strip() if track.filepath else ""
+                    Utils.log(f"Track display values - title: '{title}', filepath: '{filepath}'")
+                    display_text = title or filepath or _("No title or filepath available")
             else:
                 display_text = f"{favorite.attribute.value}: {favorite.value}"
 
