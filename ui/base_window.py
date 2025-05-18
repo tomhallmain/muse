@@ -6,7 +6,8 @@ from tkinter.ttk import Button, Entry, OptionMenu, Scale
 
 class BaseWindow:
     def init(self):
-        self.master = None
+        if not hasattr(self, 'master'):
+            self.master = None
         self.has_closed = False
         self.row_counter0 = 0
         self.row_counter1 = 0

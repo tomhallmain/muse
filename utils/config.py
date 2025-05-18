@@ -1,6 +1,7 @@
 import json
 import os
 import sys
+import time
 
 from utils.utils import Utils
 
@@ -12,8 +13,9 @@ library_data_dir = os.path.join(root_dir, "library_data", "data")
 class Config:
     CONFIGS_DIR_LOC = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "configs")
 
-    def __init__(self):
+    def __init__(self, config_path=None):
         self.dict = {}
+        self.changed_values = set()  # Track which values have been modified
         self.foreground_color = "white"
         self.background_color = "#2596BE"
         self.directories = []
@@ -68,17 +70,18 @@ class Config:
         self.server_host = "localhost"
 
         configs =  [ f.path for f in os.scandir(Config.CONFIGS_DIR_LOC) if f.is_file() and f.path.endswith(".json") ]
-        self.config_path = None
-
-        for c in configs:
-            if os.path.basename(c) == "config.json":
-                self.config_path = c
-                break
-            elif os.path.basename(c) != "config_example.json":
-                self.config_path = c
+        self.config_path = config_path
 
         if self.config_path is None:
-            self.config_path = os.path.join(Config.CONFIGS_DIR_LOC, "config_example.json")
+            for c in configs:
+                if os.path.basename(c) == "config.json":
+                    self.config_path = c
+                    break
+                elif os.path.basename(c) != "config_example.json":
+                    self.config_path = c
+
+            if self.config_path is None:
+                self.config_path = os.path.join(Config.CONFIGS_DIR_LOC, "config_example.json")
 
         try:
             self.dict = json.load(open(self.config_path, "r", encoding="utf-8"))
@@ -156,6 +159,80 @@ class Config:
 
         self.coqui_tts_model = tuple(self.coqui_tts_model)
 
+    def get_config_value(self, key):
+        """Get a configuration value by key"""
+        return getattr(self, key, None)
+
+    def set_config_value(self, key, value):
+        """Set a configuration value by key"""
+        if hasattr(self, key):
+            current_value = getattr(self, key)
+            if current_value != value:  # Only update if value actually changed
+                setattr(self, key, value)
+                self.dict[key] = value
+                self.changed_values.add(key)
+                return True
+        return False
+
+    def has_changes(self):
+        """Check if there are any unsaved changes"""
+        return len(self.changed_values) > 0
+
+    def clear_changes(self):
+        """Clear the changed values tracking"""
+        self.changed_values.clear()
+
+    def save_config(self):
+        """Save updated configuration to file"""
+        # Create temporary swap file path
+        swap_path = os.path.join(Config.CONFIGS_DIR_LOC, f"config_swap_{int(time.time())}.json")
+        
+        # Write to swap file
+        try:
+            with open(swap_path, 'w', encoding='utf-8') as f:
+                json.dump(self.dict, f, indent=4)
+        except Exception as e:
+            Utils.log_red(f"Failed to write temporary configuration: {e}")
+            if os.path.exists(swap_path):
+                os.remove(swap_path)
+            return False
+
+        # Validate the swap file by creating a new Config instance
+        try:
+            test_config = Config(config_path=swap_path)
+        except Exception as e:
+            Utils.log_red(f"Invalid configuration in swap file: {e}")
+            os.remove(swap_path)
+            return False
+
+        # Write to actual config file
+        try:
+            Utils.copy_file(swap_path, self.config_path, overwrite_existing=True)
+        except Exception as e:
+            Utils.log_red(f"Failed to write final configuration: {e}")
+            os.remove(swap_path)
+            return False
+
+        # Clean up swap file and clear changes
+        os.remove(swap_path)
+        self.clear_changes()
+        return True
+
+    def create_from_example(self):
+        """Create a new config.json from config_example.json"""
+        try:
+            example_path = os.path.join(Config.CONFIGS_DIR_LOC, "config_example.json")
+            with open(example_path, 'r', encoding='utf-8') as f:
+                self.dict = json.load(f)
+            self.config_path = os.path.join(Config.CONFIGS_DIR_LOC, "config.json")
+            return self.save_config()
+        except Exception as e:
+            Utils.log_red(f"Failed to create config from example: {e}")
+            return False
+
+    def get_all_config_values(self):
+        """Get all configuration values as a dictionary"""
+        return {key: getattr(self, key) for key in self.dict.keys() if hasattr(self, key)}
 
     def validate_and_set_directory(self, key, override=False):
         loc = key if override else self.dict[key]

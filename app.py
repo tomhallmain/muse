@@ -21,6 +21,7 @@ from library_data.library_data import LibraryData
 from ui.app_actions import AppActions
 from ui.app_style import AppStyle
 from ui.composers_window import ComposersWindow
+from ui.configuration_window import ConfigurationWindow
 from ui.extensions_window import ExtensionsWindow
 from ui.favorites_window import FavoritesWindow
 from ui.history_window import HistoryWindow
@@ -263,6 +264,10 @@ class App():
         self.use_system_language = BooleanVar(value=self.runner_app_config.use_system_lang_for_all_topics)
         self.use_system_language_choice = Checkbutton(self.sidebar, text=_('Use system language for all topics'), variable=self.use_system_language, command=self.set_use_system_language)
         self.apply_to_grid(self.track_splitting_choice, sticky=W)
+
+        # Add configuration button at the bottom
+        self.config_btn = None
+        self.add_button("config_btn", _("Configuration"), self.open_configuration_window)
 
         self.media_frame = MediaFrame(self.master, fill_canvas=True)
 
@@ -654,6 +659,13 @@ class App():
             history_window = HistoryWindow(self.master, self.app_actions, self.library_data)
         except Exception as e:
             Utils.log_red(f"Exception opening history window: {e}")
+            raise e
+
+    def open_configuration_window(self):
+        try:
+            configuration_window = ConfigurationWindow(self.master, self.app_actions)
+        except Exception as e:
+            Utils.log_red(f"Exception opening configuration window: {e}")
             raise e
 
     def get_directories(self):
