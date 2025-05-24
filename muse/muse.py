@@ -204,6 +204,7 @@ class Muse:
 
                     if intro_prompt:
                         context = init_result.context if init_result and init_result.context_provided else persona.get_context()
+                        context = None # NOTE: not using context for now as it is being deprecated for some reason
                         intro_result = self.llm.ask(intro_prompt, context=context)
                         if intro_result and intro_result.response:
                             self.say(intro_result.response, locale=persona.language_code)
@@ -667,7 +668,8 @@ class Muse:
             blacklist_items_str = ", ".join(sorted([str(i) for i in all_blacklist_items]))
             Utils.log("Hit blacklisted items: " + blacklist_items_str)
             Utils.log("Text: " + text)
-            result = self.llm.ask(prompt, json_key=json_key, context=context, system_prompt=system_prompt)
+            # NOTE excluding context for now because it's being deprecated for some reason.
+            result = self.llm.ask(prompt, json_key=json_key, context=None, system_prompt=system_prompt)
             text = result.response if result else ""
             if text.strip() == "":
                 raise LLMResponseException("No response text was generated!")
