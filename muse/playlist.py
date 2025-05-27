@@ -250,27 +250,58 @@ class Playlist:
         # may also have been played recently and thus also need to be reshuffled.
         attempts = 0
         max_attempts = 30
+        stable_attempts = 0
+        last_track_count = None
+        min_stable_attempts = 5  # Number of attempts with same count before considering it stable
         recently_played_attr_list = getattr(Playlist, history_type.value)
-        recently_played_check_count = Playlist.get_recently_played_check_count(track_attr)
-        earliest_tracks = list(self.sorted_tracks[:recently_played_check_count])
-        if self.size() <= recently_played_check_count * 2:
+        recently_played_check_count = Playlist.get_recently_played_check_count(self.sort_type)
+        # Reshuffle twice as many tracks as checked to reduce reshuffling iterations
+        doubled_check_count = recently_played_check_count * 2
+        earliest_tracks = list(self.sorted_tracks[:doubled_check_count])
+        if self.size() <= doubled_check_count:
             # The playlist is a short playlist compared to the library, and probably doesn't 
             # have enough tracks to satisfy the check conditions
             return
         tracks_to_be_reshuffled = []
+        tracks_to_check = []
+        count = 0
         for track in earliest_tracks:
             if getattr(track, track_attr) in recently_played_attr_list:
                 tracks_to_be_reshuffled.append(track)
-        while len(tracks_to_be_reshuffled) > 0:
-            Utils.log(f"Reshuffling playlist recently played track count: {len(tracks_to_be_reshuffled)} (attempt {attempts})")
+                if count < recently_played_check_count:
+                    tracks_to_check.append(track)
+                elif len(tracks_to_check) == 0:
+                    break
+            count += 1
+        while len(tracks_to_check) > 0:
+            current_track_count = len(tracks_to_check)
+            Utils.log(f"Reshuffling playlist recently played track count: {current_track_count} (attempt {attempts})")
+            
+            # Check if we've hit a stable minimum
+            if last_track_count is not None and current_track_count == last_track_count:
+                stable_attempts += 1
+                if stable_attempts >= min_stable_attempts:
+                    Utils.log(f"Found stable minimum of {current_track_count} tracks after {attempts} attempts")
+                    break
+            else:
+                stable_attempts = 0
+            last_track_count = current_track_count
+
             for track in tracks_to_be_reshuffled:
                 self.sorted_tracks.remove(track)
                 self.sorted_tracks.append(track)
             tracks_to_be_reshuffled.clear()
-            earliest_tracks = list(self.sorted_tracks[:recently_played_check_count])
+            tracks_to_check.clear()
+            earliest_tracks = list(self.sorted_tracks[:doubled_check_count])
+            count = 0
             for track in earliest_tracks:
                 if getattr(track, track_attr) in recently_played_attr_list:
                     tracks_to_be_reshuffled.append(track)
+                    if count < recently_played_check_count:
+                        tracks_to_check.append(track)
+                    elif len(tracks_to_check) == 0:
+                        break
+                count += 1
             attempts += 1
             if attempts == max_attempts:
                 Utils.log(f"Hit max attempts limit, too many recently played tracks found in playlist")
