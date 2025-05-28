@@ -221,7 +221,7 @@ class Playlist:
             # This will seed a random start track on the sequence
             # so the sort below will have more randomness.
             self.start_track = random.choice(self.sorted_tracks)
-            self.set_start_track(grouping_attr_getter_name)
+            self.set_start_track(grouping_attr_getter_name, do_print=False)
         if self.sort_type != PlaylistSortType.SEQUENCE:
             if self.sort_type != PlaylistSortType.RANDOM:
                 attr_set = set()
@@ -308,7 +308,7 @@ class Playlist:
                 return max_attempts
         return attempts
 
-    def set_start_track(self, grouping_attr_getter_name):
+    def set_start_track(self, grouping_attr_getter_name, do_print=True):
         if self.start_track is None:
             return
         if self.start_track not in self.sorted_tracks:
@@ -329,12 +329,14 @@ class Playlist:
             if callable(track_attr_to_extract):
                 is_callable = True
                 track_attr_to_extract = track_attr_to_extract()
-            Utils.log(f"Setting playlist start track attribute {grouping_attr_getter_name} to {track_attr_to_extract}")
+            if do_print:
+                Utils.log(f"Setting playlist start track attribute {grouping_attr_getter_name} to {track_attr_to_extract}")
             if is_callable:
                 extracted = [track for track in self.sorted_tracks if getattr(track, grouping_attr_getter_name)() == track_attr_to_extract]
             else:
                 extracted = [track for track in self.sorted_tracks if getattr(track, grouping_attr_getter_name) == track_attr_to_extract]
-            Utils.log(f"Found {len(extracted)} tracks with attribute {grouping_attr_getter_name} equal to {track_attr_to_extract}")
+            if do_print:
+                Utils.log(f"Found {len(extracted)} tracks with attribute {grouping_attr_getter_name} equal to {track_attr_to_extract}")
             for track in extracted:
                 self.sorted_tracks.remove(track)
             index = extracted.index(self.start_track)
