@@ -5,8 +5,8 @@ msgstr ""
 "POT-Creation-Date: 2025-05-30 18:07-0400\n"
 "PO-Revision-Date: 2025-05-30 18:07-0400\n"
 "Last-Translator: Translator Name <translator@example.com>\n"
-"Language-Team: it Team <<EMAIL>>\n"
-"Language: it\n"
+"Language-Team: ru Team <<EMAIL>>\n"
+"Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -15,63 +15,63 @@ msgstr ""
 #: app.py:150 ui/extensions_window.py:157 ui/track_details_window.py:64
 #: utils/globals.py:193
 msgid "Title"
-msgstr "Titolo"
+msgstr "Название"
 
 #: app.py:153 ui/track_details_window.py:67 utils/globals.py:119
 #: utils/globals.py:194
 msgid "Album"
-msgstr "Album"
+msgstr "Альбом"
 
 #: app.py:156 ui/track_details_window.py:70 utils/globals.py:121
 #: utils/globals.py:195 utils/globals.py:249
 msgid "Artist"
-msgstr "Artista"
+msgstr "Художник"
 
 #: app.py:159 ui/track_details_window.py:76 utils/globals.py:123
 #: utils/globals.py:196 utils/globals.py:248
 msgid "Composer"
-msgstr "Compositore"
+msgstr "композитор"
 
 #: app.py:162
 msgid "Next Up"
-msgstr "Prossimamente"
+msgstr "Следующий"
 
 #: app.py:165
 msgid "Prior Track"
-msgstr "Traccia precedente"
+msgstr "Предыдущий трек"
 
 #: app.py:168
 msgid "Spot Details"
-msgstr "Dettagli del spot"
+msgstr "Детали места"
 
 #: app.py:171
 msgid "Extension Status"
-msgstr "Stato dell'estensione"
+msgstr "Статус продления"
 
 #: app.py:174
 msgid "Volume"
-msgstr "Volume"
+msgstr "Объем"
 
 #: app.py:184 ui/network_media_window.py:167 ui/network_media_window.py:267
 #: ui/search_window.py:212 ui/search_window.py:334
 msgid "Play"
-msgstr "Gioco"
+msgstr "Играть"
 
 #: app.py:187
 msgid "Playlists"
-msgstr "Elenchi di brani"
+msgstr "Плейлисты"
 
 #: app.py:190
 msgid "Next"
-msgstr "Avanti"
+msgstr "Следующий"
 
 #: app.py:193
 msgid "Next Grouping"
-msgstr "Raggruppamento successivo"
+msgstr "Следующая группировка"
 
 #: app.py:196
 msgid "Pause"
-msgstr "Pausa"
+msgstr "Пауза"
 
 #: app.py:199 ui/composers_window.py:353 ui/composers_window.py:388
 #: ui/composers_window.py:461 ui/favorites_window.py:273
@@ -79,695 +79,691 @@ msgstr "Pausa"
 #: ui/network_media_window.py:159 ui/network_media_window.py:337
 #: ui/search_window.py:87 ui/search_window.py:204 ui/search_window.py:415
 msgid "Search"
-msgstr "Ricerca"
+msgstr "Поиск"
 
 #: app.py:202 utils/globals.py:373
 msgid "Composers"
-msgstr "Compositori"
+msgstr "композиторы"
 
 #: app.py:205
 msgid "Schedules"
-msgstr "Orari"
+msgstr "Расписания"
 
 #: app.py:208 ui/weather_window.py:27 ui/weather_window.py:37
 #: ui/weather_window.py:67
 msgid "Weather"
-msgstr "Il tempo"
+msgstr "Погода"
 
 #: app.py:210
 msgid "Stop"
-msgstr "Stop"
+msgstr "Остановись"
 
 #: app.py:211
 msgid "Text"
-msgstr "Testo"
+msgstr "Текст"
 
 #: app.py:214
 msgid "Delay Seconds"
-msgstr "Ritardo secondi"
+msgstr "Отложить секунды"
 
 #: app.py:221
 msgid "Playlist"
-msgstr "Playlist"
+msgstr "Плейлист"
 
 #: app.py:229
 msgid "Playlist Sort"
-msgstr "Ordinamento della playlist"
+msgstr "Сортировка плейлиста"
 
 #: app.py:237
 msgid "Favorite"
-msgstr "Il preferito"
+msgstr "Любимый"
 
 #: app.py:241 ui/favorites_window.py:226 ui/favorites_window.py:531
 msgid "Favorites"
-msgstr "Preferiti"
+msgstr "Любимые"
 
 #: app.py:244 ui/history_window.py:88 ui/history_window.py:297
 msgid "History"
-msgstr "Storia"
+msgstr "История"
 
 #: app.py:247
 msgid "Overwrite"
-msgstr "Sovrascrivere"
+msgstr "Переписать"
 
 #: app.py:251
 msgid "Muse"
-msgstr "Musa"
+msgstr "Муза"
 
 #: app.py:255 app.py:258
 msgid "Extension"
-msgstr "Estensione"
+msgstr "Продление"
 
 #: app.py:261
 msgid "Enable track splitting"
-msgstr "Abilita la suddivisione dei brani"
+msgstr "Включить разделение дорожек"
 
 #: app.py:265
 msgid "Use system language for all topics"
-msgstr "Utilizzare il linguaggio di sistema"
+msgstr "Используйте язык системы для всех тем"
 
 #: app.py:270
 msgid "Configuration"
-msgstr "Configurazione"
+msgstr "конфигурация"
 
 #: app.py:331
 msgid "Confirm Quit"
-msgstr "Confermare l'uscita"
+msgstr "Подтвердить отказ"
 
 #: app.py:331
 msgid "Would you like to quit the application?"
-msgstr "Volete abbandonare l'applicazione?"
+msgstr "Вы хотите закрыть приложение?"
 
 #: app.py:452
 msgid "Confirm Run"
-msgstr "Confermare l'esecuzione"
+msgstr "Подтвердить бег"
 
 #: app.py:453
 msgid "Are you sure you want to proceed?"
-msgstr "È sicuro di voler procedere?"
+msgstr "Вы уверены, что хотите продолжить?"
 
 #: app.py:520
 msgid "Copied album art to clipboard."
-msgstr "Copiato l'album art negli appunti."
+msgstr "Копирование обложки альбома в буфер обмена."
 
 #: app.py:624 app.py:777 app.py:807 ui/composers_window.py:245
 #: ui/composers_window.py:259 ui/configuration_window.py:152
 #: ui/configuration_window.py:155 ui/playlist_window.py:326
 #: ui/track_details_window.py:217
 msgid "Error"
-msgstr "Errore"
+msgstr "ошибка"
 
 #: app.py:691 muse/muse_spot_profile.py:208
 msgid "Track: "
-msgstr "Traccia: "
+msgstr "Трек: "
 
 #: app.py:692
 msgid "Album: "
-msgstr "Album: "
+msgstr "Альбом: "
 
 #: app.py:693
 msgid "Artist: "
-msgstr "Artista: "
+msgstr "Художник: "
 
 #: app.py:694
 msgid "Composer: "
-msgstr "Compositore: "
+msgstr "Композитор: "
 
 #: app.py:705
 msgid "Next Up: "
-msgstr "Prossimamente: "
+msgstr "Следующий: "
 
 #: app.py:714 muse/muse_spot_profile.py:209
 msgid "Previous Track: "
-msgstr "Traccia precedente: "
+msgstr "Предыдущий трек: "
 
 #: app.py:748
 msgid "Staged Playlist: "
-msgstr "Elenco programmato: "
+msgstr "Сценический плейлист: "
 
 #: app.py:892
 msgid " Muse "
-msgstr " Musa "
+msgstr " Муза "
 
 #: extensions/extension_manager.py:119 extensions/extension_manager.py:132
 msgid "Extension thread waiting for {0} minutes"
-msgstr "Thread di estensione in attesa per {0} minuti"
+msgstr "Продление ожидания {0} минут"
 
 #: extensions/extension_manager.py:160
 msgid "Coming up soon, we'll be listening to a new track from the {0} {1}."
-msgstr "Tra poco ascolteremo un nuovo brano dei {0} {1}."
+msgstr "Скоро мы услышим новый трек от {0} {1}."
 
 #: extensions/extension_manager.py:299
 msgid "Extension \"{0}\" waiting for {1} minutes"
-msgstr "Estensione “{0}” in attesa di {1} minuti"
+msgstr "Расширение «{0}» ожидает {1} минут"
 
 #: extensions/extension_manager.py:337
 msgid "Extension \"{0}\" ready"
-msgstr "Estensione \"{0}\" pronta"
+msgstr "Расширение «{0}» готово"
 
 #: library_data/composer.py:41
 msgid "Composer name cannot be empty"
-msgstr "Il nome del compositore non può essere vuoto"
+msgstr "Имя композитора не может быть пустым"
 
 #: library_data/composer.py:93
 msgid "Dates must be valid integers"
-msgstr "I dati devono essere validi interi"
+msgstr "Даты должны быть действительными целыми числами."
 
 #: library_data/composer.py:97
 msgid "Start date cannot be in the future"
-msgstr "La data di inizio non può essere in futuro"
+msgstr "Дата начала не может быть в будущем"
 
 #: library_data/composer.py:99
 msgid "End date cannot be in the future"
-msgstr "La data di fine non può essere in futuro"
+msgstr "Дата окончания не может быть в будущем"
 
 #: library_data/composer.py:104
 msgid "Start date cannot be after end date"
-msgstr "La data di inizio non può essere dopo la data di fine"
+msgstr "Дата начала не может быть позднее даты окончания"
 
 #: library_data/composer.py:176 library_data/library_data.py:63
 #: ui/favorites_window.py:32 ui/history_window.py:30
 msgid "({0} results)"
-msgstr "({0} risultati)"
+msgstr "({0} результаты)"
 
 #: library_data/composer.py:246 library_data/composer.py:290
 msgid "Invalid composer data"
-msgstr "Dati del compositore non valido"
+msgstr "Недопустимые данные о композиторе"
 
 #: library_data/composer.py:302
 msgid "Composer not found"
-msgstr "Compositore non trovato"
+msgstr "Композитор не найден"
 
 #: library_data/library_data.py:265
 msgid "Updating tracks"
-msgstr "Aggiornamento dei brani"
+msgstr "Обновление треков"
 
 #: library_data/media_track.py:194
 msgid "Unknown title"
-msgstr "Titolo sconosciuto"
+msgstr "Неизвестное название"
 
 #: library_data/media_track.py:200
 msgid "Unknown album"
-msgstr "Album sconosciuto"
+msgstr "Неизвестный альбом"
 
 #: library_data/media_track.py:206
 msgid "Unknown artist"
-msgstr "Artista sconosciuto"
+msgstr "Неизвестный художник"
 
 #: library_data/media_track.py:376 library_data/media_track.py:377
 #: tts/text_cleaner_ruleset.py:78
 msgid "Number \\1"
-msgstr " Numero \\1"
+msgstr " Номер \\1"
 
 #: library_data/media_track.py:378
 msgid "\\1text to speech\\2"
-msgstr "\\1testo a voce\\2"
+msgstr "\\1текста в речь\\2"
 
 #: library_data/media_track.py:379
 msgid " Opus \\2"
-msgstr " Opus \\2"
+msgstr " Опус \\2"
 
 #: muse/dj_persona.py:93
 msgid "a man"
-msgstr "un uomo"
+msgstr "мужчина"
 
 #: muse/dj_persona.py:95
 msgid "a woman"
-msgstr "una donna"
+msgstr "женщина"
 
 #: muse/muse.py:213
 msgid "Hello, I'm {0}"
-msgstr "Salve, sono {0}"
+msgstr "Привет, я {0}"
 
 #: muse/muse.py:217 muse/muse.py:221
 msgid "Hello, I'm your DJ"
-msgstr "Ciao, sono il tuo DJ"
+msgstr "Привет, я твой диджей."
 
 #: muse/muse.py:228
 msgid "Hello"
-msgstr "Ciao."
+msgstr "Привет."
 
 #: muse/muse.py:240
 msgid "tonight"
-msgstr "stasera"
+msgstr "сегодня вечером"
 
 #: muse/muse.py:240
 msgid "today"
-msgstr "oggi"
+msgstr "сегодня"
 
 #: muse/muse.py:242
 msgid "The scheduled shutdown time has arrived. That's it for {0}."
-msgstr "È arrivato l'orario di spegnimento previsto. Questo è tutto per {0}."
+msgstr "Наступило запланированное время отключения. На этом все для {0}."
 
 #: muse/muse.py:246
 msgid "I'll be on again tomorrow."
-msgstr "Sarò di nuovo in linea domani."
+msgstr "Я буду снова завтра."
 
 #: muse/muse.py:248
 msgid "Tomorrow you'll hear from {0}."
-msgstr "Domani avrete notizie di {0}."
+msgstr "Завтра вы услышите от {0}."
 
 #: muse/muse.py:252
 msgid "The next time I'll be on is next week, at the same time."
-msgstr ""
-"La prossima volta che sarò in onda sarà la settimana prossima, alla stessa "
-"ora."
+msgstr "В следующий раз я буду на связи на следующей неделе, в то же время."
 
 #: muse/muse.py:254
 msgid "I'll be on again this coming {0}."
-msgstr "Sarò di nuovo in onda il prossimo {0}."
+msgstr "Я буду снова в следующий {0}."
 
 #: muse/muse.py:265
 msgid "Good morning"
-msgstr "Buongiorno"
+msgstr "Доброе утро"
 
 #: muse/muse.py:267
 msgid "Good day"
-msgstr "Buona giornata"
+msgstr "Добрый день"
 
 #: muse/muse.py:269
 msgid "Good afternoon"
-msgstr "Buon pomeriggio"
+msgstr "Добрый день"
 
 #: muse/muse.py:271
 msgid "Good evening"
-msgstr "Buona sera"
+msgstr "Добрый вечер"
 
 #: muse/muse.py:286
 msgid "That was \"{0}\" in \"{1}\""
-msgstr "Era “{0}” in “{1}”"
+msgstr "Это было «{0}» в «{1}»"
 
 #: muse/muse.py:288 muse/muse.py:324
 msgid " by \"{0}\"."
-msgstr " da “{0}”."
+msgstr " «{0}»."
 
 #: muse/muse.py:293
 msgid "That was a new track. How'd you like that?"
-msgstr "Era un brano nuovo. Ti è piaciuto?"
+msgstr "Это была новая песня. Как тебе понравилось?"
 
 #: muse/muse.py:295
 msgid "That was a new one. How'd you like it?"
-msgstr "Questo era nuovo. Ti è piaciuta?"
+msgstr "Это было что-то новенькое. Как тебе понравилось?"
 
 #: muse/muse.py:320
 msgid "To start, we'll be playing: \"{0}\" from \"{1}\""
-msgstr "Per iniziare, giocheremo: “{0}” da “{1}”."
+msgstr "Для начала мы будем играть: «{0}» из «{1}»."
 
 #: muse/muse.py:322
 msgid "Next up, we'll be playing: \"{0}\" from \"{1}\""
-msgstr "Il prossimo appuntamento è con il gioco: \"{0}\" from \"{1}\""
+msgstr "Следующим мы будем играть: «{0}» из «{1}»"
 
 #: muse/muse.py:329
 msgid "This one is a new track."
-msgstr "Questo è un brano nuovo."
+msgstr "Это новый трек."
 
 #: muse/muse.py:341
 msgid "After that short interlude, we're back to our {0} shuffle."
-msgstr "Dopo questa breve parentesi, torniamo al nostro shuffle {0}."
+msgstr ""
+"После этого короткого перерыва мы возвращаемся к нашему {0} перемешиванию."
 
 #: muse/muse.py:344
 msgid "We've been listening to a group of tracks from the {0} {1}"
-msgstr "Abbiamo ascoltato un gruppo di brani del {0} {1}"
+msgstr "Мы прослушали несколько треков из {0} {1}"
 
 #: muse/muse.py:354
 msgid "We're listening to a group of tracks from the {0} {1}."
-msgstr "Stiamo ascoltando un gruppo di brani del {0} {1}."
+msgstr "Мы слушаем группу треков из {0} {1}."
 
 #: muse/muse.py:357
 msgid "We're going to start a new group of tracks from the {0} {1}."
-msgstr "Inizieremo un nuovo gruppo di tracce dal punto {0} {1}."
+msgstr "Мы собираемся начать новую группу треков из {0} {1}."
 
 #: muse/muse.py:408
 msgid "First let's hear about {0}"
-msgstr "Per prima cosa parliamo di {0}"
+msgstr "Сначала давайте послушаем о {0}"
 
 #: muse/muse.py:410
 msgid "But first, let's hear about {0}."
-msgstr "Ma prima parliamo di {0}."
+msgstr "Но сначала давайте послушаем о {0}."
 
 #: muse/muse.py:690
 msgid ""
 "We're having some technical difficulties in accessing our source for {0}. "
 "We'll try again later"
 msgstr ""
-"Stiamo riscontrando alcune difficoltà tecniche nell'accesso alla nostra "
-"fonte per {0}. Riproveremo più tardi"
+"У нас возникли технические проблемы с доступом к источнику {0}. Попробуем "
+"позже."
 
 #: muse/muse.py:694
 msgid ""
 "It seems our writer for {0} is unexpectedly away at the moment. Did we "
 "forget to pay his salary again?"
 msgstr ""
-"Sembra che il nostro scrittore per {0} sia inaspettatamente assente al "
-"momento. Abbiamo dimenticato di pagare di nuovo il suo stipendio?"
+"Похоже, наш автор для {0} неожиданно отсутствует в данный момент. Мы снова "
+"забыли выплатить ему зарплату?"
 
 #: muse/muse.py:698
 msgid ""
 "We've found problems with all of our {0} ideas. Please try again later."
 msgstr ""
-"Abbiamo riscontrato problemi con tutte le nostre idee {0}. Si prega di "
-"riprovare più tardi."
+"Мы обнаружили проблемы со всеми нашими {0} идеями. Повторите попытку позже."
 
 #: muse/muse.py:703
 msgid "Something went wrong. We'll try to fix it soon."
-msgstr ""
-"Qualcosa è andato storto. Cercheremo di risolvere il problema al più presto."
+msgstr "Что-то пошло не так. Мы постараемся исправить это в ближайшее время."
 
 #: muse/muse.py:770
 msgid "Starting tracks:"
-msgstr "Tracce di partenza:"
+msgstr "Начальные треки:"
 
 #: muse/muse.py:830
 msgid "The listener last tuned in {0} {1} ago"
-msgstr "L'ascoltatore si è sintonizzato l'ultima volta {0} {1} fa"
+msgstr "Слушатель в последний раз настраивался {0} {1} назад"
 
 #: muse/muse_spot_profile.py:199
 msgid "Talking about: "
-msgstr "Parlando di: "
+msgstr "Поговорим о: "
 
 #: muse/muse_spot_profile.py:208
 msgid "No track"
-msgstr "Nessuna traccia"
+msgstr "Нет следов"
 
 #: muse/muse_spot_profile.py:209
 msgid "No previous track"
-msgstr "Nessuna traccia precedente"
+msgstr "Никаких предыдущих треков"
 
 #: muse/muse_spot_profile.py:211
 msgid "Speaking about prior track"
-msgstr "Parlando della pista precedente"
+msgstr "Говоря о предыдущем треке"
 
 #: muse/muse_spot_profile.py:213
 msgid "Speaking about upcoming track"
-msgstr "Parlando del brano in uscita"
+msgstr "Говоря о предстоящем треке"
 
 #: muse/muse_spot_profile.py:215
 msgid "Talking about something"
-msgstr "Parlare di qualcosa"
+msgstr "Говорить о чем-то"
 
 #: muse/playback.py:372
 msgid "Sleeping for seconds"
-msgstr "Dormire per secondi"
+msgstr "Спать в течение нескольких секунд"
 
 #: muse/schedule.py:8 ui/schedules_window.py:40
 msgid "New Schedule"
-msgstr "Nuovo programma"
+msgstr "Новое расписание"
 
 #: muse/schedule.py:41
 msgid "Tomorrow"
-msgstr "Domani"
+msgstr "Завтра"
 
 #: muse/schedule.py:76 ui/schedules_window.py:57
 msgid "Every day"
-msgstr "Ogni giorno"
+msgstr "Каждый день"
 
 #: muse/schedule.py:79
 msgid "{0} - DJ: {1} - Days: {2} - Times: {3}-{4} - Shutdown: {5}"
-msgstr "{0} - DJ: {1} - Giorni: {2} - Orari: {3}-{4} - Spegnimento: {5}"
+msgstr "{0} - DJ: {1} - Дни: {2} - Время: {3}-{4} - Выключение: {5}"
 
 #: muse/schedules_manager.py:75
 msgid "Not enough schedules found."
-msgstr "Non sono stati trovati abbastanza programmi."
+msgstr "Не найдено достаточного количества графиков."
 
 #: ui/composers_window.py:35 ui/composers_window.py:50
 #: ui/composers_window.py:330
 msgid "New Composer"
-msgstr "Nuovo compositore"
+msgstr "Новый композитор"
 
 #: ui/composers_window.py:35
 msgid "Modify Composer: {0}"
-msgstr "Modifica del compositore: {0}"
+msgstr "Модифицировать композитора: {0}"
 
 #: ui/composers_window.py:46
 msgid "Modify Composer"
-msgstr "Modificare il Compositore"
+msgstr "Модифицировать композитора"
 
 #: ui/composers_window.py:49
 msgid "Name"
-msgstr "Nome"
+msgstr "Имя"
 
 #: ui/composers_window.py:55
 msgid "Indicators"
-msgstr "Indicatori"
+msgstr "Показатели"
 
 #: ui/composers_window.py:61
 msgid "Start Date"
-msgstr "Data di inizio"
+msgstr "Дата начала"
 
 #: ui/composers_window.py:67
 msgid "End Date"
-msgstr "Data di fine"
+msgstr "Дата окончания"
 
 #: ui/composers_window.py:73 ui/composers_window.py:75
 msgid "Dates are lifespan"
-msgstr "Le date sono a vita"
+msgstr "Даты — это срок службы"
 
 #: ui/composers_window.py:79
 msgid "Dates uncertain"
-msgstr "Date incerte"
+msgstr "Неопределенные даты"
 
 #: ui/composers_window.py:81
 msgid "Dates are uncertain"
-msgstr "Le date sono incerte"
+msgstr "Даты неопределенные"
 
 #: ui/composers_window.py:85 utils/globals.py:374
 msgid "Genres"
-msgstr "Generi"
+msgstr "Жанры"
 
 #: ui/composers_window.py:96
 msgid "Notes"
-msgstr "Note"
+msgstr "Заметки"
 
 #: ui/composers_window.py:97
 msgid "Add Note"
-msgstr "Aggiungi nota"
+msgstr "Добавить комментарий"
 
 #: ui/composers_window.py:110
 msgid "Save"
-msgstr "Salva"
+msgstr "Спасти"
 
 #: ui/composers_window.py:115 ui/composers_window.py:136
 #: ui/extensions_window.py:241 ui/presets_window.py:146
 #: ui/schedules_window.py:214
 msgid "Delete"
-msgstr "Cancellare"
+msgstr "Исключить"
 
 #: ui/composers_window.py:153
 msgid "New note"
-msgstr "Nuova nota"
+msgstr "Новая нота"
 
 #: ui/composers_window.py:217 ui/track_details_window.py:209
 msgid "Validation Error"
-msgstr "Errore di convalida"
+msgstr "Ошибка проверки"
 
 #: ui/composers_window.py:232
 msgid "Fixes applied"
-msgstr "Riparazioni applicate"
+msgstr "Примененные исправления"
 
 #: ui/composers_window.py:245
 msgid "Failed to save composer:"
-msgstr "Non riuscì a salvare il compositore:"
+msgstr "Не удалось сохранить композитора:"
 
 #: ui/composers_window.py:249
 msgid "Delete composer"
-msgstr "Elimina compositore"
+msgstr "Удалить композитора"
 
 #: ui/composers_window.py:250
 msgid "Are you sure you want to delete {0}? This action cannot be undone."
-msgstr ""
-"Sei sicuro di voler eliminare {0}? Questa azione non può essere annullata."
+msgstr "Вы уверены, что хотите удалить {0}? Это действие нельзя отменить."
 
 #: ui/composers_window.py:259
 msgid "Failed to delete composer:"
-msgstr "Non è riuscito a cancellare il compositore:"
+msgstr "Не удалось удалить композитора:"
 
 #: ui/composers_window.py:308
 msgid "Search Composers"
-msgstr "Ricerca compositori"
+msgstr "Поиск композиторов"
 
 #: ui/composers_window.py:335
 msgid "Search Composer"
-msgstr "Ricerca Composer"
+msgstr "Композитор поиска"
 
 #: ui/composers_window.py:342
 msgid "Search Genre"
-msgstr "Ricerca Genere"
+msgstr "Поисковый жанр"
 
 #: ui/composers_window.py:366 ui/search_window.py:173
 msgid "No recent searches found."
-msgstr "Non sono state trovate ricerche recenti."
+msgstr "Не найдено недавних поисковых запросов."
 
 #: ui/composers_window.py:453 ui/extensions_window.py:233
 #: ui/favorites_window.py:359 ui/favorites_window.py:486
 #: ui/history_window.py:217 ui/history_window.py:288
 #: ui/network_media_window.py:260 ui/search_window.py:327
 msgid "Details"
-msgstr "Dettagli"
+msgstr "Подробности"
 
 #: ui/composers_window.py:496
 msgid "Composer Search"
-msgstr "Ricerca del compositore"
+msgstr "Композитор Поиск"
 
 #: ui/configuration_window.py:21
 msgid "Configuration Settings"
-msgstr "Impostazioni di configurazione"
+msgstr "Настройки конфигурации"
 
 #: ui/configuration_window.py:42
 msgid "General"
-msgstr "Generale"
+msgstr "Генерал"
 
 #: ui/configuration_window.py:43
 msgid "Audio"
-msgstr "Audio"
+msgstr "Аудио"
 
 #: ui/configuration_window.py:44
 msgid "API Keys"
-msgstr "Chiavi di API"
+msgstr "API ключи"
 
 #: ui/configuration_window.py:45
 msgid "TTS Settings"
-msgstr "Impostazioni di testo in voce"
+msgstr "Настройки преобразования текста в речь"
 
 #: ui/configuration_window.py:57
 msgid "Save Configuration"
-msgstr "Salva configurazione"
+msgstr "Сохранить конфигурацию"
 
 #: ui/configuration_window.py:66
 msgid "Foreground Color"
-msgstr "Colore del primo piano"
+msgstr "Цвет переднего плана"
 
 #: ui/configuration_window.py:67
 msgid "Background Color"
-msgstr "Colore dello sfondo"
+msgstr "Цвет фона"
 
 #: ui/configuration_window.py:68
 msgid "Language Learning Language"
-msgstr "Lingua di apprendimento"
+msgstr "Язык для изучения языков"
 
 #: ui/configuration_window.py:69
 msgid "Language Learning Level"
-msgstr "Livello di apprendimento linguistico"
+msgstr "Уровень изучения языка"
 
 #: ui/configuration_window.py:70 ui/playlist_window.py:285
 msgid "Enable Dynamic Volume"
-msgstr "Abilitare il volume dinamico"
+msgstr "Включить динамический объем"
 
 #: ui/configuration_window.py:71
 msgid "Enable Library Extender"
-msgstr "Abilitare l'estensione della libreria"
+msgstr "Позволяет расширить библиотеку"
 
 #: ui/configuration_window.py:72 ui/playlist_window.py:291
 msgid "Enable Long Track Splitting"
-msgstr "Abilita la suddivisione delle tracce lunghe"
+msgstr "Включить длинное разделение дорожки"
 
 #: ui/configuration_window.py:73
 msgid "Long Track Cutoff (minutes)"
-msgstr "Taglio per tracce lunghe (minuti)"
+msgstr "Длительный отсечение (минуты)"
 
 #: ui/configuration_window.py:81
 msgid "Play Videos in Separate Window"
-msgstr "Giocare video in finestra separata"
+msgstr "Воспроизведение видео в отдельном окне"
 
 #: ui/configuration_window.py:82
 msgid "Recently Played Check Count"
-msgstr "Conteggio dei controlli giocati di recente"
+msgstr "Недавно сыгранные игры Проверить количество"
 
 #: ui/configuration_window.py:83
 msgid "Max Search Results"
-msgstr "Massimi risultati della ricerca"
+msgstr "Результаты поиска Max"
 
 #: ui/configuration_window.py:84
 msgid "Max Recent Searches"
-msgstr "Massimo ricerche recente"
+msgstr "Максимум последних запросов"
 
 #: ui/configuration_window.py:92
 msgid "OpenWeather API Key"
-msgstr "Chiave di API OpenWeather"
+msgstr "OpenWeather API Ключ"
 
 #: ui/configuration_window.py:93
 msgid "OpenWeather City"
-msgstr "Città OpenWeather"
+msgstr "Город OpenWeather"
 
 #: ui/configuration_window.py:94
 msgid "News API Key"
-msgstr "News API Chiave"
+msgstr "News API Ключ"
 
 #: ui/configuration_window.py:102
 msgid "Coqui TTS Location"
-msgstr "Coqui TTS Posizione"
+msgstr "Coqui TTS Расположение"
 
 #: ui/configuration_window.py:103
 msgid "LLM Model Name"
-msgstr "LLM Nome del modello"
+msgstr "Название модели LLM"
 
 #: ui/configuration_window.py:104
 msgid "Max Chunk Tokens"
-msgstr "Gettoni massimi di pezzi"
+msgstr "Максимальное количество токенов"
 
 #: ui/configuration_window.py:130
 msgid "Close Configuration"
-msgstr "Configurazione chiusa"
+msgstr "Закрыть конфигурацию"
 
 #: ui/configuration_window.py:131
 msgid ""
 "Do you want to close the configuration window?\n"
 "Any unsaved changes will be lost."
 msgstr ""
-"Vuoi chiudere la finestra di configurazione?\n"
-"Eventuali cambiamenti non salvati saranno persi."
+"Вы хотите закрыть окно настроек?\n"
+"Все несохраненные изменения будут утеряны."
 
 #: ui/configuration_window.py:150
 msgid "Configuration saved successfully"
-msgstr "Configurazione salvata con successo"
+msgstr "Конфигурация успешно сохранена"
 
 #: ui/configuration_window.py:152
 msgid "Failed to save configuration"
-msgstr "Non riuscito a salvare la configurazione"
+msgstr "Не удалось сохранить конфигурацию"
 
 #: ui/extensions_window.py:22 ui/extensions_window.py:31
 #: ui/extensions_window.py:294
 msgid "Extensions"
-msgstr "Estensioni"
+msgstr "Расширения"
 
 #: ui/extensions_window.py:66
 msgid "Extension Settings"
-msgstr "Impostazioni di estensione"
+msgstr "Настройки расширения"
 
 #: ui/extensions_window.py:72 ui/extensions_window.py:161
 msgid "Strategy"
-msgstr "Strategia"
+msgstr "Стратегия"
 
 #: ui/extensions_window.py:83
 msgid "Clear History"
-msgstr "Cancellare la cronologia"
+msgstr "Ясная история"
 
 #: ui/extensions_window.py:89
 msgid "Statistics"
-msgstr "Statistiche"
+msgstr "Статистика"
 
 #: ui/extensions_window.py:153
 msgid "Date"
-msgstr "Data"
+msgstr "Дата"
 
 #: ui/extensions_window.py:155
 msgid "Published"
-msgstr "Pubblicato"
+msgstr "Опубликовано"
 
 #: ui/extensions_window.py:159
 msgid "Duration"
-msgstr "Durata"
+msgstr "Продолжительность"
 
 #: ui/extensions_window.py:163
 msgid "Attribute"
-msgstr "Attributo"
+msgstr "атрибут"
 
 #: ui/extensions_window.py:165
 msgid "Search Query"
-msgstr "Quesito di ricerca"
+msgstr "Поисковый запрос"
 
 #: ui/extensions_window.py:167
 msgid "Actions"
-msgstr "Azioni"
+msgstr "Действия"
 
 #: ui/extensions_window.py:177 ui/extensions_window.py:358
 #: ui/extensions_window.py:368
@@ -776,130 +772,130 @@ msgstr "N/A"
 
 #: ui/extensions_window.py:254
 msgid "Total Extensions: {}"
-msgstr "Estensioni totali: {}"
+msgstr "Общее количество расширений: {}"
 
 #: ui/extensions_window.py:260
 msgid "Average Duration: {}"
-msgstr "Durata media: {}"
+msgstr "Средняя продолжительность: {}"
 
 #: ui/extensions_window.py:262
 msgid "Average Duration: N/A"
-msgstr "Durata media: N/A"
+msgstr "Средняя продолжительность: Н/Д"
 
 #: ui/extensions_window.py:276
 msgid "Confirm Clear"
-msgstr "Confermare Cancella"
+msgstr "Подтвердить Очистить"
 
 #: ui/extensions_window.py:277
 msgid "Are you sure you want to clear all extension history?"
-msgstr "Sei sicuro di voler cancellare tutta la storia dell'estensione?"
+msgstr "Вы уверены, что хотите очистить всю историю расширений?"
 
 #: ui/extensions_window.py:302
 msgid "Confirm Delete"
-msgstr "Conferma Cancella"
+msgstr "Подтвердить удаление"
 
 #: ui/extensions_window.py:303
 msgid "Are you sure you want to delete this extension?"
-msgstr "Sei sicuro di voler eliminare questa estensione?"
+msgstr "Вы уверены, что хотите удалить это расширение?"
 
 #: ui/extensions_window.py:317
 msgid "Extension Details"
-msgstr "Estensione Dettagli"
+msgstr "Детали расширения"
 
 #: ui/extensions_window.py:351
 msgid "Published:"
-msgstr "Pubblicato:"
+msgstr "Опубликовано:"
 
 #: ui/extensions_window.py:364
 msgid "Duration:"
-msgstr "Durata:"
+msgstr "Продолжительность:"
 
 #: ui/extensions_window.py:374
 msgid "Strategy:"
-msgstr "Strategia:"
+msgstr "Стратегия:"
 
 #: ui/extensions_window.py:382
 msgid "Attribute:"
-msgstr "Attributo:"
+msgstr "Атрибут:"
 
 #: ui/extensions_window.py:390
 msgid "Search Query:"
-msgstr "Ricerca:"
+msgstr "Поисковый запрос:"
 
 #: ui/extensions_window.py:398
 msgid "Description:"
-msgstr "Descrizione:"
+msgstr "Описание:"
 
 #: ui/extensions_window.py:406
 msgid "File:"
-msgstr "File:"
+msgstr "Файл:"
 
 #: ui/extensions_window.py:413 ui/favorites_window.py:629
 msgid "Close"
-msgstr "Chiudi"
+msgstr "Закрыть"
 
 #: ui/favorites_window.py:196 ui/favorites_window.py:205
 #: ui/favorites_window.py:209
 msgid "Favorite Exists"
-msgstr "Esisti preferiti"
+msgstr "Избранное существует"
 
 #: ui/favorites_window.py:197 ui/favorites_window.py:206
 #: ui/favorites_window.py:210
 msgid "This favorite already exists."
-msgstr "Questo preferito esiste già."
+msgstr "Этот избранный элемент уже существует."
 
 #: ui/favorites_window.py:220
 msgid "Favorite updated successfully."
-msgstr "Preferito aggiornato con successo."
+msgstr "Избранное успешно обновлено."
 
 #: ui/favorites_window.py:249
 msgid "Create Favorite From Current Track"
-msgstr "Crea favorito dalla pista corrente"
+msgstr "Создать избранное из текущего трека"
 
 #: ui/favorites_window.py:257 ui/favorites_window.py:618
 msgid "Create Favorite"
-msgstr "Crea favorito"
+msgstr "Создать избранное"
 
 #: ui/favorites_window.py:262
 msgid "Search Favorites"
-msgstr "Cerca Preferiti"
+msgstr "Поиск избранного"
 
 #: ui/favorites_window.py:326
 msgid "No favorites found."
-msgstr "Nessun favorito trovato."
+msgstr "Любимые не найдены."
 
 #: ui/favorites_window.py:366 ui/favorites_window.py:493
 #: ui/search_window.py:228
 msgid "Remove"
-msgstr "Rimuovi"
+msgstr "Удалить"
 
 #: ui/favorites_window.py:557
 msgid "Favorite Details"
-msgstr "Dettagli di Favorite"
+msgstr "Любимые детали"
 
 #: ui/favorites_window.py:594
 msgid "Type: Track"
-msgstr "Tipo: Traccia"
+msgstr "Тип: Трек"
 
 #: ui/favorites_window.py:618
 msgid "Update Favorite"
-msgstr "Aggiornamento Favorite"
+msgstr "Обновление избранного"
 
 #: ui/favorites_window.py:624
 msgid "Remove Favorite"
-msgstr "Rimuovi i preferiti"
+msgstr "Удалить из избранного"
 
 #: ui/history_window.py:110
 msgid "History Type"
-msgstr "Tipo di storia"
+msgstr "Тип истории"
 
 #: ui/history_window.py:122
 msgid "Search History"
-msgstr "Storia della ricerca"
+msgstr "Поиск по истории"
 
 #: ui/history_window.py:185
 msgid "No history found."
-msgstr "Nessuna storia trovata."
+msgstr "История не найдена."
 
 #: ui/history_window.py:211 ui/history_window.py:282
 msgid "★"
@@ -907,453 +903,453 @@ msgstr ""
 
 #: ui/network_media_window.py:77 ui/search_window.py:54
 msgid "Search Library"
-msgstr "Ricerca in biblioteca"
+msgstr "Поисковая библиотека"
 
 #: ui/network_media_window.py:115 ui/search_window.py:102
 #: ui/search_window.py:111 ui/search_window.py:120 ui/search_window.py:129
 #: ui/search_window.py:138 ui/search_window.py:147 ui/search_window.py:156
 msgid "Sort by"
-msgstr "Ordina per"
+msgstr "Сортировать по"
 
 #: ui/network_media_window.py:128 ui/network_media_window.py:234
 msgid "No recent urls found."
-msgstr "Non è stato trovato alcun url recente."
+msgstr "Не найдено последних URL-адресов."
 
 #: ui/network_media_window.py:140 ui/search_window.py:185
 msgid "(No track selected)"
-msgstr "(Nessun brano selezionato)"
+msgstr "(Трек не выбран)"
 
 #: ui/network_media_window.py:201 ui/search_window.py:268
 msgid "Please wait, overwriting cache and searching..."
-msgstr "Attendere, sovrascrivere la cache e la ricerca..."
+msgstr "Пожалуйста, подождите, перезаписывается кэш и выполняется поиск..."
 
 #: ui/network_media_window.py:201 ui/search_window.py:268
 msgid "Searching..."
-msgstr "Ricerca..."
+msgstr "В поисках..."
 
 #: ui/playlist_window.py:89
 msgid "Available Playlists"
-msgstr "Liste di gioco disponibili"
+msgstr "Доступные плейлисты"
 
 #: ui/playlist_window.py:100
 msgid "Current Playlist"
-msgstr "La lista dei giochi attuale"
+msgstr "Текущий Playlist"
 
 #: ui/playlist_window.py:111
 msgid "Tracks per Config"
-msgstr "Tracce per configurazione"
+msgstr "Треки на конфигурацию"
 
 #: ui/playlist_window.py:121
 msgid "Add to Master"
-msgstr "Aggiungi al Master"
+msgstr "Добавить в Мастер"
 
 #: ui/playlist_window.py:125
 msgid "Remove from Master"
-msgstr "Rimuovi dal Maestro"
+msgstr "Удалить от мастера"
 
 #: ui/playlist_window.py:129
 msgid "New Playlist"
-msgstr "Nuova lista di giochi"
+msgstr "Новый плейлист"
 
 #: ui/playlist_window.py:133 ui/playlist_window.py:209
 msgid "Save Master Playlist"
-msgstr "Salva la playlist principale"
+msgstr "Сохранить Основной Плейлист"
 
 #: ui/playlist_window.py:210
 msgid "Enter a name for this master playlist:"
-msgstr "Inserisci un nome per questo elenco master:"
+msgstr "Введите имя для этого основного плейлиста:"
 
 #: ui/playlist_window.py:223 ui/playlist_window.py:375
 msgid "Success"
-msgstr "Successo"
+msgstr "Успех"
 
 #: ui/playlist_window.py:223
 msgid "Master playlist created successfully"
-msgstr "Playlist master creato con successo"
+msgstr "Основной плейлист успешно создан"
 
 #: ui/playlist_window.py:254
 msgid "Playlist Name"
-msgstr "Nome della lista dei giochi"
+msgstr "Список воспроизведения Имя"
 
 #: ui/playlist_window.py:261
 msgid "Sort Type"
-msgstr "Tipo di Ordinamento"
+msgstr "Тип сортировки"
 
 #: ui/playlist_window.py:270
 msgid "Directory"
-msgstr "Elenco"
+msgstr "Директория"
 
 #: ui/playlist_window.py:280
 msgid "Playback Config Settings"
-msgstr "Impostazioni di configurazione di riproduzione"
+msgstr "Настройки конфигурации воспроизведения"
 
 #: ui/playlist_window.py:296
 msgid "Track Splitting Cutoff (minutes)"
-msgstr "Limite di taglio per tracce (minuti)"
+msgstr "Режим разбивки треков (минуты)"
 
 #: ui/playlist_window.py:306
 msgid "Start Playlist"
-msgstr "Inizia a giocare"
+msgstr "Начать играть"
 
 #: ui/playlist_window.py:310
 msgid "Add to Current Playlist"
-msgstr "Aggiungi alla lista di gioco attuale"
+msgstr "Добавить в текущий плейлист"
 
 #: ui/playlist_window.py:314
 msgid "Add to New Master Playlist"
-msgstr "Aggiungi a Nuova Playlist Master"
+msgstr "Добавить в новый основной плейлист"
 
 #: ui/playlist_window.py:318
 msgid "Cancel"
-msgstr "Annulla"
+msgstr "отменить"
 
 #: ui/playlist_window.py:326
 msgid "Please enter a playlist name"
-msgstr "Inserisci un nome di playlist"
+msgstr "Пожалуйста, введите имя плейлиста"
 
 #: ui/playlist_window.py:375
 msgid "Playlist created successfully"
-msgstr "Elenco di riproduzione creato con successo"
+msgstr "Плейлист успешно создан"
 
 #: ui/presets_window.py:52
 msgid "New Preset (ERROR no presets found)"
-msgstr "Nuova preimpostazione (ERRORE nessuna preimpostazione trovata)"
+msgstr "Новый предустановленный (ОШИБКА: не найдено предустановок)"
 
 #: ui/presets_window.py:83
 msgid "Not enough presets found."
-msgstr "Non sono state trovate abbastanza preimpostazioni."
+msgstr "Не найдено достаточного количества предустановок."
 
 #: ui/presets_window.py:93
 msgid "Presets Window"
-msgstr "Finestra delle preimpostazioni"
+msgstr "Предустановленное окно"
 
 #: ui/presets_window.py:114
 msgid "Set a new preset"
-msgstr "Impostare una nuova preimpostazione"
+msgstr "Установить новую предустановку"
 
 #: ui/presets_window.py:115
 msgid "New Preset"
-msgstr "Nuova preimpostazione"
+msgstr "Новая предустановка"
 
 #: ui/presets_window.py:119
 msgid "Add preset"
-msgstr "Aggiungi preimpostazione"
+msgstr "Добавить предустановку"
 
 #: ui/presets_window.py:121
 msgid "Clear presets"
-msgstr "Cancella le preimpostazioni"
+msgstr "Ясные предустановки"
 
 #: ui/presets_window.py:139
 msgid "Set"
-msgstr "Imposta"
+msgstr "Настройка"
 
 #: ui/presets_window.py:163
 msgid "Invalid preset: {0}"
-msgstr "Preimpostazione non valida: {0}"
+msgstr "Недействительный предустановленный: {0}"
 
 #: ui/schedules_window.py:30
 msgid "Modify Preset Schedule: {0}"
-msgstr "Modificare la pianificazione preimpostata: {0}"
+msgstr "Изменить расписание: {0}"
 
 #: ui/schedules_window.py:39
 msgid "Schedule Name"
-msgstr "Nome del programma"
+msgstr "Название расписания"
 
 #: ui/schedules_window.py:45 ui/schedules_window.py:184
 msgid "Add schedule"
-msgstr "Aggiungi programma"
+msgstr "Добавить расписание"
 
 #: ui/schedules_window.py:71
 msgid "Start Time"
-msgstr "Ora di inizio"
+msgstr "Время старта"
 
 #: ui/schedules_window.py:81
 msgid "End Time"
-msgstr "Ora della fine"
+msgstr "Время конца"
 
 #: ui/schedules_window.py:91
 msgid "Shutdown Time"
-msgstr "Tempo di spegnimento"
+msgstr "Время отключения"
 
 #: ui/schedules_window.py:163
 msgid "Preset Schedules"
-msgstr "Programmi preimpostati"
+msgstr "Предварительные расписания"
 
 #: ui/schedules_window.py:182
 msgid "Create and modify schedules"
-msgstr "Creare e modificare le pianificazioni"
+msgstr "Создание и изменение расписаний"
 
 #: ui/schedules_window.py:186
 msgid "Clear schedules"
-msgstr "Orari chiari"
+msgstr "ясный график"
 
 #: ui/schedules_window.py:207
 msgid "Modify"
-msgstr "Modificare"
+msgstr "изменять"
 
 #: ui/search_window.py:301
 msgid "No results found."
-msgstr "Nessun risultato trovato."
+msgstr "Результаты не найдены."
 
 #: ui/track_details_window.py:45 ui/track_details_window.py:231
 msgid "Track Details"
-msgstr "Dettagli della traccia"
+msgstr "Подробности трека"
 
 #: ui/track_details_window.py:60 ui/weather_window.py:40
 msgid "Update"
-msgstr "Aggiornamento"
+msgstr "обновление"
 
 #: ui/track_details_window.py:73
 msgid "Album Artist"
-msgstr "Artista dell'album"
+msgstr "Альбом исполнителя"
 
 #: ui/track_details_window.py:79 utils/globals.py:125 utils/globals.py:197
 #: utils/globals.py:250
 msgid "Genre"
-msgstr "Genere"
+msgstr "Жанр"
 
 #: ui/track_details_window.py:82
 msgid "Year"
-msgstr "Anno"
+msgstr "Год"
 
 #: ui/track_details_window.py:89
 msgid "Track Number"
-msgstr "Numero di traccia"
+msgstr "Номер трека"
 
 #: ui/track_details_window.py:93 ui/track_details_window.py:106
 msgid "of"
-msgstr "di"
+msgstr "из"
 
 #: ui/track_details_window.py:102
 msgid "Disc Number"
-msgstr "Numero del disco"
+msgstr "Номер диска"
 
 #: ui/track_details_window.py:112
 msgid "Musical Form"
-msgstr "Forma musicale"
+msgstr "Музыкальная форма"
 
 #: ui/track_details_window.py:115
 msgid "Main Instrument"
-msgstr "Strumento principale"
+msgstr "Основной инструмент"
 
 #: ui/track_details_window.py:119
 msgid "Lyrics"
-msgstr "Testi"
+msgstr "слова"
 
 #: ui/track_details_window.py:126
 msgid "Comments"
-msgstr "Osservazioni"
+msgstr "Комментарий"
 
 #: ui/track_details_window.py:140
 msgid "Duration: "
-msgstr "Durata: "
+msgstr "Продолжительность: "
 
 #: ui/track_details_window.py:143
 msgid "File: "
-msgstr "File: "
+msgstr "Файл: "
 
 #: ui/track_details_window.py:214
 msgid "Track details updated successfully"
-msgstr "I dettagli del track sono stati aggiornati con successo"
+msgstr "Детали трека успешно обновлены"
 
 #: ui/track_details_window.py:217
 msgid "Failed to update track details. Check the logs for more information."
 msgstr ""
-"Non è riuscito ad aggiornare i dettagli della traccia. Controlla i registri "
-"per maggiori informazioni."
+"Не удалось обновить данные о треке. Дополнительную информацию см. в "
+"журналах."
 
 #: utils/globals.py:127 utils/globals.py:198 utils/globals.py:251
 msgid "Form"
-msgstr "Forma musicale"
+msgstr "форма"
 
 #: utils/globals.py:129 utils/globals.py:199 utils/globals.py:252
 msgid "Instrument"
-msgstr "Strumento musicale"
+msgstr "инструмент"
 
 #: utils/globals.py:135 utils/globals.py:253
 msgid "Random"
-msgstr "Casuale"
+msgstr "Случайный"
 
 #: utils/globals.py:136
 msgid "Sequence"
-msgstr "Sequenza"
+msgstr "Последовательность"
 
 #: utils/globals.py:137
 msgid "Album Shuffle"
-msgstr "Mischia di albumi"
+msgstr "Перемешать альбом"
 
 #: utils/globals.py:138
 msgid "Artist Shuffle"
-msgstr "Mischia di artisti"
+msgstr "Смешать исполнителей"
 
 #: utils/globals.py:139
 msgid "Composer Shuffle"
-msgstr "Mischia di compositori"
+msgstr "Перемешать композиторов"
 
 #: utils/globals.py:140
 msgid "Genre Shuffle"
-msgstr "Mischiare i generi"
+msgstr "Смешение жанров"
 
 #: utils/globals.py:141
 msgid "Form Shuffle"
-msgstr "Mischiare le forme"
+msgstr "Форма перемешивания"
 
 #: utils/globals.py:142
 msgid "Instrument Shuffle"
-msgstr "Mischia di strumenti"
+msgstr "Перемешивание инструментов"
 
 #: utils/globals.py:301
 msgid "weather"
-msgstr "tempo"
+msgstr "погода"
 
 #: utils/globals.py:303
 msgid "news"
-msgstr "notizie"
+msgstr "новости"
 
 #: utils/globals.py:307
 msgid "joke"
-msgstr "scherzo"
+msgstr "шутить"
 
 #: utils/globals.py:309
 msgid "fact"
-msgstr "fatto"
+msgstr "факт"
 
 #: utils/globals.py:311
 msgid "fable"
-msgstr "favola"
+msgstr "басня"
 
 #: utils/globals.py:313
 msgid "truth and lie"
-msgstr "verità e menzogna"
+msgstr "Правда и ложь"
 
 #: utils/globals.py:315
 msgid "aphorism"
-msgstr "aforisma"
+msgstr "афоризм"
 
 #: utils/globals.py:317
 msgid "poem"
-msgstr "poesia"
+msgstr "стих"
 
 #: utils/globals.py:319
 msgid "quote"
-msgstr "citazione"
+msgstr "цитата"
 
 #: utils/globals.py:321
 msgid "tongue twister"
-msgstr "scioglilingua"
+msgstr "скручивание языка"
 
 #: utils/globals.py:323
 msgid "motivation"
-msgstr "motivazione"
+msgstr "мотивация"
 
 #: utils/globals.py:325
 msgid "calendar"
-msgstr "calendario"
+msgstr "календарь"
 
 #: utils/globals.py:327
 msgid "more about the next track"
-msgstr "più sul brano successivo"
+msgstr "подробнее о следующем треке"
 
 #: utils/globals.py:329
 msgid "more about the last track"
-msgstr "più sull'ultimo brano"
+msgstr "подробнее о последнем треке"
 
 #: utils/globals.py:331
 msgid "more about our playlist"
-msgstr "più sulla nostra playlist"
+msgstr "подробнее о нашем плейлисте"
 
 #: utils/globals.py:333
 msgid "random wiki article"
-msgstr "articolo wiki a caso"
+msgstr "случайная статья из вики"
 
 #: utils/globals.py:335
 msgid "funny story"
-msgstr "storia divertente"
+msgstr "забавная история"
 
 #: utils/globals.py:337
 msgid "language learning"
-msgstr "apprendimento delle lingue"
+msgstr "Изучение языка"
 
 #: utils/globals.py:370
 msgid "Tracks"
-msgstr "Tracce"
+msgstr "Следы"
 
 #: utils/globals.py:371
 msgid "Albums"
-msgstr "Album"
+msgstr "Альбомы"
 
 #: utils/globals.py:372
 msgid "Artists"
-msgstr "Artisti"
+msgstr "художники"
 
 #: utils/globals.py:375
 msgid "Forms"
-msgstr "Forme"
+msgstr "формы"
 
 #: utils/globals.py:376
 msgid "Instruments"
-msgstr "Strumenti"
+msgstr "Инструменты"
 
 #: utils/job_queue.py:35
 msgid " (Pending runs: {0})"
-msgstr " (Esecuzioni in corso: {0})"
+msgstr " (Ожидающие запуски: {0})"
 
 #: utils/translations.py:32
 msgid "Monday"
-msgstr "Lunedì"
+msgstr "понедельник"
 
 #: utils/translations.py:34
 msgid "Tuesday"
-msgstr "Martedì"
+msgstr "вторник"
 
 #: utils/translations.py:36
 msgid "Wednesday"
-msgstr "Mercoledì"
+msgstr "среда"
 
 #: utils/translations.py:38
 msgid "Thursday"
-msgstr "Giovedì"
+msgstr "четверг"
 
 #: utils/translations.py:40
 msgid "Friday"
-msgstr "Venerdì"
+msgstr "Пятница"
 
 #: utils/translations.py:42
 msgid "Saturday"
-msgstr "Sabato"
+msgstr "суббота"
 
 #: utils/translations.py:44
 msgid "Sunday"
-msgstr "Domenica"
+msgstr "воскресенье"
 
 #: utils/translations.py:56
 msgid "seconds"
-msgstr "secondi"
+msgstr "секунды"
 
 #: utils/translations.py:58
 msgid "minutes"
-msgstr "minuti"
+msgstr "минуты"
 
 #: utils/translations.py:60
 msgid "hours"
-msgstr "ore"
+msgstr "часы"
 
 #: utils/translations.py:62
 msgid "days"
-msgstr "giorni"
+msgstr "дни"
 
 #: utils/translations.py:64
 msgid "weeks"
-msgstr "settimane"
+msgstr "недели"
 
 #: utils/translations.py:66
 msgid "months"
-msgstr "mesi"
+msgstr "месяцы"
 
 #: utils/translations.py:68
 msgid "years"
-msgstr "anni"
+msgstr "годы"
 
 #: ui/favorites_window.py:351 ui/favorites_window.py:478
 msgid "No title or filepath available"
-msgstr "Nessun titolo o filepath disponibile"
+msgstr "Нет названия или пути к файлу"

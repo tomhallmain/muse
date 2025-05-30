@@ -1,14 +1,14 @@
 # Translations template for APPLICATION.
-# Copyright (C) 2025 THOMAS HALL <tomhall.main@gmail.com>
+# Copyright (C) 2025 AUTHOR NAME <author@example.com>
 # This file is distributed under the same license as the APPLICATION project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: APPLICATION 1.0\n"
-"Report-Msgid-Bugs-To: Thomas Hall <tomhall.main@gmail.com>\n"
-"POT-Creation-Date: 2025-05-17 23:11-0400\n"
-"PO-Revision-Date: 2025-05-17 23:11-0400\n"
+"Report-Msgid-Bugs-To: Translator Name <translator@example.com>\n"
+"POT-Creation-Date: 2025-05-30 16:21-0400\n"
+"PO-Revision-Date: 2025-05-30 16:21-0400\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -114,7 +114,7 @@ msgstr ""
 msgid "Favorite"
 msgstr ""
 
-#: app.py:241 ui/favorites_window.py:226 ui/favorites_window.py:497
+#: app.py:241 ui/favorites_window.py:226 ui/favorites_window.py:531
 msgid "Favorites"
 msgstr ""
 
@@ -287,135 +287,135 @@ msgstr ""
 msgid "a woman"
 msgstr ""
 
-#: muse/muse.py:212
+#: muse/muse.py:213
 msgid "Hello, I'm {0}"
 msgstr ""
 
-#: muse/muse.py:216 muse/muse.py:220
+#: muse/muse.py:217 muse/muse.py:221
 msgid "Hello, I'm your DJ"
 msgstr ""
 
-#: muse/muse.py:227
+#: muse/muse.py:228
 msgid "Hello"
 msgstr ""
 
-#: muse/muse.py:239
+#: muse/muse.py:240
 msgid "tonight"
 msgstr ""
 
-#: muse/muse.py:239
+#: muse/muse.py:240
 msgid "today"
 msgstr ""
 
-#: muse/muse.py:241
+#: muse/muse.py:242
 msgid "The scheduled shutdown time has arrived. That's it for {0}."
 msgstr ""
 
-#: muse/muse.py:245
+#: muse/muse.py:246
 msgid "I'll be on again tomorrow."
 msgstr ""
 
-#: muse/muse.py:247
+#: muse/muse.py:248
 msgid "Tomorrow you'll hear from {0}."
 msgstr ""
 
-#: muse/muse.py:251
+#: muse/muse.py:252
 msgid "The next time I'll be on is next week, at the same time."
 msgstr ""
 
-#: muse/muse.py:253
+#: muse/muse.py:254
 msgid "I'll be on again this coming {0}."
 msgstr ""
 
-#: muse/muse.py:264
+#: muse/muse.py:265
 msgid "Good morning"
 msgstr ""
 
-#: muse/muse.py:266
+#: muse/muse.py:267
 msgid "Good day"
 msgstr ""
 
-#: muse/muse.py:268
+#: muse/muse.py:269
 msgid "Good afternoon"
 msgstr ""
 
-#: muse/muse.py:270
+#: muse/muse.py:271
 msgid "Good evening"
 msgstr ""
 
-#: muse/muse.py:285
+#: muse/muse.py:286
 msgid "That was \"{0}\" in \"{1}\""
 msgstr ""
 
-#: muse/muse.py:287 muse/muse.py:323
+#: muse/muse.py:288 muse/muse.py:324
 msgid " by \"{0}\"."
 msgstr ""
 
-#: muse/muse.py:292
+#: muse/muse.py:293
 msgid "That was a new track. How'd you like that?"
 msgstr ""
 
-#: muse/muse.py:294
+#: muse/muse.py:295
 msgid "That was a new one. How'd you like it?"
 msgstr ""
 
-#: muse/muse.py:319
+#: muse/muse.py:320
 msgid "To start, we'll be playing: \"{0}\" from \"{1}\""
 msgstr ""
 
-#: muse/muse.py:321
+#: muse/muse.py:322
 msgid "Next up, we'll be playing: \"{0}\" from \"{1}\""
 msgstr ""
 
-#: muse/muse.py:328
+#: muse/muse.py:329
 msgid "This one is a new track."
 msgstr ""
 
-#: muse/muse.py:340
+#: muse/muse.py:341
 msgid "After that short interlude, we're back to our {0} shuffle."
 msgstr ""
 
-#: muse/muse.py:343
+#: muse/muse.py:344
 msgid "We've been listening to a group of tracks from the {0} {1}"
 msgstr ""
 
-#: muse/muse.py:353
+#: muse/muse.py:354
 msgid "We're listening to a group of tracks from the {0} {1}."
 msgstr ""
 
-#: muse/muse.py:356
+#: muse/muse.py:357
 msgid "We're going to start a new group of tracks from the {0} {1}."
 msgstr ""
 
-#: muse/muse.py:407
+#: muse/muse.py:408
 msgid "First let's hear about {0}"
 msgstr ""
 
-#: muse/muse.py:409
+#: muse/muse.py:410
 msgid "But first, let's hear about {0}."
 msgstr ""
 
-#: muse/muse.py:688
+#: muse/muse.py:690
 msgid "We're having some technical difficulties in accessing our source for {0}. We'll try again later"
 msgstr ""
 
-#: muse/muse.py:692
+#: muse/muse.py:694
 msgid "It seems our writer for {0} is unexpectedly away at the moment. Did we forget to pay his salary again?"
 msgstr ""
 
-#: muse/muse.py:696
+#: muse/muse.py:698
 msgid "We've found problems with all of our {0} ideas. Please try again later."
 msgstr ""
 
-#: muse/muse.py:701
+#: muse/muse.py:703
 msgid "Something went wrong. We'll try to fix it soon."
 msgstr ""
 
-#: muse/muse.py:768
+#: muse/muse.py:770
 msgid "Starting tracks:"
 msgstr ""
 
-#: muse/muse.py:828
+#: muse/muse.py:830
 msgid "The listener last tuned in {0} {1} ago"
 msgstr ""
 
@@ -572,7 +572,7 @@ msgstr ""
 msgid "No recent searches found."
 msgstr ""
 
-#: ui/composers_window.py:453 ui/extensions_window.py:233 ui/favorites_window.py:361 ui/favorites_window.py:452
+#: ui/composers_window.py:453 ui/extensions_window.py:233 ui/favorites_window.py:359 ui/favorites_window.py:486
 #: ui/history_window.py:217 ui/history_window.py:288 ui/network_media_window.py:260 ui/search_window.py:327
 msgid "Details"
 msgstr ""
@@ -803,7 +803,7 @@ msgstr ""
 msgid "File:"
 msgstr ""
 
-#: ui/extensions_window.py:413 ui/favorites_window.py:595
+#: ui/extensions_window.py:413 ui/favorites_window.py:629
 msgid "Close"
 msgstr ""
 
@@ -823,7 +823,7 @@ msgstr ""
 msgid "Create Favorite From Current Track"
 msgstr ""
 
-#: ui/favorites_window.py:257 ui/favorites_window.py:584
+#: ui/favorites_window.py:257 ui/favorites_window.py:618
 msgid "Create Favorite"
 msgstr ""
 
@@ -835,23 +835,27 @@ msgstr ""
 msgid "No favorites found."
 msgstr ""
 
-#: ui/favorites_window.py:368 ui/favorites_window.py:459 ui/search_window.py:228
+#: ui/favorites_window.py:351 ui/favorites_window.py:478
+msgid "No title or filepath available"
+msgstr ""
+
+#: ui/favorites_window.py:366 ui/favorites_window.py:493 ui/search_window.py:228
 msgid "Remove"
 msgstr ""
 
-#: ui/favorites_window.py:523
+#: ui/favorites_window.py:557
 msgid "Favorite Details"
 msgstr ""
 
-#: ui/favorites_window.py:560
+#: ui/favorites_window.py:594
 msgid "Type: Track"
 msgstr ""
 
-#: ui/favorites_window.py:584
+#: ui/favorites_window.py:618
 msgid "Update Favorite"
 msgstr ""
 
-#: ui/favorites_window.py:590
+#: ui/favorites_window.py:624
 msgid "Remove Favorite"
 msgstr ""
 
@@ -865,10 +869,6 @@ msgstr ""
 
 #: ui/history_window.py:185
 msgid "No history found."
-msgstr ""
-
-#: ui/history_window.py:211 ui/history_window.py:282
-msgid "★"
 msgstr ""
 
 #: ui/network_media_window.py:77 ui/search_window.py:54

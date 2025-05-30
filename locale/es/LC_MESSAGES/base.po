@@ -2,9 +2,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
-"POT-Creation-Date: 2025-05-18 00:02-0400\n"
-"PO-Revision-Date: 2025-05-18 00:02-0400\n"
-"Last-Translator: Thomas Hall <tomhall.main@gmail.com>\n"
+"POT-Creation-Date: 2025-05-30 18:07-0400\n"
+"PO-Revision-Date: 2025-05-30 18:07-0400\n"
+"Last-Translator: Translator Name <translator@example.com>\n"
 "Language-Team: es Team <<EMAIL>>\n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
@@ -118,9 +118,13 @@ msgstr "Ordenar lista de reproducción"
 msgid "Favorite"
 msgstr "Favoritos"
 
-#: app.py:241 ui/favorites_window.py:226 ui/favorites_window.py:497
+#: app.py:241 ui/favorites_window.py:226 ui/favorites_window.py:531
 msgid "Favorites"
 msgstr "Favoritos"
+
+#: app.py:244 ui/history_window.py:88 ui/history_window.py:297
+msgid "History"
+msgstr "Historia"
 
 #: app.py:247
 msgid "Overwrite"
@@ -142,6 +146,10 @@ msgstr "Activar la división de pistas"
 msgid "Use system language for all topics"
 msgstr "Utilizar el lenguaje del sistema"
 
+#: app.py:270
+msgid "Configuration"
+msgstr "Configuración"
+
 #: app.py:331
 msgid "Confirm Quit"
 msgstr "Confirmar Salir"
@@ -161,6 +169,13 @@ msgstr "¿Estás seguro de que quieres continuar?"
 #: app.py:520
 msgid "Copied album art to clipboard."
 msgstr "Copiado de la carátula del álbum en el portapapeles."
+
+#: app.py:624 app.py:777 app.py:807 ui/composers_window.py:245
+#: ui/composers_window.py:259 ui/configuration_window.py:152
+#: ui/configuration_window.py:155 ui/playlist_window.py:326
+#: ui/track_details_window.py:217
+msgid "Error"
+msgstr "Error"
 
 #: app.py:691 muse/muse_spot_profile.py:208
 msgid "Track: "
@@ -186,12 +201,9 @@ msgstr "El siguiente: "
 msgid "Previous Track: "
 msgstr "Pista anterior: "
 
-#: app.py:624 app.py:777 app.py:807 ui/composers_window.py:245
-#: ui/composers_window.py:259 ui/configuration_window.py:152
-#: ui/configuration_window.py:155 ui/playlist_window.py:326
-#: ui/track_details_window.py:217
-msgid "Error"
-msgstr "Error"
+#: app.py:748
+msgid "Staged Playlist: "
+msgstr "Lista de reproducción fija: "
 
 #: app.py:892
 msgid " Muse "
@@ -213,10 +225,38 @@ msgstr "Extensión «{0}» esperando {1} minutos"
 msgid "Extension \"{0}\" ready"
 msgstr "Extensión «{0}» listo"
 
+#: library_data/composer.py:41
+msgid "Composer name cannot be empty"
+msgstr "El nombre del compositor no puede estar vacío"
+
+#: library_data/composer.py:93
+msgid "Dates must be valid integers"
+msgstr "Las fechas deben ser números enteros válidos"
+
+#: library_data/composer.py:97
+msgid "Start date cannot be in the future"
+msgstr "La fecha de inicio no puede ser en el futuro"
+
+#: library_data/composer.py:99
+msgid "End date cannot be in the future"
+msgstr "La fecha final no puede ser en el futuro"
+
+#: library_data/composer.py:104
+msgid "Start date cannot be after end date"
+msgstr "La fecha de inicio no puede ser después de la fecha final"
+
 #: library_data/composer.py:176 library_data/library_data.py:63
 #: ui/favorites_window.py:32 ui/history_window.py:30
 msgid "({0} results)"
 msgstr "({0} resultados)"
+
+#: library_data/composer.py:246 library_data/composer.py:290
+msgid "Invalid composer data"
+msgstr "Datos del compositor inválido"
+
+#: library_data/composer.py:302
+msgid "Composer not found"
+msgstr "Compositor no encontrado"
 
 #: library_data/library_data.py:265
 msgid "Updating tracks"
@@ -255,115 +295,115 @@ msgstr "un hombre"
 msgid "a woman"
 msgstr "una mujer"
 
-#: muse/muse.py:212
+#: muse/muse.py:213
 msgid "Hello, I'm {0}"
 msgstr "Hola, yo soy {0}"
 
-#: muse/muse.py:216 muse/muse.py:220
+#: muse/muse.py:217 muse/muse.py:221
 msgid "Hello, I'm your DJ"
 msgstr "Hola, soy tu DJ"
 
-#: muse/muse.py:227
+#: muse/muse.py:228
 msgid "Hello"
 msgstr "Hola."
 
-#: muse/muse.py:239
-msgid "today"
-msgstr "hoy"
-
-#: muse/muse.py:239
+#: muse/muse.py:240
 msgid "tonight"
 msgstr "esta noche"
 
-#: muse/muse.py:241
+#: muse/muse.py:240
+msgid "today"
+msgstr "hoy"
+
+#: muse/muse.py:242
 msgid "The scheduled shutdown time has arrived. That's it for {0}."
 msgstr "Ha llegado la hora programada de apagado. Eso es todo para {0}."
 
-#: muse/muse.py:245
+#: muse/muse.py:246
 msgid "I'll be on again tomorrow."
 msgstr "Volveré mañana."
 
-#: muse/muse.py:247
+#: muse/muse.py:248
 msgid "Tomorrow you'll hear from {0}."
 msgstr "Mañana tendrán noticias de {0}."
 
-#: muse/muse.py:251
+#: muse/muse.py:252
 msgid "The next time I'll be on is next week, at the same time."
 msgstr "La próxima vez será la semana que viene, a la misma hora."
 
-#: muse/muse.py:253
+#: muse/muse.py:254
 msgid "I'll be on again this coming {0}."
 msgstr "Estaré de nuevo este próximo {0}."
 
-#: muse/muse.py:264
+#: muse/muse.py:265
 msgid "Good morning"
 msgstr "Buenos días"
 
-#: muse/muse.py:266
+#: muse/muse.py:267
 msgid "Good day"
 msgstr "Buenos días"
 
-#: muse/muse.py:268
+#: muse/muse.py:269
 msgid "Good afternoon"
 msgstr "Buenas tardes"
 
-#: muse/muse.py:270
+#: muse/muse.py:271
 msgid "Good evening"
 msgstr "Buenas noches"
 
-#: muse/muse.py:285
+#: muse/muse.py:286
 msgid "That was \"{0}\" in \"{1}\""
 msgstr "Eso fue «{0}» en «{1}»"
 
-#: muse/muse.py:287 muse/muse.py:323
+#: muse/muse.py:288 muse/muse.py:324
 msgid " by \"{0}\"."
 msgstr " por «{0}»."
 
-#: muse/muse.py:292
+#: muse/muse.py:293
 msgid "That was a new track. How'd you like that?"
 msgstr "Era un tema nuevo. ¿Qué te pareció?"
 
-#: muse/muse.py:294
+#: muse/muse.py:295
 msgid "That was a new one. How'd you like it?"
 msgstr "Ese era nuevo. ¿Te gustó?"
 
-#: muse/muse.py:319
+#: muse/muse.py:320
 msgid "To start, we'll be playing: \"{0}\" from \"{1}\""
 msgstr "Para empezar, vamos a jugar: «{0}» de «{1}»"
 
-#: muse/muse.py:321
+#: muse/muse.py:322
 msgid "Next up, we'll be playing: \"{0}\" from \"{1}\""
 msgstr "A continuación, vamos a jugar: «{0}» de «{1}»"
 
-#: muse/muse.py:328
+#: muse/muse.py:329
 msgid "This one is a new track."
 msgstr "Este es un tema nuevo."
 
-#: muse/muse.py:340
+#: muse/muse.py:341
 msgid "After that short interlude, we're back to our {0} shuffle."
 msgstr "Después de ese breve interludio, volvemos a nuestra baraja {0}."
 
-#: muse/muse.py:343
+#: muse/muse.py:344
 msgid "We've been listening to a group of tracks from the {0} {1}"
 msgstr "Hemos estado escuchando un grupo de temas del {0} {1}"
 
-#: muse/muse.py:353
+#: muse/muse.py:354
 msgid "We're listening to a group of tracks from the {0} {1}."
 msgstr "Estamos escuchando un grupo de pistas del {0} {1}."
 
-#: muse/muse.py:356
+#: muse/muse.py:357
 msgid "We're going to start a new group of tracks from the {0} {1}."
 msgstr "Vamos a empezar un nuevo grupo de pistas desde el {0} {1}."
 
-#: muse/muse.py:407
+#: muse/muse.py:408
 msgid "First let's hear about {0}"
 msgstr "Primero oigamos hablar de {0}"
 
-#: muse/muse.py:409
+#: muse/muse.py:410
 msgid "But first, let's hear about {0}."
 msgstr "Pero antes, hablemos de {0}"
 
-#: muse/muse.py:688
+#: muse/muse.py:690
 msgid ""
 "We're having some technical difficulties in accessing our source for {0}. "
 "We'll try again later"
@@ -371,7 +411,7 @@ msgstr ""
 "Estamos teniendo algunas dificultades técnicas para acceder a nuestra fuente"
 " para {0}. Lo intentaremos más tarde."
 
-#: muse/muse.py:692
+#: muse/muse.py:694
 msgid ""
 "It seems our writer for {0} is unexpectedly away at the moment. Did we "
 "forget to pay his salary again?"
@@ -379,18 +419,22 @@ msgstr ""
 "Parece que nuestro escritor para {0} está inesperadamente ausente en este "
 "momento. ¿Nos olvidamos de pagarle el sueldo otra vez?"
 
-#: muse/muse.py:696
+#: muse/muse.py:698
 msgid ""
 "We've found problems with all of our {0} ideas. Please try again later."
 msgstr ""
 "Hemos encontrado problemas con todas nuestras {0} ideas. Vuelva a intentarlo"
 " más tarde."
 
-#: muse/muse.py:701
+#: muse/muse.py:703
 msgid "Something went wrong. We'll try to fix it soon."
 msgstr "Algo salió mal. Intentaremos arreglarlo pronto."
 
-#: muse/muse.py:828
+#: muse/muse.py:770
+msgid "Starting tracks:"
+msgstr "Pistas de inicio:"
+
+#: muse/muse.py:830
 msgid "The listener last tuned in {0} {1} ago"
 msgstr "El oyente sintonizó por última vez hace {0} {1}"
 
@@ -442,9 +486,14 @@ msgstr "{0} - DJ: {1} - Días: {2} - Horas: {3}-{4} - Apagado: {5}"
 msgid "Not enough schedules found."
 msgstr "No se han encontrado suficientes horarios."
 
-#: .\ui\composers_window.py:31
-msgid "Modify Preset composer: {0}"
-msgstr "Modificar compositor predefinido: {0}"
+#: ui/composers_window.py:35 ui/composers_window.py:50
+#: ui/composers_window.py:330
+msgid "New Composer"
+msgstr "Nuevo compositor"
+
+#: ui/composers_window.py:35
+msgid "Modify Composer: {0}"
+msgstr "Modificar Compositor: {0}"
 
 #: ui/composers_window.py:46
 msgid "Modify Composer"
@@ -453,11 +502,6 @@ msgstr "Modificar Compositor"
 #: ui/composers_window.py:49
 msgid "Name"
 msgstr "Nombre"
-
-#: ui/composers_window.py:35 ui/composers_window.py:50
-#: ui/composers_window.py:330
-msgid "New Composer"
-msgstr "Nuevo compositor"
 
 #: ui/composers_window.py:55
 msgid "Indicators"
@@ -487,17 +531,52 @@ msgstr "Fechas inciertas"
 msgid "Genres"
 msgstr "Géneros"
 
-#: .\ui\composers_window.py:91
-msgid "Save composer"
-msgstr "Guardar compositor"
+#: ui/composers_window.py:96
+msgid "Notes"
+msgstr "Notas"
 
-#: .\ui\composers_window.py:94
-msgid "Add Preset Task"
-msgstr "Añadir tarea predefinida"
+#: ui/composers_window.py:97
+msgid "Add Note"
+msgstr "Agregar Nota"
+
+#: ui/composers_window.py:110
+msgid "Save"
+msgstr "Guardar"
+
+#: ui/composers_window.py:115 ui/composers_window.py:136
+#: ui/extensions_window.py:241 ui/presets_window.py:146
+#: ui/schedules_window.py:214
+msgid "Delete"
+msgstr "Borrar"
 
 #: ui/composers_window.py:153
 msgid "New note"
 msgstr "Nueva nota"
+
+#: ui/composers_window.py:217 ui/track_details_window.py:209
+msgid "Validation Error"
+msgstr "Error de validación"
+
+#: ui/composers_window.py:232
+msgid "Fixes applied"
+msgstr "Fijas aplicadas"
+
+#: ui/composers_window.py:245
+msgid "Failed to save composer:"
+msgstr "No se pudo guardar el compositor:"
+
+#: ui/composers_window.py:249
+msgid "Delete composer"
+msgstr "Eliminar el compositor"
+
+#: ui/composers_window.py:250
+msgid "Are you sure you want to delete {0}? This action cannot be undone."
+msgstr ""
+"¿Estás seguro de que quieres eliminar {0}? Esta acción no se puede deshacer."
+
+#: ui/composers_window.py:259
+msgid "Failed to delete composer:"
+msgstr "Fallido al eliminar el compositor:"
 
 #: ui/composers_window.py:308
 msgid "Search Composers"
@@ -516,7 +595,7 @@ msgid "No recent searches found."
 msgstr "No se han encontrado búsquedas recientes."
 
 #: ui/composers_window.py:453 ui/extensions_window.py:233
-#: ui/favorites_window.py:361 ui/favorites_window.py:452
+#: ui/favorites_window.py:359 ui/favorites_window.py:486
 #: ui/history_window.py:217 ui/history_window.py:288
 #: ui/network_media_window.py:260 ui/search_window.py:327
 msgid "Details"
@@ -525,6 +604,122 @@ msgstr "Detalles"
 #: ui/composers_window.py:496
 msgid "Composer Search"
 msgstr "Búsqueda de compositores"
+
+#: ui/configuration_window.py:21
+msgid "Configuration Settings"
+msgstr "Ajustes de configuración"
+
+#: ui/configuration_window.py:42
+msgid "General"
+msgstr "General"
+
+#: ui/configuration_window.py:43
+msgid "Audio"
+msgstr "Audio"
+
+#: ui/configuration_window.py:44
+msgid "API Keys"
+msgstr "Claves de API"
+
+#: ui/configuration_window.py:45
+msgid "TTS Settings"
+msgstr "Ajustes por texto a voz"
+
+#: ui/configuration_window.py:57
+msgid "Save Configuration"
+msgstr "Guardar configuración"
+
+#: ui/configuration_window.py:66
+msgid "Foreground Color"
+msgstr "Color de primer plano"
+
+#: ui/configuration_window.py:67
+msgid "Background Color"
+msgstr "Color de fondo"
+
+#: ui/configuration_window.py:68
+msgid "Language Learning Language"
+msgstr "Lenguas de aprendizaje"
+
+#: ui/configuration_window.py:69
+msgid "Language Learning Level"
+msgstr "Nivel de aprendizaje de idiomas"
+
+#: ui/configuration_window.py:70 ui/playlist_window.py:285
+msgid "Enable Dynamic Volume"
+msgstr "Activar el volumen dinámico"
+
+#: ui/configuration_window.py:71
+msgid "Enable Library Extender"
+msgstr "Activar la extensión de biblioteca"
+
+#: ui/configuration_window.py:72 ui/playlist_window.py:291
+msgid "Enable Long Track Splitting"
+msgstr "Activar la división de pistas largas"
+
+#: ui/configuration_window.py:73
+msgid "Long Track Cutoff (minutes)"
+msgstr "Corte para pistas de largas (minutos)"
+
+#: ui/configuration_window.py:81
+msgid "Play Videos in Separate Window"
+msgstr "Jugar vídeos en ventana separada"
+
+#: ui/configuration_window.py:82
+msgid "Recently Played Check Count"
+msgstr "Recuento para comprobar lo jugado recientemente"
+
+#: ui/configuration_window.py:83
+msgid "Max Search Results"
+msgstr "Máximo de resultados de búsqueda"
+
+#: ui/configuration_window.py:84
+msgid "Max Recent Searches"
+msgstr "Máximo de búsquedas recientes"
+
+#: ui/configuration_window.py:92
+msgid "OpenWeather API Key"
+msgstr "Clave de API OpenWeather"
+
+#: ui/configuration_window.py:93
+msgid "OpenWeather City"
+msgstr "Ciudad OpenWeather"
+
+#: ui/configuration_window.py:94
+msgid "News API Key"
+msgstr "News API Clave"
+
+#: ui/configuration_window.py:102
+msgid "Coqui TTS Location"
+msgstr "Coqui TTS Ubicación"
+
+#: ui/configuration_window.py:103
+msgid "LLM Model Name"
+msgstr "LLM Nombre del modelo"
+
+#: ui/configuration_window.py:104
+msgid "Max Chunk Tokens"
+msgstr "Fichas de trozos máximos"
+
+#: ui/configuration_window.py:130
+msgid "Close Configuration"
+msgstr "Configuración cercana"
+
+#: ui/configuration_window.py:131
+msgid ""
+"Do you want to close the configuration window?\n"
+"Any unsaved changes will be lost."
+msgstr ""
+"¿Quieres cerrar la ventana de configuración?\n"
+"Se perderán los cambios sin salvar."
+
+#: ui/configuration_window.py:150
+msgid "Configuration saved successfully"
+msgstr "Configuración guardada con éxito"
+
+#: ui/configuration_window.py:152
+msgid "Failed to save configuration"
+msgstr "Fallado para guardar la configuración"
 
 #: ui/extensions_window.py:22 ui/extensions_window.py:31
 #: ui/extensions_window.py:294
@@ -575,12 +770,6 @@ msgstr "Acciones"
 #: ui/extensions_window.py:368
 msgid "N/A"
 msgstr "N/A"
-
-#: ui/composers_window.py:115 ui/composers_window.py:136
-#: ui/extensions_window.py:241 ui/presets_window.py:146
-#: ui/schedules_window.py:214
-msgid "Delete"
-msgstr "Borrar"
 
 #: ui/extensions_window.py:254
 msgid "Total Extensions: {}"
@@ -642,9 +831,31 @@ msgstr "Descripción:"
 msgid "File:"
 msgstr "Archivo:"
 
-#: ui/extensions_window.py:413 ui/favorites_window.py:595
+#: ui/extensions_window.py:413 ui/favorites_window.py:629
 msgid "Close"
 msgstr "Cerca"
+
+#: ui/favorites_window.py:196 ui/favorites_window.py:205
+#: ui/favorites_window.py:209
+msgid "Favorite Exists"
+msgstr "Existidos favoritos"
+
+#: ui/favorites_window.py:197 ui/favorites_window.py:206
+#: ui/favorites_window.py:210
+msgid "This favorite already exists."
+msgstr "Este favorito ya existe."
+
+#: ui/favorites_window.py:220
+msgid "Favorite updated successfully."
+msgstr "Actualización favorita con éxito."
+
+#: ui/favorites_window.py:249
+msgid "Create Favorite From Current Track"
+msgstr "Crear favorito de la pista actual"
+
+#: ui/favorites_window.py:257 ui/favorites_window.py:618
+msgid "Create Favorite"
+msgstr "Crear Favorito"
 
 #: ui/favorites_window.py:262
 msgid "Search Favorites"
@@ -654,9 +865,42 @@ msgstr "Búsqueda Favoritos"
 msgid "No favorites found."
 msgstr "No se encontraron favoritos."
 
-#: .\ui\favorites_window.py:227
-msgid "favorite Search"
-msgstr "Búsqueda favorita"
+#: ui/favorites_window.py:366 ui/favorites_window.py:493
+#: ui/search_window.py:228
+msgid "Remove"
+msgstr "Retirar"
+
+#: ui/favorites_window.py:557
+msgid "Favorite Details"
+msgstr "Detalles del Favorito"
+
+#: ui/favorites_window.py:594
+msgid "Type: Track"
+msgstr "Tipo: Pista"
+
+#: ui/favorites_window.py:618
+msgid "Update Favorite"
+msgstr "Actualización Favorito"
+
+#: ui/favorites_window.py:624
+msgid "Remove Favorite"
+msgstr "Quitar Favorito"
+
+#: ui/history_window.py:110
+msgid "History Type"
+msgstr "Tipo de historia"
+
+#: ui/history_window.py:122
+msgid "Search History"
+msgstr "Búsqueda Historia"
+
+#: ui/history_window.py:185
+msgid "No history found."
+msgstr "No hay historia encontrada."
+
+#: ui/history_window.py:211 ui/history_window.py:282
+msgid "★"
+msgstr ""
 
 #: ui/network_media_window.py:77 ui/search_window.py:54
 msgid "Search Library"
@@ -684,17 +928,89 @@ msgstr "Por favor espere, sobreescribiendo caché y buscando..."
 msgid "Searching..."
 msgstr "Buscando..."
 
-#: .\ui\playlist_window.py:88
-msgid "Playlist Config"
-msgstr "GéneroConfiguración de la lista de reproducción"
+#: ui/playlist_window.py:89
+msgid "Available Playlists"
+msgstr "Disponibles"
 
-#: .\ui\playlist_window.py:91
-msgid "Saved Playlists"
-msgstr "Listas guardadas"
+#: ui/playlist_window.py:100
+msgid "Current Playlist"
+msgstr "Lista de reproducción actual"
+
+#: ui/playlist_window.py:111
+msgid "Tracks per Config"
+msgstr "Pistas por configuración"
+
+#: ui/playlist_window.py:121
+msgid "Add to Master"
+msgstr "Añadir al Maestro"
+
+#: ui/playlist_window.py:125
+msgid "Remove from Master"
+msgstr "Retirar del Maestro"
+
+#: ui/playlist_window.py:129
+msgid "New Playlist"
+msgstr "Nueva lista de reproducción"
+
+#: ui/playlist_window.py:133 ui/playlist_window.py:209
+msgid "Save Master Playlist"
+msgstr "Guardar Lista de reproducción principal"
+
+#: ui/playlist_window.py:210
+msgid "Enter a name for this master playlist:"
+msgstr "Escriba un nombre para esta lista de reproducción principal:"
+
+#: ui/playlist_window.py:223 ui/playlist_window.py:375
+msgid "Success"
+msgstr "Éxito"
+
+#: ui/playlist_window.py:223
+msgid "Master playlist created successfully"
+msgstr "Master lista de reproducción creada con éxito"
+
+#: ui/playlist_window.py:254
+msgid "Playlist Name"
+msgstr "Nombre de la lista"
+
+#: ui/playlist_window.py:261
+msgid "Sort Type"
+msgstr "Tipo de ordenación"
 
 #: ui/playlist_window.py:270
 msgid "Directory"
 msgstr "Directorio"
+
+#: ui/playlist_window.py:280
+msgid "Playback Config Settings"
+msgstr "Configuración de reproducción"
+
+#: ui/playlist_window.py:296
+msgid "Track Splitting Cutoff (minutes)"
+msgstr "Corte de división de pista (minutos)"
+
+#: ui/playlist_window.py:306
+msgid "Start Playlist"
+msgstr "Reproducir lista de reproducción"
+
+#: ui/playlist_window.py:310
+msgid "Add to Current Playlist"
+msgstr "Añadir a la lista de reproducción actual"
+
+#: ui/playlist_window.py:314
+msgid "Add to New Master Playlist"
+msgstr "Añadir a la lista de reproducción del nuevo maestro"
+
+#: ui/playlist_window.py:318
+msgid "Cancel"
+msgstr "Cancelar"
+
+#: ui/playlist_window.py:326
+msgid "Please enter a playlist name"
+msgstr "Por favor ingrese un nombre de lista"
+
+#: ui/playlist_window.py:375
+msgid "Playlist created successfully"
+msgstr "Playlist creado con éxito"
 
 #: ui/presets_window.py:52
 msgid "New Preset (ERROR no presets found)"
@@ -772,11 +1088,6 @@ msgstr "Horarios claros"
 msgid "Modify"
 msgstr "Modifique"
 
-#: ui/favorites_window.py:368 ui/favorites_window.py:459
-#: ui/search_window.py:228
-msgid "Remove"
-msgstr "Retirar"
-
 #: ui/search_window.py:301
 msgid "No results found."
 msgstr "No se han encontrado resultados."
@@ -837,10 +1148,6 @@ msgstr "Duración: "
 #: ui/track_details_window.py:143
 msgid "File: "
 msgstr "Archivo: "
-
-#: ui/composers_window.py:217 ui/track_details_window.py:209
-msgid "Validation Error"
-msgstr "Error de validación"
 
 #: ui/track_details_window.py:214
 msgid "Track details updated successfully"
@@ -964,6 +1271,26 @@ msgstr "historia divertida"
 msgid "language learning"
 msgstr "aprendizaje de idiomas"
 
+#: utils/globals.py:370
+msgid "Tracks"
+msgstr "Pistas"
+
+#: utils/globals.py:371
+msgid "Albums"
+msgstr "Albums"
+
+#: utils/globals.py:372
+msgid "Artists"
+msgstr "Artistas"
+
+#: utils/globals.py:375
+msgid "Forms"
+msgstr "Formas"
+
+#: utils/globals.py:376
+msgid "Instruments"
+msgstr "Instrumentos"
+
 #: utils/job_queue.py:35
 msgid " (Pending runs: {0})"
 msgstr " (Ejecuciones pendientes: {0})"
@@ -1024,353 +1351,6 @@ msgstr "meses"
 msgid "years"
 msgstr "años"
 
-#: app.py:244 ui/history_window.py:88 ui/history_window.py:297
-msgid "History"
-msgstr "Historia"
-
-#: app.py:270
-msgid "Configuration"
-msgstr "Configuración"
-
-#: app.py:748
-msgid "Staged Playlist: "
-msgstr "Lista de reproducción fija: "
-
-#: library_data/composer.py:41
-msgid "Composer name cannot be empty"
-msgstr "El nombre del compositor no puede estar vacío"
-
-#: library_data/composer.py:93
-msgid "Dates must be valid integers"
-msgstr "Las fechas deben ser números enteros válidos"
-
-#: library_data/composer.py:97
-msgid "Start date cannot be in the future"
-msgstr "La fecha de inicio no puede ser en el futuro"
-
-#: library_data/composer.py:99
-msgid "End date cannot be in the future"
-msgstr "La fecha final no puede ser en el futuro"
-
-#: library_data/composer.py:104
-msgid "Start date cannot be after end date"
-msgstr "La fecha de inicio no puede ser después de la fecha final"
-
-#: library_data/composer.py:246 library_data/composer.py:290
-msgid "Invalid composer data"
-msgstr "Datos del compositor inválido"
-
-#: library_data/composer.py:302
-msgid "Composer not found"
-msgstr "Compositor no encontrado"
-
-#: muse/muse.py:768
-msgid "Starting tracks:"
-msgstr "Pistas de inicio:"
-
-#: ui/composers_window.py:35
-msgid "Modify Composer: {0}"
-msgstr "Modificar Compositor: {0}"
-
-#: ui/composers_window.py:96
-msgid "Notes"
-msgstr "Notas"
-
-#: ui/composers_window.py:97
-msgid "Add Note"
-msgstr "Agregar Nota"
-
-#: ui/composers_window.py:110
-msgid "Save"
-msgstr "Guardar"
-
-#: ui/composers_window.py:232
-msgid "Fixes applied"
-msgstr "Fijas aplicadas"
-
-#: ui/composers_window.py:245
-msgid "Failed to save composer:"
-msgstr "No se pudo guardar el compositor:"
-
-#: ui/composers_window.py:249
-msgid "Delete composer"
-msgstr "Eliminar el compositor"
-
-#: ui/composers_window.py:250
-msgid "Are you sure you want to delete {0}? This action cannot be undone."
-msgstr ""
-"¿Estás seguro de que quieres eliminar {0}? Esta acción no se puede deshacer."
-
-#: ui/composers_window.py:259
-msgid "Failed to delete composer:"
-msgstr "Fallido al eliminar el compositor:"
-
-#: ui/configuration_window.py:21
-msgid "Configuration Settings"
-msgstr "Ajustes de configuración"
-
-#: ui/configuration_window.py:42
-msgid "General"
-msgstr "General"
-
-#: ui/configuration_window.py:43
-msgid "Audio"
-msgstr "Audio"
-
-#: ui/configuration_window.py:44
-msgid "API Keys"
-msgstr "Claves de API"
-
-#: ui/configuration_window.py:45
-msgid "TTS Settings"
-msgstr "Ajustes por texto a voz"
-
-#: ui/configuration_window.py:57
-msgid "Save Configuration"
-msgstr "Guardar configuración"
-
-#: ui/configuration_window.py:66
-msgid "Foreground Color"
-msgstr "Color de primer plano"
-
-#: ui/configuration_window.py:67
-msgid "Background Color"
-msgstr "Color de fondo"
-
-#: ui/configuration_window.py:68
-msgid "Language Learning Language"
-msgstr "Lenguas de aprendizaje"
-
-#: ui/configuration_window.py:69
-msgid "Language Learning Level"
-msgstr "Nivel de aprendizaje de idiomas"
-
-#: ui/configuration_window.py:70 ui/playlist_window.py:285
-msgid "Enable Dynamic Volume"
-msgstr "Activar el volumen dinámico"
-
-#: ui/configuration_window.py:71
-msgid "Enable Library Extender"
-msgstr "Activar la extensión de biblioteca"
-
-#: ui/configuration_window.py:72 ui/playlist_window.py:291
-msgid "Enable Long Track Splitting"
-msgstr "Activar la división de pistas largas"
-
-#: ui/configuration_window.py:73
-msgid "Long Track Cutoff (minutes)"
-msgstr "Corte para pistas de largas (minutos)"
-
-#: ui/configuration_window.py:81
-msgid "Play Videos in Separate Window"
-msgstr "Jugar vídeos en ventana separada"
-
-#: ui/configuration_window.py:82
-msgid "Recently Played Check Count"
-msgstr "Recuento para comprobar lo jugado recientemente"
-
-#: ui/configuration_window.py:83
-msgid "Max Search Results"
-msgstr "Máximo de resultados de búsqueda"
-
-#: ui/configuration_window.py:84
-msgid "Max Recent Searches"
-msgstr "Máximo de búsquedas recientes"
-
-#: ui/configuration_window.py:92
-msgid "OpenWeather API Key"
-msgstr "Clave de API OpenWeather"
-
-#: ui/configuration_window.py:93
-msgid "OpenWeather City"
-msgstr "Ciudad OpenWeather"
-
-#: ui/configuration_window.py:94
-msgid "News API Key"
-msgstr "News API Clave"
-
-#: ui/configuration_window.py:102
-msgid "Coqui TTS Location"
-msgstr "Coqui TTS Ubicación"
-
-#: ui/configuration_window.py:103
-msgid "LLM Model Name"
-msgstr "LLM Nombre del modelo"
-
-#: ui/configuration_window.py:104
-msgid "Max Chunk Tokens"
-msgstr "Fichas de trozos máximos"
-
-#: ui/configuration_window.py:130
-msgid "Close Configuration"
-msgstr "Configuración cercana"
-
-#: ui/configuration_window.py:131
-msgid ""
-"Do you want to close the configuration window?\n"
-"Any unsaved changes will be lost."
-msgstr ""
-"¿Quieres cerrar la ventana de configuración?\n"
-"Se perderán los cambios sin salvar."
-
-#: ui/configuration_window.py:150
-msgid "Configuration saved successfully"
-msgstr "Configuración guardada con éxito"
-
-#: ui/configuration_window.py:152
-msgid "Failed to save configuration"
-msgstr "Fallado para guardar la configuración"
-
-#: ui/favorites_window.py:196 ui/favorites_window.py:205
-#: ui/favorites_window.py:209
-msgid "Favorite Exists"
-msgstr "Existidos favoritos"
-
-#: ui/favorites_window.py:197 ui/favorites_window.py:206
-#: ui/favorites_window.py:210
-msgid "This favorite already exists."
-msgstr "Este favorito ya existe."
-
-#: ui/favorites_window.py:220
-msgid "Favorite updated successfully."
-msgstr "Actualización favorita con éxito."
-
-#: ui/favorites_window.py:249
-msgid "Create Favorite From Current Track"
-msgstr "Crear favorito de la pista actual"
-
-#: ui/favorites_window.py:257 ui/favorites_window.py:584
-msgid "Create Favorite"
-msgstr "Crear Favorito"
-
-#: ui/favorites_window.py:523
-msgid "Favorite Details"
-msgstr "Detalles del Favorito"
-
-#: ui/favorites_window.py:560
-msgid "Type: Track"
-msgstr "Tipo: Pista"
-
-#: ui/favorites_window.py:584
-msgid "Update Favorite"
-msgstr "Actualización Favorito"
-
-#: ui/favorites_window.py:590
-msgid "Remove Favorite"
-msgstr "Quitar Favorito"
-
-#: ui/history_window.py:110
-msgid "History Type"
-msgstr "Tipo de historia"
-
-#: ui/history_window.py:122
-msgid "Search History"
-msgstr "Búsqueda Historia"
-
-#: ui/history_window.py:185
-msgid "No history found."
-msgstr "No hay historia encontrada."
-
-#: ui/history_window.py:211 ui/history_window.py:282
-msgid "★"
-msgstr ""
-
-#: ui/playlist_window.py:89
-msgid "Available Playlists"
-msgstr "Disponibles"
-
-#: ui/playlist_window.py:100
-msgid "Current Playlist"
-msgstr "Lista de reproducción actual"
-
-#: ui/playlist_window.py:111
-msgid "Tracks per Config"
-msgstr "Pistas por configuración"
-
-#: ui/playlist_window.py:121
-msgid "Add to Master"
-msgstr "Añadir al Maestro"
-
-#: ui/playlist_window.py:125
-msgid "Remove from Master"
-msgstr "Retirar del Maestro"
-
-#: ui/playlist_window.py:129
-msgid "New Playlist"
-msgstr "Nueva lista de reproducción"
-
-#: ui/playlist_window.py:133 ui/playlist_window.py:209
-msgid "Save Master Playlist"
-msgstr "Guardar Lista de reproducción principal"
-
-#: ui/playlist_window.py:210
-msgid "Enter a name for this master playlist:"
-msgstr "Escriba un nombre para esta lista de reproducción principal:"
-
-#: ui/playlist_window.py:223 ui/playlist_window.py:375
-msgid "Success"
-msgstr "Éxito"
-
-#: ui/playlist_window.py:223
-msgid "Master playlist created successfully"
-msgstr "Master lista de reproducción creada con éxito"
-
-#: ui/playlist_window.py:254
-msgid "Playlist Name"
-msgstr "Nombre de la lista"
-
-#: ui/playlist_window.py:261
-msgid "Sort Type"
-msgstr "Tipo de ordenación"
-
-#: ui/playlist_window.py:280
-msgid "Playback Config Settings"
-msgstr "Configuración de reproducción"
-
-#: ui/playlist_window.py:296
-msgid "Track Splitting Cutoff (minutes)"
-msgstr "Corte de división de pista (minutos)"
-
-#: ui/playlist_window.py:306
-msgid "Start Playlist"
-msgstr "Reproducir lista de reproducción"
-
-#: ui/playlist_window.py:310
-msgid "Add to Current Playlist"
-msgstr "Añadir a la lista de reproducción actual"
-
-#: ui/playlist_window.py:314
-msgid "Add to New Master Playlist"
-msgstr "Añadir a la lista de reproducción del nuevo maestro"
-
-#: ui/playlist_window.py:318
-msgid "Cancel"
-msgstr "Cancelar"
-
-#: ui/playlist_window.py:326
-msgid "Please enter a playlist name"
-msgstr "Por favor ingrese un nombre de lista"
-
-#: ui/playlist_window.py:375
-msgid "Playlist created successfully"
-msgstr "Playlist creado con éxito"
-
-#: utils/globals.py:370
-msgid "Tracks"
-msgstr "Pistas"
-
-#: utils/globals.py:371
-msgid "Albums"
-msgstr "Albums"
-
-#: utils/globals.py:372
-msgid "Artists"
-msgstr "Artistas"
-
-#: utils/globals.py:375
-msgid "Forms"
-msgstr "Formas"
-
-#: utils/globals.py:376
-msgid "Instruments"
-msgstr "Instrumentos"
+#: ui/favorites_window.py:351 ui/favorites_window.py:478
+msgid "No title or filepath available"
+msgstr "No hay título o filepath disponible"

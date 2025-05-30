@@ -208,7 +208,7 @@ class HistoryWindow:
             label.pack(side=LEFT, padx=5)
 
             # Add favorite button
-            favorite_btn = Button(item_frame, text=_("★"), 
+            favorite_btn = Button(item_frame, text="★", 
                                 command=lambda v=item, t=history_type: self.add_favorite(v, t))
             favorite_btn.pack(side=RIGHT, padx=5)
 
@@ -279,7 +279,7 @@ class HistoryWindow:
             label.pack(side=LEFT, padx=5)
 
             # Add favorite button
-            favorite_btn = Button(item_frame, text=_("★"), 
+            favorite_btn = Button(item_frame, text="★", 
                                 command=lambda v=item, t=history_type: self.add_favorite(v, t))
             favorite_btn.pack(side=RIGHT, padx=5)
 
