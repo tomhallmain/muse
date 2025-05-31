@@ -653,7 +653,8 @@ class Muse:
         blacklisted_items_in_prompt = blacklist.test_all(prompt_text_to_test)
         
         # Use the context and system prompt in the LLM call
-        result = self.llm.ask(prompt, json_key=json_key, context=context, system_prompt=system_prompt)
+        # NOTE excluding context for now because it's being deprecated for some reason.
+        result = self.llm.ask(prompt, json_key=json_key, context=None, system_prompt=system_prompt)
         text = result.response if result else ""
         
         # Update context with the new context from the response
