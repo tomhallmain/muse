@@ -1,0 +1,7 @@
+Discuta brevemente (em 3 frases curtas ou menos) a lista de reprodução atual.
+
+Faixas anteriores:
+{PREVIOUS_TRACKS}
+
+Próximas faixas:
+{UPCOMING_TRACKS}

@@ -5,8 +5,8 @@ msgstr ""
 "POT-Creation-Date: 2025-05-30 22:06-0400\n"
 "PO-Revision-Date: 2025-05-30 22:06-0400\n"
 "Last-Translator: Thomas Hall <tomhall.main@gmail.com>\n"
-"Language-Team: de Team <<EMAIL>>\n"
-"Language: de\n"
+"Language-Team: pt Team <<EMAIL>>\n"
+"Language: pt\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -15,63 +15,63 @@ msgstr ""
 #: app.py:150 ui/extensions_window.py:157 ui/track_details_window.py:64
 #: utils/globals.py:193
 msgid "Title"
-msgstr "Titel"
+msgstr "Título"
 
 #: app.py:153 ui/track_details_window.py:67 utils/globals.py:119
 #: utils/globals.py:194
 msgid "Album"
-msgstr "Album"
+msgstr "Álbum"
 
 #: app.py:156 ui/track_details_window.py:70 utils/globals.py:121
 #: utils/globals.py:195 utils/globals.py:249
 msgid "Artist"
-msgstr "Künstler"
+msgstr "Artista"
 
 #: app.py:159 ui/track_details_window.py:76 utils/globals.py:123
 #: utils/globals.py:196 utils/globals.py:248
 msgid "Composer"
-msgstr "Komponist"
+msgstr "Compositor"
 
 #: app.py:162
 msgid "Next Up"
-msgstr "Weiter oben"
+msgstr "Próximo Up"
 
 #: app.py:165
 msgid "Prior Track"
-msgstr "Vorherige Audiospur"
+msgstr "Faixa anterior"
 
 #: app.py:168
 msgid "Spot Details"
-msgstr "Details zur Stelle"
+msgstr "Detalhes do spot"
 
 #: app.py:171
 msgid "Extension Status"
-msgstr "Stand der Erweiterung"
+msgstr "Estado da Extensão"
 
 #: app.py:174
 msgid "Volume"
-msgstr "Band"
+msgstr "Volume"
 
 #: app.py:184 ui/network_media_window.py:167 ui/network_media_window.py:267
 #: ui/search_window.py:212 ui/search_window.py:334
 msgid "Play"
-msgstr "Spiel"
+msgstr "Reproduzir"
 
 #: app.py:187
 msgid "Playlists"
-msgstr "Wiedergabelisten"
+msgstr "Listas de Reprodução"
 
 #: app.py:190
 msgid "Next"
-msgstr "Weiter"
+msgstr "Próxima"
 
 #: app.py:193
 msgid "Next Grouping"
-msgstr "Nächste Gruppierung"
+msgstr "Agrupamento Seguinte"
 
 #: app.py:196
 msgid "Pause"
-msgstr "Pause"
+msgstr "Pausa"
 
 #: app.py:199 ui/composers_window.py:353 ui/composers_window.py:388
 #: ui/composers_window.py:461 ui/favorites_window.py:273
@@ -79,695 +79,693 @@ msgstr "Pause"
 #: ui/network_media_window.py:159 ui/network_media_window.py:337
 #: ui/search_window.py:87 ui/search_window.py:204 ui/search_window.py:415
 msgid "Search"
-msgstr "Suche"
+msgstr "Procurar"
 
 #: app.py:202 utils/globals.py:373
 msgid "Composers"
-msgstr "Komponisten"
+msgstr "Compositores"
 
 #: app.py:205
 msgid "Schedules"
-msgstr "Zeitpläne"
+msgstr "Agendamentos"
 
 #: app.py:208 ui/weather_window.py:27 ui/weather_window.py:37
 #: ui/weather_window.py:67
 msgid "Weather"
-msgstr "Wetter"
+msgstr "Tempo"
 
 #: app.py:210
 msgid "Stop"
-msgstr "Stopp"
+msgstr "Parar"
 
 #: app.py:211
 msgid "Text"
-msgstr "Text"
+msgstr "Texto"
 
 #: app.py:214
 msgid "Delay Seconds"
-msgstr "Verzögerung Sekunden"
+msgstr "Atrasar Segundos"
 
 #: app.py:221
 msgid "Playlist"
-msgstr "Wiedergabeliste"
+msgstr "Lista de Reprodução"
 
 #: app.py:229
 msgid "Playlist Sort"
-msgstr "Wiedergabeliste sortieren"
+msgstr "Ordenar na Lista de Reprodução"
 
 #: app.py:237
 msgid "Favorite"
-msgstr "Favorit"
+msgstr "Favorito"
 
 #: app.py:241 ui/favorites_window.py:226 ui/favorites_window.py:531
 msgid "Favorites"
-msgstr "Favoriten"
+msgstr "Favoritos"
 
 #: app.py:244 ui/history_window.py:88 ui/history_window.py:297
 msgid "History"
-msgstr "Geschichte"
+msgstr "Histórico"
 
 #: app.py:247
 msgid "Overwrite"
-msgstr "Überschreiben Sie"
+msgstr "Sobrescrever"
 
 #: app.py:251
 msgid "Muse"
-msgstr "Muse"
+msgstr "Musa"
 
 #: app.py:255 app.py:258
 msgid "Extension"
-msgstr "Erweiterung"
+msgstr "Extensão"
 
 #: app.py:261
 msgid "Enable track splitting"
-msgstr "Spurtrennung einschalten"
+msgstr "Activar a divisão de faixas"
 
 #: app.py:265
 msgid "Use system language for all topics"
-msgstr "Verwendung der Systemsprache"
+msgstr "Usar a linguagem do sistema para todos os tópicos"
 
 #: app.py:270
 msgid "Configuration"
-msgstr "Konfiguration"
+msgstr "Configuração"
 
 #: app.py:331
 msgid "Confirm Quit"
-msgstr "Beenden bestätigen"
+msgstr "Confirmar Sair"
 
 #: app.py:331
 msgid "Would you like to quit the application?"
-msgstr "Möchten Sie die Anwendung beenden?"
+msgstr "Gostaria de sair da aplicação?"
 
 #: app.py:452
 msgid "Confirm Run"
-msgstr "Lauf bestätigen"
+msgstr "Confirmar a Execução"
 
 #: app.py:453
 msgid "Are you sure you want to proceed?"
-msgstr "Sind Sie sicher, dass Sie fortfahren wollen?"
+msgstr "Tens a certeza que queres continuar?"
 
 #: app.py:520
 msgid "Copied album art to clipboard."
-msgstr "Albumcover in die Zwischenablage kopiert."
+msgstr "Copiamos a arte do álbum para a área de transferência."
 
 #: app.py:624 app.py:777 app.py:807 ui/composers_window.py:245
 #: ui/composers_window.py:259 ui/configuration_window.py:152
 #: ui/configuration_window.py:155 ui/playlist_window.py:326
 #: ui/track_details_window.py:217
 msgid "Error"
-msgstr "Fehler"
+msgstr "Erro"
 
 #: app.py:691 muse/muse_spot_profile.py:208
 msgid "Track: "
-msgstr "Titel: "
+msgstr "Faixa: "
 
 #: app.py:692
 msgid "Album: "
-msgstr "Album: "
+msgstr "Álbum: "
 
 #: app.py:693
 msgid "Artist: "
-msgstr "Künstler: "
+msgstr "Artista: "
 
 #: app.py:694
 msgid "Composer: "
-msgstr "Komponist: "
+msgstr "Compositor: "
 
 #: app.py:705
 msgid "Next Up: "
-msgstr "Nächster Punkt: "
+msgstr "Próximo Up: "
 
 #: app.py:714 muse/muse_spot_profile.py:209
 msgid "Previous Track: "
-msgstr "Vorheriger Titel: "
+msgstr "Faixa Anterior: "
 
 #: app.py:748
 msgid "Staged Playlist: "
-msgstr "Inszenierte Wiedergabeliste: "
+msgstr "Lista de reprodução encenada: "
 
 #: app.py:892
 msgid " Muse "
-msgstr " Muse "
+msgstr " Musa "
 
 #: extensions/extension_manager.py:119 extensions/extension_manager.py:132
 msgid "Extension thread waiting for {0} minutes"
-msgstr "Erweiterungs-Thread wartet auf {0} Minuten"
+msgstr "Linha de extensão à espera de {0} minutos"
 
 #: extensions/extension_manager.py:160
 msgid "Coming up soon, we'll be listening to a new track from the {0} {1}."
-msgstr "In Kürze werden wir uns einen neuen Track von {0} {1} anhören."
+msgstr "Em breve, estaremos a ouvir uma nova faixa do {0} {1}."
 
 #: extensions/extension_manager.py:299
 msgid "Extension \"{0}\" waiting for {1} minutes"
-msgstr "Erweiterung „{0}“ wartet seit {1} Minuten"
+msgstr "Extensão \"{0}\" à espera de {1} minutos"
 
 #: extensions/extension_manager.py:337
 msgid "Extension \"{0}\" ready"
-msgstr "Erweiterung „{0}“ bereit"
+msgstr "Extensão \"{0}\" pronta"
 
 #: library_data/composer.py:41
 msgid "Composer name cannot be empty"
-msgstr "Komponistname kann nicht leer sein"
+msgstr "O nome do compositor não pode estar vazio"
 
 #: library_data/composer.py:93
 msgid "Dates must be valid integers"
-msgstr "Termine müssen gültige ganze Zahlen sein"
+msgstr "As datas devem ser inteiros válidos"
 
 #: library_data/composer.py:97
 msgid "Start date cannot be in the future"
-msgstr "Startdatum kann nicht in Zukunft"
+msgstr "A data de início não pode ser no futuro"
 
 #: library_data/composer.py:99
 msgid "End date cannot be in the future"
-msgstr "Enddatum kann in Zukunft nicht erreicht werden"
+msgstr "Data final não pode ser no futuro"
 
 #: library_data/composer.py:104
 msgid "Start date cannot be after end date"
-msgstr "Das Startdatum kann nicht nach dem Enddatum liegen."
+msgstr "A data de início não pode ser posterior à data de fim"
 
 #: library_data/composer.py:176 library_data/library_data.py:63
 #: ui/favorites_window.py:32 ui/history_window.py:30
 msgid "({0} results)"
-msgstr "({0} Ergebnisse)"
+msgstr "({0} resultados)"
 
 #: library_data/composer.py:246 library_data/composer.py:290
 msgid "Invalid composer data"
-msgstr "Invalide Komponistendaten"
+msgstr "Dados inválidos do compositor"
 
 #: library_data/composer.py:302
 msgid "Composer not found"
-msgstr "Komponist nicht gefunden"
+msgstr "Compositor não encontrado"
 
 #: library_data/library_data.py:265
 msgid "Updating tracks"
-msgstr "Aktualisieren von Titeln"
+msgstr "Atualizando faixas"
 
 #: library_data/media_track.py:194
 msgid "Unknown title"
-msgstr "Unbekannter Titel"
+msgstr "Título desconhecido"
 
 #: library_data/media_track.py:200
 msgid "Unknown album"
-msgstr "Unbekanntes Album"
+msgstr "Álbum desconhecido"
 
 #: library_data/media_track.py:206
 msgid "Unknown artist"
-msgstr "Unbekannter Künstler"
+msgstr "Artista desconhecido"
 
 #: library_data/media_track.py:376 library_data/media_track.py:377
 #: tts/text_cleaner_ruleset.py:78
 msgid "Number \\1"
-msgstr " Zahl \\1"
+msgstr " Número \\1"
 
 #: library_data/media_track.py:378
 msgid "\\1text to speech\\2"
-msgstr "\\1Text-in-Sprache\\2"
+msgstr "\\1texto para a fala\\ 2"
 
 #: library_data/media_track.py:379
 msgid " Opus \\2"
-msgstr " Opus \\2"
+msgstr " Opus \\ 2"
 
 #: muse/dj_persona.py:93
 msgid "a man"
-msgstr "ein Mann"
+msgstr "um homem"
 
 #: muse/dj_persona.py:95
 msgid "a woman"
-msgstr "eine Frau"
+msgstr "uma mulher"
 
 #: muse/muse.py:213
 msgid "Hello, I'm {0}"
-msgstr "Hallo, ich bin {0}"
+msgstr "Olá, eu sou {0}"
 
 #: muse/muse.py:217 muse/muse.py:221
 msgid "Hello, I'm your DJ"
-msgstr "Hallo, ich bin dein DJ"
+msgstr "Olá, sou o teu DJ."
 
 #: muse/muse.py:228
 msgid "Hello"
-msgstr "Hallo."
+msgstr "Olá."
 
 #: muse/muse.py:240
 msgid "tonight"
-msgstr "heute Abend"
+msgstr "Esta noite"
 
 #: muse/muse.py:240
 msgid "today"
-msgstr "heute"
+msgstr "hoje"
 
 #: muse/muse.py:242
 msgid "The scheduled shutdown time has arrived. That's it for {0}."
-msgstr "Die geplante Abschaltzeit ist gekommen. Das war's für {0}."
+msgstr "O horário agendado de desligamento chegou. É o fim para {0}."
 
 #: muse/muse.py:246
 msgid "I'll be on again tomorrow."
-msgstr "Ich bin morgen wieder da."
+msgstr "Vou voltar amanhã."
 
 #: muse/muse.py:248
 msgid "Tomorrow you'll hear from {0}."
-msgstr "Morgen werden Sie von {0} hören."
+msgstr "Amanhã você ouvirá de {0}."
 
 #: muse/muse.py:252
 msgid "The next time I'll be on is next week, at the same time."
-msgstr "Das nächste Mal bin ich nächste Woche zur gleichen Zeit dran."
+msgstr "A próxima vez que eu for é na próxima semana, ao mesmo tempo."
 
 #: muse/muse.py:254
 msgid "I'll be on again this coming {0}."
-msgstr "Ich werde am kommenden {0} wieder dabei sein."
+msgstr "Estarei disponível de novo neste {0}."
 
 #: muse/muse.py:265
 msgid "Good morning"
-msgstr "Guten Morgen"
+msgstr "Bom dia."
 
 #: muse/muse.py:267
 msgid "Good day"
-msgstr "Guten Tag"
+msgstr "Bom dia."
 
 #: muse/muse.py:269
 msgid "Good afternoon"
-msgstr "Guten Tag"
+msgstr "Boa tarde."
 
 #: muse/muse.py:271
 msgid "Good evening"
-msgstr "Guten Abend"
+msgstr "Boa noite."
 
 #: muse/muse.py:286
 msgid "That was \"{0}\" in \"{1}\""
-msgstr "Das war „{0}“ aus „{1}“"
+msgstr "Isso foi \"{0}\" em \"{1}\""
 
 #: muse/muse.py:288 muse/muse.py:324
 msgid " by \"{0}\"."
-msgstr " von „{0}“."
+msgstr " por \"{0}\"."
 
 #: muse/muse.py:293
 msgid "That was a new track. How'd you like that?"
-msgstr "Das war ein neuer Track. Wie hat dir das gefallen?"
+msgstr "Era uma nova faixa. Gostaste?"
 
 #: muse/muse.py:295
 msgid "That was a new one. How'd you like it?"
-msgstr "Das war eine Neuheit. Wie hat es dir gefallen?"
+msgstr "Essa era nova. Gostou?"
 
 #: muse/muse.py:320
 msgid "To start, we'll be playing: \"{0}\" from \"{1}\""
-msgstr "Zu Beginn spielen wir „{0}“ aus „{1}“"
+msgstr "Para começar, vamos tocar: \"{0}\" de \"{1}\""
 
 #: muse/muse.py:322
 msgid "Next up, we'll be playing: \"{0}\" from \"{1}\""
-msgstr "Als Nächstes spielen wir „{0}“ aus „{1}“"
+msgstr "A seguir, vamos tocar: \"{0}\" de \"{1}\""
 
 #: muse/muse.py:329
 msgid "This one is a new track."
-msgstr "Dies ist ein neuer Titel."
+msgstr "Esta é uma nova faixa."
 
 #: muse/muse.py:341
 msgid "After that short interlude, we're back to our {0} shuffle."
 msgstr ""
-"Nach diesem kurzen Intermezzo kehren wir zu unserem {0} Shuffle zurück."
+"Após esse breve interlúdio, voltamos à nossa seleção aleatória de {0}."
 
 #: muse/muse.py:344
 msgid "We've been listening to a group of tracks from the {0} {1}"
-msgstr "Wir haben uns eine Gruppe von Titeln aus der {0} {1} angehört"
+msgstr "Estivemos a ouvir um grupo de faixas do {0} {1}"
 
 #: muse/muse.py:354
 msgid "We're listening to a group of tracks from the {0} {1}."
-msgstr "Wir hören uns eine Gruppe von Titeln aus der {0} {1} an."
+msgstr "Estamos a ouvir um grupo de faixas do {0} {1}."
 
 #: muse/muse.py:357
 msgid "We're going to start a new group of tracks from the {0} {1}."
-msgstr "Wir beginnen eine neue Gruppe von Tracks mit den {0} {1}."
+msgstr "Vamos começar um novo grupo de faixas do {0} {1}."
 
 #: muse/muse.py:408
 msgid "First let's hear about {0}"
-msgstr "Zuerst etwas über {0}"
+msgstr "Primeiro vamos ouvir sobre {0}"
 
 #: muse/muse.py:410
 msgid "But first, let's hear about {0}."
-msgstr "Doch zunächst etwas über {0}."
+msgstr "Mas primeiro, vamos ouvir sobre {0}."
 
 #: muse/muse.py:690
 msgid ""
 "We're having some technical difficulties in accessing our source for {0}. "
 "We'll try again later"
 msgstr ""
-"Wir haben technische Schwierigkeiten beim Zugriff auf unsere Quelle für {0}."
-" Wir werden es später noch einmal versuchen"
+"Estamos tendo algumas dificuldades técnicas em acessar nossa fonte para {0}."
+" Tentaremos mais tarde."
 
 #: muse/muse.py:694
 msgid ""
 "It seems our writer for {0} is unexpectedly away at the moment. Did we "
 "forget to pay his salary again?"
 msgstr ""
-"Es scheint, dass unser Autor für {0} im Moment unerwartet abwesend ist. "
-"Haben wir wieder vergessen, sein Gehalt zu zahlen?"
+"Parece que o nosso escritor para {0} está inesperadamente longe no momento. "
+"Esquecemo-nos de pagar o salário dele outra vez?"
 
 #: muse/muse.py:698
 msgid ""
 "We've found problems with all of our {0} ideas. Please try again later."
 msgstr ""
-"Wir haben bei allen unseren {0} Ideen Probleme gefunden. Bitte versuchen Sie"
-" es später noch einmal."
+"Encontramos problemas com todas as nossas {0} ideias. Por favor, tente "
+"novamente mais tarde."
 
 #: muse/muse.py:703
 msgid "Something went wrong. We'll try to fix it soon."
-msgstr ""
-"Da ist etwas schief gelaufen. Wir werden versuchen, es bald zu beheben."
+msgstr "Algo correu mal. Vamos tentar resolver isto em breve."
 
 #: muse/muse.py:770
 msgid "Starting tracks:"
-msgstr "Anfangsspuren:"
+msgstr "Iniciando faixas:"
 
 #: muse/muse.py:830
 msgid "The listener last tuned in {0} {1} ago"
-msgstr "Der Hörer schaltete zuletzt vor {0} {1} ein"
+msgstr "O ouvinte afinado pela última vez em {0} {1} há"
 
 #: muse/muse_spot_profile.py:199
 msgid "Talking about: "
-msgstr "Sprechen über: "
+msgstr "A falar sobre: "
 
 #: muse/muse_spot_profile.py:208
 msgid "No track"
-msgstr "Kein Titel"
+msgstr "Nenhuma faixa"
 
 #: muse/muse_spot_profile.py:209
 msgid "No previous track"
-msgstr "Kein vorheriger Titel"
+msgstr "Nenhuma faixa anterior"
 
 #: muse/muse_spot_profile.py:211
 msgid "Speaking about prior track"
-msgstr "Apropos vorherige Titel"
+msgstr "Falando sobre a faixa anterior"
 
 #: muse/muse_spot_profile.py:213
 msgid "Speaking about upcoming track"
-msgstr "Über den kommenden Titel sprechen"
+msgstr "Falando sobre a próxima faixa"
 
 #: muse/muse_spot_profile.py:215
 msgid "Talking about something"
-msgstr "Über etwas sprechen"
+msgstr "A falar de alguma coisa."
 
 #: muse/playback.py:372
 msgid "Sleeping for seconds"
-msgstr "Schlafen für Sekunden"
+msgstr "Dormindo por segundos"
 
 #: muse/schedule.py:8 ui/schedules_window.py:40
 msgid "New Schedule"
-msgstr "Neuer Zeitplan"
+msgstr "Nova Agenda"
 
 #: muse/schedule.py:41
 msgid "Tomorrow"
-msgstr "Morgen"
+msgstr "Amanhã."
 
 #: muse/schedule.py:76 ui/schedules_window.py:57
 msgid "Every day"
-msgstr "Jeden Tag"
+msgstr "Todos os dias"
 
 #: muse/schedule.py:79
 msgid "{0} - DJ: {1} - Days: {2} - Times: {3}-{4} - Shutdown: {5}"
-msgstr "{0} - DJ: {1} - Tage: {2} - Zeiten: {3}-{4} - Abschaltung: {5}"
+msgstr "{0} - DJ: {1} - Dias: {2} - Vezes: {3}- {4} - Desligamento: {5}"
 
 #: muse/schedules_manager.py:75
 msgid "Not enough schedules found."
-msgstr "Es wurden nicht genügend Zeitpläne gefunden."
+msgstr "Não há horários suficientes."
 
 #: ui/composers_window.py:35 ui/composers_window.py:50
 #: ui/composers_window.py:330
 msgid "New Composer"
-msgstr "Neuer Komponist"
+msgstr "Novo Compositor"
 
 #: ui/composers_window.py:35
 msgid "Modify Composer: {0}"
-msgstr "Komponist ändern: {0}"
+msgstr "Modificar o Compositor: {0}"
 
 #: ui/composers_window.py:46
 msgid "Modify Composer"
-msgstr "Komponist ändern"
+msgstr "Modificar o Compositor"
 
 #: ui/composers_window.py:49
 msgid "Name"
-msgstr "Name"
+msgstr "Nome"
 
 #: ui/composers_window.py:55
 msgid "Indicators"
-msgstr "Indikatoren"
+msgstr "Indicadores"
 
 #: ui/composers_window.py:61
 msgid "Start Date"
-msgstr "Anfangsdatum"
+msgstr "Data de início"
 
 #: ui/composers_window.py:67
 msgid "End Date"
-msgstr "Enddatum"
+msgstr "Data de Fim"
 
 #: ui/composers_window.py:73 ui/composers_window.py:75
 msgid "Dates are lifespan"
-msgstr "Daten sind Lebensdauer"
+msgstr "As datas são o tempo de vida"
 
 #: ui/composers_window.py:79
 msgid "Dates uncertain"
-msgstr "Daten ungewiss"
+msgstr "Datas incertas"
 
 #: ui/composers_window.py:81
 msgid "Dates are uncertain"
-msgstr "Daten sind ungewiss"
+msgstr "As datas são incertas"
 
 #: ui/composers_window.py:85 utils/globals.py:374
 msgid "Genres"
-msgstr "Genren"
+msgstr "Géneros"
 
 #: ui/composers_window.py:96
 msgid "Notes"
-msgstr "Anmerkungen"
+msgstr "Notas"
 
 #: ui/composers_window.py:97
 msgid "Add Note"
-msgstr "Anmerkung hinzufügen"
+msgstr "Adicionar uma Nota"
 
 #: ui/composers_window.py:110
 msgid "Save"
-msgstr "Speichern"
+msgstr "Gravar"
 
 #: ui/composers_window.py:115 ui/composers_window.py:136
 #: ui/extensions_window.py:241 ui/presets_window.py:146
 #: ui/schedules_window.py:214
 msgid "Delete"
-msgstr "Löschen"
+msgstr "Apagar"
 
 #: ui/composers_window.py:153
 msgid "New note"
-msgstr "Neue Notiz"
+msgstr "Nova nota"
 
 #: ui/composers_window.py:217 ui/track_details_window.py:209
 msgid "Validation Error"
-msgstr "Validierungsfehler"
+msgstr "Erro de validação"
 
 #: ui/composers_window.py:232
 msgid "Fixes applied"
-msgstr "Angewandte Korrekturen"
+msgstr "Correcções aplicadas"
 
 #: ui/composers_window.py:245
 msgid "Failed to save composer:"
-msgstr "Versäumt, Komponist zu retten:"
+msgstr "Falha ao salvar o compositor:"
 
 #: ui/composers_window.py:249
 msgid "Delete composer"
-msgstr "Löschen Komponist"
+msgstr "Apagar o compositor"
 
 #: ui/composers_window.py:250
 msgid "Are you sure you want to delete {0}? This action cannot be undone."
 msgstr ""
-"Sind Sie sicher, dass Sie {0} löschen möchten? Diese Aktion kann nicht "
-"rückgängig gemacht werden."
+"Tem a certeza que deseja apagar {0}? Esta acção não pode ser desfeita."
 
 #: ui/composers_window.py:259
 msgid "Failed to delete composer:"
-msgstr "Löschen des Komponisten fehlgeschlagen:"
+msgstr "Falha ao excluir o compositor:"
 
 #: ui/composers_window.py:308
 msgid "Search Composers"
-msgstr "Suche nach Komponisten"
+msgstr "Compositores de Pesquisa"
 
 #: ui/composers_window.py:335
 msgid "Search Composer"
-msgstr "Suche Composer"
+msgstr "Compositor de Pesquisa"
 
 #: ui/composers_window.py:342
 msgid "Search Genre"
-msgstr "Genre suchen"
+msgstr "Procurar o Gênero"
 
 #: ui/composers_window.py:366 ui/search_window.py:173
 msgid "No recent searches found."
-msgstr "Es wurden keine aktuellen Suchanfragen gefunden."
+msgstr "Nenhuma pesquisa recente encontrada."
 
 #: ui/composers_window.py:453 ui/extensions_window.py:233
 #: ui/favorites_window.py:359 ui/favorites_window.py:486
 #: ui/history_window.py:217 ui/history_window.py:288
 #: ui/network_media_window.py:260 ui/search_window.py:327
 msgid "Details"
-msgstr "Einzelheiten"
+msgstr "Detalhes"
 
 #: ui/composers_window.py:496
 msgid "Composer Search"
-msgstr "Komponisten-Suche"
+msgstr "Pesquisa do Compositor"
 
 #: ui/configuration_window.py:21
 msgid "Configuration Settings"
-msgstr "Konfigurationseinstellungen"
+msgstr "Configurações"
 
 #: ui/configuration_window.py:42
 msgid "General"
-msgstr "Allgemeines"
+msgstr "Geral"
 
 #: ui/configuration_window.py:43
 msgid "Audio"
-msgstr "Audio"
+msgstr "Áudio"
 
 #: ui/configuration_window.py:44
 msgid "API Keys"
-msgstr "API Schlüssel"
+msgstr "Chaves de API"
 
 #: ui/configuration_window.py:45
 msgid "TTS Settings"
-msgstr "Text in Sprache Einstellungen"
+msgstr "Configuração do TTS"
 
 #: ui/configuration_window.py:57
 msgid "Save Configuration"
-msgstr "Konfiguration speichern"
+msgstr "Salvar configuração"
 
 #: ui/configuration_window.py:66
 msgid "Foreground Color"
-msgstr "Vordergrundfarbe"
+msgstr "Cor Principal"
 
 #: ui/configuration_window.py:67
 msgid "Background Color"
-msgstr "Hintergrundfarbe"
+msgstr "Cor de Fundo"
 
 #: ui/configuration_window.py:68
 msgid "Language Learning Language"
-msgstr "Sprache lernen"
+msgstr "Linguagem"
 
 #: ui/configuration_window.py:69
 msgid "Language Learning Level"
-msgstr "Sprachlernstufe"
+msgstr "Nível de aprendizagem de línguas"
 
 #: ui/configuration_window.py:70 ui/playlist_window.py:285
 msgid "Enable Dynamic Volume"
-msgstr "Dynamisches Volumen aktivieren"
+msgstr "Habilitar volume dinâmico"
 
 #: ui/configuration_window.py:71
 msgid "Enable Library Extender"
-msgstr "Bibliothek-Erweiterung einschalten"
+msgstr "Activar o Extender da Biblioteca"
 
 #: ui/configuration_window.py:72 ui/playlist_window.py:291
 msgid "Enable Long Track Splitting"
-msgstr "Aktivieren der Aufteilung langer Spuren"
+msgstr "Activar a divisão de faixas longas"
 
 #: ui/configuration_window.py:73
 msgid "Long Track Cutoff (minutes)"
-msgstr "Grenzwert für lange Spuren (Minuten)"
+msgstr "Corte Long Track (minutos)"
 
 #: ui/configuration_window.py:81
 msgid "Play Videos in Separate Window"
-msgstr "Videos im eigenen Fenster abspielen"
+msgstr "Reproduzir vídeos em janela separada"
 
 #: ui/configuration_window.py:82
 msgid "Recently Played Check Count"
-msgstr "Zählung zur Überprüfung der zuletzt gespielten"
+msgstr "Contagem de verificação recentemente reproduzida"
 
 #: ui/configuration_window.py:83
 msgid "Max Search Results"
-msgstr "Maximale Suchergebnisse"
+msgstr "Resultados da Pesquisa Máxima"
 
 #: ui/configuration_window.py:84
 msgid "Max Recent Searches"
-msgstr "Kürzlichen Suchanfragen maximal"
+msgstr "Max Pesquisas recentes"
 
 #: ui/configuration_window.py:92
 msgid "OpenWeather API Key"
-msgstr "OpenWeather API Schlüssel"
+msgstr "API OpenWeather Chave"
 
 #: ui/configuration_window.py:93
 msgid "OpenWeather City"
-msgstr "OpenWeather Stadt"
+msgstr "Cidade do Tempo Aberto"
 
 #: ui/configuration_window.py:94
 msgid "News API Key"
-msgstr "News API Schlüssel"
+msgstr "API de Notícias Chave"
 
 #: ui/configuration_window.py:102
 msgid "Coqui TTS Location"
-msgstr "Coqui TTS Standort"
+msgstr "Coqui TTS Localização"
 
 #: ui/configuration_window.py:103
 msgid "LLM Model Name"
-msgstr "LLM Bezeichnung"
+msgstr "LLM Nome do modelo"
 
 #: ui/configuration_window.py:104
 msgid "Max Chunk Tokens"
-msgstr "Max Chunk-Münzen"
+msgstr "Max Chunk Tokens"
 
 #: ui/configuration_window.py:130
 msgid "Close Configuration"
-msgstr "Schließen Konfiguration"
+msgstr "Fechar a Configuração"
 
 #: ui/configuration_window.py:131
 msgid ""
 "Do you want to close the configuration window?\n"
 "Any unsaved changes will be lost."
 msgstr ""
-"Möchten Sie das Konfigurationsfenster schließen?\n"
-"Jegliche ungenutzte Änderungen werden verloren gehen."
+"Deseja fechar a janela de configuração?\n"
+"Quaisquer mudanças não salvas serão perdidas."
 
 #: ui/configuration_window.py:150
 msgid "Configuration saved successfully"
-msgstr "Konfiguration erfolgreich gespeichert"
+msgstr "Configuração salva com sucesso"
 
 #: ui/configuration_window.py:152
 msgid "Failed to save configuration"
-msgstr "Nicht verfügbar, um Konfiguration zu speichern"
+msgstr "Falha ao salvar a configuração"
 
 #: ui/extensions_window.py:22 ui/extensions_window.py:31
 #: ui/extensions_window.py:294
 msgid "Extensions"
-msgstr "Erweiterungen"
+msgstr "Extensões"
 
 #: ui/extensions_window.py:66
 msgid "Extension Settings"
-msgstr "Erweiterungseinstellungen"
+msgstr "Configuração da Extensão"
 
 #: ui/extensions_window.py:72 ui/extensions_window.py:161
 msgid "Strategy"
-msgstr "Strategie"
+msgstr "Estratégia"
 
 #: ui/extensions_window.py:83
 msgid "Clear History"
-msgstr "Löschen des Verlaufs"
+msgstr "Limpar o Histórico"
 
 #: ui/extensions_window.py:89
 msgid "Statistics"
-msgstr "Statistik"
+msgstr "Estatísticas"
 
 #: ui/extensions_window.py:153
 msgid "Date"
-msgstr "Datum"
+msgstr "Data"
 
 #: ui/extensions_window.py:155
 msgid "Published"
-msgstr "Veröffentlicht"
+msgstr "Publicado"
 
 #: ui/extensions_window.py:159
 msgid "Duration"
-msgstr "Dauer"
+msgstr "Duração"
 
 #: ui/extensions_window.py:163
 msgid "Attribute"
-msgstr "Merkmal"
+msgstr "Atributo"
 
 #: ui/extensions_window.py:165
 msgid "Search Query"
-msgstr "Sucheanfrage"
+msgstr "Pesquisar Pesquisa"
 
 #: ui/extensions_window.py:167
 msgid "Actions"
-msgstr "Maßnahmen"
+msgstr "Acções"
 
 #: ui/extensions_window.py:177 ui/extensions_window.py:358
 #: ui/extensions_window.py:368
@@ -776,581 +774,580 @@ msgstr "N/A"
 
 #: ui/extensions_window.py:254
 msgid "Total Extensions: {}"
-msgstr "Gesamterweiterungen: {}"
+msgstr "Extensões totais: {}"
 
 #: ui/extensions_window.py:260
 msgid "Average Duration: {}"
-msgstr "Durchschnittliche Dauer: {}"
+msgstr "Duração média: {}"
 
 #: ui/extensions_window.py:262
 msgid "Average Duration: N/A"
-msgstr "Durchschnittliche Dauer: Nicht zutreffend"
+msgstr "Duração média: N/A"
 
 #: ui/extensions_window.py:276
 msgid "Confirm Clear"
-msgstr "Bestätigen Klar"
+msgstr "Confirmar Limpar"
 
 #: ui/extensions_window.py:277
 msgid "Are you sure you want to clear all extension history?"
-msgstr ""
-"Sind Sie sicher, dass Sie alle Erweiterungsgeschichte löschen möchten?"
+msgstr "Tem certeza de que deseja limpar todo o histórico de extensão?"
 
 #: ui/extensions_window.py:302
 msgid "Confirm Delete"
-msgstr "Bestätigen Löschen"
+msgstr "Confirmar Apagar"
 
 #: ui/extensions_window.py:303
 msgid "Are you sure you want to delete this extension?"
-msgstr "Sind Sie sicher, dass Sie diese Erweiterung löschen möchten?"
+msgstr "Tem certeza de que deseja excluir esta extensão?"
 
 #: ui/extensions_window.py:317
 msgid "Extension Details"
-msgstr "Erweiterungsdetails"
+msgstr "Detalhes da Extensão"
 
 #: ui/extensions_window.py:351
 msgid "Published:"
-msgstr "Veröffentlicht:"
+msgstr "Publicado:"
 
 #: ui/extensions_window.py:364
 msgid "Duration:"
-msgstr "Dauer:"
+msgstr "Duração:"
 
 #: ui/extensions_window.py:374
 msgid "Strategy:"
-msgstr "Strategie:"
+msgstr "Estratégia:"
 
 #: ui/extensions_window.py:382
 msgid "Attribute:"
-msgstr "Merkmal:"
+msgstr "Atributos:"
 
 #: ui/extensions_window.py:390
 msgid "Search Query:"
-msgstr "Suchanfrage:"
+msgstr "Pesquisar Pesquisa:"
 
 #: ui/extensions_window.py:398
 msgid "Description:"
-msgstr "Beschreibung:"
+msgstr "Descrição:"
 
 #: ui/extensions_window.py:406
 msgid "File:"
-msgstr "Datei:"
+msgstr "Ficheiro:"
 
 #: ui/extensions_window.py:413 ui/favorites_window.py:629
 msgid "Close"
-msgstr "Schließen"
+msgstr "Fechar"
 
 #: ui/favorites_window.py:196 ui/favorites_window.py:205
 #: ui/favorites_window.py:209
 msgid "Favorite Exists"
-msgstr "Liebling existiert"
+msgstr "Existe o favorito"
 
 #: ui/favorites_window.py:197 ui/favorites_window.py:206
 #: ui/favorites_window.py:210
 msgid "This favorite already exists."
-msgstr "Diese Liebling existiert bereits."
+msgstr "Este favorito já existe."
 
 #: ui/favorites_window.py:220
 msgid "Favorite updated successfully."
-msgstr "Favorit aktualisiert erfolgreich."
+msgstr "Actualizado com sucesso."
 
 #: ui/favorites_window.py:249
 msgid "Create Favorite From Current Track"
-msgstr "Aus dem aktuellen Track ein Lieblingstrack erstellen."
+msgstr "Criar favorito da faixa atual"
 
 #: ui/favorites_window.py:257 ui/favorites_window.py:618
 msgid "Create Favorite"
-msgstr "Favoriten erstellen"
+msgstr "Criar Favorito"
 
 #: ui/favorites_window.py:262
 msgid "Search Favorites"
-msgstr "Suche Favoriten"
+msgstr "Pesquisar Favoritos"
 
 #: ui/favorites_window.py:326
 msgid "No favorites found."
-msgstr "Keine Favoriten gefunden."
+msgstr "Não foram encontrados favoritos."
 
 #: ui/favorites_window.py:351 ui/favorites_window.py:478
 msgid "No title or filepath available"
-msgstr "Kein Titel oder Dateipfad verfügbar"
+msgstr "Nenhum título ou caminho de arquivo disponível"
 
 #: ui/favorites_window.py:366 ui/favorites_window.py:493
 #: ui/search_window.py:228
 msgid "Remove"
-msgstr "Entfernen"
+msgstr "Remover"
 
 #: ui/favorites_window.py:557
 msgid "Favorite Details"
-msgstr "Einzelheiten zu Favorit"
+msgstr "Detalhes favoritos"
 
 #: ui/favorites_window.py:594
 msgid "Type: Track"
-msgstr "Typ: Track"
+msgstr "Tipo: Faixa"
 
 #: ui/favorites_window.py:618
 msgid "Update Favorite"
-msgstr "Aktualisieren Favoriten"
+msgstr "Atualizar favorito"
 
 #: ui/favorites_window.py:624
 msgid "Remove Favorite"
-msgstr "Entfernen Favoriten"
+msgstr "Remover Favorito"
 
 #: ui/history_window.py:110
 msgid "History Type"
-msgstr "Geschichte-Typ"
+msgstr "Tipo de Histórico"
 
 #: ui/history_window.py:122
 msgid "Search History"
-msgstr "Geschichte der Suche"
+msgstr "Histórico da Pesquisa"
 
 #: ui/history_window.py:185
 msgid "No history found."
-msgstr "Keine Geschichte gefunden."
+msgstr "Nenhuma história encontrada."
 
 #: ui/network_media_window.py:77 ui/search_window.py:54
 msgid "Search Library"
-msgstr "Bibliothek durchsuchen"
+msgstr "Procurar Biblioteca"
 
 #: ui/network_media_window.py:115 ui/search_window.py:102
 #: ui/search_window.py:111 ui/search_window.py:120 ui/search_window.py:129
 #: ui/search_window.py:138 ui/search_window.py:147 ui/search_window.py:156
 msgid "Sort by"
-msgstr "Sortieren nach"
+msgstr "Ordenar por"
 
 #: ui/network_media_window.py:128 ui/network_media_window.py:234
 msgid "No recent urls found."
-msgstr "Keine aktuellen Urls gefunden."
+msgstr "Nenhuma url recente encontrada."
 
 #: ui/network_media_window.py:140 ui/search_window.py:185
 msgid "(No track selected)"
-msgstr "(Kein Titel ausgewählt)"
+msgstr "(Nenhuma faixa selecionada)"
 
 #: ui/network_media_window.py:201 ui/search_window.py:268
 msgid "Please wait, overwriting cache and searching..."
-msgstr "Bitte warten, Cache überschreiben und suchen..."
+msgstr "Por favor, aguarde, sobrescrever cache e pesquisa..."
 
 #: ui/network_media_window.py:201 ui/search_window.py:268
 msgid "Searching..."
-msgstr "Suche..."
+msgstr "Pesquisando..."
 
 #: ui/playlist_window.py:89
 msgid "Available Playlists"
-msgstr "Verfügbare Wiedergabelisten"
+msgstr "Listas de reprodução disponíveis"
 
 #: ui/playlist_window.py:100
 msgid "Current Playlist"
-msgstr "Aktuelle Wiedergabeliste"
+msgstr "Lista de Reprodução Actual"
 
 #: ui/playlist_window.py:111
 msgid "Tracks per Config"
-msgstr "Spuren pro Konfiguration"
+msgstr "Faixas por Configuração"
 
 #: ui/playlist_window.py:121
 msgid "Add to Master"
-msgstr "Zum Master hinzufügen"
+msgstr "Adicionar ao Mestre"
 
 #: ui/playlist_window.py:125
 msgid "Remove from Master"
-msgstr "Entfernen von Master"
+msgstr "Remover do Mestre"
 
 #: ui/playlist_window.py:129
 msgid "New Playlist"
-msgstr "Neue Wiedergabeliste"
+msgstr "Nova Lista de Reprodução"
 
 #: ui/playlist_window.py:133 ui/playlist_window.py:209
 msgid "Save Master Playlist"
-msgstr "Hauptwiedergabeliste speichern"
+msgstr "Gravar a Lista de Reprodução Mestre"
 
 #: ui/playlist_window.py:210
 msgid "Enter a name for this master playlist:"
-msgstr "Geben Sie einen Namen für diese Hauptwiedergabeliste:"
+msgstr "Indique um nome para esta lista de reprodução principal:"
 
 #: ui/playlist_window.py:223 ui/playlist_window.py:375
 msgid "Success"
-msgstr "Erfolg"
+msgstr "Sucesso"
 
 #: ui/playlist_window.py:223
 msgid "Master playlist created successfully"
-msgstr "Hauptwiedergabeliste erfolgreich erstellt"
+msgstr "Lista de reprodução mestre criada com sucesso"
 
 #: ui/playlist_window.py:254
 msgid "Playlist Name"
-msgstr "Wiedergabelistenname"
+msgstr "Nome da Lista de Reprodução"
 
 #: ui/playlist_window.py:261
 msgid "Sort Type"
-msgstr "Sortier-Typ"
+msgstr "Tipo de Ordenação"
 
 #: ui/playlist_window.py:270
 msgid "Directory"
-msgstr "Verzeichnis"
+msgstr "Pasta"
 
 #: ui/playlist_window.py:280
 msgid "Playback Config Settings"
-msgstr "Wiedergabelisten-Einstellungen"
+msgstr "Configuração da Configuração da Reprodução"
 
 #: ui/playlist_window.py:296
 msgid "Track Splitting Cutoff (minutes)"
-msgstr "Einstellung der Spurunterscheidung (Minuten)"
+msgstr "Cortar Faixas (minutos)"
 
 #: ui/playlist_window.py:306
 msgid "Start Playlist"
-msgstr "Starten Sie die Wiedergabeliste"
+msgstr "Iniciar lista de reprodução"
 
 #: ui/playlist_window.py:310
 msgid "Add to Current Playlist"
-msgstr "Zur aktuellen Wiedergabeliste hinzufügen"
+msgstr "Adicionar à Lista de Reprodução Actual"
 
 #: ui/playlist_window.py:314
 msgid "Add to New Master Playlist"
-msgstr "Zu neuem Hauptwiedergabelisten hinzufügen"
+msgstr "Adicionar à Nova Lista de Reprodução Mestre"
 
 #: ui/playlist_window.py:318
 msgid "Cancel"
-msgstr "Abbrechen"
+msgstr "Cancelar"
 
 #: ui/playlist_window.py:326
 msgid "Please enter a playlist name"
-msgstr "Bitte geben Sie einen Wiedergabelistennamen ein"
+msgstr "Digite um nome da lista de reprodução"
 
 #: ui/playlist_window.py:375
 msgid "Playlist created successfully"
-msgstr "Wiedergabeliste erstellt erfolgreich"
+msgstr "Lista de reprodução criada com sucesso"
 
 #: ui/presets_window.py:52
 msgid "New Preset (ERROR no presets found)"
-msgstr "Neue Voreinstellung (FEHLER keine Voreinstellungen gefunden)"
+msgstr "Nova Predefinição (ERROR sem predefinições encontradas)"
 
 #: ui/presets_window.py:83
 msgid "Not enough presets found."
-msgstr "Nicht genügend Voreinstellungen gefunden."
+msgstr "Não foram encontradas predefinições suficientes."
 
 #: ui/presets_window.py:93
 msgid "Presets Window"
-msgstr "Fenster Voreinstellungen"
+msgstr "Janela de Predefinições"
 
 #: ui/presets_window.py:114
 msgid "Set a new preset"
-msgstr "Eine neue Voreinstellung festlegen"
+msgstr "Definir uma nova predefinição"
 
 #: ui/presets_window.py:115
 msgid "New Preset"
-msgstr "Neue Voreinstellung"
+msgstr "Nova Predefinição"
 
 #: ui/presets_window.py:119
 msgid "Add preset"
-msgstr "Voreinstellung hinzufügen"
+msgstr "Adicionar predefinição"
 
 #: ui/presets_window.py:121
 msgid "Clear presets"
-msgstr "Voreinstellungen löschen"
+msgstr "Limpar predefinições"
 
 #: ui/presets_window.py:139
 msgid "Set"
-msgstr "Einstellen"
+msgstr "Definir"
 
 #: ui/presets_window.py:163
 msgid "Invalid preset: {0}"
-msgstr "Ungültige Voreinstellung: {0}"
+msgstr "Predefinição inválida: {0}"
 
 #: ui/schedules_window.py:30
 msgid "Modify Preset Schedule: {0}"
-msgstr "Voreingestellten Zeitplan ändern: {0}"
+msgstr "Modificar a Agenda Predefinida: {0}"
 
 #: ui/schedules_window.py:39
 msgid "Schedule Name"
-msgstr "Zeitplan Name"
+msgstr "Nome da Agenda"
 
 #: ui/schedules_window.py:45 ui/schedules_window.py:184
 msgid "Add schedule"
-msgstr "Zeitplan hinzufügen"
+msgstr "Adicionar agendamento"
 
 #: ui/schedules_window.py:71
 msgid "Start Time"
-msgstr "Anfangszeit"
+msgstr "Hora de início"
 
 #: ui/schedules_window.py:81
 msgid "End Time"
-msgstr "Endzeit"
+msgstr "Hora do fim"
 
 #: ui/schedules_window.py:91
 msgid "Shutdown Time"
-msgstr "Abschaltzeit"
+msgstr "Hora de encerramento"
 
 #: ui/schedules_window.py:163
 msgid "Preset Schedules"
-msgstr "Voreingestellte Zeitpläne"
+msgstr "Agendas predefinidas"
 
 #: ui/schedules_window.py:182
 msgid "Create and modify schedules"
-msgstr "Zeitpläne erstellen und ändern"
+msgstr "Criar e modificar agendamentos"
 
 #: ui/schedules_window.py:186
 msgid "Clear schedules"
-msgstr "Klare Zeitpläne"
+msgstr "Limpar agendamentos"
 
 #: ui/schedules_window.py:207
 msgid "Modify"
-msgstr "Ändern"
+msgstr "Modificar"
 
 #: ui/search_window.py:301
 msgid "No results found."
-msgstr "Keine Ergebnisse gefunden."
+msgstr "Não foram encontrados resultados."
 
 #: ui/track_details_window.py:45 ui/track_details_window.py:231
 msgid "Track Details"
-msgstr "Details zur Strecke"
+msgstr "Detalhes da Faixa"
 
 #: ui/track_details_window.py:60 ui/weather_window.py:40
 msgid "Update"
-msgstr "Aktualisierung"
+msgstr "Atualizar"
 
 #: ui/track_details_window.py:73
 msgid "Album Artist"
-msgstr "Albumkünstler"
+msgstr "Artista do Álbum"
 
 #: ui/track_details_window.py:79 utils/globals.py:125 utils/globals.py:197
 #: utils/globals.py:250
 msgid "Genre"
-msgstr "Genre"
+msgstr "Género"
 
 #: ui/track_details_window.py:82
 msgid "Year"
-msgstr "Jahr"
+msgstr "Ano"
 
 #: ui/track_details_window.py:89
 msgid "Track Number"
-msgstr "Titelnummer"
+msgstr "Número da Faixa"
 
 #: ui/track_details_window.py:93 ui/track_details_window.py:106
 msgid "of"
-msgstr "von"
+msgstr "de"
 
 #: ui/track_details_window.py:102
 msgid "Disc Number"
-msgstr "Datenträger Nummer"
+msgstr "Número do disco"
 
 #: ui/track_details_window.py:112
 msgid "Musical Form"
-msgstr "Musikalische Form"
+msgstr "Forma Musical"
 
 #: ui/track_details_window.py:115
 msgid "Main Instrument"
-msgstr "Hauptinstrument"
+msgstr "Instrumento Principal"
 
 #: ui/track_details_window.py:119
 msgid "Lyrics"
-msgstr "Liedtext"
+msgstr "Letras"
 
 #: ui/track_details_window.py:126
 msgid "Comments"
-msgstr "Bemerkungen"
+msgstr "Observações"
 
 #: ui/track_details_window.py:140
 msgid "Duration: "
-msgstr "Dauer: "
+msgstr "Duração: "
 
 #: ui/track_details_window.py:143
 msgid "File: "
-msgstr "Datei: "
+msgstr "Ficheiro: "
 
 #: ui/track_details_window.py:214
 msgid "Track details updated successfully"
-msgstr "Die Track-Detail-Aktualisierung war erfolgreich."
+msgstr "Detalhes da faixa atualizados com sucesso"
 
 #: ui/track_details_window.py:217
 msgid "Failed to update track details. Check the logs for more information."
 msgstr ""
-"Konnte die Trackdetails nicht aktualisieren. Um weitere Details zu erhalten,"
-" prüfen Sie die Logfiles."
+"Falhou ao atualizar os detalhes da pista. Verifique o log para mais "
+"informações."
 
 #: utils/globals.py:127 utils/globals.py:198 utils/globals.py:251
 msgid "Form"
-msgstr "Musikalische Form"
+msgstr "Forma"
 
 #: utils/globals.py:129 utils/globals.py:199 utils/globals.py:252
 msgid "Instrument"
-msgstr "Musikinstrument"
+msgstr "Instrumento"
 
 #: utils/globals.py:135 utils/globals.py:253
 msgid "Random"
-msgstr "Zufällig"
+msgstr "Aleatório"
 
 #: utils/globals.py:136
 msgid "Sequence"
-msgstr "Sequenz"
+msgstr "Sequência"
 
 #: utils/globals.py:137
 msgid "Album Shuffle"
-msgstr "Album-Mischung"
+msgstr "Embaralhar álbuns"
 
 #: utils/globals.py:138
 msgid "Artist Shuffle"
-msgstr "Künstler-Mischung"
+msgstr "Embaralhar artistas"
 
 #: utils/globals.py:139
 msgid "Composer Shuffle"
-msgstr "Komponisten-Mischung"
+msgstr "Embaralhar compositores"
 
 #: utils/globals.py:140
 msgid "Genre Shuffle"
-msgstr "Genre-Mischung"
+msgstr "Embaralhar gêneros"
 
 #: utils/globals.py:141
 msgid "Form Shuffle"
-msgstr "Form-Mischung"
+msgstr "Embaralhar formas"
 
 #: utils/globals.py:142
 msgid "Instrument Shuffle"
-msgstr "Instrumenten-Mischung"
+msgstr "Embaralhar instrumentos"
 
 #: utils/globals.py:301
 msgid "weather"
-msgstr "Wetter"
+msgstr "tempo"
 
 #: utils/globals.py:303
 msgid "news"
-msgstr "Nachrichten"
+msgstr "notícias"
 
 #: utils/globals.py:307
 msgid "joke"
-msgstr "Scherz"
+msgstr "piada"
 
 #: utils/globals.py:309
 msgid "fact"
-msgstr "Tatsache"
+msgstr "facto"
 
 #: utils/globals.py:311
 msgid "fable"
-msgstr "Fabel"
+msgstr "fábula"
 
 #: utils/globals.py:313
 msgid "truth and lie"
-msgstr "Wahrheit und Lüge"
+msgstr "verdade e mentira"
 
 #: utils/globals.py:315
 msgid "aphorism"
-msgstr "Aphorismus"
+msgstr "aforismo"
 
 #: utils/globals.py:317
 msgid "poem"
-msgstr "Gedicht"
+msgstr "poema"
 
 #: utils/globals.py:319
 msgid "quote"
-msgstr "Zitat"
+msgstr "citação"
 
 #: utils/globals.py:321
 msgid "tongue twister"
-msgstr "Zungenbrecher"
+msgstr "torcedor de língua"
 
 #: utils/globals.py:323
 msgid "motivation"
-msgstr "Motivation"
+msgstr "motivação"
 
 #: utils/globals.py:325
 msgid "calendar"
-msgstr "Kalender"
+msgstr "calendário"
 
 #: utils/globals.py:327
 msgid "more about the next track"
-msgstr "mehr über den nächsten Track"
+msgstr "mais sobre a próxima faixa"
 
 #: utils/globals.py:329
 msgid "more about the last track"
-msgstr "mehr über den letzten Track"
+msgstr "mais sobre a última faixa"
 
 #: utils/globals.py:331
 msgid "more about our playlist"
-msgstr "mehr über unsere Playlist"
+msgstr "mais sobre nossa lista de reprodução"
 
 #: utils/globals.py:333
 msgid "random wiki article"
-msgstr "zufälliger Wiki-Artikel"
+msgstr "artigo wiki aleatório"
 
 #: utils/globals.py:335
 msgid "funny story"
-msgstr "lustige Geschichte"
+msgstr "história engraçada"
 
 #: utils/globals.py:337
 msgid "language learning"
-msgstr "Sprachenlernen"
+msgstr "aprendizagem de línguas"
 
 #: utils/globals.py:370
 msgid "Tracks"
-msgstr "Titel"
+msgstr "Faixas"
 
 #: utils/globals.py:371
 msgid "Albums"
-msgstr "Alben"
+msgstr "Álbuns"
 
 #: utils/globals.py:372
 msgid "Artists"
-msgstr "Künstler"
+msgstr "Artistas"
 
 #: utils/globals.py:375
 msgid "Forms"
-msgstr "Formulare"
+msgstr "Formas"
 
 #: utils/globals.py:376
 msgid "Instruments"
-msgstr "Instrumente"
+msgstr "Instrumentos"
 
 #: utils/job_queue.py:35
 msgid " (Pending runs: {0})"
-msgstr " (Ausstehende Läufe: {0})"
+msgstr " (corridas pendentes: {0})"
 
 #: utils/translations.py:32
 msgid "Monday"
-msgstr "Montag"
+msgstr "Segunda-feira"
 
 #: utils/translations.py:34
 msgid "Tuesday"
-msgstr "Dienstag"
+msgstr "Terça-feira"
 
 #: utils/translations.py:36
 msgid "Wednesday"
-msgstr "Mittwoch"
+msgstr "Quarta-feira"
 
 #: utils/translations.py:38
 msgid "Thursday"
-msgstr "Donnerstag"
+msgstr "Quinta-feira"
 
 #: utils/translations.py:40
 msgid "Friday"
-msgstr "Freitag"
+msgstr "Sexta-feira"
 
 #: utils/translations.py:42
 msgid "Saturday"
-msgstr "Samstag"
+msgstr "Sábado"
 
 #: utils/translations.py:44
 msgid "Sunday"
-msgstr "Sonntag"
+msgstr "Domingo"
 
 #: utils/translations.py:56
 msgid "seconds"
-msgstr "Sekunden"
+msgstr "segundos"
 
 #: utils/translations.py:58
 msgid "minutes"
-msgstr "Minuten"
+msgstr "minutos"
 
 #: utils/translations.py:60
 msgid "hours"
-msgstr "Stunden"
+msgstr "horas"
 
 #: utils/translations.py:62
 msgid "days"
-msgstr "Tage"
+msgstr "dias"
 
 #: utils/translations.py:64
 msgid "weeks"
-msgstr "Wochen"
+msgstr "semanas"
 
 #: utils/translations.py:66
 msgid "months"
-msgstr "Monate"
+msgstr "meses"
 
 #: utils/translations.py:68
 msgid "years"
-msgstr "Jahre"
+msgstr "anos"

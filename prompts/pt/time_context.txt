@@ -1,0 +1,1 @@
+A hora atual é {time} em {day}, {date}. 

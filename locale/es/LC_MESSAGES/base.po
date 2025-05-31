@@ -2,9 +2,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
-"POT-Creation-Date: 2025-05-30 18:07-0400\n"
-"PO-Revision-Date: 2025-05-30 18:07-0400\n"
-"Last-Translator: Translator Name <translator@example.com>\n"
+"POT-Creation-Date: 2025-05-30 22:06-0400\n"
+"PO-Revision-Date: 2025-05-30 22:06-0400\n"
+"Last-Translator: Thomas Hall <tomhall.main@gmail.com>\n"
 "Language-Team: es Team <<EMAIL>>\n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
@@ -865,6 +865,10 @@ msgstr "Búsqueda Favoritos"
 msgid "No favorites found."
 msgstr "No se encontraron favoritos."
 
+#: ui/favorites_window.py:351 ui/favorites_window.py:478
+msgid "No title or filepath available"
+msgstr "No hay título o filepath disponible"
+
 #: ui/favorites_window.py:366 ui/favorites_window.py:493
 #: ui/search_window.py:228
 msgid "Remove"
@@ -897,10 +901,6 @@ msgstr "Búsqueda Historia"
 #: ui/history_window.py:185
 msgid "No history found."
 msgstr "No hay historia encontrada."
-
-#: ui/history_window.py:211 ui/history_window.py:282
-msgid "★"
-msgstr ""
 
 #: ui/network_media_window.py:77 ui/search_window.py:54
 msgid "Search Library"
@@ -1350,7 +1350,3 @@ msgstr "meses"
 #: utils/translations.py:68
 msgid "years"
 msgstr "años"
-
-#: ui/favorites_window.py:351 ui/favorites_window.py:478
-msgid "No title or filepath available"
-msgstr "No hay título o filepath disponible"

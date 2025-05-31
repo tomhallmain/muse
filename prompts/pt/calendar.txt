@@ -1,0 +1,1 @@
+A data é {DATE}. A hora é {TIME}. Partilhe um facto interessante sobre esta época do ano/data ou faça uma declaração prospectiva e um lembrete sobre possíveis acontecimentos neste ano ou no próximo.
