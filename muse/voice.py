@@ -65,6 +65,23 @@ class Voice:
             Utils.log_red(e)
             traceback.print_exc()
 
+    def speak_file(self, filepath, topic="", save_mp3=False, split_on_each_line=False, locale=None):
+        # Process a file and speak its contents
+        if not self.can_speak or self._tts is None:
+            Utils.log_yellow("Cannot speak.")
+            return
+        Utils.log(f"Speaking file: {filepath}")
+        temp_tts = TextToSpeechRunner(self.model_args, filepath="muse_voice", overwrite=True, run_context=self.run_context)
+        current_time_str = str(datetime.datetime.now().timestamp())
+        if "." in current_time_str:
+            current_time_str = current_time_str.split(".")[0]
+        self._tts.set_output_path(topic + "_" + current_time_str + "_")
+        try:
+            return temp_tts.speak_file(filepath, save_mp3=save_mp3, split_on_each_line=split_on_each_line, locale=locale)
+        except Exception as e:
+            Utils.log_red(e)
+            traceback.print_exc()
+
     def finish_speaking(self):
         if not self.can_speak or self._tts is None:
             Utils.log_yellow("Cannot speak.")

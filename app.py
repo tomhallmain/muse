@@ -10,7 +10,7 @@ from tkinter import (
     StringVar, Text, Toplevel, messagebox
 )
 import tkinter.font as fnt
-from tkinter.ttk import Button, Entry, OptionMenu, Progressbar, Scale
+from tkinter.ttk import Button, Entry, OptionMenu, Progressbar, Scale, Style
 from ttkthemes import ThemedTk
 
 from utils.globals import Globals, PlaylistSortType, PlaybackMasterStrategy, TrackAttribute
@@ -33,6 +33,7 @@ from ui.schedules_window import SchedulesWindow
 from ui.search_window import SearchWindow
 from ui.track_details_window import TrackDetailsWindow
 from ui.weather_window import WeatherWindow
+from ui.tts_window import TTSWindow
 
 # Core application imports
 from muse.run import Run
@@ -271,7 +272,10 @@ class App():
 
         # Add configuration button at the bottom
         self.config_btn = None
-        self.add_button("config_btn", _("Configuration"), self.open_configuration_window)
+        self.add_button("config_btn", _("Configuration"), self.open_configuration_window, increment_row_counter=False)
+
+        self.tts_btn = None
+        self.add_button("tts_btn", _("Text to Speech"), self.open_tts_window, interior_column=2)
 
         self.media_frame = MediaFrame(self.master, fill_canvas=True)
 
@@ -313,6 +317,9 @@ class App():
             elif isinstance(attr, Checkbutton):
                 attr.config(bg=AppStyle.BG_COLOR, fg=AppStyle.FG_COLOR,
                             selectcolor=AppStyle.BG_COLOR)#, font=fnt.Font(size=config.font_size))
+        # Configure ttk styles
+        style = Style()
+        AppStyle.configure_ttk_styles(style)
         self.master.update()
         if do_toast:
             self.toast(f"Theme switched to {AppStyle.get_theme_name()}.")
@@ -654,6 +661,12 @@ class App():
             weather_window = WeatherWindow(self.master, self.app_actions)
         except Exception as e:
             Utils.log_red(f"Exception opening weather window: {e}")
+
+    def open_tts_window(self):
+        try:
+            tts_window = TTSWindow(self.master)
+        except Exception as e:
+            Utils.log_red(f"Exception opening TTS window: {e}")
 
     def open_favorites_window(self):
         try:

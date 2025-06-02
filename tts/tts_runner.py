@@ -276,7 +276,7 @@ class TextToSpeechRunner:
 
     def speak(self, text, save_mp3=False, locale=None):
         if self.run_context and self.run_context.should_skip():
-            return
+            return None
             
         invocation = TTSSpeakInvocation.create(self._speak)
         
@@ -285,15 +285,15 @@ class TextToSpeechRunner:
             
             while self.speech_queue.job_running:
                 if self.run_context and self.run_context.should_skip():
-                    return
+                    return None
                 time.sleep(0.5)
-            self.combine_audio_files(save_mp3, text_content=full_text)
+            return self.combine_audio_files(save_mp3, text_content=full_text)
         finally:
             invocation.cleanup()
 
     def speak_file(self, filepath, save_mp3=True, split_on_each_line=False, locale=None):
         if self.run_context and self.run_context.should_skip():
-            return
+            return None
             
         invocation = TTSSpeakInvocation.create(self._speak)
         
@@ -302,9 +302,9 @@ class TextToSpeechRunner:
             
             while self.speech_queue.job_running:
                 if self.run_context and self.run_context.should_skip():
-                    return
+                    return None
                 time.sleep(0.5)
-            self.combine_audio_files(save_mp3, text_content=full_text)
+            return self.combine_audio_files(save_mp3, text_content=full_text)
         finally:
             invocation.cleanup()
 
