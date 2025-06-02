@@ -9,6 +9,9 @@ from utils.name_ops import NameOps
 from utils.utils import Utils
 
 
+# NOTE this class is not used in normal runtime, but is used to perform quality checks and batch imports.
+
+
 def do_print(f, s):
     f.write(s + "\n")
     print(s)
