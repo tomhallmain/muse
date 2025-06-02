@@ -137,6 +137,8 @@ class App():
             "get_current_track": self.get_current_track,
             "add_favorite": self.add_favorite,
             "open_track_details": self.open_track_details_window,
+            "find_track": lambda search_query: SearchWindow.find_track(self.library_data, search_query),
+            "search_and_play": lambda search_query: self.start_playback(SearchWindow.find_track(self.library_data, search_query)),
         })
 
         # Sidebar

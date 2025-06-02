@@ -1,9 +1,11 @@
 from datetime import datetime
+import os
 
 from tkinter import Toplevel, Label, StringVar, Frame, messagebox
 from tkinter.ttk import Button, OptionMenu
 
 from extensions.extension_manager import ExtensionManager
+from extensions.library_extender import q20, q23
 from lib.tk_scroll_demo import ScrollFrame
 from ui.app_style import AppStyle
 from ui.base_window import BaseWindow
@@ -29,7 +31,7 @@ class ExtensionsWindow(BaseWindow):
         # Create and configure top level window
         ExtensionsWindow.top_level = Toplevel(master)
         ExtensionsWindow.top_level.title(_("Extensions"))
-        ExtensionsWindow.top_level.geometry("1000x800")
+        ExtensionsWindow.top_level.geometry("1400x800")
         ExtensionsWindow.top_level.protocol("WM_DELETE_WINDOW", self.on_closing)
         
         self.master = ExtensionsWindow.top_level
@@ -111,7 +113,7 @@ class ExtensionsWindow(BaseWindow):
 
         # Create ScrollFrame for the extension list
         self.scroll_frame = ScrollFrame(self.outer_frame, bg_color=AppStyle.BG_COLOR, 
-                                        width=1000, height=800)
+                                        width=1400, height=800)
         self.scroll_frame.grid(row=0, column=0, sticky="nsew")
 
         # Lists to maintain references to widgets
@@ -124,6 +126,7 @@ class ExtensionsWindow(BaseWindow):
         self.query_labels = []
         self.details_buttons = []
         self.delete_buttons = []
+        self.play_buttons = []
 
         # Configure grid weights
         self.content.grid_rowconfigure(0, weight=1)
@@ -145,6 +148,7 @@ class ExtensionsWindow(BaseWindow):
         self.query_labels.clear()
         self.details_buttons.clear()
         self.delete_buttons.clear()
+        self.play_buttons.clear()
 
         # Header row
         header_bg = AppStyle.BG_COLOR
@@ -165,7 +169,7 @@ class ExtensionsWindow(BaseWindow):
         Label(self.scroll_frame.viewPort, text=_('Search Query'), 
               bg=header_bg, fg=header_fg).grid(row=0, column=6, sticky='w', padx=5, pady=2)
         Label(self.scroll_frame.viewPort, text=_('Actions'), 
-              bg=header_bg, fg=header_fg).grid(row=0, column=7, columnspan=2, sticky='w', padx=5, pady=2)
+              bg=header_bg, fg=header_fg).grid(row=0, column=7, columnspan=3, sticky='w', padx=5, pady=2)
 
         # Get recent extensions (most recent first, limited to 500)
         recent_extensions = sorted(
@@ -185,7 +189,7 @@ class ExtensionsWindow(BaseWindow):
                 date_str = ext['date']
                 if date_str:
                     date = datetime.fromisoformat(date_str)
-                    date_str = date.strftime("%Y-%m-%d %H:%M")
+                    date_str = date.strftime("%Y-%m-%d")
             except:
                 pass
 
@@ -194,7 +198,7 @@ class ExtensionsWindow(BaseWindow):
                 published_date_str = ext['snippet']['publishTime']
                 if published_date_str:
                     date = datetime.fromisoformat(published_date_str)
-                    published_date_str = date.strftime("%Y-%m-%d %H:%M")
+                    published_date_str = date.strftime("%Y-%m-%d")
             except:
                 pass
 
@@ -241,9 +245,17 @@ class ExtensionsWindow(BaseWindow):
                 self._show_extension_details(extension)
             details_btn.bind("<Button-1>", details_handler)
 
+            # Add Play button
+            play_btn = Button(self.scroll_frame.viewPort, text=_("Play"))
+            play_btn.grid(row=row, column=8, padx=2, pady=2)
+            self.play_buttons.append(play_btn)
+            def play_handler(event, self=self, extension=ext):
+                self._play_extension(extension)
+            play_btn.bind("<Button-1>", play_handler)
+
             # Add Delete button
             delete_btn = Button(self.scroll_frame.viewPort, text=_("Delete"))
-            delete_btn.grid(row=row, column=8, padx=2, pady=2)
+            delete_btn.grid(row=row, column=9, padx=2, pady=2)
             self.delete_buttons.append(delete_btn)
             def delete_handler(event, self=self, extension=ext):
                 self._delete_extension(extension)
@@ -310,6 +322,30 @@ class ExtensionsWindow(BaseWindow):
                 ExtensionManager.store_extensions()
                 self._refresh_extension_list()
 
+    def _play_extension(self, extension):
+        """Attempt to play an extension by searching for its original file."""
+        try:
+            id = extension.get(q20, {}).get(q23, None)
+
+            # Get the original filename without extension
+            original_filename = os.path.splitext(os.path.basename(extension.get('filename', '')))[0]
+            if not id or not original_filename:
+                raise ValueError(_("No original filename or id found in extension data"))
+                
+            # Create a search query using the filename
+            search_query = {
+                'title': original_filename,  # Search in title field
+                'id': id,
+                'max_results': 1  # We only need one match
+            }
+            
+            # Call the search callback
+            self.app_actions.search_and_play(search_query)
+                
+        except Exception as e:
+            Utils.log_red(f"Error playing extension: {str(e)}")
+            messagebox.showerror(_("Error"), str(e))
+
 
 class ExtensionDetailsWindow(BaseWindow):
     """Window to display detailed information about an extension."""
@@ -357,7 +393,7 @@ class ExtensionDetailsWindow(BaseWindow):
                   row=current_row, column=0, sticky='w', padx=5, pady=2)
         try:
             published_date = datetime.fromisoformat(extension['snippet']['publishTime'])
-            published_str = published_date.strftime("%Y-%m-%d %H:%M")
+            published_str = published_date.strftime("%Y-%m-%d")
         except:
             published_str = _("N/A")
         Label(details_frame, text=published_str,

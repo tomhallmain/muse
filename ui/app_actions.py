@@ -19,6 +19,7 @@ class AppActions:
         "start_play_callback",
         "add_favorite",
         "open_track_details",
+        "search_and_play",
     ])
 
     def __init__(self, actions: Dict[str, Callable[..., Any]]):
