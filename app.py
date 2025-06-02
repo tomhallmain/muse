@@ -453,9 +453,11 @@ class App():
             self.destroy_grid_element("progress_bar")
             self.progress_bar = None
 
-    def start_playback(self, track=None, playlist_sort_type=None):
+    def start_playback(self, track=None, playlist_sort_type=None, overwrite=None):
         if playlist_sort_type is not None:
             self.sort_type.set(playlist_sort_type.get_translation())
+        if overwrite is not None:
+            self.overwrite.set(overwrite)
         override_scheduled = self.current_run is not None and not self.current_run.is_placeholder()
         self.run(track=track, override_scheduled=override_scheduled)
 

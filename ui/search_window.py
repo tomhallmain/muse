@@ -48,19 +48,20 @@ class SearchWindow(BaseWindow):
         app_info_cache.set("recent_searches", json_searches)
 
     @staticmethod
-    def find_track(library_data, search_query, save_to_recent=False):
+    def find_track(library_data, search_query, save_to_recent=False, overwrite=False):
         """Search for a track and play it if found.
         
         Args:
             library_data: The LibraryData instance to use for searching
             search_query: Dict containing search parameters (title, album, etc.)
             save_to_recent: Whether to save this search to recent searches
+            overwrite: Whether to overwrite the cache when searching
         """
         try:
             # First try to find by ID if provided
             if search_query.get('id'):
                 Utils.log(f"Attempting to find track by ID: {search_query['id']}")
-                all_tracks = library_data.get_all_tracks()
+                all_tracks = library_data.get_all_tracks(overwrite=overwrite)
                 for track in all_tracks:
                     if search_query['id'] in track.title:  # Check in original title, not searchable_title
                         Utils.log(f"Found track by ID: '{track.title}'")
@@ -81,7 +82,7 @@ class SearchWindow(BaseWindow):
             )
             
             # Perform search
-            library_data.do_search(search, overwrite=False)
+            library_data.do_search(search, overwrite=overwrite)
             
             # Get first result
             results = search.get_results()
@@ -90,7 +91,7 @@ class SearchWindow(BaseWindow):
             if not results and search.title and len(search.title) >= 12:
                 Utils.log(f"No exact match found for '{search.title}', attempting fuzzy match...")
                 # Get all tracks and try fuzzy matching
-                all_tracks = library_data.get_all_tracks()
+                all_tracks = library_data.get_all_tracks(overwrite=overwrite)
                 
                 # Collect distances for debugging
                 distances = []
@@ -243,7 +244,7 @@ class SearchWindow(BaseWindow):
         self.sort_by_form_button.grid(row=8, column=2)
 
         self.overwrite_cache = BooleanVar(self.inner_frame)
-        self._overwrite = Checkbutton(self.inner_frame, text="Overwrite Cache", variable=self.overwrite_cache)
+        self._overwrite = Checkbutton(self.inner_frame, text=_("Overwrite Cache"), variable=self.overwrite_cache)
         self._overwrite.grid(row=9, columnspan=2)
 
         # self.master.bind("<Key>", self.filter_targets)
@@ -386,6 +387,12 @@ class SearchWindow(BaseWindow):
             self.searching_label = Label(self.results_frame.viewPort)
             self.add_label(self.searching_label, text=_("No results found."), row=1, column=1)
             self.title_list.append(self.searching_label)
+            
+            # Add cache reminder
+            cache_reminder = Label(self.results_frame.viewPort)
+            self.add_label(cache_reminder, text=_("Tip: If you've recently added or moved files, try checking 'Overwrite Cache' in the search options below."), row=2, column=1)
+            self.title_list.append(cache_reminder)
+            
             self.master.update()
             return
         self.library_data_search.sort_results_by()
@@ -442,7 +449,7 @@ class SearchWindow(BaseWindow):
         # filepath if the user selected to play from them.
         self.update_recent_searches(remove_searches_with_no_selected_filepath=True)
         playlist_sort_type = self.get_playlist_sort_type()
-        self.app_actions.start_play_callback(track=track, playlist_sort_type=playlist_sort_type)
+        self.app_actions.start_play_callback(track=track, playlist_sort_type=playlist_sort_type, overwrite=self.overwrite_cache.get())
 
     def get_playlist_sort_type(self):
         if len(self.composer.get()) > 0:

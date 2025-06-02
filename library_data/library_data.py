@@ -240,6 +240,12 @@ class LibraryData:
             LibraryData.DIRECTORIES_CACHE[directory] = files
         else:
             files = LibraryData.DIRECTORIES_CACHE[directory]
+            # Even for cached results, verify file existence
+            missing_files = [f for f in files if not os.path.exists(f)]
+            if missing_files:
+                Utils.log_yellow(f"Found {len(missing_files)} missing files in cache for {directory}. Consider refreshing the cache.")
+                files = [f for f in files if os.path.exists(f)]
+                LibraryData.DIRECTORIES_CACHE[directory] = files
         return list(files)
 
     @staticmethod

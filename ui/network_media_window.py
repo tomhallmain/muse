@@ -289,7 +289,7 @@ class NetworkMediaWindow(BaseWindow):
         # filepath if the user selected to play from them.
         self.update_recent_media_urls(remove_urls_with_no_selected_filepath=True)
         playlist_sort_type = self.get_playlist_sort_type()
-        self.app_actions.start_play_callback(track=track, playlist_sort_type=playlist_sort_type)
+        self.app_actions.start_play_callback(track=track, playlist_sort_type=playlist_sort_type, overwrite=self.overwrite_cache.get())
 
     def get_playlist_sort_type(self):
         if len(self.composer.get()) > 0:

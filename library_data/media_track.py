@@ -1,9 +1,11 @@
 """Media track management for the Muse application."""
 
+from datetime import datetime
 import glob
 import os
 import re
 from time import sleep
+import traceback
 
 from pymediainfo import MediaInfo
 
@@ -135,6 +137,13 @@ class MediaTrack:
                         value = music_tag_wrapper[k].first
                         if value is not None:
                             try:
+                                # Handle ISO date strings for year field
+                                if k == 'year' and isinstance(value, str) and 'T' in value:
+                                    # TODO this is still not working for some reason.
+                                    try:
+                                        value = int(datetime.fromisoformat(value.replace('Z', '+00:00')).year)
+                                    except Exception:
+                                        pass
                                 setattr(self, k, value)
                             except Exception:
                                 pass
@@ -145,9 +154,67 @@ class MediaTrack:
                 length_value = music_tag_wrapper["#length"].first
                 if length_value is not None:
                     self.length = float(length_value)
+            except FileNotFoundError:
+                Utils.log_yellow(f"File not found: {filepath}. This may be due to an outdated cache. Consider refreshing the cache in the UI.")
+                raise
             except Exception as e:
-                pass
-                # Utils.log(f"Failed to gather track details for track {self.title}")
+                Utils.log_yellow(f"Failed to load metadata for {filepath}: {str(e)}")
+                # Try to get basic info using MediaInfo as fallback
+                try:
+                    media_info = MediaInfo.parse(filepath)
+                    for track in media_info.tracks:
+                        # Check for any track that has audio data
+                        if hasattr(track, 'duration') and track.duration:
+                            if not self.title and hasattr(track, 'title') and track.title:
+                                self.title = track.title
+                            if not self.artist and hasattr(track, 'performer') and track.performer:
+                                self.artist = track.performer
+                            if not self.album and hasattr(track, 'album') and track.album:
+                                self.album = track.album
+                            if self.length == -1.0:
+                                self.length = float(track.duration) / 1000  # Convert ms to seconds
+                            
+                            # Additional MediaInfo attributes
+                            if hasattr(track, 'composer') and track.composer and not self.composer:
+                                self.composer = track.composer
+                            if hasattr(track, 'genre') and track.genre and not self.genre:
+                                self.genre = track.genre
+                            if hasattr(track, 'track_name') and track.track_name and not self.tracktitle:
+                                self.tracktitle = track.track_name
+                            if hasattr(track, 'track_name_position') and track.track_name_position and self.tracknumber == -1:
+                                try:
+                                    self.tracknumber = int(track.track_name_position)
+                                except (ValueError, TypeError):
+                                    pass
+                            if hasattr(track, 'track_name_total') and track.track_name_total and self.totaltracks == -1:
+                                try:
+                                    self.totaltracks = int(track.track_name_total)
+                                except (ValueError, TypeError):
+                                    pass
+                            if hasattr(track, 'part') and track.part and self.discnumber == -1:
+                                try:
+                                    self.discnumber = int(track.part)
+                                except (ValueError, TypeError):
+                                    pass
+                            if hasattr(track, 'part_total') and track.part_total and self.totaldiscs == -1:
+                                try:
+                                    self.totaldiscs = int(track.part_total)
+                                except (ValueError, TypeError):
+                                    pass
+                            if hasattr(track, 'recorded_date') and track.recorded_date and not self.year:
+                                try:
+                                    # Try to extract year from recorded date
+                                    date_str = str(track.recorded_date)
+                                    if len(date_str) >= 4:
+                                        self.year = int(date_str[:4])
+                                except (ValueError, TypeError):
+                                    pass
+                except FileNotFoundError:
+                    Utils.log_red(f"File not found: {filepath}. This may be due to an outdated cache. Consider refreshing the cache in the UI.")
+                    raise
+                except Exception as e2:
+                    Utils.log_red(f"Failed to get basic info using MediaInfo for {filepath}: {str(e2)}")
+                    Utils.log(f"MediaInfo error details:\n{traceback.format_exc()}")
 
             if self.title is not None:
                 self.searchable_title = Utils.ascii_normalize(self.title.lower())

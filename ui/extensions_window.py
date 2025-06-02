@@ -289,8 +289,10 @@ class ExtensionsWindow(BaseWindow):
 
     def _clear_history(self):
         """Clear the extension history."""
-        if messagebox.askyesno(_("Confirm Clear"), 
-                              _("Are you sure you want to clear all extension history?")):
+        res = self.app_actions.alert(_("Confirm Clear"), 
+                              _("Are you sure you want to clear all extension history?"),
+                              kind="askokcancel")
+        if res == messagebox.OK or res == True:
             ExtensionManager.extensions = []
             ExtensionManager.store_extensions()
             self._refresh_extension_list()
@@ -315,8 +317,10 @@ class ExtensionsWindow(BaseWindow):
 
     def _delete_extension(self, extension):
         """Delete a specific extension."""
-        if messagebox.askyesno(_("Confirm Delete"), 
-                              _("Are you sure you want to delete this extension?")):
+        res = self.app_actions.alert(_("Confirm Delete"), 
+                              _("Are you sure you want to delete this extension?"),
+                              kind="askokcancel")
+        if res == messagebox.OK or res == True:
             if extension in ExtensionManager.extensions:
                 ExtensionManager.extensions.remove(extension)
                 ExtensionManager.store_extensions()
@@ -343,8 +347,11 @@ class ExtensionsWindow(BaseWindow):
             self.app_actions.search_and_play(search_query)
                 
         except Exception as e:
-            Utils.log_red(f"Error playing extension: {str(e)}")
-            messagebox.showerror(_("Error"), str(e))
+            error_msg = str(e)
+            if "No matching tracks found" in error_msg:
+                error_msg += "\n\n" + _("Tip: If you've recently added or moved files, try checking 'Overwrite Cache' in the search options.")
+            Utils.log_red(f"Error playing extension: {error_msg}")
+            self.app_actions.alert(_("Error"), error_msg, kind="error")
 
 
 class ExtensionDetailsWindow(BaseWindow):
