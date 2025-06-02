@@ -5,6 +5,7 @@ import glob
 import os
 import re
 from time import sleep
+import threading
 import traceback
 
 from pymediainfo import MediaInfo
@@ -78,6 +79,38 @@ class MediaTrack:
     music_tag_ignored_tags = ['comment', 'isrc', 'lyrics', 'artwork']
     non_numeric_chars = re.compile(r"[^0-9\.\-]+")
     ffprobe_available = None
+
+    # Class-level error collection
+    _collected_errors = []
+    _error_lock = threading.Lock()
+
+    @classmethod
+    def collect_error(cls, error_msg):
+        with cls._error_lock:
+            cls._collected_errors.append(error_msg)
+
+    @classmethod
+    def clear_errors(cls):
+        with cls._error_lock:
+            cls._collected_errors.clear()
+
+    @classmethod
+    def write_errors_to_file(cls, filename="media_track_errors.log"):
+        with cls._error_lock:
+            if not cls._collected_errors:
+                return
+            errors_to_write = cls._collected_errors.copy()
+            cls._collected_errors.clear()  # Clear directly instead of calling clear_errors()
+            
+        try:
+            with open(filename, 'w', encoding='utf-8') as f:
+                f.write(f"MediaTrack Errors - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+                f.write("=" * 80 + "\n\n")
+                for error in errors_to_write:
+                    f.write(f"{error}\n\n")
+            Utils.log(f"Wrote {len(errors_to_write)} errors to {filename}")
+        except Exception as e:
+            Utils.log_red(f"Failed to write errors to file: {str(e)}")
 
     def __init__(self, filepath, parent_filepath=None):
         self.filepath = filepath
@@ -155,10 +188,14 @@ class MediaTrack:
                 if length_value is not None:
                     self.length = float(length_value)
             except FileNotFoundError:
-                Utils.log_yellow(f"File not found: {filepath}. This may be due to an outdated cache. Consider refreshing the cache in the UI.")
+                error_msg = f"File not found: {filepath}. This may be due to an outdated cache. Consider refreshing the cache in the UI."
+                Utils.log_yellow(error_msg)
+                self.__class__.collect_error(error_msg)
                 raise
             except Exception as e:
-                Utils.log_yellow(f"Failed to load metadata for {filepath}: {str(e)}")
+                error_msg = f"Failed to load metadata for {filepath}: {str(e)}"
+                Utils.log_yellow(error_msg)
+                self.__class__.collect_error(error_msg)
                 # Try to get basic info using MediaInfo as fallback
                 try:
                     media_info = MediaInfo.parse(filepath)
@@ -210,11 +247,14 @@ class MediaTrack:
                                 except (ValueError, TypeError):
                                     pass
                 except FileNotFoundError:
-                    Utils.log_red(f"File not found: {filepath}. This may be due to an outdated cache. Consider refreshing the cache in the UI.")
+                    error_msg = f"File not found: {filepath}. This may be due to an outdated cache. Consider refreshing the cache in the UI."
+                    Utils.log_red(error_msg)
+                    self.__class__.collect_error(error_msg)
                     raise
                 except Exception as e2:
-                    Utils.log_red(f"Failed to get basic info using MediaInfo for {filepath}: {str(e2)}")
-                    Utils.log(f"MediaInfo error details:\n{traceback.format_exc()}")
+                    error_msg = f"Failed to get basic info using MediaInfo for {filepath}: {str(e2)}\nMediaInfo error details:\n{traceback.format_exc()}"
+                    Utils.log_red(error_msg)
+                    self.__class__.collect_error(error_msg)
 
             if self.title is not None:
                 self.searchable_title = Utils.ascii_normalize(self.title.lower())

@@ -273,6 +273,8 @@ class LibraryData:
             if len(LibraryData.all_tracks) == 0 or overwrite:
                 all_directories = config.get_all_directories()
                 LibraryData.all_tracks = [LibraryData.get_track(f) for f in LibraryData.get_all_filepaths(all_directories, overwrite=overwrite)]
+                # Write any collected errors to file after cache refresh
+                MediaTrack.write_errors_to_file()
             return LibraryData.all_tracks
 
     @staticmethod

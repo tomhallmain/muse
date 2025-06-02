@@ -5,6 +5,7 @@ __pycache__
 api.md
 app_info_cache.json
 app_media_track_cache
+media_track_errors.log
 configs/*
 !configs/config_example.json
 library_data/data/*
