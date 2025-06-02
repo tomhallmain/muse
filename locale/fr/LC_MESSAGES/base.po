@@ -2,8 +2,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
-"POT-Creation-Date: 2025-05-30 22:06-0400\n"
-"PO-Revision-Date: 2025-05-30 22:06-0400\n"
+"POT-Creation-Date: 2025-06-01 19:22-0400\n"
+"PO-Revision-Date: 2025-06-01 19:22-0400\n"
 "Last-Translator: Thomas Hall <tomhall.main@gmail.com>\n"
 "Language-Team: fr Team <<EMAIL>>\n"
 "Language: fr\n"
@@ -13,22 +13,22 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: app.py:150 ui/extensions_window.py:157 ui/track_details_window.py:64
-#: utils/globals.py:193
+#: utils/globals.py:217
 msgid "Title"
 msgstr "Titre"
 
-#: app.py:153 ui/track_details_window.py:67 utils/globals.py:119
-#: utils/globals.py:194
+#: app.py:153 ui/track_details_window.py:67 utils/globals.py:118
+#: utils/globals.py:218
 msgid "Album"
 msgstr "Album"
 
-#: app.py:156 ui/track_details_window.py:70 utils/globals.py:121
-#: utils/globals.py:195 utils/globals.py:249
+#: app.py:156 ui/track_details_window.py:70 utils/globals.py:120
+#: utils/globals.py:219 utils/globals.py:273
 msgid "Artist"
 msgstr "Artiste"
 
-#: app.py:159 ui/track_details_window.py:76 utils/globals.py:123
-#: utils/globals.py:196 utils/globals.py:248
+#: app.py:159 ui/track_details_window.py:76 utils/globals.py:122
+#: utils/globals.py:220 utils/globals.py:272
 msgid "Composer"
 msgstr "Compositeur"
 
@@ -81,7 +81,7 @@ msgstr "Pause"
 msgid "Search"
 msgstr "Recherche"
 
-#: app.py:202 utils/globals.py:373
+#: app.py:202 utils/globals.py:397
 msgid "Composers"
 msgstr "Compositeurs"
 
@@ -146,66 +146,70 @@ msgstr "Activer le fractionnement des pistes"
 msgid "Use system language for all topics"
 msgstr "Utiliser la langue du système"
 
-#: app.py:270
+#: app.py:269
+msgid "Thorough playlist memory check"
+msgstr "Vérification approfondie de la mémoire de la liste de lecture"
+
+#: app.py:274
 msgid "Configuration"
 msgstr "Configuration"
 
-#: app.py:331
+#: app.py:335
 msgid "Confirm Quit"
 msgstr "Confirmer Quitter"
 
-#: app.py:331
+#: app.py:335
 msgid "Would you like to quit the application?"
 msgstr "Souhaitez-vous quitter l'application ?"
 
-#: app.py:452
+#: app.py:459
 msgid "Confirm Run"
 msgstr "Confirmer l'exécution"
 
-#: app.py:453
+#: app.py:460
 msgid "Are you sure you want to proceed?"
 msgstr "Êtes-vous sûr de vouloir continuer ?"
 
-#: app.py:520
+#: app.py:527
 msgid "Copied album art to clipboard."
 msgstr "Copie de la pochette d'album dans le presse-papiers."
 
-#: app.py:624 app.py:777 app.py:807 ui/composers_window.py:245
+#: app.py:632 app.py:785 app.py:815 ui/composers_window.py:245
 #: ui/composers_window.py:259 ui/configuration_window.py:152
 #: ui/configuration_window.py:155 ui/playlist_window.py:326
 #: ui/track_details_window.py:217
 msgid "Error"
 msgstr "Erreur"
 
-#: app.py:691 muse/muse_spot_profile.py:208
+#: app.py:699 muse/muse_spot_profile.py:208
 msgid "Track: "
 msgstr "Piste : "
 
-#: app.py:692
+#: app.py:700
 msgid "Album: "
 msgstr "Album : "
 
-#: app.py:693
+#: app.py:701
 msgid "Artist: "
 msgstr "Artiste : "
 
-#: app.py:694
+#: app.py:702
 msgid "Composer: "
 msgstr "Compositeur : "
 
-#: app.py:705
+#: app.py:713
 msgid "Next Up: "
 msgstr "Prochaine étape : "
 
-#: app.py:714 muse/muse_spot_profile.py:209
+#: app.py:722 muse/muse_spot_profile.py:209
 msgid "Previous Track: "
 msgstr "Piste précédente : "
 
-#: app.py:748
+#: app.py:756
 msgid "Staged Playlist: "
 msgstr "Liste de lecture mise en scène : "
 
-#: app.py:892
+#: app.py:900
 msgid " Muse "
 msgstr " Muse "
 
@@ -406,7 +410,11 @@ msgstr "Tout d'abord, parlons de {0}"
 msgid "But first, let's hear about {0}."
 msgstr "Mais tout d'abord, parlons de {0}"
 
-#: muse/muse.py:690
+#: muse/muse.py:546
+msgid " [already mentioned]"
+msgstr " [déjà mentionné]"
+
+#: muse/muse.py:692
 msgid ""
 "We're having some technical difficulties in accessing our source for {0}. "
 "We'll try again later"
@@ -414,7 +422,7 @@ msgstr ""
 "Nous rencontrons des difficultés techniques pour accéder à notre source pour"
 " {0}. Nous réessayerons plus tard"
 
-#: muse/muse.py:694
+#: muse/muse.py:696
 msgid ""
 "It seems our writer for {0} is unexpectedly away at the moment. Did we "
 "forget to pay his salary again?"
@@ -422,22 +430,22 @@ msgstr ""
 "Il semble que notre rédacteur pour {0} soit absent en ce moment. Avons-nous "
 "encore oublié de lui verser son salaire ?"
 
-#: muse/muse.py:698
+#: muse/muse.py:700
 msgid ""
 "We've found problems with all of our {0} ideas. Please try again later."
 msgstr ""
 "Nous avons trouvé des problèmes avec toutes nos {0} idées. Veuillez "
 "réessayer plus tard."
 
-#: muse/muse.py:703
+#: muse/muse.py:705
 msgid "Something went wrong. We'll try to fix it soon."
 msgstr "Un problème s'est produit. Nous essaierons d'y remédier rapidement."
 
-#: muse/muse.py:770
+#: muse/muse.py:772
 msgid "Starting tracks:"
 msgstr "Pistes de début:"
 
-#: muse/muse.py:830
+#: muse/muse.py:832
 msgid "The listener last tuned in {0} {1} ago"
 msgstr "L'auditeur a écouté pour la dernière fois il y a {0} {1}"
 
@@ -530,7 +538,7 @@ msgstr "Dates incertaines"
 msgid "Dates are uncertain"
 msgstr "Les dates sont incertaines"
 
-#: ui/composers_window.py:85 utils/globals.py:374
+#: ui/composers_window.py:85 utils/globals.py:398
 msgid "Genres"
 msgstr "Genres"
 
@@ -1108,8 +1116,8 @@ msgstr "Mise à jour"
 msgid "Album Artist"
 msgstr "Artiste de l'album"
 
-#: ui/track_details_window.py:79 utils/globals.py:125 utils/globals.py:197
-#: utils/globals.py:250
+#: ui/track_details_window.py:79 utils/globals.py:124 utils/globals.py:221
+#: utils/globals.py:274
 msgid "Genre"
 msgstr "Genre"
 
@@ -1163,135 +1171,143 @@ msgstr ""
 "Échec à mettre à jour les détails de la piste. Vérifiez les journaux pour "
 "plus d'informations."
 
-#: utils/globals.py:127 utils/globals.py:198 utils/globals.py:251
+#: utils/globals.py:126 utils/globals.py:222 utils/globals.py:275
 msgid "Form"
 msgstr "Forme musicale"
 
-#: utils/globals.py:129 utils/globals.py:199 utils/globals.py:252
+#: utils/globals.py:128 utils/globals.py:223 utils/globals.py:276
 msgid "Instrument"
 msgstr "Instrument de musique"
 
-#: utils/globals.py:135 utils/globals.py:253
+#: utils/globals.py:134 utils/globals.py:277
 msgid "Random"
 msgstr "Au hasard"
 
-#: utils/globals.py:136
+#: utils/globals.py:135
 msgid "Sequence"
 msgstr "Séquence"
 
-#: utils/globals.py:137
+#: utils/globals.py:136
 msgid "Album Shuffle"
 msgstr "Mélange d'albums"
 
-#: utils/globals.py:138
+#: utils/globals.py:137
 msgid "Artist Shuffle"
 msgstr "Mélange d'artistes"
 
-#: utils/globals.py:139
+#: utils/globals.py:138
 msgid "Composer Shuffle"
 msgstr "Mélange des compositeurs"
 
-#: utils/globals.py:140
+#: utils/globals.py:139
 msgid "Genre Shuffle"
 msgstr "Mélange de genres"
 
-#: utils/globals.py:141
+#: utils/globals.py:140
 msgid "Form Shuffle"
 msgstr "Mélange de formulaires"
 
-#: utils/globals.py:142
+#: utils/globals.py:141
 msgid "Instrument Shuffle"
 msgstr "Mélange des instruments"
 
-#: utils/globals.py:301
+#: utils/globals.py:176
+msgid "All Music"
+msgstr "Toute la musique"
+
+#: utils/globals.py:177
+msgid "Playlist Config"
+msgstr "Configuration de la liste de lecture"
+
+#: utils/globals.py:325
 msgid "weather"
 msgstr "météo"
 
-#: utils/globals.py:303
+#: utils/globals.py:327
 msgid "news"
 msgstr "nouvelles"
 
-#: utils/globals.py:307
+#: utils/globals.py:331
 msgid "joke"
 msgstr "blague"
 
-#: utils/globals.py:309
+#: utils/globals.py:333
 msgid "fact"
 msgstr "fait"
 
-#: utils/globals.py:311
+#: utils/globals.py:335
 msgid "fable"
 msgstr "fable"
 
-#: utils/globals.py:313
+#: utils/globals.py:337
 msgid "truth and lie"
 msgstr "vérité et mensonge"
 
-#: utils/globals.py:315
+#: utils/globals.py:339
 msgid "aphorism"
 msgstr "aphorisme"
 
-#: utils/globals.py:317
+#: utils/globals.py:341
 msgid "poem"
 msgstr "poème"
 
-#: utils/globals.py:319
+#: utils/globals.py:343
 msgid "quote"
 msgstr "citation"
 
-#: utils/globals.py:321
+#: utils/globals.py:345
 msgid "tongue twister"
 msgstr "virelangue"
 
-#: utils/globals.py:323
+#: utils/globals.py:347
 msgid "motivation"
 msgstr "motivation"
 
-#: utils/globals.py:325
+#: utils/globals.py:349
 msgid "calendar"
 msgstr "calendrier"
 
-#: utils/globals.py:327
+#: utils/globals.py:351
 msgid "more about the next track"
 msgstr "plus d'informations sur la prochaine piste"
 
-#: utils/globals.py:329
+#: utils/globals.py:353
 msgid "more about the last track"
 msgstr "en savoir plus sur la dernière piste"
 
-#: utils/globals.py:331
+#: utils/globals.py:355
 msgid "more about our playlist"
 msgstr "en savoir plus sur notre playlist"
 
-#: utils/globals.py:333
+#: utils/globals.py:357
 msgid "random wiki article"
 msgstr "article wiki aléatoire"
 
-#: utils/globals.py:335
+#: utils/globals.py:359
 msgid "funny story"
 msgstr "histoire drôle"
 
-#: utils/globals.py:337
+#: utils/globals.py:361
 msgid "language learning"
 msgstr "l'apprentissage des langues"
 
-#: utils/globals.py:370
+#: utils/globals.py:394
 msgid "Tracks"
 msgstr "Les pistes"
 
-#: utils/globals.py:371
+#: utils/globals.py:395
 msgid "Albums"
 msgstr "Albums"
 
-#: utils/globals.py:372
+#: utils/globals.py:396
 msgid "Artists"
 msgstr "Artistes"
 
-#: utils/globals.py:375
+#: utils/globals.py:399
 msgid "Forms"
 msgstr "Formulaires"
 
-#: utils/globals.py:376
+#: utils/globals.py:400
 msgid "Instruments"
 msgstr "Instruments"
 

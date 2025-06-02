@@ -5,8 +5,6 @@ from utils.config import config
 from utils.globals import PlaylistSortType, HistoryType
 from utils.utils import Utils
 
-## TODO need a way to exclude certain artists from the smart sort based on recent plays
-
 
 class Playlist:
     recently_played_filepaths = []
@@ -28,7 +26,7 @@ class Playlist:
             app_info_cache.set(history_type.value, getattr(Playlist, history_type.value))
 
     @staticmethod
-    def update_list(_list=[], item="", sort_type=PlaylistSortType.RANDOM):
+    def update_list(_list, item="", sort_type=PlaylistSortType.RANDOM):
         if item is None or item.strip() == "":
             return
         if item in _list:
@@ -36,7 +34,7 @@ class Playlist:
         _list.insert(0, item)
         check_count = Playlist.get_recently_played_check_count(sort_type)
         if len(_list) > check_count:
-            del _list[-check_count:]
+            _list[:] = _list[:check_count]
 
     @staticmethod
     def get_recently_played_check_count(sort_type):
@@ -49,8 +47,10 @@ class Playlist:
         elif sort_type == PlaylistSortType.INSTRUMENT_SHUFFLE:
             recently_played_check_count = int(max(recently_played_check_count / 60, 1))
         elif sort_type == PlaylistSortType.COMPOSER_SHUFFLE:
-            recently_played_check_count = int(max(recently_played_check_count / 2, 1))
+            recently_played_check_count = int(max(recently_played_check_count / 4, 1))
         elif sort_type == PlaylistSortType.ARTIST_SHUFFLE:
+            recently_played_check_count = int(max(recently_played_check_count / 4, 1))
+        elif sort_type == PlaylistSortType.ALBUM_SHUFFLE:
             recently_played_check_count = int(max(recently_played_check_count / 2, 1))
         return recently_played_check_count
 
@@ -64,7 +64,8 @@ class Playlist:
         Playlist.update_list(Playlist.recently_played_forms, track.get_form(), sort_type=PlaylistSortType.FORM_SHUFFLE)
         Playlist.update_list(Playlist.recently_played_instruments, track.get_instrument(), sort_type=PlaylistSortType.INSTRUMENT_SHUFFLE)
 
-    def __init__(self, tracks=[], _type=PlaylistSortType.SEQUENCE, data_callbacks=None, start_track=None):
+    def __init__(self, tracks=[], _type=PlaylistSortType.SEQUENCE, data_callbacks=None,
+                 start_track=None, check_entire_playlist=False):
         self.in_sequence = list(tracks)
         self.sort_type = _type
         self.pending_tracks = list(tracks)
@@ -83,7 +84,7 @@ class Playlist:
             self.sorted_tracks.append(track)
         Utils.log(f"Playlist length: {self.size()}")
         if self.size() > 0:
-            self.sort()
+            self.sort(check_entire_playlist=check_entire_playlist)
 
     def size(self):
         return len(self.in_sequence)
@@ -210,16 +211,30 @@ class Playlist:
         except IndexError:
             return None
 
-    def sort(self):
+    def sort(self, check_entire_playlist=False):
+        """Sorts the playlist according to the specified sort type with optional memory-based shuffling.
+        
+        The method handles several sort types:
+        - SEQUENCE: Maintains original track order
+        - RANDOM: Completely randomizes tracks with no grouping consideration
+        - Other types (ALBUM_SHUFFLE, ARTIST_SHUFFLE, etc.): Groups tracks by attribute and applies
+          memory-based shuffling to avoid recently played groups
+        
+        For non-RANDOM sorts, the method first seeds a random start track (unless user-specified)
+        to add variety to the initial grouping, then applies memory-based shuffling to avoid
+        recently played groups in the early portion of the playlist.
+        
+        Args:
+            check_entire_playlist (bool): If True, uses thorough memory-based shuffling that
+                                        guarantees no recently played groups in early portion
+        """
         grouping_attr_getter_name = None
-        list_name_mapping = None
         do_set_start_track = self.start_track is not None
         grouping_attr_getter_name = self.sort_type.getter_name_mapping()
         if self.sort_type == PlaylistSortType.RANDOM:
             random.shuffle(self.sorted_tracks)
         elif not do_set_start_track:
-            # This will seed a random start track on the sequence
-            # so the sort below will have more randomness.
+            # This will seed a random start track on the sequence so the sort below will have more randomness.
             self.start_track = random.choice(self.sorted_tracks)
             self.set_start_track(grouping_attr_getter_name, do_print=False)
         if self.sort_type != PlaylistSortType.SEQUENCE:
@@ -237,34 +252,147 @@ class Playlist:
                 else:
                     self.sorted_tracks.sort(key=lambda t: (all_attrs_list.index(getattr(t, grouping_attr_getter_name)), t.filepath))
             history_type = self.sort_type.grouping_list_name_mapping()
-            self.shuffle_with_memory_for_attr(grouping_attr_getter_name, history_type)
+            self.shuffle_with_memory_for_attr(grouping_attr_getter_name, history_type, check_entire_playlist)
         if do_set_start_track:
             # The user specified a start track, it's not random
             self.set_start_track(grouping_attr_getter_name)
 
-    def shuffle_with_memory_for_attr(self, track_attr: str, history_type: HistoryType):
-        # Look at the first config.playlist_recently_played_check_count (1000 default)
-        # tracks and ensure they haven't been played recently. If they have, then
-        # decide if they need to be reshuffled into a later position in the playlist.
-        # As earlier tracks are reshuffled to the end of the playlist, later tracks 
-        # may also have been played recently and thus also need to be reshuffled.
-        attempts = 0
-        max_attempts = 30
-        stable_attempts = 0
-        last_track_count = None
-        min_stable_attempts = 5  # Number of attempts with same count before considering it stable
-        recently_played_attr_list = getattr(Playlist, history_type.value)
+    def shuffle_with_memory_for_attr(self, track_attr: str, history_type: HistoryType, check_entire_playlist=False):
+        """Main entry point for reducing recently played tracks in the playlist.
+        
+        This method looks at the first config.playlist_recently_played_check_count tracks
+        and ensures they haven't been played recently. If they have, it decides if they need
+        to be reshuffled into a later position in the playlist. As earlier tracks are reshuffled
+        to the end of the playlist, later tracks may also have been played recently and thus
+        also need to be reshuffled.
+        
+        The method can use either a thorough approach (scour_playlist) that guarantees no recently
+        played tracks in the early portion while preserving grouping integrity, or a less thorough
+        approach (reshuffle_tracks) that may leave some recently played tracks but preserves more
+        of the original randomization.
+        
+        Args:
+            track_attr (str): The attribute name to check on each track (e.g., 'album', 'artist')
+            history_type (HistoryType): The type of history to check against (e.g., albums, artists)
+            check_entire_playlist (bool): If True, uses the thorough scour_playlist method instead
+                                        of the default reshuffle_tracks method
+                                        
+        Returns:
+            int: Number of attempts made to reduce recently played tracks in the playlist
+        """
+        recently_played_attr_list = list(getattr(Playlist, history_type.value))
         recently_played_check_count = Playlist.get_recently_played_check_count(self.sort_type)
+        Utils.log(f"Recently played check count for {history_type.value}: {recently_played_check_count}")
+        if len(recently_played_attr_list) == 0:
+            return 0
+        elif len(recently_played_attr_list) > recently_played_check_count:
+            recently_played_attr_list = recently_played_attr_list[:recently_played_check_count]
+        
+        # Minimum playlist size to attempt any shuffling
+        MIN_PLAYLIST_SIZE = 200
+        # Target playlist size for full check count
+        TARGET_PLAYLIST_SIZE = max(recently_played_check_count * 2, MIN_PLAYLIST_SIZE)
+        
+        if self.size() < MIN_PLAYLIST_SIZE:
+            # Playlist is too small to bother with memory-based shuffling
+            return 0
+            
+        # Scale the check count based on playlist size
+        if self.size() < TARGET_PLAYLIST_SIZE:
+            # Linearly scale the check count based on playlist size
+            # e.g., 1000 tracks would use 50% of the check count
+            scale_factor = self.size() / TARGET_PLAYLIST_SIZE
+            recently_played_check_count = int(recently_played_check_count * scale_factor)
+            # Ensure we check at least a minimum number of tracks
+            recently_played_check_count = max(recently_played_check_count, 50)
+            
+        if check_entire_playlist:
+            return self.scour_playlist(track_attr, recently_played_attr_list, recently_played_check_count)
+        else:
+            return self.reshuffle_tracks(track_attr, recently_played_attr_list, recently_played_check_count)
+
+    def scour_playlist(self, track_attr, recently_played_attr_list, recently_played_check_count):
+        """Scours the playlist to ensure the first N tracks don't contain recently played attributes.
+        
+        This method is used to maintain variety in playlists across sessions by ensuring that tracks 
+        with recently played attributes (like albums, artists, genres, etc.) are moved out of the
+        earliest portion of the playlist.
+        
+        Args:
+            track_attr (str): The attribute name to check on each track (e.g., 'album', 'artist')
+            recently_played_attr_list (list): List of attribute values that have been recently played
+            recently_played_check_count (int): Number of tracks from the start to check and maintain
+            
+        Returns:
+            int: Number of tracks checked during the process. Returns 0 if no reshuffling was needed.
+        """
+        tracks_checked = 0
+        max_tracks_to_check = min(100000, self.size())  # Reasonable limit for most playlists
+        total_moved = 0
+        Utils.log(f"Scouring playlist for tracks not in {len(recently_played_attr_list)} recently played {track_attr}s with {recently_played_check_count} tracks to check")
+
+        while tracks_checked < max_tracks_to_check:
+            tracks_to_be_reshuffled = []
+            earliest_tracks = list(self.sorted_tracks[:recently_played_check_count])
+            
+            # First pass: identify tracks that need to be reshuffled
+            for track in earliest_tracks:
+                if getattr(track, track_attr) in recently_played_attr_list:
+                    tracks_to_be_reshuffled.append(track)
+            
+            # If no tracks need reshuffling, we're done
+            if not tracks_to_be_reshuffled:
+                if total_moved > 0:
+                    Utils.log(f"Successfully moved all {total_moved} tracks with recently played {track_attr} out of first {recently_played_check_count} positions")
+                else:
+                    Utils.log(f"No tracks needed reshuffling for {track_attr}")
+                return tracks_checked
+                
+            Utils.log(f"Found {len(tracks_to_be_reshuffled)} tracks with recently played {track_attr} in first {recently_played_check_count} positions")
+                
+            # Remove tracks that need reshuffling and add them to the end
+            for track in tracks_to_be_reshuffled:
+                self.sorted_tracks.remove(track)
+                self.sorted_tracks.append(track)
+                total_moved += 1
+            
+            tracks_checked += len(earliest_tracks)
+            
+        Utils.log(f"Hit max tracks limit ({max_tracks_to_check}) while trying to move tracks with recently played {track_attr}")
+        return tracks_checked
+
+    def reshuffle_tracks(self, track_attr, recently_played_attr_list, recently_played_check_count):
+        """A less thorough alternative to scour_playlist for reducing recently played tracks.
+        
+        This method attempts to reduce the number of recently played tracks in the earliest portion
+        of the playlist by moving them to the end. Unlike scour_playlist, it:
+        - Makes multiple passes through the early part of the playlist to gradually improve distribution
+        - May not completely eliminate recently played tracks from the earliest portion
+        - Stops after reaching a stable minimum or hitting max attempts
+        
+        This method provides fewer guarantees about the final playlist distribution, but it may end up
+        producing playlists more to the users taste by including some recently played tracks sooner and
+        preserving some of the earlier randomization.
+   
+        Args:
+            track_attr (str): The attribute name to check on each track (e.g., 'album', 'artist')
+            recently_played_attr_list (list): List of attribute values that have been recently played
+            recently_played_check_count (int): Number of tracks from the start to check and maintain
+            
+        Returns:
+            int: Number of reshuffling attempts made before reaching a stable state or max attempts
+        """
         # Reshuffle twice as many tracks as checked to reduce reshuffling iterations
         doubled_check_count = recently_played_check_count * 2
         earliest_tracks = list(self.sorted_tracks[:doubled_check_count])
-        if self.size() <= doubled_check_count:
-            # The playlist is a short playlist compared to the library, and probably doesn't 
-            # have enough tracks to satisfy the check conditions
-            return
         tracks_to_be_reshuffled = []
         tracks_to_check = []
         count = 0
+        attempts = 0
+        max_attempts = 30
+        stable_attempts = 0
+        min_stable_attempts = 5  # Number of attempts with same count before considering it stable
+        last_track_count = None
         for track in earliest_tracks:
             if getattr(track, track_attr) in recently_played_attr_list:
                 tracks_to_be_reshuffled.append(track)
@@ -274,18 +402,18 @@ class Playlist:
                     break
             count += 1
         while len(tracks_to_check) > 0:
-            current_track_count = len(tracks_to_check)
-            Utils.log(f"Reshuffling playlist recently played track count: {current_track_count} (attempt {attempts})")
+            current_check_count = len(tracks_to_check)
+            Utils.log(f"Reshuffling playlist recently played track count: {current_check_count} (attempt {attempts})")
             
             # Check if we've hit a stable minimum
-            if last_track_count is not None and current_track_count == last_track_count:
+            if last_track_count is not None and current_check_count == last_track_count:
                 stable_attempts += 1
                 if stable_attempts >= min_stable_attempts:
-                    Utils.log(f"Found stable minimum of {current_track_count} tracks after {attempts} attempts")
+                    Utils.log(f"Found stable minimum of {current_check_count} tracks after {attempts} attempts")
                     break
             else:
                 stable_attempts = 0
-            last_track_count = current_track_count
+            last_track_count = current_check_count
 
             for track in tracks_to_be_reshuffled:
                 self.sorted_tracks.remove(track)
@@ -305,7 +433,7 @@ class Playlist:
             attempts += 1
             if attempts == max_attempts:
                 Utils.log(f"Hit max attempts limit, too many recently played tracks found in playlist")
-                return max_attempts
+                return attempts
         return attempts
 
     def set_start_track(self, grouping_attr_getter_name, do_print=True):

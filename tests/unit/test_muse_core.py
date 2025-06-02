@@ -2,15 +2,18 @@ import pytest
 from muse import Muse, MuseSpotProfile, PlaybackConfig, Playlist
 from utils.globals import PlaylistSortType
 from library_data.media_track import MediaTrack
+from muse.run_context import RunContext
 
 @pytest.mark.unit
 class TestMuse:
     def test_muse_creation(self, mock_data_callbacks, mock_args):
         """Test basic Muse instance creation."""
-        muse = Muse(args=mock_args, library_data=mock_data_callbacks)
+        run_context = RunContext()  # Create a new RunContext
+        muse = Muse(args=mock_args, library_data=mock_data_callbacks, run_context=run_context)
         assert isinstance(muse, Muse)
         assert muse.args == mock_args
         assert muse.library_data == mock_data_callbacks
+        assert muse._run_context == run_context
 
 @pytest.mark.unit
 class TestMuseSpot:

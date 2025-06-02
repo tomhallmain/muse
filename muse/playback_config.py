@@ -42,7 +42,8 @@ class PlaybackConfig:
         self.long_track_splitting_time_cutoff_minutes = args.long_track_splitting_time_cutoff_minutes if args else 20
         self.long_track_splitting_play_all = False
         self.data_callbacks = data_callbacks
-        self.list = Playlist(data_callbacks=self.data_callbacks)
+        self.check_entire_playlist = args.check_entire_playlist if args else False
+        self.list = Playlist(data_callbacks=self.data_callbacks, check_entire_playlist=self.check_entire_playlist)
         self.start_track = args.track if args else None
         self.next_track_override = None
         self.playing = False
@@ -61,7 +62,8 @@ class PlaybackConfig:
         if self.list.is_valid():
             return self.list
         l = self.data_callbacks.get_all_filepaths(self.directories, self.overwrite)
-        self.list = Playlist(l, self.type, data_callbacks=self.data_callbacks, start_track=self.start_track)
+        self.list = Playlist(l, self.type, data_callbacks=self.data_callbacks, start_track=self.start_track,
+                             check_entire_playlist=self.check_entire_playlist)
         return self.list
 
     def set_playing(self, playing=True):
@@ -130,12 +132,13 @@ class PlaybackConfig:
             and self.enable_long_track_splitting == other.enable_long_track_splitting \
             and self.long_track_splitting_time_cutoff_minutes == other.long_track_splitting_time_cutoff_minutes \
             and self.long_track_splitting_play_all == other.long_track_splitting_play_all \
-            and self.start_track == other.start_track
+            and self.start_track == other.start_track \
+            and self.check_entire_playlist == other.check_entire_playlist
 
     def __hash__(self) -> int:
         return hash((self.type, tuple(self.directories), self.overwrite, self.enable_dynamic_volume,
                      self.enable_long_track_splitting, self.long_track_splitting_time_cutoff_minutes,
-                     self.long_track_splitting_play_all, self.start_track))
+                     self.long_track_splitting_play_all, self.start_track, self.check_entire_playlist))
 
     def __deepcopy__(self, memo):
         cls = self.__class__

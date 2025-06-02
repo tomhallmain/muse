@@ -369,7 +369,7 @@ class Playback:
     def delay(self):
         if self.has_played_first_track and not self.last_track_failed:
             if self.remaining_delay_seconds > 4 and self.ui_callbacks is not None:
-                self.ui_callbacks.update_next_up_callback(_("Sleeping for seconds") + ": " + str(self.remaining_delay_seconds), no_title=True)
+                self.ui_callbacks.update_next_up_callback(_("Sleeping for seconds") + ": " + str(int(self.remaining_delay_seconds)), no_title=True)
                 # TODO set track text to "Upcoming track"
             delay_timer = 0
             while not self._run_context.skip_delay and delay_timer < self.remaining_delay_seconds:

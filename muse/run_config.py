@@ -1,11 +1,11 @@
-
-from utils.globals import PlaylistSortType # must import first
+from utils.globals import PlaylistSortType, PlaybackMasterStrategy # must import first
 
 class RunConfig:
 
     def __init__(self, args=None, placeholder=False):
         self.args = args
         self.playlist_sort_type = PlaylistSortType.RANDOM
+        self.playback_master_strategy = PlaybackMasterStrategy.ALL_MUSIC
         self.total = -1
         self.is_all_tracks = False
         self.directories = self.get("directories")
@@ -18,6 +18,7 @@ class RunConfig:
         self.placeholder = placeholder
         self.track = None
         self.use_system_language_for_all_topics = False
+        self.check_entire_playlist = False
 
     def get(self, name):
         if isinstance(self.args, dict):

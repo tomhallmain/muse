@@ -1,15 +1,15 @@
 from copy import deepcopy
 import json
 
-from utils.globals import Globals, PlaylistSortType
+from utils.globals import Globals, PlaylistSortType, PlaybackMasterStrategy
 
 class RunnerAppConfig:
     def __init__(self):
         self.workflow_type = PlaylistSortType.RANDOM.name
+        self.playback_master_strategy = PlaybackMasterStrategy.ALL_MUSIC.get_translation()
         self.total = "-1"
         self.delay_time_seconds = "5"
         self.volume = 60.0
-        self.playback_master_strategy = "ALL_MUSIC"
         self.directory = "ALL_MUSIC"
         self.overwrite = True
         self.muse = True
@@ -18,6 +18,7 @@ class RunnerAppConfig:
         self.enable_long_track_splitting = False
         self.long_track_splitting_time_cutoff_minutes  = 20
         self.use_system_lang_for_all_topics = True
+        self.check_entire_playlist = False
 
     def set_from_run_config(self, args):
         pass

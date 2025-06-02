@@ -1,7 +1,6 @@
 from enum import Enum
 import os
 
-from utils.config import config
 from utils.translations import I18N
 
 _ = I18N._
@@ -163,6 +162,31 @@ class PlaylistSortType(Enum):
 class PlaybackMasterStrategy(Enum):
     ALL_MUSIC = "ALL_MUSIC"
     PLAYLIST_CONFIG = "PLAYLIST_CONFIG"
+
+    def get_translation(self):
+        strategies = [
+            PlaybackMasterStrategy.ALL_MUSIC,
+            PlaybackMasterStrategy.PLAYLIST_CONFIG,
+        ]
+        return PlaybackMasterStrategy.get_translated_names()[strategies.index(self)]
+
+    @staticmethod
+    def get_translated_names():
+        return [
+            _('All Music'),
+            _('Playlist Config'),
+        ]
+
+    @staticmethod
+    def get_from_translation(translation):
+        strategies = [
+            PlaybackMasterStrategy.ALL_MUSIC,
+            PlaybackMasterStrategy.PLAYLIST_CONFIG,
+        ]
+        try:
+            return strategies[PlaybackMasterStrategy.get_translated_names().index(translation)]
+        except ValueError:
+            return PlaybackMasterStrategy.ALL_MUSIC
 
 
 

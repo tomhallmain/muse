@@ -263,7 +263,11 @@ class App():
 
         self.use_system_language = BooleanVar(value=self.runner_app_config.use_system_lang_for_all_topics)
         self.use_system_language_choice = Checkbutton(self.sidebar, text=_('Use system language for all topics'), variable=self.use_system_language, command=self.set_use_system_language)
-        self.apply_to_grid(self.track_splitting_choice, sticky=W)
+        self.apply_to_grid(self.use_system_language_choice, sticky=W)
+
+        self.check_entire_playlist = BooleanVar(value=self.runner_app_config.check_entire_playlist)
+        self.check_entire_playlist_choice = Checkbutton(self.sidebar, text=_('Thorough playlist memory check'), variable=self.check_entire_playlist, command=self.set_check_entire_playlist)
+        self.apply_to_grid(self.check_entire_playlist_choice, sticky=W)
 
         # Add configuration button at the bottom
         self.config_btn = None
@@ -430,6 +434,9 @@ class App():
     def set_use_system_language(self, event=None):
         self.runner_app_config.use_system_lang_for_all_topics = self.use_system_language.get()
 
+    def set_check_entire_playlist(self, event=None):
+        self.runner_app_config.check_entire_playlist = self.check_entire_playlist.get()
+
     def destroy_progress_bar(self):
         if self.progress_bar is not None:
             self.progress_bar.stop()
@@ -524,6 +531,7 @@ class App():
         self.set_delay()
         args = RunConfig()
         args.playlist_sort_type = PlaylistSortType.get_from_translation(self.sort_type.get())
+        args.playback_master_strategy = PlaybackMasterStrategy.get_from_translation(self.playlist_strategy.get())
         args.total = -1
         args.is_all_tracks, args.directories = self.get_directories()
         args.overwrite = self.overwrite.get()
@@ -532,7 +540,7 @@ class App():
         args.track = track
         args.enable_long_track_splitting = self.track_splitting.get()
         args.use_system_language_for_all_topics = self.use_system_language.get()
-        args.playback_master_strategy = self.playlist_strategy.get()
+        args.check_entire_playlist = self.check_entire_playlist.get()
 
         args_copy = deepcopy(args)
         return args, args_copy
@@ -893,7 +901,7 @@ if __name__ == "__main__":
         assets = os.path.join(os.path.dirname(os.path.realpath(__file__)), "assets")
         icon = PhotoImage(file=os.path.join(assets, "icon.png"))
         root.iconphoto(False, icon)
-        root.geometry("1200x600")
+        root.geometry("1200x700")
         # root.attributes('-fullscreen', True)
         root.resizable(1, 1)
         root.columnconfigure(0, weight=1)

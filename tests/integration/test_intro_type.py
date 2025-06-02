@@ -4,6 +4,7 @@ import datetime
 from muse.muse import Muse
 from muse.muse_memory import MuseMemory
 from muse.dj_persona import DJPersona
+from muse.run_context import RunContext
 
 def mktime(dt):
     """Convert datetime to timestamp."""
@@ -37,7 +38,8 @@ class TestIntroType:
         
         # Set up mock args with placeholder=True
         mock_args.placeholder = True  # Set placeholder=True specifically for these tests
-        self.muse = Muse(mock_args, None)  # library_data can be None when placeholder is True
+        run_context = RunContext()  # Create a new RunContext
+        self.muse = Muse(mock_args, None, run_context)  # Pass the run_context
         
         # Use a fixed reference time: 2024-03-20 12:00:00
         self.reference_time = datetime.datetime(2024, 3, 20, 12, 0, 0)

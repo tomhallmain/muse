@@ -543,8 +543,9 @@ class Muse:
         previous_tracks = spot_profile.get_previous_tracks(count=random.randint(1, 5))
         upcoming_tracks = spot_profile.get_upcoming_tracks(count=random.randint(3, 8))
         prompt = self.get_prompt(Topic.PLAYLIST_CONTEXT)
-        prompt = prompt.format(PREVIOUS_TRACKS="\n".join([f" - {t.get_track_details()}{' [already mentioned]' if was_spoken else ''}" for t, was_spoken in previous_tracks]),
-                               UPCOMING_TRACKS="\n".join([f" - {t.get_track_details()}{' [already mentioned]' if was_spoken else ''}" for t, was_spoken in upcoming_tracks]))
+        already_mentioned = _(' [already mentioned]')
+        prompt = prompt.format(PREVIOUS_TRACKS="\n".join([f" - {t.get_track_details()}{already_mentioned if was_spoken else ''}" for t, was_spoken in previous_tracks]),
+                               UPCOMING_TRACKS="\n".join([f" - {t.get_track_details()}{already_mentioned if was_spoken else ''}" for t, was_spoken in upcoming_tracks]))
         playlist_context = self.generate_text(prompt)
         self.say_at_some_point(playlist_context, spot_profile, Topic.PLAYLIST_CONTEXT)
 
