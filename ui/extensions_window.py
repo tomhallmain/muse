@@ -1,14 +1,13 @@
-from enum import Enum
 from datetime import datetime
 
-from tkinter import Toplevel, Label, StringVar, LEFT, W, Frame, ttk, messagebox
-from tkinter.ttk import Button, Entry, OptionMenu
+from tkinter import Toplevel, Label, StringVar, Frame, messagebox
+from tkinter.ttk import Button, OptionMenu
 
 from extensions.extension_manager import ExtensionManager
 from lib.tk_scroll_demo import ScrollFrame
 from ui.app_style import AppStyle
 from ui.base_window import BaseWindow
-from utils.config import config
+# from utils.config import config
 from utils.globals import ExtensionStrategy
 from utils.translations import I18N
 from utils.utils import Utils
@@ -21,6 +20,7 @@ class ExtensionsWindow(BaseWindow):
     '''
     CURRENT_EXTENSION_TEXT = _("Extensions")
     COL_0_WIDTH = 150
+    MAX_EXTENSIONS = 500
     top_level = None
 
     def __init__(self, master, app_actions):
@@ -167,8 +167,12 @@ class ExtensionsWindow(BaseWindow):
         Label(self.scroll_frame.viewPort, text=_('Actions'), 
               bg=header_bg, fg=header_fg).grid(row=0, column=7, columnspan=2, sticky='w', padx=5, pady=2)
 
-        # Get recent extensions (last 100)
-        recent_extensions = ExtensionManager.extensions[-100:]
+        # Get recent extensions (most recent first, limited to 500)
+        recent_extensions = sorted(
+            ExtensionManager.extensions[-ExtensionsWindow.MAX_EXTENSIONS:],
+            key=lambda x: x.get('date', ''),
+            reverse=True
+        )
 
         for i, ext in enumerate(recent_extensions):
             row = i + 1  # Start after header row
