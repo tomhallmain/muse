@@ -11600,7 +11600,9 @@
         "id": 5828,
         "name": "Franz Xaver Biebl",
         "indicators": [
-            "Franz Xaver Biebl"
+            "Franz Xaver Biebl",
+            "Franz Biebl",
+            "Biebl"
         ],
         "start_date": 1906,
         "end_date": 2001,
@@ -19170,6 +19172,21 @@
         "works": [],
         "notes": {}
     },
+    "Giovanni Cavaccio": {
+        "id": 4828,
+        "name": "Giovanni Cavaccio",
+        "indicators": [
+            "Giovanni Cavaccio",
+            "Cavaccio"
+        ],
+        "start_date": 1550,
+        "end_date": 1602,
+        "dates_are_lifespan": true,
+        "dates_uncertain": true,
+        "genres": [],
+        "works": [],
+        "notes": {}
+    },
     "Emilio de' Cavalieri": {
         "id": 4828,
         "name": "Emilio de' Cavalieri",
@@ -24793,6 +24810,22 @@
         "indicators": [
             "Ern\u0151 Dohn\u00e1nyi",
             "Dohn\u00e1nyi"
+        ],
+        "start_date": 1877,
+        "end_date": 1960,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [],
+        "works": [],
+        "notes": {}
+    },
+    "Ernst von Dohn\u00e1nyi": {
+        "id": 9289,
+        "name": "Ernst von Dohn\u00e1nyi",
+        "indicators": [
+            "Ernst von Dohn\u00e1nyi",
+            "Dohn\u00e1nyi",
+            "Dohnanyi"
         ],
         "start_date": 1877,
         "end_date": 1960,
@@ -34634,6 +34667,22 @@
         "works": [],
         "notes": {}
     },
+    "Nikolai Golovanov": {
+        "id": 9288,
+        "name": "Nikolai Golovanov",
+        "indicators": [
+            "Nikolai Golovanov",
+            "Nikolai Semyonovich Golovanov",
+            "Golovanov"
+        ],
+        "start_date": 1891,
+        "end_date": 1953,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [],
+        "works": [],
+        "notes": {}
+    },
     "Georg Goltermann": {
         "id": 523,
         "name": "Georg Goltermann",
@@ -35993,7 +36042,8 @@
         "name": "Charles Tomlinson Griffes",
         "indicators": [
             "Charles Tomlinson Griffes",
-            "Charles Griffes"
+            "Charles Griffes",
+            "Griffes"
         ],
         "start_date": 1884,
         "end_date": 1920,
@@ -36440,6 +36490,22 @@
         "end_date": null,
         "dates_are_lifespan": true,
         "dates_uncertain": false,
+        "genres": [],
+        "works": [],
+        "notes": {}
+    },
+    "Ingomar Gr\u00fcnauer": {
+        "id": 9286,
+        "name": "Ingomar Gr\u00fcnauer",
+        "indicators": [
+            "Ingomar Gr\u00fcnauer",
+            "Gr\u00fcnauer",
+            "Grunauer"
+        ],
+        "start_date": 1938,
+        "end_date": -1,
+        "dates_are_lifespan": true,
+        "dates_uncertain": true,
         "genres": [],
         "works": [],
         "notes": {}
@@ -38945,6 +39011,21 @@
         ],
         "start_date": 1941,
         "end_date": -1,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [],
+        "works": [],
+        "notes": {}
+    },
+    "Luis Venegas de Henestrosa": {
+        "id": 8636,
+        "name": "Luis Venegas de Henestrosa",
+        "indicators": [
+            "Luis Venegas de Henestrosa",
+            "Venegas de Henestrosa"
+        ],
+        "start_date": null,
+        "end_date": null,
         "dates_are_lifespan": true,
         "dates_uncertain": false,
         "genres": [],
@@ -44091,7 +44172,8 @@
         "name": "Dmitry Kabalevsky",
         "indicators": [
             "Dmitry Kabalevsky",
-            "Dmitri Kabalevsky"
+            "Dmitri Kabalevsky",
+            "Kabalevsky"
         ],
         "start_date": 1904,
         "end_date": 1987,
@@ -46585,7 +46667,8 @@
         "id": 772,
         "name": "Charles Koechlin",
         "indicators": [
-            "Charles Koechlin"
+            "Charles Koechlin",
+            "Koechlin"
         ],
         "start_date": 1867,
         "end_date": 1950,
@@ -81293,6 +81376,24 @@
         "works": [],
         "notes": {}
     },
+    "Tenmon": {
+        "id": 9290,
+        "name": "Tenmon",
+        "indicators": [
+            "Tenmon",
+            "Atsushi Shirakawa",
+            "\u5929\u9580"
+        ],
+        "start_date": 1971,
+        "end_date": -1,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "video_game"
+        ],
+        "works": [],
+        "notes": {}
+    },
     "James Tenney": {
         "id": 8523,
         "name": "James Tenney",
@@ -81538,6 +81639,21 @@
         ],
         "start_date": 1925,
         "end_date": 2021,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [],
+        "works": [],
+        "notes": {}
+    },
+    "Christopher Theofanidis": {
+        "id": 9287,
+        "name": "Christopher Theofanidis",
+        "indicators": [
+            "Christopher Theofanidis",
+            "Theofanidis"
+        ],
+        "start_date": 1967,
+        "end_date": -1,
         "dates_are_lifespan": true,
         "dates_uncertain": false,
         "genres": [],
@@ -87180,7 +87296,8 @@
         "id": 5204,
         "name": "Robert White",
         "indicators": [
-            "Robert White"
+            "Robert White",
+            "White, Robert"
         ],
         "start_date": 1538,
         "end_date": 1574,
@@ -87208,7 +87325,8 @@
         "id": 8747,
         "name": "Percy Whitlock",
         "indicators": [
-            "Percy Whitlock"
+            "Percy Whitlock",
+            "Whitlock, Percy"
         ],
         "start_date": 1903,
         "end_date": 1946,
@@ -88147,6 +88265,9 @@
         "name": "Dag Wir\u00e9n",
         "indicators": [
             "Dag Wir\u00e9n",
+            "Dag Wiren",
+            "Wir\u00e9n, Dag",
+            "Wiren, Dag",
             "Wir\u00e9n"
         ],
         "start_date": 1905,

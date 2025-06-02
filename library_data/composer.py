@@ -5,6 +5,7 @@ import re
 
 from library_data.work import Work
 from utils.config import config
+from utils.name_ops import NameOps
 from utils.translations import I18N
 from utils.utils import Utils
 
@@ -233,6 +234,54 @@ class ComposersData:
         for name, composer in composers.items():
             self._composers[name] = Composer.from_json(composer)
 
+    def _get_next_available_id(self):
+        """Find the next available ID in the composers collection.
+        
+        Returns:
+            int: The next available ID
+        """
+        max_id = 0
+        for comp in self._composers.values():
+            if comp.id is not None and comp.id > max_id:
+                max_id = comp.id
+        return max_id + 1
+
+    def _assign_next_id(self, composer):
+        """Assign the next available ID to a composer if they don't have one.
+        
+        Args:
+            composer: The Composer object to assign an ID to
+            
+        Returns:
+            None
+        """
+        if composer.id is None:
+            composer.id = self._get_next_available_id()
+
+    def _write_sorted_composers_to_file(self):
+        """Write the composers dictionary to file in sorted order.
+        
+        Returns:
+            tuple: (bool, str) - (success, error_message)
+        """
+        try:
+            # Convert composers to JSON format and sort by name
+            composers_json = {}
+            sorted_composers = sorted(self._composers.items(), 
+                                   key=lambda x: NameOps.get_name_sort_key(x[0]))
+            for name, comp in sorted_composers:
+                composers_json[name] = comp.to_json()
+            
+            # Write to file
+            with open(config.composers_file, 'w', encoding="utf-8") as f:
+                json.dump(composers_json, f, indent=4, ensure_ascii=True)
+            return True, ""
+            
+        except Exception as e:
+            error_msg = str(e)
+            Utils.log_red(f"Error writing composers file: {error_msg}")
+            return False, error_msg
+
     def save_composer(self, composer):
         """Save a composer to the JSON file.
         
@@ -251,17 +300,16 @@ class ComposersData:
             import shutil
             shutil.copy2(config.composers_file, backup_file)
             
+            # Assign ID if needed
+            self._assign_next_id(composer)
+            
             # Update in-memory data
             self._composers[composer.name] = composer
             
-            # Convert composers to JSON format
-            composers_json = {}
-            for name, comp in self._composers.items():
-                composers_json[name] = comp.to_json()
-            
-            # Write to file
-            with open(config.composers_file, 'w', encoding="utf-8") as f:
-                json.dump(composers_json, f, indent=4, ensure_ascii=False)
+            # Write sorted composers to file
+            success, error_msg = self._write_sorted_composers_to_file()
+            if not success:
+                raise Exception(error_msg)
                 
             # Remove backup if successful
             import os
@@ -301,14 +349,10 @@ class ComposersData:
             else:
                 return False, _("Composer not found")
             
-            # Convert composers to JSON format
-            composers_json = {}
-            for name, comp in self._composers.items():
-                composers_json[name] = comp.to_json()
-            
-            # Write to file
-            with open(config.composers_file, 'w', encoding="utf-8") as f:
-                json.dump(composers_json, f, indent=4, ensure_ascii=False)
+            # Write sorted composers to file
+            success, error_msg = self._write_sorted_composers_to_file()
+            if not success:
+                raise Exception(error_msg)
                 
             # Remove backup if successful
             os.remove(backup_file)
