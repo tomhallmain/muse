@@ -208,13 +208,55 @@ class LLM:
         """Check if the current model is a thinking model that uses internal prompts."""
         return self.model_name.startswith("deepseek-r1")
 
-    def _clean_response_for_models(self, response_text):
+    def _clean_response_for_models(self, response_text, accept_mostly_cjk_response=False):
+        """
+        Clean and validate model responses, handling model-specific patterns and invalid outputs.
+        
+        Args:
+            response_text: The raw response text from the model
+            accept_mostly_cjk_response: If False, responses containing mostly CJK (Chinese, Japanese, Korean)
+                                      characters will be rejected as they are not compatible with the TTS system.
+                                      If True, these responses will be allowed through.
+        
+        Returns:
+            str: Cleaned response text, or empty string if the response is invalid
+            
+        Note:
+            CJK characters are rejected by default because they are not supported by the Coqui TTS model
+            used in this application. This includes Chinese (Han), Japanese (Hiragana, Katakana, Kanji),
+            and Korean (Hangul) characters.
+        """
+        # First handle thinking model specific cleaning
         if self._is_thinking_model():
             if response_text.strip().startswith("<think>") and "</think>" in response_text:
                 response_text = response_text[response_text.rfind("</think>") + len("</think>"):].strip()
             if "<think>" in response_text:
                 # Sometimes the model will return extra misplaced <think> tags in the non-thinking section of the response.
                 response_text = response_text.replace("<think>", "").replace("</think>", "").strip()
+
+        # Remove "Final Answer:" prefix if present
+        if response_text.strip().startswith("Final Answer:"):
+            response_text = response_text[response_text.find("Final Answer:") + len("Final Answer:"):].strip()
+
+        # Check for CJK characters if not accepting them
+        if not accept_mostly_cjk_response and Utils.get_cjk_character_ratio(response_text, 50):
+            return ""
+
+        # Check for invalid output pattern (Chinese characters followed by note block)
+        invalid_pattern = "---\n\n**Note:** The assistant's response is cut off due to the user stopping the interaction.\n\n---"
+        if invalid_pattern in response_text:
+            # If the response is just the invalid pattern, return empty string
+            if response_text.strip() == invalid_pattern:
+                return ""
+            
+            # Check if the text before the invalid pattern is mostly CJK characters
+            before_pattern = response_text[:response_text.find(invalid_pattern)].strip()
+            if Utils.get_cjk_character_ratio(before_pattern, 50):
+                return ""
+            
+            # Otherwise, just remove the invalid pattern
+            response_text = response_text.replace(invalid_pattern, "").strip()
+
         return response_text
 
     def _sanitize_query(self, query):

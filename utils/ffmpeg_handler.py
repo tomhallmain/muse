@@ -1,13 +1,14 @@
 import os
+from pathlib import Path
+import random
 import re
 import shutil
 import subprocess
-import unicodedata
-from pathlib import Path
 from typing import Optional, Tuple, Dict
+import unicodedata
+
 from utils.temp_dir import TempDir
 from utils.utils import Utils
-import random
 
 class FFmpegHandler:
     """Handler for all FFmpeg operations with filename sanitization."""
@@ -42,9 +43,17 @@ class FFmpegHandler:
             
         Returns:
             Sanitized path that can be used with ffmpeg
+            
+        Raises:
+            Exception: If the filepath contains emoji or other problematic characters
         """
         if not FFmpegHandler.ffmpeg_available:
             raise Exception("ffmpeg is not available.")
+
+        # Check for emoji in the filepath
+        if Utils.contains_emoji(filepath):
+            raise Exception(f"Filepath contains emoji characters which are not supported: {filepath}")
+
         if filepath in FFmpegHandler._filename_cache:
             return FFmpegHandler._filename_cache[filepath]
 

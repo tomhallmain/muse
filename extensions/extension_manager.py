@@ -1,6 +1,7 @@
 import datetime
 import os
 import random
+import re
 import subprocess
 
 from extensions.llm import LLM
@@ -234,7 +235,8 @@ class ExtensionManager:
                    or b.xfgi(self.minimum_allowed_duration_seconds)
                    or self.is_in_library(b)
                    or (strict and self._strict_test(b, attr, strict))
-                   or self._is_blacklisted(b)):
+                   or self._is_blacklisted(b)
+                   or (Utils.contains_emoji(b.n) and random.random() > 0.05)):  # 95% chance to skip emoji titles
                 counter += 1
                 b = random.choice(a)
                 if counter > 10:
@@ -325,6 +327,19 @@ class ExtensionManager:
                     raise Exception(f"No output found {b}")
             else:
                 _f = _e
+        
+        # Clean emoji from filename if present
+        if Utils.contains_emoji(_f):
+            dirname = os.path.dirname(_f)
+            basename = os.path.basename(_f)
+            cleaned_basename = Utils.clean_emoji(basename)
+            new_path = os.path.join(dirname, cleaned_basename)
+            try:
+                os.rename(_f, new_path)
+                _f = new_path
+            except Exception as e:
+                Utils.log_red(f"Failed to rename file to remove emoji: {e}")
+        
         obj = dict(b.u)
         obj["filename"] = _f
         obj["date"] = datetime.datetime.now().isoformat()

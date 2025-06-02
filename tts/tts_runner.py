@@ -1,6 +1,5 @@
 from datetime import datetime
 import os
-import re
 import subprocess
 import sys
 import time
@@ -23,7 +22,7 @@ except ImportError:
 import vlc
 
 # from ops.speakers import speakers
-from tts.text_cleaner_ruleset import TextCleanerRuleset
+from tts.chunker import Chunker
 from utils.config import config
 from utils.job_queue import JobQueue
 from utils.utils import Utils
@@ -35,105 +34,19 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 # pprint.pprint(TTS().list_models())
 
 
-class Chunker:
-    MAX_CHUNK_TOKENS = config.max_chunk_tokens
-    cleaner = TextCleanerRuleset()
-
-    @staticmethod
-    def _clean_xml(text):
-        # Remove XML/HTML tags
-        cleaned = re.sub(r'<[^>]+>', '', text)
-        # Remove any remaining angle brackets
-        cleaned = re.sub(r'[<>]', '', cleaned)
-        return cleaned.strip()
-
-    @staticmethod
-    def _is_entirely_xml(text):
-        # Check if text is entirely wrapped in XML/HTML tags
-        return bool(re.match(r'^\s*<[^>]+>.*</[^>]+>\s*$', text))
-
-    @staticmethod
-    def _clean(text, locale=None):
-        # First clean XML/HTML
-        cleaned = Chunker._clean_xml(text)
-        # Skip if entirely XML/HTML
-        if Chunker._is_entirely_xml(text) and not Chunker.contains_alphanumeric(cleaned):
-            return None
-        # Apply normal cleaning
-        cleaned = Chunker.cleaner.clean(cleaned, locale)
-        if Chunker.count_tokens(cleaned) > 200 and cleaned.startswith("\"") and cleaned.endswith("\""):
-            # The sentence segmentation algorithm does not break on quotes even if they are long.
-            return cleaned[1:-1]
-        return cleaned
-
-    @staticmethod
-    def contains_alphanumeric(text):
-        return bool(re.search(r'\w', text))
-
-    @staticmethod
-    def _yield_chunks(lines_iterable, is_str=False, split_on_each_line=False, locale=None):
-        last_chunk = ""
-        chunk = ""
-        for line in lines_iterable:
-            if split_on_each_line:
-                if Chunker.contains_alphanumeric(line):
-                    yield Chunker._clean(line.strip(), locale)
-                continue
-            if line.strip() == "":
-                if chunk.strip() != "":
-                    if Chunker.contains_alphanumeric(chunk):
-                        yield Chunker._clean(chunk.strip(), locale)
-                last_chunk = chunk
-                chunk = ""
-                continue
-            if line.startswith("[") or line.startswith("("):
-                continue
-            if is_str and len(chunk) > 0 and chunk[-1] != " ":
-                chunk += " "
-            chunk += line
-        if chunk != last_chunk and chunk.strip() != "":
-            if Chunker.contains_alphanumeric(chunk):
-                yield Chunker._clean(chunk.strip(), locale)
-
-    @staticmethod
-    def count_tokens(chunk):
-        return len(chunk.strip().split(" "))
-
-    @staticmethod
-    def split_tokens(chunk, size):
-        chunk_tokens = chunk.strip().split(" ")
-        return [" ".join(chunk_tokens[i: i + size]) for i in range(0, len(chunk_tokens), size)]
-
-    @staticmethod
-    def yield_chunks(lines_iterable, is_str=False, split_on_each_line=False, locale=None):
-        for chunk in Chunker._yield_chunks(lines_iterable, is_str=is_str, split_on_each_line=split_on_each_line, locale=locale):
-            if Chunker.count_tokens(chunk) > Chunker.MAX_CHUNK_TOKENS:
-                for subchunk in Chunker.split_tokens(chunk, size=Chunker.MAX_CHUNK_TOKENS - 1):
-                    yield subchunk
-            else:
-                yield chunk
-
-    @staticmethod
-    def get_chunks(filepath, split_on_each_line=False, locale=None):
-        with open(filepath, 'r', encoding="utf8") as f:
-            yield from Chunker.yield_chunks(f, split_on_each_line=split_on_each_line, locale=locale)
-
-    @staticmethod
-    def get_str_chunks(text, split_on_each_line=False, locale=None):
-        yield from Chunker.yield_chunks(text.split("\n"), is_str=True, split_on_each_line=split_on_each_line, locale=locale)
-
-
 class TTSSpeakInvocation:
     _tracking = {}  # Maps invocation_id to TTSSpeakInvocation
 
     @staticmethod
-    def create() -> 'TTSSpeakInvocation':
-        return TTSSpeakInvocation(str(uuid.uuid4()))
+    def create(speak_callback) -> 'TTSSpeakInvocation':
+        return TTSSpeakInvocation(str(uuid.uuid4()), speak_callback)
 
-    def __init__(self, invocation_id: str):
+    def __init__(self, invocation_id: str, speak_callback):
         self.invocation_id = invocation_id
         self.error_count = 0
         self.total_chunks = 0
+        self.chunker = Chunker(skip_cjk=True)
+        self.speak_callback = speak_callback
         self._tracking[invocation_id] = self
 
     def increment_error(self):
@@ -144,6 +57,67 @@ class TTSSpeakInvocation:
 
     def all_chunks_failed(self) -> bool:
         return self.error_count > 0 and self.error_count == self.total_chunks
+
+    def _process_chunks(self, chunks):
+        """
+        Process chunks through the chunker and generate speech for each chunk.
+        
+        Args:
+            chunks: Iterable of text chunks to process
+            
+        Returns:
+            str: The full processed text
+        """
+        full_text = ""
+        for chunk in chunks:
+            Utils.log("-------------------\n" + chunk)
+            if full_text:
+                full_text += "\n\n"
+            full_text += chunk
+            self.increment_chunks()
+            self.speak_callback(chunk, self)
+            
+        if self.all_chunks_failed():
+            raise Exception(f"All {self.total_chunks} chunks failed to generate speech")
+            
+        return full_text
+
+    def process_text(self, text, locale=None):
+        """
+        Process text through the chunker and generate speech for each chunk.
+        
+        Args:
+            text: The text to process
+            locale: Optional locale for text processing
+            
+        Returns:
+            str: The full processed text
+        """
+        if not text or not text.strip():
+            raise Exception("Empty text provided to process")
+            
+        return self._process_chunks(
+            self.chunker.get_str_chunks(text, locale=locale)
+        )
+
+    def process_file(self, filepath, split_on_each_line=False, locale=None):
+        """
+        Process a file through the chunker and generate speech for each chunk.
+        
+        Args:
+            filepath: Path to the file to process
+            split_on_each_line: Whether to split on each line
+            locale: Optional locale for text processing
+            
+        Returns:
+            str: The full processed text
+        """
+        if not os.path.exists(filepath) or os.path.getsize(filepath) == 0:
+            raise Exception("Empty or non-existent file provided to process")
+            
+        return self._process_chunks(
+            self.chunker.get_chunks(filepath, split_on_each_line, locale=locale)
+        )
 
     def cleanup(self):
         if self.invocation_id in self._tracking:
@@ -304,26 +278,11 @@ class TextToSpeechRunner:
         if self.run_context and self.run_context.should_skip():
             return
             
-        # Check for empty text
-        if not text or not text.strip():
-            raise Exception("Empty text provided to speak method")
-            
-        invocation = TTSSpeakInvocation.create()
+        invocation = TTSSpeakInvocation.create(self._speak)
         
         try:
-            full_text = ""
-            for chunk in Chunker.get_str_chunks(text, locale=locale):
-                Utils.log("-------------------\n" + chunk)
-                if full_text:
-                    full_text += "\n\n"
-                full_text += chunk
-                invocation.increment_chunks()
-                self._speak(chunk, invocation)
-                
-            # Check if all chunks failed
-            if invocation.all_chunks_failed():
-                raise Exception(f"All {invocation.total_chunks} chunks failed to generate speech")
-                
+            full_text = invocation.process_text(text, locale)
+            
             while self.speech_queue.job_running:
                 if self.run_context and self.run_context.should_skip():
                     return
@@ -336,26 +295,11 @@ class TextToSpeechRunner:
         if self.run_context and self.run_context.should_skip():
             return
             
-        # Check for empty file
-        if not os.path.exists(filepath) or os.path.getsize(filepath) == 0:
-            raise Exception("Empty or non-existent file provided to speak_file method")
-            
-        invocation = TTSSpeakInvocation.create()
+        invocation = TTSSpeakInvocation.create(self._speak)
         
         try:
-            full_text = ""
-            for chunk in Chunker.get_chunks(filepath, split_on_each_line, locale=locale):
-                Utils.log("-------------------\n" + chunk)
-                if full_text:
-                    full_text += "\n\n"
-                full_text += chunk
-                invocation.increment_chunks()
-                self._speak(chunk, invocation)
-                
-            # Check if all chunks failed
-            if invocation.all_chunks_failed():
-                raise Exception(f"All {invocation.total_chunks} chunks failed to generate speech")
-                
+            full_text = invocation.process_file(filepath, split_on_each_line, locale)
+            
             while self.speech_queue.job_running:
                 if self.run_context and self.run_context.should_skip():
                     return
@@ -483,12 +427,13 @@ def main(model, text):
             break
 
 if __name__ == "__main__":
-    # speaker = list(filter(lambda x: x if x.startswith(sys.argv[2]) else None, speakers))[0] if len(sys.argv)>2 else "Royston Min"
-    # de_model = ("tts_models/de/thorsten/tacotron2-DDC", None, None)
-    # multi_model = ("tts_models/multilingual/multi-dataset/xtts_v2", speaker, "en")
-    # model = multi_model
+    speaker = list(filter(lambda x: x if x.startswith(sys.argv[2]) else None, speakers))[0] if len(sys.argv)>2 else "Royston Min"
+    de_model = ("tts_models/de/thorsten/tacotron2-DDC", None, None)
+    multi_model = ("tts_models/multilingual/multi-dataset/xtts_v2", speaker, "en")
+    model = multi_model
+    text = ""
 
-    # main(model, text)
+    main(model, text)
 
-    for chunk in Chunker.get_str_chunks("""Hello and welcome to our news show! Today, we have some exciting stories for you. First up, Tesla stock jumps on Q3 earnings beat. This is a major story as investors are always looking out for the latest updates from companies in their portfolios. The live briefing by Blinken says 'more progress' from Israel needed on Gaza aid flow shows that there is still tension between Israel and Palestine, with both countries blaming each other for the lack of aid to Gaza. The North Korean troops are in Russia, would be 'legitimate targets' in Ukraine, US says is a worrying story as we don't know what the United States plans to do if Russia invades Ukraine. The DOJ warns Elon Musk's America PAC that $1 million giveaway may break the law shows that money can buy influence and the DOJ is taking action against it. The Dragon Undocks from Station, Crew-8 Heads Toward Earth is a positive story as we finally have more astronauts going to space again! Chiefs finalizing trade to get DeAndre Hopkins from Titans shows that there are still trades happening in the NFL despite COVID-19 concerns. The Israeli strikes pound Lebanese coastal city after residents evacuate is a sad story as we don't know how many people were injured or killed during the attack. Wall Street closes down, pressured by tech losses and worries about rates shows that investors are still nervous about the economy despite the new stimulus package. The McDonald's takes Quarter Pounder off the menu at 1 in 5 restaurants due to E. coli outbreak is a scary story as we don't know where it came from or how many people got sick. Olivia Munn bares mastectomy scars in new SKIMS campaign shows that celebrities are still sharing their personal stories despite the pandemic. The Troops deployed to Jewish community center in Sri Lanka surfing town after US warns of possible attack in area is a worrying story as we don't know what will happen if this attack happens. The Panthers' Young to start after Dalton hurt in crash shows that there are still injuries happening despite the new safety measures. The New guidance for stroke prevention includes Ozempic, other weight loss drugs shows that healthcare professionals are trying to find new ways to help their patients and make it easier on them. The Iranian hacker group aims at US election websites and media before vote, Microsoft says is a worrying story as we don't know how serious this attack was or if any data was compromised. At least 4 dead in 'terrorist attack' on aerospace facility in Turkey shows that there are still terrorist attacks happening despite the pandemic. The Existing home sales fall to lowest level since 2010 shows that we need more affordable housing options for people who can't afford homes right now. And finally, How long can you stand like a flamingo? The answer may reflect your age, new study says is an interesting story as it gives us something fun to think about during these difficult times."""):
-        Utils.log(chunk)
+    # for chunk in Chunker.get_str_chunks(""""""):
+    #     Utils.log(chunk)

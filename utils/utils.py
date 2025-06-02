@@ -12,6 +12,7 @@ import time
 import traceback
 import unicodedata
 from pathlib import Path
+import subprocess
 
 from utils.custom_formatter import CustomFormatter
 
@@ -39,7 +40,23 @@ fh.setLevel(logging.DEBUG)
 fh.setFormatter(CustomFormatter())
 logger.addHandler(fh)
 
+
 class Utils:
+    # Regular expression to match emoji characters
+    EMOJI_PATTERN = re.compile("["
+        u"\U0001F600-\U0001F64F"  # emoticons
+        u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+        u"\U0001F680-\U0001F6FF"  # transport & map symbols
+        u"\U0001F700-\U0001F77F"  # alchemical symbols
+        u"\U0001F780-\U0001F7FF"  # Geometric Shapes
+        u"\U0001F800-\U0001F8FF"  # Supplemental Arrows-C
+        u"\U0001F900-\U0001F9FF"  # Supplemental Symbols and Pictographs
+        u"\U0001FA00-\U0001FA6F"  # Chess Symbols
+        u"\U0001FA70-\U0001FAFF"  # Symbols and Pictographs Extended-A
+        u"\U00002702-\U000027B0"  # Dingbats
+        u"\U000024C2-\U0001F251" 
+        "]+", flags=re.UNICODE)
+
     @staticmethod
     def get_assets_filenames(filename_filter=None):
         assets_filenames = os.listdir(Utils.get_assets_dir())
@@ -556,6 +573,106 @@ class Utils:
     def open_log_file():
         """Open the log file in the default text editor."""
         Utils.open_file(str(log_file))
+
+    @staticmethod
+    def contains_emoji(text):
+        """Check if text contains any emoji characters."""
+        if Utils.EMOJI_PATTERN.search(text):
+            Utils.log(f"Found emoji in text: {text}")
+            return True
+        return False
+
+    @staticmethod
+    def clean_emoji(text):
+        """Remove emoji characters from text and replace with [emoji] placeholder."""
+        if Utils.contains_emoji(text):
+            cleaned = Utils.EMOJI_PATTERN.sub("[emoji]", text)
+            Utils.log(f"Cleaned emoji from text: {text} -> {cleaned}")
+            return cleaned
+        return text
+
+    @staticmethod
+    def count_cjk_characters(text):
+        """
+        Count the number of CJK characters in the given text.
+        
+        Args:
+            text: The text to analyze
+            
+        Returns:
+            tuple: (total_cjk_chars, dict) where dict contains counts for each script:
+                  {
+                      'chinese': count,
+                      'japanese': count,
+                      'korean': count
+                  }
+                  
+        Note:
+            CJK characters include:
+            - Chinese (Han): \u4e00-\u9fff
+            - Japanese (Hiragana): \u3040-\u309f
+            - Japanese (Katakana): \u30a0-\u30ff
+            - Korean (Hangul): \uac00-\ud7af
+        """
+        if not text:
+            return 0, {'chinese': 0, 'japanese': 0, 'korean': 0}
+            
+        script_counts = {
+            'chinese': 0,
+            'japanese': 0,
+            'korean': 0
+        }
+        
+        for c in text:
+            if '\u4e00' <= c <= '\u9fff':  # Chinese
+                script_counts['chinese'] += 1
+            elif '\u3040' <= c <= '\u309f' or '\u30a0' <= c <= '\u30ff':  # Japanese
+                script_counts['japanese'] += 1
+            elif '\uac00' <= c <= '\ud7af':  # Korean
+                script_counts['korean'] += 1
+                
+        total_cjk = sum(script_counts.values())
+        return total_cjk, script_counts
+
+    @staticmethod
+    def get_cjk_character_ratio(text, threshold_percentage=None):
+        """
+        Calculate the ratio of CJK characters in the given text.
+        
+        Args:
+            text: The text to analyze
+            threshold_percentage: Optional percentage threshold (0-100). If provided,
+                                returns True if the ratio exceeds this threshold.
+        
+        Returns:
+            If threshold_percentage is None:
+                float: Ratio of CJK characters (0.0 to 1.0)
+            If threshold_percentage is provided:
+                bool: True if ratio exceeds threshold, False otherwise
+                
+        Note:
+            CJK characters include:
+            - Chinese (Han): \u4e00-\u9fff
+            - Japanese (Hiragana): \u3040-\u309f
+            - Japanese (Katakana): \u30a0-\u30ff
+            - Korean (Hangul): \uac00-\ud7af
+        """
+        if not text:
+            return 0.0 if threshold_percentage is None else False
+            
+        cjk_char_count, _ = Utils.count_cjk_characters(text)
+        ratio = cjk_char_count / len(text)
+        
+        if threshold_percentage is not None:
+            return ratio > (threshold_percentage / 100.0)
+            
+        return ratio
+
+    @staticmethod
+    def is_valid_filename(filename):
+        # Implement the logic to check if a filename is valid
+        # This is a placeholder and should be replaced with the actual implementation
+        return True
 
 
 if __name__ == "__main__":
