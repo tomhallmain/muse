@@ -85,9 +85,9 @@ class MediaTrack:
     _error_lock = threading.Lock()
 
     @classmethod
-    def collect_error(cls, error_msg):
+    def collect_error(cls, error_msg, stack_trace=None):
         with cls._error_lock:
-            cls._collected_errors.append(error_msg)
+            cls._collected_errors.append((error_msg, stack_trace))
 
     @classmethod
     def clear_errors(cls):
@@ -106,8 +106,11 @@ class MediaTrack:
             with open(filename, 'w', encoding='utf-8') as f:
                 f.write(f"MediaTrack Errors - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
                 f.write("=" * 80 + "\n\n")
-                for error in errors_to_write:
-                    f.write(f"{error}\n\n")
+                for error_msg, stack_trace in errors_to_write:
+                    f.write(f"{error_msg}\n")
+                    if stack_trace:
+                        f.write(f"{stack_trace}\n")
+                    f.write("\n")
             Utils.log(f"Wrote {len(errors_to_write)} errors to {filename}")
         except Exception as e:
             Utils.log_red(f"Failed to write errors to file: {str(e)}")
@@ -195,7 +198,7 @@ class MediaTrack:
             except Exception as e:
                 error_msg = f"Failed to load metadata for {filepath}: {str(e)}"
                 Utils.log_yellow(error_msg)
-                self.__class__.collect_error(error_msg)
+                self.__class__.collect_error(error_msg, traceback.format_exc())
                 # Try to get basic info using MediaInfo as fallback
                 try:
                     media_info = MediaInfo.parse(filepath)
@@ -252,9 +255,10 @@ class MediaTrack:
                     self.__class__.collect_error(error_msg)
                     raise
                 except Exception as e2:
-                    error_msg = f"Failed to get basic info using MediaInfo for {filepath}: {str(e2)}\nMediaInfo error details:\n{traceback.format_exc()}"
-                    Utils.log_red(error_msg)
-                    self.__class__.collect_error(error_msg)
+                    error_msg = f"Failed to get basic info using MediaInfo for {filepath}: {str(e2)}"
+                    stack_trace = traceback.format_exc()
+                    Utils.log_red(f"{error_msg}\nMediaInfo error details:\n{stack_trace}")
+                    self.__class__.collect_error(error_msg, stack_trace)
 
             if self.title is not None:
                 self.searchable_title = Utils.ascii_normalize(self.title.lower())

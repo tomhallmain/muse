@@ -2,8 +2,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
-"POT-Creation-Date: 2025-06-01 19:22-0400\n"
-"PO-Revision-Date: 2025-06-01 19:22-0400\n"
+"POT-Creation-Date: 2025-06-02 22:23-0400\n"
+"PO-Revision-Date: 2025-06-02 22:23-0400\n"
 "Last-Translator: Thomas Hall <tomhall.main@gmail.com>\n"
 "Language-Team: ru Team <<EMAIL>>\n"
 "Language: ru\n"
@@ -12,282 +12,283 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: app.py:150 ui/extensions_window.py:157 ui/track_details_window.py:64
+#: app.py:153 ui/extensions_window.py:161 ui/track_details_window.py:64
 #: utils/globals.py:217
 msgid "Title"
 msgstr "Название"
 
-#: app.py:153 ui/track_details_window.py:67 utils/globals.py:118
+#: app.py:156 ui/track_details_window.py:67 utils/globals.py:118
 #: utils/globals.py:218
 msgid "Album"
 msgstr "Альбом"
 
-#: app.py:156 ui/track_details_window.py:70 utils/globals.py:120
+#: app.py:159 ui/track_details_window.py:70 utils/globals.py:120
 #: utils/globals.py:219 utils/globals.py:273
 msgid "Artist"
 msgstr "Художник"
 
-#: app.py:159 ui/track_details_window.py:76 utils/globals.py:122
+#: app.py:162 ui/track_details_window.py:76 utils/globals.py:122
 #: utils/globals.py:220 utils/globals.py:272
 msgid "Composer"
 msgstr "композитор"
 
-#: app.py:162
+#: app.py:165
 msgid "Next Up"
 msgstr "Следующий"
 
-#: app.py:165
+#: app.py:168
 msgid "Prior Track"
 msgstr "Предыдущий трек"
 
-#: app.py:168
+#: app.py:171
 msgid "Spot Details"
 msgstr "Детали места"
 
-#: app.py:171
+#: app.py:174
 msgid "Extension Status"
 msgstr "Статус продления"
 
-#: app.py:174
+#: app.py:177
 msgid "Volume"
 msgstr "Объем"
 
-#: app.py:184 ui/network_media_window.py:167 ui/network_media_window.py:267
-#: ui/search_window.py:212 ui/search_window.py:334
+#: app.py:187 ui/extensions_window.py:249 ui/network_media_window.py:167
+#: ui/network_media_window.py:267 ui/search_window.py:299
+#: ui/search_window.py:427
 msgid "Play"
 msgstr "Играть"
 
-#: app.py:187
+#: app.py:190
 msgid "Playlists"
 msgstr "Плейлисты"
 
-#: app.py:190
+#: app.py:193
 msgid "Next"
 msgstr "Следующий"
 
-#: app.py:193
+#: app.py:196
 msgid "Next Grouping"
 msgstr "Следующая группировка"
 
-#: app.py:196
+#: app.py:199
 msgid "Pause"
 msgstr "Пауза"
 
-#: app.py:199 ui/composers_window.py:353 ui/composers_window.py:388
+#: app.py:202 ui/composers_window.py:353 ui/composers_window.py:388
 #: ui/composers_window.py:461 ui/favorites_window.py:273
 #: ui/history_window.py:129 ui/network_media_window.py:107
 #: ui/network_media_window.py:159 ui/network_media_window.py:337
-#: ui/search_window.py:87 ui/search_window.py:204 ui/search_window.py:415
+#: ui/search_window.py:174 ui/search_window.py:291 ui/search_window.py:508
 msgid "Search"
 msgstr "Поиск"
 
-#: app.py:202 utils/globals.py:397
+#: app.py:205 utils/globals.py:397
 msgid "Composers"
 msgstr "композиторы"
 
-#: app.py:205
+#: app.py:208
 msgid "Schedules"
 msgstr "Расписания"
 
-#: app.py:208 ui/weather_window.py:27 ui/weather_window.py:37
+#: app.py:211 ui/weather_window.py:27 ui/weather_window.py:37
 #: ui/weather_window.py:67
 msgid "Weather"
 msgstr "Погода"
 
-#: app.py:210
+#: app.py:213
 msgid "Stop"
 msgstr "Остановись"
 
-#: app.py:211
+#: app.py:214
 msgid "Text"
 msgstr "Текст"
 
-#: app.py:214
+#: app.py:217
 msgid "Delay Seconds"
 msgstr "Отложить секунды"
 
-#: app.py:221
+#: app.py:224
 msgid "Playlist"
 msgstr "Плейлист"
 
-#: app.py:229
+#: app.py:232
 msgid "Playlist Sort"
 msgstr "Сортировка плейлиста"
 
-#: app.py:237
+#: app.py:240
 msgid "Favorite"
 msgstr "Любимый"
 
-#: app.py:241 ui/favorites_window.py:226 ui/favorites_window.py:531
+#: app.py:244 ui/favorites_window.py:226 ui/favorites_window.py:531
 msgid "Favorites"
 msgstr "Любимые"
 
-#: app.py:244 ui/history_window.py:88 ui/history_window.py:297
+#: app.py:247 ui/history_window.py:88 ui/history_window.py:297
 msgid "History"
 msgstr "История"
 
-#: app.py:247
+#: app.py:250
 msgid "Overwrite"
 msgstr "Переписать"
 
-#: app.py:251
+#: app.py:254
 msgid "Muse"
 msgstr "Муза"
 
-#: app.py:255 app.py:258
+#: app.py:258 app.py:261
 msgid "Extension"
 msgstr "Продление"
 
-#: app.py:261
+#: app.py:264
 msgid "Enable track splitting"
 msgstr "Включить разделение дорожек"
 
-#: app.py:265
+#: app.py:268
 msgid "Use system language for all topics"
 msgstr "Используйте язык системы для всех тем"
 
-#: app.py:269
+#: app.py:272
 msgid "Thorough playlist memory check"
 msgstr "Полная проверка памяти плейлиста"
 
-#: app.py:274
+#: app.py:277
 msgid "Configuration"
 msgstr "конфигурация"
 
-#: app.py:335
+#: app.py:344
 msgid "Confirm Quit"
 msgstr "Подтвердить отказ"
 
-#: app.py:335
+#: app.py:344
 msgid "Would you like to quit the application?"
 msgstr "Вы хотите закрыть приложение?"
 
-#: app.py:459
+#: app.py:470
 msgid "Confirm Run"
 msgstr "Подтвердить бег"
 
-#: app.py:460
+#: app.py:471
 msgid "Are you sure you want to proceed?"
 msgstr "Вы уверены, что хотите продолжить?"
 
-#: app.py:527
+#: app.py:538
 msgid "Copied album art to clipboard."
 msgstr "Копирование обложки альбома в буфер обмена."
 
-#: app.py:632 app.py:785 app.py:815 ui/composers_window.py:245
+#: app.py:643 app.py:802 app.py:832 ui/composers_window.py:245
 #: ui/composers_window.py:259 ui/configuration_window.py:152
-#: ui/configuration_window.py:155 ui/playlist_window.py:326
-#: ui/track_details_window.py:217
+#: ui/configuration_window.py:155 ui/extensions_window.py:354
+#: ui/playlist_window.py:326 ui/track_details_window.py:217
 msgid "Error"
 msgstr "ошибка"
 
-#: app.py:699 muse/muse_spot_profile.py:208
+#: app.py:716 muse/muse_spot_profile.py:208
 msgid "Track: "
 msgstr "Трек: "
 
-#: app.py:700
+#: app.py:717
 msgid "Album: "
 msgstr "Альбом: "
 
-#: app.py:701
+#: app.py:718
 msgid "Artist: "
 msgstr "Художник: "
 
-#: app.py:702
+#: app.py:719
 msgid "Composer: "
 msgstr "Композитор: "
 
-#: app.py:713
+#: app.py:730
 msgid "Next Up: "
 msgstr "Следующий: "
 
-#: app.py:722 muse/muse_spot_profile.py:209
+#: app.py:739 muse/muse_spot_profile.py:209
 msgid "Previous Track: "
 msgstr "Предыдущий трек: "
 
-#: app.py:756
+#: app.py:773
 msgid "Staged Playlist: "
 msgstr "Сценический плейлист: "
 
-#: app.py:900
+#: app.py:917
 msgid " Muse "
 msgstr " Муза "
 
-#: extensions/extension_manager.py:119 extensions/extension_manager.py:132
+#: extensions/extension_manager.py:120 extensions/extension_manager.py:133
 msgid "Extension thread waiting for {0} minutes"
 msgstr "Продление ожидания {0} минут"
 
-#: extensions/extension_manager.py:160
+#: extensions/extension_manager.py:161
 msgid "Coming up soon, we'll be listening to a new track from the {0} {1}."
 msgstr "Скоро мы услышим новый трек от {0} {1}."
 
-#: extensions/extension_manager.py:299
+#: extensions/extension_manager.py:301
 msgid "Extension \"{0}\" waiting for {1} minutes"
 msgstr "Расширение «{0}» ожидает {1} минут"
 
-#: extensions/extension_manager.py:337
+#: extensions/extension_manager.py:352
 msgid "Extension \"{0}\" ready"
 msgstr "Расширение «{0}» готово"
 
-#: library_data/composer.py:41
+#: library_data/composer.py:42
 msgid "Composer name cannot be empty"
 msgstr "Имя композитора не может быть пустым"
 
-#: library_data/composer.py:93
+#: library_data/composer.py:94
 msgid "Dates must be valid integers"
 msgstr "Даты должны быть действительными целыми числами."
 
-#: library_data/composer.py:97
+#: library_data/composer.py:98
 msgid "Start date cannot be in the future"
 msgstr "Дата начала не может быть в будущем"
 
-#: library_data/composer.py:99
+#: library_data/composer.py:100
 msgid "End date cannot be in the future"
 msgstr "Дата окончания не может быть в будущем"
 
-#: library_data/composer.py:104
+#: library_data/composer.py:105
 msgid "Start date cannot be after end date"
 msgstr "Дата начала не может быть позднее даты окончания"
 
-#: library_data/composer.py:176 library_data/library_data.py:63
+#: library_data/composer.py:177 library_data/library_data.py:63
 #: ui/favorites_window.py:32 ui/history_window.py:30
 msgid "({0} results)"
 msgstr "({0} результаты)"
 
-#: library_data/composer.py:246 library_data/composer.py:290
+#: library_data/composer.py:295 library_data/composer.py:338
 msgid "Invalid composer data"
 msgstr "Недопустимые данные о композиторе"
 
-#: library_data/composer.py:302
+#: library_data/composer.py:350
 msgid "Composer not found"
 msgstr "Композитор не найден"
 
-#: library_data/library_data.py:265
+#: library_data/library_data.py:271
 msgid "Updating tracks"
 msgstr "Обновление треков"
 
-#: library_data/media_track.py:194
+#: library_data/media_track.py:305
 msgid "Unknown title"
 msgstr "Неизвестное название"
 
-#: library_data/media_track.py:200
+#: library_data/media_track.py:311
 msgid "Unknown album"
 msgstr "Неизвестный альбом"
 
-#: library_data/media_track.py:206
+#: library_data/media_track.py:317
 msgid "Unknown artist"
 msgstr "Неизвестный художник"
 
-#: library_data/media_track.py:376 library_data/media_track.py:377
+#: library_data/media_track.py:487 library_data/media_track.py:488
 #: tts/text_cleaner_ruleset.py:78
 msgid "Number \\1"
 msgstr " Номер \\1"
 
-#: library_data/media_track.py:378
+#: library_data/media_track.py:489
 msgid "\\1text to speech\\2"
 msgstr "\\1текста в речь\\2"
 
-#: library_data/media_track.py:379
+#: library_data/media_track.py:490
 msgid " Opus \\2"
 msgstr " Опус \\2"
 
@@ -552,7 +553,7 @@ msgid "Save"
 msgstr "Спасти"
 
 #: ui/composers_window.py:115 ui/composers_window.py:136
-#: ui/extensions_window.py:241 ui/presets_window.py:146
+#: ui/extensions_window.py:257 ui/presets_window.py:146
 #: ui/schedules_window.py:214
 msgid "Delete"
 msgstr "Исключить"
@@ -597,14 +598,14 @@ msgstr "Композитор поиска"
 msgid "Search Genre"
 msgstr "Поисковый жанр"
 
-#: ui/composers_window.py:366 ui/search_window.py:173
+#: ui/composers_window.py:366 ui/search_window.py:260
 msgid "No recent searches found."
 msgstr "Не найдено недавних поисковых запросов."
 
-#: ui/composers_window.py:453 ui/extensions_window.py:233
+#: ui/composers_window.py:453 ui/extensions_window.py:241
 #: ui/favorites_window.py:359 ui/favorites_window.py:486
 #: ui/history_window.py:217 ui/history_window.py:288
-#: ui/network_media_window.py:260 ui/search_window.py:327
+#: ui/network_media_window.py:260 ui/search_window.py:420
 msgid "Details"
 msgstr "Подробности"
 
@@ -728,117 +729,117 @@ msgstr "Конфигурация успешно сохранена"
 msgid "Failed to save configuration"
 msgstr "Не удалось сохранить конфигурацию"
 
-#: ui/extensions_window.py:22 ui/extensions_window.py:31
-#: ui/extensions_window.py:294
+#: ui/extensions_window.py:23 ui/extensions_window.py:33
+#: ui/extensions_window.py:312
 msgid "Extensions"
 msgstr "Расширения"
 
-#: ui/extensions_window.py:66
+#: ui/extensions_window.py:68
 msgid "Extension Settings"
 msgstr "Настройки расширения"
 
-#: ui/extensions_window.py:72 ui/extensions_window.py:161
+#: ui/extensions_window.py:74 ui/extensions_window.py:165
 msgid "Strategy"
 msgstr "Стратегия"
 
-#: ui/extensions_window.py:83
+#: ui/extensions_window.py:85
 msgid "Clear History"
 msgstr "Ясная история"
 
-#: ui/extensions_window.py:89
+#: ui/extensions_window.py:91
 msgid "Statistics"
 msgstr "Статистика"
 
-#: ui/extensions_window.py:153
+#: ui/extensions_window.py:157
 msgid "Date"
 msgstr "Дата"
 
-#: ui/extensions_window.py:155
+#: ui/extensions_window.py:159
 msgid "Published"
 msgstr "Опубликовано"
 
-#: ui/extensions_window.py:159
+#: ui/extensions_window.py:163
 msgid "Duration"
 msgstr "Продолжительность"
 
-#: ui/extensions_window.py:163
+#: ui/extensions_window.py:167
 msgid "Attribute"
 msgstr "атрибут"
 
-#: ui/extensions_window.py:165
+#: ui/extensions_window.py:169
 msgid "Search Query"
 msgstr "Поисковый запрос"
 
-#: ui/extensions_window.py:167
+#: ui/extensions_window.py:171
 msgid "Actions"
 msgstr "Действия"
 
-#: ui/extensions_window.py:177 ui/extensions_window.py:358
-#: ui/extensions_window.py:368
+#: ui/extensions_window.py:185 ui/extensions_window.py:405
+#: ui/extensions_window.py:415
 msgid "N/A"
 msgstr "N/A"
 
-#: ui/extensions_window.py:254
+#: ui/extensions_window.py:270
 msgid "Total Extensions: {}"
 msgstr "Общее количество расширений: {}"
 
-#: ui/extensions_window.py:260
+#: ui/extensions_window.py:276
 msgid "Average Duration: {}"
 msgstr "Средняя продолжительность: {}"
 
-#: ui/extensions_window.py:262
+#: ui/extensions_window.py:278
 msgid "Average Duration: N/A"
 msgstr "Средняя продолжительность: Н/Д"
 
-#: ui/extensions_window.py:276
+#: ui/extensions_window.py:292
 msgid "Confirm Clear"
 msgstr "Подтвердить Очистить"
 
-#: ui/extensions_window.py:277
+#: ui/extensions_window.py:293
 msgid "Are you sure you want to clear all extension history?"
 msgstr "Вы уверены, что хотите очистить всю историю расширений?"
 
-#: ui/extensions_window.py:302
+#: ui/extensions_window.py:320
 msgid "Confirm Delete"
 msgstr "Подтвердить удаление"
 
-#: ui/extensions_window.py:303
+#: ui/extensions_window.py:321
 msgid "Are you sure you want to delete this extension?"
 msgstr "Вы уверены, что хотите удалить это расширение?"
 
-#: ui/extensions_window.py:317
+#: ui/extensions_window.py:364
 msgid "Extension Details"
 msgstr "Детали расширения"
 
-#: ui/extensions_window.py:351
+#: ui/extensions_window.py:398
 msgid "Published:"
 msgstr "Опубликовано:"
 
-#: ui/extensions_window.py:364
+#: ui/extensions_window.py:411
 msgid "Duration:"
 msgstr "Продолжительность:"
 
-#: ui/extensions_window.py:374
+#: ui/extensions_window.py:421
 msgid "Strategy:"
 msgstr "Стратегия:"
 
-#: ui/extensions_window.py:382
+#: ui/extensions_window.py:429
 msgid "Attribute:"
 msgstr "Атрибут:"
 
-#: ui/extensions_window.py:390
+#: ui/extensions_window.py:437
 msgid "Search Query:"
 msgstr "Поисковый запрос:"
 
-#: ui/extensions_window.py:398
+#: ui/extensions_window.py:445
 msgid "Description:"
 msgstr "Описание:"
 
-#: ui/extensions_window.py:406
+#: ui/extensions_window.py:453
 msgid "File:"
 msgstr "Файл:"
 
-#: ui/extensions_window.py:413 ui/favorites_window.py:629
+#: ui/extensions_window.py:460 ui/favorites_window.py:629
 msgid "Close"
 msgstr "Закрыть"
 
@@ -877,7 +878,7 @@ msgid "No title or filepath available"
 msgstr "Нет названия или пути к файлу"
 
 #: ui/favorites_window.py:366 ui/favorites_window.py:493
-#: ui/search_window.py:228
+#: ui/search_window.py:315
 msgid "Remove"
 msgstr "Удалить"
 
@@ -909,13 +910,13 @@ msgstr "Поиск по истории"
 msgid "No history found."
 msgstr "История не найдена."
 
-#: ui/network_media_window.py:77 ui/search_window.py:54
+#: ui/network_media_window.py:77 ui/search_window.py:141
 msgid "Search Library"
 msgstr "Поисковая библиотека"
 
-#: ui/network_media_window.py:115 ui/search_window.py:102
-#: ui/search_window.py:111 ui/search_window.py:120 ui/search_window.py:129
-#: ui/search_window.py:138 ui/search_window.py:147 ui/search_window.py:156
+#: ui/network_media_window.py:115 ui/search_window.py:189
+#: ui/search_window.py:198 ui/search_window.py:207 ui/search_window.py:216
+#: ui/search_window.py:225 ui/search_window.py:234 ui/search_window.py:243
 msgid "Sort by"
 msgstr "Сортировать по"
 
@@ -923,15 +924,15 @@ msgstr "Сортировать по"
 msgid "No recent urls found."
 msgstr "Не найдено последних URL-адресов."
 
-#: ui/network_media_window.py:140 ui/search_window.py:185
+#: ui/network_media_window.py:140 ui/search_window.py:272
 msgid "(No track selected)"
 msgstr "(Трек не выбран)"
 
-#: ui/network_media_window.py:201 ui/search_window.py:268
+#: ui/network_media_window.py:201 ui/search_window.py:355
 msgid "Please wait, overwriting cache and searching..."
 msgstr "Пожалуйста, подождите, перезаписывается кэш и выполняется поиск..."
 
-#: ui/network_media_window.py:201 ui/search_window.py:268
+#: ui/network_media_window.py:201 ui/search_window.py:355
 msgid "Searching..."
 msgstr "В поисках..."
 
@@ -1095,7 +1096,7 @@ msgstr "ясный график"
 msgid "Modify"
 msgstr "изменять"
 
-#: ui/search_window.py:301
+#: ui/search_window.py:388
 msgid "No results found."
 msgstr "Результаты не найдены."
 
@@ -1365,3 +1366,136 @@ msgstr "месяцы"
 #: utils/translations.py:68
 msgid "years"
 msgstr "годы"
+
+#: app.py:280 ui/tts_window.py:28 ui/tts_window.py:34 ui/tts_window.py:203
+msgid "Text to Speech"
+msgstr "Текст в речь"
+
+#: tts/chunker.py:76
+msgid "Chinese"
+msgstr "китайский"
+
+#: tts/chunker.py:77
+msgid "Japanese"
+msgstr "японский"
+
+#: tts/chunker.py:78
+msgid "Korean"
+msgstr "корейский"
+
+#: tts/chunker.py:80
+msgid " and "
+msgstr " и "
+
+#: tts/chunker.py:81
+msgid "*This text contains {0}, I can't read it but it looks interesting*"
+msgstr ""
+"*Этот текст содержит {0}, я не могу его прочитать, но он выглядит интересно*"
+
+#: ui/extensions_window.py:337
+msgid "No original filename or id found in extension data"
+msgstr "В данных расширения не найдено исходное имя файла или идентификатор"
+
+#: ui/extensions_window.py:352
+msgid ""
+"Tip: If you've recently added or moved files, try checking 'Overwrite Cache'"
+" in the search options."
+msgstr ""
+"Совет: если вы недавно добавили или переместили файлы, попробуйте установить"
+" флажок «Перезаписать кэш» в параметрах поиска."
+
+#: ui/search_window.py:117
+msgid "No matching tracks found"
+msgstr "Никаких следов совпадения не найдено"
+
+#: ui/search_window.py:247
+msgid "Overwrite Cache"
+msgstr "Перезаписать кэш"
+
+#: ui/search_window.py:393
+msgid ""
+"Tip: If you've recently added or moved files, try checking 'Overwrite Cache'"
+" in the search options below."
+msgstr ""
+"Совет: если вы недавно добавили или переместили файлы, попробуйте установить"
+" флажок «Перезаписать кэш» в параметрах поиска."
+
+#: ui/tts_window.py:55
+msgid "Text Input"
+msgstr "Ввод текста"
+
+#: ui/tts_window.py:66
+msgid "File Input"
+msgstr "Ввод файлов"
+
+#: ui/tts_window.py:69
+msgid "Browse"
+msgstr "Просмотр"
+
+#: ui/tts_window.py:72
+msgid "Options"
+msgstr "Варианты"
+
+#: ui/tts_window.py:76
+msgid "Speaker:"
+msgstr "Докладчик::"
+
+#: ui/tts_window.py:83
+msgid "Split on lines"
+msgstr "Разделить по строкам"
+
+#: ui/tts_window.py:87
+msgid "Speak Text"
+msgstr "Прочитать текст"
+
+#: ui/tts_window.py:88
+msgid "Speak File"
+msgstr "Файл речи"
+
+#: ui/tts_window.py:91
+msgid "Status"
+msgstr "статус"
+
+#: ui/tts_window.py:128
+msgid "Select Text File"
+msgstr "Выберите текстовый файл"
+
+#: ui/tts_window.py:129
+msgid "Text files"
+msgstr "Текстовые файлы"
+
+#: ui/tts_window.py:129
+msgid "All files"
+msgstr "Все файлы"
+
+#: ui/tts_window.py:147
+msgid "Error: No text provided"
+msgstr "Ошибка: нет текста"
+
+#: ui/tts_window.py:154 ui/tts_window.py:193
+msgid "Successfully generated speech file: {}"
+msgstr "Успешно созданный файл речи: {}"
+
+#: ui/tts_window.py:156 ui/tts_window.py:195
+msgid "No output file was generated"
+msgstr "Выходной файл не был сгенерирован"
+
+#: ui/tts_window.py:158 ui/tts_window.py:197
+msgid "Error generating speech: {}"
+msgstr "Ошибка при генерации речи: {}"
+
+#: ui/tts_window.py:165
+msgid "Error: No file selected"
+msgstr "Ошибка: файл не выбран"
+
+#: ui/tts_window.py:170
+msgid "Error: File does not exist"
+msgstr "Ошибка: файл не существует"
+
+#: ui/tts_window.py:173
+msgid "Error: Path is not a file"
+msgstr "Ошибка: Path не является файлом"
+
+#: ui/tts_window.py:176
+msgid "Error: File is empty"
+msgstr "Ошибка: файл пуст"
