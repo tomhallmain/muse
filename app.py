@@ -487,7 +487,7 @@ class App():
             self.cancel_btn.grid(row=12, column=2)
             self.text_btn.grid(row=13, column=2)
             self.extension_btn.grid(row=14, column=2)
-            self.current_run = Run(args, callbacks=self.app_actions)
+            self.current_run = Run(args, app_actions=self.app_actions)
             self.current_run.execute()
             self.cancel_btn.grid_forget()
             self.text_btn.grid_forget()

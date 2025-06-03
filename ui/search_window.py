@@ -48,86 +48,50 @@ class SearchWindow(BaseWindow):
         app_info_cache.set("recent_searches", json_searches)
 
     @staticmethod
-    def find_track(library_data, search_query, save_to_recent=False, overwrite=False):
+    def find_track(library_data, library_data_search, save_to_recent=False, overwrite=False):
         """Search for a track and play it if found.
         
         Args:
             library_data: The LibraryData instance to use for searching
-            search_query: Dict containing search parameters (title, album, etc.)
+            library_data_search: The LibraryDataSearch object to use for searching
             save_to_recent: Whether to save this search to recent searches
             overwrite: Whether to overwrite the cache when searching
         """
         try:
             # First try to find by ID if provided
-            if search_query.get('id'):
-                Utils.log(f"Attempting to find track by ID: {search_query['id']}")
-                all_tracks = library_data.get_all_tracks(overwrite=overwrite)
-                for track in all_tracks:
-                    if search_query['id'] in track.title:  # Check in original title, not searchable_title
-                        Utils.log(f"Found track by ID: '{track.title}'")
-                        return track
-                Utils.log("No track found by ID, falling back to title search")
+            if library_data_search.id:
+                track = library_data.find_track_by_id(library_data_search.id, overwrite=overwrite)
+                if track:
+                    return track
+                Utils.log("No track found by ID, falling back to search")
 
-            # Create search object
-            search = LibraryDataSearch(
-                all=search_query.get('all', ''),
-                title=search_query.get('title', ''),
-                album=search_query.get('album', ''),
-                artist=search_query.get('artist', ''),
-                composer=search_query.get('composer', ''),
-                genre=search_query.get('genre', ''),
-                instrument=search_query.get('instrument', ''),
-                form=search_query.get('form', ''),
-                max_results=search_query.get('max_results', SearchWindow.MAX_RESULTS)
-            )
+            # NOTE: Overwrite should be False for next calls because cache would have been
+            # overwritten by the above call
+
+            # Perform search and get first result
+            library_data.do_search(library_data_search, overwrite=False)
+            results = library_data_search.get_results()
             
-            # Perform search
-            library_data.do_search(search, overwrite=overwrite)
-            
-            # Get first result
-            results = search.get_results()
-            
-            # If no results and we have a title search with sufficient length, try fuzzy matching
-            if not results and search.title and len(search.title) >= 12:
-                Utils.log(f"No exact match found for '{search.title}', attempting fuzzy match...")
-                # Get all tracks and try fuzzy matching
-                all_tracks = library_data.get_all_tracks(overwrite=overwrite)
-                
-                # Collect distances for debugging
-                distances = []
-                for track in all_tracks:
-                    if Utils.is_similar_strings(search.title, track.searchable_title):
-                        Utils.log(f"Found fuzzy match: '{track.title}' for '{search.title}'")
-                        results = [track]
-                        break
-                    else:
-                        # Collect distance for debugging
-                        distance = Utils.string_distance(search.title, track.searchable_title)
-                        distances.append((distance, track.searchable_title, track.title))
-                
-                # If no match found, show closest matches
-                if not results:
-                    Utils.log(f"No fuzzy match found. Showing closest 200 matches for '{search.title}':")
-                    # Sort by distance and take top 200 
-                    distances.sort(key=lambda x: x[0])
-                    for distance, searchable_title, title in distances[:200]:
-                        Utils.log(f"Distance: {distance}, Searchable: '{searchable_title}', Title: '{title}'")
+            if results:
+                # Save to recent searches if requested
+                if save_to_recent:
+                    library_data_search.set_selected_track_path(results[0])
+                    LibraryDataSearch.update_recent_searches(library_data_search)
+            elif library_data_search.title:
+                # If no results and we have a title search with sufficient length, try fuzzy matching
+                matches = library_data.find_track_by_fuzzy_title(
+                    library_data_search.title, 
+                    overwrite=False, 
+                    max_results=1  # We only need one match for find_track
+                )
+                if matches:
+                    results = matches
             
             if not results:
                 raise ValueError(_("No matching tracks found"))
                 
             # Get the first track
             track = results[0]
-            
-            # Save to recent searches if requested
-            if save_to_recent:
-                search.set_selected_track_path(track)
-                if search not in SearchWindow.recent_searches:
-                    SearchWindow.recent_searches.insert(0, search)
-                    if len(SearchWindow.recent_searches) > SearchWindow.MAX_RECENT_SEARCHES:
-                        del SearchWindow.recent_searches[-1]
-                    SearchWindow.store_recent_searches()
-            
             return track
             
         except Exception as e:
@@ -362,9 +326,19 @@ class SearchWindow(BaseWindow):
             # Schedule UI update on main thread
             self.master.after(0, lambda: self._update_ui_after_search())
 
+        def update_status(status_text):
+            """Callback for updating search status."""
+            # Schedule UI update on main thread
+            self.master.after(0, lambda: self._update_search_status(status_text))
+
         def search_thread():
             try:
-                self.library_data.do_search(self.library_data_search, overwrite=overwrite, callback=search_complete)
+                self.library_data.do_search(
+                    self.library_data_search, 
+                    overwrite=overwrite, 
+                    completion_callback=search_complete,
+                    status_callback=update_status
+                )
             except Exception as e:
                 Utils.log_red(f"Error in search thread: {e}")
                 # Schedule UI update on main thread
@@ -375,7 +349,7 @@ class SearchWindow(BaseWindow):
 
     def _update_ui_after_search(self):
         """Update the UI after a search completes."""
-        self.update_recent_searches()
+        SearchWindow.update_recent_searches(self.library_data_search)
         self._refresh_widgets()
 
     def _show_search_error(self, error_msg):
@@ -391,19 +365,20 @@ class SearchWindow(BaseWindow):
         self.master.destroy()
         self.has_closed = True
 
-    def update_recent_searches(self, remove_searches_with_no_selected_filepath=False):
-        assert self.library_data_search is not None
-        if self.library_data_search in SearchWindow.recent_searches:
-            SearchWindow.recent_searches.remove(self.library_data_search)
+    @staticmethod
+    def update_recent_searches(library_data_search, remove_searches_with_no_selected_filepath=False):
+        assert library_data_search is not None
+        if library_data_search in SearchWindow.recent_searches:
+            SearchWindow.recent_searches.remove(library_data_search)
         if remove_searches_with_no_selected_filepath:
             searches_to_remove = []
             for search in SearchWindow.recent_searches:
                 if (search.selected_track_path == None or search.selected_track_path.strip() == "") and \
-                        search.matches_no_selected_track_path(self.library_data_search):
+                        search.matches_no_selected_track_path(library_data_search):
                     SearchWindow.recent_searches.remove(search)
             for search in searches_to_remove:
                 SearchWindow.recent_searches.remove(search)
-        SearchWindow.recent_searches.insert(0, self.library_data_search)
+        SearchWindow.recent_searches.insert(0, library_data_search)
         if len(SearchWindow.recent_searches) > SearchWindow.MAX_RECENT_SEARCHES:
             del SearchWindow.recent_searches[-1]
 
@@ -478,7 +453,7 @@ class SearchWindow(BaseWindow):
         library_data_search.set_selected_track_path(track)
         # the below argument ensures that stored recent searches will have a selected
         # filepath if the user selected to play from them.
-        self.update_recent_searches(remove_searches_with_no_selected_filepath=True)
+        SearchWindow.update_recent_searches(library_data_search, remove_searches_with_no_selected_filepath=True)
         playlist_sort_type = self.get_playlist_sort_type()
         self.app_actions.start_play_callback(track=track, playlist_sort_type=playlist_sort_type, overwrite=self.overwrite_cache.get())
 
@@ -549,4 +524,10 @@ class SearchWindow(BaseWindow):
             setattr(self, button_ref_name, button)
             button # for some reason this is necessary to maintain the reference?
             button.grid(row=row, column=column)
+
+    def _update_search_status(self, status_text):
+        """Update the search status label with progress information."""
+        if hasattr(self, 'searching_label') and self.searching_label.winfo_exists():
+            self.searching_label.config(text=status_text)
+            self.master.update()
 

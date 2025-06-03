@@ -1,8 +1,9 @@
 from dataclasses import dataclass
-from typing import Optional
 import time
 
+from library_data.library_data import LibraryDataSearch
 from utils.globals import TrackAttribute
+
 
 @dataclass
 class Favorite:
@@ -142,8 +143,8 @@ class Favorite:
         Get a query for playing this favorite.
         Returns either:
         - A string filepath if this is a track favorite with a valid filepath
-        - A dict search query if this is a track favorite without a valid filepath
-        - A dict search query if this is an attribute favorite
+        - A LibraryDataSearch object if this is a track favorite without a valid filepath
+        - A LibraryDataSearch object if this is an attribute favorite
         - None if no valid query can be generated
         """
         if self.attribute == TrackAttribute.TITLE:
@@ -154,21 +155,20 @@ class Favorite:
                     return self.filepath
 
             # If no valid filepath, create a search query
-            search_query = {
-                'title': self.value,  # Search in title field
-                'max_results': 1  # We only need one match
-            }
+            search = LibraryDataSearch(
+                title=self.value,  # Search in title field
+                max_results=1  # We only need one match
+            )
             # Add metadata filters if available
             if self.artist:
-                search_query['artist'] = self.artist
+                search.artist = self.artist
             if self.album:
-                search_query['album'] = self.album
+                search.album = self.album
             if self.composer:
-                search_query['composer'] = self.composer
-            return search_query
+                search.composer = self.composer
+            return search
         else:
             # For attribute favorites, create a search query based on the attribute
-            return {
-                self.attribute.value: self.value,
-                'max_results': 1
-            } 
+            search = LibraryDataSearch(max_results=1)
+            setattr(search, self.attribute.value, self.value)
+            return search 

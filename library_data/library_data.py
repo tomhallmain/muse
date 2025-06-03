@@ -25,7 +25,7 @@ libary_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)))
 
 class LibraryDataSearch:
     def __init__(self, all="", title="", album="", artist="", composer="", genre="", instrument="", form="",
-                 selected_track_path=None, stored_results_count=0, max_results=200):
+                 selected_track_path=None, stored_results_count=0, max_results=200, id=None):
         self.all = all.lower()
         self.title = title.lower()
         self.album = album.lower()
@@ -37,6 +37,7 @@ class LibraryDataSearch:
         self.stored_results_count = stored_results_count
         self.selected_track_path = selected_track_path
         self.max_results = max_results
+        self.id = id
 
         self.results = []
 
@@ -198,6 +199,7 @@ class LibraryDataSearch:
             "selected_track_path": self.selected_track_path,
             "stored_results_count": self.stored_results_count,
             "max_results": self.max_results,
+            "id": self.id,
         }
 
     @staticmethod
@@ -251,28 +253,55 @@ class LibraryData:
     @staticmethod
     def get_all_filepaths(directories, overwrite=False):
         l = []
-        count = 0
+        total_media_files_count = 0
         for directory in directories:
             for f in LibraryData.get_directory_files(directory, overwrite=overwrite):
                 if MediaFileType.is_media_filetype(f):
                     l += [os.path.join(directory, f)]
-                    count += 1
-                    if count > 100000:
+                    total_media_files_count += 1
+                    if total_media_files_count > 100000: # TODO maybe make this limit configurable
                         break
                 elif config.debug and os.path.isfile(f):
                     Utils.log("Skipping non-media file: " + f)
         return l
 
     @staticmethod
-    def get_all_tracks(overwrite=False, ui_callbacks=None):
+    def get_all_tracks(overwrite=False, app_actions=None, search_status_callback=None):
+        # The app_actions.update_extension_status callback is used to update the status on the main window
+        # while the search_status_callback is used to update the status on the search window.
+        # If both are provided, both will be called for progress updates.
+        any_callback = search_status_callback or (app_actions and app_actions.update_extension_status)
         if overwrite:
             LibraryData.MEDIA_TRACK_CACHE = {}
-            if ui_callbacks is not None:
-                ui_callbacks.update_extension_status(_("Updating tracks"))
+            if app_actions is not None:
+                app_actions.update_extension_status(_("Updating tracks"))
         with LibraryData.get_tracks_lock:
             if len(LibraryData.all_tracks) == 0 or overwrite:
                 all_directories = config.get_all_directories()
-                LibraryData.all_tracks = [LibraryData.get_track(f) for f in LibraryData.get_all_filepaths(all_directories, overwrite=overwrite)]
+                all_filepaths = LibraryData.get_all_filepaths(all_directories, overwrite=overwrite)
+                total_files = len(all_filepaths)
+                
+                # Clear existing tracks if overwriting
+                if overwrite:
+                    LibraryData.all_tracks = []
+                
+                # Process files with progress updates
+                for i, filepath in enumerate(all_filepaths):
+                    # Call status callback every 1000 files or at the end
+                    if any_callback and (i % 1000 == 999 or i == total_files - 1):
+                        try:
+                            message = f"Refreshing cache... ({i + 1}/{total_files} files)"
+                            if search_status_callback:
+                                search_status_callback(message)
+                            if app_actions:
+                                app_actions.update_extension_status(message)
+                        except Exception as e:
+                            Utils.log_red(f"Error in status callback: {e}")
+                    
+                    track = LibraryData.get_track(filepath)
+                    if track is not None:
+                        LibraryData.all_tracks.append(track)
+                
                 # Write any collected errors to file after cache refresh
                 MediaTrack.write_errors_to_file()
             return LibraryData.all_tracks
@@ -289,7 +318,7 @@ class LibraryData:
             return track
 
 
-    def __init__(self, ui_callbacks=None):
+    def __init__(self, app_actions=None):
         LibraryData.load_directory_cache()
         self.artists = artists_data
         self.blacklist = blacklist
@@ -297,16 +326,16 @@ class LibraryData:
         self.forms = forms_data
         self.genres = genre_data
         self.instruments = instruments_data
-        self.ui_callbacks = ui_callbacks
+        self.app_actions = app_actions
         self.data_callbacks = LibraryDataCallbacks(
             LibraryData.get_all_filepaths,
             LibraryData.get_all_tracks,
             LibraryData.get_track,
             self,
         )
-        self.extension_manager = ExtensionManager(self.ui_callbacks, self.data_callbacks)
+        self.extension_manager = ExtensionManager(self.app_actions, self.data_callbacks)
 
-    def do_search(self, library_data_search, overwrite=False, callback=None):
+    def do_search(self, library_data_search, overwrite=False, completion_callback=None, search_status_callback=None):
         if not isinstance(library_data_search, LibraryDataSearch):
             raise TypeError('Library data search must be of type LibraryDataSearch')
         if not library_data_search.is_valid():
@@ -315,22 +344,37 @@ class LibraryData:
 
         Utils.log(f"Searching for tracks matching query {library_data_search}")
 
-        for audio_track in LibraryData.get_all_tracks(overwrite=overwrite):
+        # Get all tracks first to ensure cache is up to date
+        all_tracks = LibraryData.get_all_tracks(overwrite=overwrite, search_status_callback=search_status_callback)
+        total_files = len(all_tracks)
+
+        if search_status_callback:
+            search_status_callback("Searching for tracks...")
+        
+        # Search through tracks
+        for i, audio_track in enumerate(all_tracks):
+            # Call status callback every 5000 files or at the end
+            if search_status_callback and (i % 5000 == 4999 or i == total_files - 1):
+                try:
+                    search_status_callback(f"Searching for tracks... ({i + 1} files searched, {total_files - i} files may be remaining)")
+                except Exception as e:
+                    Utils.log_red(f"Error in status callback: {e}")
+
             if library_data_search.test(audio_track) is None:
                 break
 
         library_data_search.set_stored_results_count()
         
-        # Call the callback if provided
-        if callback:
+        # Call the completion callback if provided
+        if completion_callback:
             try:
-                callback(library_data_search)
+                completion_callback(library_data_search)
             except Exception as e:
                 Utils.log_red(f"Error in search callback: {e}")
                 
         return library_data_search
 
-    def resolve_track(self, audio_track):
+    def resolve_track(self, media_track):
         # Find any highly similar tracks in the library to this track.
         # Especially in the case that two master directories contain the same track files,
         # we want to prioritise the track in the master directory that contains the
@@ -340,7 +384,7 @@ class LibraryData:
     def start_extensions_thread(self, initial_sleep=True, overwrite_cache=False, voice=None):
         if LibraryData.extension_thread_started:
             return
-        LibraryData.get_all_tracks(overwrite=overwrite_cache, ui_callbacks=self.ui_callbacks)
+        LibraryData.get_all_tracks(overwrite=overwrite_cache, app_actions=self.app_actions)
         self.extension_manager.start_extensions_thread(initial_sleep, overwrite_cache, voice)
 
     def reset_extension(self, restart_thread=True):
@@ -350,4 +394,62 @@ class LibraryData:
         search = LibraryDataSearch(title=title, album=album, artist=artist, composer=composer, form=form, genre=genre, instrument=instrument)
         self.do_search(search)
         return len(search.results) > 0
+
+    def find_track_by_id(self, track_id, overwrite=False):
+        """
+        Attempt to find a track by its ID in the title.
+        Returns the track if found, None otherwise.
+        """
+        if not track_id:
+            return None
+            
+        Utils.log(f"Attempting to find track by ID: {track_id}")
+        all_tracks = LibraryData.get_all_tracks(overwrite=overwrite)
+        for track in all_tracks:
+            if track_id in track.title:  # Check in original title, not searchable_title
+                Utils.log(f"Found track by ID: '{track.title}'")
+                return track
+        Utils.log("No track found by ID")
+        return None
+
+    def find_track_by_fuzzy_title(self, title, overwrite=False, max_results=-1):
+        """
+        Attempt to find tracks using fuzzy matching on the title.
+        Returns a list of matching tracks, up to max_results (or all if max_results is -1).
+        
+        Args:
+            title: The title to search for
+            overwrite: Whether to overwrite the cache when searching
+            max_results: Maximum number of results to return (-1 for all matches)
+        """
+        if not title or len(title) < 12:
+            return []
+            
+        Utils.log(f"No exact match found for '{title}', attempting fuzzy match...")
+        # Get all tracks and try fuzzy matching
+        all_tracks = LibraryData.get_all_tracks(overwrite=overwrite)
+        
+        # Collect distances for debugging and matching
+        distances = []
+        matches = []
+        for track in all_tracks:
+            if Utils.is_similar_strings(title, track.searchable_title):
+                Utils.log(f"Found fuzzy match: '{track.title}' for '{title}'")
+                matches.append(track)
+                if max_results != -1 and len(matches) >= max_results:
+                    break
+            else:
+                # Collect distance for debugging
+                distance = Utils.string_distance(title, track.searchable_title)
+                distances.append((distance, track.searchable_title, track.title))
+        
+        # If no matches found, show closest matches
+        if not matches and distances:
+            Utils.log(f"No fuzzy match found. Showing closest 200 matches for '{title}':")
+            # Sort by distance and take top 200 
+            distances.sort(key=lambda x: x[0])
+            for distance, searchable_title, title in distances[:200]:
+                Utils.log(f"Distance: {distance}, Searchable: '{searchable_title}', Title: '{title}'")
+        
+        return matches
 

@@ -7,6 +7,7 @@ from tkinter.ttk import Button, OptionMenu
 from extensions.extension_manager import ExtensionManager
 from extensions.library_extender import q20, q23
 from lib.tk_scroll_demo import ScrollFrame
+from library_data.library_data import LibraryDataSearch
 from ui.app_style import AppStyle
 from ui.base_window import BaseWindow
 # from utils.config import config
@@ -337,14 +338,14 @@ class ExtensionsWindow(BaseWindow):
                 raise ValueError(_("No original filename or id found in extension data"))
                 
             # Create a search query using the filename
-            search_query = {
-                'title': original_filename,  # Search in title field
-                'id': id,
-                'max_results': 1  # We only need one match
-            }
+            search = LibraryDataSearch(
+                title=original_filename,  # Search in title field
+                id=id,
+                max_results=1  # We only need one match
+            )
             
             # Call the search callback
-            self.app_actions.search_and_play(search_query)
+            self.app_actions.search_and_play(search)
                 
         except Exception as e:
             error_msg = str(e)

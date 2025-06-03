@@ -21,14 +21,14 @@ _ = I18N._
 
 
 class Run:
-    def __init__(self, args, callbacks=None):
+    def __init__(self, args, app_actions=None):
         self.id = str(time.time())
         self.is_started = False
         self.is_complete = False
         self.args = args
         self.last_config = None
-        self.callbacks = callbacks
-        self.library_data = None if args.placeholder else LibraryData(callbacks)
+        self.app_actions = app_actions
+        self.library_data = None if args.placeholder else LibraryData(app_actions)
         self._run_context = RunContext()
         self.muse = Muse(self.args, self.library_data, self._run_context)
         self._playback = None
@@ -59,7 +59,7 @@ class Run:
 
     def get_library_data(self):
         if self.library_data is None:
-            self.library_data = LibraryData(self.callbacks)
+            self.library_data = LibraryData(self.app_actions)
         return self.library_data
 
     def switch_extension(self):
@@ -90,9 +90,9 @@ class Run:
         except ScheduledShutdownException as e:
             FFmpegHandler.cleanup_cache()
             TempDir.cleanup()
-            if self.callbacks is not None:
+            if self.app_actions is not None:
                 print("Shutting down main thread! Good-bye.")
-                self.callbacks.shutdown_callback()
+                self.app_actions.shutdown_callback()
         except Exception as e:
             FFmpegHandler.cleanup_cache()
             TempDir.cleanup()
@@ -106,7 +106,7 @@ class Run:
 
     def do_workflow(self):
         playback_config = PlaybackConfig(args=self.args, data_callbacks=self.library_data.data_callbacks)
-        self._playback = Playback(playback_config, self.callbacks, self)
+        self._playback = Playback(playback_config, self.app_actions, self)
         self.last_config = None
 
         try:

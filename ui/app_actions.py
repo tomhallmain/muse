@@ -19,6 +19,7 @@ class AppActions:
         "start_play_callback",
         "add_favorite",
         "open_track_details",
+        "find_track",
         "search_and_play",
     ])
 

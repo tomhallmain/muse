@@ -573,11 +573,9 @@ class FavoritesWindow:
             if not query:
                 raise ValueError(_("No valid play query could be generated for this favorite"))
 
-            if isinstance(query, str):
-                # If we got a filepath, use start_play_callback
+            if isinstance(query, str): # If we got a filepath, use start_play_callback
                 self.app_actions.start_play_callback(query)
-            else:
-                # Otherwise use search_and_play with the query
+            else: # Otherwise use search_and_play with the LibraryDataSearch object
                 self.app_actions.search_and_play(query)
 
         except Exception as e:
