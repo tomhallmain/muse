@@ -268,6 +268,7 @@ class FavoritesWindow:
         self.favorite_list = []
         self.open_details_btn_list = []
         self.search_btn_list = []
+        self.play_btn_list = []  # Add list for play buttons
 
         self.search_btn = None
         self.add_btn("search_btn", _("Search"), self.do_search, row=2)
@@ -356,16 +357,24 @@ class FavoritesWindow:
             self.add_label(title_label, display_text, row=row, column=1, wraplength=200)
             self.favorite_list.append(title_label)
 
+            # Add Play button
+            play_btn = Button(self.results_frame.viewPort, text=_("Play"))
+            self.play_btn_list.append(play_btn)
+            play_btn.grid(row=row, column=2)
+            def play_handler(event, self=self, favorite=favorite):
+                self._play_favorite(favorite)
+            play_btn.bind("<Button-1>", play_handler)
+
             open_details_btn = Button(self.results_frame.viewPort, text=_("Details"))
             self.open_details_btn_list.append(open_details_btn)
-            open_details_btn.grid(row=row, column=2)
+            open_details_btn.grid(row=row, column=3)
             def open_detail_handler(event, self=self, favorite=favorite):
                 self.open_details(favorite)
             open_details_btn.bind("<Button-1>", open_detail_handler)
 
             remove_btn = Button(self.results_frame.viewPort, text=_("Remove"))
             self.open_details_btn_list.append(remove_btn)
-            remove_btn.grid(row=row, column=3)
+            remove_btn.grid(row=row, column=4)
             def remove_handler(event, self=self, favorite=favorite):
                 if FavoritesWindow.remove_favorite(favorite):
                     self._refresh_widgets()
@@ -483,16 +492,24 @@ class FavoritesWindow:
             self.add_label(title_label, display_text, row=row, column=0)
             self.favorite_list.append(title_label)
 
+            # Add Play button
+            play_btn = Button(self.results_frame.viewPort, text=_("Play"))
+            self.play_btn_list.append(play_btn)
+            play_btn.grid(row=row, column=1)
+            def play_handler(event, self=self, favorite=favorite):
+                self._play_favorite(favorite)
+            play_btn.bind("<Button-1>", play_handler)
+
             open_details_btn = Button(self.results_frame.viewPort, text=_("Details"))
             self.open_details_btn_list.append(open_details_btn)
-            open_details_btn.grid(row=row, column=1)
+            open_details_btn.grid(row=row, column=2)
             def open_detail_handler(event, self=self, favorite=favorite):
                 self.open_details(favorite)
             open_details_btn.bind("<Button-1>", open_detail_handler)
 
             remove_btn = Button(self.results_frame.viewPort, text=_("Remove"))
             self.open_details_btn_list.append(remove_btn)
-            remove_btn.grid(row=row, column=2)
+            remove_btn.grid(row=row, column=3)
             def remove_handler(event, self=self, favorite=favorite):
                 if FavoritesWindow.remove_favorite(favorite):
                     self._refresh_widgets()
@@ -522,9 +539,12 @@ class FavoritesWindow:
             btn.destroy()
         for btn in self.search_btn_list:
             btn.destroy()
+        for btn in self.play_btn_list:  # Clear play buttons
+            btn.destroy()
         self.favorite_list = []
         self.open_details_btn_list = []
         self.search_btn_list = []
+        self.play_btn_list = []  # Reset play button list
 
     @staticmethod
     def set_title(extra_text):
@@ -545,6 +565,27 @@ class FavoritesWindow:
             setattr(self, button_ref_name, button)
             button # for some reason this is necessary to maintain the reference?
             button.grid(row=row, column=column)
+
+    def _play_favorite(self, favorite):
+        """Attempt to play a favorite."""
+        try:
+            query = favorite.get_play_query(self.library_data)
+            if not query:
+                raise ValueError(_("No valid play query could be generated for this favorite"))
+
+            if isinstance(query, str):
+                # If we got a filepath, use start_play_callback
+                self.app_actions.start_play_callback(query)
+            else:
+                # Otherwise use search_and_play with the query
+                self.app_actions.search_and_play(query)
+
+        except Exception as e:
+            error_msg = str(e)
+            if "No matching tracks found" in error_msg:
+                error_msg += "\n\n" + _("Tip: If you've recently added or moved files, try checking 'Overwrite Cache' in the search options.")
+            Utils.log_red(f"Error playing favorite: {error_msg}")
+            self.app_actions.alert(_("Error"), error_msg, kind="error")
 
 
 class FavoriteWindow:

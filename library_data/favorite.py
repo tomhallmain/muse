@@ -135,4 +135,40 @@ class Favorite:
             return hash((self.attribute, self.value, self.artist, 
                         self.album, self.composer))
         else:
-            return hash((self.attribute, self.value)) 
+            return hash((self.attribute, self.value))
+
+    def get_play_query(self, library_data=None):
+        """
+        Get a query for playing this favorite.
+        Returns either:
+        - A string filepath if this is a track favorite with a valid filepath
+        - A dict search query if this is a track favorite without a valid filepath
+        - A dict search query if this is an attribute favorite
+        - None if no valid query can be generated
+        """
+        if self.attribute == TrackAttribute.TITLE:
+            # For track favorites, first check if we have a valid filepath
+            if self.filepath and library_data:
+                track = library_data.get_track(self.filepath)
+                if track and (track.title or track.filepath):
+                    return self.filepath
+
+            # If no valid filepath, create a search query
+            search_query = {
+                'title': self.value,  # Search in title field
+                'max_results': 1  # We only need one match
+            }
+            # Add metadata filters if available
+            if self.artist:
+                search_query['artist'] = self.artist
+            if self.album:
+                search_query['album'] = self.album
+            if self.composer:
+                search_query['composer'] = self.composer
+            return search_query
+        else:
+            # For attribute favorites, create a search query based on the attribute
+            return {
+                self.attribute.value: self.value,
+                'max_results': 1
+            } 
