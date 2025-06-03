@@ -177,31 +177,26 @@ class MediaTrack:
             Utils.log_red(f"{error_msg}\nMediaInfo error details:\n{stack_trace}")
             self.__class__.collect_error(error_msg, stack_trace)
 
-    @staticmethod
-    def _patched_music_tag_year_sanitizer(year):
-        print("Using patched music tag year sanitizer")
-        if isinstance(year, str) and 'T' in year:
-            return int(datetime.fromisoformat(year.replace('Z', '+00:00')).year)
-        return MediaTrack.original_sanitize_year(year)
+    def _get_year_from_media_info(self, filepath):
+        try:
+            media_info = MediaInfo.parse(filepath)
+            for track in media_info.tracks:
+                if hasattr(track, 'recorded_date') and track.recorded_date:
+                    date_str = str(track.recorded_date)
+                    if len(date_str) >= 4:
+                        self.year = int(date_str[:4])
+                        return
+                if hasattr(track, 'original_date') and track.original_date:
+                    date_str = str(track.original_date)
+                    if len(date_str) >= 4:
+                        self.year = int(date_str[:4])
+                        return
+        except Exception as e:
+            Utils.log_red(f"Failed to get year from MediaInfo: {str(e)}")
 
     def _try_music_tag_load(self, filepath):
         try:
             music_tag_wrapper = music_tag.load_file(filepath)
-            if MediaTrack.original_sanitize_year is None:
-                MediaTrack.original_sanitize_year = music_tag.util.sanitize_year
-                music_tag.util.sanitize_year = MediaTrack._patched_music_tag_year_sanitizer
-            for k in music_tag_wrapper.__dict__["tag_map"].keys():
-                if not k in MediaTrack.music_tag_ignored_tags and not k.startswith("#"):
-                    value = music_tag_wrapper[k].first
-                    if value is not None:
-                        setattr(self, k, value)
-            if self.title is None and self.tracktitle is not None:
-                self.title = str(self.tracktitle)
-            if self.artist is None and self.albumartist is not None:
-                self.artist = str(self.albumartist)
-            length_value = music_tag_wrapper["#length"].first
-            if length_value is not None:
-                self.length = float(length_value)
         except FileNotFoundError:
             error_msg = f"File not found: {filepath}. This may be due to an outdated cache. Consider refreshing the cache in the UI."
             Utils.log_yellow(error_msg)
@@ -216,14 +211,52 @@ class MediaTrack:
                 stack_trace = traceback.format_exc()
             Utils.log_yellow(error_msg)
             self.__class__.collect_error(error_msg, stack_trace)
-            # Try to get basic info using MediaInfo as fallback
             self._try_media_info_fallback(filepath)
+            return
         except Exception as e:
             error_msg = f"Failed to load metadata for {filepath}: {str(e)}"
             Utils.log_yellow(error_msg)
             self.__class__.collect_error(error_msg, traceback.format_exc())
-            # Try to get basic info using MediaInfo as fallback
             self._try_media_info_fallback(filepath)
+            return
+
+        # Verify tag_map exists and is a dictionary
+        if not hasattr(music_tag_wrapper, "tag_map") or not isinstance(music_tag_wrapper.tag_map, dict):
+            Utils.log_yellow(f"Invalid music_tag wrapper for {filepath}: missing or invalid tag_map")
+            self._try_media_info_fallback(filepath)
+            return
+
+        # Track failures in tag processing
+        failure_count = 0
+        max_failures = 3  # Adjust this threshold as needed
+
+        for k in music_tag_wrapper.tag_map.keys():
+            if not k in MediaTrack.music_tag_ignored_tags and not k.startswith("#"):
+                try:
+                    value = music_tag_wrapper[k].first
+                    if value is not None:
+                        setattr(self, k, value)
+                except Exception as e:
+                    failure_count += 1
+                    if k == 'year':
+                        self._get_year_from_media_info(filepath)
+                    else:
+                        Utils.log_yellow(f"Failed to load {k} for {filepath}: {str(e)}")
+                        if failure_count >= max_failures:
+                            Utils.log_yellow(f"Too many tag failures ({failure_count}) for {filepath}, falling back to MediaInfo")
+                            self._try_media_info_fallback(filepath)
+                            return
+
+        if self.title is None and self.tracktitle is not None:
+            self.title = str(self.tracktitle)
+        if self.artist is None and self.albumartist is not None:
+            self.artist = str(self.albumartist)
+        try:
+            length_value = music_tag_wrapper["#length"].first
+            if length_value is not None:
+                self.length = float(length_value)
+        except Exception as e:
+            Utils.log_yellow(f"Failed to load length for {filepath}: {str(e)}")
 
     def __init__(self, filepath, parent_filepath=None):
         self.filepath = filepath
