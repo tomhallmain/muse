@@ -115,6 +115,116 @@ class MediaTrack:
         except Exception as e:
             Utils.log_red(f"Failed to write errors to file: {str(e)}")
 
+    def _try_media_info_fallback(self, filepath):
+        """Attempt to get basic metadata using MediaInfo as a fallback."""
+        try:
+            media_info = MediaInfo.parse(filepath)
+            for track in media_info.tracks:
+                # Check for any track that has audio data
+                if hasattr(track, 'duration') and track.duration:
+                    if not self.title and hasattr(track, 'title') and track.title:
+                        self.title = track.title
+                    if not self.artist and hasattr(track, 'performer') and track.performer:
+                        self.artist = track.performer
+                    if not self.album and hasattr(track, 'album') and track.album:
+                        self.album = track.album
+                    if self.length == -1.0:
+                        self.length = float(track.duration) / 1000  # Convert ms to seconds
+                    
+                    # Additional MediaInfo attributes
+                    if hasattr(track, 'composer') and track.composer and not self.composer:
+                        self.composer = track.composer
+                    if hasattr(track, 'genre') and track.genre and not self.genre:
+                        self.genre = track.genre
+                    if hasattr(track, 'track_name') and track.track_name and not self.tracktitle:
+                        self.tracktitle = track.track_name
+                    if hasattr(track, 'track_name_position') and track.track_name_position and self.tracknumber == -1:
+                        try:
+                            self.tracknumber = int(track.track_name_position)
+                        except (ValueError, TypeError):
+                            pass
+                    if hasattr(track, 'track_name_total') and track.track_name_total and self.totaltracks == -1:
+                        try:
+                            self.totaltracks = int(track.track_name_total)
+                        except (ValueError, TypeError):
+                            pass
+                    if hasattr(track, 'part') and track.part and self.discnumber == -1:
+                        try:
+                            self.discnumber = int(track.part)
+                        except (ValueError, TypeError):
+                            pass
+                    if hasattr(track, 'part_total') and track.part_total and self.totaldiscs == -1:
+                        try:
+                            self.totaldiscs = int(track.part_total)
+                        except (ValueError, TypeError):
+                            pass
+                    if hasattr(track, 'recorded_date') and track.recorded_date and not self.year:
+                        try:
+                            # Try to extract year from recorded date
+                            date_str = str(track.recorded_date)
+                            if len(date_str) >= 4:
+                                self.year = int(date_str[:4])
+                        except (ValueError, TypeError):
+                            pass
+        except FileNotFoundError:
+            error_msg = f"File not found: {filepath}. This may be due to an outdated cache. Consider refreshing the cache in the UI."
+            Utils.log_red(error_msg)
+            self.__class__.collect_error(error_msg)
+            raise
+        except Exception as e2:
+            error_msg = f"Failed to get basic info using MediaInfo for {filepath}: {str(e2)}"
+            stack_trace = traceback.format_exc()
+            Utils.log_red(f"{error_msg}\nMediaInfo error details:\n{stack_trace}")
+            self.__class__.collect_error(error_msg, stack_trace)
+
+    @staticmethod
+    def _patched_music_tag_year_sanitizer(year):
+        print("Using patched music tag year sanitizer")
+        if isinstance(year, str) and 'T' in year:
+            return int(datetime.fromisoformat(year.replace('Z', '+00:00')).year)
+        return MediaTrack.original_sanitize_year(year)
+
+    def _try_music_tag_load(self, filepath):
+        try:
+            music_tag_wrapper = music_tag.load_file(filepath)
+            if MediaTrack.original_sanitize_year is None:
+                MediaTrack.original_sanitize_year = music_tag.util.sanitize_year
+                music_tag.util.sanitize_year = MediaTrack._patched_music_tag_year_sanitizer
+            for k in music_tag_wrapper.__dict__["tag_map"].keys():
+                if not k in MediaTrack.music_tag_ignored_tags and not k.startswith("#"):
+                    value = music_tag_wrapper[k].first
+                    if value is not None:
+                        setattr(self, k, value)
+            if self.title is None and self.tracktitle is not None:
+                self.title = str(self.tracktitle)
+            if self.artist is None and self.albumartist is not None:
+                self.artist = str(self.albumartist)
+            length_value = music_tag_wrapper["#length"].first
+            if length_value is not None:
+                self.length = float(length_value)
+        except FileNotFoundError:
+            error_msg = f"File not found: {filepath}. This may be due to an outdated cache. Consider refreshing the cache in the UI."
+            Utils.log_yellow(error_msg)
+            self.__class__.collect_error(error_msg)
+            raise
+        except NotImplementedError as e:
+            stack_trace = None
+            if "Mutagen type" in str(e):
+                error_msg = f"Unsupported file format for metadata reading: {filepath}. The file format is not supported by the metadata library."
+            else:
+                error_msg = f"Failed to load metadata for {filepath}: {str(e)}"
+                stack_trace = traceback.format_exc()
+            Utils.log_yellow(error_msg)
+            self.__class__.collect_error(error_msg, stack_trace)
+            # Try to get basic info using MediaInfo as fallback
+            self._try_media_info_fallback(filepath)
+        except Exception as e:
+            error_msg = f"Failed to load metadata for {filepath}: {str(e)}"
+            Utils.log_yellow(error_msg)
+            self.__class__.collect_error(error_msg, traceback.format_exc())
+            # Try to get basic info using MediaInfo as fallback
+            self._try_media_info_fallback(filepath)
+
     def __init__(self, filepath, parent_filepath=None):
         self.filepath = filepath
         self.parent_filepath = parent_filepath # for split track parts
@@ -166,99 +276,7 @@ class MediaTrack:
             self.set_track_index()
             self.clean_track_values()
 
-            try:
-                music_tag_wrapper = music_tag.load_file(filepath)
-                for k in music_tag_wrapper.__dict__["tag_map"].keys():
-                    if not k in MediaTrack.music_tag_ignored_tags and not k.startswith("#"):
-                        value = music_tag_wrapper[k].first
-                        if value is not None:
-                            try:
-                                # Handle ISO date strings for year field
-                                if k == 'year' and isinstance(value, str) and 'T' in value:
-                                    # TODO this is still not working for some reason.
-                                    try:
-                                        value = int(datetime.fromisoformat(value.replace('Z', '+00:00')).year)
-                                    except Exception:
-                                        pass
-                                setattr(self, k, value)
-                            except Exception:
-                                pass
-                if self.title is None and self.tracktitle is not None:
-                    self.title = str(self.tracktitle)
-                if self.artist is None and self.albumartist is not None:
-                    self.artist = str(self.albumartist)
-                length_value = music_tag_wrapper["#length"].first
-                if length_value is not None:
-                    self.length = float(length_value)
-            except FileNotFoundError:
-                error_msg = f"File not found: {filepath}. This may be due to an outdated cache. Consider refreshing the cache in the UI."
-                Utils.log_yellow(error_msg)
-                self.__class__.collect_error(error_msg)
-                raise
-            except Exception as e:
-                error_msg = f"Failed to load metadata for {filepath}: {str(e)}"
-                Utils.log_yellow(error_msg)
-                self.__class__.collect_error(error_msg, traceback.format_exc())
-                # Try to get basic info using MediaInfo as fallback
-                try:
-                    media_info = MediaInfo.parse(filepath)
-                    for track in media_info.tracks:
-                        # Check for any track that has audio data
-                        if hasattr(track, 'duration') and track.duration:
-                            if not self.title and hasattr(track, 'title') and track.title:
-                                self.title = track.title
-                            if not self.artist and hasattr(track, 'performer') and track.performer:
-                                self.artist = track.performer
-                            if not self.album and hasattr(track, 'album') and track.album:
-                                self.album = track.album
-                            if self.length == -1.0:
-                                self.length = float(track.duration) / 1000  # Convert ms to seconds
-                            
-                            # Additional MediaInfo attributes
-                            if hasattr(track, 'composer') and track.composer and not self.composer:
-                                self.composer = track.composer
-                            if hasattr(track, 'genre') and track.genre and not self.genre:
-                                self.genre = track.genre
-                            if hasattr(track, 'track_name') and track.track_name and not self.tracktitle:
-                                self.tracktitle = track.track_name
-                            if hasattr(track, 'track_name_position') and track.track_name_position and self.tracknumber == -1:
-                                try:
-                                    self.tracknumber = int(track.track_name_position)
-                                except (ValueError, TypeError):
-                                    pass
-                            if hasattr(track, 'track_name_total') and track.track_name_total and self.totaltracks == -1:
-                                try:
-                                    self.totaltracks = int(track.track_name_total)
-                                except (ValueError, TypeError):
-                                    pass
-                            if hasattr(track, 'part') and track.part and self.discnumber == -1:
-                                try:
-                                    self.discnumber = int(track.part)
-                                except (ValueError, TypeError):
-                                    pass
-                            if hasattr(track, 'part_total') and track.part_total and self.totaldiscs == -1:
-                                try:
-                                    self.totaldiscs = int(track.part_total)
-                                except (ValueError, TypeError):
-                                    pass
-                            if hasattr(track, 'recorded_date') and track.recorded_date and not self.year:
-                                try:
-                                    # Try to extract year from recorded date
-                                    date_str = str(track.recorded_date)
-                                    if len(date_str) >= 4:
-                                        self.year = int(date_str[:4])
-                                except (ValueError, TypeError):
-                                    pass
-                except FileNotFoundError:
-                    error_msg = f"File not found: {filepath}. This may be due to an outdated cache. Consider refreshing the cache in the UI."
-                    Utils.log_red(error_msg)
-                    self.__class__.collect_error(error_msg)
-                    raise
-                except Exception as e2:
-                    error_msg = f"Failed to get basic info using MediaInfo for {filepath}: {str(e2)}"
-                    stack_trace = traceback.format_exc()
-                    Utils.log_red(f"{error_msg}\nMediaInfo error details:\n{stack_trace}")
-                    self.__class__.collect_error(error_msg, stack_trace)
+            self._try_music_tag_load(filepath)
 
             if self.title is not None:
                 self.searchable_title = Utils.ascii_normalize(self.title.lower())
