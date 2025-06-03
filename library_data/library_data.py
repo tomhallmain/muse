@@ -306,7 +306,7 @@ class LibraryData:
         )
         self.extension_manager = ExtensionManager(self.ui_callbacks, self.data_callbacks)
 
-    def do_search(self, library_data_search, overwrite=False):
+    def do_search(self, library_data_search, overwrite=False, callback=None):
         if not isinstance(library_data_search, LibraryDataSearch):
             raise TypeError('Library data search must be of type LibraryDataSearch')
         if not library_data_search.is_valid():
@@ -320,6 +320,14 @@ class LibraryData:
                 break
 
         library_data_search.set_stored_results_count()
+        
+        # Call the callback if provided
+        if callback:
+            try:
+                callback(library_data_search)
+            except Exception as e:
+                Utils.log_red(f"Error in search callback: {e}")
+                
         return library_data_search
 
     def resolve_track(self, audio_track):

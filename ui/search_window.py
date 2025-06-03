@@ -356,9 +356,40 @@ class SearchWindow(BaseWindow):
         self.add_label(self.searching_label, text=searching_text, row=1, column=1)
         self.title_list.append(self.searching_label)
         self.master.update()
-        self.library_data.do_search(self.library_data_search, overwrite=overwrite)
+
+        def search_complete(search_results):
+            """Callback for when search completes."""
+            # Schedule UI update on main thread
+            self.master.after(0, lambda: self._update_ui_after_search())
+
+        def search_thread():
+            try:
+                self.library_data.do_search(self.library_data_search, overwrite=overwrite, callback=search_complete)
+            except Exception as e:
+                Utils.log_red(f"Error in search thread: {e}")
+                # Schedule UI update on main thread
+                self.master.after(0, lambda: self._show_search_error(str(e)))
+
+        # Start search in a separate thread
+        Utils.start_thread(search_thread, use_asyncio=False)
+
+    def _update_ui_after_search(self):
+        """Update the UI after a search completes."""
         self.update_recent_searches()
         self._refresh_widgets()
+
+    def _show_search_error(self, error_msg):
+        """Show an error message in the search results."""
+        self._refresh_widgets(add_results=False)
+        error_label = Label(self.results_frame.viewPort)
+        self.add_label(error_label, text=error_msg, row=1, column=1)
+        self.title_list.append(error_label)
+        self.master.update()
+
+    def on_closing(self, event=None):
+        """Handle window closing."""
+        self.master.destroy()
+        self.has_closed = True
 
     def update_recent_searches(self, remove_searches_with_no_selected_filepath=False):
         assert self.library_data_search is not None
