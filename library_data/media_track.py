@@ -630,6 +630,15 @@ class MediaTrack:
             # Load the file with music_tag
             mfile = music_tag.load_file(self.filepath)
 
+            # Handle artwork update if present
+            if 'artwork' in metadata:
+                try:
+                    mfile['artwork'] = metadata['artwork']
+                    self.artwork = metadata['artwork']  # Update local cache
+                except Exception as e:
+                    Utils.log_yellow(f"Failed to update artwork: {str(e)}")
+                    return False
+
             # Map our metadata keys to music_tag keys
             tag_mapping = {
                 'title': 'tracktitle',

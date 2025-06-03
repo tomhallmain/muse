@@ -453,3 +453,62 @@ class LibraryData:
         
         return matches
 
+    # TODO hook up this method to the UI
+    def ensure_album_artwork_consistency(self, track):
+        """
+        Ensures that all tracks in an album have consistent artwork.
+        If the given track has valid artwork, it will be used as the reference.
+        If not, it will look for artwork from other tracks in the same album.
+        
+        Args:
+            track (MediaTrack): The track to check and potentially update artwork for
+            
+        Returns:
+            bool: True if artwork was updated, False otherwise
+        """
+        if not track.album:
+            return False
+            
+        # Get all tracks in the same album
+        album_tracks = []
+        for t in self.all_tracks:
+            if t.album == track.album:
+                album_tracks.append(t)
+                
+        if len(album_tracks) < 2:
+            return False
+            
+        # Check if current track has artwork
+        if track.artwork:
+            # This track has artwork, use it as reference
+            # Make a copy of the artwork bytes to avoid shared references
+            ref_artwork = bytes(track.artwork)
+            updated = False
+            
+            # Update other tracks that don't have artwork
+            for t in album_tracks:
+                if t != track and not t.artwork:
+                    try:
+                        # Update metadata with the artwork copy
+                        metadata = {'artwork': ref_artwork}
+                        if t.update_metadata(metadata):
+                            updated = True
+                    except Exception as e:
+                        Utils.log_yellow(f"Failed to update artwork for {t.title}: {str(e)}")
+            
+            return updated
+        else:
+            # Current track doesn't have artwork, look for it in other tracks
+            for t in album_tracks:
+                if t != track and t.artwork:
+                    try:
+                        # Make a copy of the artwork bytes before updating
+                        artwork_copy = bytes(t.artwork)
+                        metadata = {'artwork': artwork_copy}
+                        if track.update_metadata(metadata):
+                            return True
+                    except Exception as e:
+                        Utils.log_yellow(f"Failed to update artwork for {track.title}: {str(e)}")
+            
+            return False
+

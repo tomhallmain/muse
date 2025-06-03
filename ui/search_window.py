@@ -337,7 +337,7 @@ class SearchWindow(BaseWindow):
                     self.library_data_search, 
                     overwrite=overwrite, 
                     completion_callback=search_complete,
-                    status_callback=update_status
+                    search_status_callback=update_status
                 )
             except Exception as e:
                 Utils.log_red(f"Error in search thread: {e}")
