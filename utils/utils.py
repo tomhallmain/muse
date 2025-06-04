@@ -45,17 +45,47 @@ class Utils:
     # Regular expression to match emoji characters
     EMOJI_PATTERN = re.compile("["
         u"\U0001F600-\U0001F64F"  # emoticons
-        u"\U0001F300-\U0001F5FF"  # symbols & pictographs
-        u"\U0001F680-\U0001F6FF"  # transport & map symbols
-        u"\U0001F700-\U0001F77F"  # alchemical symbols
-        u"\U0001F780-\U0001F7FF"  # Geometric Shapes
-        u"\U0001F800-\U0001F8FF"  # Supplemental Arrows-C
-        u"\U0001F900-\U0001F9FF"  # Supplemental Symbols and Pictographs
-        u"\U0001FA00-\U0001FA6F"  # Chess Symbols
-        u"\U0001FA70-\U0001FAFF"  # Symbols and Pictographs Extended-A
+        # u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+        # u"\U0001F680-\U0001F6FF"  # transport & map symbols
+        # u"\U0001F700-\U0001F77F"  # alchemical symbols
+        # u"\U0001F780-\U0001F7FF"  # Geometric Shapes
+        # u"\U0001F800-\U0001F8FF"  # Supplemental Arrows-C
+        # u"\U0001F900-\U0001F9FF"  # Supplemental Symbols and Pictographs
+        # u"\U0001FA00-\U0001FA6F"  # Chess Symbols
+        # u"\U0001FA70-\U0001FAFF"  # Symbols and Pictographs Extended-A
         u"\U00002702-\U000027B0"  # Dingbats
-        u"\U000024C2-\U0001F251" 
+        # u"\U000024C2-\U0001F251"  # Enclosed characters
         "]+", flags=re.UNICODE)
+
+    # List of valid non-emoji characters that are commonly used in filenames
+    VALID_FILENAME_CHARS = {
+        u"\uFF1A",  # Chinese colon (：)
+        u"\uFF0C",  # Chinese comma (，)
+        u"\u3001",  # Japanese comma (、)
+        u"\u3002",  # Japanese period (。)
+        u"\uFF01",  # Full-width exclamation mark (！)
+        u"\uFF1F",  # Full-width question mark (？)
+        u"\uFF08",  # Full-width left parenthesis (（)
+        u"\uFF09",  # Full-width right parenthesis (）)
+        u"\u3014",  # Left tortoise shell bracket (〔)
+        u"\u3015",  # Right tortoise shell bracket (〕)
+        u"\u3010",  # Left black lenticular bracket (【)
+        u"\u3011",  # Right black lenticular bracket (】)
+        u"\u300A",  # Left double angle bracket (《)
+        u"\u300B",  # Right double angle bracket (》)
+        u"\u3008",  # Left angle bracket (〈)
+        u"\u3009",  # Right angle bracket (〉)
+        u"\u300C",  # Left corner bracket (「)
+        u"\u300D",  # Right corner bracket (」)
+        u"\u300E",  # Left white corner bracket (『)
+        u"\u300F",  # Right white corner bracket (』)
+        u"\u3016",  # Left white lenticular bracket (〖)
+        u"\u3017",  # Right white lenticular bracket (〗)
+        u"\u3018",  # Left white tortoise shell bracket (〘)
+        u"\u3019",  # Right white tortoise shell bracket (〙)
+        u"\u301A",  # Left white square bracket (〚)
+        u"\u301B",  # Right white square bracket (〛)
+    }
 
     @staticmethod
     def get_assets_filenames(filename_filter=None):
@@ -577,9 +607,17 @@ class Utils:
     @staticmethod
     def contains_emoji(text):
         """Check if text contains any emoji characters."""
-        if Utils.EMOJI_PATTERN.search(text):
-            Utils.log(f"Found emoji in text: {text}")
-            return True
+        if not text:
+            return False
+            
+        # First check if any character is in our whitelist
+        for char in text:
+            if char in Utils.VALID_FILENAME_CHARS:
+                continue
+            # If not in whitelist, check if it's an emoji
+            if Utils.EMOJI_PATTERN.search(char):
+                Utils.log(f"Found emoji in text: {text}")
+                return True
         return False
 
     @staticmethod

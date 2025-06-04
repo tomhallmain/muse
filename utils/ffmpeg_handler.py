@@ -135,7 +135,7 @@ class FFmpegHandler:
                 if max_volume_tag in line:
                     max_volume = float(line[line.index(max_volume_tag)+len(max_volume_tag):-3].strip())
         except Exception as e:
-            Utils.log(f"Error getting volume for {filepath}: {str(e)}")
+            Utils.log_yellow(f"Error getting volume for {filepath}: {str(e)}")
         return mean_volume, max_volume
 
     @staticmethod

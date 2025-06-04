@@ -399,7 +399,13 @@ class MediaTrack:
 
     def get_volume(self):
         if self.mean_volume < -200:
-            self.mean_volume, self.max_volume = FFmpegHandler.get_volume(self.filepath)
+            try:
+                self.mean_volume, self.max_volume = FFmpegHandler.get_volume(self.filepath)
+            except Exception as e:
+                if "emoji characters" in str(e):
+                    Utils.log_yellow(f"Skipping volume analysis for file with special characters: {self.filepath}")
+                else:
+                    raise # FFMPEG should be catching the other errors
         return self.mean_volume, self.max_volume
 
     def open_track_location(self):
