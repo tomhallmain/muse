@@ -1,6 +1,6 @@
 import sys
 
-from tts.tts_runner import Chunker, TextToSpeechRunner
+from tts.tts_runner import Chunker, TextToSpeechRunner, TTSConfig
 
 text = """Lang schwang der Klang am Hang entlang"""
 
@@ -25,7 +25,12 @@ def main():
     # text_file = "test"
     text_file = sys.argv[1]
     overwrite = (sys.argv[2] == "t" or sys.argv[2] == "T") if len(sys.argv) > 2 else False
-    runner = TextToSpeechRunner(multi_model, filepath=text_file, overwrite=overwrite)
+    config = TTSConfig(
+        model=multi_model,
+        filepath=text_file,
+        overwrite=overwrite
+    )
+    runner = TextToSpeechRunner(config)
 
     runner.speak_file(text_file)
 

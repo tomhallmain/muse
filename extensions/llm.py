@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 import json
-import random  # Add this at the top with other standard library imports
+import random
 import threading
 import time
 from typing import Optional, List
@@ -75,6 +75,16 @@ class LLMResult:
 
 
 class LLM:
+    """
+    Interface for interacting with the Ollama LLM API.
+    
+    TODO: Consider implementing redundancy elimination during response generation.
+    This would require:
+    1. Setting up streaming responses from the LLM
+    2. Checking each chunk as it arrives
+    3. Short-circuiting response generation if redundancy is detected
+    4. This would save both processing time and API costs
+    """
     ENDPOINT = "http://localhost:11434/api/generate"
     DEFAULT_TIMEOUT = 180
     DEFAULT_SYSTEM_PROMPT_DROP_RATE = 0.9  # 90% chance to drop system prompt

@@ -1,8 +1,10 @@
+from dataclasses import dataclass
 from datetime import datetime
 import os
 import subprocess
 import sys
 import time
+from typing import Optional, Callable
 import uuid
 
 import torch
@@ -33,19 +35,31 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 # List available 🐸TTS models
 # pprint.pprint(TTS().list_models())
 
+@dataclass
+class TTSConfig:
+    """Configuration for TextToSpeechRunner and related classes."""
+    model: str
+    filepath: str = "test"
+    overwrite: bool = False
+    delete_interim_files: bool = True
+    auto_play: bool = True
+    run_context: Optional[object] = None
+    skip_cjk: bool = True
+    skip_redundant: bool = True
 
 class TTSSpeakInvocation:
     _tracking = {}  # Maps invocation_id to TTSSpeakInvocation
 
-    @staticmethod
-    def create(speak_callback) -> 'TTSSpeakInvocation':
-        return TTSSpeakInvocation(str(uuid.uuid4()), speak_callback)
+    @classmethod
+    def create(cls, speak_callback, config):
+        """Create a new invocation with a unique ID."""
+        return cls(str(uuid.uuid4()), speak_callback, config)
 
-    def __init__(self, invocation_id: str, speak_callback):
+    def __init__(self, invocation_id: str, speak_callback: Callable, config: TTSConfig):
         self.invocation_id = invocation_id
         self.error_count = 0
         self.total_chunks = 0
-        self.chunker = Chunker(skip_cjk=True)
+        self.chunker = Chunker(skip_cjk=config.skip_cjk, skip_redundant=config.skip_redundant)
         self.speak_callback = speak_callback
         self._tracking[invocation_id] = self
 
@@ -129,18 +143,19 @@ class TextToSpeechRunner:
     output_directory = os.path.join(os.path.dirname(os.path.dirname(__file__)), "tts_output")
     lib_sounds = os.path.join(os.path.dirname(os.path.dirname(__file__)), "lib", "sounds")
 
-    def __init__(self, model, filepath="test", overwrite=False, delete_interim_files=True, auto_play=True, run_context=None):
+    def __init__(self, config: TTSConfig):
+        self.config = config
         self.speech_queue = JobQueue("Speech Queue")
-        self.output_path = os.path.splitext(os.path.basename(filepath))[0]
+        self.output_path = os.path.splitext(os.path.basename(config.filepath))[0]
         self.output_path_normalized = Utils.ascii_normalize(self.output_path)
-        self.model = model
-        self.overwrite = overwrite
+        self.model = config.model
+        self.overwrite = config.overwrite
         self.counter = 0
         self.audio_paths = []
         self.used_audio_paths = []
-        self.delete_interim_files = delete_interim_files if auto_play else False
-        self.auto_play = auto_play
-        self.run_context = run_context
+        self.delete_interim_files = config.delete_interim_files if config.auto_play else False
+        self.auto_play = config.auto_play
+        self.run_context = config.run_context
 
     def clean(self):
         if len(self.used_audio_paths) > 0:
@@ -278,7 +293,7 @@ class TextToSpeechRunner:
         if self.run_context and self.run_context.should_skip():
             return None
             
-        invocation = TTSSpeakInvocation.create(self._speak)
+        invocation = TTSSpeakInvocation.create(self._speak, self.config)
         
         try:
             full_text = invocation.process_text(text, locale)
@@ -295,7 +310,7 @@ class TextToSpeechRunner:
         if self.run_context and self.run_context.should_skip():
             return None
             
-        invocation = TTSSpeakInvocation.create(self._speak)
+        invocation = TTSSpeakInvocation.create(self._speak, self.config)
         
         try:
             full_text = invocation.process_file(filepath, split_on_each_line, locale)
@@ -413,9 +428,9 @@ class TextToSpeechRunner:
             self.speech_queue.job_running = True
             Utils.start_thread(self.play_async, use_asyncio=False, args=[filepath])
 
-
 def main(model, text):
-    runner = TextToSpeechRunner(model)
+    config = TTSConfig(model=model)
+    runner = TextToSpeechRunner(config)
     try:
         runner.speak(text)
     except KeyboardInterrupt:

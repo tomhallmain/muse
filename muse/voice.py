@@ -7,7 +7,7 @@ tts_runner_imported = False
 
 try:
     Utils.log(f"Importing tts_runner...")
-    from tts.tts_runner import TextToSpeechRunner
+    from tts.tts_runner import TextToSpeechRunner, TTSConfig
     tts_runner_imported = True
 except Exception as e:
     Utils.log_red(e)
@@ -22,11 +22,14 @@ class Voice:
         self.model_args = (Voice.MULTI_MODEL, self._coqui_named_voice, "en")
         self.run_context = run_context
         if self.can_speak:
-            self._tts = TextToSpeechRunner(self.model_args,
-                                           filepath="muse_voice",
-                                           delete_interim_files=False,
-                                           auto_play=False,
-                                           run_context=self.run_context)
+            config = TTSConfig(
+                model=self.model_args,
+                filepath="muse_voice",
+                delete_interim_files=False,
+                auto_play=False,
+                run_context=self.run_context
+            )
+            self._tts = TextToSpeechRunner(config)
         else:
             self._tts = None
 
@@ -36,7 +39,13 @@ class Voice:
             Utils.log_yellow("Cannot speak.")
             return
         Utils.log(f"Saying: {text}")
-        temp_tts = TextToSpeechRunner(self.model_args, filepath="muse_voice", overwrite=True, run_context=self.run_context)
+        config = TTSConfig(
+            model=self.model_args,
+            filepath="muse_voice",
+            overwrite=True,
+            run_context=self.run_context
+        )
+        temp_tts = TextToSpeechRunner(config)
         current_time_str = str(datetime.datetime.now().timestamp())
         if "." in current_time_str:
             current_time_str = current_time_str.split(".")[0]
@@ -71,7 +80,13 @@ class Voice:
             Utils.log_yellow("Cannot speak.")
             return
         Utils.log(f"Speaking file: {filepath}")
-        temp_tts = TextToSpeechRunner(self.model_args, filepath="muse_voice", overwrite=True, run_context=self.run_context)
+        config = TTSConfig(
+            model=self.model_args,
+            filepath="muse_voice",
+            overwrite=True,
+            run_context=self.run_context
+        )
+        temp_tts = TextToSpeechRunner(config)
         current_time_str = str(datetime.datetime.now().timestamp())
         if "." in current_time_str:
             current_time_str = current_time_str.split(".")[0]

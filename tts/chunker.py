@@ -9,10 +9,21 @@ _ = I18N._
 
 
 class Chunker:
+    """
+    Handles text chunking for TTS processing.
+    """
     MAX_CHUNK_TOKENS = config.max_chunk_tokens
     cleaner = TextCleanerRuleset()
+    
+    # Redundancy thresholds and limits
+    MIN_SIMILARITY_LENGTH = 20  # Minimum length to trust similarity checking
+    REDUNDANCY_TIERS = [
+        (300, 1),   # Chunks under 300 chars can be repeated once
+        (100, 2),   # Chunks under 100 chars can be repeated twice
+        (50, 3),   # Chunks under 50 chars can be repeated three times
+    ]
 
-    def __init__(self, skip_cjk=True):
+    def __init__(self, skip_cjk=True, skip_redundant=True):
         """
         Initialize a new Chunker instance.
         
@@ -20,12 +31,17 @@ class Chunker:
             skip_cjk: If True, handle CJK characters (Chinese, Japanese, Korean)
                      by replacing them with descriptive messages as they are not
                      well-handled by the TTS model.
+            skip_redundant: If True, skip chunks that are highly similar to previously
+                          seen chunks to avoid redundant output.
         """
         self.skip_cjk = skip_cjk
+        self.skip_redundant = skip_redundant
         self._cjk_warning_given = False
         self._cjk_scripts_seen = set()
         self._total_chars = 0
         self._cjk_chars = 0
+        self._seen_chunks = []  # Store previously seen chunks for similarity comparison
+        self._redundant_counts = {}  # Track how many times each chunk has been seen
 
     def _clean_xml(self, text):
         # Remove XML/HTML tags
@@ -37,6 +53,56 @@ class Chunker:
     def _is_entirely_xml(self, text):
         # Check if text is entirely wrapped in XML/HTML tags
         return bool(re.match(r'^\s*<[^>]+>.*</[^>]+>\s*$', text))
+
+    def _get_redundancy_limit(self, chunk_length):
+        """
+        Get the maximum number of times a chunk of given length can be repeated.
+        
+        Args:
+            chunk_length: Length of the chunk in characters
+            
+        Returns:
+            int: Maximum number of allowed repetitions
+        """
+        for threshold, limit in self.REDUNDANCY_TIERS:
+            if chunk_length < threshold:
+                return limit
+        return 0  # No redundancy allowed for chunks above the highest threshold
+
+    def _is_redundant(self, chunk):
+        """
+        Check if a chunk is redundant by comparing it with previously seen chunks.
+        Uses a tiered system based on chunk length to determine allowed repetitions.
+        
+        Args:
+            chunk: The chunk to check for redundancy
+            
+        Returns:
+            bool: True if the chunk is redundant, False otherwise
+        """
+        if not self.skip_redundant:
+            return False
+            
+        chunk_length = len(chunk)
+        
+        # Don't trust similarity checking for very short chunks
+        if chunk_length < self.MIN_SIMILARITY_LENGTH:
+            return False
+            
+        for seen_chunk in self._seen_chunks:
+            if Utils.is_similar_strings(chunk, seen_chunk):
+                # Get the redundancy limit for this chunk length
+                redundancy_limit = self._get_redundancy_limit(chunk_length)
+                
+                # Count how many times this chunk has been seen
+                current_count = self._redundant_counts.get(chunk, 0)
+                
+                if current_count < redundancy_limit:
+                    # Allow this repetition
+                    self._redundant_counts[chunk] = current_count + 1
+                    return False
+                return True
+        return False
 
     def _clean(self, text, locale=None):
         """
@@ -86,7 +152,16 @@ class Chunker:
         cleaned = self.cleaner.clean(cleaned, locale)
         if self.count_tokens(cleaned) > 200 and cleaned.startswith("\"") and cleaned.endswith("\""):
             # The sentence segmentation algorithm does not break on quotes even if they are long.
-            return cleaned[1:-1]
+            cleaned = cleaned[1:-1]
+            
+        # Check for redundancy
+        if cleaned and self._is_redundant(cleaned):
+            return None
+            
+        # Add to seen chunks if not redundant
+        if cleaned:
+            self._seen_chunks.append(cleaned)
+            
         return cleaned
 
     @staticmethod
