@@ -18,7 +18,7 @@ Muse is a media player with an integrated voice synthesizer attached to an LLM. 
 
 - Set `LANGUAGE` environment variable to desired i18n code. If not supported, the language will default to English.
     - NOTE: I haven't fully surveyed their models, but in my experience besides some languages that use Cyrillic the default universal xtts_v2 model does not do very well with non-Roman characters, so languages that do not use them will not be supported until I can find an open source TTS solution that does. I have found that Russian is functional, so that is one option provided.
-    - Supported UI languages: en (English), de (Deutsh), fr (Français), es (Español), it (Italiano), ru (русский)
+    - Supported UI languages: en (English), de (Deutsh), fr (Français), es (Español), it (Italiano), pt (Português), ru (русский)
 - `directories` - Add the paths of any audio or video file directories Muse should be playing to this list.
 - `text_cleaner_ruleset` - Add a dictionary of text cleaning rules to be run on text before Muse speaks it. Use a JSON object for each replacement set if using personas with different languages.
 - `coqui_tts_model` - Set the TTS model and speaker to be used by Muse.

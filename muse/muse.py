@@ -53,14 +53,15 @@ class Muse:
         if persona:
             self.memory.get_persona_manager().set_current_persona(persona.voice_name)
             self.voice = Voice(persona.voice_name, run_context=self._run_context)
+            self.wiki_search = WikiOpenSearchAPI(language_code=persona.language_code)
         else:
             self.voice = Voice(initial_voice, run_context=self._run_context)
+            self.wiki_search = WikiOpenSearchAPI(language_code=Utils.get_default_user_language())
             
         self.open_weather_api = OpenWeatherAPI()
         self.news_api = NewsAPI()
         self.hacker_news_souper = HackerNewsSouper()
         self.prompter = Prompter()
-        self.wiki_search = WikiOpenSearchAPI()
         self.has_started_prep = False
         self.preparation_id = None # TODO pass a prep ID along with the speech request so things can be deleted before spoke if necessary.
         self.is_cancelled_prep = False
@@ -215,6 +216,8 @@ class Muse:
                 except Exception as e:
                     Utils.log_red(f"Failed to generate introduction: {e}")
                     self.say(_("Hello, I'm your DJ"), locale=I18N.locale)
+
+                self.wiki_search = WikiOpenSearchAPI(language_code=persona.language_code)
             else:
                 Utils.log_yellow(f"No persona found for voice {voice_name}, using default voice")
                 self.voice = Voice(voice_name, run_context=self._run_context)

@@ -1,4 +1,3 @@
-
 import requests
 
 from extensions.soup_utils import SoupUtils
@@ -31,10 +30,9 @@ class RandomWikiResponse:
         return self.title + '\n\n' + self.data
 
 class WikiOpenSearchAPI:
-    BASE_URL = 'https://en.wikipedia.org/w/api.php'
-
-    def __init__(self) -> None:
-        pass
+    def __init__(self, language_code: str = "en") -> None:
+        self.language_code = language_code
+        self.BASE_URL = f'https://{language_code}.wikipedia.org/w/api.php'
 
     def __build_url(self, query: str, limit):
         url = f'{self.BASE_URL}?action=opensearch&search={query}&format=json'
