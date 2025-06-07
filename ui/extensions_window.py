@@ -71,6 +71,23 @@ class ExtensionsWindow(BaseWindow):
                   row=current_row, column=0, columnspan=2, sticky='ew', pady=5)
         current_row += 1
 
+        # Status section
+        Label(self.sidebar, text=_("Thread Status"), 
+              bg=AppStyle.BG_COLOR, fg=AppStyle.FG_COLOR).grid(
+                  row=current_row, column=0, columnspan=2, sticky='ew', pady=5)
+        current_row += 1
+        
+        self.status_label = Label(self.sidebar, text=_("Click Check Status to see thread state"),
+                                 bg=AppStyle.BG_COLOR, fg=AppStyle.FG_COLOR, wraplength=150)
+        self.status_label.grid(row=current_row, column=0, columnspan=2, sticky='w', pady=2)
+        current_row += 1
+
+        # Status check button
+        check_status_btn = Button(self.sidebar, text=_("Check Status"), 
+                                 command=self._check_thread_status)
+        check_status_btn.grid(row=current_row, column=0, columnspan=2, pady=5)
+        current_row += 1
+
         # Strategy selection
         Label(self.sidebar, text=_("Strategy"), 
               bg=AppStyle.BG_COLOR, fg=AppStyle.FG_COLOR).grid(
@@ -353,6 +370,22 @@ class ExtensionsWindow(BaseWindow):
                 error_msg += "\n\n" + _("Tip: If you've recently added or moved files, try checking 'Overwrite Cache' in the search options.")
             Utils.log_red(f"Error playing extension: {error_msg}")
             self.app_actions.alert(_("Error"), error_msg, kind="error")
+
+    def _check_thread_status(self):
+        """Check and display the current status of the extension thread."""
+        if ExtensionManager.extension_thread is None:
+            status = _("No extension thread running")
+        elif not ExtensionManager.extension_thread.is_alive():
+            status = _("Extension thread terminated")
+        else:
+            status = _("Extension thread running")
+            if ExtensionManager.EXTENSION_QUEUE.has_pending():
+                status += _(" (with pending jobs)")
+            if not ExtensionManager.extension_thread_delayed_complete:
+                status += _(" (processing delayed operation)")
+        
+        self.status_label.config(text=status)
+        self.master.update_idletasks()
 
 
 class ExtensionDetailsWindow(BaseWindow):
