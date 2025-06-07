@@ -1,4 +1,3 @@
-
 from utils.utils import Utils
 
 class JobQueue:
@@ -25,7 +24,10 @@ class JobQueue:
         Utils.log(f"JobQueue {self.name} - Added pending job: {job_args}")
 
     def cancel(self):
-        self.pending_jobs = []
+        """Clear all pending jobs from the queue and reset the job_running flag."""
+        if self.pending_jobs:
+            Utils.log(f"JobQueue {self.name} - Clearing {len(self.pending_jobs)} pending jobs")
+            self.pending_jobs = []
         self.job_running = False
 
     def pending_text(self):

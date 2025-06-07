@@ -145,6 +145,13 @@ class TextToSpeechRunner:
 
     def __init__(self, config: TTSConfig):
         self.config = config
+        # WARNING: The speech queue is shared across all TTSRunner instances.
+        # When skip is triggered, it will cancel ALL pending speech jobs, not just
+        # the current one. This means if multiple TTS invocations are running
+        # simultaneously (e.g. from different parts of the application), they will
+        # all be cancelled when skip is pressed. This is currently acceptable since
+        # the DJ's speech is supplementary to the music experience, but this should
+        # be reviewed if more critical TTS functionality is added in the future.
         self.speech_queue = JobQueue("Speech Queue")
         self.output_path = os.path.splitext(os.path.basename(config.filepath))[0]
         self.output_path_normalized = Utils.ascii_normalize(self.output_path)
@@ -291,7 +298,8 @@ class TextToSpeechRunner:
 
     def speak(self, text, save_mp3=False, locale=None):
         if self.run_context and self.run_context.should_skip():
-            return None
+            # Clear the speech queue when skipping
+            return self.speech_queue.cancel()
             
         invocation = TTSSpeakInvocation.create(self._speak, self.config)
         
@@ -300,7 +308,8 @@ class TextToSpeechRunner:
             
             while self.speech_queue.job_running:
                 if self.run_context and self.run_context.should_skip():
-                    return None
+                    # Clear the speech queue when skipping
+                    return self.speech_queue.cancel()
                 time.sleep(0.5)
             return self.combine_audio_files(save_mp3, text_content=full_text)
         finally:
@@ -308,7 +317,7 @@ class TextToSpeechRunner:
 
     def speak_file(self, filepath, save_mp3=True, split_on_each_line=False, locale=None):
         if self.run_context and self.run_context.should_skip():
-            return None
+            return self.speech_queue.cancel()
             
         invocation = TTSSpeakInvocation.create(self._speak, self.config)
         
@@ -317,7 +326,7 @@ class TextToSpeechRunner:
             
             while self.speech_queue.job_running:
                 if self.run_context and self.run_context.should_skip():
-                    return None
+                    return self.speech_queue.cancel()
                 time.sleep(0.5)
             return self.combine_audio_files(save_mp3, text_content=full_text)
         finally:

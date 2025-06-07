@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from datetime import datetime
 from enum import Enum, auto
 from time import time
 from typing import Optional, Dict
@@ -60,7 +61,8 @@ class RunContext:
             self.skip_grouping = False
             self.skip_delay = True
 
-        Utils.log(f"Updated action to {action} at {self.interaction_times[action]}")
+        timestamp = datetime.fromtimestamp(self.interaction_times[action]).strftime('%Y-%m-%d %H:%M:%S')
+        Utils.log(f"User initiated action {action} at {timestamp}")
 
     def get_last_interaction_time(self, action: UserAction) -> Optional[float]:
         """Get the timestamp of the last interaction for a specific action."""
