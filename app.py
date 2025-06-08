@@ -129,6 +129,7 @@ class App():
         self.file_menu = Menu(self.menu_bar, tearoff=0)
         self.menu_bar.add_cascade(label=_("File"), menu=self.file_menu)
         self.file_menu.add_command(label=_("Open Library"), command=self.open_library_window)
+        self.file_menu.add_command(label=_("Current Track Text"), command=self.open_text)
         self.file_menu.add_separator()
         self.file_menu.add_command(label=_("Exit"), command=self.quit)
 
@@ -232,20 +233,7 @@ class App():
         self.pause_btn = None
         self.add_button("pause_btn", _("Pause"), self.pause)
 
-        self.search_btn = None
-        self.add_button("search_btn", _("Search"), self.open_search_window)
-
-        self.composers_btn = None
-        self.add_button("composers_btn", _("Composers"), self.open_composers_window)
-
-        self.schedules_btn = None
-        self.add_button("schedules_btn", _("Schedules"), self.open_schedules_window, increment_row_counter=False)
-
-        self.weather_btn = None
-        self.add_button("weather_btn", _("Weather"), self.open_weather_window, interior_column=2)
-
         self.cancel_btn = Button(self.sidebar, text=_("Stop"), command=self.cancel)
-        self.text_btn = Button(self.sidebar, text=_("Text"), command=self.open_text)
 
         self.label_delay = Label(self.sidebar)
         self.add_label(self.label_delay, _("Delay Seconds"), increment_row_counter=False)
@@ -277,41 +265,29 @@ class App():
         self.favorites_btn = None
         self.add_button("favorites_btn", _("Favorites"), self.open_favorites_window, interior_column=2)
 
-        self.history_btn = None
-        self.add_button("history_btn", _("History"), self.open_history_window)
-
         self.overwrite = BooleanVar(value=self.runner_app_config.overwrite)
         self.overwrite_choice = Checkbutton(self.sidebar, text=_('Overwrite'), variable=self.overwrite)
-        self.apply_to_grid(self.overwrite_choice, sticky=W)
+        self.apply_to_grid(self.overwrite_choice, sticky=W, columnspan=3)
 
         self.muse = BooleanVar(value=self.runner_app_config.muse)
         self.muse_choice = Checkbutton(self.sidebar, text=_('Muse'), variable=self.muse, command=self.set_muse)
-        self.apply_to_grid(self.muse_choice, sticky=W)
+        self.apply_to_grid(self.muse_choice, sticky=W, columnspan=3)
 
         self.extend = BooleanVar(value=self.runner_app_config.extend)
         self.extend_choice = Checkbutton(self.sidebar, text=_('Extension'), variable=self.extend, command=self.set_extend)
         self.apply_to_grid(self.extend_choice, sticky=W, increment_row_counter=False)
-        self.extension_btn = None
-        self.add_button("extension_btn", _("Extension"), self.open_extensions_window, interior_column=2)
 
         self.track_splitting = BooleanVar(value=self.runner_app_config.enable_long_track_splitting)
         self.track_splitting_choice = Checkbutton(self.sidebar, text=_('Enable track splitting'), variable=self.track_splitting, command=self.set_track_splitting)
-        self.apply_to_grid(self.track_splitting_choice, sticky=W)
+        self.apply_to_grid(self.track_splitting_choice, sticky=W, columnspan=3)
 
         self.use_system_language = BooleanVar(value=self.runner_app_config.use_system_lang_for_all_topics)
         self.use_system_language_choice = Checkbutton(self.sidebar, text=_('Use system language for all topics'), variable=self.use_system_language, command=self.set_use_system_language)
-        self.apply_to_grid(self.use_system_language_choice, sticky=W)
+        self.apply_to_grid(self.use_system_language_choice, sticky=W, columnspan=3)
 
         self.check_entire_playlist = BooleanVar(value=self.runner_app_config.check_entire_playlist)
         self.check_entire_playlist_choice = Checkbutton(self.sidebar, text=_('Thorough playlist memory check'), variable=self.check_entire_playlist, command=self.set_check_entire_playlist)
-        self.apply_to_grid(self.check_entire_playlist_choice, sticky=W)
-
-        # Add configuration button at the bottom
-        self.config_btn = None
-        self.add_button("config_btn", _("Configuration"), self.open_configuration_window, increment_row_counter=False)
-
-        self.tts_btn = None
-        self.add_button("tts_btn", _("Text to Speech"), self.open_tts_window, interior_column=2)
+        self.apply_to_grid(self.check_entire_playlist_choice, sticky=W, columnspan=3)
 
         self.media_frame = MediaFrame(self.master, fill_canvas=True)
 
@@ -519,13 +495,10 @@ class App():
             self.progress_bar = Progressbar(self.sidebar, orient=HORIZONTAL, length=300, mode='determinate')
             self.progress_bar.grid(row=9, column=0, columnspan=3, sticky="EW")
             self.cancel_btn.grid(row=12, column=2)
-            self.text_btn.grid(row=13, column=2)
-            self.extension_btn.grid(row=14, column=2)
             self.current_run = Run(args, app_actions=self.app_actions)
             self.current_run.execute()
             self.cancel_btn.grid_forget()
             self.text_btn.grid_forget()
-            self.extension_btn.grid_forget()
             self.destroy_progress_bar()
             self.job_queue.job_running = False
             next_job_args = self.job_queue.take()
