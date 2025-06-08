@@ -7,7 +7,7 @@ import traceback
 from tkinter import (
     BOTH, END, HORIZONTAL, N, NW, W, E, YES,
     BooleanVar, Checkbutton, Frame, Label, PhotoImage,
-    StringVar, Text, Toplevel, messagebox
+    StringVar, Text, Toplevel, messagebox, Menu
 )
 import tkinter.font as fnt
 from tkinter.ttk import Button, Entry, OptionMenu, Progressbar, Scale, Style
@@ -25,6 +25,7 @@ from ui.configuration_window import ConfigurationWindow
 from ui.extensions_window import ExtensionsWindow
 from ui.favorites_window import FavoritesWindow
 from ui.history_window import HistoryWindow
+from ui.library_window import LibraryWindow
 from ui.media_frame import MediaFrame
 from ui.playlist_window import MasterPlaylistWindow
 from ui.preset import Preset
@@ -119,6 +120,39 @@ class App():
         self.current_run = Run(RunConfig(placeholder=True))
         # Initialize library_data as None for lazy instantiation
         self._library_data = None
+
+        # Create menu bar
+        self.menu_bar = Menu(self.master)
+        self.master.config(menu=self.menu_bar)
+
+        # File menu
+        self.file_menu = Menu(self.menu_bar, tearoff=0)
+        self.menu_bar.add_cascade(label=_("File"), menu=self.file_menu)
+        self.file_menu.add_command(label=_("Open Library"), command=self.open_library_window)
+        self.file_menu.add_separator()
+        self.file_menu.add_command(label=_("Exit"), command=self.quit)
+
+        # View menu
+        self.view_menu = Menu(self.menu_bar, tearoff=0)
+        self.menu_bar.add_cascade(label=_("View"), menu=self.view_menu)
+        self.view_menu.add_command(label=_("Toggle Fullscreen"), command=self.toggle_fullscreen)
+        self.view_menu.add_command(label=_("Toggle Theme"), command=self.toggle_theme)
+        self.view_menu.add_separator()
+        self.view_menu.add_command(label=_("Playlists"), command=self.open_presets_window)
+        self.view_menu.add_command(label=_("Favorites"), command=self.open_favorites_window)
+        self.view_menu.add_command(label=_("History"), command=self.open_history_window)
+        self.view_menu.add_command(label=_("Composers"), command=self.open_composers_window)
+
+        # Tools menu
+        self.tools_menu = Menu(self.menu_bar, tearoff=0)
+        self.menu_bar.add_cascade(label=_("Tools"), menu=self.tools_menu)
+        self.tools_menu.add_command(label=_("Search"), command=self.open_search_window)
+        self.tools_menu.add_command(label=_("Extensions"), command=self.open_extensions_window)
+        self.tools_menu.add_command(label=_("Weather"), command=self.open_weather_window)
+        self.tools_menu.add_command(label=_("Text to Speech"), command=self.open_tts_window)
+        self.tools_menu.add_separator()
+        self.tools_menu.add_command(label=_("Configuration"), command=self.open_configuration_window)
+
         self.app_actions = AppActions({
             "track_details_callback": self.update_track_text,
             "update_next_up_callback": self.update_next_up_text,
@@ -614,6 +648,13 @@ class App():
 
     #     Utils.start_thread(run_preset_async, use_asyncio=False, args=[])
 
+    def open_library_window(self, event=None):
+        try:
+            LibraryWindow(self.master, self.app_actions, self.library_data)
+        except Exception as e:
+            Utils.log_red(f"Exception opening library window: {e}")
+            raise e
+
     def open_composers_window(self):
         try:
             composers_window = ComposersWindow(self.master, self.app_actions)
@@ -666,9 +707,9 @@ class App():
         except Exception as e:
             Utils.log_red(f"Exception opening weather window: {e}")
 
-    def open_tts_window(self):
+    def open_tts_window(self, event=None):
         try:
-            tts_window = TTSWindow(self.master)
+            tts_window = TTSWindow(self.master, self.app_actions)
         except Exception as e:
             Utils.log_red(f"Exception opening TTS window: {e}")
 

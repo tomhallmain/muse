@@ -27,7 +27,7 @@ class TTSWindow(BaseWindow):
     top_level = None
     DEFAULT_TOPIC = _("Text to Speech")
     
-    def __init__(self, master, dimensions="800x600"):
+    def __init__(self, master, app_actions, dimensions="800x600"):
         super().init()
         TTSWindow.top_level = Toplevel(master, bg=AppStyle.BG_COLOR)
         TTSWindow.top_level.geometry(dimensions)
