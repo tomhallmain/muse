@@ -3,13 +3,19 @@ from random import randint
 import time
 import traceback
 import vlc
+from typing import TYPE_CHECKING, Any, Callable, Optional
 
+from library_data.media_track import MediaTrack
 from muse.playback_config import PlaybackConfig
 from muse.run_context import RunContext
 from utils.config import config
 from utils.globals import Globals
 from utils.utils import Utils
 from utils.translations import I18N
+
+if TYPE_CHECKING:
+    from muse.muse import Muse
+    from muse.muse_spot_profile import MuseSpotProfile
 
 _ = I18N._
 
@@ -18,11 +24,11 @@ INSTANCE = vlc.Instance("verbose=-2")
 class Playback:
 
     @staticmethod
-    def new_playback(override_dir=None, data_callbacks=None):
+    def new_playback(override_dir: Optional[str] = None, data_callbacks: Optional[Any] = None) -> 'Playback':
         config = PlaybackConfig.new_playback_config(override_dir=override_dir, data_callbacks=data_callbacks)
         return Playback(config, None, False)
 
-    def __init__(self, playback_config, ui_callbacks=None, run=None):
+    def __init__(self, playback_config: PlaybackConfig, ui_callbacks: Optional[Any] = None, run: Optional[Any] = None) -> None:
         self.vlc_media_player = INSTANCE.media_player_new()
         self._playback_config = playback_config
         self.ui_callbacks = ui_callbacks
@@ -50,15 +56,15 @@ class Playback:
         self.old_grouping = None
         self.new_grouping = None
 
-    def has_muse(self):
+    def has_muse(self) -> bool:
         return self._run and self._run.args.muse and self.muse is not None and self.muse.voice.can_speak
 
-    def get_muse(self):
+    def get_muse(self) -> 'Muse':
         if self.muse is None:
             raise Exception("No Muse instance found")
         return self.muse
 
-    def get_track(self):
+    def get_track(self) -> bool:
         self.previous_track = self.track
         if self.did_advance:
             self.track, self.old_grouping, self.new_grouping = self._playback_config.next_track(
@@ -73,11 +79,11 @@ class Playback:
             self.has_attempted_track_split = False
         return self.track is not None and not self.track.is_invalid()
 
-    def get_song_quality_info(self):
+    def get_song_quality_info(self) -> None:
         # TODO: Get info like bit rate, mono vs stereo, possibly try to infer if it's AI or not
         pass
 
-    def get_spot_profile(self, track=None):
+    def get_spot_profile(self, track: Optional['MediaTrack'] = None) -> 'MuseSpotProfile':
         if track is None:
             track = self.track
         for profile in self.muse_spot_profiles:
@@ -94,7 +100,7 @@ class Playback:
                 return profile
         raise Exception(f"No spot profile found for track: {track}")
 
-    def play_one_song(self):
+    def play_one_song(self) -> None:
         if self.get_track():
             self.register_new_song()
             self.vlc_media_player.play()
@@ -105,7 +111,7 @@ class Playback:
         else:
             raise Exception("No tracks in playlist")
 
-    def get_track_length(self, track=None):
+    def get_track_length(self, track: Optional['MediaTrack'] = None) -> float:
         if track is None:
             track = self.track
         assert track is not None
@@ -116,13 +122,13 @@ class Playback:
         Utils.log(f"Track length: {length} seconds - {track}")
         return length
 
-    def set_delay_seconds(self):
+    def set_delay_seconds(self) -> None:
         track_length = self.get_track_length()
         random_buffer_threshold = max(round(float(track_length) / randint(5, 10)), 40)
         random_buffer = randint(0, random_buffer_threshold) * (1 if randint(0,1) == 1 else -1)
         self.remaining_delay_seconds = min(max(1, Globals.DELAY_TIME_SECONDS + random_buffer), Globals.DELAY_TIME_SECONDS * 1.5)
 
-    def run(self):
+    def run(self) -> None:
         assert self.vlc_media_player is not None
         if self.has_muse():
             if not self.has_played_first_track:
@@ -190,7 +196,7 @@ class Playback:
             if self.increment_count():
                 break
 
-    def update_progress(self):
+    def update_progress(self) -> float:
         assert self.vlc_media_player is not None
         duration = self.vlc_media_player.get_length()
         current_time = self.vlc_media_player.get_time()
@@ -199,11 +205,11 @@ class Playback:
             self.ui_callbacks.update_progress_callback(progress, current_time, duration)
         return duration - current_time
 
-    def reset_muse(self):
+    def reset_muse(self) -> None:
         self.get_muse().reset()
         self.muse_spot_profiles.remove(self.get_spot_profile(self.track))
 
-    def prepare_muse(self, delayed_prep=False):
+    def prepare_muse(self, delayed_prep: bool = False) -> int:
         """Prepare the DJ for the next track."""
         # At the moment the local LLM and TTS models are not that fast, so need to start generation
         # for muse before the previous track stops playing, to avoid waiting extra time beyond
@@ -244,7 +250,7 @@ class Playback:
             self.has_attempted_track_split = False
         return round(time.time() - start)
 
-    def ensure_splittable_track(self, next_track, delayed_prep):
+    def ensure_splittable_track(self, next_track: 'MediaTrack', delayed_prep: bool = False) -> tuple[MediaTrack, bool, int]:
         # Handle track splitting
         next_track, did_split, split_failed = self.split_track_if_needed(next_track)
         did_advance = bool(did_split)
@@ -262,7 +268,7 @@ class Playback:
         self.has_attempted_track_split = True
         return next_track, did_advance, places_from_current
 
-    def split_track_if_needed(self, track, delayed_prep=False):
+    def split_track_if_needed(self, track: 'MediaTrack', delayed_prep: bool = False) -> tuple[MediaTrack, bool, bool]:
         if not self._playback_config.enable_long_track_splitting:
             Utils.log_debug("Split track config option not set")
             return track, False, False
@@ -288,14 +294,14 @@ class Playback:
         except AttributeError:
             return ""
 
-    def generate_silent_spot_profile(self):
+    def generate_silent_spot_profile(self) -> None:
         previous_track = self.previous_track if self.has_played_first_track else None
         spot_profile = self.get_muse().get_spot_profile(
                 previous_track, self.track, self.last_track_failed, self._run_context.skip_track,
                 get_upcoming_tracks_callback=self._get_upcoming_tracks_callback())
         self.muse_spot_profiles.append(spot_profile)
 
-    def register_new_song(self):
+    def register_new_song(self) -> None:
         assert self.track is not None
         Utils.log(f"Playing track file: {self.track.filepath}")
         self.vlc_media_player = vlc.MediaPlayer(self.track.filepath)
@@ -303,7 +309,7 @@ class Playback:
             self.ensure_video_frame()
         self.update_ui()
 
-    def ensure_video_frame(self):
+    def ensure_video_frame(self) -> None:
         if not config.play_videos_in_separate_window:
             assert self.vlc_media_player is not None and self.ui_callbacks is not None
             # set the window id where to render VLC's video output
@@ -312,7 +318,7 @@ class Playback:
             else:
                 self.vlc_media_player.set_xwindow(self.ui_callbacks.get_media_frame_handle()) # this line messes up windows
 
-    def update_ui(self):
+    def update_ui(self) -> None:
         if self.ui_callbacks is None:
             return
         if self.ui_callbacks.track_details_callback is not None:
@@ -334,7 +340,7 @@ class Playback:
                 album_artwork = self._get_random_image_asset(filename_filter="record")
             self.ui_callbacks.update_album_artwork(image_filepath=album_artwork)
 
-    def update_ui_art_for_muse(self):
+    def update_ui_art_for_muse(self) -> None:
         if self.ui_callbacks.update_album_artwork is not None:
             filename_filter = ["muse__"] # Default filter
             persona = self.get_muse().get_current_persona()
@@ -350,23 +356,23 @@ class Playback:
             album_artwork = self._get_random_image_asset(filename_filter=filename_filter)
             self.ui_callbacks.update_album_artwork(image_filepath=album_artwork)
 
-    def update_ui_art_for_silence(self):
+    def update_ui_art_for_silence(self) -> None:
         # TODO add silence artwork
         pass
 
-    def _get_random_image_asset(self, filename_filter=["record"]):
+    def _get_random_image_asset(self, filename_filter: list[str] = ["record"]) -> str:
         for filter in filename_filter:
             if not filter.endswith(".png"):
                 filter += ".*\\.png"
         filenames = Utils.get_assets_filenames(filename_filter=filename_filter)
         return Utils.get_asset(filenames[randint(0, len(filenames)-1)])
 
-    def increment_count(self):
+    def increment_count(self) -> bool:
         if not self._run_context.skip_track:
             self.count += 1
         return bool(self._playback_config.total > -1 and self.count > self._playback_config.total)
 
-    def delay(self):
+    def delay(self) -> None:
         if self.has_played_first_track and not self.last_track_failed:
             if self.remaining_delay_seconds > 4 and self.ui_callbacks is not None:
                 self.ui_callbacks.update_next_up_callback(_("Sleeping for seconds") + ": " + str(int(self.remaining_delay_seconds)), no_title=True)
@@ -377,33 +383,33 @@ class Playback:
                 delay_timer += 0.5
             self._run_context.skip_delay = False
 
-    def set_volume(self):
+    def set_volume(self) -> None:
         mean_volume, max_volume = self.track.get_volume()
         volume = (Globals.DEFAULT_VOLUME_THRESHOLD + 30) if mean_volume < -50 else min(int(Globals.DEFAULT_VOLUME_THRESHOLD + (-1 * mean_volume)), 100)
         Utils.log(f"Mean volume: {mean_volume} Max volume: {max_volume} Setting volume to: {volume}")
         self.vlc_media_player.audio_set_volume(volume)
         # TODO callback for UI element, add a UI element for "effective volume"
 
-    def pause(self):
+    def pause(self) -> None:
         self.vlc_media_player.pause()
 
-    def resume(self):
+    def resume(self) -> None:
         self.vlc_media_player.play()
 
-    def stop(self):
+    def stop(self) -> None:
         self.vlc_media_player.stop()
 
-    def get_current_track_artwork(self):
+    def get_current_track_artwork(self) -> str:
         if self.track is None or self.track.is_invalid():
             raise Exception("Track is invalid.")
         return self.track.get_album_artwork(filename="copy")
 
-    def get_track_text_file(self):
+    def get_track_text_file(self) -> Optional[str]:
         if self.track is None or self.track.is_invalid():
             return None
         return self.track.get_track_text_file()
 
-    def _get_upcoming_tracks_callback(self):
+    def _get_upcoming_tracks_callback(self) -> Callable[[], list[MediaTrack]]:
         return self._playback_config.get_list().get_upcoming_tracks
 
 

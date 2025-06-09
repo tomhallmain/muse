@@ -498,7 +498,6 @@ class App():
             self.current_run = Run(args, app_actions=self.app_actions)
             self.current_run.execute()
             self.cancel_btn.grid_forget()
-            self.text_btn.grid_forget()
             self.destroy_progress_bar()
             self.job_queue.job_running = False
             next_job_args = self.job_queue.take()
