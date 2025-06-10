@@ -2,11 +2,15 @@ import argparse
 from copy import deepcopy
 import time
 import traceback
+from typing import Optional, Any, List, Dict, Union
+
+from utils.globals import PlaybackMasterStrategy
 
 from library_data.library_data import LibraryData
 from muse.muse import Muse
 from muse.playback import Playback
 from muse.playback_config import PlaybackConfig
+from muse.playback_config_master import PlaybackConfigMaster
 from muse.playback_state import PlaybackStateManager
 from muse.run_config import RunConfig
 from muse.run_context import RunContext, UserAction
@@ -23,52 +27,54 @@ logger = get_logger(__name__)
 
 
 class Run:
-    def __init__(self, args, app_actions=None):
+    def __init__(self, args: RunConfig, app_actions: Optional[Any] = None) -> None:
         self.id = str(time.time())
-        self.is_started = False
-        self.is_complete = False
-        self.args = args
+        self.is_started: bool = False
+        self.is_complete: bool = False
+        self.args: RunConfig = args
         self.last_config = None
-        self.app_actions = app_actions
-        self.library_data = None if args.placeholder else LibraryData(app_actions)
-        self._run_context = RunContext()
-        self.muse = Muse(self.args, self.library_data, self._run_context, ui_callbacks=app_actions)
-        self._playback = None
+        self.app_actions: Optional[Any] = app_actions
+        self.library_data: Optional[LibraryData] = None if args.placeholder else LibraryData(app_actions)
+        self._run_context: RunContext = RunContext()
+        self.muse: Muse = Muse(self.args, self.library_data, self._run_context, ui_callbacks=app_actions)
+        self._playback: Optional[Playback] = None
 
-    def is_infinite(self):
+    def is_infinite(self) -> bool:
         return self.args.total == -1
 
-    def is_placeholder(self):
+    def is_placeholder(self) -> bool:
         return self.args.placeholder
 
-    def next(self):
+    def next(self) -> None:
         """Skip to the next track."""
         self._run_context.update_action(UserAction.SKIP_TRACK)
         self.get_playback().stop()
 
-    def next_grouping(self):
+    def next_grouping(self) -> None:
         """Skip to the next grouping."""
         self._run_context.update_action(UserAction.SKIP_GROUPING)
         self.get_playback().stop()
 
-    def pause(self):
+    def pause(self) -> None:
         """Pause playback."""
         self._run_context.update_action(UserAction.PAUSE)
         self.get_playback().pause()
     
-    def get_playback(self):
+    def get_playback(self) -> Playback:
+        if self._playback is None:
+            raise RuntimeError("Playback not initialized")
         return self._playback
 
-    def get_library_data(self):
+    def get_library_data(self) -> LibraryData:
         if self.library_data is None:
             self.library_data = LibraryData(self.app_actions)
         return self.library_data
 
-    def switch_extension(self):
+    def switch_extension(self) -> None:
         if self.args.extend:
             self.get_library_data().reset_extension()
 
-    def run(self, playback_config):
+    def run(self, playback_config: Union[PlaybackConfig, PlaybackConfigMaster]) -> None:
         # Handle extension thread based on extension setting
         if config.enable_library_extender:
             if self.args.extend:
@@ -86,6 +92,13 @@ class Run:
             self.is_started = True
             # Set the current config in the state manager
             PlaybackStateManager.set_current_config(playback_config)
+            
+            # If we're using a master config, make sure it's set as the singleton
+            if self.args.playback_master_strategy == PlaybackMasterStrategy.PLAYLIST_CONFIG:
+                master_config = PlaybackStateManager.get_current_master_config()
+                if master_config and master_config.playback_configs:
+                    playback_config = master_config
+            
             self.get_playback().run()
             FFmpegHandler.cleanup_cache()
             TempDir.cleanup()
@@ -107,7 +120,7 @@ class Run:
 
         self.last_config = deepcopy(self.get_playback()._playback_config)
 
-    def do_workflow(self):
+    def do_workflow(self) -> None:
         playback_config = PlaybackConfig(args=self.args, data_callbacks=self.library_data.data_callbacks)
         self._playback = Playback(playback_config, self.app_actions, self)
         self.last_config = None
@@ -117,33 +130,33 @@ class Run:
         except KeyboardInterrupt:
             pass
 
-    def load_and_run(self):
+    def load_and_run(self) -> None:
         try:
             self.do_workflow()
         except Exception as e:
             logger.info(e)
             traceback.print_exc()
 
-    def execute(self):
+    def execute(self) -> None:
         self.is_complete = False
         self._run_context.reset()  # Reset context at start of execution
         self.load_and_run()
         self.is_complete = True
 
-    def cancel(self):
+    def cancel(self) -> None:
         """Cancel all operations."""
         logger.info("Canceling...")
         self._run_context.update_action(UserAction.CANCEL)
         self.get_playback().stop()
 
-    def open_text(self):
+    def open_text(self) -> None:
         song_text_filepath = self.get_playback().get_track_text_file()
         Utils.open_file(song_text_filepath)
 
-    def get_current_track(self):
+    def get_current_track(self) -> Optional[Any]:
         return self.get_playback().track
 
-    def get_current_track_artwork(self):
+    def get_current_track_artwork(self) -> Optional[str]:
         return self.get_playback().get_current_track_artwork()
 
     def get_run_context(self) -> RunContext:
@@ -163,7 +176,7 @@ class Run:
         return self._run_context.was_cancelled()
 
 
-def main(args):
+def main(args: RunConfig) -> None:
     run = Run(args)
     run.execute()
 

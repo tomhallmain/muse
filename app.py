@@ -17,7 +17,7 @@ from ttkthemes import ThemedTk
 from utils.globals import Globals, PlaylistSortType, PlaybackMasterStrategy, ProtectedActions, TrackAttribute
 
 # Local imports - UI components
-from lib.autocomplete_entry import AutocompleteEntry, matches
+# from lib.autocomplete_entry import AutocompleteEntry, matches
 from lib.debounce import Debouncer
 from lib.multi_display import SmartToplevel
 from lib.media_keys import MediaKeyHandler
@@ -68,40 +68,6 @@ from utils import (
 logger = get_logger(__name__)
 
 _ = I18N._
-
-
-def set_attr_if_not_empty(text_box):
-    current_value = text_box.get()
-    if not current_value or current_value == "":
-        return None
-    return 
-
-def matches_tag(fieldValue, acListEntry):
-    if fieldValue and "+" in fieldValue:
-        pattern_base = fieldValue.split("+")[-1]
-    elif fieldValue and "," in fieldValue:
-        pattern_base = fieldValue.split(",")[-1]
-    else:
-        pattern_base = fieldValue
-    return matches(pattern_base, acListEntry)
-
-def set_tag(current_value, new_value):
-    if current_value and (current_value.endswith("+") or current_value.endswith(",")):
-        return current_value + new_value
-    else:
-        return new_value
-    
-def clear_quotes(s):
-    if len(s) > 0:
-        if s.startswith('"'):
-            s = s[1:]
-        if s.endswith('"'):
-            s = s[:-1]
-        if s.startswith("'"):
-            s = s[1:]
-        if s.endswith("'"):
-            s = s[:-1]
-    return s
 
 
 class Sidebar(Frame):

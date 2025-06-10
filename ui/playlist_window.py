@@ -1,6 +1,6 @@
 from copy import deepcopy
 
-from tkinter import Frame, Label, Text, StringVar, Scale, Listbox, Button, simpledialog, Entry, Checkbutton, BooleanVar
+from tkinter import Frame, Label, Text, StringVar, Scale, Listbox, Button, Toplevel, simpledialog, Entry, Checkbutton, BooleanVar, messagebox, END
 from tkinter.constants import W
 from tkinter.ttk import OptionMenu, Scale
 
@@ -8,6 +8,9 @@ from lib.multi_display import SmartToplevel
 from utils.globals import PlaylistSortType, PlaybackMasterStrategy
 
 from muse.playback_config import PlaybackConfig
+from muse.playback_config_master import PlaybackConfigMaster
+from muse.playback_state import PlaybackStateManager
+from muse.playlist import Playlist
 from muse.run_config import RunConfig
 from ui.base_window import BaseWindow
 from utils.app_info_cache import app_info_cache
@@ -15,42 +18,6 @@ from utils.config import config
 from utils.translations import I18N
 
 _ = I18N._
-
-def set_attr_if_not_empty(text_box):
-    current_value = text_box.get()
-    if not current_value or current_value == "":
-        return None
-    return 
-
-def set_tag(current_value, new_value):
-    if current_value and (current_value.endswith("+") or current_value.endswith(",")):
-        return current_value + new_value
-    else:
-        return new_value
-    
-def clear_quotes(s):
-    if len(s) > 0:
-        if s.startswith('"'):
-            s = s[1:]
-        if s.endswith('"'):
-            s = s[:-1]
-        if s.startswith("'"):
-            s = s[1:]
-        if s.endswith("'"):
-            s = s[:-1]
-    return s
-
-class Sidebar(Frame):
-    def __init__(self, master=None, cnf={}, **kw):
-        Frame.__init__(self, master=master, cnf=cnf, **kw)
-
-
-class ProgressListener:
-    def __init__(self, update_func):
-        self.update_func = update_func
-
-    def update(self, context, percent_complete):
-        self.update_func(context, percent_complete)
 
 
 class MasterPlaylistWindow(BaseWindow):
@@ -136,7 +103,12 @@ class MasterPlaylistWindow(BaseWindow):
         self.btn_save.grid(column=3, row=0, padx=5)
         
         # Initialize data
-        self.playback_master = PlaybackMaster(initial_configs or [])
+        if initial_configs:
+            self.playback_config_master = PlaybackConfigMaster(initial_configs)
+            PlaybackStateManager.set_current_master_config(self.playback_config_master)
+        else:
+            self.playback_config_master = PlaybackStateManager.get_current_master_config() or PlaybackConfigMaster()
+            PlaybackStateManager.set_current_master_config(self.playback_config_master)
         self.update_master_playlist_display()
 
     def update_available_playlists(self):
@@ -148,7 +120,7 @@ class MasterPlaylistWindow(BaseWindow):
     def update_master_playlist_display(self):
         """Update the display of the master playlist."""
         self.master_playlist.delete(0, END)
-        for config in self.playback_master.playback_configs:
+        for config in self.playback_config_master.playback_configs:
             self.master_playlist.insert(END, str(config))
 
     def add_to_master(self):
@@ -156,7 +128,7 @@ class MasterPlaylistWindow(BaseWindow):
         selection = self.available_playlists.curselection()
         if selection:
             playlist_name = self.available_playlists.get(selection[0])
-            if playlist_name not in [str(config) for config in self.playback_master.playback_configs]:
+            if playlist_name not in [str(config) for config in self.playback_config_master.playback_configs]:
                 config = MasterPlaylistWindow.named_playlist_configs[playlist_name]
                 playback_config = PlaybackConfig(
                     args=RunConfig(
@@ -170,7 +142,8 @@ class MasterPlaylistWindow(BaseWindow):
                     _type=config['sort_type'],
                     data_callbacks=self.app_actions
                 )
-                self.playback_master.playback_configs.append(playback_config)
+                self.playback_config_master.playback_configs.append(playback_config)
+                PlaybackStateManager.set_current_master_config(self.playback_config_master)
                 self.update_master_playlist_display()
                 # Set the playback master strategy to PLAYLIST_CONFIG
                 self.app_actions.set_playback_master_strategy(PlaybackMasterStrategy.PLAYLIST_CONFIG)
@@ -179,10 +152,11 @@ class MasterPlaylistWindow(BaseWindow):
         """Remove selected playlist from master playlist."""
         selection = self.master_playlist.curselection()
         if selection:
-            del self.playback_master.playback_configs[selection[0]]
+            del self.playback_config_master.playback_configs[selection[0]]
+            PlaybackStateManager.set_current_master_config(self.playback_config_master)
             self.update_master_playlist_display()
             # If no playlists left, set strategy back to ALL_MUSIC
-            if not self.playback_master.playback_configs:
+            if not self.playback_config_master.playback_configs:
                 self.app_actions.set_playback_master_strategy(PlaybackMasterStrategy.ALL_MUSIC)
 
     def open_new_playlist(self):
@@ -192,21 +166,23 @@ class MasterPlaylistWindow(BaseWindow):
 
     def set_playlist(self, playback_config):
         """Set the current playlist to a new config."""
-        self.playback_master.playback_configs = [playback_config]
+        self.playback_config_master = PlaybackConfigMaster([playback_config])
+        PlaybackStateManager.set_current_master_config(self.playback_config_master)
         self.update_master_playlist_display()
         # Set the playback master strategy to PLAYLIST_CONFIG
         self.app_actions.set_playback_master_strategy(PlaybackMasterStrategy.PLAYLIST_CONFIG)
 
     def add_playlist(self, playback_config):
         """Add a new playlist to the current master playlist."""
-        self.playback_master.playback_configs.append(playback_config)
+        self.playback_config_master.playback_configs.append(playback_config)
+        PlaybackStateManager.set_current_master_config(self.playback_config_master)
         self.update_master_playlist_display()
         # Set the playback master strategy to PLAYLIST_CONFIG
         self.app_actions.set_playback_master_strategy(PlaybackMasterStrategy.PLAYLIST_CONFIG)
 
     def save_master_playlist(self):
         """Save the master playlist configuration."""
-        if self.playback_master.playback_configs:
+        if self.playback_config_master.playback_configs:
             playlist_name = simpledialog.askstring(_("Save Master Playlist"),
                                                  _("Enter a name for this master playlist:"))
             if playlist_name:
@@ -217,7 +193,7 @@ class MasterPlaylistWindow(BaseWindow):
                         'sort_type': config.list.sort_type,
                         'config_type': config.type,
                         'tracks_per_play': int(self.tracks_per_config.get())
-                    } for config in self.playback_master.playback_configs]
+                    } for config in self.playback_config_master.playback_configs]
                 }
                 MasterPlaylistWindow.store_named_playlist_configs()
                 

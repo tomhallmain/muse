@@ -12,6 +12,7 @@ class PlaybackConfigMaster:
     playlist_history = []
     LAST_EXTENSION_PLAYED = datetime.datetime.now()
     READY_FOR_EXTENSION = True
+    OPEN_CONFIGS = []
     
     @staticmethod
     def load_playlist_history():
