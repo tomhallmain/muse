@@ -1,8 +1,8 @@
 import datetime
 import os
 import random
-import re
 import subprocess
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 
 from extensions.llm import LLM
 from extensions.library_extender import LibraryExtender
@@ -16,6 +16,10 @@ from utils.job_queue import JobQueue
 from utils.utils import Utils
 from utils.translations import I18N
 
+if TYPE_CHECKING:
+    from library_data.composer import Composer
+    from library_data.media_track import MediaTrack
+
 _ = I18N._
 
 
@@ -25,32 +29,32 @@ class ExtensionManager:
     # directories, querying them, showing in UI, removing, etc.
     # Each new extension should be registered here
 
-    extensions = []
-    strategy = ExtensionStrategy.RANDOM
-    extension_thread_delayed_complete = False
-    EXTENSION_QUEUE = JobQueue("Extension queue")
-    DELAYED_THREADS = []
-    max_extensions_length = 100000
-    minimum_allowed_duration_seconds = 120
-    extension_thread = None
+    extensions: List[Dict[str, Any]] = []
+    strategy: ExtensionStrategy = ExtensionStrategy.RANDOM
+    extension_thread_delayed_complete: bool = False
+    EXTENSION_QUEUE: JobQueue = JobQueue("Extension queue")
+    DELAYED_THREADS: List[Any] = []
+    max_extensions_length: int = 100000
+    minimum_allowed_duration_seconds: int = 120
+    extension_thread: Optional[Any] = None
 
     @staticmethod
-    def load_extensions():
+    def load_extensions() -> None:
         ExtensionManager.extensions = app_info_cache.get("extensions", [])
     
     @staticmethod
-    def store_extensions():
+    def store_extensions() -> None:
         app_info_cache.set("extensions", list(ExtensionManager.extensions))
 
-    def __init__(self, ui_callbacks, data_callbacks):
+    def __init__(self, ui_callbacks: Optional[Any], data_callbacks: Optional[Any]) -> None:
         self.llm = LLM()
         self.prompter = Prompter()
-        self.extension_wait_min = 60
-        self.extension_wait_expected_max = 90
+        self.extension_wait_min: int = 60
+        self.extension_wait_expected_max: int = 90
         self.ui_callbacks = ui_callbacks
         self.data_callbacks = data_callbacks
 
-    def start_extensions_thread(self, initial_sleep=True, overwrite_cache=False, voice=None):
+    def start_extensions_thread(self, initial_sleep: bool = True, overwrite_cache: bool = False, voice: Optional[Any] = None) -> None:
         Utils.log('Starting extensions thread')
         if ExtensionManager.extension_thread is not None and ExtensionManager.extension_thread.is_alive():
             Utils.log('Extension thread already running')
@@ -58,7 +62,7 @@ class ExtensionManager:
         ExtensionManager.extension_thread = Utils.start_thread(self._run_extensions, use_asyncio=False, args=(initial_sleep, voice))
         ExtensionManager.extension_thread_started = True
 
-    def reset_extension(self, restart_thread=True):
+    def reset_extension(self, restart_thread: bool = True) -> None:
         """Reset the extension system, optionally restarting the thread."""
         try:
             ExtensionManager.EXTENSION_QUEUE.cancel()
@@ -98,7 +102,7 @@ class ExtensionManager:
             ExtensionManager.DELAYED_THREADS = []
             ExtensionManager.extension_thread_started = False
 
-    def get_extension_sleep_time(self, min_value, max_value):
+    def get_extension_sleep_time(self, min_value: int, max_value: int) -> int:
         current_track = PlaybackConfig.get_playing_track()
         if current_track is not None and current_track.get_track_length() > max_value:
             length = int(current_track.get_track_length())
@@ -107,8 +111,7 @@ class ExtensionManager:
             Utils.log("Increased extension sleep time for long track, new range: {0}min-{1}min".format(min_value/60, max_value/60))
         return random.randint(min_value, max_value)
 
-
-    def _run_extensions(self, initial_sleep=True, voice=None):
+    def _run_extensions(self, initial_sleep: bool = True, voice: Optional[Any] = None) -> None:
         if initial_sleep:
             sleep_time_seconds = random.randint(200, 1200)
             check_cadence = 150
@@ -133,8 +136,8 @@ class ExtensionManager:
                     self.ui_callbacks.update_extension_status(_("Extension thread waiting for {0} minutes").format(sleep_time_minutes))
                 Utils.long_sleep(check_cadence * 60, "extension thread", total=sleep_time_minutes * 60, print_cadence=180)
 
-    def _extend_by_random_attr(self, voice=None):
-        extendible_attrs = {
+    def _extend_by_random_attr(self, voice: Optional[Any] = None) -> None:
+        extendible_attrs: Dict[TrackAttribute, Callable[[], str]] = {
             TrackAttribute.ARTIST: lambda: random.choice(self.data_callbacks.instance.artists.get_artist_names()),
             TrackAttribute.COMPOSER: lambda: random.choice(self.data_callbacks.instance.composers.get_composer_names()),
             TrackAttribute.GENRE: lambda: random.choice(self.data_callbacks.instance.genres.get_genre_names()),
@@ -162,19 +165,28 @@ class ExtensionManager:
             voice.prepare_to_say(muse_to_say, save_for_last=True)
         self.extend(value=value, attr=attr, strict=True)
 
-    def _extend(self, value="", attr=None, strict=False):
-        if attr == TrackAttribute.TITLE:
-            self.extend_by_title(value, strict=strict)
-        if attr == TrackAttribute.ALBUM:
-            self.extend_by_album(value, strict=strict)
-        if attr == TrackAttribute.ARTIST:
-            self.extend_by_artist(value, strict=strict)
-        if attr == TrackAttribute.COMPOSER:
-            self.extend_by_composer(value)
-        if attr == TrackAttribute.GENRE:
-            self.extend_by_genre(value, strict=strict)
-        if attr == TrackAttribute.INSTRUMENT:
-            self.extend_by_instrument(value, strict=strict)
+    def _extend(self, value: str = "", attr: Optional[TrackAttribute] = None, strict: bool = False) -> None:
+        try:
+            if attr == TrackAttribute.TITLE:
+                self.extend_by_title(value, strict=strict)
+            if attr == TrackAttribute.ALBUM:
+                self.extend_by_album(value, strict=strict)
+            if attr == TrackAttribute.ARTIST:
+                self.extend_by_artist(value, strict=strict)
+            if attr == TrackAttribute.COMPOSER:
+                self.extend_by_composer(value)
+            if attr == TrackAttribute.GENRE:
+                self.extend_by_genre(value, strict=strict)
+            if attr == TrackAttribute.INSTRUMENT:
+                self.extend_by_instrument(value, strict=strict)
+        except Exception as e:
+            error_msg = _("Extension failed for {0} with value '{1}': {2}").format(
+                attr.get_translation() if attr is not None else "", value, str(e))
+            Utils.log_yellow(error_msg)
+            if self.ui_callbacks is not None:
+                self.ui_callbacks.update_extension_status(error_msg)
+            ExtensionManager.extension_thread_delayed_complete = True
+            # Don't re-raise the exception, let the thread continue
 
         # Set up the next thread to run another extension
         next_job_args = self.EXTENSION_QUEUE.take()
@@ -184,8 +196,8 @@ class ExtensionManager:
         else:
             self.EXTENSION_QUEUE.job_running = False
 
-    def extend(self, value="", attr=None, strict=False):
-        args=[value, attr, strict]
+    def extend(self, value: str = "", attr: Optional[TrackAttribute] = None, strict: bool = False) -> None:
+        args = [value, attr, strict]
         if self.EXTENSION_QUEUE.has_pending() or self.EXTENSION_QUEUE.job_running:
             self.EXTENSION_QUEUE.add(args)
         else:
@@ -193,36 +205,36 @@ class ExtensionManager:
             print(args)
             Utils.start_thread(self._extend, use_asyncio=False, args=args)
 
-    def extend_by_title(self, title, strict=False):
+    def extend_by_title(self, title: str, strict: bool = False) -> None:
         self._simple("track title: \"" + title + "\"", attr=TrackAttribute.TITLE, strict=(title if strict else None))
 
-    def extend_by_album(self, album, strict=False):
+    def extend_by_album(self, album: str, strict: bool = False) -> None:
         self._simple("album title: \"" + album + "\"", attr=TrackAttribute.ALBUM, strict=(album if strict else None))
 
-    def extend_by_artist(self, artist, strict=False):
+    def extend_by_artist(self, artist: str, strict: bool = False) -> None:
         prompt = self.prompter.get_prompt("search_artist")
         result = self.llm.generate_json_get_value(prompt.replace("ARTIST", artist), "search_query")
         query = result.response if result else artist
         self._simple(query, attr=TrackAttribute.ARTIST, strict=(artist if strict else None))
 
-    def extend_by_composer(self, composer_name):
+    def extend_by_composer(self, composer_name: str) -> None:
         composer = self.data_callbacks.instance.composers.get_data(composer_name)
         self._simple("music composed by " + composer_name, attr=TrackAttribute.COMPOSER, strict=composer)
 
-    def extend_by_genre(self, genre, strict=False):
+    def extend_by_genre(self, genre: str, strict: bool = False) -> None:
         prompt = self.prompter.get_prompt("search_genre")
         result = self.llm.generate_json_get_value(prompt.replace("GENRE", genre), "search_query")
         query = result.response if result else genre
         self._simple(query, attr=TrackAttribute.GENRE, strict=(genre if strict else None))
 
-    def extend_by_instrument(self, instrument, genre="Classical", strict=False):
+    def extend_by_instrument(self, instrument: str, genre: str = "Classical", strict: bool = False) -> None:
         prompt = self.prompter.get_prompt("search_instrument")
         prompt = prompt.replace("INSTRUMENT", instrument).replace("GENRE", genre)
         result = self.llm.generate_json_get_value(prompt, "search_query")
         query = result.response if result else f"{instrument} {genre}"
         self._simple(query, attr=TrackAttribute.INSTRUMENT, strict=(instrument if strict else None))
 
-    def _simple(self, q, m=6, depth=0, attr=None, strict=None):
+    def _simple(self, q: str, m: int = 6, depth: int = 0, attr: Optional[TrackAttribute] = None, strict: Optional[Union[str, 'Composer']] = None) -> None:
         r = self.s(q, m)
         if r is not None and r.i():
             a = r.o()
@@ -257,12 +269,12 @@ class ExtensionManager:
             else:
                 Utils.log_yellow(f'No results found for "{q}"')
 
-    def is_in_library(self, b):
+    def is_in_library(self, b) -> bool:
         if b.w is None or b.w.strip() == "":
             raise Exception("No ID found: " + str(b.x()))
         return self.data_callbacks.instance.is_in_library(title=b.w.strip())
 
-    def _strict_test(self, b, attr, strict):
+    def _strict_test(self, b, attr: Optional[TrackAttribute], strict: Optional[Union[str, 'Composer']]) -> bool:
         if attr is None or strict is None:
             raise Exception("No strict test attribute specified")
         if attr == TrackAttribute.COMPOSER:
@@ -274,7 +286,7 @@ class ExtensionManager:
             return True
         return strict.strip().lower() in b.n.lower() or strict.strip().lower() in b.d.lower()
 
-    def _is_blacklisted(self, b):
+    def _is_blacklisted(self, b) -> bool:
         item = self.data_callbacks.instance.blacklist.test(SoupUtils.clean_html(b.n))
         if item is not None:
             Utils.log_yellow(f"Blacklisted: {item} ({b.n})")
@@ -285,11 +297,11 @@ class ExtensionManager:
             return True
         return False
 
-    def delayed(self, b, attr, s):
+    def delayed(self, b, attr: Optional[TrackAttribute], s: str) -> None:
         thread = Utils.start_thread(self._delayed, use_asyncio=False, args=[b, attr, s,])
         ExtensionManager.DELAYED_THREADS.append(thread)
 
-    def _delayed(self, b, attr, s, sleep=True):
+    def _delayed(self, b, attr: Optional[TrackAttribute], s: str, sleep: bool = True) -> None:
         if sleep:
             time_seconds = self.get_extension_sleep_time(1000, 2000)
             check_cadence = 150
@@ -344,7 +356,7 @@ class ExtensionManager:
         obj["filename"] = _f
         obj["date"] = datetime.datetime.now().isoformat()
         obj["strategy"] = ExtensionManager.strategy.name
-        obj["track_attr"] = attr.name
+        obj["track_attr"] = attr.name if attr is not None else "<unknown>"
         obj["search_query"] = s
         ExtensionManager.extensions.append(obj)
         PlaybackConfig.assign_extension(_f)
@@ -353,7 +365,7 @@ class ExtensionManager:
             # TODO update ExtensionsWindow as well if it's open
         ExtensionManager.extension_thread_delayed_complete = True
 
-    def check_dir_for_close_match(self, t):
+    def check_dir_for_close_match(self, t: Optional[str]) -> Optional[str]:
         if t is None or t.strip() == "":
             return None
         _dir = os.path.abspath(config.directories[0])
@@ -369,7 +381,7 @@ class ExtensionManager:
         return LibraryExtender.isyMOLB_(q, m=x)
 
     @staticmethod
-    def get_extension_detailsfor_track(media_track=None):
+    def get_extension_detailsfor_track(media_track: Optional['MediaTrack'] = None) -> Optional[Dict[str, Any]]:
         if media_track is None:
             return None
         try:

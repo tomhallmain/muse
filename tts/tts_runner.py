@@ -61,6 +61,7 @@ class TTSSpeakInvocation:
         self.total_chunks = 0
         self.chunker = Chunker(skip_cjk=config.skip_cjk, skip_redundant=config.skip_redundant)
         self.speak_callback = speak_callback
+        self.config = config  # Store config to access run_context
         self._tracking[invocation_id] = self
 
     def increment_error(self):
@@ -84,6 +85,11 @@ class TTSSpeakInvocation:
         """
         full_text = ""
         for chunk in chunks:
+            # Check for skip before processing each chunk
+            if self.config.run_context and self.config.run_context.should_skip():
+                Utils.log("Skipping remaining TTS chunks due to skip request")
+                break
+                
             Utils.log("-------------------\n" + chunk)
             if full_text:
                 full_text += "\n\n"
