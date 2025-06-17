@@ -149,20 +149,33 @@ class Composer:
 
 
 class ComposersDataSearch:
-    def __init__(self, composer="", genre="", stored_results_count=0, max_results=200):
+    def __init__(self, composer="", genre="", stored_results_count=0, max_results=200,
+                 start_date_greater_than=-1, start_date_less_than=-1,
+                 end_date_greater_than=-1, end_date_less_than=-1):
         self.composer = composer.lower()
         self.genre = genre.lower()
         self.max_results = max_results
         self.stored_results_count = stored_results_count
+        self.start_date_greater_than = start_date_greater_than
+        self.start_date_less_than = start_date_less_than
+        self.end_date_greater_than = end_date_greater_than
+        self.end_date_less_than = end_date_less_than
+        self.dates_specified = any([start_date_greater_than > -1, start_date_less_than > -1,
+                                    end_date_greater_than > -1, end_date_less_than > -1])
 
         self.results = []
 
     def is_valid(self):
+        # Check if any search criteria is provided
         for name in ["composer", "genre"]:
             field = getattr(self, name)
-            if field is not None and field.strip()!= "":
-                #print(f"{name} - \"{field}\"")
+            if field is not None and field != "":
                 return True
+        for name in ["start_date_greater_than", "start_date_less_than",
+                    "end_date_greater_than", "end_date_less_than"]:
+            field = getattr(self, name)
+            if not isinstance(field, int):
+                return False
         return isinstance(self.max_results, int) and self.max_results > 0
 
     def set_stored_results_count(self):
@@ -176,9 +189,84 @@ class ComposersDataSearch:
             results_str = str(self.stored_results_count)
         return _("({0} results)").format(results_str)
 
+    def get_title(self) -> str:
+        """Get a human-readable title describing the search criteria.
+        
+        Returns:
+            str: A formatted title string
+        """
+        parts = []
+        
+        # Add name/genre criteria
+        if self.composer:
+            parts.append(_("Composer: {0}").format(self.composer))
+        if self.genre:
+            parts.append(_("Genre: {0}").format(self.genre))
+            
+        # Add date criteria
+        date_parts = []
+        if self.start_date_greater_than != -1:
+            date_parts.append(_("Start after {0}").format(self.start_date_greater_than))
+        if self.start_date_less_than != -1:
+            date_parts.append(_("Start before {0}").format(self.start_date_less_than))
+        if self.end_date_greater_than != -1:
+            date_parts.append(_("End after {0}").format(self.end_date_greater_than))
+        if self.end_date_less_than != -1:
+            date_parts.append(_("End before {0}").format(self.end_date_less_than))
+            
+        if date_parts:
+            parts.append(_("Dates: {0}").format(", ".join(date_parts)))
+            
+        # If no criteria specified, return default title
+        if not parts:
+            return _("All Composers")
+            
+        return " | ".join(parts)
+
     def test(self, composer, strict=True):
         if len(self.results) > self.max_results:
             return None
+
+        # Check dates first since integer comparisons are fast
+        if self.dates_specified:
+            date_tests_passed = [self.start_date_greater_than == -1,
+                                 self.start_date_less_than == -1,
+                                 self.end_date_greater_than == -1,
+                                 self.end_date_less_than == -1]
+
+            if composer.start_date != -1 and composer.start_date is not None:
+                if self.start_date_greater_than != -1:
+                    if composer.start_date < self.start_date_greater_than:
+                        return False
+                    date_tests_passed[0] = True
+                if self.start_date_less_than != -1:
+                    if composer.start_date > self.start_date_less_than:
+                        return False
+                    date_tests_passed[1] = True
+
+            if composer.end_date != -1 and composer.end_date is not None:
+                if self.end_date_greater_than != -1:
+                    if composer.end_date < self.end_date_greater_than:
+                        return False
+                    date_tests_passed[2] = True
+                if self.end_date_less_than != -1:
+                    if composer.end_date > self.end_date_less_than:
+                        return False
+                    date_tests_passed[3] = True
+            else:
+                # Composer could still be alive, or very old with little information
+                date_tests_passed[2] = True
+                date_tests_passed[3] = True
+            
+            if not all(date_tests_passed):
+                print(f"Date tests failed: {date_tests_passed}")
+                return False
+            elif len(self.composer) == 0 and len(self.genre) == 0:
+                print(f"Date tests passed: {date_tests_passed}")
+                self.results.append(composer)
+                return True
+
+        # Test name/indicator matches
         if len(self.composer) > 0:
             pattern = re.compile(f"(^|\\W){self.composer}") if strict else ""
             for indicator in composer.indicators:
@@ -191,12 +279,15 @@ class ComposersDataSearch:
                     if self.composer in indicator_lower:
                         self.results.append(composer)
                         return True
+
+        # Test genre matches
         if len(self.genre) > 0 and strict:
             for genre in composer.genres:
                 genre_lower = genre.lower()
                 if genre_lower == self.genre or self.genre in genre_lower:
                     self.results.append(composer)
                     return True
+
         return False
 
     def sort_results_by_indicators(self):
@@ -210,15 +301,26 @@ class ComposersDataSearch:
             "composer": self.composer, 
             "genre": self.genre,
             "stored_results_count": self.stored_results_count,
+            "start_date_greater_than": self.start_date_greater_than,
+            "start_date_less_than": self.start_date_less_than,
+            "end_date_greater_than": self.end_date_greater_than,
+            "end_date_less_than": self.end_date_less_than
         }
 
     def __eq__(self, value: object) -> bool:
-        return isinstance(value, ComposersDataSearch) and \
-               self.composer == value.composer and \
-               self.genre == value.genre
+        if not isinstance(value, ComposersDataSearch):
+            return False
+        return (self.composer == value.composer and 
+                self.genre == value.genre and
+                self.start_date_greater_than == value.start_date_greater_than and
+                self.start_date_less_than == value.start_date_less_than and
+                self.end_date_greater_than == value.end_date_greater_than and
+                self.end_date_less_than == value.end_date_less_than)
 
     def __hash__(self) -> int:
-        return hash((self.composer, self.genre))
+        return hash((self.composer, self.genre,
+                    self.start_date_greater_than, self.start_date_less_than,
+                    self.end_date_greater_than, self.end_date_less_than))
 
 
 

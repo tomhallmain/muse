@@ -2,15 +2,89 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
-"POT-Creation-Date: 2025-06-09 12:13-0400\n"
-"PO-Revision-Date: 2025-06-09 12:13-0400\n"
-"Last-Translator: Translator Name <translator@example.com>\n"
+"POT-Creation-Date: 2025-06-16 22:37-0400\n"
+"PO-Revision-Date: 2025-06-16 22:37-0400\n"
+"Last-Translator: Thomas Hall <tomhall.main@gmail.com>\n"
 "Language-Team: de Team <<EMAIL>>\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: app.py:130
+msgid "File"
+msgstr "Datei"
+
+#: app.py:131
+msgid "Open Library"
+msgstr "Bibliothek"
+
+#: app.py:132
+msgid "Current Track Text"
+msgstr "Aktueller Titeltext"
+
+#: app.py:134
+msgid "Exit"
+msgstr "Ausgang"
+
+#: app.py:138
+msgid "View"
+msgstr "Blick"
+
+#: app.py:139
+msgid "Toggle Fullscreen"
+msgstr "Vollbild vergrößern"
+
+#: app.py:140
+msgid "Toggle Theme"
+msgstr "Themen ändern"
+
+#: app.py:142 app.py:225
+msgid "Playlists"
+msgstr "Wiedergabelisten"
+
+#: app.py:143 app.py:266 ui/favorites_window.py:226 ui/favorites_window.py:551
+msgid "Favorites"
+msgstr "Favoriten"
+
+#: app.py:144 ui/history_window.py:88 ui/history_window.py:297
+msgid "History"
+msgstr "Geschichte"
+
+#: app.py:145 utils/globals.py:397
+msgid "Composers"
+msgstr "Komponisten"
+
+#: app.py:149
+msgid "Tools"
+msgstr "Werkzeuge"
+
+#: app.py:150 ui/composers_window.py:387 ui/composers_window.py:420
+#: ui/composers_window.py:539 ui/favorites_window.py:274
+#: ui/history_window.py:129 ui/network_media_window.py:107
+#: ui/network_media_window.py:159 ui/network_media_window.py:337
+#: ui/search_window.py:138 ui/search_window.py:255 ui/search_window.py:514
+msgid "Search"
+msgstr "Suche"
+
+#: app.py:151 ui/extensions_window.py:24 ui/extensions_window.py:34
+#: ui/extensions_window.py:330
+msgid "Extensions"
+msgstr "Erweiterungen"
+
+#: app.py:152 ui/weather_window.py:27 ui/weather_window.py:37
+#: ui/weather_window.py:67
+msgid "Weather"
+msgstr "Wetter"
+
+#: app.py:153 ui/tts_window.py:28 ui/tts_window.py:34 ui/tts_window.py:203
+msgid "Text to Speech"
+msgstr "Text-en-Sprache"
+
+#: app.py:155
+msgid "Configuration"
+msgstr "Konfiguration"
 
 #: app.py:188 ui/extensions_window.py:179 ui/track_details_window.py:64
 #: utils/globals.py:217
@@ -59,10 +133,6 @@ msgstr "Band"
 msgid "Play"
 msgstr "Spiel"
 
-#: app.py:142 app.py:225
-msgid "Playlists"
-msgstr "Wiedergabelisten"
-
 #: app.py:228
 msgid "Next"
 msgstr "Weiter"
@@ -75,34 +145,9 @@ msgstr "Nächste Gruppierung"
 msgid "Pause"
 msgstr "Pause"
 
-#: app.py:150 ui/composers_window.py:353 ui/composers_window.py:388
-#: ui/composers_window.py:461 ui/favorites_window.py:274
-#: ui/history_window.py:129 ui/network_media_window.py:107
-#: ui/network_media_window.py:159 ui/network_media_window.py:337
-#: ui/search_window.py:138 ui/search_window.py:255 ui/search_window.py:514
-msgid "Search"
-msgstr "Suche"
-
-#: app.py:145 utils/globals.py:397
-msgid "Composers"
-msgstr "Komponisten"
-
-#: app.py:208
-msgid "Schedules"
-msgstr "Zeitpläne"
-
-#: app.py:152 ui/weather_window.py:27 ui/weather_window.py:37
-#: ui/weather_window.py:67
-msgid "Weather"
-msgstr "Wetter"
-
 #: app.py:236
 msgid "Stop"
 msgstr "Stopp"
-
-#: app.py:214
-msgid "Text"
-msgstr "Text"
 
 #: app.py:239
 msgid "Delay Seconds"
@@ -119,14 +164,6 @@ msgstr "Wiedergabeliste sortieren"
 #: app.py:262
 msgid "Favorite"
 msgstr "Favorit"
-
-#: app.py:143 app.py:266 ui/favorites_window.py:226 ui/favorites_window.py:551
-msgid "Favorites"
-msgstr "Favoriten"
-
-#: app.py:144 ui/history_window.py:88 ui/history_window.py:297
-msgid "History"
-msgstr "Geschichte"
 
 #: app.py:269
 msgid "Overwrite"
@@ -151,14 +188,6 @@ msgstr "Verwendung der Systemsprache"
 #: app.py:289
 msgid "Thorough playlist memory check"
 msgstr "Gründliche Überprüfung des Wiedergabeliste-Speichers"
-
-#: app.py:155
-msgid "Configuration"
-msgstr "Konfiguration"
-
-#: app.py:153 ui/tts_window.py:28 ui/tts_window.py:34 ui/tts_window.py:203
-msgid "Text to Speech"
-msgstr "Text-en-Sprache"
 
 #: app.py:354
 msgid "Confirm Quit"
@@ -220,19 +249,23 @@ msgstr "Inszenierte Wiedergabeliste: "
 msgid " Muse "
 msgstr " Muse "
 
-#: extensions/extension_manager.py:120 extensions/extension_manager.py:133
+#: extensions/extension_manager.py:123 extensions/extension_manager.py:136
 msgid "Extension thread waiting for {0} minutes"
 msgstr "Erweiterungs-Thread wartet auf {0} Minuten"
 
-#: extensions/extension_manager.py:161
+#: extensions/extension_manager.py:164
 msgid "Coming up soon, we'll be listening to a new track from the {0} {1}."
 msgstr "In Kürze werden wir uns einen neuen Track von {0} {1} anhören."
 
-#: extensions/extension_manager.py:301
+#: extensions/extension_manager.py:183
+msgid "Extension failed for {0} with value '{1}': {2}"
+msgstr "Erweiterung fehlte für {0} mit Wert '{1}': {2}"
+
+#: extensions/extension_manager.py:313
 msgid "Extension \"{0}\" waiting for {1} minutes"
 msgstr "Erweiterung „{0}“ wartet seit {1} Minuten"
 
-#: extensions/extension_manager.py:352
+#: extensions/extension_manager.py:364
 msgid "Extension \"{0}\" ready"
 msgstr "Erweiterung „{0}“ bereit"
 
@@ -256,16 +289,48 @@ msgstr "Enddatum kann in Zukunft nicht erreicht werden"
 msgid "Start date cannot be after end date"
 msgstr "Das Startdatum kann nicht nach dem Enddatum liegen."
 
-#: library_data/composer.py:177 library_data/library_data.py:64
+#: library_data/composer.py:190 library_data/library_data.py:64
 #: ui/favorites_window.py:32 ui/history_window.py:30
 msgid "({0} results)"
 msgstr "({0} Ergebnisse)"
 
-#: library_data/composer.py:295 library_data/composer.py:338
+#: library_data/composer.py:202
+msgid "Composer: {0}"
+msgstr "Komponist: {0}"
+
+#: library_data/composer.py:204
+msgid "Genre: {0}"
+msgstr "Genre: {0}"
+
+#: library_data/composer.py:209
+msgid "Start after {0}"
+msgstr "Beginnen nach {0}"
+
+#: library_data/composer.py:211
+msgid "Start before {0}"
+msgstr "Beginnen vor {0}"
+
+#: library_data/composer.py:213
+msgid "End after {0}"
+msgstr "Ende nach {0}"
+
+#: library_data/composer.py:215
+msgid "End before {0}"
+msgstr "Ende vor {0}"
+
+#: library_data/composer.py:218
+msgid "Dates: {0}"
+msgstr "Datum: {0}"
+
+#: library_data/composer.py:222
+msgid "All Composers"
+msgstr "Alle Komponisten"
+
+#: library_data/composer.py:401 library_data/composer.py:444
 msgid "Invalid composer data"
 msgstr "Invalide Komponistendaten"
 
-#: library_data/composer.py:350
+#: library_data/composer.py:456
 msgid "Composer not found"
 msgstr "Komponist nicht gefunden"
 
@@ -622,26 +687,42 @@ msgstr "Löschen des Komponisten fehlgeschlagen:"
 msgid "Search Composers"
 msgstr "Suche nach Komponisten"
 
-#: ui/composers_window.py:335
+#: ui/composers_window.py:336
 msgid "Search Composer"
 msgstr "Suche Composer"
 
-#: ui/composers_window.py:342
+#: ui/composers_window.py:344
 msgid "Search Genre"
 msgstr "Genre suchen"
 
-#: ui/composers_window.py:366 ui/search_window.py:224
+#: ui/composers_window.py:352
+msgid "Start Date After"
+msgstr "Startdatum nach"
+
+#: ui/composers_window.py:359
+msgid "Start Date Before"
+msgstr "Startdatum vor"
+
+#: ui/composers_window.py:367
+msgid "End Date After"
+msgstr "Enddatum nach"
+
+#: ui/composers_window.py:374
+msgid "End Date Before"
+msgstr "Enddatum vor"
+
+#: ui/composers_window.py:398 ui/search_window.py:224
 msgid "No recent searches found."
 msgstr "Es wurden keine aktuellen Suchanfragen gefunden."
 
-#: ui/composers_window.py:453 ui/extensions_window.py:259
+#: ui/composers_window.py:531 ui/extensions_window.py:259
 #: ui/favorites_window.py:368 ui/favorites_window.py:503
 #: ui/history_window.py:217 ui/history_window.py:288
 #: ui/network_media_window.py:260 ui/search_window.py:426
 msgid "Details"
 msgstr "Einzelheiten"
 
-#: ui/composers_window.py:496
+#: ui/composers_window.py:580
 msgid "Composer Search"
 msgstr "Komponisten-Suche"
 
@@ -761,14 +842,21 @@ msgstr "Konfiguration erfolgreich gespeichert"
 msgid "Failed to save configuration"
 msgstr "Nicht verfügbar, um Konfiguration zu speichern"
 
-#: app.py:151 ui/extensions_window.py:24 ui/extensions_window.py:34
-#: ui/extensions_window.py:330
-msgid "Extensions"
-msgstr "Erweiterungen"
-
 #: ui/extensions_window.py:69
 msgid "Extension Settings"
 msgstr "Erweiterungseinstellungen"
+
+#: ui/extensions_window.py:75
+msgid "Thread Status"
+msgstr "Fädenzustand"
+
+#: ui/extensions_window.py:80
+msgid "Click Check Status to see thread state"
+msgstr "Klicken Sie auf Status überprüfen, um den Fädenzustand zu sehen"
+
+#: ui/extensions_window.py:86
+msgid "Check Status"
+msgstr "Status überprüfen"
 
 #: ui/extensions_window.py:92 ui/extensions_window.py:183
 msgid "Strategy"
@@ -854,6 +942,26 @@ msgstr ""
 "Tipp: Wenn Sie kürzlich Dateien hinzugefügt oder verschoben haben, "
 "aktivieren Sie in den Suchoptionen die Option „Cache überschreiben“."
 
+#: ui/extensions_window.py:377
+msgid "No extension thread running"
+msgstr "Keine Verlängerungsfäden läuft"
+
+#: ui/extensions_window.py:379
+msgid "Extension thread terminated"
+msgstr "Verlängerungsfäden beendet"
+
+#: ui/extensions_window.py:381
+msgid "Extension thread running"
+msgstr "Verlängerungsfäden läuft"
+
+#: ui/extensions_window.py:383
+msgid " (with pending jobs)"
+msgstr " (mit anhängigen Arbeitsplätzen)"
+
+#: ui/extensions_window.py:385
+msgid " (processing delayed operation)"
+msgstr " (Verarbeitung verzögert Betrieb)"
+
 #: ui/extensions_window.py:398
 msgid "Extension Details"
 msgstr "Erweiterungsdetails"
@@ -929,6 +1037,11 @@ msgstr "Kein Titel oder Dateipfad verfügbar"
 msgid "Remove"
 msgstr "Entfernen"
 
+#: ui/favorites_window.py:574
+msgid "No valid play query could be generated for this favorite"
+msgstr ""
+"Für diesen Favoriten konnte keine gültige Spielabfrage generiert werden"
+
 #: ui/favorites_window.py:596
 msgid "Favorite Details"
 msgstr "Einzelheiten zu Favorit"
@@ -956,6 +1069,50 @@ msgstr "Geschichte der Suche"
 #: ui/history_window.py:185
 msgid "No history found."
 msgstr "Keine Geschichte gefunden."
+
+#: ui/library_window.py:20 ui/library_window.py:28
+msgid "Library"
+msgstr "Bibliothek"
+
+#: ui/library_window.py:70
+msgid "Library Statistics"
+msgstr "Bibliothek Statistik"
+
+#: ui/library_window.py:107
+msgid "Browse By"
+msgstr "Durchsuchen"
+
+#: ui/library_window.py:122
+msgid "Search:"
+msgstr "Suche:"
+
+#: ui/library_window.py:138
+msgid "Count"
+msgstr "Anzahl"
+
+#: ui/library_window.py:159
+msgid "Total Tracks: {}"
+msgstr "Gesamte Titel: {}"
+
+#: ui/library_window.py:167
+msgid "Total Albums: {}"
+msgstr "Gesamtalben: {}"
+
+#: ui/library_window.py:175
+msgid "Total Artists: {}"
+msgstr "Gesamte Künstler: {}"
+
+#: ui/library_window.py:183
+msgid "Total Composers: {}"
+msgstr "Gesamte Komponisten: {}"
+
+#: ui/library_window.py:192
+msgid "Total Instruments: {}"
+msgstr "Gesamtinstrumente: {}"
+
+#: ui/library_window.py:201
+msgid "Total Forms: {}"
+msgstr "Gesamtformen: {}"
 
 #: ui/network_media_window.py:77 ui/search_window.py:105
 msgid "Search Library"
@@ -1509,116 +1666,3 @@ msgstr "Monate"
 #: utils/translations.py:68
 msgid "years"
 msgstr "Jahre"
-
-#: app.py:130
-msgid "File"
-msgstr "Datei"
-
-#: app.py:131
-msgid "Open Library"
-msgstr "Bibliothek"
-
-#: app.py:132
-msgid "Current Track Text"
-msgstr "Aktueller Titeltext"
-
-#: app.py:134
-msgid "Exit"
-msgstr "Ausgang"
-
-#: app.py:138
-msgid "View"
-msgstr "Blick"
-
-#: app.py:139
-msgid "Toggle Fullscreen"
-msgstr "Vollbild vergrößern"
-
-#: app.py:140
-msgid "Toggle Theme"
-msgstr "Themen ändern"
-
-#: app.py:149
-msgid "Tools"
-msgstr "Werkzeuge"
-
-#: ui/extensions_window.py:75
-msgid "Thread Status"
-msgstr "Fädenzustand"
-
-#: ui/extensions_window.py:80
-msgid "Click Check Status to see thread state"
-msgstr "Klicken Sie auf Status überprüfen, um den Fädenzustand zu sehen"
-
-#: ui/extensions_window.py:86
-msgid "Check Status"
-msgstr "Status überprüfen"
-
-#: ui/extensions_window.py:377
-msgid "No extension thread running"
-msgstr "Keine Verlängerungsfäden läuft"
-
-#: ui/extensions_window.py:379
-msgid "Extension thread terminated"
-msgstr "Verlängerungsfäden beendet"
-
-#: ui/extensions_window.py:381
-msgid "Extension thread running"
-msgstr "Verlängerungsfäden läuft"
-
-#: ui/extensions_window.py:383
-msgid " (with pending jobs)"
-msgstr " (mit anhängigen Arbeitsplätzen)"
-
-#: ui/extensions_window.py:385
-msgid " (processing delayed operation)"
-msgstr " (Verarbeitung verzögert Betrieb)"
-
-#: ui/favorites_window.py:574
-msgid "No valid play query could be generated for this favorite"
-msgstr ""
-"Für diesen Favoriten konnte keine gültige Spielabfrage generiert werden"
-
-#: ui/library_window.py:20 ui/library_window.py:28
-msgid "Library"
-msgstr "Bibliothek"
-
-#: ui/library_window.py:70
-msgid "Library Statistics"
-msgstr "Bibliothek Statistik"
-
-#: ui/library_window.py:107
-msgid "Browse By"
-msgstr "Durchsuchen"
-
-#: ui/library_window.py:122
-msgid "Search:"
-msgstr "Suche:"
-
-#: ui/library_window.py:138
-msgid "Count"
-msgstr "Anzahl"
-
-#: ui/library_window.py:159
-msgid "Total Tracks: {}"
-msgstr "Gesamte Titel: {}"
-
-#: ui/library_window.py:167
-msgid "Total Albums: {}"
-msgstr "Gesamtalben: {}"
-
-#: ui/library_window.py:175
-msgid "Total Artists: {}"
-msgstr "Gesamte Künstler: {}"
-
-#: ui/library_window.py:183
-msgid "Total Composers: {}"
-msgstr "Gesamte Komponisten: {}"
-
-#: ui/library_window.py:192
-msgid "Total Instruments: {}"
-msgstr "Gesamtinstrumente: {}"
-
-#: ui/library_window.py:201
-msgid "Total Forms: {}"
-msgstr "Gesamtformen: {}"

@@ -331,6 +331,7 @@ class ComposersWindow:
                                      command=self.new_composer)
         self.new_composer_btn.grid(row=0, column=2, padx=5)
 
+        # Name search
         self._composer_label = Label(self.inner_frame)
         self.add_label(self._composer_label, _("Search Composer"), row=0)
         self.composer = StringVar(self.inner_frame)
@@ -338,6 +339,7 @@ class ComposersWindow:
         self.composer_entry.grid(row=0, column=1)
         self.composer_entry.bind("<Return>", self.do_search)
 
+        # Genre search
         self._genre_label = Label(self.inner_frame)
         self.add_label(self._genre_label, _("Search Genre"), row=1)
         self.genre = StringVar(self.inner_frame)
@@ -345,15 +347,45 @@ class ComposersWindow:
         self.genre_entry.grid(row=1, column=1)
         self.genre_entry.bind("<Return>", self.do_search)
 
+        # Start date range
+        self._start_date_greater_label = Label(self.inner_frame)
+        self.add_label(self._start_date_greater_label, _("Start Date After"), row=2)
+        self.start_date_greater = StringVar(self.inner_frame)
+        self.start_date_greater_entry = Entry(self.inner_frame, textvariable=self.start_date_greater)
+        self.start_date_greater_entry.grid(row=2, column=1)
+        self.start_date_greater_entry.bind("<Return>", self.do_search)
+
+        self._start_date_less_label = Label(self.inner_frame)
+        self.add_label(self._start_date_less_label, _("Start Date Before"), row=3)
+        self.start_date_less = StringVar(self.inner_frame)
+        self.start_date_less_entry = Entry(self.inner_frame, textvariable=self.start_date_less)
+        self.start_date_less_entry.grid(row=3, column=1)
+        self.start_date_less_entry.bind("<Return>", self.do_search)
+
+        # End date range
+        self._end_date_greater_label = Label(self.inner_frame)
+        self.add_label(self._end_date_greater_label, _("End Date After"), row=4)
+        self.end_date_greater = StringVar(self.inner_frame)
+        self.end_date_greater_entry = Entry(self.inner_frame, textvariable=self.end_date_greater)
+        self.end_date_greater_entry.grid(row=4, column=1)
+        self.end_date_greater_entry.bind("<Return>", self.do_search)
+
+        self._end_date_less_label = Label(self.inner_frame)
+        self.add_label(self._end_date_less_label, _("End Date Before"), row=5)
+        self.end_date_less = StringVar(self.inner_frame)
+        self.end_date_less_entry = Entry(self.inner_frame, textvariable=self.end_date_less)
+        self.end_date_less_entry.grid(row=5, column=1)
+        self.end_date_less_entry.bind("<Return>", self.do_search)
+
         self.composer_list = []
+        self.start_date_list = []
+        self.end_date_list = []
         self.open_details_btn_list = []
         self.search_btn_list = []
 
         self.search_btn = None
-        self.add_btn("search_btn", _("Search"), self.do_search, row=2)
+        self.add_btn("search_btn", _("Search"), self.do_search, row=6)
 
-        # self.master.bind("<Key>", self.filter_targets)
-        # self.master.bind("<Return>", self.do_action)
         self.master.bind("<Escape>", self.close_windows)
         self.master.protocol("WM_DELETE_WINDOW", self.close_windows)
         self.results_frame.after(1, lambda: self.results_frame.focus_force())
@@ -374,7 +406,7 @@ class ComposersWindow:
                 continue
 
             title_label = Label(self.results_frame.viewPort)
-            self.add_label(title_label, search.composer, row=row, column=1, wraplength=200)
+            self.add_label(title_label, search.get_title(), row=row, column=1, wraplength=200)
             self.composer_list.append(title_label)
 
             album_label = Label(self.results_frame.viewPort)
@@ -414,20 +446,48 @@ class ComposersWindow:
         assert composer_data_search is not None
         self.composer.set(composer_data_search.composer)
         self.genre.set(composer_data_search.genre)
+        self.start_date_greater.set(str(composer_data_search.start_date_greater_than) if composer_data_search.start_date_greater_than is not None else "")
+        self.start_date_less.set(str(composer_data_search.start_date_less_than) if composer_data_search.start_date_less_than is not None else "")
+        self.end_date_greater.set(str(composer_data_search.end_date_greater_than) if composer_data_search.end_date_greater_than is not None else "")
+        self.end_date_less.set(str(composer_data_search.end_date_less_than) if composer_data_search.end_date_less_than is not None else "")
         self.composer_data_search = composer_data_search
 
     def do_search(self, event=None):
         composer = self.composer.get().strip()
         genre = self.genre.get().strip()
         
+        # Parse date values
+        start_date_greater = self._parse_date(self.start_date_greater.get().strip())
+        start_date_less = self._parse_date(self.start_date_less.get().strip())
+        end_date_greater = self._parse_date(self.end_date_greater.get().strip())
+        end_date_less = self._parse_date(self.end_date_less.get().strip())
+        
         # If search is empty or just whitespace, show recent searches
-        if not composer and not genre:
-            self._refresh_widgets(add_results=False)
-            self.show_recent_searches()
-            return
+        if not any([composer, genre]):
+            if sum([start_date_greater, start_date_less, end_date_greater, end_date_less]) == -4:
+                self._refresh_widgets(add_results=False)
+                self.show_recent_searches()
+                return
             
-        self.composer_data_search = ComposersDataSearch(composer, genre, ComposersWindow.MAX_RESULTS)
+        self.composer_data_search = ComposersDataSearch(
+            composer=composer,
+            genre=genre,
+            max_results=ComposersWindow.MAX_RESULTS,
+            start_date_greater_than=start_date_greater,
+            start_date_less_than=start_date_less,
+            end_date_greater_than=end_date_greater,
+            end_date_less_than=end_date_less
+        )
         self._do_search()
+
+    def _parse_date(self, date_str):
+        """Parse a date string into an integer year, or return -1 if invalid/empty."""
+        if not date_str:
+            return -1
+        try:
+            return int(date_str)
+        except ValueError:
+            return -1
 
     def _do_search(self, event=None):
         assert self.composer_data_search is not None
@@ -446,13 +506,31 @@ class ComposersWindow:
             row = i + 1
             composer = results[i]
 
+            # Name column
             composer_label = Label(self.results_frame.viewPort)
             self.add_label(composer_label, composer.name, row=row, column=0)
             self.composer_list.append(composer_label)
 
+            # Start date column
+            start_date_label = Label(self.results_frame.viewPort)
+            start_date_text = ""
+            if composer.start_date is not None and composer.start_date != -1:
+                start_date_text = str(composer.start_date)
+            self.add_label(start_date_label, start_date_text, row=row, column=1)
+            self.start_date_list.append(start_date_label)
+
+            # End date column
+            end_date_label = Label(self.results_frame.viewPort)
+            end_date_text = ""
+            if composer.end_date is not None and composer.end_date != -1:
+                end_date_text = str(composer.end_date)
+            self.add_label(end_date_label, end_date_text, row=row, column=2)
+            self.end_date_list.append(end_date_label)
+
+            # Details button column
             open_details_btn = Button(self.results_frame.viewPort, text=_("Details"))
             self.open_details_btn_list.append(open_details_btn)
-            open_details_btn.grid(row=row, column=1)
+            open_details_btn.grid(row=row, column=3)
             def open_detail_handler(event, self=self, composer=composer):
                 self.open_details(composer)
             open_details_btn.bind("<Button-1>", open_detail_handler)
@@ -483,11 +561,17 @@ class ComposersWindow:
     def clear_widget_lists(self):
         for label in self.composer_list:
             label.destroy()
+        for label in self.start_date_list:
+            label.destroy()
+        for label in self.end_date_list:
+            label.destroy()
         for btn in self.open_details_btn_list:
             btn.destroy()
         for btn in self.search_btn_list:
             btn.destroy()
         self.composer_list = []
+        self.start_date_list = []
+        self.end_date_list = []
         self.open_details_btn_list = []
         self.search_btn_list = []
 

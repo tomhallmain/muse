@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: APPLICATION 1.0\n"
 "Report-Msgid-Bugs-To: Translator Name <translator@example.com>\n"
-"POT-Creation-Date: 2025-06-09 11:50-0400\n"
-"PO-Revision-Date: 2025-06-09 11:50-0400\n"
+"POT-Creation-Date: 2025-06-16 22:27-0400\n"
+"PO-Revision-Date: 2025-06-16 22:27-0400\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -64,7 +64,7 @@ msgstr ""
 msgid "Tools"
 msgstr ""
 
-#: app.py:150 ui/composers_window.py:353 ui/composers_window.py:388 ui/composers_window.py:461 ui/favorites_window.py:274
+#: app.py:150 ui/composers_window.py:387 ui/composers_window.py:420 ui/composers_window.py:539 ui/favorites_window.py:274
 #: ui/history_window.py:129 ui/network_media_window.py:107 ui/network_media_window.py:159 ui/network_media_window.py:337
 #: ui/search_window.py:138 ui/search_window.py:255 ui/search_window.py:514
 msgid "Search"
@@ -241,19 +241,23 @@ msgstr ""
 msgid " Muse "
 msgstr ""
 
-#: extensions/extension_manager.py:120 extensions/extension_manager.py:133
+#: extensions/extension_manager.py:123 extensions/extension_manager.py:136
 msgid "Extension thread waiting for {0} minutes"
 msgstr ""
 
-#: extensions/extension_manager.py:161
+#: extensions/extension_manager.py:164
 msgid "Coming up soon, we'll be listening to a new track from the {0} {1}."
 msgstr ""
 
-#: extensions/extension_manager.py:301
+#: extensions/extension_manager.py:183
+msgid "Extension failed for {0} with value '{1}': {2}"
+msgstr ""
+
+#: extensions/extension_manager.py:313
 msgid "Extension \"{0}\" waiting for {1} minutes"
 msgstr ""
 
-#: extensions/extension_manager.py:352
+#: extensions/extension_manager.py:364
 msgid "Extension \"{0}\" ready"
 msgstr ""
 
@@ -277,15 +281,47 @@ msgstr ""
 msgid "Start date cannot be after end date"
 msgstr ""
 
-#: library_data/composer.py:177 library_data/library_data.py:64 ui/favorites_window.py:32 ui/history_window.py:30
+#: library_data/composer.py:190 library_data/library_data.py:64 ui/favorites_window.py:32 ui/history_window.py:30
 msgid "({0} results)"
 msgstr ""
 
-#: library_data/composer.py:295 library_data/composer.py:338
+#: library_data/composer.py:202
+msgid "Composer: {0}"
+msgstr ""
+
+#: library_data/composer.py:204
+msgid "Genre: {0}"
+msgstr ""
+
+#: library_data/composer.py:209
+msgid "Start after {0}"
+msgstr ""
+
+#: library_data/composer.py:211
+msgid "Start before {0}"
+msgstr ""
+
+#: library_data/composer.py:213
+msgid "End after {0}"
+msgstr ""
+
+#: library_data/composer.py:215
+msgid "End before {0}"
+msgstr ""
+
+#: library_data/composer.py:218
+msgid "Dates: {0}"
+msgstr ""
+
+#: library_data/composer.py:222
+msgid "All Composers"
+msgstr ""
+
+#: library_data/composer.py:401 library_data/composer.py:444
 msgid "Invalid composer data"
 msgstr ""
 
-#: library_data/composer.py:350
+#: library_data/composer.py:456
 msgid "Composer not found"
 msgstr ""
 
@@ -622,24 +658,40 @@ msgstr ""
 msgid "Search Composers"
 msgstr ""
 
-#: ui/composers_window.py:335
+#: ui/composers_window.py:336
 msgid "Search Composer"
 msgstr ""
 
-#: ui/composers_window.py:342
+#: ui/composers_window.py:344
 msgid "Search Genre"
 msgstr ""
 
-#: ui/composers_window.py:366 ui/search_window.py:224
+#: ui/composers_window.py:352
+msgid "Start Date After"
+msgstr ""
+
+#: ui/composers_window.py:359
+msgid "Start Date Before"
+msgstr ""
+
+#: ui/composers_window.py:367
+msgid "End Date After"
+msgstr ""
+
+#: ui/composers_window.py:374
+msgid "End Date Before"
+msgstr ""
+
+#: ui/composers_window.py:398 ui/search_window.py:224
 msgid "No recent searches found."
 msgstr ""
 
-#: ui/composers_window.py:453 ui/extensions_window.py:259 ui/favorites_window.py:368 ui/favorites_window.py:503
+#: ui/composers_window.py:531 ui/extensions_window.py:259 ui/favorites_window.py:368 ui/favorites_window.py:503
 #: ui/history_window.py:217 ui/history_window.py:288 ui/network_media_window.py:260 ui/search_window.py:426
 msgid "Details"
 msgstr ""
 
-#: ui/composers_window.py:496
+#: ui/composers_window.py:580
 msgid "Composer Search"
 msgstr ""
 
