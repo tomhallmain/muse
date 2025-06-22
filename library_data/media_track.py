@@ -273,6 +273,7 @@ class MediaTrack:
         self.genre = None
         self.year = None
         self.compilation = False
+        self.compilation_name = None  # Will be set when compilation is identified
         self.mean_volume = -9999.0
         self.max_volume = -9999.0
         self.length = -1.0

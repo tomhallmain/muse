@@ -2,7 +2,7 @@ from dataclasses import dataclass
 import time
 
 from library_data.library_data import LibraryDataSearch
-from utils.globals import TrackAttribute
+from utils.globals import TrackAttribute, PlaylistSortType
 
 
 @dataclass
@@ -170,5 +170,8 @@ class Favorite:
         else:
             # For attribute favorites, create a search query based on the attribute
             search = LibraryDataSearch(max_results=1)
-            setattr(search, self.attribute.value, self.value)
-            return search 
+            setattr(search, self.attribute.value, self.value.lower())
+            return search
+
+    def get_playlist_sort_type(self) -> PlaylistSortType:
+        return self.attribute.get_playlist_sort_type()

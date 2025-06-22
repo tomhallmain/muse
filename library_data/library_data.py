@@ -1,7 +1,9 @@
 import glob
 import os
 import pickle
+import re
 import threading
+import traceback
 
 from extensions.extension_manager import ExtensionManager
 from library_data.artist import artists_data
@@ -14,7 +16,7 @@ from library_data.library_data_callbacks import LibraryDataCallbacks
 from library_data.media_track import MediaTrack
 from utils.app_info_cache import app_info_cache
 from utils.config import config
-from utils.globals import MediaFileType
+from utils.globals import MediaFileType, PlaylistSortType
 from utils.utils import Utils
 from utils.translations import I18N
 
@@ -147,6 +149,24 @@ class LibraryDataSearch:
             return "get_form"
         else:
             raise Exception(f"Invalid search attribute: {search_attr}")
+
+    def get_playlist_sort_type(self) -> PlaylistSortType:
+        if len(self.title) > 0:
+            return PlaylistSortType.TITLE
+        elif len(self.album) > 0:
+            return PlaylistSortType.ALBUM_SHUFFLE
+        elif len(self.artist) > 0:
+            return PlaylistSortType.ARTIST_SHUFFLE
+        elif len(self.composer) > 0:
+            return PlaylistSortType.COMPOSER_SHUFFLE
+        elif len(self.genre) > 0:
+            return PlaylistSortType.GENRE_SHUFFLE
+        elif len(self.instrument) > 0:
+            return PlaylistSortType.INSTRUMENT_SHUFFLE
+        elif len(self.form) > 0:
+            return PlaylistSortType.FORM_SHUFFLE
+        else:
+            return PlaylistSortType.RANDOM
 
     def get_first_available_track(self):
         for track in self.results:
@@ -452,6 +472,139 @@ class LibraryData:
                 Utils.log(f"Distance: {distance}, Searchable: '{searchable_title}', Title: '{title}'")
         
         return matches
+
+    # Cache for compilation names
+    _compilation_cache = {}
+    _compilation_cache_lock = threading.Lock()
+
+    def _clean_album_title(self, title):
+        """Helper to clean album titles by removing parenthetical content at the end."""
+        # Remove content in parentheses at the end of the title
+        cleaned = re.sub(r'\s*\([^)]*\)\s*$', '', title)
+        return cleaned.strip()
+
+    def _get_compilation_cache_key(self, track):
+        """Creates a cache key for a track's compilation info based on identifying attributes."""
+        # Use attributes that should be common across a compilation
+        return (track.album, track.albumartist or track.artist)
+
+    def identify_compilation_name(self, track):
+        """
+        Identifies if a track is part of a compilation by analyzing album titles.
+        Returns the compilation name if found, otherwise returns the original album title.
+        Uses caching for efficiency.
+        
+        Args:
+            track (MediaTrack): The track to check for compilation membership
+            
+        Returns:
+            str: The identified compilation name or original album title
+        """
+        if not track or not track.album:
+            return None
+
+        # First check if track already has a compilation name
+        if track.compilation_name is not None:
+            return track.compilation_name
+
+        # Check cache next
+        cache_key = self._get_compilation_cache_key(track)
+        with self._compilation_cache_lock:
+            if cache_key in self._compilation_cache:
+                return self._compilation_cache[cache_key]
+                
+        # Find all albums that start with similar text
+        similar_albums = []
+        base_album = track.album  # Use original album title for comparison
+        
+        # Group albums by their common prefixes
+        prefix_groups = {}  # prefix -> list of albums
+        
+        for other_track in LibraryData.all_tracks:
+            if other_track.album and other_track.album != track.album:
+                # Find the longest common prefix
+                common_prefix = ''
+                min_len = min(len(base_album), len(other_track.album))
+                for i in range(min_len):
+                    if base_album[i].lower() == other_track.album[i].lower():
+                        common_prefix += base_album[i]
+                    else:
+                        break
+                        
+                # If common prefix is >70% of either album title and at least 5 chars
+                # Only use if it's a meaningful name (not just "The" or similar)
+                if len(common_prefix) >= 5:
+                    prefix_ratio = len(common_prefix) / max(len(base_album), len(other_track.album))
+                    if prefix_ratio > 0.7:
+                        # Add to prefix group
+                        if common_prefix not in prefix_groups:
+                            prefix_groups[common_prefix] = []
+                        prefix_groups[common_prefix].append(other_track.album)
+                        similar_albums.append(other_track.album)
+                        
+        # If we found similar albums, find the most common meaningful prefix
+        compilation_name = None
+        if similar_albums:
+            # Sort prefixes by length (longest first) and number of albums in group
+            sorted_prefixes = sorted(
+                prefix_groups.items(), 
+                key=lambda x: (-len(x[0]), -len(x[1]))  # Sort by prefix length (desc) then group size (desc)
+            )
+            
+            # Take the longest prefix that has at least 2 albums
+            for prefix, albums in sorted_prefixes:
+                if len(albums) >= 1:  # We already know this album matches too
+                    cleaned_prefix = self._clean_album_title(prefix.strip())
+                    if len(cleaned_prefix) >= 5:
+                        compilation_name = cleaned_prefix
+                        break
+                    
+        # Check metadata hints if no compilation found
+        if not compilation_name:
+            if track.totaldiscs and track.totaldiscs > 1:
+                compilation_name = self._clean_album_title(base_album)
+            elif track.compilation:
+                compilation_name = self._clean_album_title(base_album)
+            else:
+                compilation_name = track.album  # Use original album title
+                
+        # Cache the result
+        with self._compilation_cache_lock:
+            self._compilation_cache[cache_key] = compilation_name
+            
+        # Store on the track object itself for future reference
+        track.compilation_name = compilation_name
+            
+        return compilation_name
+
+    def identify_compilation_tracks(self, tracks):
+        """
+        Process a list of tracks to identify compilations.
+        Updates each track's compilation name based on analysis of all library tracks.
+        
+        Args:
+            tracks (list): List of MediaTrack objects to analyze
+            
+        Returns:
+            dict: Mapping of track filepaths to their compilation names
+        """
+        compilation_map = {}
+        
+        # Process each track
+        for track in tracks:
+            try:
+                compilation_name = self.identify_compilation_name(track)
+                compilation_map[track.filepath] = compilation_name
+            except Exception as e:
+                error_msg = f"Error processing compilation for track {track.title}: {str(e)}"
+                Utils.log_yellow(error_msg)
+                MediaTrack.collect_error(error_msg, traceback.format_exc())
+                compilation_map[track.filepath] = track.album  # Fallback to original album name
+        
+        # Write any errors collected during compilation identification
+        MediaTrack.write_errors_to_file()
+            
+        return compilation_map
 
     # TODO hook up this method to the UI
     def ensure_album_artwork_consistency(self, track):

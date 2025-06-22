@@ -566,7 +566,7 @@ class FavoritesWindow:
             button # for some reason this is necessary to maintain the reference?
             button.grid(row=row, column=column)
 
-    def _play_favorite(self, favorite):
+    def _play_favorite(self, favorite: Favorite):
         """Attempt to play a favorite."""
         try:
             query = favorite.get_play_query(self.library_data)
@@ -574,8 +574,13 @@ class FavoritesWindow:
                 raise ValueError(_("No valid play query could be generated for this favorite"))
 
             if isinstance(query, str): # If we got a filepath, use start_play_callback
-                self.app_actions.start_play_callback(query)
+                # Get the track object from the filepath
+                track = self.library_data.get_track(query)
+                # For specific track favorites, use random sorting
+                self.app_actions.start_play_callback(track=track)
             else: # Otherwise use search_and_play with the LibraryDataSearch object
+                # For attribute favorites, we need to pass the playlist_sort_type to search_and_play
+                # This will be handled by the search window's logic
                 self.app_actions.search_and_play(query)
 
         except Exception as e:

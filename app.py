@@ -173,7 +173,7 @@ class App():
             "add_favorite": self.add_favorite,
             "open_track_details": self.open_track_details_window,
             "find_track": lambda search_query: SearchWindow.find_track(self.library_data, search_query),
-            "search_and_play": lambda search_query: self.start_playback(SearchWindow.find_track(self.library_data, search_query)),
+            "search_and_play": self.search_and_play,
         })
 
         # Sidebar
@@ -802,6 +802,14 @@ class App():
         if self.current_run and not self.current_run.is_complete:
             return self.current_run.get_current_track()
         return None
+
+    def search_and_play(self, search_query):
+        track = SearchWindow.find_track(self.library_data, search_query)
+        if track:
+            playlist_sort_type = search_query.get_playlist_sort_type()
+            self.start_playback(track=track, playlist_sort_type=playlist_sort_type)
+        else:
+            self.alert(_("Error"), _("Track not found in library for query: ") + "\n\n" + search_query, kind="error")
 
     def add_favorite(self, favorite):
         """Add a favorite to the favorites list.

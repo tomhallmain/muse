@@ -239,6 +239,22 @@ class TrackAttribute(Enum):
         except ValueError:
             return TrackAttribute.ARTIST
 
+    def get_playlist_sort_type(self) -> PlaylistSortType:
+        if self == TrackAttribute.COMPOSER:
+            return PlaylistSortType.COMPOSER_SHUFFLE
+        elif self == TrackAttribute.ARTIST:
+            return PlaylistSortType.ARTIST_SHUFFLE
+        elif self == TrackAttribute.GENRE:
+            return PlaylistSortType.GENRE_SHUFFLE
+        elif self == TrackAttribute.INSTRUMENT:
+            return PlaylistSortType.INSTRUMENT_SHUFFLE
+        elif self == TrackAttribute.FORM:
+            return PlaylistSortType.FORM_SHUFFLE
+        elif self == TrackAttribute.ALBUM:
+            return PlaylistSortType.ALBUM_SHUFFLE
+        else:
+            return PlaylistSortType.RANDOM
+
 
 
 class ExtensionStrategy(Enum):
