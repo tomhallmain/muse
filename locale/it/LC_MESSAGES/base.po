@@ -2,9 +2,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
-"POT-Creation-Date: 2025-06-16 22:37-0400\n"
-"PO-Revision-Date: 2025-06-16 22:37-0400\n"
-"Last-Translator: Thomas Hall <tomhall.main@gmail.com>\n"
+"POT-Creation-Date: 2025-06-28 19:43-0400\n"
+"PO-Revision-Date: 2025-06-28 19:43-0400\n"
+"Last-Translator: Translator Name <translator@example.com>\n"
 "Language-Team: it Team <<EMAIL>>\n"
 "Language: it\n"
 "MIME-Version: 1.0\n"
@@ -40,11 +40,11 @@ msgstr "Mostra schermo intero"
 msgid "Toggle Theme"
 msgstr "Modifica tema"
 
-#: app.py:142 app.py:225
+#: app.py:142 app.py:230
 msgid "Playlists"
 msgstr "Elenchi di brani"
 
-#: app.py:143 app.py:266 ui/favorites_window.py:226 ui/favorites_window.py:551
+#: app.py:143 app.py:271 ui/favorites_window.py:226 ui/favorites_window.py:551
 msgid "Favorites"
 msgstr "Preferiti"
 
@@ -52,7 +52,7 @@ msgstr "Preferiti"
 msgid "History"
 msgstr "Storia"
 
-#: app.py:145 utils/globals.py:397
+#: app.py:145 utils/globals.py:413
 msgid "Composers"
 msgstr "Compositori"
 
@@ -86,166 +86,166 @@ msgstr "Testo in voce"
 msgid "Configuration"
 msgstr "Configurazione"
 
-#: app.py:188 ui/extensions_window.py:179 ui/track_details_window.py:64
+#: app.py:193 ui/extensions_window.py:179 ui/track_details_window.py:64
 #: utils/globals.py:217
 msgid "Title"
 msgstr "Titolo"
 
-#: app.py:191 ui/track_details_window.py:67 utils/globals.py:118
+#: app.py:196 ui/track_details_window.py:67 utils/globals.py:118
 #: utils/globals.py:218
 msgid "Album"
 msgstr "Album"
 
-#: app.py:194 ui/track_details_window.py:70 utils/globals.py:120
-#: utils/globals.py:219 utils/globals.py:273
+#: app.py:199 ui/track_details_window.py:70 utils/globals.py:120
+#: utils/globals.py:219 utils/globals.py:289
 msgid "Artist"
 msgstr "Artista"
 
-#: app.py:197 ui/track_details_window.py:76 utils/globals.py:122
-#: utils/globals.py:220 utils/globals.py:272
+#: app.py:202 ui/track_details_window.py:76 utils/globals.py:122
+#: utils/globals.py:220 utils/globals.py:288
 msgid "Composer"
 msgstr "Compositore"
 
-#: app.py:200
+#: app.py:205
 msgid "Next Up"
 msgstr "Prossimamente"
 
-#: app.py:203
+#: app.py:208
 msgid "Prior Track"
 msgstr "Traccia precedente"
 
-#: app.py:206
+#: app.py:211
 msgid "Spot Details"
 msgstr "Dettagli del spot"
 
-#: app.py:209
+#: app.py:214
 msgid "Extension Status"
 msgstr "Stato dell'estensione"
 
-#: app.py:212
+#: app.py:217
 msgid "Volume"
 msgstr "Volume"
 
-#: app.py:222 ui/extensions_window.py:267 ui/favorites_window.py:361
+#: app.py:227 ui/extensions_window.py:267 ui/favorites_window.py:361
 #: ui/favorites_window.py:496 ui/network_media_window.py:167
 #: ui/network_media_window.py:267 ui/search_window.py:263
 #: ui/search_window.py:433
 msgid "Play"
 msgstr "Gioco"
 
-#: app.py:228
+#: app.py:233
 msgid "Next"
 msgstr "Avanti"
 
-#: app.py:231
+#: app.py:236
 msgid "Next Grouping"
 msgstr "Raggruppamento successivo"
 
-#: app.py:234
+#: app.py:239
 msgid "Pause"
 msgstr "Pausa"
 
-#: app.py:236
+#: app.py:241
 msgid "Stop"
 msgstr "Stop"
 
-#: app.py:239
+#: app.py:244
 msgid "Delay Seconds"
 msgstr "Ritardo secondi"
 
-#: app.py:246
+#: app.py:251
 msgid "Playlist"
 msgstr "Playlist"
 
-#: app.py:254
+#: app.py:259
 msgid "Playlist Sort"
 msgstr "Ordinamento della playlist"
 
-#: app.py:262
+#: app.py:267
 msgid "Favorite"
 msgstr "Il preferito"
 
-#: app.py:269
+#: app.py:274
 msgid "Overwrite"
 msgstr "Sovrascrivere"
 
-#: app.py:273
+#: app.py:278
 msgid "Muse"
 msgstr "Musa"
 
-#: app.py:277
+#: app.py:282
 msgid "Extension"
 msgstr "Estensione"
 
-#: app.py:281
+#: app.py:286
 msgid "Enable track splitting"
 msgstr "Abilita la suddivisione dei brani"
 
-#: app.py:285
+#: app.py:290
 msgid "Use system language for all topics"
 msgstr "Utilizzare il linguaggio di sistema"
 
-#: app.py:289
+#: app.py:294
 msgid "Thorough playlist memory check"
 msgstr "Controllo della memoria di playlist"
 
-#: app.py:354
+#: app.py:359
 msgid "Confirm Quit"
 msgstr "Confermare l'uscita"
 
-#: app.py:354
+#: app.py:359
 msgid "Would you like to quit the application?"
 msgstr "Volete abbandonare l'applicazione?"
 
-#: app.py:480
+#: app.py:488
 msgid "Confirm Run"
 msgstr "Confermare l'esecuzione"
 
-#: app.py:481
+#: app.py:489
 msgid "Are you sure you want to proceed?"
 msgstr "È sicuro di voler procedere?"
 
-#: app.py:544
+#: app.py:552
 msgid "Copied album art to clipboard."
 msgstr "Copiato l'album art negli appunti."
 
-#: app.py:656 app.py:815 app.py:845 ui/composers_window.py:245
+#: app.py:664 app.py:833 app.py:844 app.py:874 ui/composers_window.py:245
 #: ui/composers_window.py:259 ui/configuration_window.py:152
 #: ui/configuration_window.py:155 ui/extensions_window.py:372
-#: ui/favorites_window.py:586 ui/playlist_window.py:326
+#: ui/favorites_window.py:591 ui/playlist_window.py:326
 #: ui/track_details_window.py:217
 msgid "Error"
 msgstr "Errore"
 
-#: app.py:729 muse/muse_spot_profile.py:208
+#: app.py:737 muse/muse_spot_profile.py:208
 msgid "Track: "
 msgstr "Traccia: "
 
-#: app.py:730
+#: app.py:738
 msgid "Album: "
 msgstr "Album: "
 
-#: app.py:731
+#: app.py:739
 msgid "Artist: "
 msgstr "Artista: "
 
-#: app.py:732
+#: app.py:740
 msgid "Composer: "
 msgstr "Compositore: "
 
-#: app.py:743
+#: app.py:751
 msgid "Next Up: "
 msgstr "Prossimamente: "
 
-#: app.py:752 muse/muse_spot_profile.py:209
+#: app.py:760 muse/muse_spot_profile.py:209
 msgid "Previous Track: "
 msgstr "Traccia precedente: "
 
-#: app.py:786
+#: app.py:807
 msgid "Staged Playlist: "
 msgstr "Elenco programmato: "
 
-#: app.py:930
+#: app.py:959
 msgid " Muse "
 msgstr " Musa "
 
@@ -289,7 +289,7 @@ msgstr "La data di fine non può essere in futuro"
 msgid "Start date cannot be after end date"
 msgstr "La data di inizio non può essere dopo la data di fine"
 
-#: library_data/composer.py:190 library_data/library_data.py:64
+#: library_data/composer.py:190 library_data/library_data.py:66
 #: ui/favorites_window.py:32 ui/history_window.py:30
 msgid "({0} results)"
 msgstr "({0} risultati)"
@@ -326,40 +326,40 @@ msgstr "Date: {0}"
 msgid "All Composers"
 msgstr "Tutti i compositori"
 
-#: library_data/composer.py:401 library_data/composer.py:444
+#: library_data/composer.py:397 library_data/composer.py:440
 msgid "Invalid composer data"
 msgstr "Dati del compositore non valido"
 
-#: library_data/composer.py:456
+#: library_data/composer.py:452
 msgid "Composer not found"
 msgstr "Compositore non trovato"
 
-#: library_data/library_data.py:277
+#: library_data/library_data.py:297
 msgid "Updating tracks"
 msgstr "Aggiornamento dei brani"
 
-#: library_data/media_track.py:356
+#: library_data/media_track.py:357
 msgid "Unknown title"
 msgstr "Titolo sconosciuto"
 
-#: library_data/media_track.py:362
+#: library_data/media_track.py:363
 msgid "Unknown album"
 msgstr "Album sconosciuto"
 
-#: library_data/media_track.py:368
+#: library_data/media_track.py:369
 msgid "Unknown artist"
 msgstr "Artista sconosciuto"
 
-#: library_data/media_track.py:544 library_data/media_track.py:545
+#: library_data/media_track.py:545 library_data/media_track.py:546
 #: tts/text_cleaner_ruleset.py:78
 msgid "Number \\1"
 msgstr " Numero \\1"
 
-#: library_data/media_track.py:546
+#: library_data/media_track.py:547
 msgid "\\1text to speech\\2"
 msgstr "\\1testo a voce\\2"
 
-#: library_data/media_track.py:547
+#: library_data/media_track.py:548
 msgid " Opus \\2"
 msgstr " Opus \\2"
 
@@ -631,7 +631,7 @@ msgstr "Date incerte"
 msgid "Dates are uncertain"
 msgstr "Le date sono incerte"
 
-#: ui/composers_window.py:85 utils/globals.py:398
+#: ui/composers_window.py:85 utils/globals.py:414
 msgid "Genres"
 msgstr "Generi"
 
@@ -930,7 +930,7 @@ msgstr "Sei sicuro di voler eliminare questa estensione?"
 msgid "No original filename or id found in extension data"
 msgstr "Nessun nome file originale o ID trovato nei dati dell'estensione"
 
-#: ui/extensions_window.py:370 ui/favorites_window.py:584
+#: ui/extensions_window.py:370 ui/favorites_window.py:589
 msgid ""
 "Tip: If you've recently added or moved files, try checking 'Overwrite Cache'"
 " in the search options."
@@ -990,7 +990,7 @@ msgstr "Descrizione:"
 msgid "File:"
 msgstr "File:"
 
-#: ui/extensions_window.py:494 ui/favorites_window.py:668
+#: ui/extensions_window.py:494 ui/favorites_window.py:673
 msgid "Close"
 msgstr "Chiudi"
 
@@ -1012,7 +1012,7 @@ msgstr "Preferito aggiornato con successo."
 msgid "Create Favorite From Current Track"
 msgstr "Crea favorito dalla pista corrente"
 
-#: ui/favorites_window.py:257 ui/favorites_window.py:657
+#: ui/favorites_window.py:257 ui/favorites_window.py:662
 msgid "Create Favorite"
 msgstr "Crea favorito"
 
@@ -1039,19 +1039,19 @@ msgstr ""
 "Nessuna domanda di gioco valida potrebbe essere generato per questo "
 "preferito"
 
-#: ui/favorites_window.py:596
+#: ui/favorites_window.py:601
 msgid "Favorite Details"
 msgstr "Dettagli di Favorite"
 
-#: ui/favorites_window.py:633
+#: ui/favorites_window.py:638
 msgid "Type: Track"
 msgstr "Tipo: Traccia"
 
-#: ui/favorites_window.py:657
+#: ui/favorites_window.py:662
 msgid "Update Favorite"
 msgstr "Aggiornamento Favorite"
 
-#: ui/favorites_window.py:663
+#: ui/favorites_window.py:668
 msgid "Remove Favorite"
 msgstr "Rimuovi i preferiti"
 
@@ -1330,7 +1330,7 @@ msgid "Album Artist"
 msgstr "Artista dell'album"
 
 #: ui/track_details_window.py:79 utils/globals.py:124 utils/globals.py:221
-#: utils/globals.py:274
+#: utils/globals.py:290
 msgid "Genre"
 msgstr "Genere"
 
@@ -1464,15 +1464,15 @@ msgstr "Errore: Percorso non è un file"
 msgid "Error: File is empty"
 msgstr "Errore: Il file è vuoto"
 
-#: utils/globals.py:126 utils/globals.py:222 utils/globals.py:275
+#: utils/globals.py:126 utils/globals.py:222 utils/globals.py:291
 msgid "Form"
 msgstr "Forma musicale"
 
-#: utils/globals.py:128 utils/globals.py:223 utils/globals.py:276
+#: utils/globals.py:128 utils/globals.py:223 utils/globals.py:292
 msgid "Instrument"
 msgstr "Strumento musicale"
 
-#: utils/globals.py:134 utils/globals.py:277
+#: utils/globals.py:134 utils/globals.py:293
 msgid "Random"
 msgstr "Casuale"
 
@@ -1512,95 +1512,95 @@ msgstr "Tutta la musica"
 msgid "Playlist Config"
 msgstr "Configurazione dell'elenco di canzoni"
 
-#: utils/globals.py:325
+#: utils/globals.py:341
 msgid "weather"
 msgstr "tempo"
 
-#: utils/globals.py:327
+#: utils/globals.py:343
 msgid "news"
 msgstr "notizie"
 
-#: utils/globals.py:331
+#: utils/globals.py:347
 msgid "joke"
 msgstr "scherzo"
 
-#: utils/globals.py:333
+#: utils/globals.py:349
 msgid "fact"
 msgstr "fatto"
 
-#: utils/globals.py:335
+#: utils/globals.py:351
 msgid "fable"
 msgstr "favola"
 
-#: utils/globals.py:337
+#: utils/globals.py:353
 msgid "truth and lie"
 msgstr "verità e menzogna"
 
-#: utils/globals.py:339
+#: utils/globals.py:355
 msgid "aphorism"
 msgstr "aforisma"
 
-#: utils/globals.py:341
+#: utils/globals.py:357
 msgid "poem"
 msgstr "poesia"
 
-#: utils/globals.py:343
+#: utils/globals.py:359
 msgid "quote"
 msgstr "citazione"
 
-#: utils/globals.py:345
+#: utils/globals.py:361
 msgid "tongue twister"
 msgstr "scioglilingua"
 
-#: utils/globals.py:347
+#: utils/globals.py:363
 msgid "motivation"
 msgstr "motivazione"
 
-#: utils/globals.py:349
+#: utils/globals.py:365
 msgid "calendar"
 msgstr "calendario"
 
-#: utils/globals.py:351
+#: utils/globals.py:367
 msgid "more about the next track"
 msgstr "più sul brano successivo"
 
-#: utils/globals.py:353
+#: utils/globals.py:369
 msgid "more about the last track"
 msgstr "più sull'ultimo brano"
 
-#: utils/globals.py:355
+#: utils/globals.py:371
 msgid "more about our playlist"
 msgstr "più sulla nostra playlist"
 
-#: utils/globals.py:357
+#: utils/globals.py:373
 msgid "random wiki article"
 msgstr "articolo wiki a caso"
 
-#: utils/globals.py:359
+#: utils/globals.py:375
 msgid "funny story"
 msgstr "storia divertente"
 
-#: utils/globals.py:361
+#: utils/globals.py:377
 msgid "language learning"
 msgstr "apprendimento delle lingue"
 
-#: utils/globals.py:394
+#: utils/globals.py:410
 msgid "Tracks"
 msgstr "Tracce"
 
-#: utils/globals.py:395
+#: utils/globals.py:411
 msgid "Albums"
 msgstr "Album"
 
-#: utils/globals.py:396
+#: utils/globals.py:412
 msgid "Artists"
 msgstr "Artisti"
 
-#: utils/globals.py:399
+#: utils/globals.py:415
 msgid "Forms"
 msgstr "Forme"
 
-#: utils/globals.py:400
+#: utils/globals.py:416
 msgid "Instruments"
 msgstr "Strumenti"
 
@@ -1663,3 +1663,11 @@ msgstr "mesi"
 #: utils/translations.py:68
 msgid "years"
 msgstr "anni"
+
+#: app.py:784
+msgid "Directories: {0}"
+msgstr "Elenchi: {0}"
+
+#: app.py:833
+msgid "Track not found in library for query: "
+msgstr "Traccia non trovata nella libreria per la richiesta: "

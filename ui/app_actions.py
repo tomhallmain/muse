@@ -21,6 +21,7 @@ class AppActions:
         "open_track_details",
         "find_track",
         "search_and_play",
+        "update_directory_count",
     ])
 
     def __init__(self, actions: Dict[str, Callable[..., Any]]):

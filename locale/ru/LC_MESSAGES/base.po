@@ -2,9 +2,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
-"POT-Creation-Date: 2025-06-16 22:37-0400\n"
-"PO-Revision-Date: 2025-06-16 22:37-0400\n"
-"Last-Translator: Thomas Hall <tomhall.main@gmail.com>\n"
+"POT-Creation-Date: 2025-06-28 19:43-0400\n"
+"PO-Revision-Date: 2025-06-28 19:43-0400\n"
+"Last-Translator: Translator Name <translator@example.com>\n"
 "Language-Team: ru Team <<EMAIL>>\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
@@ -40,11 +40,11 @@ msgstr "Переключить полноэкранный режим"
 msgid "Toggle Theme"
 msgstr "переключаться Тема"
 
-#: app.py:142 app.py:225
+#: app.py:142 app.py:230
 msgid "Playlists"
 msgstr "Плейлисты"
 
-#: app.py:143 app.py:266 ui/favorites_window.py:226 ui/favorites_window.py:551
+#: app.py:143 app.py:271 ui/favorites_window.py:226 ui/favorites_window.py:551
 msgid "Favorites"
 msgstr "Любимые"
 
@@ -52,7 +52,7 @@ msgstr "Любимые"
 msgid "History"
 msgstr "История"
 
-#: app.py:145 utils/globals.py:397
+#: app.py:145 utils/globals.py:413
 msgid "Composers"
 msgstr "композиторы"
 
@@ -86,166 +86,166 @@ msgstr "Текст в речь"
 msgid "Configuration"
 msgstr "конфигурация"
 
-#: app.py:188 ui/extensions_window.py:179 ui/track_details_window.py:64
+#: app.py:193 ui/extensions_window.py:179 ui/track_details_window.py:64
 #: utils/globals.py:217
 msgid "Title"
 msgstr "Название"
 
-#: app.py:191 ui/track_details_window.py:67 utils/globals.py:118
+#: app.py:196 ui/track_details_window.py:67 utils/globals.py:118
 #: utils/globals.py:218
 msgid "Album"
 msgstr "Альбом"
 
-#: app.py:194 ui/track_details_window.py:70 utils/globals.py:120
-#: utils/globals.py:219 utils/globals.py:273
+#: app.py:199 ui/track_details_window.py:70 utils/globals.py:120
+#: utils/globals.py:219 utils/globals.py:289
 msgid "Artist"
 msgstr "Художник"
 
-#: app.py:197 ui/track_details_window.py:76 utils/globals.py:122
-#: utils/globals.py:220 utils/globals.py:272
+#: app.py:202 ui/track_details_window.py:76 utils/globals.py:122
+#: utils/globals.py:220 utils/globals.py:288
 msgid "Composer"
 msgstr "композитор"
 
-#: app.py:200
+#: app.py:205
 msgid "Next Up"
 msgstr "Следующий"
 
-#: app.py:203
+#: app.py:208
 msgid "Prior Track"
 msgstr "Предыдущий трек"
 
-#: app.py:206
+#: app.py:211
 msgid "Spot Details"
 msgstr "Детали места"
 
-#: app.py:209
+#: app.py:214
 msgid "Extension Status"
 msgstr "Статус продления"
 
-#: app.py:212
+#: app.py:217
 msgid "Volume"
 msgstr "Объем"
 
-#: app.py:222 ui/extensions_window.py:267 ui/favorites_window.py:361
+#: app.py:227 ui/extensions_window.py:267 ui/favorites_window.py:361
 #: ui/favorites_window.py:496 ui/network_media_window.py:167
 #: ui/network_media_window.py:267 ui/search_window.py:263
 #: ui/search_window.py:433
 msgid "Play"
 msgstr "Играть"
 
-#: app.py:228
+#: app.py:233
 msgid "Next"
 msgstr "Следующий"
 
-#: app.py:231
+#: app.py:236
 msgid "Next Grouping"
 msgstr "Следующая группировка"
 
-#: app.py:234
+#: app.py:239
 msgid "Pause"
 msgstr "Пауза"
 
-#: app.py:236
+#: app.py:241
 msgid "Stop"
 msgstr "Остановись"
 
-#: app.py:239
+#: app.py:244
 msgid "Delay Seconds"
 msgstr "Отложить секунды"
 
-#: app.py:246
+#: app.py:251
 msgid "Playlist"
 msgstr "Плейлист"
 
-#: app.py:254
+#: app.py:259
 msgid "Playlist Sort"
 msgstr "Сортировка плейлиста"
 
-#: app.py:262
+#: app.py:267
 msgid "Favorite"
 msgstr "Любимый"
 
-#: app.py:269
+#: app.py:274
 msgid "Overwrite"
 msgstr "Переписать"
 
-#: app.py:273
+#: app.py:278
 msgid "Muse"
 msgstr "Муза"
 
-#: app.py:277
+#: app.py:282
 msgid "Extension"
 msgstr "Продление"
 
-#: app.py:281
+#: app.py:286
 msgid "Enable track splitting"
 msgstr "Включить разделение дорожек"
 
-#: app.py:285
+#: app.py:290
 msgid "Use system language for all topics"
 msgstr "Используйте язык системы для всех тем"
 
-#: app.py:289
+#: app.py:294
 msgid "Thorough playlist memory check"
 msgstr "Полная проверка памяти плейлиста"
 
-#: app.py:354
+#: app.py:359
 msgid "Confirm Quit"
 msgstr "Подтвердить отказ"
 
-#: app.py:354
+#: app.py:359
 msgid "Would you like to quit the application?"
 msgstr "Вы хотите закрыть приложение?"
 
-#: app.py:480
+#: app.py:488
 msgid "Confirm Run"
 msgstr "Подтвердить бег"
 
-#: app.py:481
+#: app.py:489
 msgid "Are you sure you want to proceed?"
 msgstr "Вы уверены, что хотите продолжить?"
 
-#: app.py:544
+#: app.py:552
 msgid "Copied album art to clipboard."
 msgstr "Копирование обложки альбома в буфер обмена."
 
-#: app.py:656 app.py:815 app.py:845 ui/composers_window.py:245
+#: app.py:664 app.py:833 app.py:844 app.py:874 ui/composers_window.py:245
 #: ui/composers_window.py:259 ui/configuration_window.py:152
 #: ui/configuration_window.py:155 ui/extensions_window.py:372
-#: ui/favorites_window.py:586 ui/playlist_window.py:326
+#: ui/favorites_window.py:591 ui/playlist_window.py:326
 #: ui/track_details_window.py:217
 msgid "Error"
 msgstr "ошибка"
 
-#: app.py:729 muse/muse_spot_profile.py:208
+#: app.py:737 muse/muse_spot_profile.py:208
 msgid "Track: "
 msgstr "Трек: "
 
-#: app.py:730
+#: app.py:738
 msgid "Album: "
 msgstr "Альбом: "
 
-#: app.py:731
+#: app.py:739
 msgid "Artist: "
 msgstr "Художник: "
 
-#: app.py:732
+#: app.py:740
 msgid "Composer: "
 msgstr "Композитор: "
 
-#: app.py:743
+#: app.py:751
 msgid "Next Up: "
 msgstr "Следующий: "
 
-#: app.py:752 muse/muse_spot_profile.py:209
+#: app.py:760 muse/muse_spot_profile.py:209
 msgid "Previous Track: "
 msgstr "Предыдущий трек: "
 
-#: app.py:786
+#: app.py:807
 msgid "Staged Playlist: "
 msgstr "Сценический плейлист: "
 
-#: app.py:930
+#: app.py:959
 msgid " Muse "
 msgstr " Муза "
 
@@ -289,7 +289,7 @@ msgstr "Дата окончания не может быть в будущем"
 msgid "Start date cannot be after end date"
 msgstr "Дата начала не может быть позднее даты окончания"
 
-#: library_data/composer.py:190 library_data/library_data.py:64
+#: library_data/composer.py:190 library_data/library_data.py:66
 #: ui/favorites_window.py:32 ui/history_window.py:30
 msgid "({0} results)"
 msgstr "({0} результаты)"
@@ -326,40 +326,40 @@ msgstr "Даты: {0}"
 msgid "All Composers"
 msgstr "Все композиторы"
 
-#: library_data/composer.py:401 library_data/composer.py:444
+#: library_data/composer.py:397 library_data/composer.py:440
 msgid "Invalid composer data"
 msgstr "Недопустимые данные о композиторе"
 
-#: library_data/composer.py:456
+#: library_data/composer.py:452
 msgid "Composer not found"
 msgstr "Композитор не найден"
 
-#: library_data/library_data.py:277
+#: library_data/library_data.py:297
 msgid "Updating tracks"
 msgstr "Обновление треков"
 
-#: library_data/media_track.py:356
+#: library_data/media_track.py:357
 msgid "Unknown title"
 msgstr "Неизвестное название"
 
-#: library_data/media_track.py:362
+#: library_data/media_track.py:363
 msgid "Unknown album"
 msgstr "Неизвестный альбом"
 
-#: library_data/media_track.py:368
+#: library_data/media_track.py:369
 msgid "Unknown artist"
 msgstr "Неизвестный художник"
 
-#: library_data/media_track.py:544 library_data/media_track.py:545
+#: library_data/media_track.py:545 library_data/media_track.py:546
 #: tts/text_cleaner_ruleset.py:78
 msgid "Number \\1"
 msgstr " Номер \\1"
 
-#: library_data/media_track.py:546
+#: library_data/media_track.py:547
 msgid "\\1text to speech\\2"
 msgstr "\\1текста в речь\\2"
 
-#: library_data/media_track.py:547
+#: library_data/media_track.py:548
 msgid " Opus \\2"
 msgstr " Опус \\2"
 
@@ -628,7 +628,7 @@ msgstr "Неопределенные даты"
 msgid "Dates are uncertain"
 msgstr "Даты неопределенные"
 
-#: ui/composers_window.py:85 utils/globals.py:398
+#: ui/composers_window.py:85 utils/globals.py:414
 msgid "Genres"
 msgstr "Жанры"
 
@@ -926,7 +926,7 @@ msgstr "Вы уверены, что хотите удалить это расш�
 msgid "No original filename or id found in extension data"
 msgstr "В данных расширения не найдено исходное имя файла или идентификатор"
 
-#: ui/extensions_window.py:370 ui/favorites_window.py:584
+#: ui/extensions_window.py:370 ui/favorites_window.py:589
 msgid ""
 "Tip: If you've recently added or moved files, try checking 'Overwrite Cache'"
 " in the search options."
@@ -986,7 +986,7 @@ msgstr "Описание:"
 msgid "File:"
 msgstr "Файл:"
 
-#: ui/extensions_window.py:494 ui/favorites_window.py:668
+#: ui/extensions_window.py:494 ui/favorites_window.py:673
 msgid "Close"
 msgstr "Закрыть"
 
@@ -1008,7 +1008,7 @@ msgstr "Избранное успешно обновлено."
 msgid "Create Favorite From Current Track"
 msgstr "Создать избранное из текущего трека"
 
-#: ui/favorites_window.py:257 ui/favorites_window.py:657
+#: ui/favorites_window.py:257 ui/favorites_window.py:662
 msgid "Create Favorite"
 msgstr "Создать избранное"
 
@@ -1035,19 +1035,19 @@ msgstr ""
 "Ни один действительный игровой запрос не может быть создан для этой любимой "
 "игры."
 
-#: ui/favorites_window.py:596
+#: ui/favorites_window.py:601
 msgid "Favorite Details"
 msgstr "Любимые детали"
 
-#: ui/favorites_window.py:633
+#: ui/favorites_window.py:638
 msgid "Type: Track"
 msgstr "Тип: Трек"
 
-#: ui/favorites_window.py:657
+#: ui/favorites_window.py:662
 msgid "Update Favorite"
 msgstr "Обновление избранного"
 
-#: ui/favorites_window.py:663
+#: ui/favorites_window.py:668
 msgid "Remove Favorite"
 msgstr "Удалить из избранного"
 
@@ -1326,7 +1326,7 @@ msgid "Album Artist"
 msgstr "Альбом исполнителя"
 
 #: ui/track_details_window.py:79 utils/globals.py:124 utils/globals.py:221
-#: utils/globals.py:274
+#: utils/globals.py:290
 msgid "Genre"
 msgstr "Жанр"
 
@@ -1460,15 +1460,15 @@ msgstr "Ошибка: Path не является файлом"
 msgid "Error: File is empty"
 msgstr "Ошибка: файл пуст"
 
-#: utils/globals.py:126 utils/globals.py:222 utils/globals.py:275
+#: utils/globals.py:126 utils/globals.py:222 utils/globals.py:291
 msgid "Form"
 msgstr "форма"
 
-#: utils/globals.py:128 utils/globals.py:223 utils/globals.py:276
+#: utils/globals.py:128 utils/globals.py:223 utils/globals.py:292
 msgid "Instrument"
 msgstr "инструмент"
 
-#: utils/globals.py:134 utils/globals.py:277
+#: utils/globals.py:134 utils/globals.py:293
 msgid "Random"
 msgstr "Случайный"
 
@@ -1508,95 +1508,95 @@ msgstr "Вся музыка"
 msgid "Playlist Config"
 msgstr "Плейлист Конфигурация"
 
-#: utils/globals.py:325
+#: utils/globals.py:341
 msgid "weather"
 msgstr "погода"
 
-#: utils/globals.py:327
+#: utils/globals.py:343
 msgid "news"
 msgstr "новости"
 
-#: utils/globals.py:331
+#: utils/globals.py:347
 msgid "joke"
 msgstr "шутить"
 
-#: utils/globals.py:333
+#: utils/globals.py:349
 msgid "fact"
 msgstr "факт"
 
-#: utils/globals.py:335
+#: utils/globals.py:351
 msgid "fable"
 msgstr "басня"
 
-#: utils/globals.py:337
+#: utils/globals.py:353
 msgid "truth and lie"
 msgstr "Правда и ложь"
 
-#: utils/globals.py:339
+#: utils/globals.py:355
 msgid "aphorism"
 msgstr "афоризм"
 
-#: utils/globals.py:341
+#: utils/globals.py:357
 msgid "poem"
 msgstr "стих"
 
-#: utils/globals.py:343
+#: utils/globals.py:359
 msgid "quote"
 msgstr "цитата"
 
-#: utils/globals.py:345
+#: utils/globals.py:361
 msgid "tongue twister"
 msgstr "скручивание языка"
 
-#: utils/globals.py:347
+#: utils/globals.py:363
 msgid "motivation"
 msgstr "мотивация"
 
-#: utils/globals.py:349
+#: utils/globals.py:365
 msgid "calendar"
 msgstr "календарь"
 
-#: utils/globals.py:351
+#: utils/globals.py:367
 msgid "more about the next track"
 msgstr "подробнее о следующем треке"
 
-#: utils/globals.py:353
+#: utils/globals.py:369
 msgid "more about the last track"
 msgstr "подробнее о последнем треке"
 
-#: utils/globals.py:355
+#: utils/globals.py:371
 msgid "more about our playlist"
 msgstr "подробнее о нашем плейлисте"
 
-#: utils/globals.py:357
+#: utils/globals.py:373
 msgid "random wiki article"
 msgstr "случайная статья из вики"
 
-#: utils/globals.py:359
+#: utils/globals.py:375
 msgid "funny story"
 msgstr "забавная история"
 
-#: utils/globals.py:361
+#: utils/globals.py:377
 msgid "language learning"
 msgstr "Изучение языка"
 
-#: utils/globals.py:394
+#: utils/globals.py:410
 msgid "Tracks"
 msgstr "Следы"
 
-#: utils/globals.py:395
+#: utils/globals.py:411
 msgid "Albums"
 msgstr "Альбомы"
 
-#: utils/globals.py:396
+#: utils/globals.py:412
 msgid "Artists"
 msgstr "художники"
 
-#: utils/globals.py:399
+#: utils/globals.py:415
 msgid "Forms"
 msgstr "формы"
 
-#: utils/globals.py:400
+#: utils/globals.py:416
 msgid "Instruments"
 msgstr "Инструменты"
 
@@ -1659,3 +1659,11 @@ msgstr "месяцы"
 #: utils/translations.py:68
 msgid "years"
 msgstr "годы"
+
+#: app.py:784
+msgid "Directories: {0}"
+msgstr "Каталоги: 0"
+
+#: app.py:833
+msgid "Track not found in library for query: "
+msgstr "Треки для запроса не найдены в библиотеке: "

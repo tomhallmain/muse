@@ -174,6 +174,7 @@ class App():
             "open_track_details": self.open_track_details_window,
             "find_track": lambda search_query: SearchWindow.find_track(self.library_data, search_query),
             "search_and_play": self.search_and_play,
+            "update_directory_count": self.update_directory_count,
         })
 
         # Sidebar
@@ -183,6 +184,10 @@ class App():
         self.row_counter0 = 0
         self.row_counter1 = 0
         self.sidebar.grid(column=0, row=0)
+
+        # Directory count label at the very top
+        self.label_directory_count = Label(self.sidebar)
+        self.add_label(self.label_directory_count, "", columnspan=3)
 
         self.label_title_text = Label(self.sidebar)
         self.add_label(self.label_title_text, _("Title"), columnspan=3)
@@ -474,6 +479,9 @@ class App():
     def run(self, event=None, track=None, override_scheduled=False):
         args, args_copy = self.get_args(track=track)
 
+        # Update directory count when starting a new run
+        self.update_directory_count(args.directories)
+
         try:
             args.validate()
         except Exception as e:
@@ -762,6 +770,19 @@ class App():
     def update_label_extension_status(self, extension):
         text = Utils._wrap_text_to_fit_length(extension[:500], 90)
         self.label_extension_status["text"] = text
+        self.master.update()
+
+    def update_directory_count(self, directories):
+        """Update the directory count label with the total number of directories."""
+        if directories is None:
+            count = 0
+        elif isinstance(directories, list):
+            count = len(directories)
+        else:
+            count = 0
+        
+        text = _("Directories: {0}").format(count)
+        self.label_directory_count["text"] = text
         self.master.update()
 
     def update_album_artwork(self, image_filepath):
