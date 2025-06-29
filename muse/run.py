@@ -93,7 +93,7 @@ class Run:
             FFmpegHandler.cleanup_cache()
             TempDir.cleanup()
             if self.app_actions is not None:
-                logger.info_yellow(f"\n{'='*50}\nSCHEDULED SHUTDOWN: {str(e)}\n{'='*50}\n")
+                logger.warning(f"\n{'='*50}\nSCHEDULED SHUTDOWN: {str(e)}\n{'='*50}\n")
                 print("Shutting down main thread! Good-bye.")
                 self.app_actions.shutdown_callback()
         except Exception as e:
