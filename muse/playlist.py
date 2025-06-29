@@ -1,5 +1,7 @@
 import random
+from typing import List, Optional, TYPE_CHECKING
 
+from library_data.media_track import MediaTrack
 from utils.app_info_cache import app_info_cache
 from utils.config import config
 from utils.globals import PlaylistSortType, HistoryType
@@ -7,27 +9,31 @@ from utils.logging_setup import get_logger
 
 logger = get_logger(__name__)
 
+if TYPE_CHECKING:
+    from library_data.library_data_callbacks import LibraryDataCallbacks
+
+
 class Playlist:
-    recently_played_filepaths = []
-    recently_played_albums = []
-    recently_played_artists = []
-    recently_played_composers = []
-    recently_played_genres = []
-    recently_played_forms = []
-    recently_played_instruments = []
+    recently_played_filepaths: List[str] = []
+    recently_played_albums: List[str] = []
+    recently_played_artists: List[str] = []
+    recently_played_composers: List[str] = []
+    recently_played_genres: List[str] = []
+    recently_played_forms: List[str] = []
+    recently_played_instruments: List[str] = []
 
     @staticmethod
-    def load_recently_played_lists():
+    def load_recently_played_lists() -> None:
         for history_type in HistoryType:
             setattr(Playlist, history_type.value, app_info_cache.get(history_type.value, []))
 
     @staticmethod
-    def store_recently_played_lists():
+    def store_recently_played_lists() -> None:
         for history_type in HistoryType:
             app_info_cache.set(history_type.value, getattr(Playlist, history_type.value))
 
     @staticmethod
-    def update_list(_list, item="", sort_type=PlaylistSortType.RANDOM):
+    def update_list(_list: List[str], item: str = "", sort_type: PlaylistSortType = PlaylistSortType.RANDOM) -> None:
         if item is None or item.strip() == "":
             return
         if item in _list:
@@ -38,7 +44,7 @@ class Playlist:
             _list[:] = _list[:check_count]
 
     @staticmethod
-    def get_recently_played_check_count(sort_type):
+    def get_recently_played_check_count(sort_type: PlaylistSortType) -> int:
         recently_played_check_count = abs(int(config.playlist_recently_played_check_count))
         # Note that some groupings will infer an overriden count because they are such broad groupings.
         if sort_type == PlaylistSortType.GENRE_SHUFFLE:
@@ -56,7 +62,7 @@ class Playlist:
         return recently_played_check_count
 
     @staticmethod
-    def update_recently_played_lists(track):
+    def update_recently_played_lists(track: MediaTrack) -> None:
         Playlist.update_list(Playlist.recently_played_filepaths, track.filepath)
         Playlist.update_list(Playlist.recently_played_albums, track.album, sort_type=PlaylistSortType.ALBUM_SHUFFLE)
         Playlist.update_list(Playlist.recently_played_artists, track.artist, sort_type=PlaylistSortType.ARTIST_SHUFFLE)
@@ -65,21 +71,22 @@ class Playlist:
         Playlist.update_list(Playlist.recently_played_forms, track.get_form(), sort_type=PlaylistSortType.FORM_SHUFFLE)
         Playlist.update_list(Playlist.recently_played_instruments, track.get_instrument(), sort_type=PlaylistSortType.INSTRUMENT_SHUFFLE)
 
-    def __init__(self, tracks=[], _type=PlaylistSortType.SEQUENCE, data_callbacks=None,
-                 start_track=None, check_entire_playlist=False):
-        self.in_sequence = list(tracks)
-        self.sort_type = _type
-        self.pending_tracks = list(tracks)
-        self.played_tracks = []
-        self.extensions = []
-        self.current_track_index = -1
-        self.start_track = start_track
-        self.data_callbacks = data_callbacks
+    def __init__(self, tracks: List[str] = [], _type: PlaylistSortType = PlaylistSortType.SEQUENCE, 
+                 data_callbacks: Optional['LibraryDataCallbacks'] = None, start_track: Optional[MediaTrack] = None, 
+                 check_entire_playlist: bool = False) -> None:
+        self.in_sequence: List[str] = list(tracks)
+        self.sort_type: PlaylistSortType = _type
+        self.pending_tracks: List[str] = list(tracks)
+        self.played_tracks: List[str] = []
+        self.extensions: List[MediaTrack] = []
+        self.current_track_index: int = -1
+        self.start_track: Optional[MediaTrack] = start_track
+        self.data_callbacks: Optional['LibraryDataCallbacks'] = data_callbacks
         assert self.data_callbacks is not None and \
                 self.data_callbacks.get_track is not None and \
                 self.data_callbacks.get_all_tracks is not None
         # Build sorted tracks list using LibraryData callback to reduce load time
-        self.sorted_tracks = []
+        self.sorted_tracks: List[MediaTrack] = []
         for track_filepath in list(tracks):
             track = self.data_callbacks.get_track(track_filepath)
             self.sorted_tracks.append(track)
@@ -87,16 +94,17 @@ class Playlist:
         if self.size() > 0:
             self.sort(check_entire_playlist=check_entire_playlist)
 
-    def size(self):
+    def size(self) -> int:
         return len(self.in_sequence)
 
-    def remaining_count(self):
+    def remaining_count(self) -> int:
         return len(self.pending_tracks)
 
-    def is_valid(self):
+    def is_valid(self) -> bool:
         return len(self.in_sequence) > 0
 
-    def insert_upcoming_tracks(self, tracks, idx=None, offset=1, overwrite_existing_at_index=True):
+    def insert_upcoming_tracks(self, tracks: List[MediaTrack], idx: Optional[int] = None, 
+                             offset: int = 1, overwrite_existing_at_index: bool = True) -> None:
         if idx is None:
             idx = self.current_track_index
         idx += offset
@@ -107,7 +115,7 @@ class Playlist:
             self.sorted_tracks.insert(idx, track)
             self.in_sequence.append(track.filepath)
 
-    def insert_extension(self, track):
+    def insert_extension(self, track: MediaTrack) -> None:
         self.insert_upcoming_tracks([track], overwrite_existing_at_index=False)
         self.extensions.append(track)
 
@@ -126,11 +134,11 @@ class Playlist:
                 break
         return count
 
-    def get_upcoming_tracks(self, count=1):
+    def get_upcoming_tracks(self, count: int = 1) -> List[MediaTrack]:
         # NOTE: This returns the state of upcoming tracks assuming that no grouping will be skipped.
         return self.sorted_tracks[self.current_track_index + 1:self.current_track_index + 1 + count]
 
-    def next_track(self, skip_grouping=False, places_from_current=0):
+    def next_track(self, skip_grouping: bool = False, places_from_current: int = 0) -> tuple[Optional[MediaTrack], Optional[str], Optional[str]]:
         """Returns the next track, old grouping, and new grouping.
         NOTE - Modifies self.current_track_index and pending / played tracks properties.
 
@@ -184,7 +192,7 @@ class Playlist:
         self.print_upcoming("next_track after")
         return next_track, old_grouping, new_grouping
 
-    def upcoming_track(self, places_from_current=1):
+    def upcoming_track(self, places_from_current: int = 1) -> tuple[Optional[MediaTrack], Optional[str], Optional[str]]:
         """Returns the upcoming track, old grouping, and new grouping.
         NOTE - Does not modify playlist properties.
         
@@ -222,7 +230,7 @@ class Playlist:
         self.print_upcoming("upcoming_track after")
         return upcoming_track, old_grouping, new_grouping
 
-    def current_track(self):
+    def current_track(self) -> Optional[MediaTrack]:
         try:
             return self.sorted_tracks[self.current_track_index]
         except IndexError:
@@ -527,12 +535,12 @@ class Playlist:
             extracted = extracted[index:] + extracted[:index]
             self.sorted_tracks = extracted + self.sorted_tracks
 
-    def get_group_count(self, group_text):
+    def get_group_count(self, group_text: str) -> int:
         if self.sort_type == PlaylistSortType.SEQUENCE or self.sort_type == PlaylistSortType.RANDOM:
             return 1
         attr_getter_name = self.sort_type.getter_name_mapping()
         is_callable_attr = attr_getter_name.startswith("get_")
-        def is_matching_group(track):
+        def is_matching_group(track: MediaTrack) -> bool:
             nonlocal group_text
             nonlocal is_callable_attr
             nonlocal attr_getter_name

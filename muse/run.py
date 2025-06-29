@@ -2,7 +2,7 @@ import argparse
 from copy import deepcopy
 import time
 import traceback
-from typing import Optional, Any, List, Dict, Union
+from typing import Optional, Any
 
 from utils.globals import PlaybackMasterStrategy
 
@@ -15,6 +15,7 @@ from muse.playback_state import PlaybackStateManager
 from muse.run_config import RunConfig
 from muse.run_context import RunContext, UserAction
 from muse.schedules_manager import ScheduledShutdownException
+from ui.app_actions import AppActions
 from utils.config import config
 from utils.ffmpeg_handler import FFmpegHandler
 from utils.logging_setup import get_logger
@@ -27,13 +28,13 @@ logger = get_logger(__name__)
 
 
 class Run:
-    def __init__(self, args: RunConfig, app_actions: Optional[Any] = None) -> None:
-        self.id = str(time.time())
+    def __init__(self, args: RunConfig, app_actions: Optional[AppActions] = None) -> None:
+        self.id: str = str(time.time())
         self.is_started: bool = False
         self.is_complete: bool = False
         self.args: RunConfig = args
-        self.last_config = None
-        self.app_actions: Optional[Any] = app_actions
+        self.last_config: Optional[PlaybackConfigMaster] = None
+        self.app_actions: Optional[AppActions] = app_actions
         self.library_data: Optional[LibraryData] = None if args.placeholder else LibraryData(app_actions)
         self._run_context: RunContext = RunContext()
         self.muse: Muse = Muse(self.args, self.library_data, self._run_context, ui_callbacks=app_actions)
@@ -74,7 +75,7 @@ class Run:
         if self.args.extend:
             self.get_library_data().reset_extension()
 
-    def run(self, playback_config: Union[PlaybackConfig, PlaybackConfigMaster]) -> None:
+    def run(self, playback_config: PlaybackConfigMaster) -> None:
         # Handle extension thread based on extension setting
         if config.enable_library_extender:
             if self.args.extend:
@@ -121,7 +122,10 @@ class Run:
         self.last_config = deepcopy(self.get_playback()._playback_config)
 
     def do_workflow(self) -> None:
-        playback_config = PlaybackConfig(args=self.args, data_callbacks=self.library_data.data_callbacks)
+        # Create a single-config master for the simple case
+        playback_config = PlaybackConfigMaster(
+            playback_configs=[PlaybackConfig(args=self.args, data_callbacks=self.library_data.data_callbacks)]
+        )
         self._playback = Playback(playback_config, self.app_actions, self)
         self.last_config = None
 

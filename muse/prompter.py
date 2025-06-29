@@ -1,5 +1,6 @@
 import datetime
 import os
+from typing import List, Optional
 
 from utils.app_info_cache import app_info_cache
 from utils.config import config
@@ -49,11 +50,11 @@ class Prompter:
     - Best practices for prompt organization
     """
 
-    TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M"
+    TIMESTAMP_FORMAT: str = "%Y-%m-%d %H:%M"
     PERSONA_INIT_PROMPT_NAME = "persona_init"
 
     @staticmethod
-    def minutes_since(measure_time, from_time=None):
+    def minutes_since(measure_time: datetime.datetime, from_time: Optional[datetime.datetime] = None) -> int:
         """Calculate minutes elapsed since a given time."""
         if from_time is None:
             from_time = datetime.datetime.now()
@@ -61,7 +62,7 @@ class Prompter:
         return int(td.days * (60 * 24) + td.seconds / 60)
 
     @staticmethod
-    def update_history(topic, text=""):
+    def update_history(topic: Topic, text: str = "") -> None:
         """Update the timestamp for when a topic was last discussed.
         
         Args:
@@ -71,19 +72,15 @@ class Prompter:
         Raises:
             Exception: If topic is not a valid Topic enum
         """
-        if not isinstance(topic, Topic):
-            raise Exception(f"Invalid topic: {topic}")
         app_info_cache.set(topic.value, datetime.datetime.now().strftime(Prompter.TIMESTAMP_FORMAT))
 
     @staticmethod
-    def time_from_last_topic(topic):
+    def time_from_last_topic(topic: Topic) -> int:
         """Get minutes elapsed since a topic was last discussed.
         
         Returns:
             int: Minutes since topic was last discussed, or very large number if never discussed
         """
-        if not isinstance(topic, Topic):
-            raise Exception(f"Invalid topic: {topic}")
         item_timestamp = app_info_cache.get(topic.value)
         if item_timestamp is None:
             return 9999999999
@@ -91,17 +88,17 @@ class Prompter:
             return Prompter.minutes_since(datetime.datetime.strptime(item_timestamp, Prompter.TIMESTAMP_FORMAT))
 
     @staticmethod
-    def over_n_hours_since_last(topic, n_hours=24):
+    def over_n_hours_since_last(topic: Topic, n_hours: int = 24) -> bool:
         """Check if more than n hours have passed since topic was discussed."""
         return Prompter.time_from_last_topic(topic) > (60 * n_hours)
 
     @staticmethod
-    def under_n_hours_since_last(topic, n_hours):
+    def under_n_hours_since_last(topic: Topic, n_hours: int) -> bool:
         """Check if less than n hours have passed since topic was discussed."""
         return not Prompter.over_n_hours_since_last(topic, n_hours)
 
     @staticmethod
-    def get_oldest_topic(excluded_topics=[]):
+    def get_oldest_topic(excluded_topics: List[Topic] = []) -> Topic:
         """Find the topic that hasn't been discussed for the longest time.
         
         Args:
@@ -110,7 +107,8 @@ class Prompter:
         Returns:
             Topic: The topic with the oldest or no discussion timestamp
         """
-        oldest_time = None
+        oldest_time: Optional[int] = None
+        oldest_topic: Optional[Topic] = None
         for topic in Topic.__members__.values():
             if topic in excluded_topics: continue
             topic_time_str = app_info_cache.get(topic.value)
@@ -124,11 +122,11 @@ class Prompter:
                 oldest_topic = topic
         return oldest_topic
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize Prompter with prompts directory from config."""
-        self.prompts_dir = config.prompts_directory
+        self.prompts_dir: str = config.prompts_directory
 
-    def get_prompt_update_history(self, topic):
+    def get_prompt_update_history(self, topic: Topic) -> str:
         """Get a prompt for a topic and update its discussion history.
         
         This method is crucial for maintaining topic novelty in DJ conversations.
@@ -152,13 +150,11 @@ class Prompter:
         Raises:
             Exception: If topic is not a valid Topic enum
         """
-        if not isinstance(topic, Topic):
-            raise Exception(f"Invalid topic: {topic}")
         prompt_topic = topic.get_prompt_topic_value()
         Prompter.update_history(topic)
         return self.get_prompt(prompt_topic)
 
-    def get_translation_prompt(self, language_code, language_name_english, prompt):
+    def get_translation_prompt(self, language_code: str, language_name_english: str, prompt: str) -> str:
         """Get a prompt for translating content to a specific language.
         
         Args:
@@ -217,7 +213,7 @@ class Prompter:
                 
         raise FileNotFoundError(f"Prompt file not found: {prompt_name}.txt")
 
-    def get_prompt_with_language(self, topic, language_code: str = "en") -> str:
+    def get_prompt_with_language(self, topic: Topic, language_code: str = "en") -> str:
         """Get a prompt for a topic with language support and fallback.
         
         This method combines topic history tracking with language-aware prompt loading.
@@ -234,9 +230,6 @@ class Prompter:
             Exception: If topic is invalid
             FileNotFoundError: If no prompt found and translation fails
         """
-        if not isinstance(topic, Topic):
-            raise Exception(f"Invalid topic: {topic}")
-            
         prompt_topic = topic.get_prompt_topic_value()
         Prompter.update_history(topic)
         
