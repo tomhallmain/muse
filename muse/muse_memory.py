@@ -6,8 +6,10 @@ from typing import Optional, Dict
 
 from muse.dj_persona import DJPersonaManager
 from muse.muse_spot_profile import MuseSpotProfile
+from utils.logging_setup import get_logger
 from utils import Utils
 
+logger = get_logger(__name__)
 
 @dataclass
 class SpotProfileSnapshot:
@@ -65,7 +67,7 @@ class MuseMemory:
         except FileNotFoundError:
             MuseMemory.persona_manager = DJPersonaManager()
         except Exception as e:
-            Utils.log(f"Error loading memory: {e}")
+            logger.info(f"Error loading memory: {e}")
 
     @staticmethod
     def save():
@@ -82,12 +84,12 @@ class MuseMemory:
     @staticmethod
     def update_all_spot_profiles(spot_profile: MuseSpotProfile):
         """Update the spot profiles list and maintain historical snapshots."""
-        Utils.log_debug(f"Updating all spot profiles: current count={len(MuseMemory.all_spot_profiles)}, new profile creation_time={spot_profile.creation_time}")
+        logger.debug(f"Updating all spot profiles: current count={len(MuseMemory.all_spot_profiles)}, new profile creation_time={spot_profile.creation_time}")
         
         if len(MuseMemory.all_spot_profiles) > 0:
             # Clean up the previous spot profile if it exists
             previous_profile = MuseMemory.all_spot_profiles[0]
-            Utils.log_debug(f"Cleaning up previous profile: creation_time={previous_profile.creation_time}, was_spoken={previous_profile.was_spoken}")
+            logger.debug(f"Cleaning up previous profile: creation_time={previous_profile.creation_time}, was_spoken={previous_profile.was_spoken}")
             # Clear fields that are no longer needed
             previous_profile.unset_non_historical_fields()
             # Force garbage collection of the cleared objects
@@ -95,16 +97,16 @@ class MuseMemory:
 
         # Add to current profiles
         MuseMemory.all_spot_profiles.insert(0, spot_profile)
-        Utils.log_debug(f"Added new profile at index 0: creation_time={spot_profile.creation_time}, was_spoken={spot_profile.was_spoken}")
+        logger.debug(f"Added new profile at index 0: creation_time={spot_profile.creation_time}, was_spoken={spot_profile.was_spoken}")
         
         if len(MuseMemory.all_spot_profiles) > MuseMemory.max_memory_size:
-            Utils.log_debug(f"Exceeding max memory size ({MuseMemory.max_memory_size}), converting excess profiles to snapshots")
+            logger.debug(f"Exceeding max memory size ({MuseMemory.max_memory_size}), converting excess profiles to snapshots")
             # Convert excess profiles to snapshots before removing
             for profile in MuseMemory.all_spot_profiles[MuseMemory.max_memory_size:]:
-                Utils.log_debug(f"Converting to snapshot: creation_time={profile.creation_time}, was_spoken={profile.was_spoken}")
+                logger.debug(f"Converting to snapshot: creation_time={profile.creation_time}, was_spoken={profile.was_spoken}")
                 MuseMemory._add_historical_snapshot(profile)
             MuseMemory.all_spot_profiles = MuseMemory.all_spot_profiles[:MuseMemory.max_memory_size]
-            Utils.log_debug(f"Trimmed profiles list to {len(MuseMemory.all_spot_profiles)} entries")
+            logger.debug(f"Trimmed profiles list to {len(MuseMemory.all_spot_profiles)} entries")
 
     @staticmethod
     def _add_historical_snapshot(profile: MuseSpotProfile):
@@ -145,40 +147,40 @@ class MuseMemory:
         Returns:
             MuseSpotProfile or None: The previous spot profile if found and valid, None otherwise
         """
-        Utils.log_debug(f"get_previous_session_spot_profile called: idx={idx}, creation_time={creation_time}, list_length={len(MuseMemory.current_session_spot_profiles)}")
+        logger.debug(f"get_previous_session_spot_profile called: idx={idx}, creation_time={creation_time}, list_length={len(MuseMemory.current_session_spot_profiles)}")
         
         # Check if requested index is beyond list length
         if len(MuseMemory.current_session_spot_profiles) <= idx:
-            Utils.log_debug(f"Index beyond list length of {len(MuseMemory.current_session_spot_profiles)}, returning None")
+            logger.debug(f"Index beyond list length of {len(MuseMemory.current_session_spot_profiles)}, returning None")
             return None
             
         # If no creation time specified, return profile at requested index
         if creation_time is None:
-            Utils.log_debug(f"Returning profile at index {idx}")
+            logger.debug(f"Returning profile at index {idx}")
             return MuseMemory.current_session_spot_profiles[idx]
             
         # Find first profile created before the given creation time
         base_idx = idx
         while base_idx < len(MuseMemory.current_session_spot_profiles):
             profile = MuseMemory.current_session_spot_profiles[base_idx]
-            Utils.log_debug(f"Checking profile at {base_idx}: creation_time={profile.creation_time}, target_time={creation_time}, was_spoken={profile.was_spoken}")
+            logger.debug(f"Checking profile at {base_idx}: creation_time={profile.creation_time}, target_time={creation_time}, was_spoken={profile.was_spoken}")
             if profile.creation_time < creation_time:
                 break
             base_idx += 1
             
         # If no profile found before creation time, return None
         if base_idx >= len(MuseMemory.current_session_spot_profiles):
-            Utils.log_debug("No profile found before creation time, returning None")
+            logger.debug("No profile found before creation time, returning None")
             return None
             
         # Return profile at (base_idx + requested_idx) if it exists
         target_idx = base_idx + idx
         if target_idx >= len(MuseMemory.current_session_spot_profiles):
-            Utils.log_debug(f"Target index {target_idx} beyond list length, returning None")
+            logger.debug(f"Target index {target_idx} beyond list length, returning None")
             return None
 
         spot_profile = MuseMemory.current_session_spot_profiles[target_idx]
-        Utils.log_debug(f"Returning profile at target index {target_idx}: creation_time={spot_profile.creation_time}, was_spoken={spot_profile.was_spoken}")
+        logger.debug(f"Returning profile at target index {target_idx}: creation_time={spot_profile.creation_time}, was_spoken={spot_profile.was_spoken}")
         return spot_profile
 
     def __init__(self):

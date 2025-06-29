@@ -5,11 +5,11 @@ class AllPoetryPoem:
     def __init__(self, id, titleline_el):
         titleline_links = SoupUtils.get_elements(class_path=[["tag", "a"]], parent=titleline_el)
         # if len(titleline_links) > 2:
-        #     Utils.log_yellow("Unexpected number of title line links found: " + str(len(titleline_links)))
+        #     logger.warning("Unexpected number of title line links found: " + str(len(titleline_links)))
         # elif len(titleline_links) == 1:
         #     return # No source == no article
         # elif len(titleline_links) == 0:
-        #     Utils.log_yellow(titleline_el)
+        #     logger.warning(titleline_el)
         #     raise Exception("No title line links found: " + str(len(titleline_links)))
         # self.id = id
         # self.url = titleline_links[0].attrs["href"]

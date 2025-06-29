@@ -1,6 +1,3 @@
-
-
-
 class Work:
     def __init__(self, name, composer, date=None):
         self.name = name

@@ -4,8 +4,9 @@ from enum import Enum, auto
 from time import time
 from typing import Optional, Dict
 
-from utils import Utils
+from utils.logging_setup import get_logger
 
+logger = get_logger(__name__)
 
 class UserAction(Enum):
     """Enum representing different types of user actions."""
@@ -43,18 +44,18 @@ class RunContext:
         # Update the corresponding state flags
         if action == UserAction.SKIP_TRACK or action == UserAction.SKIP_GROUPING:
             if action == UserAction.SKIP_TRACK:
-                Utils.log("Skipping ahead to next track.")
+                logger.info("Skipping ahead to next track.")
             else:
-                Utils.log("Skipping ahead to next track grouping.")
+                logger.info("Skipping ahead to next track grouping.")
             self.skip_track = True
             self.skip_delay = True
             self.skip_grouping = action == UserAction.SKIP_GROUPING
             self.is_paused = False
         elif action == UserAction.PAUSE:
-            Utils.log("Pausing playback.")
+            logger.info("Pausing playback.")
             self.is_paused = True
         elif action == UserAction.CANCEL:
-            Utils.log("Cancelling playback.")
+            logger.info("Cancelling playback.")
             self.is_cancelled = True
             self.is_paused = False
             self.skip_track = True
@@ -62,7 +63,7 @@ class RunContext:
             self.skip_delay = True
 
         timestamp = datetime.fromtimestamp(self.interaction_times[action]).strftime('%Y-%m-%d %H:%M:%S')
-        Utils.log(f"User initiated action {action} at {timestamp}")
+        logger.info(f"User initiated action {action} at {timestamp}")
 
     def get_last_interaction_time(self, action: UserAction) -> Optional[float]:
         """Get the timestamp of the last interaction for a specific action."""

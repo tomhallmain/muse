@@ -15,27 +15,33 @@ from library_data.form import forms_data
 from library_data.instrument import instruments_data
 from utils.config import config
 from utils.ffmpeg_handler import FFmpegHandler
+from utils.logging_setup import get_logger
 from utils.temp_dir import TempDir
 from utils.translations import I18N
 from utils.utils import Utils
 
 _ = I18N._
 
+# Get logger for this module
+logger = get_logger(__name__)
+
 # Optional third party imports
-has_imported_music_tag = False
 try:
     import music_tag
-    has_imported_music_tag = True
+    MUSIC_TAG_AVAILABLE = True
 except ImportError as e:
-    Utils.log_yellow("No music tag support: %s" % str(e))
+    MUSIC_TAG_AVAILABLE = False
+    logger.warning("No music tag support: %s" % str(e))
 
-has_imported_mutagen = False
 try:
     from mutagen import File
     from mutagen.mp4 import MP4Cover
-    has_imported_mutagen = True
+    MUTAGEN_AVAILABLE = True
 except ImportError as e:
-    Utils.log_yellow("No mutagen (album artwork) support: %s" % str(e))
+    MUTAGEN_AVAILABLE = False
+    logger.warning("No mutagen (album artwork) support: %s" % str(e))
+
+
 
 def has_video_stream(file_path):
     media_info = MediaInfo.parse(file_path)
@@ -111,9 +117,9 @@ class MediaTrack:
                     if stack_trace:
                         f.write(f"{stack_trace}\n")
                     f.write("\n")
-            Utils.log(f"Wrote {len(errors_to_write)} errors to {filename}")
+            logger.info(f"Wrote {len(errors_to_write)} errors to {filename}")
         except Exception as e:
-            Utils.log_red(f"Failed to write errors to file: {str(e)}")
+            logger.error(f"Failed to write errors to file: {str(e)}")
 
     def _try_media_info_fallback(self, filepath):
         """Attempt to get basic metadata using MediaInfo as a fallback."""
@@ -168,13 +174,13 @@ class MediaTrack:
                             pass
         except FileNotFoundError:
             error_msg = f"File not found: {filepath}. This may be due to an outdated cache. Consider refreshing the cache in the UI."
-            Utils.log_red(error_msg)
+            logger.error(error_msg)
             self.__class__.collect_error(error_msg)
             raise
         except Exception as e2:
             error_msg = f"Failed to get basic info using MediaInfo for {filepath}: {str(e2)}"
             stack_trace = traceback.format_exc()
-            Utils.log_red(f"{error_msg}\nMediaInfo error details:\n{stack_trace}")
+            logger.error(f"{error_msg}\nMediaInfo error details:\n{stack_trace}")
             self.__class__.collect_error(error_msg, stack_trace)
 
     def _get_year_from_media_info(self, filepath):
@@ -192,14 +198,14 @@ class MediaTrack:
                         self.year = int(date_str[:4])
                         return
         except Exception as e:
-            Utils.log_red(f"Failed to get year from MediaInfo: {str(e)}")
+            logger.error(f"Failed to get year from MediaInfo: {str(e)}")
 
     def _try_music_tag_load(self, filepath):
         try:
             music_tag_wrapper = music_tag.load_file(filepath)
         except FileNotFoundError:
             error_msg = f"File not found: {filepath}. This may be due to an outdated cache. Consider refreshing the cache in the UI."
-            Utils.log_yellow(error_msg)
+            logger.warning(error_msg)
             self.__class__.collect_error(error_msg)
             raise
         except NotImplementedError as e:
@@ -209,20 +215,20 @@ class MediaTrack:
             else:
                 error_msg = f"Failed to load metadata for {filepath}: {str(e)}"
                 stack_trace = traceback.format_exc()
-            Utils.log_yellow(error_msg)
+            logger.warning(error_msg)
             self.__class__.collect_error(error_msg, stack_trace)
             self._try_media_info_fallback(filepath)
             return
         except Exception as e:
             error_msg = f"Failed to load metadata for {filepath}: {str(e)}"
-            Utils.log_yellow(error_msg)
+            logger.warning(error_msg)
             self.__class__.collect_error(error_msg, traceback.format_exc())
             self._try_media_info_fallback(filepath)
             return
 
         # Verify tag_map exists and is a dictionary
         if not hasattr(music_tag_wrapper, "tag_map") or not isinstance(music_tag_wrapper.tag_map, dict):
-            Utils.log_yellow(f"Invalid music_tag wrapper for {filepath}: missing or invalid tag_map")
+            logger.warning(f"Invalid music_tag wrapper for {filepath}: missing or invalid tag_map")
             self._try_media_info_fallback(filepath)
             return
 
@@ -241,9 +247,9 @@ class MediaTrack:
                     if k == 'year':
                         self._get_year_from_media_info(filepath)
                     else:
-                        Utils.log_yellow(f"Failed to load {k} for {filepath}: {str(e)}")
+                        logger.warning(f"Failed to load {k} for {filepath}: {str(e)}")
                         if failure_count >= max_failures:
-                            Utils.log_yellow(f"Too many tag failures ({failure_count}) for {filepath}, falling back to MediaInfo")
+                            logger.warning(f"Too many tag failures ({failure_count}) for {filepath}, falling back to MediaInfo")
                             self._try_media_info_fallback(filepath)
                             return
 
@@ -256,7 +262,7 @@ class MediaTrack:
             if length_value is not None:
                 self.length = float(length_value)
         except Exception as e:
-            Utils.log_yellow(f"Failed to load length for {filepath}: {str(e)}")
+            logger.warning(f"Failed to load length for {filepath}: {str(e)}")
 
     def __init__(self, filepath, parent_filepath=None):
         self.filepath = filepath
@@ -380,7 +386,7 @@ class MediaTrack:
                 sleep(0.2)
                 if os.path.isfile(self.filepath):
                     return False
-                Utils.log_debug("Could not find song file path: " + self.filepath)
+                logger.debug("Could not find song file path: " + self.filepath)
                 attempts += 1
             raise Exception("Could not find song file path: " + self.filepath)
         return False
@@ -404,7 +410,7 @@ class MediaTrack:
                 self.mean_volume, self.max_volume = FFmpegHandler.get_volume(self.filepath)
             except Exception as e:
                 if "emoji characters" in str(e):
-                    Utils.log_yellow(f"Skipping volume analysis for file with special characters: {self.filepath}")
+                    logger.warning(f"Skipping volume analysis for file with special characters: {self.filepath}")
                 else:
                     raise # FFMPEG should be catching the other errors
         return self.mean_volume, self.max_volume
@@ -440,7 +446,7 @@ class MediaTrack:
     def get_track_length(self):
         if self.length == -1.0:
             length = self.set_track_length()
-            Utils.log(f"Track length set: {length} seconds - {self}")
+            logger.info(f"Track length set: {length} seconds - {self}")
         return self.length
 
     def get_track_text_file(self):
@@ -461,13 +467,13 @@ class MediaTrack:
                 return os.path.join(dirname,  basename)
         string_distance_dict = {}
         song_basename_no_ext = os.path.splitext(track_basename)[0]
-        Utils.log(f"Track basename no ext: {song_basename_no_ext}")
+        logger.info(f"Track basename no ext: {song_basename_no_ext}")
         min_string_distance = (999999999, None)
         for basename in txt_basenames:
             basename_no_ext = os.path.splitext(basename)[0]
             string_distance = Utils.string_distance(song_basename_no_ext,  basename_no_ext)
             string_distance_dict[basename] = string_distance
-            Utils.log(f"Txt basename no ext: {basename_no_ext}, string distance: {string_distance}")
+            logger.info(f"Txt basename no ext: {basename_no_ext}, string distance: {string_distance}")
             if min_string_distance[0] > string_distance:
                 min_string_distance = (string_distance, basename)
         if min_string_distance[1] is not None and min_string_distance[0] < 30:
@@ -497,13 +503,13 @@ class MediaTrack:
                 for k, v in _file.tags.items():
                     if type(v) == list and type(v[0]) == MP4Cover:
                         self.artwork = bytes(v[0])
-                        Utils.log("found artwork in MP4Cover mutagen tag type.")
+                        logger.info("found artwork in MP4Cover mutagen tag type.")
                         break
                 if self.artwork is None:
                     self.artwork = _file.tags['APIC:'].data
-                    Utils.log("found artwork by accessing APIC frame")
+                    logger.info("found artwork by accessing APIC frame")
             except Exception as e:
-                Utils.log_yellow(f"Album artwork not found: {e}")
+                logger.warning(f"Album artwork not found: {e}")
             if self.artwork is None:
                 return None
         try:
@@ -512,7 +518,7 @@ class MediaTrack:
                 filename += ".jpg" # TODO figure out actual image format
             return TempDir.get().add_file(filename, file_content=self.artwork, write_flags='wb')
         except Exception as e:
-            Utils.log_red(f"Could not write album artwork to temp file: {e}")
+            logger.error(f"Could not write album artwork to temp file: {e}")
             return None
 
     def get_genre(self):
@@ -602,12 +608,12 @@ class MediaTrack:
         Returns:
             bool: True if update was successful, False otherwise
         """
-        if not has_imported_music_tag:
-            Utils.log_yellow("Cannot update metadata: music_tag library not available")
+        if not MUSIC_TAG_AVAILABLE:
+            logger.warning("Cannot update metadata: music_tag library not available")
             return False
 
         if self.get_is_video():
-            Utils.log_yellow("Cannot update metadata: track is a video file")
+            logger.warning("Cannot update metadata: track is a video file")
             return False
 
         try:
@@ -617,10 +623,10 @@ class MediaTrack:
                 try:
                     year = int(year)
                     if year < 0 or year > 9999:
-                        Utils.log_yellow(f"Invalid year value: {year}")
+                        logger.warning(f"Invalid year value: {year}")
                         return False
                 except ValueError:
-                    Utils.log_yellow(f"Invalid year format: {year}")
+                    logger.warning(f"Invalid year format: {year}")
                     return False
 
             track_number = metadata.get('tracknumber')
@@ -628,10 +634,10 @@ class MediaTrack:
                 try:
                     track_number = int(track_number)
                     if track_number < 0:
-                        Utils.log_yellow(f"Invalid track number: {track_number}")
+                        logger.warning(f"Invalid track number: {track_number}")
                         return False
                 except ValueError:
-                    Utils.log_yellow(f"Invalid track number format: {track_number}")
+                    logger.warning(f"Invalid track number format: {track_number}")
                     return False
 
             # Load the file with music_tag
@@ -643,7 +649,7 @@ class MediaTrack:
                     mfile['artwork'] = metadata['artwork']
                     self.artwork = metadata['artwork']  # Update local cache
                 except Exception as e:
-                    Utils.log_yellow(f"Failed to update artwork: {str(e)}")
+                    logger.warning(f"Failed to update artwork: {str(e)}")
                     return False
 
             # Map our metadata keys to music_tag keys
@@ -672,7 +678,7 @@ class MediaTrack:
                     try:
                         mfile[tag_key] = value
                     except Exception as e:
-                        Utils.log_yellow(f"Failed to update {tag_key}: {str(e)}")
+                        logger.warning(f"Failed to update {tag_key}: {str(e)}")
 
             # Save the changes
             mfile.save()
@@ -683,11 +689,11 @@ class MediaTrack:
                     if value != "" and value != -1:  # Only update if not empty/default
                         setattr(self, our_key, value)
 
-            Utils.log(f"Successfully updated metadata for {self.title}")
+            logger.info(f"Successfully updated metadata for {self.title}")
             return True
 
         except Exception as e:
-            Utils.log_red(f"Failed to update track metadata: {str(e)}")
+            logger.error(f"Failed to update track metadata: {str(e)}")
             return False
 
 

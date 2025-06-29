@@ -7,12 +7,15 @@ from library_data.favorite import Favorite
 from ui.app_style import AppStyle
 # from ui.base_window import BaseWindow
 from utils.app_info_cache import app_info_cache
+from utils.logging_setup import get_logger
 from utils.translations import I18N
 from utils.utils import Utils
 from utils.globals import TrackAttribute
 
 _ = I18N._
 
+# Get logger for this module
+logger = get_logger(__name__)
 
 class FavoritesDataSearch:
     def __init__(self, favorite="", max_results=200):
@@ -348,7 +351,7 @@ class FavoritesWindow:
                     # Handle empty/whitespace values
                     title = track.title.strip() if track.title else ""
                     filepath = track.filepath.strip() if track.filepath else ""
-                    # Utils.log(f"Track display values - title: '{title}', filepath: '{filepath}'")
+                    # logger.info(f"Track display values - title: '{title}', filepath: '{filepath}'")
                     display_text = title or filepath or _("No title or filepath available")
             else:
                 display_text = f"{favorite.attribute.value}: {favorite.value}"
@@ -414,7 +417,7 @@ class FavoritesWindow:
                 # Update favorite with new filepath
                 if favorite.update_from_track(track):
                     FavoritesWindow.store_favorites()
-                    Utils.log(f"Updated favorite for track {favorite.value} with new filepath: {track.filepath}")
+                    logger.info(f"Updated favorite for track {favorite.value} with new filepath: {track.filepath}")
             return track
             
         # Try to get track by filepath
@@ -430,7 +433,7 @@ class FavoritesWindow:
             # Update favorite with new filepath
             if favorite.update_from_track(track):
                 FavoritesWindow.store_favorites()
-                Utils.log(f"Updated favorite for track {favorite.value} with new filepath: {track.filepath}")
+                logger.info(f"Updated favorite for track {favorite.value} with new filepath: {track.filepath}")
         return track
 
     def do_search(self, event=None):
@@ -451,7 +454,7 @@ class FavoritesWindow:
                 # and updates the favorite's filepath if found by metadata
                 track = self._get_track_for_favorite(favorite)
                 if not track:
-                    Utils.log_red(f"Track not found for favorite {favorite.value}")
+                    logger.error(f"Track not found for favorite {favorite.value}")
                     continue
                 search_text = favorite.value
             else:
@@ -465,7 +468,7 @@ class FavoritesWindow:
     def add_widgets_for_results(self):
         assert self.favorite_data_search is not None
         results = self.favorite_data_search.get_results()
-        Utils.log(f"Found {len(results)} results")
+        logger.info(f"Found {len(results)} results")
         for i in range(len(results)):
             row = i + 1
             favorite = results[i]
@@ -483,7 +486,7 @@ class FavoritesWindow:
                     # Handle empty/whitespace values
                     title = track.title.strip() if track.title else ""
                     filepath = track.filepath.strip() if track.filepath else ""
-                    Utils.log(f"Track display values - title: '{title}', filepath: '{filepath}'")
+                    logger.info(f"Track display values - title: '{title}', filepath: '{filepath}'")
                     display_text = title or filepath or _("No title or filepath available")
             else:
                 display_text = f"{favorite.attribute.value}: {favorite.value}"
@@ -587,7 +590,7 @@ class FavoritesWindow:
             error_msg = str(e)
             if "No matching tracks found" in error_msg:
                 error_msg += "\n\n" + _("Tip: If you've recently added or moved files, try checking 'Overwrite Cache' in the search options.")
-            Utils.log_red(f"Error playing favorite: {error_msg}")
+            logger.error(f"Error playing favorite: {error_msg}")
             self.app_actions.alert(_("Error"), error_msg, kind="error")
 
 

@@ -12,6 +12,7 @@ import music_tag
 
 from utils.config import config
 from utils.job_queue import JobQueue
+from utils.logging_setup import get_logger
 from utils.utils import Utils
 
 try:
@@ -34,6 +35,9 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 
 # List available 🐸TTS models
 # pprint.pprint(TTS().list_models())
+
+# Get logger for this module
+logger = get_logger(__name__)
 
 @dataclass
 class TTSConfig:
@@ -87,10 +91,10 @@ class TTSSpeakInvocation:
         for chunk in chunks:
             # Check for skip before processing each chunk
             if self.config.run_context and self.config.run_context.should_skip():
-                Utils.log("Skipping remaining TTS chunks due to skip request")
+                logger.info("Skipping remaining TTS chunks due to skip request")
                 break
                 
-            Utils.log("-------------------\n" + chunk)
+            logger.info("-------------------\n" + chunk)
             if full_text:
                 full_text += "\n\n"
             full_text += chunk
@@ -173,17 +177,17 @@ class TextToSpeechRunner:
     def clean(self):
         if len(self.used_audio_paths) > 0:
             def _clean(files_to_delete=[]):
-                Utils.log(f"Cleaning used TTS audio files")
+                logger.info(f"Cleaning used TTS audio files")
                 fail_count = 0
                 while len(files_to_delete) > 0:
                     if fail_count > 6:
-                        Utils.log_red("Failed to delete audio files: " + str(len(files_to_delete)))
+                        logger.error("Failed to delete audio files: " + str(len(files_to_delete)))
                         break
                     try:
                         os.remove(files_to_delete[0])
                         files_to_delete = files_to_delete[1:]
                     except Exception as e:
-                        Utils.log_red(e)
+                        logger.error(e)
                         fail_count += 1
                         time.sleep(0.5)
 
@@ -206,15 +210,15 @@ class TextToSpeechRunner:
 
     def generate_speech_file(self, text, output_path):
         if os.path.exists(output_path) and not self.overwrite:
-            Utils.log("Using existing generation file: " + output_path)
+            logger.info("Using existing generation file: " + output_path)
             return
         output_path1, output_path_no_unicode = self.get_output_path_no_unicode()
         final_output_path_mp3 = self.get_output_path_mp3(output_path1)
         final_output_path_mp3 = final_output_path_mp3[:-4] + " - TTS.mp3"
         if os.path.exists(final_output_path_mp3) and not self.overwrite:
-            Utils.log("Using existing generation file: " + final_output_path_mp3)
+            logger.info("Using existing generation file: " + final_output_path_mp3)
             return
-        Utils.log("Generating speech file: " + output_path)
+        logger.info("Generating speech file: " + output_path)
         try:
             # Init TTS with the target model name
             tts = TTS(model_name=self.model[0], progress_bar=False).to(device)
@@ -225,14 +229,14 @@ class TextToSpeechRunner:
                               file_path=output_path,
                               language=self.model[2])
             except Exception as e:
-                Utils.log_red(f"TTS generation failed: {str(e)}")
+                logger.error(f"TTS generation failed: {str(e)}")
                 # Check if the file was created despite the error
                 if not os.path.exists(output_path):
                     raise Exception("TTS failed to generate audio file")
                 # If file exists, we can continue despite the error
-                Utils.log("TTS generated file despite error, continuing...")
+                logger.info("TTS generated file despite error, continuing...")
         except Exception as e:
-            Utils.log_red(f"TTS initialization failed: {str(e)}")
+            logger.error(f"TTS initialization failed: {str(e)}")
             raise
 
     def play_async(self, filepath):
@@ -262,7 +266,7 @@ class TextToSpeechRunner:
                     if os.path.exists(next_job_output_path):
                         self.play_async(next_job_output_path)
                     else:
-                        Utils.log_red(f"Cannot find speech output path: {next_job_output_path}")
+                        logger.error(f"Cannot find speech output path: {next_job_output_path}")
                     while self.speech_queue.job_running:
                         time.sleep(.5)
             self.clean()
@@ -294,7 +298,7 @@ class TextToSpeechRunner:
             self.add_speech_file_to_queue(output_path)
         except Exception as e:
             invocation.increment_error()
-            Utils.log_red(f"TTS generation error: {str(e)}")
+            logger.error(f"TTS generation error: {str(e)}")
             # Clean up the output file if it was created
             if os.path.exists(output_path):
                 try:
@@ -345,7 +349,7 @@ class TextToSpeechRunner:
         if file_path.endswith(".mp3") or os.path.exists(output_path):
             raise Exception("File already exists as mp3")
         args = ["ffmpeg", "-hide_banner", "-loglevel", "error", "-i", os.path.abspath(file_path), output_path]
-        # Utils.log(args)
+        # logger.info(args)
         try:
             completed_process = subprocess.run(args)
             if completed_process.returncode != 0:
@@ -383,9 +387,9 @@ class TextToSpeechRunner:
 
             f['year'] = datetime.now().year
             f.save()
-            Utils.log(f"Added metadata to {output_path}")
+            logger.info(f"Added metadata to {output_path}")
         except Exception as e:
-            Utils.log_yellow(f"Could not add metadata: {e}")
+            logger.warning(f"Could not add metadata: {e}")
 
     def get_output_path_no_unicode(self):
         output_path = os.path.join(TextToSpeechRunner.output_directory, self.output_path + '.wav')
@@ -408,15 +412,15 @@ class TextToSpeechRunner:
         for i in range(len(self.audio_paths)):
             f = self.audio_paths[i]
             args.append(f.replace("\\", "/"))
-            Utils.log(f"File {f} was found: {os.path.exists(f)}")
+            logger.info(f"File {f} was found: {os.path.exists(f)}")
             if i < len(self.audio_paths) - 1:
                 args.append(silence_file.replace("\\", "/"))
         args.append(output_path_no_unicode.replace("\\", "/"))
-        # Utils.log(args)
+        # logger.info(args)
         try:
             completed_process = subprocess.run(args)
             if completed_process.returncode == 0:
-                Utils.log("Combined audio files: " + output_path)
+                logger.info("Combined audio files: " + output_path)
                 if save_mp3:
                     mp3_path = self.convert_to_mp3(output_path_no_unicode, text_content=text_content)
                 os.remove(output_path_no_unicode)
@@ -466,4 +470,4 @@ if __name__ == "__main__":
     main(model, text)
 
     # for chunk in Chunker.get_str_chunks(""""""):
-    #     Utils.log(chunk)
+    #     logger.info(chunk)

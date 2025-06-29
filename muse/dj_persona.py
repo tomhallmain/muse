@@ -8,8 +8,11 @@ import time
 from extensions.llm import LLMResult
 from tts.speakers import speakers
 from utils.config import config
+from utils.logging_setup import get_logger
 from utils.utils import Utils
 from utils.translations import I18N
+
+logger = get_logger(__name__)
 
 _ = I18N._
 
@@ -47,11 +50,11 @@ class DJPersona:
             try: 
                 for speaker in speakers:
                     if Utils.is_similar_strings(speaker, self.voice_name):
-                        Utils.log_yellow(f"Found similar voice name \"{self.voice_name}\", using valid speaker name \"{speaker}\" instead")
+                        logger.warning(f"Found similar voice name \"{self.voice_name}\", using valid speaker name \"{speaker}\" instead")
                         self.voice_name = speaker
                         break
             except Exception as e:
-                Utils.log_red(f"Error validating voice name: {e}")
+                logger.error(f"Error validating voice name: {e}")
                 raise ValueError(f"Invalid voice name: {self.voice_name}. Must be one of {list(speakers.keys())}")
         
         if self.artwork_paths is not None:
@@ -59,9 +62,9 @@ class DJPersona:
             for path in test_paths:
                 if not Path(path).exists():
                     test_paths.remove(path)
-                    Utils.log_yellow(f"Artwork path \"{path}\" does not exist, removing it")
+                    logger.warning(f"Artwork path \"{path}\" does not exist, removing it")
             if len(test_paths) == 0:
-                Utils.log_red(f"No valid artwork paths found for persona \"{self.name}\", using default artwork")
+                logger.error(f"No valid artwork paths found for persona \"{self.name}\", using default artwork")
                 self.artwork_paths = None
             else:
                 self.artwork_paths = test_paths
@@ -72,20 +75,20 @@ class DJPersona:
         self.context = new_context
         # Update last signoff time whenever the persona speaks
         self.set_last_signoff_time()
-        Utils.log(f"Updated context for {self.name}: {old_context_len} -> {len(new_context)} tokens")
+        logger.info(f"Updated context for {self.name}: {old_context_len} -> {len(new_context)} tokens")
 
     def set_last_signoff_time(self) -> None:
         """Set the last signoff time to the current time."""
         old_time = self.last_signoff_time
         self.last_signoff_time = time.time()
         if old_time:
-            Utils.log(f"Updated last signoff time for {self.name}: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(old_time))} -> {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(self.last_signoff_time))}")
+            logger.info(f"Updated last signoff time for {self.name}: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(old_time))} -> {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(self.last_signoff_time))}")
         else:
-            Utils.log(f"Set initial signoff time for {self.name}: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(self.last_signoff_time))}")
+            logger.info(f"Set initial signoff time for {self.name}: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(self.last_signoff_time))}")
 
     def get_context(self) -> List[int]:
         """Get the current context."""
-        Utils.log(f"Retrieved context for {self.name}: {len(self.context)} tokens")
+        logger.info(f"Retrieved context for {self.name}: {len(self.context)} tokens")
         return self.context
 
     def get_s(self) -> str:
@@ -111,7 +114,7 @@ class DJPersona:
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert the persona to a dictionary for serialization."""
-        Utils.log(f"Serializing {self.name} persona with {len(self.context)} tokens of context")
+        logger.info(f"Serializing {self.name} persona with {len(self.context)} tokens of context")
         return {
             "name": self.name,
             "voice_name": self.voice_name,
@@ -130,7 +133,7 @@ class DJPersona:
     def from_dict(cls, data: Dict[str, Any]) -> 'DJPersona':
         """Create a persona from a dictionary."""
         context_len = len(data.get("context", []))
-        Utils.log(f"Deserializing {data['name']} persona with {context_len} tokens of context")
+        logger.info(f"Deserializing {data['name']} persona with {context_len} tokens of context")
         return cls(
             name=data["name"],
             voice_name=data["voice_name"],
@@ -163,9 +166,9 @@ class DJPersonaManager:
                 if persona.voice_name not in self.personas:
                     self.personas[persona.voice_name] = persona
                 else:
-                    Utils.log_yellow(f"Persona already exists, skipping: {persona.voice_name}")
+                    logger.warning(f"Persona already exists, skipping: {persona.voice_name}")
         except Exception as e:
-            Utils.log_red(f"Error loading personas: {e}")
+            logger.error(f"Error loading personas: {e}")
         
         if len(self.personas) == 0:
             self._create_default_personas()
@@ -175,7 +178,7 @@ class DJPersonaManager:
     def reload_personas(self):
         """Reload personas from the config JSON file."""
         try:
-            Utils.log(f"Reloading personas from config, count = {len(config.dj_personas)}")
+            logger.info(f"Reloading personas from config, count = {len(config.dj_personas)}")
             for persona_data in config.dj_personas:
                 persona_new = DJPersona.from_dict(persona_data)
                 if persona_new.voice_name not in self.personas:
@@ -186,10 +189,10 @@ class DJPersonaManager:
             # Remove mock personas
             for name, persona in self.personas.items():
                 if persona.is_mock:
-                    Utils.log_yellow(f"Removing mock persona: {name}")
+                    logger.warning(f"Removing mock persona: {name}")
                     del self.personas[name]
         except Exception as e:
-            Utils.log_red(f"Error reloading personas: {e}")
+            logger.error(f"Error reloading personas: {e}")
 
     def _create_default_personas(self):
         """Create default personas if none exist."""
@@ -259,7 +262,7 @@ class DJPersonaManager:
             return persona
         else:
             if hasattr(self, "allow_mock_personas") and self.allow_mock_personas:
-                Utils.log_yellow(f"Mock persona not found, creating new: {voice_name}")
+                logger.warning(f"Mock persona not found, creating new: {voice_name}")
                 persona = DJPersona(
                     name=voice_name,
                     voice_name=voice_name,
@@ -273,7 +276,7 @@ class DJPersonaManager:
                 self.personas[voice_name] = persona
                 return persona
             else:
-                Utils.log_red(f"Persona not found: {voice_name}")
+                logger.error(f"Persona not found: {voice_name}")
                 return None
 
     def set_current_persona(self, voice_name: str) -> Optional[DJPersona]:
@@ -309,5 +312,5 @@ class DJPersonaManager:
                 # Default system prompt is used if no persona is selected for some reason
             ) 
         except Exception as e:
-            Utils.log_red(f"Error getting context and system prompt: {e}")
+            logger.error(f"Error getting context and system prompt: {e}")
             return ([], None)

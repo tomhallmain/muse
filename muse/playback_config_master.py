@@ -3,8 +3,9 @@ import datetime
 import time
 from utils.app_info_cache import app_info_cache
 from utils.globals import PlaylistSortType
-from utils.utils import Utils
+from utils.logging_setup import get_logger
 
+logger = get_logger(__name__)
 
 class PlaybackConfigMaster:
     playlist_history_max_size = 1000
@@ -23,9 +24,9 @@ class PlaybackConfigMaster:
     @staticmethod
     def assign_extension(new_file):
         while not PlaybackConfigMaster.READY_FOR_EXTENSION:
-            Utils.log("Waiting for config to accept extension...")
+            logger.info("Waiting for config to accept extension...")
             time.sleep(5)
-        Utils.log("Assigning extension to playback")
+        logger.info("Assigning extension to playback")
         PlaybackConfigMaster.READY_FOR_EXTENSION = False
         for open_config in PlaybackConfigMaster.OPEN_CONFIGS:
             open_config.overwrite = True

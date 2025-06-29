@@ -1,6 +1,9 @@
 
 from extensions.library_ext_q_dict import q_dict
 from utils import app_info_cache, Utils
+from utils.logging_setup import get_logger
+
+logger = get_logger(__name__)
 
 for ___q, ___v in q_dict.items():
     try:
@@ -79,7 +82,7 @@ class r4yiurhfxohzepo:
             _ = EogfiaqREkb(e)
             self.j.append(_)
         except Exception as e:
-            Utils.log_red(e)
+            logger.error(e)
 
     def i(self):
         return len(self.j) > 0
@@ -140,18 +143,18 @@ class LibraryExtender():
                 g3wsdwei21 = v_409ak[q18]
                 for ogf4_ in g3wsdwei21:
                     if q31 not in ogf4_ or q20 not in ogf4_:
-                        Utils.log_yellow(f"Malformed: No {q31} or {q20}")
+                        logger.warning(f"Malformed: No {q31} or {q20}")
                         continue
                     cbcfkglra = ogf4_[q31]
                     if q32 not in cbcfkglra:
-                        Utils.log_yellow(f"Malformed: No {q32}")
+                        logger.warning(f"Malformed: No {q32}")
                         continue
                     wjefosder = r.g(ogf4_[q20])
                     wjefosder.ogxz4(cbcfkglra, Utils.parse_isod(cbcfkglra[q32]))
         else:
-            Utils.log_yellow("No results found.")
-            Utils.log_yellow(q18)
-            Utils.log_yellow(q17.keys())
+            logger.warning("No results found.")
+            logger.warning(q18)
+            logger.warning(q17.keys())
         return r
 
     @staticmethod

@@ -9,8 +9,11 @@ from library_data.composer import Composer, ComposersDataSearch, ComposersData
 from ui.app_style import AppStyle
 # from ui.base_window import BaseWindow
 from utils.app_info_cache import app_info_cache
+from utils.logging_setup import get_logger
 from utils.translations import I18N
 from utils.utils import Utils
+
+logger = get_logger(__name__)
 
 _ = I18N._
 
@@ -432,7 +435,7 @@ class ComposersWindow:
             #     self.load_stored_search(library_data_search=search)
             #     self._do_search(event)
             #     if track is None:
-            #         Utils.log("No specific track defined on search, using first available track.")
+            #         logger.info("No specific track defined on search, using first available track.")
             #         track = search.get_first_available_track()
             #         if track is None:
             #             raise Exception("No tracks available on search.")
@@ -501,7 +504,7 @@ class ComposersWindow:
     def add_widgets_for_results(self):
         assert self.composer_data_search is not None
         results = self.composer_data_search.get_results()
-        Utils.log(f"Found {len(results)} results")
+        logger.info(f"Found {len(results)} results")
         for i in range(len(results)):
             row = i + 1
             composer = results[i]

@@ -1,7 +1,9 @@
 import requests
 
 from extensions.soup_utils import SoupUtils
-from utils.utils import Utils
+from utils.logging_setup import get_logger
+
+logger = get_logger(__name__)
 
 
 class WikiOpenSearchResponse:
@@ -45,7 +47,7 @@ class WikiOpenSearchAPI:
             req = requests.get(self.__build_url(query, limit))
             return WikiOpenSearchResponse(req.json())
         except Exception as e:
-            Utils.log_red(f"Failed to connect to Wiki OpenSearch API: {e}")
+            logger.error(f"Failed to connect to Wiki OpenSearch API: {e}")
             return None
 
     def random_wiki(self):
@@ -53,5 +55,5 @@ class WikiOpenSearchAPI:
             req = requests.get(f'{self.BASE_URL}?action=query&generator=random&grnnamespace=0&grnlimit=1&prop=extracts&format=json')
             return RandomWikiResponse(req.json())
         except Exception as e:
-            Utils.log_red(f"Failed to connect to Wiki OpenSearch API: {e}")
+            logger.error(f"Failed to connect to Wiki OpenSearch API: {e}")
 

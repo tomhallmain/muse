@@ -12,7 +12,9 @@ root_dir = os.path.dirname(script_dir)
 os.chdir(root_dir)
 
 from library_data.library_data import LibraryData
-from utils.utils import Utils
+from utils.logging_setup import get_logger
+
+logger = get_logger(__name__)
 
 def main():
     # Initialize library data and load caches
@@ -20,18 +22,18 @@ def main():
     LibraryData.load_media_track_cache()
     
     # Get all tracks
-    Utils.log("Loading all tracks...")
+    logger.info("Loading all tracks...")
     all_tracks = LibraryData.get_all_tracks()
     total_tracks = len(all_tracks)
-    Utils.log(f"Loaded {total_tracks} tracks")
+    logger.info(f"Loaded {total_tracks} tracks")
     
     # Clear existing compilation names
-    Utils.log("Clearing existing compilation names...")
+    logger.info("Clearing existing compilation names...")
     for track in all_tracks:
         track.compilation_name = None
     
     # Run compilation detection on all tracks
-    Utils.log("Running compilation detection...")
+    logger.info("Running compilation detection...")
     compilation_map = library.identify_compilation_tracks(all_tracks)
     
     # Find tracks where compilation_name != album
@@ -44,18 +46,18 @@ def main():
     true_compilations.sort(key=lambda t: (t.compilation_name, t.album, t.tracknumber, t.tracktitle, t.title))
     
     # Log results
-    Utils.log("\nCompilation Detection Results:")
-    Utils.log("=" * 80)
-    Utils.log(f"Found {len(true_compilations)} tracks in compilations out of {total_tracks} total tracks")
-    Utils.log("=" * 80)
+    logger.info("\nCompilation Detection Results:")
+    logger.info("=" * 80)
+    logger.info(f"Found {len(true_compilations)} tracks in compilations out of {total_tracks} total tracks")
+    logger.info("=" * 80)
     
     current_compilation = None
     for track in true_compilations:
         if track.compilation_name != current_compilation:
             current_compilation = track.compilation_name
-            Utils.log(f"\nCompilation: {current_compilation}")
-            Utils.log("-" * 40)
-        Utils.log(track.get_track_details())
+            logger.info(f"\nCompilation: {current_compilation}")
+            logger.info("-" * 40)
+        logger.info(track.get_track_details())
 
 if __name__ == "__main__":
     main() 

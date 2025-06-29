@@ -17,6 +17,7 @@ from library_data.media_track import MediaTrack
 from utils.app_info_cache import app_info_cache
 from utils.config import config
 from utils.globals import MediaFileType, PlaylistSortType
+from utils.logging_setup import get_logger
 from utils.utils import Utils
 from utils.translations import I18N
 
@@ -24,6 +25,7 @@ _ = I18N._
 
 libary_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)))
 
+logger = get_logger(__name__)
 
 class LibraryDataSearch:
     def __init__(self, all="", title="", album="", artist="", composer="", genre="", instrument="", form="",
@@ -56,7 +58,7 @@ class LibraryDataSearch:
 
     def set_stored_results_count(self):
         self.stored_results_count = len(self.results)
-        Utils.log(f"Stored count for {self}: {self.get_readable_stored_results_count()}")
+        logger.info(f"Stored count for {self}: {self.get_readable_stored_results_count()}")
 
     def get_readable_stored_results_count(self) -> str:
         if self.stored_results_count > self.max_results:
@@ -68,7 +70,7 @@ class LibraryDataSearch:
     def set_selected_track_path(self, track):
         assert track is not None
         self.selected_track_path = str(track.filepath)
-        Utils.log(f"Set selected track path on {self}: {self.selected_track_path}")
+        logger.info(f"Set selected track path on {self}: {self.selected_track_path}")
 
     def test(self, audio_track):
         if len(self.results) > self.max_results:
@@ -120,7 +122,7 @@ class LibraryDataSearch:
                     attr = self._get_searchable_track_attr(_attr)
                     break
             if attr is None:
-                Utils.log("No sortable attribute in search query.")
+                logger.info("No sortable attribute in search query.")
                 return
         else:
             attr = self._get_searchable_track_attr(attr)
@@ -241,7 +243,7 @@ class LibraryData:
             with open("app_media_track_cache", "wb") as f:
                 pickle.dump(LibraryData.MEDIA_TRACK_CACHE,  f)
         except Exception as e:
-            Utils.log_red(f"Error storing media track cache: {e}")
+            logger.error(f"Error storing media track cache: {e}")
 
     @staticmethod
     def load_directory_cache():
@@ -253,7 +255,7 @@ class LibraryData:
             with open("app_media_track_cache", "rb") as f:
                 LibraryData.MEDIA_TRACK_CACHE = pickle.load(f)
         except FileNotFoundError as e:
-            Utils.log("No media track cache found, creating new one")
+            logger.info("No media track cache found, creating new one")
 
     @staticmethod
     def get_directory_files(directory, overwrite=False):
@@ -265,7 +267,7 @@ class LibraryData:
             # Even for cached results, verify file existence
             missing_files = [f for f in files if not os.path.exists(f)]
             if missing_files:
-                Utils.log_yellow(f"Found {len(missing_files)} missing files in cache for {directory}. Consider refreshing the cache.")
+                logger.warning(f"Found {len(missing_files)} missing files in cache for {directory}. Consider refreshing the cache.")
                 files = [f for f in files if os.path.exists(f)]
                 LibraryData.DIRECTORIES_CACHE[directory] = files
         return list(files)
@@ -282,7 +284,7 @@ class LibraryData:
                     if total_media_files_count > 100000: # TODO maybe make this limit configurable
                         break
                 elif config.debug and os.path.isfile(f):
-                    Utils.log("Skipping non-media file: " + f)
+                    logger.info("Skipping non-media file: " + f)
         return l
 
     @staticmethod
@@ -316,7 +318,7 @@ class LibraryData:
                             if app_actions:
                                 app_actions.update_extension_status(message)
                         except Exception as e:
-                            Utils.log_red(f"Error in status callback: {e}")
+                            logger.error(f"Error in status callback: {e}")
                     
                     track = LibraryData.get_track(filepath)
                     if track is not None:
@@ -359,10 +361,10 @@ class LibraryData:
         if not isinstance(library_data_search, LibraryDataSearch):
             raise TypeError('Library data search must be of type LibraryDataSearch')
         if not library_data_search.is_valid():
-            Utils.log_yellow('Invalid search query')
+            logger.warning('Invalid search query')
             return library_data_search
 
-        Utils.log(f"Searching for tracks matching query {library_data_search}")
+        logger.info(f"Searching for tracks matching query {library_data_search}")
 
         # Get all tracks first to ensure cache is up to date
         all_tracks = LibraryData.get_all_tracks(overwrite=overwrite, search_status_callback=search_status_callback)
@@ -378,7 +380,7 @@ class LibraryData:
                 try:
                     search_status_callback(f"Searching for tracks... ({i + 1} files searched, {total_files - i} files may be remaining)")
                 except Exception as e:
-                    Utils.log_red(f"Error in status callback: {e}")
+                    logger.error(f"Error in status callback: {e}")
 
             if library_data_search.test(audio_track) is None:
                 break
@@ -390,7 +392,7 @@ class LibraryData:
             try:
                 completion_callback(library_data_search)
             except Exception as e:
-                Utils.log_red(f"Error in search callback: {e}")
+                logger.error(f"Error in search callback: {e}")
                 
         return library_data_search
 
@@ -423,13 +425,13 @@ class LibraryData:
         if not track_id:
             return None
             
-        Utils.log(f"Attempting to find track by ID: {track_id}")
+        logger.info(f"Attempting to find track by ID: {track_id}")
         all_tracks = LibraryData.get_all_tracks(overwrite=overwrite)
         for track in all_tracks:
             if track_id in track.title:  # Check in original title, not searchable_title
-                Utils.log(f"Found track by ID: '{track.title}'")
+                logger.info(f"Found track by ID: '{track.title}'")
                 return track
-        Utils.log("No track found by ID")
+        logger.info("No track found by ID")
         return None
 
     def find_track_by_fuzzy_title(self, title, overwrite=False, max_results=-1):
@@ -445,7 +447,7 @@ class LibraryData:
         if not title or len(title) < 12:
             return []
             
-        Utils.log(f"No exact match found for '{title}', attempting fuzzy match...")
+        logger.info(f"No exact match found for '{title}', attempting fuzzy match...")
         # Get all tracks and try fuzzy matching
         all_tracks = LibraryData.get_all_tracks(overwrite=overwrite)
         
@@ -454,7 +456,7 @@ class LibraryData:
         matches = []
         for track in all_tracks:
             if Utils.is_similar_strings(title, track.searchable_title):
-                Utils.log(f"Found fuzzy match: '{track.title}' for '{title}'")
+                logger.info(f"Found fuzzy match: '{track.title}' for '{title}'")
                 matches.append(track)
                 if max_results != -1 and len(matches) >= max_results:
                     break
@@ -465,11 +467,11 @@ class LibraryData:
         
         # If no matches found, show closest matches
         if not matches and distances:
-            Utils.log(f"No fuzzy match found. Showing closest 200 matches for '{title}':")
+            logger.info(f"No fuzzy match found. Showing closest 200 matches for '{title}':")
             # Sort by distance and take top 200 
             distances.sort(key=lambda x: x[0])
             for distance, searchable_title, title in distances[:200]:
-                Utils.log(f"Distance: {distance}, Searchable: '{searchable_title}', Title: '{title}'")
+                logger.info(f"Distance: {distance}, Searchable: '{searchable_title}', Title: '{title}'")
         
         return matches
 
@@ -597,7 +599,7 @@ class LibraryData:
                 compilation_map[track.filepath] = compilation_name
             except Exception as e:
                 error_msg = f"Error processing compilation for track {track.title}: {str(e)}"
-                Utils.log_yellow(error_msg)
+                logger.warning(error_msg)
                 MediaTrack.collect_error(error_msg, traceback.format_exc())
                 compilation_map[track.filepath] = track.album  # Fallback to original album name
         
@@ -647,7 +649,7 @@ class LibraryData:
                         if t.update_metadata(metadata):
                             updated = True
                     except Exception as e:
-                        Utils.log_yellow(f"Failed to update artwork for {t.title}: {str(e)}")
+                        logger.warning(f"Failed to update artwork for {t.title}: {str(e)}")
             
             return updated
         else:
@@ -661,7 +663,7 @@ class LibraryData:
                         if track.update_metadata(metadata):
                             return True
                     except Exception as e:
-                        Utils.log_yellow(f"Failed to update artwork for {track.title}: {str(e)}")
+                        logger.warning(f"Failed to update artwork for {track.title}: {str(e)}")
             
             return False
 

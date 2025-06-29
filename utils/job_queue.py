@@ -1,4 +1,6 @@
-from utils.utils import Utils
+from utils.logging_setup import get_logger
+
+logger = get_logger(__name__)
 
 class JobQueue:
     def __init__(self, name="JobQueue", max_size=50):
@@ -21,12 +23,12 @@ class JobQueue:
         if len(self.pending_jobs) > self.max_size:
             raise Exception(f"Reached limit of pending runs: {self.max_size} - wait until current run has completed.")
         self.pending_jobs.append(job_args)
-        Utils.log(f"JobQueue {self.name} - Added pending job: {job_args}")
+        logger.info(f"JobQueue {self.name} - Added pending job: {job_args}")
 
     def cancel(self):
         """Clear all pending jobs from the queue and reset the job_running flag."""
         if self.pending_jobs:
-            Utils.log(f"JobQueue {self.name} - Clearing {len(self.pending_jobs)} pending jobs")
+            logger.info(f"JobQueue {self.name} - Clearing {len(self.pending_jobs)} pending jobs")
             self.pending_jobs = []
         self.job_running = False
 

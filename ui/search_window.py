@@ -10,6 +10,10 @@ from utils.config import config
 from utils.globals import PlaylistSortType
 from utils.translations import I18N
 from utils.utils import Utils
+from utils.logging_setup import get_logger
+
+# Get logger for this module
+logger = get_logger(__name__)
 
 _ = I18N._
 
@@ -37,7 +41,7 @@ class SearchWindow(BaseWindow):
             if library_data_search.is_valid() and library_data_search.stored_results_count > 0:
                 SearchWindow.recent_searches.append(library_data_search)
             else:
-                Utils.log_yellow(f"Invalid search removed: {search_json}")
+                logger.warning(f"Invalid search removed: {search_json}")
 
     @staticmethod
     def store_recent_searches():
@@ -63,7 +67,7 @@ class SearchWindow(BaseWindow):
                 track = library_data.find_track_by_id(library_data_search.id, overwrite=overwrite)
                 if track:
                     return track
-                Utils.log("No track found by ID, falling back to search")
+                logger.info("No track found by ID, falling back to search")
 
             # NOTE: Overwrite should be False for next calls because cache would have been
             # overwritten by the above call
@@ -95,7 +99,7 @@ class SearchWindow(BaseWindow):
             return track
             
         except Exception as e:
-            Utils.log_red(f"Error in find_track: {str(e)}")
+            logger.error(f"Error in find_track: {str(e)}")
             raise
 
     def __init__(self, master, app_actions, library_data, dimensions="1550x700"):
@@ -267,7 +271,7 @@ class SearchWindow(BaseWindow):
                 self.load_stored_search(library_data_search=search)
                 self._do_search(event)
                 if track is None:
-                    Utils.log("No specific track defined on search, using first available track.")
+                    logger.info("No specific track defined on search, using first available track.")
                     track = search.get_first_available_track()
                     if track is None:
                         raise Exception("No tracks available on search.")
@@ -340,7 +344,7 @@ class SearchWindow(BaseWindow):
                     search_status_callback=update_status
                 )
             except Exception as e:
-                Utils.log_red(f"Error in search thread: {e}")
+                logger.error(f"Error in search thread: {e}")
                 # Schedule UI update on main thread
                 self.master.after(0, lambda: self._show_search_error(str(e)))
 
@@ -434,7 +438,7 @@ class SearchWindow(BaseWindow):
             self.play_btn_list.append(play_btn)
             play_btn.grid(row=row, column=6)
             def play_handler(event, self=self, audio_track=track):
-                Utils.log(f"User selected audio track: {audio_track}")
+                logger.info(f"User selected audio track: {audio_track}")
                 self.run_play_callback(audio_track)
             play_btn.bind("<Button-1>", play_handler)
 

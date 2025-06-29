@@ -6,8 +6,9 @@ import pandas as pd
 import io
 import re
 
-from utils.utils import Utils
+from utils.logging_setup import get_logger
 
+logger = get_logger(__name__)
 
 class WebConnectionException(Exception):
     """Raised on failure to connect HTML"""
@@ -54,7 +55,7 @@ class SoupUtils:
         else:
             raise Exception("Unhandled type: " + _type)
 
-        # Utils.log(f"Found {len(elements)} elements of {_type}={value}")
+        # logger.info(f"Found {len(elements)} elements of {_type}={value}")
         
         if lowest_class:
             all_elements = elements
@@ -71,7 +72,7 @@ class SoupUtils:
             for element in SoupUtils.get_elements(class_path, start_element):
                 out.append(element.text)
         except Exception as e:
-            Utils.log_yellow(f"Failed to find elements of class {class_path} - {e}")
+            logger.warning(f"Failed to find elements of class {class_path} - {e}")
         return out
 
     @staticmethod

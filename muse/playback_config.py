@@ -6,8 +6,9 @@ from library_data.media_track import MediaTrack
 from muse.playlist import Playlist
 from utils.config import config
 from utils.globals import PlaylistSortType
-from utils.utils import Utils
+from utils.logging_setup import get_logger
 
+logger = get_logger(__name__)
 
 class PlaybackConfig:
     LAST_EXTENSION_PLAYED = datetime.datetime.now()
@@ -104,16 +105,16 @@ class PlaybackConfig:
             raise Exception("Track split failed")
         if do_split_override:
             self.get_list().insert_upcoming_tracks(tracks, offset=offset)
-            Utils.log(f"Assigned split track overrides: {tracks}")
+            logger.info(f"Assigned split track overrides: {tracks}")
         self.get_list().print_upcoming("split_track after")
         return tracks[0]
 
     @staticmethod
     def assign_extension(new_file):
         while not PlaybackConfig.READY_FOR_EXTENSION:
-            Utils.log("Waiting for config to accept extension...")
+            logger.info("Waiting for config to accept extension...")
             time.sleep(5)
-        Utils.log("Assigning extension to playback")
+        logger.info("Assigning extension to playback")
         PlaybackConfig.READY_FOR_EXTENSION = False
         for open_config in PlaybackConfig.OPEN_CONFIGS:
             open_config.overwrite = True

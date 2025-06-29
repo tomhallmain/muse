@@ -4,6 +4,10 @@ import sys
 import time
 
 from utils.utils import Utils
+from utils.logging_setup import get_logger
+
+# Get logger for this module
+logger = get_logger(__name__)
 
 root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 configs_dir = os.path.join(root_dir, "configs")
@@ -86,8 +90,8 @@ class Config:
         try:
             self.dict = json.load(open(self.config_path, "r", encoding="utf-8"))
         except Exception as e:
-            Utils.log_red(e)
-            Utils.log_yellow("Unable to load config. Ensure config.json file settings are correct.")
+            logger.error(e)
+            logger.warning("Unable to load config. Ensure config.json file settings are correct.")
 
         self.set_values(str,
             "foreground_color",
@@ -192,7 +196,7 @@ class Config:
             with open(swap_path, 'w', encoding='utf-8') as f:
                 json.dump(self.dict, f, indent=4)
         except Exception as e:
-            Utils.log_red(f"Failed to write temporary configuration: {e}")
+            logger.error(f"Failed to write temporary configuration: {e}")
             if os.path.exists(swap_path):
                 os.remove(swap_path)
             return False
@@ -201,7 +205,7 @@ class Config:
         try:
             test_config = Config(config_path=swap_path)
         except Exception as e:
-            Utils.log_red(f"Invalid configuration in swap file: {e}")
+            logger.error(f"Invalid configuration in swap file: {e}")
             os.remove(swap_path)
             return False
 
@@ -209,7 +213,7 @@ class Config:
         try:
             Utils.copy_file(swap_path, self.config_path, overwrite_existing=True)
         except Exception as e:
-            Utils.log_red(f"Failed to write final configuration: {e}")
+            logger.error(f"Failed to write final configuration: {e}")
             os.remove(swap_path)
             return False
 
@@ -227,7 +231,7 @@ class Config:
             self.config_path = os.path.join(Config.CONFIGS_DIR_LOC, "config.json")
             return self.save_config()
         except Exception as e:
-            Utils.log_red(f"Failed to create config from example: {e}")
+            logger.error(f"Failed to create config from example: {e}")
             return False
 
     def get_all_config_values(self):
@@ -269,16 +273,16 @@ class Config:
             try:
                 setattr(self, directory, self.validate_and_set_directory(directory))
             except Exception as e:
-                Utils.log_yellow(e)
-                Utils.log_yellow(f"Failed to set {directory} from config.json file. Ensure the key is set.")
+                logger.warning(e)
+                logger.warning(f"Failed to set {directory} from config.json file. Ensure the key is set.")
 
     def set_filepaths(self, *filepaths):
         for filepath in filepaths:
             try:
                 setattr(self, filepath, self.validate_and_set_filepath(filepath))
             except Exception as e:
-               Utils.log_yellow(e)
-               Utils.log_yellow(f"Failed to set {filepath} from config.json file. Ensure the key is set.")
+               logger.warning(e)
+               logger.warning(f"Failed to set {filepath} from config.json file. Ensure the key is set.")
 
     def set_values(self, type, *names):
         for name in names:
@@ -286,14 +290,14 @@ class Config:
                 try:
                     setattr(self, name, type(self.dict[name]))
                 except Exception as e:
-                    Utils.log_red(e)
-                    Utils.log_yellow(f"Failed to set {name} from config.json file. Ensure the value is set and of the correct type.")
+                    logger.error(e)
+                    logger.warning(f"Failed to set {name} from config.json file. Ensure the value is set and of the correct type.")
             else:
                 try:
                     setattr(self, name, self.dict[name])
                 except Exception as e:
-                    Utils.log_red(e)
-                    Utils.log_yellow(f"Failed to set {name} from config.json file. Ensure the key is set.")
+                    logger.error(e)
+                    logger.warning(f"Failed to set {name} from config.json file. Ensure the key is set.")
 
 
     def get_subdirectories(self):

@@ -12,10 +12,11 @@ from ui.app_style import AppStyle
 from ui.base_window import BaseWindow
 # from utils.config import config
 from utils.globals import ExtensionStrategy
+from utils.logging_setup import get_logger
 from utils.translations import I18N
-from utils.utils import Utils
 
 _ = I18N._
+logger = get_logger(__name__)
 
 class ExtensionsWindow(BaseWindow):
     '''
@@ -300,10 +301,10 @@ class ExtensionsWindow(BaseWindow):
         try:
             new_strategy = ExtensionStrategy[self.strategy_var.get()]
             ExtensionManager.strategy = new_strategy
-            Utils.log(f"Extension strategy changed to: {new_strategy.name}")
+            logger.info(f"Extension strategy changed to: {new_strategy.name}")
             ExtensionManager.reset_extension()
         except KeyError:
-            Utils.log_yellow(f"Invalid strategy selected: {self.strategy_var.get()}")
+            logger.warning(f"Invalid strategy selected: {self.strategy_var.get()}")
 
     def _clear_history(self):
         """Clear the extension history."""
@@ -368,7 +369,7 @@ class ExtensionsWindow(BaseWindow):
             error_msg = str(e)
             if "No matching tracks found" in error_msg:
                 error_msg += "\n\n" + _("Tip: If you've recently added or moved files, try checking 'Overwrite Cache' in the search options.")
-            Utils.log_red(f"Error playing extension: {error_msg}")
+            logger.error(f"Error playing extension: {error_msg}")
             self.app_actions.alert(_("Error"), error_msg, kind="error")
 
     def _check_thread_status(self):

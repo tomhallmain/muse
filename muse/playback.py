@@ -10,6 +10,7 @@ from muse.playback_config import PlaybackConfig
 from muse.run_context import RunContext
 from utils.config import config
 from utils.globals import Globals
+from utils.logging_setup import get_logger
 from utils.utils import Utils
 from utils.translations import I18N
 
@@ -20,6 +21,8 @@ if TYPE_CHECKING:
 _ = I18N._
 
 INSTANCE = vlc.Instance("verbose=-2")
+
+logger = get_logger(__name__)
 
 class Playback:
 
@@ -119,7 +122,7 @@ class Playback:
         # length = round(float(vlc.MediaPlayer(track.filepath).get_length()) / 1000)
         # track.set_track_length(length)
         length = track.get_track_length()
-        Utils.log(f"Track length: {length} seconds - {track}")
+        logger.info(f"Track length: {length} seconds - {track}")
         return length
 
     def set_delay_seconds(self) -> None:
@@ -143,7 +146,7 @@ class Playback:
                     seconds_passed = self.prepare_muse(delayed_prep=True)
                     self.remaining_delay_seconds -= seconds_passed
                 elif self.get_spot_profile().needs_repreparation():
-                    Utils.log("Spot profile track was overwritten and will be reprepared.")
+                    logger.info("Spot profile track was overwritten and will be reprepared.")
                     # self.muse.cancel_preparation()
                     # self.spot_profile.reset()
                     seconds_passed = self.prepare_muse(delayed_prep=True)
@@ -166,7 +169,7 @@ class Playback:
                     self.register_new_song()
             else:
                 if self._run and self._run.args.muse and self._run.muse is not None:
-                    Utils.log_yellow("No voice available due to import failure, skipping Muse.")
+                    logger.warning("No voice available due to import failure, skipping Muse.")
                 if self.has_played_first_track:
                     self.delay()
                 self.generate_silent_spot_profile()
@@ -242,7 +245,7 @@ class Playback:
         if delayed_prep:
             spot_profile.immediate = True
             if self.has_played_first_track:
-                Utils.log("Delayed preparation.")
+                logger.info("Delayed preparation.")
             self.get_muse().prepare(spot_profile, self.ui_callbacks)
         else:
             Utils.start_thread(self.get_muse().prepare, use_asyncio=False, args=(spot_profile, self.ui_callbacks))
@@ -262,7 +265,7 @@ class Playback:
                 next_track, did_split, split_failed = self.split_track_if_needed(next_track, delayed_prep=delayed_prep)
                 places_from_current += 1
                 if split_failed and places_from_current > (1 if delayed_prep else 5):
-                    Utils.log_red("Failed to split too many tracks in queue!")
+                    logger.error("Failed to split too many tracks in queue!")
                     break
             places_from_current -= 1
         self.has_attempted_track_split = True
@@ -270,22 +273,22 @@ class Playback:
 
     def split_track_if_needed(self, track: 'MediaTrack', delayed_prep: bool = False) -> tuple[MediaTrack, bool, bool]:
         if not self._playback_config.enable_long_track_splitting:
-            Utils.log_debug("Split track config option not set")
+            logger.debug("Split track config option not set")
             return track, False, False
         track_length = self.get_track_length(track=track)
         cutoff_seconds = self._playback_config.long_track_splitting_time_cutoff_minutes * 60
         offset = 0
         if track_length > cutoff_seconds:
             try:
-                Utils.log(f"Trying to split track: {track}")
+                logger.info(f"Trying to split track: {track}")
                 track = self._playback_config.split_track(track=track, do_split_override=True, offset=offset)
                 return track, True, False
             except Exception as e:
                 traceback.print_exc()
-                Utils.log_yellow(f"Error splitting track: {e}")
+                logger.warning(f"Error splitting track: {e}")
                 return track, True, True
         elif int(track_length) == -1.0 or int(track_length) == 0:
-            Utils.log_yellow(f"Failed to set track length: {track}")
+            logger.warning(f"Failed to set track length: {track}")
         return track, False, False
 
     def get_grouping_type(self):
@@ -303,7 +306,7 @@ class Playback:
 
     def register_new_song(self) -> None:
         assert self.track is not None
-        Utils.log(f"Playing track file: {self.track.filepath}")
+        logger.info(f"Playing track file: {self.track.filepath}")
         self.vlc_media_player = vlc.MediaPlayer(self.track.filepath)
         if self.track.get_is_video():
             self.ensure_video_frame()
@@ -386,7 +389,7 @@ class Playback:
     def set_volume(self) -> None:
         mean_volume, max_volume = self.track.get_volume()
         volume = (Globals.DEFAULT_VOLUME_THRESHOLD + 30) if mean_volume < -50 else min(int(Globals.DEFAULT_VOLUME_THRESHOLD + (-1 * mean_volume)), 100)
-        Utils.log(f"Mean volume: {mean_volume} Max volume: {max_volume} Setting volume to: {volume}")
+        logger.info(f"Mean volume: {mean_volume} Max volume: {max_volume} Setting volume to: {volume}")
         self.vlc_media_player.audio_set_volume(volume)
         # TODO callback for UI element, add a UI element for "effective volume"
 

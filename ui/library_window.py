@@ -1,17 +1,15 @@
-from datetime import datetime
-import os
+from tkinter import Toplevel, Label, StringVar, Frame, Entry
+from tkinter.ttk import OptionMenu, Treeview, Scrollbar
 
-from tkinter import Toplevel, Label, StringVar, Frame, messagebox, Entry
-from tkinter.ttk import Button, OptionMenu, Treeview, Scrollbar
-
-from library_data.library_data import LibraryData
 from ui.app_style import AppStyle
 from ui.base_window import BaseWindow
 from utils.globals import TrackAttribute
+from utils.logging_setup import get_logger
 from utils.translations import I18N
-from utils.utils import Utils
 
 _ = I18N._
+
+logger = get_logger(__name__)
 
 class LibraryWindow(BaseWindow):
     '''

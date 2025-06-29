@@ -50,8 +50,12 @@ from utils import (
     RunnerAppConfig,
     TempDir,
     I18N,
-    Utils
+    Utils,
+    get_logger
 )
+
+# Get logger for this module
+logger = get_logger(__name__)
 
 _ = I18N._
 
@@ -350,7 +354,7 @@ class App():
         #     try:
         #         self.server.stop()
         #     except Exception as e:
-        #         Utils.log_yellow(f"Error stopping server: {e}")
+        #         logger.warning(f"Error stopping server: {e}")
         FFmpegHandler.cleanup_cache()
         TempDir.cleanup()
         self.master.destroy()
@@ -358,7 +362,7 @@ class App():
     def quit(self, event=None):
         res = self.alert(_("Confirm Quit"), _("Would you like to quit the application?"), kind="askokcancel")
         if res == messagebox.OK or res == True:
-            Utils.log("Exiting application")
+            logger.info("Exiting application")
             self.on_closing()
 
     def store_info_cache(self):
@@ -376,7 +380,7 @@ class App():
             self.config_history_index = app_info_cache.get("config_history_index", default_val=0)
             return app_info_cache.get_history_latest()
         except Exception as e:
-            Utils.log_red(e)
+            logger.error(e)
             return RunnerAppConfig()
 
     def one_config_away(self, change=1):
@@ -548,7 +552,7 @@ class App():
         current_track_artwork_path = self.current_run.get_current_track_artwork()
         self.master.clipboard_clear()
         self.master.clipboard_append(current_track_artwork_path)
-        Utils.log(f"Copied to clipboard: {current_track_artwork_path}")
+        logger.info(f"Copied to clipboard: {current_track_artwork_path}")
         self.toast(_("Copied album art to clipboard."))
 
     def get_args(self, track=None):
@@ -632,28 +636,28 @@ class App():
         try:
             LibraryWindow(self.master, self.app_actions, self.library_data)
         except Exception as e:
-            Utils.log_red(f"Exception opening library window: {e}")
+            logger.error(f"Exception opening library window: {e}")
             raise e
 
     def open_composers_window(self):
         try:
             composers_window = ComposersWindow(self.master, self.app_actions)
         except Exception as e:
-            Utils.log_red(f"Exception opening composers window: {e}")
+            logger.error(f"Exception opening composers window: {e}")
             raise e
 
     def open_schedules_window(self):
         try:
             schedules_window = SchedulesWindow(self.master, self.app_actions)
         except Exception as e:
-            Utils.log_red(f"Exception opening schedules window: {e}")
+            logger.error(f"Exception opening schedules window: {e}")
             raise e
 
     def open_search_window(self):
         try:
             search_window = SearchWindow(self.master, self.app_actions, self.library_data)
         except Exception as e:
-            Utils.log_red(f"Exception opening search window: {e}")
+            logger.error(f"Exception opening search window: {e}")
             raise e
 
     def open_track_details_window(self, track):
@@ -667,51 +671,51 @@ class App():
         try:
             extensions_window = ExtensionsWindow(self.master, self.app_actions)
         except Exception as e:
-            Utils.log_red(f"Exception opening extensions window: {e}")
+            logger.error(f"Exception opening extensions window: {e}")
 
     def open_playlist_window(self):
         try:
             playlist_window = MasterPlaylistWindow(self.master, self.app_actions)
         except Exception as e:
-            Utils.log_red(f"Exception opening playlist window: {e}")
+            logger.error(f"Exception opening playlist window: {e}")
 
     def open_presets_window(self):
         try:
             presets_window = PresetsWindow(self.master, self.app_actions, self.construct_preset, self.start_run_from_preset)
         except Exception as e:
-            Utils.log_red(f"Exception opening presets window: {e}")
+            logger.error(f"Exception opening presets window: {e}")
 
     def open_weather_window(self):
         try:
             weather_window = WeatherWindow(self.master, self.app_actions)
         except Exception as e:
-            Utils.log_red(f"Exception opening weather window: {e}")
+            logger.error(f"Exception opening weather window: {e}")
 
     def open_tts_window(self, event=None):
         try:
             tts_window = TTSWindow(self.master, self.app_actions)
         except Exception as e:
-            Utils.log_red(f"Exception opening TTS window: {e}")
+            logger.error(f"Exception opening TTS window: {e}")
 
     def open_favorites_window(self):
         try:
             favorites_window = FavoritesWindow(self.master, self.app_actions, self.library_data)
         except Exception as e:
-            Utils.log_red(f"Exception opening favorites window: {e}")
+            logger.error(f"Exception opening favorites window: {e}")
             raise e
 
     def open_history_window(self):
         try:
             history_window = HistoryWindow(self.master, self.app_actions, self.library_data)
         except Exception as e:
-            Utils.log_red(f"Exception opening history window: {e}")
+            logger.error(f"Exception opening history window: {e}")
             raise e
 
     def open_configuration_window(self):
         try:
             configuration_window = ConfigurationWindow(self.master, self.app_actions)
         except Exception as e:
-            Utils.log_red(f"Exception opening configuration window: {e}")
+            logger.error(f"Exception opening configuration window: {e}")
             raise e
 
     def get_directories(self):
@@ -856,11 +860,11 @@ class App():
             raise ValueError("Unsupported alert kind.")
 
         if kind == "error":
-            Utils.log_red(f"Alert - Title: \"{title}\" Message: {message}")
+            logger.error(f"Alert - Title: \"{title}\" Message: {message}")
         elif kind == "warning":
-            Utils.log_yellow(f"Alert - Title: \"{title}\" Message: {message}")
+            logger.warning(f"Alert - Title: \"{title}\" Message: {message}")
         else:
-            Utils.log(f"Alert - Title: \"{title}\" Message: {message}")
+            logger.info(f"Alert - Title: \"{title}\" Message: {message}")
 
         if kind == "askokcancel":
             show_method = getattr(messagebox, kind)
@@ -875,7 +879,7 @@ class App():
         self.alert(title, error_text, kind=kind)
 
     def toast(self, message):
-        Utils.log("Toast message: " + message)
+        logger.info("Toast message: " + message)
 
         # Set the position of the toast on the screen (top right)
         width = 300
@@ -969,7 +973,7 @@ if __name__ == "__main__":
 
         # Graceful shutdown handler
         def graceful_shutdown(signum, frame):
-            Utils.log("Caught signal, shutting down gracefully...")
+            logger.info("Caught signal, shutting down gracefully...")
             app.on_closing()
             exit(0)
 

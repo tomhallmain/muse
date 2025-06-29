@@ -13,6 +13,7 @@ from utils.app_info_cache import app_info_cache
 from utils.config import config
 from utils.globals import TrackAttribute, ExtensionStrategy
 from utils.job_queue import JobQueue
+from utils.logging_setup import get_logger
 from utils.utils import Utils
 from utils.translations import I18N
 
@@ -22,6 +23,8 @@ if TYPE_CHECKING:
 
 _ = I18N._
 
+# Get logger for this module
+logger = get_logger(__name__)
 
 class ExtensionManager:
     # This class should hold a short history of library extensions
@@ -55,9 +58,9 @@ class ExtensionManager:
         self.data_callbacks = data_callbacks
 
     def start_extensions_thread(self, initial_sleep: bool = True, overwrite_cache: bool = False, voice: Optional[Any] = None) -> None:
-        Utils.log('Starting extensions thread')
+        logger.info('Starting extensions thread')
         if ExtensionManager.extension_thread is not None and ExtensionManager.extension_thread.is_alive():
-            Utils.log('Extension thread already running')
+            logger.info('Extension thread already running')
             return
         ExtensionManager.extension_thread = Utils.start_thread(self._run_extensions, use_asyncio=False, args=(initial_sleep, voice))
         ExtensionManager.extension_thread_started = True
@@ -74,7 +77,7 @@ class ExtensionManager:
                 ExtensionManager.extension_thread.should_stop = True
                 ExtensionManager.extension_thread.join(timeout=5.0)  # Wait up to 5 seconds
                 if ExtensionManager.extension_thread.is_alive():
-                    Utils.log_yellow("Extension thread did not terminate gracefully")
+                    logger.warning("Extension thread did not terminate gracefully")
                     # Force cleanup of the thread
                     ExtensionManager.extension_thread = None
                 closed_one_thread = True
@@ -86,17 +89,17 @@ class ExtensionManager:
                     thread.should_stop = True
                     thread.join(timeout=5.0)  # Wait up to 5 seconds
                     if thread.is_alive():
-                        Utils.log_yellow("Delayed thread did not terminate gracefully")
+                        logger.warning("Delayed thread did not terminate gracefully")
                     closed_one_thread = True
 
             ExtensionManager.DELAYED_THREADS = []
             ExtensionManager.extension_thread_started = False
             if closed_one_thread:
-                Utils.log("Reset extension thread.")
+                logger.info("Reset extension thread.")
             if restart_thread:
                 self.start_extensions_thread()
         except Exception as e:
-            Utils.log_red(f"Error during extension reset: {str(e)}")
+            logger.error(f"Error during extension reset: {str(e)}")
             # Ensure we don't leave the system in an inconsistent state
             ExtensionManager.extension_thread = None
             ExtensionManager.DELAYED_THREADS = []
@@ -108,7 +111,7 @@ class ExtensionManager:
             length = int(current_track.get_track_length())
             min_value += length
             max_value += length
-            Utils.log("Increased extension sleep time for long track, new range: {0}min-{1}min".format(min_value/60, max_value/60))
+            logger.info("Increased extension sleep time for long track, new range: {0}min-{1}min".format(min_value/60, max_value/60))
         return random.randint(min_value, max_value)
 
     def _run_extensions(self, initial_sleep: bool = True, voice: Optional[Any] = None) -> None:
@@ -122,7 +125,7 @@ class ExtensionManager:
                 if self.ui_callbacks is not None:
                     self.ui_callbacks.update_extension_status(_("Extension thread waiting for {0} minutes").format(round(float(sleep_time_seconds) / 60)))
                 Utils.long_sleep(check_cadence, "extension thread", total=sleep_time_seconds, print_cadence=180)
-            Utils.log("Extension thread woke up")
+            logger.info("Extension thread woke up")
         while True:
             self._extend_by_random_attr(voice)
             ExtensionManager.extension_thread_delayed_complete = False
@@ -159,7 +162,7 @@ class ExtensionManager:
         attr = random.choice(list(extendible_attrs.keys()))
         value = extendible_attrs[attr]()
 
-        Utils.log(f'Extending by random {attr}: {value}')
+        logger.info(f'Extending by random {attr}: {value}')
         if voice is not None:
             muse_to_say = _("Coming up soon, we'll be listening to a new track from the {0} {1}.").format(attr.get_translation(), value)
             voice.prepare_to_say(muse_to_say, save_for_last=True)
@@ -182,7 +185,7 @@ class ExtensionManager:
         except Exception as e:
             error_msg = _("Extension failed for {0} with value '{1}': {2}").format(
                 attr.get_translation() if attr is not None else "", value, str(e))
-            Utils.log_yellow(error_msg)
+            logger.warning(error_msg)
             if self.ui_callbacks is not None:
                 self.ui_callbacks.update_extension_status(error_msg)
             ExtensionManager.extension_thread_delayed_complete = True
@@ -242,7 +245,7 @@ class ExtensionManager:
             counter = 0
             failed = False
             for i in a:
-                Utils.log("Extension option: " + i.n + " " + i.x())
+                logger.info("Extension option: " + i.n + " " + i.x())
             while (b is None or b.y
                    or b.xfgi(self.minimum_allowed_duration_seconds)
                    or self.is_in_library(b)
@@ -260,14 +263,14 @@ class ExtensionManager:
                 self._simple(q, m=m*2, depth=depth+1, attr=attr, strict=strict)
                 return
             name = SoupUtils.clean_html(b.n)
-            Utils.log_yellow(f"Selected option: {name} - {b.x()}")
-            Utils.log(b.d)
+            logger.warning(f"Selected option: {name} - {b.x()}")
+            logger.info(b.d)
             self.delayed(b, attr, s=q)
         else:
             if r is None:
-                Utils.log_yellow("Tracking too many requests.")
+                logger.warning("Tracking too many requests.")
             else:
-                Utils.log_yellow(f'No results found for "{q}"')
+                logger.warning(f'No results found for "{q}"')
 
     def is_in_library(self, b) -> bool:
         if b.w is None or b.w.strip() == "":
@@ -289,11 +292,11 @@ class ExtensionManager:
     def _is_blacklisted(self, b) -> bool:
         item = self.data_callbacks.instance.blacklist.test(SoupUtils.clean_html(b.n))
         if item is not None:
-            Utils.log_yellow(f"Blacklisted: {item} ({b.n})")
+            logger.warning(f"Blacklisted: {item} ({b.n})")
             return True
         item = self.data_callbacks.instance.blacklist.test(b.d)
         if item is not None:
-            Utils.log_yellow(f"Blacklisted: {item}\n{b.d}")
+            logger.warning(f"Blacklisted: {item}\n{b.d}")
             return True
         return False
 
@@ -314,7 +317,7 @@ class ExtensionManager:
                 Utils.long_sleep(check_cadence, "Extension thread delay wait", total=time_seconds, print_cadence=180)
         a = b.da(g=config.directories[0])
         e1 = " Destination: "
-        Utils.log_yellow(f"extending delayed: {a}")
+        logger.warning(f"extending delayed: {a}")
         e = "[download]"
         p = subprocess.Popen(a, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
         o, __ = p.communicate()
@@ -328,9 +331,9 @@ class ExtensionManager:
             if line.startswith(f + e1):
                 _f = line[len(f + e1):]
         if _f is None or not os.path.exists(_f):
-            Utils.log_yellow("F was not found" if _f is None else "F was found but invalid: " + _f)
+            logger.warning("F was not found" if _f is None else "F was found but invalid: " + _f)
             if _e is None or not os.path.exists(_e):
-                Utils.log_yellow("E was not found" if _e is None else "E was found but invalid: " + _e)
+                logger.warning("E was not found" if _e is None else "E was found but invalid: " + _e)
                 close_match = self.check_dir_for_close_match(_e)
                 if close_match is not None:
                     _f = close_match
@@ -350,7 +353,7 @@ class ExtensionManager:
                 os.rename(_f, new_path)
                 _f = new_path
             except Exception as e:
-                Utils.log_red(f"Failed to rename file to remove emoji: {e}")
+                logger.error(f"Failed to rename file to remove emoji: {e}")
         
         obj = dict(b.u)
         obj["filename"] = _f
@@ -372,12 +375,12 @@ class ExtensionManager:
         for f in os.listdir(_dir):
             filepath = os.path.join(_dir, f)
             if os.path.isfile(filepath) and Utils.is_similar_strings(filepath, t, True):
-                Utils.log(f"Found close match: {f}")
+                logger.info(f"Found close match: {f}")
                 return filepath
         return None
 
     def s(self, q, x=1):
-        Utils.log(f"s: {q}")
+        logger.info(f"s: {q}")
         return LibraryExtender.isyMOLB_(q, m=x)
 
     @staticmethod
@@ -390,6 +393,6 @@ class ExtensionManager:
                 if extension["filename"] == filepath:
                     return extension
         except Exception as e:
-            Utils.log_red(f"Error getting extension details for {filepath}: {e}")
-        Utils.log_red(f"No extension details found for {filepath}")
+            logger.error(f"Error getting extension details for {filepath}: {e}")
+        logger.error(f"No extension details found for {filepath}")
         return None

@@ -3,8 +3,9 @@ import json
 import re
 
 from utils.config import config
-from utils.utils import Utils
+from utils.logging_setup import get_logger
 
+logger = get_logger(__name__)
 
 class Genre:
     def __init__(self, name, transliterations=[], notes={}):
@@ -104,7 +105,7 @@ class GenresData:
         if not isinstance(data_search, GenresDataSearch):
             raise TypeError('Genres data search must be of type GenresDataSearch')
         if not data_search.is_valid():
-            Utils.log_yellow('Invalid search query')
+            logger.warning('Invalid search query')
             return data_search
 
         full_results = False

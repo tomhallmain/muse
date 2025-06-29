@@ -6,11 +6,12 @@ from utils.globals import HistoryType
 from lib.tk_scroll_demo import ScrollFrame
 from muse.playlist import Playlist
 from ui.app_style import AppStyle
+from utils.logging_setup import get_logger
 from utils.translations import I18N
-from utils.utils import Utils
 
 _ = I18N._
 
+logger = get_logger(__name__)
 
 class HistoryDataSearch:
     def __init__(self, search_term="", max_results=200):
@@ -82,7 +83,7 @@ class HistoryWindow:
     MAX_RESULTS = 200
 
     def __init__(self, master, app_actions, library_data, dimensions="600x600"):
-        Utils.log(f"Opening HistoryWindow with dimensions {dimensions}")
+        logger.info(f"Opening HistoryWindow with dimensions {dimensions}")
         HistoryWindow.top_level = Toplevel(master, bg=AppStyle.BG_COLOR) 
         HistoryWindow.top_level.geometry(dimensions)
         HistoryWindow.set_title(_("History"))
@@ -169,7 +170,7 @@ class HistoryWindow:
 
     def show_history(self, history_type_translation):
         """Show history for the specified type"""
-        Utils.log(f"Showing history for type: {history_type_translation}")
+        logger.info(f"Showing history for type: {history_type_translation}")
         self.clear_widgets()
         
         # Convert the translated name back to the enum value
@@ -177,10 +178,10 @@ class HistoryWindow:
         
         # Get the appropriate history list based on type
         history_list = getattr(Playlist, history_type.value)
-        Utils.log(f"Found {len(history_list)} items in history")
+        logger.info(f"Found {len(history_list)} items in history")
 
         if not history_list:
-            Utils.log("No history items found")
+            logger.info("No history items found")
             self.add_label(Label(self.results_frame.viewPort), 
                          _("No history found."), row=1, column=1)
             return
@@ -195,7 +196,7 @@ class HistoryWindow:
                     display_text = f"{track.title} - {track.artist}"
                 else:
                     display_text = item
-                    Utils.log(f"Could not find track details for: {item}")
+                    logger.info(f"Could not find track details for: {item}")
             else:
                 display_text = item
 

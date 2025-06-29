@@ -3,9 +3,10 @@ import time
 
 from utils.config import config
 from utils.translations import I18N
-from utils.utils import Utils
+from utils.logging_setup import get_logger
 
 _ = I18N._
+logger = get_logger(__name__)
 
 
 class MuseSpotProfile:
@@ -29,7 +30,7 @@ class MuseSpotProfile:
                  grouping_type, 
                  get_previous_spot_profile_callback=None,
                  get_upcoming_tracks_callback=None):
-        Utils.log(f"Creating new spot profile: previous_track={previous_track is not None}, track={track is not None}, is_first_track={previous_track is None and not self._track_history}")
+        logger.info(f"Creating new spot profile: previous_track={previous_track is not None}, track={track is not None}, is_first_track={previous_track is None and not self._track_history}")
         self.previous_track = previous_track
         self.track = track
         self.track_overwritten_time = None
@@ -52,7 +53,7 @@ class MuseSpotProfile:
         
         # For the first track, we should mark it as spoken if it's an introduction
         # if self.is_first_track:
-        #     Utils.log("First track of session - marking as spoken for introduction")
+        #     logger.info("First track of session - marking as spoken for introduction")
         #     self.was_spoken = True
         # else:
         self.was_spoken = False
@@ -73,7 +74,7 @@ class MuseSpotProfile:
             minutes_since_last = time_since_last / 60
             adjusted_chance = min(base_chance * 4, base_chance * (1 + minutes_since_last / 15))
             self.talk_about_something = random.random() < adjusted_chance
-            Utils.log(f"Talk about something: {self.talk_about_something}, base chance: {base_chance}, adjusted chance: {adjusted_chance}, minutes since last: {minutes_since_last}, previous profile time: {previous_profile.get_time() if previous_profile else 'None'}, current time: {self.creation_time}")
+            logger.info(f"Talk about something: {self.talk_about_something}, base chance: {base_chance}, adjusted chance: {adjusted_chance}, minutes since last: {minutes_since_last}, previous profile time: {previous_profile.get_time() if previous_profile else 'None'}, current time: {self.creation_time}")
         else:
             # Skip talking about random stuff if we just started playing, to avoid a long delay.
             self.talk_about_something = False
@@ -156,7 +157,7 @@ class MuseSpotProfile:
         NOTE: Currently this is set during preparation but at some point it could be a callback via the Muse Voice instance."""
         if self.get_previous_spot_profile_callback is None:
             raise Exception("Previous spot profile callback was not set properly")
-        Utils.log_debug(f"Getting previous spot profile: idx={idx}, creation_time={self.creation_time}")
+        logger.debug(f"Getting previous spot profile: idx={idx}, creation_time={self.creation_time}")
         return self.get_previous_spot_profile_callback(idx=idx, creation_time=self.creation_time)
 
     def get_time(self):
@@ -170,9 +171,9 @@ class MuseSpotProfile:
         if not no_time_restriction:
             no_time_restriction = self.override_time_restriction
             if no_time_restriction:
-                Utils.log("Overriding time restriction on spot profile due to library extension")
+                logger.info("Overriding time restriction on spot profile due to library extension")
             else:
-                Utils.log("Time restriction applied to current spot profile preparation")
+                logger.info("Time restriction applied to current spot profile preparation")
         return no_time_restriction and (self.speak_about_prior_track or self.speak_about_upcoming_track or self.talk_about_something)
 
     def update_skip_previous_track_remark(self, skip_track):
@@ -221,25 +222,25 @@ class MuseSpotProfile:
         Returns:
             MuseSpotProfile or None: The most recent spot profile where was_spoken is True, or None if none found
         """
-        Utils.log_debug(f"Starting get_last_spoken_profile for profile created at {self.creation_time}")
+        logger.debug(f"Starting get_last_spoken_profile for profile created at {self.creation_time}")
         idx = 0
         max_iterations = 100  # Failsafe to prevent infinite loops
         
         while True:
             profile = self.get_previous_spot_profile(idx=idx)
             if profile is None:
-                Utils.log_debug(f"No profile found at index {idx}")
+                logger.debug(f"No profile found at index {idx}")
                 return None
                 
-            Utils.log_debug(f"Checking profile at index {idx}: creation_time={profile.creation_time}, was_spoken={profile.was_spoken}")
+            logger.debug(f"Checking profile at index {idx}: creation_time={profile.creation_time}, was_spoken={profile.was_spoken}")
             
             if profile.was_spoken:
-                Utils.log_debug(f"Found spoken profile at index {idx}: creation_time={profile.creation_time}")
+                logger.debug(f"Found spoken profile at index {idx}: creation_time={profile.creation_time}")
                 return profile
                 
             idx += 1
             if idx >= max_iterations:
-                Utils.log_red(f"Failsafe triggered: get_last_spoken_profile exceeded {max_iterations} iterations")
+                logger.error(f"Failsafe triggered: get_last_spoken_profile exceeded {max_iterations} iterations")
                 return None
 
     def last_spot_profile_more_than_seconds(self, seconds=min_seconds_between_spots):

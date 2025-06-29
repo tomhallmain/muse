@@ -3,7 +3,9 @@ import json
 import re
 
 from utils.config import config
-from utils.utils import Utils
+from utils.logging_setup import get_logger
+
+logger = get_logger(__name__)
 
 
 class Artist:
@@ -109,7 +111,7 @@ class ArtistsData:
                     matches += [artist.name]
                     break
                 elif audio_track.artist is not None and value in audio_track.artist:
-                    Utils.log("Found artist match on " + audio_track.filepath)
+                    logger.info("Found artist match on " + audio_track.filepath)
                     matches += [artist.name]
                     break
         return matches
@@ -118,7 +120,7 @@ class ArtistsData:
         if not isinstance(data_search, ArtistsDataSearch):
             raise TypeError('Artists data search must be of type ArtistsDataSearch')
         if not data_search.is_valid():
-            Utils.log_yellow('Invalid search query')
+            logger.warning('Invalid search query')
             return data_search
 
         full_results = False

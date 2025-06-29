@@ -21,11 +21,14 @@ from muse.prompter import Prompter
 from muse.voice import Voice
 from utils.config import config
 from utils.globals import Topic
+from utils.logging_setup import get_logger
 from utils.translations import I18N
 from utils.utils import Utils
 
 _ = I18N._
 
+# Get logger for this module
+logger = get_logger(__name__)
 
 class Muse:
     SYSTEM_LANGUAGE_NAME_IN_ENGLISH = Utils.get_english_language_name(Utils.get_default_user_language())
@@ -130,7 +133,7 @@ class Muse:
             if update_ui_callbacks.update_spot_profile_topics_text is not None:
                 update_ui_callbacks.update_spot_profile_topics_text(spot_profile.get_topic_text())
         if spot_profile.is_going_to_say_something():
-            Utils.log_debug(f"Preparing muse:\n{spot_profile}")
+            logger.debug(f"Preparing muse:\n{spot_profile}")
             if spot_profile.say_good_day:
                 self.say_good_day()
                 spot_profile.was_spoken = True
@@ -144,7 +147,7 @@ class Muse:
         spot_profile.is_prepared = True
 
     def cancel_preparation(self, spot_profile, update_ui_callbacks=None):
-        Utils.log_debug(f"Canceling muse prep:\n{spot_profile}")
+        logger.debug(f"Canceling muse prep:\n{spot_profile}")
         self.is_cancelled_prep = True
         if update_ui_callbacks is not None:
             if update_ui_callbacks.update_next_up_callback is not None:
@@ -179,12 +182,12 @@ class Muse:
             raise Exception("Failed to establish active schedule")
         if self._schedule != active_schedule or self._last_checked_schedules is None:
             if self._last_checked_schedules is None:
-                Utils.log_yellow(f"Starting with DJ {active_schedule.voice} - until {active_schedule.next_end(now)}")
+                logger.warning(f"Starting with DJ {active_schedule.voice} - until {active_schedule.next_end(now)}")
             else:
-                Utils.log_yellow(f"Switching DJ to {active_schedule.voice} from {self._schedule.voice} - until {active_schedule.next_end(now)}")
+                logger.warning(f"Switching DJ to {active_schedule.voice} from {self._schedule.voice} - until {active_schedule.next_end(now)}")
             self.change_voice(active_schedule.voice, get_upcoming_tracks_callback)
         else:
-            Utils.log("No change in schedule")
+            logger.info("No change in schedule")
         self._schedule = active_schedule
         self._last_checked_schedules = datetime.datetime.now()
 
@@ -214,17 +217,17 @@ class Muse:
                             self.say(_("Hello, I'm {0}").format(persona.name), locale=persona.language_code)
                         persona.last_hello_time = time.time()
                 except Exception as e:
-                    Utils.log_red(f"Failed to generate introduction: {e}")
+                    logger.error(f"Failed to generate introduction: {e}")
                     self.say(_("Hello, I'm your DJ"), locale=I18N.locale)
 
                 self.wiki_search = WikiOpenSearchAPI(language_code=persona.language_code)
             else:
-                Utils.log_yellow(f"No persona found for voice {voice_name}, using default voice")
+                logger.warning(f"No persona found for voice {voice_name}, using default voice")
                 self.voice = Voice(voice_name, run_context=self._run_context)
                 self.say(_("Hello, I'm your DJ"), locale=I18N.locale)
                 
         except Exception as e:
-            Utils.log_red(f"Failed to change voice to {voice_name}: {e}")
+            logger.error(f"Failed to change voice to {voice_name}: {e}")
             traceback.print_exc()
             # Ensure we at least have a working voice
             self.voice = Voice(voice_name, run_context=self._run_context)
@@ -263,7 +266,7 @@ class Muse:
         hour = SchedulesManager.get_hour()
         if hour < 5 or hour > 22:
             return
-        Utils.log_debug("Saying good day")
+        logger.debug("Saying good day")
         if hour < 11:
             self.prepare_to_say(_("Good morning"))
         elif hour < 13:
@@ -414,7 +417,7 @@ class Muse:
             self.say_at_some_point(remark, spot_profile, None)
 
         topic = spot_profile.topic
-        Utils.log(f"Talking about topic: {topic.value}")
+        logger.info(f"Talking about topic: {topic.value}")
 
         func = None
         args = [spot_profile]
@@ -461,7 +464,7 @@ class Muse:
         elif topic == Topic.LANGUAGE_LEARNING:
             func = self.teach_language
         else:
-            Utils.log_yellow(f"Unhandled topic: {topic}")
+            logger.warning(f"Unhandled topic: {topic}")
             return
 
         self._wrap_function(spot_profile, topic, func, args, kwargs)
@@ -512,7 +515,7 @@ class Muse:
     def share_a_tongue_twister(self, spot_profile):
         if config.tongue_twisters_dir is None or config.tongue_twisters_dir == "":
             raise Exception("No tongue twister directory specified")
-        Utils.log(f"Playing tongue twister from {config.tongue_twisters_dir}")
+        logger.info(f"Playing tongue twister from {config.tongue_twisters_dir}")
         playback = Playback.new_playback(config.tongue_twisters_dir, self.get_library_data().data_callbacks)
         tongue_twister_track, __, ___ = playback._playback_config.next_track()
         if tongue_twister_track is None or not os.path.exists(tongue_twister_track.filepath):
@@ -611,7 +614,7 @@ class Muse:
         
         # If language is English or not supported, use English
         if language_code == "en" or language_code not in ["de", "es", "fr", "it"]:
-            Utils.log_yellow(f"No translation available for language {language_code} topic {topic}, using English")
+            logger.warning(f"No translation available for language {language_code} topic {topic}, using English")
             return prompt
         
         try:
@@ -622,7 +625,7 @@ class Muse:
             else:
                 prompt = self.prompter.get_prompt_with_language(topic, language_code)
         except Exception as e:
-            Utils.log(f"Failed to translate prompt for topic {topic} into language {language_code} with error: {e}")
+            logger.info(f"Failed to translate prompt for topic {topic} into language {language_code} with error: {e}")
         return prompt
 
     def generate_text(self, prompt, json_key=None, include_time_context=True):
@@ -633,7 +636,7 @@ class Muse:
         
         # If we have no persona/context, use language-specific default prompt
         if not system_prompt:
-            Utils.log_yellow("No system prompt available, using default prompt")
+            logger.warning("No system prompt available, using default prompt")
             language_code = Utils.get_default_user_language()
             system_prompt = self.prompter.get_prompt("default_system_prompt", language_code)
         
@@ -671,8 +674,8 @@ class Muse:
         while len(blacklist_items) > 0:
             all_blacklist_items.update(set(blacklist_items))
             blacklist_items_str = ", ".join(sorted([str(i) for i in all_blacklist_items]))
-            Utils.log("Hit blacklisted items: " + blacklist_items_str)
-            Utils.log("Text: " + text)
+            logger.info("Hit blacklisted items: " + blacklist_items_str)
+            logger.info("Text: " + text)
             # NOTE excluding context for now because it's being deprecated for some reason.
             result = self.llm.ask(prompt, json_key=json_key, context=None, system_prompt=system_prompt)
             text = result.response if result else ""
@@ -691,19 +694,19 @@ class Muse:
         try:
             return func(*_args, **_kwargs)
         except WebConnectionException as e:
-            Utils.log_red(e)
+            logger.error(e)
             self.say_at_some_point(_("We're having some technical difficulties in accessing our source for {0}. We'll try again later").format(topic),
                                    spot_profile, None)
         except LLMResponseException as e:
-            Utils.log_red(e)
+            logger.error(e)
             self.say_at_some_point(_("It seems our writer for {0} is unexpectedly away at the moment. Did we forget to pay his salary again?").format(topic),
                                    spot_profile, None)
         except BlacklistException as e:
-            Utils.log_red(e)
+            logger.error(e)
             self.say_at_some_point(_("We've found problems with all of our {0} ideas. Please try again later.").format(topic),
                                    spot_profile, None)
         except Exception as e:
-            Utils.log_red(e)
+            logger.error(e)
             traceback.print_exc()
             self.say_at_some_point(_("Something went wrong. We'll try to fix it soon."), spot_profile, None)
 
@@ -760,7 +763,7 @@ class Muse:
             if result.context:
                 self.memory.get_persona_manager().update_context(result)
         else:
-            Utils.log_yellow(f"Result was None for {persona.name} initial persona prompt, possibly due to user skip.")
+            logger.warning(f"Result was None for {persona.name} initial persona prompt, possibly due to user skip.")
             return None, None
 
         # Get starting tracks if callback is provided
@@ -771,10 +774,10 @@ class Muse:
                 upcoming_tracks = get_upcoming_tracks_callback(random.randint(3, 8))
                 if upcoming_tracks:
                     upcoming_tracks_str = "\n".join([f" - {t.get_track_details()}" for t in upcoming_tracks])
-                Utils.log(f"Starting intro with tracks:\n{upcoming_tracks_str}")
+                logger.info(f"Starting intro with tracks:\n{upcoming_tracks_str}")
                 starting_tracks_str = _("Starting tracks:") + "\n" + upcoming_tracks_str
             except Exception as e:
-                Utils.log(f"Error getting upcoming tracks: {e}")
+                logger.info(f"Error getting upcoming tracks: {e}")
 
         # Get the appropriate introduction prompt
         intro_prompt = self.prompter.get_prompt(f"persona_{intro_type}", language_code)
@@ -799,7 +802,7 @@ class Muse:
 
         # If neither hello nor signoff has been said recently, or it's been a long time
         if last_hello == 0 or last_signoff == 0 or (now_time - last_hello > 6 * 3600 and now_time - last_signoff > 6 * 3600):
-            Utils.log_debug("intro case 1: last_hello: {0}, last_signoff: {1}, now_time: {2}".format(last_hello, last_signoff, now_time))
+            logger.debug("intro case 1: last_hello: {0}, last_signoff: {1}, now_time: {2}".format(last_hello, last_signoff, now_time))
             return "intro"  
         
         # Check if the time difference spans across sleeping hours
@@ -811,16 +814,16 @@ class Muse:
         if ((4 * 3600) < (now_time - last_signoff) < (12 * 3600) and 
                 ((last_signoff_dt.hour >= 23 or last_signoff_dt.hour < 6) and
                  (now_dt.hour > 4 and now_dt.hour < 10))):
-            Utils.log_debug("intro case 2: last_hello: {0}, last_signoff: {1}, now_time: {2}".format(last_hello, last_signoff, now_time))
+            logger.debug("intro case 2: last_hello: {0}, last_signoff: {1}, now_time: {2}".format(last_hello, last_signoff, now_time))
             return "intro"
             
         # If hello hasn't been said recently but signoff was recent (1-6 hours ago)
         elif now_time - last_hello > 2 * 3600 and 1 * 3600 < now_time - last_signoff <= 6 * 3600:
-            Utils.log_debug("reintro: last_hello: {0}, last_signoff: {1}, now_time: {2}".format(last_hello, last_signoff, now_time))
+            logger.debug("reintro: last_hello: {0}, last_signoff: {1}, now_time: {2}".format(last_hello, last_signoff, now_time))
             return "reintro"
         else:
             # If both hello and signoff were recent, don't say anything
-            Utils.log_debug("no intro: last_hello: {0}, last_signoff: {1}, now_time: {2}".format(last_hello, last_signoff, now_time))
+            logger.debug("no intro: last_hello: {0}, last_signoff: {1}, now_time: {2}".format(last_hello, last_signoff, now_time))
             return None
 
     def _get_last_tuned_in_str(self, persona: DJPersona) -> str:

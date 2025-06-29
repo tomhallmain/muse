@@ -13,11 +13,13 @@ from muse.run_context import RunContext, UserAction
 from muse.schedules_manager import ScheduledShutdownException
 from utils.config import config
 from utils.ffmpeg_handler import FFmpegHandler
+from utils.logging_setup import get_logger
 from utils.temp_dir import TempDir
 from utils.translations import I18N
 from utils.utils import Utils
 
 _ = I18N._
+logger = get_logger(__name__)
 
 
 class Run:
@@ -75,9 +77,9 @@ class Run:
                 # Close and don't restart extension thread if it's running and extension is disabled
                 self.get_library_data().reset_extension(restart_thread=False)
         
-        Utils.log(playback_config)
+        logger.info(playback_config)
         if self.last_config and playback_config == self.last_config:
-            Utils.log("\n\nConfig matches last config. Please modify it or quit.")
+            logger.info("\n\nConfig matches last config. Please modify it or quit.")
             return
 
         try:
@@ -91,7 +93,7 @@ class Run:
             FFmpegHandler.cleanup_cache()
             TempDir.cleanup()
             if self.app_actions is not None:
-                Utils.log_yellow(f"\n{'='*50}\nSCHEDULED SHUTDOWN: {str(e)}\n{'='*50}\n")
+                logger.info_yellow(f"\n{'='*50}\nSCHEDULED SHUTDOWN: {str(e)}\n{'='*50}\n")
                 print("Shutting down main thread! Good-bye.")
                 self.app_actions.shutdown_callback()
         except Exception as e:
@@ -119,7 +121,7 @@ class Run:
         try:
             self.do_workflow()
         except Exception as e:
-            Utils.log(e)
+            logger.info(e)
             traceback.print_exc()
 
     def execute(self):
@@ -130,7 +132,7 @@ class Run:
 
     def cancel(self):
         """Cancel all operations."""
-        Utils.log("Canceling...")
+        logger.info("Canceling...")
         self._run_context.update_action(UserAction.CANCEL)
         self.get_playback().stop()
 

@@ -9,6 +9,10 @@ import unicodedata
 
 from utils.temp_dir import TempDir
 from utils.utils import Utils
+from utils.logging_setup import get_logger
+
+# Get logger for this module
+logger = get_logger(__name__)
 
 class FFmpegHandler:
     """Handler for all FFmpeg operations with filename sanitization."""
@@ -28,7 +32,7 @@ class FFmpegHandler:
                 if os.path.exists(sanitized):
                     os.remove(sanitized)
             except Exception as e:
-                Utils.log(f"Error cleaning up temporary file {sanitized}: {str(e)}")
+                logger.info(f"Error cleaning up temporary file {sanitized}: {str(e)}")
         FFmpegHandler._filename_cache.clear()
 
     @staticmethod
@@ -87,13 +91,13 @@ class FFmpegHandler:
         except Exception as e:
             if os.name != 'nt':
                 # Symlink creation often fails on Windows
-                Utils.log_yellow(f"Symlink creation failed for {filepath}, trying fallback methods")
+                logger.info(f"Symlink creation failed for {filepath}, trying fallback methods")
 
         # If symlink fails, check file size before attempting to copy
         try:
             file_size = os.path.getsize(filepath)
             if file_size > FFmpegHandler.MAX_COPY_SIZE:
-                Utils.log_yellow(f"File too large to copy ({file_size / 1024 / 1024:.1f}MB), using original path")
+                logger.info(f"File too large to copy ({file_size / 1024 / 1024:.1f}MB), using original path")
                 # # For large files, try to use the original path if it's already safe
                 # if all(c.isascii() and (c.isalnum() or c in '._-/\\') for c in str(path)):
                 #     return str(path)
@@ -103,7 +107,7 @@ class FFmpegHandler:
                 # if not os.path.exists(safe_path):
                 #     shutil.move(filepath, safe_path)
                 #     return str(safe_path)
-                # Utils.log_yellow(f"Could not create safe path for large file, attempting to use original path")
+                # logger.warning(f"Could not create safe path for large file, attempting to use original path")
                 return filepath
             
             # For small files, create a copy - these should be removed upon program exit
@@ -112,7 +116,7 @@ class FFmpegHandler:
             return sanitized_path
             
         except Exception as e:
-            Utils.log(f"Error handling file {filepath}: {str(e)}")
+            logger.info(f"Error handling file {filepath}: {str(e)}")
             # If all else fails, return original path as fallback
             return filepath
 
@@ -135,7 +139,7 @@ class FFmpegHandler:
                 if max_volume_tag in line:
                     max_volume = float(line[line.index(max_volume_tag)+len(max_volume_tag):-3].strip())
         except Exception as e:
-            Utils.log_yellow(f"Error getting volume for {filepath}: {str(e)}")
+            logger.warning(f"Error getting volume for {filepath}: {str(e)}")
         return mean_volume, max_volume
 
     @staticmethod
@@ -166,7 +170,7 @@ class FFmpegHandler:
             output, _ = process.communicate()
             return process.returncode == 0
         except Exception as e:
-            Utils.log(f"Error splitting media {input_path}: {str(e)}")
+            logger.info(f"Error splitting media {input_path}: {str(e)}")
             return False
 
     @staticmethod
@@ -187,9 +191,9 @@ class FFmpegHandler:
                     try:
                         return float(line[:-1])  # Match original behavior of trimming last char
                     except Exception as e:
-                        Utils.log(f"Error parsing ffprobe duration output: {str(e)}")
+                        logger.info(f"Error parsing ffprobe duration output: {str(e)}")
             except Exception as e:
-                Utils.log(f"Error running ffprobe: {str(e)}")
+                logger.info(f"Error running ffprobe: {str(e)}")
         
         # Fallback to ffmpeg if ffprobe fails or is not available
         args = ["ffmpeg", "-i", sanitized_path]
@@ -207,9 +211,9 @@ class FFmpegHandler:
                     )
                     return duration_seconds
         except Exception as e:
-            Utils.log(f"Error getting duration with ffmpeg: {str(e)}")
+            logger.info(f"Error getting duration with ffmpeg: {str(e)}")
             
-        Utils.log_red(f"Failed to get track length: {filepath}")
+        logger.warning(f"Failed to get track length: {filepath}")
         return None
 
     @staticmethod
@@ -307,7 +311,7 @@ class FFmpegHandler:
         # Convert times to sexagesimal format (HH:MM:SS.xxx)
         start_time = Utils.get_sexagesimal_time_str(start)
         end_time = Utils.get_sexagesimal_time_str(end)
-        Utils.log(f"Creating track part {idx} out of {total} with anchors start={start}, end={end}")
+        logger.info(f"Creating track part {idx} out of {total} with anchors start={start}, end={end}")
         sanitized_input = FFmpegHandler.sanitize_filename(filepath)
         sanitized_output = FFmpegHandler.sanitize_filename(temp_filepath)
         
@@ -328,7 +332,7 @@ class FFmpegHandler:
             else:
                 raise Exception(f"FFmpeg failed with return code {process.returncode}")
         except Exception as e:
-            Utils.log(f"Error creating track part from {filepath}: {str(e)}")
+            logger.info(f"Error creating track part from {filepath}: {str(e)}")
             raise e
 
     @staticmethod
@@ -356,9 +360,9 @@ class FFmpegHandler:
         """
         silence_times = FFmpegHandler.detect_silence_times(filepath, noise_threshold, duration)
         if not silence_times:
-            Utils.log_yellow("No silence detected, returning None")
+            logger.info("No silence detected, returning None")
             return []
-        Utils.log(f"Silence times: {silence_times}")
+        logger.info(f"Silence times: {silence_times}")
         track_paths = []
         if select_random_track_part:
             idx = random.randint(1, len(silence_times))

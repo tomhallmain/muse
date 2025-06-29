@@ -8,11 +8,12 @@ from ui.base_window import BaseWindow
 from utils.app_info_cache import app_info_cache
 from utils.config import config
 from utils.globals import PlaylistSortType
+from utils.logging_setup import get_logger
 from utils.translations import I18N
 from utils.utils import Utils
 
 _ = I18N._
-
+logger = get_logger(__name__)
 
 class NetworkMediaURL():
     '''A URLwith media on it.'''
@@ -171,7 +172,7 @@ class NetworkMediaWindow(BaseWindow):
                 self.load_stored_search(library_data_search=search)
                 self._do_search(event)
                 if track is None:
-                    Utils.log("No specific track defined on search, using first available track.")
+                    logger.info("No specific track defined on search, using first available track.")
                     track = search.get_first_available_track()
                     if track is None:
                         raise Exception("No tracks available on search.")
@@ -268,7 +269,7 @@ class NetworkMediaWindow(BaseWindow):
             self.play_btn_list.append(play_btn)
             play_btn.grid(row=row, column=6)
             def play_handler(event, self=self, audio_track=track):
-                Utils.log(f"User selected audio track: {audio_track}")
+                logger.info(f"User selected audio track: {audio_track}")
                 self.run_play_callback(audio_track)
             play_btn.bind("<Button-1>", play_handler)
 

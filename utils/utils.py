@@ -14,9 +14,10 @@ import unicodedata
 from pathlib import Path
 import subprocess
 
-from utils.logger import logger, log_file
+from utils.logging_setup import get_logger
 
-
+# Get logger for this module
+logger = get_logger(__name__)
 
 class Utils:
     # Regular expression to match emoji characters
@@ -110,24 +111,8 @@ class Utils:
                     message += f" ({total} remaining in total)"
             if extra_message is not None:
                 message += f" - {extra_message}"
-            Utils.log(message)
+            logger.info(message)
         time.sleep(seconds)
-
-    @staticmethod
-    def log(message, level=logging.INFO):
-        logger.log(level, message)
-    
-    @staticmethod
-    def log_debug(message):
-        Utils.log(message, logging.DEBUG)
-
-    @staticmethod
-    def log_red(message):
-        Utils.log(message, logging.ERROR)
-    
-    @staticmethod
-    def log_yellow(message):
-        Utils.log(message, logging.WARNING)
 
     @staticmethod
     def extract_substring(text, pattern):
@@ -169,7 +154,7 @@ class Utils:
                     period = int(run_obj) if isinstance(run_obj, int) else getattr(run_obj, sleep_attr)
                     await asyncio.sleep(period)
                     if run_obj and run_attr and not getattr(run_obj, run_attr):
-                        Utils.log(f"Ending periodic task: {run_obj.__name__}.{run_attr} = False")
+                        logger.info(f"Ending periodic task: {run_obj.__name__}.{run_attr} = False")
                         break
             return wrapper
         return scheduler
@@ -254,11 +239,11 @@ class Utils:
         if end_index >= len(string) or start_index >= len(string):
             raise Exception("Start or end index were too high for string: " + string)
         if start_index == 0:
-            Utils.log("Removed: " + string[:end_index+1])
+            logger.info("Removed: " + string[:end_index+1])
             return string[end_index+1:]
         left_part = string[:start_index]
         right_part = string[end_index+1:]
-        Utils.log("Removed: " + string[start_index:end_index+1])
+        logger.info("Removed: " + string[start_index:end_index+1])
         return left_part + right_part
 
     @staticmethod
@@ -372,7 +357,7 @@ class Utils:
             language = langcodes.Language.get(language_code)
             return language.display_name()
         except Exception as e:
-            Utils.log_red(f"Error while getting language name for code '{language_code}': {e}")
+            logger.error(f"Error while getting language name for code '{language_code}': {e}")
             return "English"
 
     @staticmethod
@@ -574,7 +559,12 @@ class Utils:
     @staticmethod
     def get_log_file():
         """Get the path to the log file."""
-        return str(log_file)
+        # Get the current log file path from the root logger
+        root_logger = get_logger("root")
+        for handler in root_logger.handlers:
+            if isinstance(handler, logging.FileHandler):
+                return handler.baseFilename
+        return None
 
     @staticmethod
     def open_log_file():
@@ -593,7 +583,7 @@ class Utils:
                 continue
             # If not in whitelist, check if it's an emoji
             if Utils.EMOJI_PATTERN.search(char):
-                Utils.log(f"Found emoji in text: {text}")
+                logger.info(f"Found emoji in text: {text}")
                 return True
         return False
 
@@ -602,7 +592,7 @@ class Utils:
         """Remove emoji characters from text and replace with [emoji] placeholder."""
         if Utils.contains_emoji(text):
             cleaned = Utils.EMOJI_PATTERN.sub("[emoji]", text)
-            Utils.log(f"Cleaned emoji from text: {text} -> {cleaned}")
+            logger.info(f"Cleaned emoji from text: {text} -> {cleaned}")
             return cleaned
         return text
 

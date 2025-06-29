@@ -3,8 +3,9 @@ import random
 from utils.app_info_cache import app_info_cache
 from utils.config import config
 from utils.globals import PlaylistSortType, HistoryType
-from utils.utils import Utils
+from utils.logging_setup import get_logger
 
+logger = get_logger(__name__)
 
 class Playlist:
     recently_played_filepaths = []
@@ -82,7 +83,7 @@ class Playlist:
         for track_filepath in list(tracks):
             track = self.data_callbacks.get_track(track_filepath)
             self.sorted_tracks.append(track)
-        Utils.log(f"Playlist length: {self.size()}")
+        logger.info(f"Playlist length: {self.size()}")
         if self.size() > 0:
             self.sort(check_entire_playlist=check_entire_playlist)
 
@@ -166,11 +167,11 @@ class Playlist:
                             next_track_attr = next_track_attr()
                         new_grouping = next_track_attr
                         skip_counter += 1
-                    Utils.log(f"Skipped {skip_counter} tracks due to same grouping ({old_grouping} -> {new_grouping})")
+                    logger.info(f"Skipped {skip_counter} tracks due to same grouping ({old_grouping} -> {new_grouping})")
             else:
                 old_grouping = previous_track_attr
                 new_grouping = next_track_attr
-                Utils.log("")
+                logger.info("")
         Playlist.update_recently_played_lists(next_track)
         self.print_upcoming("next_track after")
         return next_track, old_grouping, new_grouping
@@ -282,7 +283,7 @@ class Playlist:
         """
         recently_played_attr_list = list(getattr(Playlist, history_type.value))
         recently_played_check_count = Playlist.get_recently_played_check_count(self.sort_type)
-        Utils.log(f"Recently played check count for {history_type.value}: {recently_played_check_count}")
+        logger.info(f"Recently played check count for {history_type.value}: {recently_played_check_count}")
         if len(recently_played_attr_list) == 0:
             return 0
         elif len(recently_played_attr_list) > recently_played_check_count:
@@ -329,7 +330,7 @@ class Playlist:
         tracks_checked = 0
         max_tracks_to_check = min(100000, self.size())  # Reasonable limit for most playlists
         total_moved = 0
-        Utils.log(f"Scouring playlist for tracks not in {len(recently_played_attr_list)} recently played {track_attr}s with {recently_played_check_count} tracks to check")
+        logger.info(f"Scouring playlist for tracks not in {len(recently_played_attr_list)} recently played {track_attr}s with {recently_played_check_count} tracks to check")
 
         while tracks_checked < max_tracks_to_check:
             tracks_to_be_reshuffled = []
@@ -343,12 +344,12 @@ class Playlist:
             # If no tracks need reshuffling, we're done
             if not tracks_to_be_reshuffled:
                 if total_moved > 0:
-                    Utils.log(f"Successfully moved all {total_moved} tracks with recently played {track_attr} out of first {recently_played_check_count} positions")
+                    logger.info(f"Successfully moved all {total_moved} tracks with recently played {track_attr} out of first {recently_played_check_count} positions")
                 else:
-                    Utils.log(f"No tracks needed reshuffling for {track_attr}")
+                    logger.info(f"No tracks needed reshuffling for {track_attr}")
                 return tracks_checked
                 
-            Utils.log(f"Found {len(tracks_to_be_reshuffled)} tracks with recently played {track_attr} in first {recently_played_check_count} positions")
+            logger.info(f"Found {len(tracks_to_be_reshuffled)} tracks with recently played {track_attr} in first {recently_played_check_count} positions")
                 
             # Remove tracks that need reshuffling and add them to the end
             for track in tracks_to_be_reshuffled:
@@ -358,7 +359,7 @@ class Playlist:
             
             tracks_checked += len(earliest_tracks)
             
-        Utils.log(f"Hit max tracks limit ({max_tracks_to_check}) while trying to move tracks with recently played {track_attr}")
+        logger.info(f"Hit max tracks limit ({max_tracks_to_check}) while trying to move tracks with recently played {track_attr}")
         return tracks_checked
 
     def reshuffle_tracks(self, track_attr, recently_played_attr_list, recently_played_check_count):
@@ -403,13 +404,13 @@ class Playlist:
             count += 1
         while len(tracks_to_check) > 0:
             current_check_count = len(tracks_to_check)
-            Utils.log(f"Reshuffling playlist recently played track count: {current_check_count} (attempt {attempts})")
+            logger.info(f"Reshuffling playlist recently played track count: {current_check_count} (attempt {attempts})")
             
             # Check if we've hit a stable minimum
             if last_track_count is not None and current_check_count == last_track_count:
                 stable_attempts += 1
                 if stable_attempts >= min_stable_attempts:
-                    Utils.log(f"Found stable minimum of {current_check_count} tracks after {attempts} attempts")
+                    logger.info(f"Found stable minimum of {current_check_count} tracks after {attempts} attempts")
                     break
             else:
                 stable_attempts = 0
@@ -432,7 +433,7 @@ class Playlist:
                 count += 1
             attempts += 1
             if attempts == max_attempts:
-                Utils.log(f"Hit max attempts limit, too many recently played tracks found in playlist")
+                logger.info(f"Hit max attempts limit, too many recently played tracks found in playlist")
                 return attempts
         return attempts
 
@@ -442,11 +443,11 @@ class Playlist:
         if self.start_track not in self.sorted_tracks:
             raise Exception("Playlist start track not in playlist!")
         if self.sort_type == PlaylistSortType.RANDOM:
-            Utils.log(f"Setting playlist start track to {self.start_track}")
+            logger.info(f"Setting playlist start track to {self.start_track}")
             self.sorted_tracks.remove(self.start_track)
             self.sorted_tracks.insert(0, self.start_track)
         elif self.sort_type == PlaylistSortType.SEQUENCE:
-            Utils.log(f"Setting playlist start track to {self.start_track}")
+            logger.info(f"Setting playlist start track to {self.start_track}")
             index = self.sorted_tracks.index(self.start_track)
             self.sorted_tracks = self.sorted_tracks[index:] + self.sorted_tracks[:index]
         else:
@@ -458,13 +459,13 @@ class Playlist:
                 is_callable = True
                 track_attr_to_extract = track_attr_to_extract()
             if do_print:
-                Utils.log(f"Setting playlist start track attribute {grouping_attr_getter_name} to {track_attr_to_extract}")
+                logger.info(f"Setting playlist start track attribute {grouping_attr_getter_name} to {track_attr_to_extract}")
             if is_callable:
                 extracted = [track for track in self.sorted_tracks if getattr(track, grouping_attr_getter_name)() == track_attr_to_extract]
             else:
                 extracted = [track for track in self.sorted_tracks if getattr(track, grouping_attr_getter_name) == track_attr_to_extract]
             if do_print:
-                Utils.log(f"Found {len(extracted)} tracks with attribute {grouping_attr_getter_name} equal to {track_attr_to_extract}")
+                logger.info(f"Found {len(extracted)} tracks with attribute {grouping_attr_getter_name} equal to {track_attr_to_extract}")
             for track in extracted:
                 self.sorted_tracks.remove(track)
             index = extracted.index(self.start_track)
@@ -485,7 +486,7 @@ class Playlist:
             else:
                 return getattr(track, attr_getter_name) == group_text
         count = len([t for t in self.sorted_tracks if is_matching_group(t)])
-        Utils.log(f"Group {group_text} has {count} tracks")
+        logger.info(f"Group {group_text} has {count} tracks")
         return count
 
 

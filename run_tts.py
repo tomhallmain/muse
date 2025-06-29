@@ -2,6 +2,10 @@ import sys
 
 from tts.tts_runner import Chunker, TextToSpeechRunner, TTSConfig
 
+from utils.logging_setup import get_logger
+
+logger = get_logger(__name__)
+
 text = """Lang schwang der Klang am Hang entlang"""
 
 preferred_speakers = [
@@ -41,8 +45,8 @@ def main():
     #             try:
     #                 runner.speak(text)
     #             except Exception as e:
-    #                 Utils.log_red("Failed to speak text: " + text)
-    #                 Utils.log_red(e)
+    #                 logger.error("Failed to speak text: " + text)
+    #                 logger.error(e)
     #     except KeyboardInterrupt:
     #         break
 
@@ -53,16 +57,16 @@ def main():
     #             runner.set_output_path(cut_str_from_right_by_word(line))
     #             runner.speak(line)
     #         except Exception as e:
-    #             Utils.log_red("Failed to speak text: " + line)
+    #             logger.error("Failed to speak text: " + line)
     #             failures.append((line, e))
 
     # if len(failures) > 0:
-    #     Utils.log("|--------------------------------------------------|")
-    #     Utils.log_red("Total failed to speak texts: " + str(len(failures)))
+    #     logger.info("|--------------------------------------------------|")
+    #     logger.error("Total failed to speak texts: " + str(len(failures)))
     #     for line, e in failures:
-    #         Utils.log(line + ":" + str(e))
+    #         logger.info(line + ":" + str(e))
 
 if __name__ == '__main__':
     main()
     # for s in Chunker.get_str_chunks(text):
-    #     Utils.log(s)
+    #     logger.info(s)

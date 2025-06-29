@@ -5,9 +5,11 @@ from utils.app_info_cache import app_info_cache
 from utils.config import config
 from utils.globals import Topic
 from utils.translations import I18N
+from utils.logging_setup import get_logger
 
 _ = I18N._
 
+logger = get_logger(__name__)
 
 class Prompter:
     """Manages prompt loading, language support, and topic history for the Muse application.

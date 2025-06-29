@@ -6,8 +6,10 @@ import re
 from library_data.work import Work
 from utils.config import config
 from utils.name_ops import NameOps
+from utils.logging_setup import get_logger
 from utils.translations import I18N
-from utils.utils import Utils
+
+logger = get_logger(__name__)
 
 _ = I18N._
 
@@ -180,7 +182,7 @@ class ComposersDataSearch:
 
     def set_stored_results_count(self):
         self.stored_results_count = len(self.results)
-        Utils.log(f"Stored count for {self}: {self.get_readable_stored_results_count()}")
+        logger.info(f"Stored count for {self}: {self.get_readable_stored_results_count()}")
 
     def get_readable_stored_results_count(self) -> str:
         if self.stored_results_count > self.max_results:
@@ -381,7 +383,7 @@ class ComposersData:
             
         except Exception as e:
             error_msg = str(e)
-            Utils.log_red(f"Error writing composers file: {error_msg}")
+            logger.error(f"Error writing composers file: {error_msg}")
             return False, error_msg
 
     def save_composer(self, composer):
@@ -420,7 +422,7 @@ class ComposersData:
             
         except Exception as e:
             error_msg = str(e)
-            Utils.log_red(f"Error saving composer: {error_msg}")
+            logger.error(f"Error saving composer: {error_msg}")
             # Restore from backup if it exists
             if os.path.exists(backup_file):
                 shutil.copy2(backup_file, config.composers_file)
@@ -462,7 +464,7 @@ class ComposersData:
             
         except Exception as e:
             error_msg = str(e)
-            Utils.log_red(f"Error deleting composer: {error_msg}")
+            logger.error(f"Error deleting composer: {error_msg}")
             # Restore from backup if it exists
             if os.path.exists(backup_file):
                 shutil.copy2(backup_file, config.composers_file)
@@ -491,7 +493,7 @@ class ComposersData:
                     matches += [composer.name]
                     break
                 elif audio_track.composer is not None and value in audio_track.composer:
-                    Utils.log("Found composer match on " + audio_track.filepath)
+                    logger.info("Found composer match on " + audio_track.filepath)
                     matches += [composer.name]
                     break
         return matches
@@ -500,7 +502,7 @@ class ComposersData:
         if not isinstance(data_search, ComposersDataSearch):
             raise TypeError('Composers data search must be of type ComposersDataSearch')
         if not data_search.is_valid():
-            Utils.log_yellow('Invalid search query')
+            logger.warning('Invalid search query')
             return data_search
 
         full_results = False

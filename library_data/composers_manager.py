@@ -1,8 +1,10 @@
-
 from copy import deepcopy
 import json
 import os
 
+from utils.logging_setup import get_logger
+
+logger = get_logger(__name__)
 
 from library_data.life_dates import LifeDates
 from utils.name_ops import NameOps

@@ -4,7 +4,10 @@ import tempfile
 import time
 from datetime import datetime, timedelta
 
-from utils.utils import Utils
+from utils.logging_setup import get_logger
+
+# Get logger for this module
+logger = get_logger(__name__)
 
 class TempDir:
     prefix = "tmp_muse_"
@@ -42,7 +45,7 @@ class TempDir:
                 if os.path.exists(filepath):
                     os.remove(filepath)
             except Exception as e:
-                Utils.log_yellow(f"Failed to delete temp file: {filepath} - {str(e)}")
+                logger.warning(f"Failed to delete temp file: {filepath} - {str(e)}")
         TempDir.file_timestamps.clear()
 
         # Then remove directories
@@ -51,7 +54,7 @@ class TempDir:
                 if os.path.exists(directory._temp_directory):
                     shutil.rmtree(directory._temp_directory)
             except Exception as e:
-                Utils.log_red("Failed to delete temp dir: " + directory._temp_directory)
+                logger.error("Failed to delete temp dir: " + directory._temp_directory)
         TempDir.open_directories.clear()
 
     @staticmethod
@@ -67,10 +70,10 @@ class TempDir:
                 try:
                     if os.path.exists(filepath):
                         file_age_hours = (current_time - create_time) / 3600
-                        Utils.log(f"Removing old temp file: {os.path.basename(filepath)} (age: {file_age_hours:.1f} hours)")
+                        logger.info(f"Removing old temp file: {os.path.basename(filepath)} (age: {file_age_hours:.1f} hours)")
                         os.remove(filepath)
                 except Exception as e:
-                    Utils.log_yellow(f"Error removing old file {filepath}: {str(e)}")
+                    logger.warning(f"Error removing old file {filepath}: {str(e)}")
                 files_to_remove.append(filepath)
 
         # Clean up tracking dictionary
@@ -86,10 +89,10 @@ class TempDir:
                         try:
                             file_create_time = os.path.getctime(dirpath)
                             if current_time - file_create_time > max_age_seconds:
-                                Utils.log(f"Removing untracked temp file: {dirname}")
+                                logger.info(f"Removing untracked temp file: {dirname}")
                                 os.remove(dirpath)
                         except Exception as e:
-                            Utils.log_yellow(f"Error checking/removing untracked file {dirname}: {str(e)}")
+                            logger.warning(f"Error checking/removing untracked file {dirname}: {str(e)}")
 
     def __init__(self, prefix=prefix):
         self._prefix = prefix
@@ -107,9 +110,9 @@ class TempDir:
                         os.remove(path)
                     else:
                         shutil.rmtree(path)
-                    Utils.log("Purging stale temp item: " + _dir)
+                    logger.info("Purging stale temp item: " + _dir)
                 except Exception as e:
-                    Utils.log_yellow(f"Error purging stale temp item {_dir}: {str(e)}")
+                    logger.warning(f"Error purging stale temp item {_dir}: {str(e)}")
 
     def get_filepath(self, filename=None):
         if filename is None or filename.strip() == "":
