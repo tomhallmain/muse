@@ -505,8 +505,8 @@ class App():
             self.job_queue.job_running = True
             self.destroy_progress_bar()
             self.progress_bar = Progressbar(self.sidebar, orient=HORIZONTAL, length=300, mode='determinate')
-            self.progress_bar.grid(row=9, column=0, columnspan=3, sticky="EW")
-            self.cancel_btn.grid(row=12, column=2)
+            self.progress_bar.grid(row=10, column=0, columnspan=3, sticky="EW")
+            self.cancel_btn.grid(row=13, column=2)
             self.current_run = Run(args, app_actions=self.app_actions)
             self.current_run.execute()
             self.cancel_btn.grid_forget()

@@ -21,6 +21,7 @@ colorama==0.4.6
 confection==0.1.5
 contourpy==1.3.0
 coqpit==0.0.17
+cryptography
 cycler==0.12.1
 cymem==2.0.8
 dateparser==1.1.8
@@ -50,6 +51,7 @@ jieba==0.42.1
 Jinja2==3.1.4
 joblib==1.4.2
 jsonlines==1.2.0
+keyring
 kiwisolver==1.4.7
 langcodes==3.4.1
 language_data==1.2.0
