@@ -1,4 +1,3 @@
-
 from datetime import datetime
 import requests
 
@@ -36,14 +35,64 @@ class OpenWeatherResponse:
                 self.hourly_forecast[hour] = OpenWeatherResponse(hourly_data)
 
     def rain_in_next_5_days(self):
+        """Returns rainy periods grouped by date, with consecutive periods shown as ranges."""
         hours_with_rain = {}
         for hour, hourly_data in self.hourly_forecast.items():
             if hourly_data.rain is not None:
                 date = hourly_data.datetime.strftime("%m/%d (%A)")
                 if date not in hours_with_rain:
                     hours_with_rain[date] = []
-                hours_with_rain[date].append(hourly_data.datetime.strftime("%H:%M"))
-        return hours_with_rain
+                hours_with_rain[date].append(hourly_data.datetime)
+        
+        # Group consecutive periods into ranges
+        rainy_periods = {}
+        for date, datetimes in hours_with_rain.items():
+            if not datetimes:
+                continue
+                
+            # Sort datetimes for the date
+            datetimes.sort()
+            periods = self._group_consecutive_periods(datetimes)
+            rainy_periods[date] = periods
+            
+        return rainy_periods
+    
+    def _group_consecutive_periods(self, datetimes):
+        """Groups consecutive datetime objects into time ranges."""
+        if not datetimes:
+            return []
+            
+        periods = []
+        start_time = datetimes[0]
+        end_time = datetimes[0]
+        
+        for i in range(1, len(datetimes)):
+            current_time = datetimes[i]
+            # Check if this is consecutive (within 3 hours of the previous)
+            time_diff = (current_time - end_time).total_seconds() / 3600
+            
+            if time_diff <= 3:  # Consecutive or same time period
+                end_time = current_time
+            else:
+                # End of consecutive period, add to periods
+                periods.append(self._format_time_range(start_time, end_time))
+                start_time = current_time
+                end_time = current_time
+        
+        # Add the last period
+        periods.append(self._format_time_range(start_time, end_time))
+        return periods
+    
+    def _format_time_range(self, start_time, end_time):
+        """Formats a time range in a readable format."""
+        if start_time == end_time:
+            # Single time point
+            return start_time.strftime("%I:%M %p").lstrip("0")
+        else:
+            # Time range
+            start_str = start_time.strftime("%I:%M %p").lstrip("0")
+            end_str = end_time.strftime("%I:%M %p").lstrip("0")
+            return f"{start_str}-{end_str}"
 
     def forecast_min_max_temps_by_day(self):
         data = {}
@@ -77,11 +126,12 @@ Sunrise: {self.sunrise} hours
 Sunset: {self.sunset} hours"""
         if self.hourly_forecast is not None:
             out += "\nForecast"
-            hours_with_rain = self.rain_in_next_5_days()
+            rainy_periods = self.rain_in_next_5_days()
             for date, date_data in self.forecast_min_max_temps_by_day().items():
                 out += f"\n{date}: Max {date_data['max_temp']}°F Min {date_data['min_temp']}°F"
-                if date_data['rain'] and date in hours_with_rain:
-                    out += f"  Rainy hours: {', '.join(hours_with_rain[date])}"
+                if date_data['rain'] and date in rainy_periods:
+                    periods_str = ', '.join(rainy_periods[date])
+                    out += f"  Rain expected: {periods_str}"
         return out
 
 class OpenWeatherAPI:
