@@ -443,3 +443,45 @@ class HistoryType(Enum):
             HistoryType.FORMS: TrackAttribute.FORM,
             HistoryType.INSTRUMENTS: TrackAttribute.INSTRUMENT
         }[self]
+
+class ProtectedActions(Enum):
+    """Enumeration of actions that can be password protected."""
+    RUN_SEARCH = "run_search"
+    VIEW_LIBRARY = "view_library"
+    VIEW_HISTORY = "view_history"
+    EDIT_COMPOSERS = "edit_composers"
+    EDIT_SCHEDULES = "edit_schedules"
+    EDIT_EXTENSIONS = "edit_extensions"
+    EDIT_PLAYLISTS = "edit_playlists"
+    EDIT_FAVORITES = "edit_favorites"
+    DELETE_MEDIA = "delete_media"
+    EDIT_CONFIGURATION = "edit_configuration"
+    START_APPLICATION = "start_application"
+    ACCESS_ADMIN = "access_admin"
+    
+    @staticmethod
+    def get_action(action_name: str):
+        """Get the ProtectedActions enum value for a given action name."""
+        try:
+            return ProtectedActions(action_name.lower().replace(" ", "_"))
+        except ValueError:
+            return None
+
+    def get_description(self):
+        """Get the user-friendly description for this action."""
+        descriptions = {
+            ProtectedActions.RUN_SEARCH: _("Run Search"),
+            ProtectedActions.VIEW_LIBRARY: _("View Library"),
+            ProtectedActions.VIEW_HISTORY: _("View History"),
+            ProtectedActions.EDIT_COMPOSERS: _("Edit Composers"),
+            ProtectedActions.EDIT_SCHEDULES: _("Edit Schedules"),
+            ProtectedActions.EDIT_EXTENSIONS: _("Edit Extensions"),
+            ProtectedActions.EDIT_PLAYLISTS: _("Edit Playlists"),
+            ProtectedActions.EDIT_FAVORITES: _("Edit Favorites"),
+            ProtectedActions.DELETE_MEDIA: _("Delete Media"),
+            ProtectedActions.EDIT_CONFIGURATION: _("Edit Configuration"),
+            ProtectedActions.START_APPLICATION: _("Start Application"),
+            ProtectedActions.ACCESS_ADMIN: _("Access Password Administration")
+        }
+        return descriptions.get(self, self.value)
+

@@ -1,6 +1,7 @@
 import datetime
 import json
 import os
+import shutil
 
 from utils.encryptor import encrypt_data_to_file, decrypt_data_from_file
 from utils.runner_app_config import RunnerAppConfig
@@ -21,7 +22,12 @@ class AppInfoCache:
     def store(self):
         try:
             cache_data = json.dumps(self._cache).encode('utf-8')
-            encrypt_data_to_file(cache_data, "muse", "app_info_cache", AppInfoCache.CACHE_LOC)
+            encrypt_data_to_file(
+                cache_data,
+                "muse",
+                "app_info_cache",
+                AppInfoCache.CACHE_LOC
+            )
         except Exception as e:
             print(f"Error storing cache: {e}")
             raise e
@@ -36,9 +42,24 @@ class AppInfoCache:
                     self._cache = json.load(f)
                 self.store()
                 os.remove(old_json_loc)
-            else:
-                encrypted_data = decrypt_data_from_file(AppInfoCache.CACHE_LOC, "muse", "app_info_cache")
+            elif os.path.exists(AppInfoCache.CACHE_LOC):
+                encrypted_data = decrypt_data_from_file(
+                    AppInfoCache.CACHE_LOC,
+                    "muse",
+                    "app_info_cache"
+                )
                 self._cache = json.loads(encrypted_data.decode('utf-8'))
+                # The encrypted file did not fail to decrypt, so preserve a backup                
+                backup_loc = AppInfoCache.CACHE_LOC + ".bak"
+                backup_loc2 = AppInfoCache.CACHE_LOC + ".bak2"
+                text = f"Loaded cache from {AppInfoCache.CACHE_LOC}, shifted backups to {backup_loc}"
+                if os.path.exists(backup_loc):
+                    shutil.copy2(backup_loc, backup_loc2)
+                    text += f" and {backup_loc2}"
+                shutil.copy2(AppInfoCache.CACHE_LOC, backup_loc)
+                print(text)
+            else:
+                print(f"No cache file found at {AppInfoCache.CACHE_LOC}, creating new cache")
         except FileNotFoundError:
             pass
 

@@ -13,11 +13,13 @@ import tkinter.font as fnt
 from tkinter.ttk import Button, Entry, OptionMenu, Progressbar, Scale, Style
 from ttkthemes import ThemedTk
 
-from utils.globals import Globals, PlaylistSortType, PlaybackMasterStrategy, TrackAttribute
+from utils.globals import Globals, PlaylistSortType, PlaybackMasterStrategy, ProtectedActions, TrackAttribute
 
 # Local imports - UI components
 from lib.autocomplete_entry import AutocompleteEntry, matches
 from library_data.library_data import LibraryData
+from ui.auth.password_admin_window import PasswordAdminWindow
+from ui.auth.password_utils import require_password
 from ui.app_actions import AppActions
 from ui.app_style import AppStyle
 from ui.composers_window import ComposersWindow
@@ -157,6 +159,7 @@ class App():
         self.tools_menu.add_command(label=_("Text to Speech"), command=self.open_tts_window)
         self.tools_menu.add_separator()
         self.tools_menu.add_command(label=_("Configuration"), command=self.open_configuration_window)
+        self.tools_menu.add_command(label=_("Security Configuration"), command=self.open_password_admin_window)
 
         self.app_actions = AppActions({
             "track_details_callback": self.update_track_text,
@@ -310,6 +313,7 @@ class App():
         self.master.bind("<Home>", lambda event: self.first_config())
         self.master.bind("<End>", lambda event: self.first_config(end=True))
         self.master.bind("<Control-q>", self.quit)
+        self.master.bind("<Control-p>", self.open_password_admin_window)
         self.master.bind("<Control-l>", lambda event: Utils.open_log_file())
         self.toggle_theme()
         self.master.update()
@@ -632,6 +636,7 @@ class App():
 
     #     Utils.start_thread(run_preset_async, use_asyncio=False, args=[])
 
+    @require_password(ProtectedActions.VIEW_LIBRARY)
     def open_library_window(self, event=None):
         try:
             LibraryWindow(self.master, self.app_actions, self.library_data)
@@ -639,6 +644,7 @@ class App():
             logger.error(f"Exception opening library window: {e}")
             raise e
 
+    @require_password(ProtectedActions.EDIT_COMPOSERS)
     def open_composers_window(self):
         try:
             composers_window = ComposersWindow(self.master, self.app_actions)
@@ -646,6 +652,7 @@ class App():
             logger.error(f"Exception opening composers window: {e}")
             raise e
 
+    @require_password(ProtectedActions.EDIT_SCHEDULES)
     def open_schedules_window(self):
         try:
             schedules_window = SchedulesWindow(self.master, self.app_actions)
@@ -653,6 +660,7 @@ class App():
             logger.error(f"Exception opening schedules window: {e}")
             raise e
 
+    @require_password(ProtectedActions.RUN_SEARCH)
     def open_search_window(self):
         try:
             search_window = SearchWindow(self.master, self.app_actions, self.library_data)
@@ -667,12 +675,14 @@ class App():
         except Exception as e:
             self.alert(_("Error"), str(e), kind="error")
 
+    @require_password(ProtectedActions.EDIT_EXTENSIONS)
     def open_extensions_window(self):
         try:
             extensions_window = ExtensionsWindow(self.master, self.app_actions)
         except Exception as e:
             logger.error(f"Exception opening extensions window: {e}")
 
+    @require_password(ProtectedActions.EDIT_PLAYLISTS)
     def open_playlist_window(self):
         try:
             playlist_window = MasterPlaylistWindow(self.master, self.app_actions)
@@ -697,6 +707,7 @@ class App():
         except Exception as e:
             logger.error(f"Exception opening TTS window: {e}")
 
+    @require_password(ProtectedActions.EDIT_FAVORITES)
     def open_favorites_window(self):
         try:
             favorites_window = FavoritesWindow(self.master, self.app_actions, self.library_data)
@@ -704,6 +715,7 @@ class App():
             logger.error(f"Exception opening favorites window: {e}")
             raise e
 
+    @require_password(ProtectedActions.VIEW_HISTORY)
     def open_history_window(self):
         try:
             history_window = HistoryWindow(self.master, self.app_actions, self.library_data)
@@ -711,12 +723,20 @@ class App():
             logger.error(f"Exception opening history window: {e}")
             raise e
 
+    @require_password(ProtectedActions.EDIT_CONFIGURATION)
     def open_configuration_window(self):
         try:
             configuration_window = ConfigurationWindow(self.master, self.app_actions)
         except Exception as e:
             logger.error(f"Exception opening configuration window: {e}")
             raise e
+
+    @require_password(ProtectedActions.ACCESS_ADMIN)
+    def open_password_admin_window(self, event=None):
+        try:
+            password_admin_window = PasswordAdminWindow(self.master, self.app_actions)
+        except Exception as e:
+            self.handle_error(str(e), title="Password Admin Window Error")
 
     def get_directories(self):
         directories = []
