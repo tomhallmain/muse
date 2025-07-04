@@ -7,8 +7,10 @@ from tkinter.ttk import Button, Entry
 from lib.tk_scroll_demo import ScrollFrame
 from library_data.composer import Composer, ComposersDataSearch, ComposersData
 from ui.app_style import AppStyle
+from ui.auth.password_utils import require_password
 # from ui.base_window import BaseWindow
 from utils.app_info_cache import app_info_cache
+from utils.globals import ProtectedActions
 from utils.logging_setup import get_logger
 from utils.translations import I18N
 from utils.utils import Utils
@@ -189,6 +191,7 @@ class ComposerDetailsWindow():
                 self.end_date.set(fixes['end_date'])
             self.master.update()
 
+    @require_password(ProtectedActions.EDIT_COMPOSERS)
     def finalize_composer(self, event=None):
         # Create a temporary composer with current UI values
         temp_composer = Composer(
@@ -247,6 +250,7 @@ class ComposerDetailsWindow():
         else:
             self.app_actions.alert(_("Error"), _("Failed to save composer:") + "\n\n" + error_msg, type="error")
 
+    @require_password(ProtectedActions.EDIT_COMPOSERS)
     def delete_composer(self, event=None):
         """Delete the current composer after confirmation"""
         res = self.app_actions.alert(_("Delete composer"), 
@@ -541,11 +545,13 @@ class ComposersWindow:
             open_details_btn = None
             self.add_btn("search_btn", _("Search"), self.do_search, row=0)
 
+    @require_password(ProtectedActions.EDIT_COMPOSERS)
     def open_details(self, composer):
         if ComposersWindow.details_window is not None:
             ComposersWindow.details_window.master.destroy()
         ComposersWindow.details_window = ComposerDetailsWindow(ComposersWindow.top_level, self, composer)
 
+    @require_password(ProtectedActions.EDIT_COMPOSERS)
     def new_composer(self):
         """Open the composer details window to create a new composer"""
         if ComposersWindow.details_window is not None:

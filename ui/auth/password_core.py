@@ -4,16 +4,9 @@ This module contains the foundational password management and configuration clas
 It has no dependencies on other password modules to avoid circular imports.
 """
 
-import os
-from utils.globals import Globals, ProtectedActions
+from utils.globals import AppInfo, ProtectedActions
 from utils.app_info_cache import app_info_cache
-#from utils.encryptor import store_encrypted_password, retrieve_encrypted_password, delete_stored_password
-def store_encrypted_password(*args, **kwargs):
-    return True
-def retrieve_encrypted_password(*args, **kwargs):
-    return None
-def delete_stored_password(*args, **kwargs):
-    return True
+from utils.encryptor import store_encrypted_password, retrieve_encrypted_password, delete_stored_password
 
 
 class SecurityConfig:
@@ -21,18 +14,18 @@ class SecurityConfig:
     
     # Default password-protected actions
     DEFAULT_PROTECTED_ACTIONS = {
-        ProtectedActions.RUN_SEARCH: False,
-        ProtectedActions.VIEW_LIBRARY: False,
-        ProtectedActions.VIEW_HISTORY: False,
-        ProtectedActions.EDIT_COMPOSERS: False,
-        ProtectedActions.EDIT_SCHEDULES: True,
-        ProtectedActions.EDIT_EXTENSIONS: False,
-        ProtectedActions.EDIT_PLAYLISTS: False,
-        ProtectedActions.EDIT_FAVORITES: False,
-        ProtectedActions.DELETE_MEDIA: True,
-        ProtectedActions.EDIT_CONFIGURATION: False,
-        ProtectedActions.START_APPLICATION: False,
-        ProtectedActions.ACCESS_ADMIN: True  #Always protected
+        ProtectedActions.RUN_SEARCH.value: False,
+        ProtectedActions.VIEW_LIBRARY.value: False,
+        ProtectedActions.VIEW_HISTORY.value: False,
+        ProtectedActions.EDIT_COMPOSERS.value: False,
+        ProtectedActions.EDIT_SCHEDULES.value: True,
+        ProtectedActions.EDIT_EXTENSIONS.value: False,
+        ProtectedActions.EDIT_PLAYLISTS.value: False,
+        ProtectedActions.EDIT_FAVORITES.value: False,
+        ProtectedActions.DELETE_MEDIA.value: True,
+        ProtectedActions.EDIT_CONFIGURATION.value: False,
+        ProtectedActions.START_APPLICATION.value: False,
+        ProtectedActions.ACCESS_ADMIN.value: True  #Always protected
     }
     
     # Default session timeout settings (in minutes)
@@ -119,8 +112,8 @@ class PasswordManager:
         try:
             # Check if password exists in encrypted storage
             stored_password = retrieve_encrypted_password(
-                Globals.SERVICE_NAME,
-                Globals.APP_IDENTIFIER,
+                AppInfo.SERVICE_NAME,
+                AppInfo.APP_IDENTIFIER,
                 PasswordManager.PASSWORD_ID
             )
             PasswordManager._security_configured_cache = stored_password is not None and len(stored_password) > 0
@@ -135,8 +128,8 @@ class PasswordManager:
         try:
             # Store the password using encrypted storage
             success = store_encrypted_password(
-                Globals.SERVICE_NAME,
-                Globals.APP_IDENTIFIER,
+                AppInfo.SERVICE_NAME,
+                AppInfo.APP_IDENTIFIER,
                 PasswordManager.PASSWORD_ID,
                 password
             )
@@ -153,8 +146,8 @@ class PasswordManager:
         try:
             # Retrieve the stored password from encrypted storage
             stored_password = retrieve_encrypted_password(
-                Globals.SERVICE_NAME,
-                Globals.APP_IDENTIFIER,
+                AppInfo.SERVICE_NAME,
+                AppInfo.APP_IDENTIFIER,
                 PasswordManager.PASSWORD_ID
             )
             
@@ -173,8 +166,8 @@ class PasswordManager:
         try:
             # Remove the password from encrypted storage
             delete_stored_password(
-                Globals.SERVICE_NAME,
-                Globals.APP_IDENTIFIER,
+                AppInfo.SERVICE_NAME,
+                AppInfo.APP_IDENTIFIER,
                 PasswordManager.PASSWORD_ID
             )
             PasswordManager._security_configured_cache = False

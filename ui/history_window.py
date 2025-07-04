@@ -1,8 +1,8 @@
 from tkinter import Toplevel, Frame, Label, StringVar, LEFT, RIGHT, W, Entry
 from tkinter.ttk import Button, OptionMenu
 
-from utils.globals import HistoryType
-
+from utils.globals import HistoryType, ProtectedActions
+from ui.auth.password_utils import require_password
 from lib.tk_scroll_demo import ScrollFrame
 from muse.playlist import Playlist
 from ui.app_style import AppStyle
@@ -136,11 +136,13 @@ class HistoryWindow:
         # Show tracks history by default
         self.show_history(HistoryType.TRACKS.get_translation())
 
+    @require_password(ProtectedActions.VIEW_HISTORY)
     def do_search(self, event=None):
         search_term = self.search_term.get().strip()
         self.history_data_search = HistoryDataSearch(search_term, HistoryWindow.MAX_RESULTS)
         self._do_search()
 
+    @require_password(ProtectedActions.VIEW_HISTORY)
     def _do_search(self, event=None):
         assert self.history_data_search is not None
         self._refresh_widgets(add_results=False)
@@ -219,6 +221,7 @@ class HistoryWindow:
                                    command=lambda t=track: self.app_actions.open_track_details(t))
                 details_btn.pack(side=RIGHT, padx=5)
 
+    @require_password(ProtectedActions.EDIT_FAVORITES)
     def add_favorite(self, value: str, history_type: HistoryType):
         """Add the selected item to favorites."""
         from library_data.favorite import Favorite

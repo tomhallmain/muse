@@ -7,9 +7,11 @@ from tkinter.ttk import Entry, Button
 from muse.schedule import Schedule
 from muse.schedules_manager import schedules_manager
 from tts.speakers import speakers
+from ui.auth.password_utils import require_password
 from ui.app_style import AppStyle
 from ui.base_window import BaseWindow
 from utils.app_info_cache import app_info_cache
+from utils.globals import ProtectedActions
 from utils.runner_app_config import RunnerAppConfig
 from utils.translations import I18N
 
@@ -110,6 +112,7 @@ class ScheduleModifyWindow(BaseWindow):
     def get_active_weekday_indices(self):
         return [i for i, var in enumerate(self.days_of_the_week_var_list) if var.get()]
 
+    @require_password(ProtectedActions.EDIT_SCHEDULES)
     def finalize_schedule(self, event=None):
         self.schedule.name = self.new_schedule_name.get()
         self.schedule.voice = self.voice_var.get()
@@ -206,18 +209,19 @@ class SchedulesWindow(BaseWindow):
 
             modify_schedule_btn = Button(self.frame, text=_("Modify"))
             self.set_schedule_btn_list.append(modify_schedule_btn)
-            modify_schedule_btn.grid(row=row, column=base_col+2)
+            modify_schedule_btn.grid(row=row, column=base_col+1)
             def modify_schedule_handler(event, self=self, schedule=schedule):
                 return self.open_schedule_modify_window(event, schedule)
             modify_schedule_btn.bind("<Button-1>", modify_schedule_handler)
 
             delete_schedule_btn = Button(self.frame, text=_("Delete"))
             self.delete_schedule_btn_list.append(delete_schedule_btn)
-            delete_schedule_btn.grid(row=row, column=base_col+3)
+            delete_schedule_btn.grid(row=row, column=base_col+2)
             def delete_schedule_handler(event, self=self, schedule=schedule):
                 return self.delete_schedule(event, schedule)
             delete_schedule_btn.bind("<Button-1>", delete_schedule_handler)
 
+    @require_password(ProtectedActions.EDIT_SCHEDULES)
     def open_schedule_modify_window(self, event=None, schedule=None):
         if SchedulesWindow.schedule_modify_window is not None:
             SchedulesWindow.schedule_modify_window.master.destroy()
@@ -231,6 +235,7 @@ class SchedulesWindow(BaseWindow):
     def set_schedule(self, schedule):
         pass
 
+    @require_password(ProtectedActions.EDIT_SCHEDULES)
     def delete_schedule(self, event=None, schedule=None):
         schedules_manager.delete_schedule(schedule)
         self.refresh()
@@ -312,6 +317,7 @@ class SchedulesWindow(BaseWindow):
                 schedule = schedules_manager.last_set_schedule
             self.set_schedule(schedule=schedule)
 
+    @require_password(ProtectedActions.EDIT_SCHEDULES)
     def clear_recent_schedules(self, event=None):
         self.clear_widget_lists()
         schedules_manager.recent_schedules.clear()

@@ -154,6 +154,7 @@ class App():
         self.tools_menu = Menu(self.menu_bar, tearoff=0)
         self.menu_bar.add_cascade(label=_("Tools"), menu=self.tools_menu)
         self.tools_menu.add_command(label=_("Search"), command=self.open_search_window)
+        self.tools_menu.add_command(label=_("Schedules"), command=self.open_schedules_window)
         self.tools_menu.add_command(label=_("Extensions"), command=self.open_extensions_window)
         self.tools_menu.add_command(label=_("Weather"), command=self.open_weather_window)
         self.tools_menu.add_command(label=_("Text to Speech"), command=self.open_tts_window)

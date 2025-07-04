@@ -3,11 +3,12 @@ from tkinter.ttk import Button, Entry
 
 from lib.tk_scroll_demo import ScrollFrame
 from library_data.library_data import LibraryDataSearch
+from ui.auth.password_utils import require_password
 from ui.app_style import AppStyle
 from ui.base_window import BaseWindow
 from utils.app_info_cache import app_info_cache
 from utils.config import config
-from utils.globals import PlaylistSortType
+from utils.globals import PlaylistSortType, ProtectedActions
 from utils.translations import I18N
 from utils.utils import Utils
 from utils.logging_setup import get_logger
@@ -288,6 +289,7 @@ class SearchWindow(BaseWindow):
             remove_btn.bind("<Button-1>", remove_handler)
         self.master.update()
 
+    @require_password(ProtectedActions.RUN_SEARCH)
     def do_search(self, event=None):
         all = self.all.get().strip()
         title = self.title.get().strip()
@@ -316,6 +318,7 @@ class SearchWindow(BaseWindow):
         self.form.set(library_data_search.form)
         self.library_data_search = library_data_search
 
+    @require_password(ProtectedActions.RUN_SEARCH)
     def _do_search(self, event=None, overwrite=False):
         assert self.library_data_search is not None
         self._refresh_widgets(add_results=False)

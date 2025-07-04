@@ -6,6 +6,11 @@ from utils.translations import I18N
 _ = I18N._
 
 
+class AppInfo:
+    SERVICE_NAME = "MyPersonalApplicationsService"
+    APP_IDENTIFIER = "muse"
+
+
 class Globals:
     HOME = os.path.expanduser("~")
     DELAY_TIME_SECONDS = 5

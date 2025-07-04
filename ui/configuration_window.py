@@ -3,8 +3,10 @@ from tkinter.ttk import Notebook, Button, Entry
 from tkinter.constants import W, BOTH, YES
 
 from ui.app_style import AppStyle
+from ui.auth.password_utils import require_password
 from ui.base_window import BaseWindow
 from utils.config import config
+from utils.globals import ProtectedActions
 from utils.translations import I18N
 
 _ = I18N._
@@ -135,6 +137,7 @@ class ConfigurationWindow(BaseWindow):
         else:
             self.on_closing()
 
+    @require_password(ProtectedActions.EDIT_CONFIGURATION)
     def save_config(self):
         """Save configuration to file"""
         try:

@@ -3,11 +3,13 @@ import json
 import os
 import shutil
 
+from utils.globals import AppInfo
 from utils.encryptor import encrypt_data_to_file, decrypt_data_from_file
 from utils.runner_app_config import RunnerAppConfig
 
 class AppInfoCache:
     CACHE_LOC = os.path.join(os.path.dirname(os.path.abspath(os.path.dirname(__file__))), "app_info_cache.enc")
+    JSON_LOC = os.path.join(os.path.dirname(os.path.abspath(os.path.dirname(__file__))), "app_info_cache.json")
     INFO_KEY = "info"
     HISTORY_KEY = "history"
     DIRECTORIES_KEY = "directories"
@@ -24,8 +26,8 @@ class AppInfoCache:
             cache_data = json.dumps(self._cache).encode('utf-8')
             encrypt_data_to_file(
                 cache_data,
-                "muse",
-                "app_info_cache",
+                AppInfo.SERVICE_NAME,
+                AppInfo.APP_IDENTIFIER,
                 AppInfoCache.CACHE_LOC
             )
         except Exception as e:
@@ -34,19 +36,18 @@ class AppInfoCache:
 
     def load(self):
         try:
-            old_json_loc = AppInfoCache.CACHE_LOC.replace(".enc", ".json")
-            if os.path.exists(old_json_loc):
-                print(f"Removing old cache file: {old_json_loc}")
+            if os.path.exists(AppInfoCache.JSON_LOC):
+                print(f"Removing old cache file: {AppInfoCache.JSON_LOC}")
                 # Get the old data first
-                with open(old_json_loc, "r") as f:
+                with open(AppInfoCache.JSON_LOC, "r", encoding="utf-8") as f:
                     self._cache = json.load(f)
                 self.store()
-                os.remove(old_json_loc)
+                os.remove(AppInfoCache.JSON_LOC)
             elif os.path.exists(AppInfoCache.CACHE_LOC):
                 encrypted_data = decrypt_data_from_file(
                     AppInfoCache.CACHE_LOC,
-                    "muse",
-                    "app_info_cache"
+                    AppInfo.SERVICE_NAME,
+                    AppInfo.APP_IDENTIFIER
                 )
                 self._cache = json.loads(encrypted_data.decode('utf-8'))
                 # The encrypted file did not fail to decrypt, so preserve a backup                
@@ -155,5 +156,13 @@ class AppInfoCache:
     @staticmethod
     def normalize_directory_key(directory):
         return os.path.normpath(os.path.abspath(directory))
+
+    def export_as_json(self, json_path=None):
+        """Export the current cache as a JSON file (not encrypted)."""
+        if json_path is None:
+            json_path = AppInfoCache.JSON_LOC
+        with open(json_path, "w", encoding="utf-8") as f:
+            json.dump(self._cache, f, ensure_ascii=False, indent=2)
+        return json_path
 
 app_info_cache = AppInfoCache()

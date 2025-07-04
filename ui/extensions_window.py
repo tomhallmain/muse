@@ -9,9 +9,10 @@ from extensions.library_extender import q20, q23
 from lib.tk_scroll_demo import ScrollFrame
 from library_data.library_data import LibraryDataSearch
 from ui.app_style import AppStyle
+from ui.auth.password_utils import require_password
 from ui.base_window import BaseWindow
 # from utils.config import config
-from utils.globals import ExtensionStrategy
+from utils.globals import ExtensionStrategy, ProtectedActions
 from utils.logging_setup import get_logger
 from utils.translations import I18N
 
@@ -306,6 +307,7 @@ class ExtensionsWindow(BaseWindow):
         except KeyError:
             logger.warning(f"Invalid strategy selected: {self.strategy_var.get()}")
 
+    @require_password(ProtectedActions.EDIT_EXTENSIONS)
     def _clear_history(self):
         """Clear the extension history."""
         res = self.app_actions.alert(_("Confirm Clear"), 
@@ -330,10 +332,13 @@ class ExtensionsWindow(BaseWindow):
         """Set the window title."""
         ExtensionsWindow.top_level.title(_("Extensions") + " - " + extra_text)
 
+    @require_password(ProtectedActions.EDIT_EXTENSIONS)
     def _show_extension_details(self, extension):
         """Show details for a specific extension."""
         ExtensionDetailsWindow(self.master, extension)
 
+    @require_password(ProtectedActions.EDIT_EXTENSIONS)
+    @require_password(ProtectedActions.DELETE_MEDIA)
     def _delete_extension(self, extension):
         """Delete a specific extension."""
         res = self.app_actions.alert(_("Confirm Delete"), 

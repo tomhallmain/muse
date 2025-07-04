@@ -5,12 +5,13 @@ from tkinter.ttk import Button, Entry, OptionMenu
 from lib.tk_scroll_demo import ScrollFrame
 from library_data.favorite import Favorite
 from ui.app_style import AppStyle
+from ui.auth.password_utils import require_password
 # from ui.base_window import BaseWindow
 from utils.app_info_cache import app_info_cache
 from utils.logging_setup import get_logger
 from utils.translations import I18N
 from utils.utils import Utils
-from utils.globals import TrackAttribute
+from utils.globals import ProtectedActions, TrackAttribute
 
 _ = I18N._
 
@@ -281,6 +282,7 @@ class FavoritesWindow:
         self.results_frame.after(1, lambda: self.results_frame.focus_force())
         Utils.start_thread(self.show_recent_favorites, use_asyncio=False)
 
+    @require_password(ProtectedActions.EDIT_FAVORITES)
     def create_favorite_from_current(self):
         """Open FavoriteWindow to create a new favorite from the current track's selected attribute"""
         current_track = self.app_actions.get_current_track()
@@ -317,6 +319,7 @@ class FavoritesWindow:
             is_new=True
         )
 
+    @require_password(ProtectedActions.EDIT_FAVORITES)
     def create_favorite(self, favorite, is_new=False):
         """Create a new favorite or update an existing one"""
         if FavoritesWindow.add_favorite(favorite, is_new, self.app_actions):
@@ -518,6 +521,7 @@ class FavoritesWindow:
                     self._refresh_widgets()
             remove_btn.bind("<Button-1>", remove_handler)
 
+    @require_password(ProtectedActions.EDIT_FAVORITES)
     def open_details(self, favorite):
         if FavoritesWindow.details_window is not None:
             FavoritesWindow.details_window.master.destroy()
