@@ -3,8 +3,8 @@ import json
 import os
 import shutil
 
-from utils.globals import AppInfo
 from utils.encryptor import encrypt_data_to_file, decrypt_data_from_file
+from utils.globals import AppInfo
 from utils.runner_app_config import RunnerAppConfig
 
 class AppInfoCache:
@@ -20,6 +20,9 @@ class AppInfoCache:
         self._cache = {AppInfoCache.INFO_KEY: {}, AppInfoCache.HISTORY_KEY: [], AppInfoCache.DIRECTORIES_KEY: {}}
         self.load()
         self.validate()
+
+    def wipe_instance(self):
+        self._cache = {AppInfoCache.INFO_KEY: {}, AppInfoCache.HISTORY_KEY: [], AppInfoCache.DIRECTORIES_KEY: {}}
 
     def store(self):
         try:

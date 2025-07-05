@@ -312,7 +312,7 @@ class LibraryData:
                     # Call status callback every 1000 files or at the end
                     if any_callback and (i % 1000 == 999 or i == total_files - 1):
                         try:
-                            message = f"Refreshing cache... ({i + 1}/{total_files} files)"
+                            message = _("Refreshing cache... ({0}/{1} files)").format(i + 1, total_files)
                             if search_status_callback:
                                 search_status_callback(message)
                             if app_actions:
@@ -378,7 +378,8 @@ class LibraryData:
             # Call status callback every 5000 files or at the end
             if search_status_callback and (i % 5000 == 4999 or i == total_files - 1):
                 try:
-                    search_status_callback(f"Searching for tracks... ({i + 1} files searched, {total_files - i} files may be remaining)")
+                    search_status_callback(_(
+                        "Searching for tracks... ({0} files searched, {1} files may be remaining)").format(i + 1, total_files - i))
                 except Exception as e:
                     logger.error(f"Error in status callback: {e}")
 

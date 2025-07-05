@@ -360,6 +360,7 @@ class App():
         #         self.server.stop()
         #     except Exception as e:
         #         logger.warning(f"Error stopping server: {e}")
+        app_info_cache.wipe_instance()  # Ensure the pyc file has no data
         FFmpegHandler.cleanup_cache()
         TempDir.cleanup()
         self.master.destroy()
