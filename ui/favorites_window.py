@@ -1,3 +1,5 @@
+import random
+
 from tkinter import Toplevel, Frame, Label, Checkbutton, BooleanVar, StringVar, LEFT, W
 import tkinter.font as fnt
 from tkinter.ttk import Button, Entry, OptionMenu
@@ -276,6 +278,9 @@ class FavoritesWindow:
 
         self.search_btn = None
         self.add_btn("search_btn", _("Search"), self.do_search, row=2)
+        
+        # Add Play Random Favorite button
+        self.add_btn("play_random_btn", _("Play Random Favorite"), self.play_random_favorite, row=2, column=1)
 
         self.master.bind("<Escape>", self.close_windows)
         self.master.protocol("WM_DELETE_WINDOW", self.close_windows)
@@ -596,6 +601,18 @@ class FavoritesWindow:
                 error_msg += "\n\n" + _("Tip: If you've recently added or moved files, try checking 'Overwrite Cache' in the search options.")
             logger.error(f"Error playing favorite: {error_msg}")
             self.app_actions.alert(_("Error"), error_msg, kind="error")
+
+    def play_random_favorite(self):
+        """Randomly select and play a favorite."""
+        if not FavoritesWindow.recent_favorites:
+            self.app_actions.alert(_("No Favorites"), _("No favorites available to play."))
+            return
+            
+        # Randomly select a favorite
+        random_favorite = random.choice(FavoritesWindow.recent_favorites)
+        
+        # Play the selected favorite
+        self._play_favorite(random_favorite)
 
 
 class FavoriteWindow:

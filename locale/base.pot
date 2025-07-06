@@ -1,14 +1,14 @@
 # Translations template for APPLICATION.
-# Copyright (C) 2025 THOMAS HALL <tomhall.main@gmail.com>
+# Copyright (C) 2025 AUTHOR NAME <author@example.com>
 # This file is distributed under the same license as the APPLICATION project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: APPLICATION 1.0\n"
-"Report-Msgid-Bugs-To: Thomas Hall <tomhall.main@gmail.com>\n"
-"POT-Creation-Date: 2025-07-06 15:22-0400\n"
-"PO-Revision-Date: 2025-07-06 15:22-0400\n"
+"Report-Msgid-Bugs-To: Translator Name <translator@example.com>\n"
+"POT-Creation-Date: 2025-07-06 16:26-0400\n"
+"PO-Revision-Date: 2025-07-06 16:26-0400\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -48,7 +48,7 @@ msgstr ""
 msgid "Playlists"
 msgstr ""
 
-#: app.py:149 app.py:279 ui/favorites_window.py:230 ui/favorites_window.py:558
+#: app.py:149 app.py:279 ui/favorites_window.py:232 ui/favorites_window.py:563
 msgid "Favorites"
 msgstr ""
 
@@ -64,7 +64,7 @@ msgstr ""
 msgid "Tools"
 msgstr ""
 
-#: app.py:156 ui/composers_window.py:394 ui/composers_window.py:427 ui/composers_window.py:546 ui/favorites_window.py:278
+#: app.py:156 ui/composers_window.py:394 ui/composers_window.py:427 ui/composers_window.py:546 ui/favorites_window.py:280
 #: ui/history_window.py:130 ui/network_media_window.py:108 ui/network_media_window.py:160 ui/network_media_window.py:338
 #: ui/search_window.py:143 ui/search_window.py:260 ui/search_window.py:521
 msgid "Search"
@@ -130,7 +130,7 @@ msgstr ""
 msgid "Volume"
 msgstr ""
 
-#: app.py:235 ui/extensions_window.py:269 ui/favorites_window.py:367 ui/favorites_window.py:502
+#: app.py:235 ui/extensions_window.py:269 ui/favorites_window.py:372 ui/favorites_window.py:507
 #: ui/network_media_window.py:168 ui/network_media_window.py:268 ui/search_window.py:268 ui/search_window.py:440
 msgid "Play"
 msgstr ""
@@ -213,7 +213,7 @@ msgstr ""
 
 #: app.py:678 app.py:859 app.py:870 app.py:900 ui/auth/password_dialog.py:170 ui/composers_window.py:251
 #: ui/composers_window.py:266 ui/configuration_window.py:155 ui/configuration_window.py:158 ui/extensions_window.py:378
-#: ui/favorites_window.py:598 ui/playlist_window.py:326 ui/track_details_window.py:217
+#: ui/favorites_window.py:603 ui/playlist_window.py:326 ui/track_details_window.py:217
 msgid "Error"
 msgstr ""
 
@@ -297,7 +297,7 @@ msgstr ""
 msgid "Start date cannot be after end date"
 msgstr ""
 
-#: library_data/composer.py:192 library_data/library_data.py:68 ui/favorites_window.py:36 ui/history_window.py:31
+#: library_data/composer.py:192 library_data/library_data.py:68 ui/favorites_window.py:38 ui/history_window.py:31
 msgid "({0} results)"
 msgstr ""
 
@@ -710,7 +710,7 @@ msgstr ""
 msgid "No recent searches found."
 msgstr ""
 
-#: ui/composers_window.py:538 ui/extensions_window.py:261 ui/favorites_window.py:374 ui/favorites_window.py:509
+#: ui/composers_window.py:538 ui/extensions_window.py:261 ui/favorites_window.py:379 ui/favorites_window.py:514
 #: ui/history_window.py:220 ui/history_window.py:292 ui/network_media_window.py:261 ui/search_window.py:433
 msgid "Details"
 msgstr ""
@@ -921,7 +921,7 @@ msgstr ""
 msgid "No original filename or id found in extension data"
 msgstr ""
 
-#: ui/extensions_window.py:376 ui/favorites_window.py:596
+#: ui/extensions_window.py:376 ui/favorites_window.py:601
 msgid "Tip: If you've recently added or moved files, try checking 'Overwrite Cache' in the search options."
 msgstr ""
 
@@ -977,63 +977,75 @@ msgstr ""
 msgid "File:"
 msgstr ""
 
-#: ui/auth/password_admin_window.py:225 ui/extensions_window.py:500 ui/favorites_window.py:680
+#: ui/auth/password_admin_window.py:225 ui/extensions_window.py:500 ui/favorites_window.py:697
 msgid "Close"
 msgstr ""
 
-#: ui/favorites_window.py:200 ui/favorites_window.py:209 ui/favorites_window.py:213
+#: ui/favorites_window.py:202 ui/favorites_window.py:211 ui/favorites_window.py:215
 msgid "Favorite Exists"
 msgstr ""
 
-#: ui/favorites_window.py:201 ui/favorites_window.py:210 ui/favorites_window.py:214
+#: ui/favorites_window.py:203 ui/favorites_window.py:212 ui/favorites_window.py:216
 msgid "This favorite already exists."
 msgstr ""
 
-#: ui/favorites_window.py:224
+#: ui/favorites_window.py:226
 msgid "Favorite updated successfully."
 msgstr ""
 
-#: ui/favorites_window.py:253
+#: ui/favorites_window.py:255
 msgid "Create Favorite From Current Track"
 msgstr ""
 
-#: ui/favorites_window.py:261 ui/favorites_window.py:669
+#: ui/favorites_window.py:263 ui/favorites_window.py:686
 msgid "Create Favorite"
 msgstr ""
 
-#: ui/favorites_window.py:266
+#: ui/favorites_window.py:268
 msgid "Search Favorites"
 msgstr ""
 
-#: ui/favorites_window.py:333
+#: ui/favorites_window.py:283
+msgid "Play Random Favorite"
+msgstr ""
+
+#: ui/favorites_window.py:338
 msgid "No favorites found."
 msgstr ""
 
-#: ui/favorites_window.py:358 ui/favorites_window.py:493
+#: ui/favorites_window.py:363 ui/favorites_window.py:498
 msgid "No title or filepath available"
 msgstr ""
 
-#: ui/favorites_window.py:381 ui/favorites_window.py:516 ui/search_window.py:284
+#: ui/favorites_window.py:386 ui/favorites_window.py:521 ui/search_window.py:284
 msgid "Remove"
 msgstr ""
 
-#: ui/favorites_window.py:581
+#: ui/favorites_window.py:586
 msgid "No valid play query could be generated for this favorite"
 msgstr ""
 
 #: ui/favorites_window.py:608
+msgid "No Favorites"
+msgstr ""
+
+#: ui/favorites_window.py:608
+msgid "No favorites available to play."
+msgstr ""
+
+#: ui/favorites_window.py:625
 msgid "Favorite Details"
 msgstr ""
 
-#: ui/favorites_window.py:645
+#: ui/favorites_window.py:662
 msgid "Type: Track"
 msgstr ""
 
-#: ui/favorites_window.py:669
+#: ui/favorites_window.py:686
 msgid "Update Favorite"
 msgstr ""
 
-#: ui/favorites_window.py:675
+#: ui/favorites_window.py:692
 msgid "Remove Favorite"
 msgstr ""
 
