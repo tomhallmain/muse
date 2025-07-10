@@ -309,6 +309,7 @@ class App():
         self.master.bind("<F11>", self.toggle_fullscreen)
         self.master.bind("<Shift-F>", self.toggle_fullscreen)
         self.master.bind("<Control-C>", self.copy_album_art)
+        self.master.bind("<Control-P>", self.open_password_admin_window)
         self.master.bind("<Prior>", lambda event: self.one_config_away(change=1))
         self.master.bind("<Next>", lambda event: self.one_config_away(change=-1))
         self.master.bind("<Home>", lambda event: self.first_config())
