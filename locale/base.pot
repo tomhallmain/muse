@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: APPLICATION 1.0\n"
 "Report-Msgid-Bugs-To: Translator Name <translator@example.com>\n"
-"POT-Creation-Date: 2025-07-06 16:26-0400\n"
-"PO-Revision-Date: 2025-07-06 16:26-0400\n"
+"POT-Creation-Date: 2025-07-14 10:22-0400\n"
+"PO-Revision-Date: 2025-07-14 10:22-0400\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -191,69 +191,69 @@ msgstr ""
 msgid "Thorough playlist memory check"
 msgstr ""
 
-#: app.py:369
+#: app.py:370
 msgid "Confirm Quit"
 msgstr ""
 
-#: app.py:369
+#: app.py:370
 msgid "Would you like to quit the application?"
 msgstr ""
 
-#: app.py:498
+#: app.py:499
 msgid "Confirm Run"
 msgstr ""
 
-#: app.py:499
+#: app.py:500
 msgid "Are you sure you want to proceed?"
 msgstr ""
 
-#: app.py:562
+#: app.py:563
 msgid "Copied album art to clipboard."
 msgstr ""
 
-#: app.py:678 app.py:859 app.py:870 app.py:900 ui/auth/password_dialog.py:170 ui/composers_window.py:251
+#: app.py:679 app.py:860 app.py:871 app.py:901 ui/auth/password_dialog.py:231 ui/composers_window.py:251
 #: ui/composers_window.py:266 ui/configuration_window.py:155 ui/configuration_window.py:158 ui/extensions_window.py:378
 #: ui/favorites_window.py:603 ui/playlist_window.py:326 ui/track_details_window.py:217
 msgid "Error"
 msgstr ""
 
-#: app.py:763 muse/muse_spot_profile.py:209
+#: app.py:764 muse/muse_spot_profile.py:209
 msgid "Track: "
 msgstr ""
 
-#: app.py:764
+#: app.py:765
 msgid "Album: "
 msgstr ""
 
-#: app.py:765
+#: app.py:766
 msgid "Artist: "
 msgstr ""
 
-#: app.py:766
+#: app.py:767
 msgid "Composer: "
 msgstr ""
 
-#: app.py:777
+#: app.py:778
 msgid "Next Up: "
 msgstr ""
 
-#: app.py:786 muse/muse_spot_profile.py:210
+#: app.py:787 muse/muse_spot_profile.py:210
 msgid "Previous Track: "
 msgstr ""
 
-#: app.py:810
+#: app.py:811
 msgid "Directories: {0}"
 msgstr ""
 
-#: app.py:833
+#: app.py:834
 msgid "Staged Playlist: "
 msgstr ""
 
-#: app.py:859
+#: app.py:860
 msgid "Track not found in library for query: "
 msgstr ""
 
-#: app.py:985
+#: app.py:986
 msgid " Muse "
 msgstr ""
 
@@ -977,7 +977,7 @@ msgstr ""
 msgid "File:"
 msgstr ""
 
-#: ui/auth/password_admin_window.py:225 ui/extensions_window.py:500 ui/favorites_window.py:697
+#: ui/auth/password_admin_window.py:234 ui/extensions_window.py:500 ui/favorites_window.py:697
 msgid "Close"
 msgstr ""
 
@@ -1202,8 +1202,8 @@ msgstr ""
 msgid "Add to New Master Playlist"
 msgstr ""
 
-#: ui/auth/password_admin_window.py:403 ui/auth/password_dialog.py:105 ui/auth/password_dialog.py:156
-#: ui/playlist_window.py:318
+#: ui/auth/password_admin_window.py:412 ui/auth/password_dialog.py:139 ui/auth/password_dialog.py:200
+#: ui/auth/password_dialog.py:217 ui/playlist_window.py:318
 msgid "Cancel"
 msgstr ""
 
@@ -1451,220 +1451,224 @@ msgstr ""
 msgid "Error: File is empty"
 msgstr ""
 
-#: ui/auth/password_admin_window.py:19
+#: ui/auth/password_admin_window.py:20
 msgid "Password Administration"
 msgstr ""
 
-#: ui/auth/password_admin_window.py:62
+#: ui/auth/password_admin_window.py:71
 msgid "Password Protection Settings"
 msgstr ""
 
-#: ui/auth/password_admin_window.py:74
+#: ui/auth/password_admin_window.py:83
 msgid "Protected Actions"
 msgstr ""
 
-#: ui/auth/password_admin_window.py:80
+#: ui/auth/password_admin_window.py:89
 msgid "Select which actions require password authentication:"
 msgstr ""
 
-#: ui/auth/password_admin_window.py:96
+#: ui/auth/password_admin_window.py:105
 msgid "(Always protected if a password is set)"
 msgstr ""
 
-#: ui/auth/password_admin_window.py:114
+#: ui/auth/password_admin_window.py:123
 msgid "Session Timeout Settings"
 msgstr ""
 
-#: ui/auth/password_admin_window.py:120
+#: ui/auth/password_admin_window.py:129
 msgid "Enable session timeout (remember password for a period)"
 msgstr ""
 
-#: ui/auth/password_admin_window.py:132
+#: ui/auth/password_admin_window.py:141
 msgid "Session timeout duration (minutes):"
 msgstr ""
 
-#: ui/auth/password_admin_window.py:141
+#: ui/auth/password_admin_window.py:150
 msgid "Password Setup"
 msgstr ""
 
-#: ui/auth/password_admin_window.py:151
+#: ui/auth/password_admin_window.py:160
 msgid "Password is configured"
 msgstr ""
 
-#: ui/auth/password_admin_window.py:157 ui/auth/password_admin_window.py:325 ui/auth/password_admin_window.py:341
-#: ui/auth/password_admin_window.py:400
+#: ui/auth/password_admin_window.py:166 ui/auth/password_admin_window.py:334 ui/auth/password_admin_window.py:350
+#: ui/auth/password_admin_window.py:409
 msgid "Change Password"
 msgstr ""
 
-#: ui/auth/password_admin_window.py:162 ui/auth/password_admin_window.py:413
+#: ui/auth/password_admin_window.py:171 ui/auth/password_admin_window.py:422
 msgid "Remove Password"
 msgstr ""
 
-#: ui/auth/password_admin_window.py:167
+#: ui/auth/password_admin_window.py:176
 msgid "Set up a password to enable protection:"
 msgstr ""
 
-#: ui/auth/password_admin_window.py:177 ui/auth/password_admin_window.py:357
+#: ui/auth/password_admin_window.py:186 ui/auth/password_admin_window.py:366
 msgid "New Password:"
 msgstr ""
 
-#: ui/auth/password_admin_window.py:190
+#: ui/auth/password_admin_window.py:199
 msgid "Confirm Password:"
 msgstr ""
 
-#: ui/auth/password_admin_window.py:199
+#: ui/auth/password_admin_window.py:208
 msgid "Set Password"
 msgstr ""
 
-#: ui/auth/password_admin_window.py:209 ui/auth/password_admin_window.py:255
+#: ui/auth/password_admin_window.py:218 ui/auth/password_admin_window.py:264
 msgid "Reset to Defaults"
 msgstr ""
 
-#: ui/auth/password_admin_window.py:213 ui/auth/password_admin_window.py:275
+#: ui/auth/password_admin_window.py:222 ui/auth/password_admin_window.py:284
 msgid "Set to Current"
 msgstr ""
 
-#: ui/auth/password_admin_window.py:217
+#: ui/auth/password_admin_window.py:226
 msgid "Export Cache as JSON"
 msgstr ""
 
-#: ui/auth/password_admin_window.py:221
+#: ui/auth/password_admin_window.py:230
 msgid "Save Settings"
 msgstr ""
 
-#: ui/auth/password_admin_window.py:249
+#: ui/auth/password_admin_window.py:258
 msgid "Password protection settings saved."
 msgstr ""
 
-#: ui/auth/password_admin_window.py:256
+#: ui/auth/password_admin_window.py:265
 msgid "Are you sure you want to reset all password protection settings to their default values?"
 msgstr ""
 
-#: ui/auth/password_admin_window.py:270
+#: ui/auth/password_admin_window.py:279
 msgid "Settings reset to defaults."
 msgstr ""
 
-#: ui/auth/password_admin_window.py:276
+#: ui/auth/password_admin_window.py:285
 msgid "Are you sure you want to restore all settings to their current saved state? This will discard any unsaved changes."
 msgstr ""
 
-#: ui/auth/password_admin_window.py:291
+#: ui/auth/password_admin_window.py:300
 msgid "Settings restored to current saved state."
 msgstr ""
 
-#: ui/auth/password_admin_window.py:300
+#: ui/auth/password_admin_window.py:309
 msgid "Please enter a password."
 msgstr ""
 
-#: ui/auth/password_admin_window.py:304
+#: ui/auth/password_admin_window.py:313
 msgid "Passwords do not match."
 msgstr ""
 
-#: ui/auth/password_admin_window.py:308 ui/auth/password_admin_window.py:391
+#: ui/auth/password_admin_window.py:317 ui/auth/password_admin_window.py:400
 msgid "Password must be at least 6 characters long."
 msgstr ""
 
-#: ui/auth/password_admin_window.py:312
+#: ui/auth/password_admin_window.py:321
 msgid "Password set successfully."
 msgstr ""
 
-#: ui/auth/password_admin_window.py:319
+#: ui/auth/password_admin_window.py:328
 msgid "Failed to set password."
 msgstr ""
 
-#: ui/auth/password_admin_window.py:348
+#: ui/auth/password_admin_window.py:357
 msgid "Current Password:"
 msgstr ""
 
-#: ui/auth/password_admin_window.py:366
+#: ui/auth/password_admin_window.py:375
 msgid "Confirm New Password:"
 msgstr ""
 
-#: ui/auth/password_admin_window.py:383
+#: ui/auth/password_admin_window.py:392
 msgid "Current password is incorrect."
 msgstr ""
 
-#: ui/auth/password_admin_window.py:387
+#: ui/auth/password_admin_window.py:396
 msgid "New passwords do not match."
 msgstr ""
 
-#: ui/auth/password_admin_window.py:395
+#: ui/auth/password_admin_window.py:404
 msgid "Password changed successfully."
 msgstr ""
 
-#: ui/auth/password_admin_window.py:398
+#: ui/auth/password_admin_window.py:407
 msgid "Failed to change password."
 msgstr ""
 
-#: ui/auth/password_admin_window.py:414
+#: ui/auth/password_admin_window.py:423
 msgid "Are you sure you want to remove password protection? This will disable all password requirements."
 msgstr ""
 
-#: ui/auth/password_admin_window.py:419
+#: ui/auth/password_admin_window.py:428
 msgid "Password removed successfully."
 msgstr ""
 
-#: ui/auth/password_admin_window.py:423
+#: ui/auth/password_admin_window.py:432
 msgid "Failed to remove password."
 msgstr ""
 
-#: ui/auth/password_admin_window.py:458
+#: ui/auth/password_admin_window.py:467
 msgid "Cache exported as JSON to:"
 msgstr ""
 
-#: ui/auth/password_admin_window.py:460
+#: ui/auth/password_admin_window.py:469
 msgid "Failed to export cache as JSON:"
 msgstr ""
 
-#: ui/auth/password_dialog.py:29 ui/auth/password_dialog.py:73
+#: ui/auth/password_dialog.py:38 ui/auth/password_dialog.py:93
 msgid "Password Required"
 msgstr ""
 
-#: ui/auth/password_dialog.py:29
+#: ui/auth/password_dialog.py:38
 msgid "Password Protection"
 msgstr ""
 
-#: ui/auth/password_dialog.py:80
+#: ui/auth/password_dialog.py:100
 msgid "Password required for: {0}"
 msgstr ""
 
-#: ui/auth/password_dialog.py:89
+#: ui/auth/password_dialog.py:123
 msgid "Password:"
 msgstr ""
 
-#: ui/auth/password_dialog.py:102
+#: ui/auth/password_dialog.py:136
 msgid "OK"
 msgstr ""
 
-#: ui/auth/password_dialog.py:111
+#: ui/auth/password_dialog.py:145
 msgid "Password Protection Available"
 msgstr ""
 
-#: ui/auth/password_dialog.py:118
+#: ui/auth/password_dialog.py:152
 msgid "This action requires password protection: {0}"
 msgstr ""
 
-#: ui/auth/password_dialog.py:124
+#: ui/auth/password_dialog.py:168
 msgid "Password protection is not currently configured. You can:"
 msgstr ""
 
-#: ui/auth/password_dialog.py:134
+#: ui/auth/password_dialog.py:178
 msgid "• Configure password protection for sensitive actions"
 msgstr ""
 
-#: ui/auth/password_dialog.py:139
+#: ui/auth/password_dialog.py:183
 msgid "• Continue without password protection (less secure)"
 msgstr ""
 
-#: ui/auth/password_dialog.py:148
+#: ui/auth/password_dialog.py:192 ui/auth/password_dialog.py:213
 msgid "Configure Protection"
 msgstr ""
 
-#: ui/auth/password_dialog.py:152
+#: ui/auth/password_dialog.py:196
 msgid "Continue Without Protection"
 msgstr ""
 
-#: ui/auth/password_dialog.py:170
+#: ui/auth/password_dialog.py:204
+msgid "Password protection is required for this action but is not currently configured."
+msgstr ""
+
+#: ui/auth/password_dialog.py:231
 msgid "Incorrect password"
 msgstr ""
 
