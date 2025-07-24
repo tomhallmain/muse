@@ -99,7 +99,21 @@ class LLM:
         self._result = None
         self._exception = None
         self._thread = None
+        self.failure_count = 0  # Track consecutive LLM failures
         logger.info(f"Using LLM model: {self.model_name}")
+
+    def get_failure_count(self):
+        return self.failure_count
+
+    def increment_failure_count(self):
+        self.failure_count += 1
+
+    def reset_failure_count(self):
+        self.failure_count = 0
+
+    def get_llm_penalty(self):
+        import math
+        return 1.0 / (1.0 + math.log2(1.0 + self.failure_count))
 
     def ask(self, query, json_key=None, timeout=DEFAULT_TIMEOUT, context=None, system_prompt=None, system_prompt_drop_rate=DEFAULT_SYSTEM_PROMPT_DROP_RATE):
         """Ask the LLM a question and optionally extract a JSON value."""

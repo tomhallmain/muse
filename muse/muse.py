@@ -312,9 +312,15 @@ class Muse:
             self.speak_about_upcoming_track(spot_profile)
             spot_profile.has_already_spoken = True
             spot_profile.was_spoken = True
+        # LLM failure backoff for topic discussion
         if spot_profile.talk_about_something:
-            self.talk_about_something(spot_profile)
-            spot_profile.was_spoken = True
+            penalty = self.llm.get_llm_penalty()
+            import random
+            if random.random() < penalty:
+                self.talk_about_something(spot_profile)
+                spot_profile.was_spoken = True
+            else:
+                logger.info(f"Skipping talk_about_something due to LLM failure penalty (failures={self.llm.get_failure_count()}, penalty={penalty:.3f})")
         else:
             self.memory.tracks_since_last_topic += 1
 
@@ -692,13 +698,17 @@ class Muse:
 
     def _wrap_function(self, spot_profile, topic, func, _args=[], _kwargs={}):
         try:
-            return func(*_args, **_kwargs)
+            result = func(*_args, **_kwargs)
+            # Reset LLM failure count on success
+            self.llm.reset_failure_count()
+            return result
         except WebConnectionException as e:
             logger.error(e)
             self.say_at_some_point(_("We're having some technical difficulties in accessing our source for {0}. We'll try again later").format(topic),
                                    spot_profile, None)
         except LLMResponseException as e:
             logger.error(e)
+            self.llm.increment_failure_count()  # Increment on LLM failure
             self.say_at_some_point(_("It seems our writer for {0} is unexpectedly away at the moment. Did we forget to pay his salary again?").format(topic),
                                    spot_profile, None)
         except BlacklistException as e:
