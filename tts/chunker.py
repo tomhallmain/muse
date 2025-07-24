@@ -137,8 +137,10 @@ class Chunker:
                 if script_counts['korean'] > 0:
                     self._cjk_scripts_seen.add("Korean")
             
-            # If we haven't given a warning yet and there are CJK scripts, add warning
-            if not self._cjk_warning_given and self._cjk_scripts_seen:
+            # Only warn if CJK is more than 4% of total and at least 5 CJK chars seen
+            cjk_ratio = (self._cjk_chars / self._total_chars) if self._total_chars > 0 else 0
+            if (not self._cjk_warning_given and self._cjk_scripts_seen and
+                self._cjk_chars >= 5 and cjk_ratio > 0.04):
                 scripts = [_("Chinese") if "Chinese" in self._cjk_scripts_seen else None,
                           _("Japanese") if "Japanese" in self._cjk_scripts_seen else None,
                           _("Korean") if "Korean" in self._cjk_scripts_seen else None]
