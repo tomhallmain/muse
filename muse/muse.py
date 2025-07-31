@@ -699,8 +699,6 @@ class Muse:
     def _wrap_function(self, spot_profile, topic, func, _args=[], _kwargs={}):
         try:
             result = func(*_args, **_kwargs)
-            # Reset LLM failure count on success
-            self.llm.reset_failure_count()
             return result
         except WebConnectionException as e:
             logger.error(e)
@@ -708,7 +706,6 @@ class Muse:
                                    spot_profile, None)
         except LLMResponseException as e:
             logger.error(e)
-            self.llm.increment_failure_count()  # Increment on LLM failure
             self.say_at_some_point(_("It seems our writer for {0} is unexpectedly away at the moment. Did we forget to pay his salary again?").format(topic),
                                    spot_profile, None)
         except BlacklistException as e:

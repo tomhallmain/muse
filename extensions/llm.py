@@ -1,4 +1,4 @@
-"""LLM interface for the Muse application."""
+"""General LLM interface using Ollama."""
 
 from dataclasses import dataclass
 import json
@@ -51,6 +51,11 @@ class LLMResult:
             eval_count=data.get("eval_count", 0),
             eval_duration=data.get("eval_duration", 0)
         )
+
+    def validate(self):
+        if self.response is None or self.response.strip() == "":
+            return False
+        return True
 
     def _get_json_attr(self, attr_name):
         try:
@@ -165,9 +170,15 @@ class LLM:
             result = LLMResult.from_json(resp_json, context_provided=context is not None)
             result.response = self._clean_response_for_models(result.response)
             logger.debug(f"LLM response received, length: {len(result.response)}")
+            if result.validate():
+                # Reset LLM failure count on success
+                self.reset_failure_count()
+            else:
+                raise LLMResponseException("LLM response is invalid!")
             return result
         except Exception as e:
             logger.error(f"Failed to generate LLM response: {e}")
+            self.increment_failure_count()  # Increment on LLM failure
             raise LLMResponseException(f"Failed to generate LLM response: {e}")
 
     def generate_response_async(self, query, timeout=DEFAULT_TIMEOUT, context=None, system_prompt=None, system_prompt_drop_rate=DEFAULT_SYSTEM_PROMPT_DROP_RATE):
