@@ -22,6 +22,7 @@ class AppActions:
         "find_track",
         "search_and_play",
         "update_directory_count",
+        "open_password_admin_window",
     ])
 
     def __init__(self, actions: Dict[str, Callable[..., Any]]):

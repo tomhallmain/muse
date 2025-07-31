@@ -2,8 +2,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
-"POT-Creation-Date: 2025-07-14 10:22-0400\n"
-"PO-Revision-Date: 2025-07-14 10:22-0400\n"
+"POT-Creation-Date: 2025-07-30 21:07-0400\n"
+"PO-Revision-Date: 2025-07-30 21:07-0400\n"
 "Last-Translator: Thomas Hall <tomhall.main@gmail.com>\n"
 "Language-Team: ru Team <<EMAIL>>\n"
 "Language: ru\n"
@@ -40,11 +40,11 @@ msgstr "Переключить полноэкранный режим"
 msgid "Toggle Theme"
 msgstr "переключаться Тема"
 
-#: app.py:148 app.py:238
+#: app.py:148 app.py:239
 msgid "Playlists"
 msgstr "Плейлисты"
 
-#: app.py:149 app.py:279 ui/favorites_window.py:232 ui/favorites_window.py:563
+#: app.py:149 app.py:280 ui/favorites_window.py:232 ui/favorites_window.py:563
 msgid "Favorites"
 msgstr "Любимые"
 
@@ -94,130 +94,130 @@ msgstr "конфигурация"
 msgid "Security Configuration"
 msgstr "Конфигурация безопасности"
 
-#: app.py:201 ui/extensions_window.py:181 ui/track_details_window.py:64
+#: app.py:202 ui/extensions_window.py:181 ui/track_details_window.py:64
 #: utils/globals.py:222
 msgid "Title"
 msgstr "Название"
 
-#: app.py:204 ui/track_details_window.py:67 utils/globals.py:123
+#: app.py:205 ui/track_details_window.py:67 utils/globals.py:123
 #: utils/globals.py:223
 msgid "Album"
 msgstr "Альбом"
 
-#: app.py:207 ui/track_details_window.py:70 utils/globals.py:125
+#: app.py:208 ui/track_details_window.py:70 utils/globals.py:125
 #: utils/globals.py:224 utils/globals.py:294
 msgid "Artist"
 msgstr "Художник"
 
-#: app.py:210 ui/track_details_window.py:76 utils/globals.py:127
+#: app.py:211 ui/track_details_window.py:76 utils/globals.py:127
 #: utils/globals.py:225 utils/globals.py:293
 msgid "Composer"
 msgstr "композитор"
 
-#: app.py:213
+#: app.py:214
 msgid "Next Up"
 msgstr "Следующий"
 
-#: app.py:216
+#: app.py:217
 msgid "Prior Track"
 msgstr "Предыдущий трек"
 
-#: app.py:219
+#: app.py:220
 msgid "Spot Details"
 msgstr "Детали места"
 
-#: app.py:222
+#: app.py:223
 msgid "Extension Status"
 msgstr "Статус продления"
 
-#: app.py:225
+#: app.py:226
 msgid "Volume"
 msgstr "Объем"
 
-#: app.py:235 ui/extensions_window.py:269 ui/favorites_window.py:372
+#: app.py:236 ui/extensions_window.py:269 ui/favorites_window.py:372
 #: ui/favorites_window.py:507 ui/network_media_window.py:168
 #: ui/network_media_window.py:268 ui/search_window.py:268
 #: ui/search_window.py:440
 msgid "Play"
 msgstr "Играть"
 
-#: app.py:241
+#: app.py:242
 msgid "Next"
 msgstr "Следующий"
 
-#: app.py:244
+#: app.py:245
 msgid "Next Grouping"
 msgstr "Следующая группировка"
 
-#: app.py:247
+#: app.py:248
 msgid "Pause"
 msgstr "Пауза"
 
-#: app.py:249
+#: app.py:250
 msgid "Stop"
 msgstr "Остановись"
 
-#: app.py:252
+#: app.py:253
 msgid "Delay Seconds"
 msgstr "Отложить секунды"
 
-#: app.py:259
+#: app.py:260
 msgid "Playlist"
 msgstr "Плейлист"
 
-#: app.py:267
+#: app.py:268
 msgid "Playlist Sort"
 msgstr "Сортировка плейлиста"
 
-#: app.py:275
+#: app.py:276
 msgid "Favorite"
 msgstr "Любимый"
 
-#: app.py:282
+#: app.py:283
 msgid "Overwrite"
 msgstr "Переписать"
 
-#: app.py:286
+#: app.py:287
 msgid "Muse"
 msgstr "Муза"
 
-#: app.py:290
+#: app.py:291
 msgid "Extension"
 msgstr "Продление"
 
-#: app.py:294
+#: app.py:295
 msgid "Enable track splitting"
 msgstr "Включить разделение дорожек"
 
-#: app.py:298
+#: app.py:299
 msgid "Use system language for all topics"
 msgstr "Используйте язык системы для всех тем"
 
-#: app.py:302
+#: app.py:303
 msgid "Thorough playlist memory check"
 msgstr "Полная проверка памяти плейлиста"
 
-#: app.py:370
+#: app.py:371
 msgid "Confirm Quit"
 msgstr "Подтвердить отказ"
 
-#: app.py:370
+#: app.py:371
 msgid "Would you like to quit the application?"
 msgstr "Вы хотите закрыть приложение?"
 
-#: app.py:499
+#: app.py:500
 msgid "Confirm Run"
 msgstr "Подтвердить бег"
 
-#: app.py:500
+#: app.py:501
 msgid "Are you sure you want to proceed?"
 msgstr "Вы уверены, что хотите продолжить?"
 
-#: app.py:563
+#: app.py:564
 msgid "Copied album art to clipboard."
 msgstr "Копирование обложки альбома в буфер обмена."
 
-#: app.py:679 app.py:860 app.py:871 app.py:901 ui/auth/password_dialog.py:231
+#: app.py:680 app.py:861 app.py:872 app.py:902 ui/auth/password_dialog.py:247
 #: ui/composers_window.py:251 ui/composers_window.py:266
 #: ui/configuration_window.py:155 ui/configuration_window.py:158
 #: ui/extensions_window.py:378 ui/favorites_window.py:603
@@ -225,43 +225,43 @@ msgstr "Копирование обложки альбома в буфер об�
 msgid "Error"
 msgstr "ошибка"
 
-#: app.py:764 muse/muse_spot_profile.py:209
+#: app.py:765 muse/muse_spot_profile.py:209
 msgid "Track: "
 msgstr "Трек: "
 
-#: app.py:765
+#: app.py:766
 msgid "Album: "
 msgstr "Альбом: "
 
-#: app.py:766
+#: app.py:767
 msgid "Artist: "
 msgstr "Художник: "
 
-#: app.py:767
+#: app.py:768
 msgid "Composer: "
 msgstr "Композитор: "
 
-#: app.py:778
+#: app.py:779
 msgid "Next Up: "
 msgstr "Следующий: "
 
-#: app.py:787 muse/muse_spot_profile.py:210
+#: app.py:788 muse/muse_spot_profile.py:210
 msgid "Previous Track: "
 msgstr "Предыдущий трек: "
 
-#: app.py:811
+#: app.py:812
 msgid "Directories: {0}"
 msgstr "Каталоги: {0}"
 
-#: app.py:834
+#: app.py:835
 msgid "Staged Playlist: "
 msgstr "Сценический плейлист: "
 
-#: app.py:860
+#: app.py:861
 msgid "Track not found in library for query: "
 msgstr "Треки для запроса не найдены в библиотеке: "
 
-#: app.py:986
+#: app.py:987
 msgid " Muse "
 msgstr " Муза "
 
@@ -456,7 +456,7 @@ msgstr "Добрый вечер"
 msgid "That was \"{0}\" in \"{1}\""
 msgstr "Это было «{0}» в «{1}»"
 
-#: muse/muse.py:294 muse/muse.py:330
+#: muse/muse.py:294 muse/muse.py:336
 msgid " by \"{0}\"."
 msgstr " «{0}»."
 
@@ -468,48 +468,48 @@ msgstr "Это была новая песня. Как тебе понравил�
 msgid "That was a new one. How'd you like it?"
 msgstr "Это было что-то новенькое. Как тебе понравилось?"
 
-#: muse/muse.py:326
+#: muse/muse.py:332
 msgid "To start, we'll be playing: \"{0}\" from \"{1}\""
 msgstr "Для начала мы будем играть: «{0}» из «{1}»."
 
-#: muse/muse.py:328
+#: muse/muse.py:334
 msgid "Next up, we'll be playing: \"{0}\" from \"{1}\""
 msgstr "Следующим мы будем играть: «{0}» из «{1}»"
 
-#: muse/muse.py:335
+#: muse/muse.py:341
 msgid "This one is a new track."
 msgstr "Это новый трек."
 
-#: muse/muse.py:347
+#: muse/muse.py:353
 msgid "After that short interlude, we're back to our {0} shuffle."
 msgstr ""
 "После этого короткого перерыва мы возвращаемся к нашему {0} перемешиванию."
 
-#: muse/muse.py:350
+#: muse/muse.py:356
 msgid "We've been listening to a group of tracks from the {0} {1}"
 msgstr "Мы прослушали несколько треков из {0} {1}"
 
-#: muse/muse.py:360
+#: muse/muse.py:366
 msgid "We're listening to a group of tracks from the {0} {1}."
 msgstr "Мы слушаем группу треков из {0} {1}."
 
-#: muse/muse.py:363
+#: muse/muse.py:369
 msgid "We're going to start a new group of tracks from the {0} {1}."
 msgstr "Мы собираемся начать новую группу треков из {0} {1}."
 
-#: muse/muse.py:414
+#: muse/muse.py:420
 msgid "First let's hear about {0}"
 msgstr "Сначала давайте послушаем о {0}"
 
-#: muse/muse.py:416
+#: muse/muse.py:422
 msgid "But first, let's hear about {0}."
 msgstr "Но сначала давайте послушаем о {0}."
 
-#: muse/muse.py:552
+#: muse/muse.py:558
 msgid " [already mentioned]"
 msgstr " [уже упоминалось]"
 
-#: muse/muse.py:698
+#: muse/muse.py:707
 msgid ""
 "We're having some technical difficulties in accessing our source for {0}. "
 "We'll try again later"
@@ -517,7 +517,7 @@ msgstr ""
 "У нас возникли технические проблемы с доступом к источнику {0}. Попробуем "
 "позже."
 
-#: muse/muse.py:702
+#: muse/muse.py:712
 msgid ""
 "It seems our writer for {0} is unexpectedly away at the moment. Did we "
 "forget to pay his salary again?"
@@ -525,21 +525,21 @@ msgstr ""
 "Похоже, наш автор для {0} неожиданно отсутствует в данный момент. Мы снова "
 "забыли выплатить ему зарплату?"
 
-#: muse/muse.py:706
+#: muse/muse.py:716
 msgid ""
 "We've found problems with all of our {0} ideas. Please try again later."
 msgstr ""
 "Мы обнаружили проблемы со всеми нашими {0} идеями. Повторите попытку позже."
 
-#: muse/muse.py:711
+#: muse/muse.py:721
 msgid "Something went wrong. We'll try to fix it soon."
 msgstr "Что-то пошло не так. Мы постараемся исправить это в ближайшее время."
 
-#: muse/muse.py:778
+#: muse/muse.py:788
 msgid "Starting tracks:"
 msgstr "Начальные треки:"
 
-#: muse/muse.py:838
+#: muse/muse.py:848
 msgid "The listener last tuned in {0} {1} ago"
 msgstr "Слушатель в последний раз настраивался {0} {1} назад"
 
@@ -591,23 +591,23 @@ msgstr "{0} - DJ: {1} - Дни: {2} - Время: {3}-{4} - Выключение
 msgid "Not enough schedules found."
 msgstr "Не найдено достаточного количества графиков."
 
-#: tts/chunker.py:142
+#: tts/chunker.py:144
 msgid "Chinese"
 msgstr "китайский"
 
-#: tts/chunker.py:143
+#: tts/chunker.py:145
 msgid "Japanese"
 msgstr "японский"
 
-#: tts/chunker.py:144
+#: tts/chunker.py:146
 msgid "Korean"
 msgstr "корейский"
 
-#: tts/chunker.py:146
+#: tts/chunker.py:148
 msgid " and "
 msgstr " и "
 
-#: tts/chunker.py:147
+#: tts/chunker.py:149
 msgid "*This text contains {0}, I can't read it but it looks interesting*"
 msgstr ""
 "*Этот текст содержит {0}, я не могу его прочитать, но он выглядит интересно*"
@@ -1011,7 +1011,7 @@ msgstr "Описание:"
 msgid "File:"
 msgstr "Файл:"
 
-#: ui/auth/password_admin_window.py:234 ui/extensions_window.py:500
+#: ui/auth/password_admin_window.py:251 ui/extensions_window.py:500
 #: ui/favorites_window.py:697
 msgid "Close"
 msgstr "Закрыть"
@@ -1243,8 +1243,8 @@ msgstr "Добавить в текущий плейлист"
 msgid "Add to New Master Playlist"
 msgstr "Добавить в новый основной плейлист"
 
-#: ui/auth/password_admin_window.py:412 ui/auth/password_dialog.py:139
-#: ui/auth/password_dialog.py:200 ui/auth/password_dialog.py:217
+#: ui/auth/password_admin_window.py:452 ui/auth/password_dialog.py:150
+#: ui/auth/password_dialog.py:219 ui/auth/password_dialog.py:236
 #: ui/playlist_window.py:318
 msgid "Cancel"
 msgstr "отменить"
@@ -1504,88 +1504,96 @@ msgstr "Ошибка: файл пуст"
 msgid "Password Administration"
 msgstr "Администрирование паролей"
 
-#: ui/auth/password_admin_window.py:71
+#: ui/auth/password_admin_window.py:74
 msgid "Password Protection Settings"
 msgstr "Настройки защиты паролем"
 
-#: ui/auth/password_admin_window.py:83
+#: ui/auth/password_admin_window.py:86
 msgid "Protected Actions"
 msgstr "Защищенные действия"
 
-#: ui/auth/password_admin_window.py:89
+#: ui/auth/password_admin_window.py:92
 msgid "Select which actions require password authentication:"
 msgstr "Выберите, какие действия требуют проверки подлинности пароля:"
 
-#: ui/auth/password_admin_window.py:105
+#: ui/auth/password_admin_window.py:108
 msgid "(Always protected if a password is set)"
 msgstr "(Всегда защищена, если установлен пароль)"
 
-#: ui/auth/password_admin_window.py:123
+#: ui/auth/password_admin_window.py:126
 msgid "Session Timeout Settings"
 msgstr "Настройки таймаута сеанса"
 
-#: ui/auth/password_admin_window.py:129
+#: ui/auth/password_admin_window.py:132
 msgid "Enable session timeout (remember password for a period)"
 msgstr "Включите тайм-аут сессии (запоминание пароля на определенное время)"
 
-#: ui/auth/password_admin_window.py:141
+#: ui/auth/password_admin_window.py:144
 msgid "Session timeout duration (minutes):"
 msgstr "Длительность тайм-аута сеанса (минуты):"
 
-#: ui/auth/password_admin_window.py:150
+#: ui/auth/password_admin_window.py:153
+msgid "Security Advice Settings"
+msgstr "Настройки рекомендаций по безопасности"
+
+#: ui/auth/password_admin_window.py:159
+msgid "Show security advice when no password is configured"
+msgstr "Показывать советы по безопасности, если пароль не настроен"
+
+#: ui/auth/password_admin_window.py:167
 msgid "Password Setup"
 msgstr "Настройка пароля"
 
-#: ui/auth/password_admin_window.py:160
+#: ui/auth/password_admin_window.py:177
 msgid "Password is configured"
 msgstr "Пароль настроен"
 
-#: ui/auth/password_admin_window.py:166 ui/auth/password_admin_window.py:334
-#: ui/auth/password_admin_window.py:350 ui/auth/password_admin_window.py:409
+#: ui/auth/password_admin_window.py:183 ui/auth/password_admin_window.py:373
+#: ui/auth/password_admin_window.py:389 ui/auth/password_admin_window.py:449
 msgid "Change Password"
 msgstr "Изменить пароль"
 
-#: ui/auth/password_admin_window.py:171 ui/auth/password_admin_window.py:422
+#: ui/auth/password_admin_window.py:188 ui/auth/password_admin_window.py:462
 msgid "Remove Password"
 msgstr "Удалить пароль"
 
-#: ui/auth/password_admin_window.py:176
+#: ui/auth/password_admin_window.py:193
 msgid "Set up a password to enable protection:"
 msgstr "Установите пароль для включения защиты:"
 
-#: ui/auth/password_admin_window.py:186 ui/auth/password_admin_window.py:366
+#: ui/auth/password_admin_window.py:203 ui/auth/password_admin_window.py:405
 msgid "New Password:"
 msgstr "Новый пароль:"
 
-#: ui/auth/password_admin_window.py:199
+#: ui/auth/password_admin_window.py:216
 msgid "Confirm Password:"
 msgstr "Подтвердите пароль:"
 
-#: ui/auth/password_admin_window.py:208
+#: ui/auth/password_admin_window.py:225
 msgid "Set Password"
 msgstr "Установить пароль"
 
-#: ui/auth/password_admin_window.py:218 ui/auth/password_admin_window.py:264
+#: ui/auth/password_admin_window.py:235 ui/auth/password_admin_window.py:294
 msgid "Reset to Defaults"
 msgstr "Сброс настроек по умолчанию"
 
-#: ui/auth/password_admin_window.py:222 ui/auth/password_admin_window.py:284
+#: ui/auth/password_admin_window.py:239 ui/auth/password_admin_window.py:319
 msgid "Set to Current"
 msgstr "Установить на текущий"
 
-#: ui/auth/password_admin_window.py:226
+#: ui/auth/password_admin_window.py:243
 msgid "Export Cache as JSON"
 msgstr "Экспорт кэша в формате JSON"
 
-#: ui/auth/password_admin_window.py:230
+#: ui/auth/password_admin_window.py:247
 msgid "Save Settings"
 msgstr "Сохранить настройки"
 
-#: ui/auth/password_admin_window.py:258
+#: ui/auth/password_admin_window.py:288
 msgid "Password protection settings saved."
 msgstr "Сохранение настроек защиты паролем."
 
-#: ui/auth/password_admin_window.py:265
+#: ui/auth/password_admin_window.py:295
 msgid ""
 "Are you sure you want to reset all password protection settings to their "
 "default values?"
@@ -1593,11 +1601,11 @@ msgstr ""
 "Вы уверены, что хотите сбросить все настройки защиты паролем до значений по "
 "умолчанию?"
 
-#: ui/auth/password_admin_window.py:279
+#: ui/auth/password_admin_window.py:314
 msgid "Settings reset to defaults."
 msgstr "Настройки сбрасываются до значений по умолчанию."
 
-#: ui/auth/password_admin_window.py:285
+#: ui/auth/password_admin_window.py:320
 msgid ""
 "Are you sure you want to restore all settings to their current saved state? "
 "This will discard any unsaved changes."
@@ -1605,55 +1613,55 @@ msgstr ""
 "Вы уверены, что хотите восстановить все настройки в текущем сохраненном "
 "состоянии? Это приведет к удалению всех несохраненных изменений."
 
-#: ui/auth/password_admin_window.py:300
+#: ui/auth/password_admin_window.py:338
 msgid "Settings restored to current saved state."
 msgstr "Настройки восстанавливаются в текущее сохраненное состояние."
 
-#: ui/auth/password_admin_window.py:309
+#: ui/auth/password_admin_window.py:347
 msgid "Please enter a password."
 msgstr "Пожалуйста, введите пароль."
 
-#: ui/auth/password_admin_window.py:313
+#: ui/auth/password_admin_window.py:351
 msgid "Passwords do not match."
 msgstr "Пароли не совпадают."
 
-#: ui/auth/password_admin_window.py:317 ui/auth/password_admin_window.py:400
+#: ui/auth/password_admin_window.py:355 ui/auth/password_admin_window.py:439
 msgid "Password must be at least 6 characters long."
 msgstr "Пароль должен состоять не менее чем из 6 символов."
 
-#: ui/auth/password_admin_window.py:321
+#: ui/auth/password_admin_window.py:360
 msgid "Password set successfully."
 msgstr "Пароль установлен успешно."
 
-#: ui/auth/password_admin_window.py:328
+#: ui/auth/password_admin_window.py:367
 msgid "Failed to set password."
 msgstr "Не удалось установить пароль."
 
-#: ui/auth/password_admin_window.py:357
+#: ui/auth/password_admin_window.py:396
 msgid "Current Password:"
 msgstr "Текущий пароль:"
 
-#: ui/auth/password_admin_window.py:375
+#: ui/auth/password_admin_window.py:414
 msgid "Confirm New Password:"
 msgstr "Подтвердите новый пароль:"
 
-#: ui/auth/password_admin_window.py:392
+#: ui/auth/password_admin_window.py:431
 msgid "Current password is incorrect."
 msgstr "Текущий пароль неверен."
 
-#: ui/auth/password_admin_window.py:396
+#: ui/auth/password_admin_window.py:435
 msgid "New passwords do not match."
 msgstr "Новые пароли не совпадают."
 
-#: ui/auth/password_admin_window.py:404
+#: ui/auth/password_admin_window.py:444
 msgid "Password changed successfully."
 msgstr "Пароль успешно изменен."
 
-#: ui/auth/password_admin_window.py:407
+#: ui/auth/password_admin_window.py:447
 msgid "Failed to change password."
 msgstr "Не удалось изменить пароль."
 
-#: ui/auth/password_admin_window.py:423
+#: ui/auth/password_admin_window.py:463
 msgid ""
 "Are you sure you want to remove password protection? This will disable all "
 "password requirements."
@@ -1661,71 +1669,75 @@ msgstr ""
 "Вы уверены, что хотите снять защиту паролем? Это отключит все требования к "
 "паролю."
 
-#: ui/auth/password_admin_window.py:428
+#: ui/auth/password_admin_window.py:469
 msgid "Password removed successfully."
 msgstr "Пароль успешно удален."
 
-#: ui/auth/password_admin_window.py:432
+#: ui/auth/password_admin_window.py:473
 msgid "Failed to remove password."
 msgstr "Не удалось удалить пароль."
 
-#: ui/auth/password_admin_window.py:467
+#: ui/auth/password_admin_window.py:508
 msgid "Cache exported as JSON to:"
 msgstr "Кэш экспортируется в формате JSON в:"
 
-#: ui/auth/password_admin_window.py:469
+#: ui/auth/password_admin_window.py:510
 msgid "Failed to export cache as JSON:"
 msgstr "Не удалось экспортировать кэш в формате JSON:"
 
-#: ui/auth/password_dialog.py:38 ui/auth/password_dialog.py:93
+#: ui/auth/password_dialog.py:40 ui/auth/password_dialog.py:104
 msgid "Password Required"
 msgstr "Требуется пароль"
 
-#: ui/auth/password_dialog.py:38
+#: ui/auth/password_dialog.py:40
 msgid "Password Protection"
 msgstr "Защита паролем"
 
-#: ui/auth/password_dialog.py:100
+#: ui/auth/password_dialog.py:111
 msgid "Password required for: {0}"
 msgstr "Требуется пароль для: {0}"
 
-#: ui/auth/password_dialog.py:123
+#: ui/auth/password_dialog.py:134
 msgid "Password:"
 msgstr "Пароль:"
 
-#: ui/auth/password_dialog.py:136
+#: ui/auth/password_dialog.py:147
 msgid "OK"
 msgstr "OK"
 
-#: ui/auth/password_dialog.py:145
+#: ui/auth/password_dialog.py:156
 msgid "Password Protection Available"
 msgstr "Доступна защита паролем"
 
-#: ui/auth/password_dialog.py:152
+#: ui/auth/password_dialog.py:163
 msgid "This action requires password protection: {0}"
 msgstr "Это действие требует защиты паролем: {0}"
 
-#: ui/auth/password_dialog.py:168
+#: ui/auth/password_dialog.py:179
 msgid "Password protection is not currently configured. You can:"
 msgstr "В настоящее время защита паролем не настроена. Вы можете:"
 
-#: ui/auth/password_dialog.py:178
+#: ui/auth/password_dialog.py:189
 msgid "• Configure password protection for sensitive actions"
 msgstr "• Настройте защиту паролем для важных действий"
 
-#: ui/auth/password_dialog.py:183
+#: ui/auth/password_dialog.py:194
 msgid "• Continue without password protection (less secure)"
 msgstr "• Продолжить без защиты паролем (менее безопасно)"
 
-#: ui/auth/password_dialog.py:192 ui/auth/password_dialog.py:213
+#: ui/auth/password_dialog.py:201
+msgid "Don't show this security advice again"
+msgstr "Не показывать больше это предупреждение о безопасности"
+
+#: ui/auth/password_dialog.py:211 ui/auth/password_dialog.py:232
 msgid "Configure Protection"
 msgstr "Настройка защиты"
 
-#: ui/auth/password_dialog.py:196
+#: ui/auth/password_dialog.py:215
 msgid "Continue Without Protection"
 msgstr "Продолжайте работать без защиты"
 
-#: ui/auth/password_dialog.py:204
+#: ui/auth/password_dialog.py:223
 msgid ""
 "Password protection is required for this action but is not currently "
 "configured."
@@ -1733,7 +1745,7 @@ msgstr ""
 "Для этого действия требуется защита паролем, но в настоящее время она не "
 "настроена."
 
-#: ui/auth/password_dialog.py:231
+#: ui/auth/password_dialog.py:247
 msgid "Incorrect password"
 msgstr "Неверный пароль"
 

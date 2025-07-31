@@ -183,6 +183,7 @@ class App():
             "find_track": lambda search_query: SearchWindow.find_track(self.library_data, search_query),
             "search_and_play": self.search_and_play,
             "update_directory_count": self.update_directory_count,
+            "open_password_admin_window": self.open_password_admin_window,
         })
 
         # Sidebar
