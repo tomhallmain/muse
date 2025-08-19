@@ -5,7 +5,9 @@ from tkinter.ttk import Button, Entry, OptionMenu, Scale
 
 
 class BaseWindow:
-    def init(self):
+    def __init__(self, master=None, app_actions=None):
+        self.master = master
+        self.app_actions = app_actions
         if not hasattr(self, 'master'):
             self.master = None
         self.has_closed = False

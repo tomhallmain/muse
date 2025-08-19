@@ -36,6 +36,7 @@ from ui.schedules_window import SchedulesWindow
 from ui.search_window import SearchWindow
 from ui.track_details_window import TrackDetailsWindow
 from ui.weather_window import WeatherWindow
+from ui.timer_window import TimerWindow
 from ui.tts_window import TTSWindow
 
 # Core application imports
@@ -158,6 +159,7 @@ class App():
         self.tools_menu.add_command(label=_("Extensions"), command=self.open_extensions_window)
         self.tools_menu.add_command(label=_("Weather"), command=self.open_weather_window)
         self.tools_menu.add_command(label=_("Text to Speech"), command=self.open_tts_window)
+        self.tools_menu.add_command(label=_("Timer"), command=self.open_timer_window)
         self.tools_menu.add_separator()
         self.tools_menu.add_command(label=_("Configuration"), command=self.open_configuration_window)
         self.tools_menu.add_command(label=_("Security Configuration"), command=self.open_password_admin_window)
@@ -698,6 +700,12 @@ class App():
             presets_window = PresetsWindow(self.master, self.app_actions, self.construct_preset, self.start_run_from_preset)
         except Exception as e:
             logger.error(f"Exception opening presets window: {e}")
+
+    def open_timer_window(self):
+        try:
+            timer_window = TimerWindow(self.master, self.app_actions)
+        except Exception as e:
+            logger.error(f"Exception opening timer window: {e}")
 
     def open_weather_window(self):
         try:

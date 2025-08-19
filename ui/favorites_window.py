@@ -277,6 +277,8 @@ class FavoritesWindow:
         self.play_btn_list = []  # Add list for play buttons
 
         self.search_btn = None
+        self.play_random_btn = None
+        
         self.add_btn("search_btn", _("Search"), self.do_search, row=2)
         
         # Add Play Random Favorite button

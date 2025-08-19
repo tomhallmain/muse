@@ -58,6 +58,10 @@ class Playback:
         # Keep track of grouping i.e. if shuffling by artist, album, composer etc
         self.old_grouping = None
         self.new_grouping = None
+        
+        # Timer volume override
+        self._timer_volume_override = False
+        self._timer_override_volume = 20
 
     def has_muse(self) -> bool:
         return self._run and self._run.args.muse and self.muse is not None and self.muse.voice.can_speak
@@ -387,11 +391,24 @@ class Playback:
             self._run_context.skip_delay = False
 
     def set_volume(self) -> None:
-        mean_volume, max_volume = self.track.get_volume()
-        volume = (Globals.DEFAULT_VOLUME_THRESHOLD + 30) if mean_volume < -50 else min(int(Globals.DEFAULT_VOLUME_THRESHOLD + (-1 * mean_volume)), 100)
-        logger.info(f"Mean volume: {mean_volume} Max volume: {max_volume} Setting volume to: {volume}")
+        # Check if timer volume override is active
+        if self._timer_volume_override:
+            volume = self._timer_override_volume
+            logger.info(f"Timer volume override active: setting volume to {volume}")
+        else:
+            mean_volume, max_volume = self.track.get_volume()
+            volume = (Globals.DEFAULT_VOLUME_THRESHOLD + 30) if mean_volume < -50 else min(int(Globals.DEFAULT_VOLUME_THRESHOLD + (-1 * mean_volume)), 100)
+            logger.info(f"Mean volume: {mean_volume} Max volume: {max_volume} Setting volume to: {volume}")
+        
         self.vlc_media_player.audio_set_volume(volume)
         # TODO callback for UI element, add a UI element for "effective volume"
+    
+    def set_timer_volume_override(self, override: bool, volume: Optional[int] = None) -> None:
+        """Set timer volume override flag and volume level"""
+        self._timer_volume_override = override
+        if override and volume is not None:
+            self._timer_override_volume = volume
+        logger.info(f"Timer volume override {'enabled' if override else 'disabled'} with volume {self._timer_override_volume if override else 'N/A'}")
 
     def pause(self) -> None:
         self.vlc_media_player.pause()

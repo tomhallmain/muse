@@ -765,7 +765,7 @@ class Muse:
         )
         
         # Make an initial call to seed the context, using the old context
-        result = self.llm.ask(persona_prompt, context=persona.get_context())
+        result = self.llm.ask(persona_prompt, context=None)
         if result:
             if result.context:
                 self.memory.get_persona_manager().update_context(result)
