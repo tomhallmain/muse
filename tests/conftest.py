@@ -4,11 +4,12 @@ import sys
 from pathlib import Path
 from dataclasses import dataclass
 from typing import Optional, List, Any
-from utils.globals import PlaylistSortType
 
 # Add the project root directory to the Python path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
+
+from utils.globals import PlaylistSortType
 
 class MockArgs:
     """Mock command line arguments for testing."""

@@ -105,9 +105,75 @@ class OpenWeatherResponse:
                     data[date]["min_temp"] = hourly_data.temperature
                 if hourly_data.rain is not None:
                     data[date]["rain"] = True
+                data[date]["hour_count"] += 1
             else:
-                data[date] = {"max_temp": hourly_data.temperature, "min_temp": hourly_data.temperature, "rain": hourly_data.rain is not None}
+                data[date] = {
+                    "max_temp": hourly_data.temperature, 
+                    "min_temp": hourly_data.temperature, 
+                    "rain": hourly_data.rain is not None,
+                    "hour_count": 1
+                }
         return data
+
+    def _is_day_complete(self, date, date_data):
+        """Check if a day has complete data (8 data points for 24 hours in 3-hour increments)."""
+        # OpenWeather API returns data in 3-hour increments
+        # A complete day should have 8 data points (24 hours / 3 hours = 8)
+        expected_hours = 8
+        return date_data.get("hour_count", 0) >= expected_hours
+
+    def _get_complete_days_only(self):
+        """Return forecast data excluding incomplete days."""
+        all_data = self.forecast_min_max_temps_by_day()
+        complete_data = {}
+        for date, date_data in all_data.items():
+            if self._is_day_complete(date, date_data):
+                complete_data[date] = date_data
+        return complete_data
+
+    def _get_incomplete_days(self):
+        """Return days with incomplete data."""
+        all_data = self.forecast_min_max_temps_by_day()
+        incomplete_data = {}
+        for date, date_data in all_data.items():
+            if not self._is_day_complete(date, date_data):
+                incomplete_data[date] = date_data
+        return incomplete_data
+
+    def has_incomplete_days(self):
+        """Check if there are any days with incomplete forecast data."""
+        return len(self._get_incomplete_days()) > 0
+
+    def get_complete_forecast_only(self):
+        """Return forecast data excluding incomplete days."""
+        return self._get_complete_days_only()
+
+    def get_forecast_summary(self, include_incomplete=True):
+        """Get a summary of forecast data with option to include incomplete days."""
+        if include_incomplete:
+            return self.forecast_min_max_temps_by_day()
+        else:
+            return self.get_complete_forecast_only()
+
+    def get_clean_forecast_string(self, include_incomplete=False):
+        """Get a clean forecast string, optionally excluding incomplete days."""
+        if not self.hourly_forecast:
+            return "No forecast data available"
+            
+        forecast_data = self.get_forecast_summary(include_incomplete)
+        if not forecast_data:
+            return "No complete forecast data available"
+            
+        out = "Forecast:"
+        rainy_periods = self.rain_in_next_5_days()
+        
+        for date, date_data in forecast_data.items():
+            out += f"\n{date}: Max {date_data['max_temp']}°F Min {date_data['min_temp']}°F"
+            if date_data['rain'] and date in rainy_periods:
+                periods_str = ', '.join(rainy_periods[date])
+                out += f"  Rain expected: {periods_str}"
+                
+        return out
 
     def __str__(self):
         out = f"""Current weather details for {self.datetime.strftime("%A %B %d at %H:%M")}
@@ -126,12 +192,25 @@ Sunrise: {self.sunrise} hours
 Sunset: {self.sunset} hours"""
         if self.hourly_forecast is not None:
             out += "\nForecast"
+            # Get complete and incomplete days
+            complete_days = self._get_complete_days_only()
+            incomplete_days = self._get_incomplete_days()
             rainy_periods = self.rain_in_next_5_days()
-            for date, date_data in self.forecast_min_max_temps_by_day().items():
+            # Display complete days
+            for date, date_data in complete_days.items():
                 out += f"\n{date}: Max {date_data['max_temp']}°F Min {date_data['min_temp']}°F"
                 if date_data['rain'] and date in rainy_periods:
                     periods_str = ', '.join(rainy_periods[date])
                     out += f"  Rain expected: {periods_str}"
+
+            # Display incomplete days with warning
+            if incomplete_days:
+                out += "\n--- Incomplete Data (Partial Day) ---"
+                for date, date_data in incomplete_days.items():
+                    out += f"\n{date}: Max {date_data['max_temp']}°F Min {date_data['min_temp']}°F (INCOMPLETE - {date_data['hour_count']}/8 hours)"
+                    if date_data['rain'] and date in rainy_periods:
+                        periods_str = ', '.join(rainy_periods[date])
+                        out += f"  Rain expected: {periods_str}"
         return out
 
 class OpenWeatherAPI:
@@ -165,4 +244,23 @@ class OpenWeatherAPI:
 
 if __name__ == "__main__":
     api = OpenWeatherAPI()
-    api.get_weather_for_city("Washington")
+    weather = api.get_weather_for_city("Washington")
+    
+    # Test the new incomplete day detection
+    print("Testing incomplete day detection:")
+    print(f"Has incomplete days: {weather.has_incomplete_days()}")
+    
+    # Get only complete days
+    complete_forecast = weather.get_complete_forecast_only()
+    print(f"\nComplete days: {len(complete_forecast)}")
+    
+    # Get all days including incomplete
+    all_forecast = weather.get_forecast_summary(include_incomplete=True)
+    print(f"All days: {len(all_forecast)}")
+    
+    # Get clean forecast string (complete days only)
+    clean_forecast = weather.get_clean_forecast_string(include_incomplete=False)
+    print(f"\nClean forecast (complete days only):\n{clean_forecast}")
+    
+    # Print the full string representation
+    print(f"\nFull weather report:\n{weather}")
