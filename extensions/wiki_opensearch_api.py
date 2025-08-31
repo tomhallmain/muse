@@ -1,4 +1,5 @@
 import requests
+import traceback
 
 from extensions.soup_utils import SoupUtils
 from utils.logging_setup import get_logger
@@ -42,18 +43,26 @@ class WikiOpenSearchAPI:
             url += f'&limit={limit}'
         return url
 
+    def __get_headers(self):
+        return {'user-agent': 'tomhallmain-Muse-App/1.0'}
+
     def search(self, query: str, limit=-1):
         try:
-            req = requests.get(self.__build_url(query, limit))
+            headers = self.__get_headers()
+            req = requests.get(self.__build_url(query, limit), headers=headers)
             return WikiOpenSearchResponse(req.json())
         except Exception as e:
             logger.error(f"Failed to connect to Wiki OpenSearch API: {e}")
+            traceback.print_exc()
             return None
 
     def random_wiki(self):
         try:
-            req = requests.get(f'{self.BASE_URL}?action=query&generator=random&grnnamespace=0&grnlimit=1&prop=extracts&format=json')
+            headers = self.__get_headers()
+            req = requests.get(f'{self.BASE_URL}?action=query&generator=random&grnnamespace=0&grnlimit=1&prop=extracts&format=json', headers=headers)
             return RandomWikiResponse(req.json())
         except Exception as e:
             logger.error(f"Failed to connect to Wiki OpenSearch API: {e}")
+            traceback.print_exc()
+            return None
 

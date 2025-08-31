@@ -320,6 +320,7 @@ class App():
         self.master.bind("<Control-q>", self.quit)
         self.master.bind("<Control-p>", self.open_password_admin_window)
         self.master.bind("<Control-l>", lambda event: Utils.open_log_file())
+        self.master.bind("<Control-t>", self.test)
         self.toggle_theme()
         self.master.update()
         # self.close_autocomplete_popups()
@@ -986,6 +987,11 @@ class App():
             element.destroy()
             setattr(self, element_ref_name, None)
             self.row_counter0 -= 1
+
+    def test(self, event=None):
+        print("Test not implemented")
+        # from extensions import WikiOpenSearchAPI
+        # print(WikiOpenSearchAPI().random_wiki())
 
 
 if __name__ == "__main__":
