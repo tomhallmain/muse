@@ -104,7 +104,7 @@ class SearchWindow(BaseWindow):
             raise
 
     def __init__(self, master, app_actions, library_data, dimensions="1550x700"):
-        super().init()
+        super().__init__()
         SearchWindow.top_level = Toplevel(master, bg=AppStyle.BG_COLOR) 
         SearchWindow.top_level.geometry(dimensions)
         SearchWindow.set_title(_("Search Library"))

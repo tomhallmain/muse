@@ -19,7 +19,7 @@ class LibraryWindow(BaseWindow):
     top_level = None
 
     def __init__(self, master, app_actions, library_data):
-        super().init()
+        super().__init__()
         
         # Create and configure top level window
         LibraryWindow.top_level = Toplevel(master)

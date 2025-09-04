@@ -21,7 +21,7 @@ class WeatherWindow(BaseWindow):
     top_level = None
 
     def __init__(self, master, app_actions, dimensions="600x600"):
-        super().init()
+        super().__init__()
         WeatherWindow.top_level = Toplevel(master, bg=AppStyle.BG_COLOR)
         WeatherWindow.top_level.geometry(dimensions)
         WeatherWindow.set_title(_("Weather"))

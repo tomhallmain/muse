@@ -16,7 +16,6 @@ class ConfigurationWindow(BaseWindow):
 
     def __init__(self, master, app_actions):
         super().__init__()
-        super().init()
         
         # Create and configure top level window
         ConfigurationWindow.top_level = Toplevel(master)

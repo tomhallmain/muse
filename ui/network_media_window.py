@@ -72,7 +72,7 @@ class NetworkMediaWindow(BaseWindow):
         app_info_cache.set("recent_media_urls", json_urls)
 
     def __init__(self, master, app_actions, dimensions="1550x700"):
-        super().init()
+        super().__init__()
         NetworkMediaWindow.top_level = Toplevel(master, bg=AppStyle.BG_COLOR) 
         NetworkMediaWindow.top_level.geometry(dimensions)
         NetworkMediaWindow.set_title(_("Search Library"))

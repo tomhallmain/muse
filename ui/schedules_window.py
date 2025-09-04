@@ -23,7 +23,7 @@ class ScheduleModifyWindow(BaseWindow):
     COL_0_WIDTH = 600
 
     def __init__(self, master, refresh_callback, schedule, dimensions="600x600"):
-        super().init()
+        super().__init__()
         ScheduleModifyWindow.top_level = Toplevel(master, bg=AppStyle.BG_COLOR)
         ScheduleModifyWindow.top_level.geometry(dimensions)
         self.master = ScheduleModifyWindow.top_level
@@ -160,7 +160,7 @@ class SchedulesWindow(BaseWindow):
         return f"{width}x{height}"
 
     def __init__(self, master, toast_callback, runner_app_config=RunnerAppConfig()):
-        super().init()
+        super().__init__()
         SchedulesWindow.top_level = Toplevel(master, bg=AppStyle.BG_COLOR)
         SchedulesWindow.top_level.geometry(SchedulesWindow.get_geometry())
         SchedulesWindow.top_level.title(_("Preset Schedules"))

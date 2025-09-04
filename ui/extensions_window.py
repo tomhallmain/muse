@@ -29,7 +29,7 @@ class ExtensionsWindow(BaseWindow):
     top_level = None
 
     def __init__(self, master, app_actions):
-        super().init()
+        super().__init__()
         
         # Create and configure top level window
         ExtensionsWindow.top_level = Toplevel(master)
@@ -397,7 +397,7 @@ class ExtensionsWindow(BaseWindow):
 class ExtensionDetailsWindow(BaseWindow):
     """Window to display detailed information about an extension."""
     def __init__(self, master, extension):
-        super().init()
+        super().__init__()
         
         # Create and configure top level window
         self.top_level = Toplevel(master)

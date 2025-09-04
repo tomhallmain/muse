@@ -39,7 +39,7 @@ class TrackDetailsWindow(BaseWindow):
     top_level = None
 
     def __init__(self, master, app_actions, audio_track, dimensions="800x800"):
-        super().init()
+        super().__init__()
         TrackDetailsWindow.top_level = Toplevel(master, bg=AppStyle.BG_COLOR)
         TrackDetailsWindow.top_level.geometry(dimensions)
         TrackDetailsWindow.set_title(_("Track Details"))
