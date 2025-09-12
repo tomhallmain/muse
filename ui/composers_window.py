@@ -29,7 +29,7 @@ class ComposerDetailsWindow():
     COL_0_WIDTH = 600
 
     def __init__(self, master, composers_window, composer=None, dimensions="600x600"):
-        # super().init()
+        # super().__init__()
         ComposerDetailsWindow.top_level = Toplevel(master, bg=AppStyle.BG_COLOR)
         ComposerDetailsWindow.top_level.geometry(dimensions)
         self.master = ComposerDetailsWindow.top_level

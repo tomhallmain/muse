@@ -42,7 +42,7 @@ class DJPersona:
             self.is_mock = False
             
         # Validate language code
-        valid_language_codes = ["en", "de", "es", "fr", "it"]
+        valid_language_codes = ["en", "de", "es", "fr", "it", "pt", "ru"]
         if self.language_code not in valid_language_codes:
             raise ValueError(f"Invalid language code: {self.language_code}. Must be one of {valid_language_codes}")
         
@@ -200,7 +200,7 @@ class DJPersonaManager:
             {
                 "name": "Royston",
                 "voice_name": "Royston Min",
-                "s": "a man",
+                "s": "M",
                 "tone": "warm and engaging",
                 "characteristics": [
                     "classical music expert",
@@ -215,7 +215,7 @@ class DJPersonaManager:
             {
                 "name": "Sofia",
                 "voice_name": "Sofia Hellen",
-                "s": "a woman",
+                "s": "F",
                 "tone": "energetic and passionate",
                 "characteristics": [
                     "contemporary music enthusiast",
@@ -230,7 +230,7 @@ class DJPersonaManager:
             {
                 "name": "Ludvig",
                 "voice_name": "Ludvig Milivoj",
-                "s": "a man",
+                "s": "M",
                 "tone": "thoughtful and analytical",
                 "characteristics": [
                     "baroque music specialist",
@@ -314,3 +314,69 @@ class DJPersonaManager:
         except Exception as e:
             logger.error(f"Error getting context and system prompt: {e}")
             return ([], None)
+
+    def save_personas_to_config(self):
+        """Save all personas to the configuration file."""
+        try:
+            # Convert personas to dict format for config
+            personas_data = []
+            for persona in self.personas.values():
+                personas_data.append(persona.to_dict())
+            
+            # Update config
+            config.dj_personas = personas_data
+            success = config.save_config()
+            
+            if success:
+                logger.info(f"Successfully saved {len(personas_data)} personas to configuration")
+            else:
+                logger.error("Failed to save personas to configuration")
+            
+            return success
+            
+        except Exception as e:
+            logger.error(f"Error saving personas to config: {e}")
+            return False
+
+    def add_persona(self, persona: DJPersona) -> bool:
+        """Add a new persona to the manager."""
+        try:
+            self.personas[persona.voice_name] = persona
+            logger.info(f"Added persona: {persona.name} ({persona.voice_name})")
+            return True
+        except Exception as e:
+            logger.error(f"Error adding persona: {e}")
+            return False
+
+    def remove_persona(self, voice_name: str) -> bool:
+        """Remove a persona from the manager."""
+        try:
+            if voice_name in self.personas:
+                persona = self.personas[voice_name]
+                del self.personas[voice_name]
+                logger.info(f"Removed persona: {persona.name} ({voice_name})")
+                return True
+            else:
+                logger.warning(f"Persona not found for removal: {voice_name}")
+                return False
+        except Exception as e:
+            logger.error(f"Error removing persona: {e}")
+            return False
+
+    def update_persona(self, voice_name: str, updated_persona: DJPersona) -> bool:
+        """Update an existing persona in the manager."""
+        try:
+            if voice_name in self.personas:
+                self.personas[voice_name] = updated_persona
+                logger.info(f"Updated persona: {updated_persona.name} ({voice_name})")
+                return True
+            else:
+                logger.warning(f"Persona not found for update: {voice_name}")
+                return False
+        except Exception as e:
+            logger.error(f"Error updating persona: {e}")
+            return False
+
+    def get_all_personas(self) -> Dict[str, DJPersona]:
+        """Get all personas as a dictionary."""
+        return self.personas.copy()

@@ -29,6 +29,7 @@ from ui.favorites_window import FavoritesWindow
 from ui.history_window import HistoryWindow
 from ui.library_window import LibraryWindow
 from ui.media_frame import MediaFrame
+from ui.personas_window import PersonasWindow
 from ui.playlist_window import MasterPlaylistWindow
 from ui.preset import Preset
 from ui.presets_window import PresetsWindow
@@ -150,6 +151,7 @@ class App():
         self.view_menu.add_command(label=_("Favorites"), command=self.open_favorites_window)
         self.view_menu.add_command(label=_("History"), command=self.open_history_window)
         self.view_menu.add_command(label=_("Composers"), command=self.open_composers_window)
+        self.view_menu.add_command(label=_("Personas"), command=self.open_personas_window)
 
         # Tools menu
         self.tools_menu = Menu(self.menu_bar, tearoff=0)
@@ -657,6 +659,14 @@ class App():
             composers_window = ComposersWindow(self.master, self.app_actions)
         except Exception as e:
             logger.error(f"Exception opening composers window: {e}")
+            raise e
+
+    @require_password(ProtectedActions.EDIT_PERSONAS)
+    def open_personas_window(self):
+        try:
+            personas_window = PersonasWindow(self.master, self.app_actions)
+        except Exception as e:
+            logger.error(f"Exception opening personas window: {e}")
             raise e
 
     @require_password(ProtectedActions.EDIT_SCHEDULES)

@@ -449,12 +449,67 @@ class HistoryType(Enum):
             HistoryType.INSTRUMENTS: TrackAttribute.INSTRUMENT
         }[self]
 
+class PersonaSex(Enum):
+    """Enumeration of persona sex/gender options."""
+    MALE = "M"
+    FEMALE = "F"
+
+    def get_translation(self):
+        types = [
+            PersonaSex.MALE,
+            PersonaSex.FEMALE,
+        ]
+        return PersonaSex.get_translated_names()[types.index(self)]
+
+    @staticmethod
+    def get_translated_names():
+        return [
+            _('Male'),
+            _('Female'),
+        ]
+
+    @staticmethod
+    def get_from_translation(translation):
+        types = [
+            PersonaSex.MALE,
+            PersonaSex.FEMALE,
+        ]
+        try:
+            return types[PersonaSex.get_translated_names().index(translation)]
+        except ValueError:
+            return PersonaSex.MALE
+
+    def get_legacy_value(self):
+        """Get the legacy single character value used in the persona data."""
+        return self.value
+
+    @staticmethod
+    def from_legacy_value(legacy_value):
+        """Convert a legacy single character value to PersonaSex enum."""
+        if not legacy_value:
+            return PersonaSex.MALE
+        
+        legacy_upper = legacy_value.upper()
+        if legacy_upper == "M":
+            return PersonaSex.MALE
+        elif legacy_upper in ("F", "W"):
+            return PersonaSex.FEMALE
+        else:
+            return PersonaSex.MALE  # Default fallback
+
+    @staticmethod
+    def to_translated_display(legacy_value):
+        """Convert a legacy single character value to translated display string."""
+        return PersonaSex.from_legacy_value(legacy_value).get_translation()
+
+
 class ProtectedActions(Enum):
     """Enumeration of actions that can be password protected."""
     RUN_SEARCH = "run_search"
     VIEW_LIBRARY = "view_library"
     VIEW_HISTORY = "view_history"
     EDIT_COMPOSERS = "edit_composers"
+    EDIT_PERSONAS = "edit_personas"
     EDIT_SCHEDULES = "edit_schedules"
     EDIT_EXTENSIONS = "edit_extensions"
     EDIT_PLAYLISTS = "edit_playlists"
@@ -479,6 +534,7 @@ class ProtectedActions(Enum):
             ProtectedActions.VIEW_LIBRARY: _("View Library"),
             ProtectedActions.VIEW_HISTORY: _("View History"),
             ProtectedActions.EDIT_COMPOSERS: _("Edit Composers"),
+            ProtectedActions.EDIT_PERSONAS: _("Edit Personas"),
             ProtectedActions.EDIT_SCHEDULES: _("Edit Schedules"),
             ProtectedActions.EDIT_EXTENSIONS: _("Edit Extensions"),
             ProtectedActions.EDIT_PLAYLISTS: _("Edit Playlists"),
