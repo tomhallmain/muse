@@ -28,7 +28,6 @@
     "forms_file": "forms_example.json",
     "genres_file": "genres_example.json",
     "instruments_file": "instruments_example.json",
-    "blacklist_file": "blacklist_example.json",
     "enable_dynamic_volume": true,
     "play_videos_in_separate_window": false,
     "playlist_recently_played_check_count": 1000,

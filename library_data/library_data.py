@@ -7,7 +7,6 @@ import traceback
 
 from extensions.extension_manager import ExtensionManager
 from library_data.artist import artists_data
-from library_data.blacklist import blacklist
 from library_data.composer import composers_data
 from library_data.form import forms_data
 from library_data.genre import genre_data
@@ -343,7 +342,6 @@ class LibraryData:
     def __init__(self, app_actions=None):
         LibraryData.load_directory_cache()
         self.artists = artists_data
-        self.blacklist = blacklist
         self.composers = composers_data
         self.forms = forms_data
         self.genres = genre_data

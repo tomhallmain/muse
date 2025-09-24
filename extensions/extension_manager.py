@@ -290,13 +290,14 @@ class ExtensionManager:
         return strict.strip().lower() in b.n.lower() or strict.strip().lower() in b.d.lower()
 
     def _is_blacklisted(self, b) -> bool:
-        item = self.data_callbacks.instance.blacklist.test(SoupUtils.clean_html(b.n))
+        from library_data.blacklist import Blacklist
+        item = Blacklist.get_violation_item(SoupUtils.clean_html(b.n))
         if item is not None:
-            logger.warning(f"Blacklisted: {item} ({b.n})")
+            logger.warning(f"Blacklisted: {item.string} ({b.n})")
             return True
-        item = self.data_callbacks.instance.blacklist.test(b.d)
+        item = Blacklist.get_violation_item(b.d)
         if item is not None:
-            logger.warning(f"Blacklisted: {item}\n{b.d}")
+            logger.warning(f"Blacklisted: {item.string}\n{b.d}")
             return True
         return False
 

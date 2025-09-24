@@ -1,7 +1,7 @@
 import datetime
 
 from extensions.soup_utils import SoupUtils
-from library_data.blacklist import blacklist
+from library_data.blacklist import Blacklist
 from utils.logging_setup import get_logger
 
 logger = get_logger(__name__)
@@ -98,7 +98,7 @@ class HackerNewsSouper():
     def get_nonblacklisted_stories(items=[]):
         headlines = []
         for item in items:
-            blacklist_items = blacklist.test_all(item.title)
+            blacklist_items = list(Blacklist.find_blacklisted_items(item.title).keys())
             if len(blacklist_items) > 0:
                 logger.info(f"item blacklisted: {item.title} ({blacklist_items})")
             else:

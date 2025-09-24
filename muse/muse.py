@@ -11,7 +11,7 @@ from extensions.open_weather import OpenWeatherAPI
 from extensions.soup_utils import WebConnectionException
 from extensions.wiki_opensearch_api import WikiOpenSearchAPI
 from extensions.llm import LLM, LLMResponseException, LLMResult
-from library_data.blacklist import blacklist, BlacklistException
+from library_data.blacklist import Blacklist, BlacklistException
 from library_data.media_track import MediaTrack
 from muse.dj_persona import DJPersona
 from muse.muse_memory import MuseMemory
@@ -570,7 +570,7 @@ class Muse:
             if article is None or not article.is_valid():
                 raise Exception("No valid wiki article found")
             article_text = str(article)[:2000]
-            blacklist_words = blacklist.test_all(article_text)
+            blacklist_words = list(Blacklist.find_blacklisted_items(article_text).keys())
             blacklisted_words_found.update(blacklist_words)
             article_blacklisted = len(blacklist_words) > 0
             if count > 10:
@@ -663,7 +663,7 @@ class Muse:
         if variant_part_marker in prompt_text_to_test:
             prompt_text_to_test = prompt_text_to_test[prompt_text_to_test.index(variant_part_marker):]
             prompt_text_to_test = prompt_text_to_test[prompt_text_to_test.index("\n") + 1:]
-        blacklisted_items_in_prompt = blacklist.test_all(prompt_text_to_test)
+        blacklisted_items_in_prompt = list(Blacklist.find_blacklisted_items(prompt_text_to_test).keys())
         
         # Use the context and system prompt in the LLM call
         # NOTE excluding context for now because it's being deprecated for some reason.
@@ -675,7 +675,9 @@ class Muse:
         
         generations = []
         all_blacklist_items = set()
-        blacklist_items = blacklist.test_all(text, excluded_items=blacklisted_items_in_prompt)
+        blacklist_items = list(Blacklist.find_blacklisted_items(text).keys())
+        # Filter out excluded items (items already in prompt)
+        blacklist_items = [item for item in blacklist_items if item not in blacklisted_items_in_prompt]
         attempts = 0
         while len(blacklist_items) > 0:
             all_blacklist_items.update(set(blacklist_items))
@@ -688,7 +690,9 @@ class Muse:
             if text.strip() == "":
                 raise LLMResponseException("No response text was generated!")
             generations.append(text)
-            blacklist_items = blacklist.test_all(text, excluded_items=blacklisted_items_in_prompt)
+            blacklist_items = list(Blacklist.find_blacklisted_items(text).keys())
+            # Filter out excluded items (items already in prompt)
+            blacklist_items = [item for item in blacklist_items if item not in blacklisted_items_in_prompt]
             attempts += 1
             if attempts > 2:
                 blacklist_items_str = ", ".join(sorted([str(i) for i in all_blacklist_items]))

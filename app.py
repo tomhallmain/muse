@@ -22,6 +22,7 @@ from ui.auth.password_admin_window import PasswordAdminWindow
 from ui.auth.password_utils import require_password
 from ui.app_actions import AppActions
 from ui.app_style import AppStyle
+from ui.blacklist_window import BlacklistWindow
 from ui.composers_window import ComposersWindow
 from ui.configuration_window import ConfigurationWindow
 from ui.extensions_window import ExtensionsWindow
@@ -159,6 +160,7 @@ class App():
         self.tools_menu.add_command(label=_("Search"), command=self.open_search_window)
         self.tools_menu.add_command(label=_("Schedules"), command=self.open_schedules_window)
         self.tools_menu.add_command(label=_("Extensions"), command=self.open_extensions_window)
+        self.tools_menu.add_command(label=_("Blacklist"), command=self.open_blacklist_window)
         self.tools_menu.add_command(label=_("Weather"), command=self.open_weather_window)
         self.tools_menu.add_command(label=_("Text to Speech"), command=self.open_tts_window)
         self.tools_menu.add_command(label=_("Timer"), command=self.open_timer_window)
@@ -322,10 +324,14 @@ class App():
         self.master.bind("<Control-q>", self.quit)
         self.master.bind("<Control-p>", self.open_password_admin_window)
         self.master.bind("<Control-l>", lambda event: Utils.open_log_file())
+        self.master.bind("<Control-b>", self.open_blacklist_window)
         self.master.bind("<Control-t>", self.test)
         self.toggle_theme()
         self.master.update()
         # self.close_autocomplete_popups()
+        
+        # Initialize blacklist
+        BlacklistWindow.set_blacklist()
 
     def toggle_theme(self, to_theme=None, do_toast=True):
         if (to_theme is None and AppStyle.IS_DEFAULT_THEME) or to_theme == AppStyle.LIGHT_THEME:
@@ -361,6 +367,7 @@ class App():
     #     self.lora_tags_box.closeListbox()
 
     def on_closing(self):
+        BlacklistWindow.store_blacklist()
         self.store_info_cache()
         # if self.server is not None:
         #     try:
@@ -698,6 +705,14 @@ class App():
             extensions_window = ExtensionsWindow(self.master, self.app_actions)
         except Exception as e:
             logger.error(f"Exception opening extensions window: {e}")
+
+    @require_password(ProtectedActions.EDIT_BLACKLIST)
+    def open_blacklist_window(self):
+        try:
+            blacklist_window = BlacklistWindow(self.master, self.app_actions)
+        except Exception as e:
+            logger.error(f"Exception opening blacklist window: {e}")
+            raise e
 
     @require_password(ProtectedActions.EDIT_PLAYLISTS)
     def open_playlist_window(self):

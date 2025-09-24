@@ -34,7 +34,7 @@ Muse is a media player with an integrated voice synthesizer attached to an LLM. 
     - `min_seconds_between_spots` - Minimum time between DJ spots to prevent too frequent interruptions.
 - `save_tts_output_topics` - Set the topics to retain MP3 files for in the `tts_ouput` directory.
 - `news_api_source_trustworthiness` - Set the trustworthiness of news sources from News API.
-- `artists_file`, `composers_file`, `forms_file`, `genres_file`, `instruments_file`, `blacklist_file` - Modify these and place your desired file in the `library_data/data` directory following the formats in the example files found there.
+- `artists_file`, `composers_file`, `forms_file`, `genres_file`, `instruments_file` - Modify these and place your desired file in the `library_data/data` directory following the formats in the example files found there.
 - `enable_dynamic_volume` - Attempts to normalize track loudness by reducing or increasing the master volume above the base volume level.
 - `play_videos_in_separate_window` - If the track is a video, play it in a separate window from the main window
 - `playlist_recently_played_check_count` - As each track is played, the attributes are stored in lists of recently-played attributes. Set this to a higher value to reduce the chance that you hear recently-played tracks after a random sort has been applied.

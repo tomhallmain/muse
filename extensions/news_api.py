@@ -3,7 +3,7 @@
 import datetime
 import requests
 
-from library_data.blacklist import blacklist
+from library_data.blacklist import Blacklist
 from utils.config import config
 from utils.utils import Utils
 from utils.logging_setup import get_logger
@@ -30,7 +30,7 @@ class NewsResponse:
             source_name = article["source"]["name"]
             trustworthiness = self.get_source_trustworthiness(source_name)
             if trustworthiness > 0.2:
-                blacklist_items = blacklist.test_all(article['title'])
+                blacklist_items = list(Blacklist.find_blacklisted_items(article['title']).keys())
                 if len(blacklist_items) > 0:
                     title = article['title']
                     logger.info(f"Article blacklisted: {title} ({blacklist_items})")

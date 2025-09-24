@@ -24,6 +24,7 @@ class Globals:
     def set_volume(cls, volume=60):
         cls.DEFAULT_VOLUME_THRESHOLD = int(volume)
 
+
 class MediaFileType(Enum):
     MKV = '.MKV'
     MP4 = '.MP4'
@@ -65,6 +66,7 @@ class MediaFileType(Enum):
             if f.endswith(e.value):
                 return True
         return False
+
 
 class PlaylistSortType(Enum):
     RANDOM = 'RANDOM'
@@ -194,7 +196,6 @@ class PlaybackMasterStrategy(Enum):
             return PlaybackMasterStrategy.ALL_MUSIC
 
 
-
 class TrackAttribute(Enum):
     TITLE = "title"
     ALBUM = "album"
@@ -259,7 +260,6 @@ class TrackAttribute(Enum):
             return PlaylistSortType.ALBUM_SHUFFLE
         else:
             return PlaylistSortType.RANDOM
-
 
 
 class ExtensionStrategy(Enum):
@@ -449,6 +449,38 @@ class HistoryType(Enum):
             HistoryType.INSTRUMENTS: TrackAttribute.INSTRUMENT
         }[self]
 
+
+class BlacklistMode(Enum):
+    REMOVE_WORD_OR_PHRASE = "REMOVE_WORD_OR_PHRASE"
+    REMOVE_ENTIRE_TAG = "REMOVE_ENTIRE_TAG"
+    FAIL_PROMPT = "FAIL_PROMPT"
+    LOG_ONLY = "LOG_ONLY"
+
+    def __str__(self):
+        return self.value
+
+    def display(self):
+        # Use I18N._ for translation
+        _ = I18N._
+        display_map = {
+            BlacklistMode.REMOVE_WORD_OR_PHRASE: _(u"Remove word/phrase (only the blacklisted part)"),
+            BlacklistMode.REMOVE_ENTIRE_TAG: _(u"Remove entire tag (if any part matches)"),
+            BlacklistMode.FAIL_PROMPT: _(u"Fail prompt (block generation)"),
+            BlacklistMode.LOG_ONLY: _(u"Log only (do not remove, just log)"),
+        }
+        return display_map.get(self, str(self))
+
+    @staticmethod
+    def display_values():
+        return [mode.display() for mode in BlacklistMode]
+
+    @staticmethod
+    def from_display(display_str):
+        for mode in BlacklistMode:
+            if mode.display() == display_str:
+                return mode
+
+
 class PersonaSex(Enum):
     """Enumeration of persona sex/gender options."""
     MALE = "M"
@@ -514,6 +546,8 @@ class ProtectedActions(Enum):
     EDIT_EXTENSIONS = "edit_extensions"
     EDIT_PLAYLISTS = "edit_playlists"
     EDIT_FAVORITES = "edit_favorites"
+    EDIT_BLACKLIST = "edit_blacklist"
+    REVEAL_BLACKLIST_CONCEPTS = "reveal_blacklist_concepts"
     DELETE_MEDIA = "delete_media"
     EDIT_CONFIGURATION = "edit_configuration"
     START_APPLICATION = "start_application"
@@ -539,6 +573,8 @@ class ProtectedActions(Enum):
             ProtectedActions.EDIT_EXTENSIONS: _("Edit Extensions"),
             ProtectedActions.EDIT_PLAYLISTS: _("Edit Playlists"),
             ProtectedActions.EDIT_FAVORITES: _("Edit Favorites"),
+            ProtectedActions.EDIT_BLACKLIST: _("Edit Blacklist"),
+            ProtectedActions.REVEAL_BLACKLIST_CONCEPTS: _("Reveal Blacklist Concepts"),
             ProtectedActions.DELETE_MEDIA: _("Delete Media"),
             ProtectedActions.EDIT_CONFIGURATION: _("Edit Configuration"),
             ProtectedActions.START_APPLICATION: _("Start Application"),
