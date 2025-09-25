@@ -698,3 +698,12 @@ if __name__ == "__main__":
             data[os.path.basename(artist_dir)] = artist_data
     pickle.dump(data, open("test.pkl", "wb"))
     
+
+from enum import Enum
+
+class ModifierKey(Enum):
+    SHIFT = 0x1
+    CAPS_LOCK = 0x2
+    CTRL = 0x4
+    ALT = 0x20000
+
