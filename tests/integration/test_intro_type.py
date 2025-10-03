@@ -33,8 +33,9 @@ class TestIntroType:
     def setup(self, mock_args):
         """Set up test environment."""
         MuseMemory.load()
-        MuseMemory.get_persona_manager().allow_mock_personas = True
-        MuseMemory.get_persona_manager().set_current_persona("test_voice")
+        from muse.muse_memory import muse_memory
+        muse_memory.get_persona_manager().allow_mock_personas = True
+        muse_memory.get_persona_manager().set_current_persona("test_voice")
         
         # Set up mock args with placeholder=True
         mock_args.placeholder = True  # Set placeholder=True specifically for these tests

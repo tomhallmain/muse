@@ -14,7 +14,7 @@ from extensions.llm import LLM, LLMResponseException, LLMResult
 from library_data.blacklist import Blacklist, BlacklistException
 from library_data.media_track import MediaTrack
 from muse.dj_persona import DJPersona
-from muse.muse_memory import MuseMemory
+from muse.muse_memory import muse_memory
 from muse.schedules_manager import SchedulesManager, ScheduledShutdownException
 from muse.playback import Playback
 from muse.prompter import Prompter
@@ -47,7 +47,7 @@ class Muse:
         self._schedule = SchedulesManager.default_schedule
         if self._schedule is None:
             raise Exception("Failed to establish active schedule")
-        self.memory = MuseMemory()
+        self.memory = muse_memory
         self.llm = LLM(model_name=config.llm_model_name)
         
         initial_voice = self._schedule.voice

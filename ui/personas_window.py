@@ -39,8 +39,8 @@ class PersonasWindow(BaseWindow):
         self.app_actions = app_actions
         
         # Get persona manager from memory
-        from muse.muse_memory import MuseMemory
-        self.persona_manager = MuseMemory.get_persona_manager()
+        from muse.muse_memory import muse_memory
+        self.persona_manager = muse_memory.get_persona_manager()
         if not self.persona_manager:
             self.persona_manager = DJPersonaManager()
         

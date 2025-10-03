@@ -148,8 +148,8 @@ class MuseSpotProfile:
     def unset_non_historical_fields(self):
         """Clear fields that are not needed for historical reference."""
         self.get_previous_spot_profile_callback = None
-        self.get_upcoming_tracks_callback = None        
-        self.topic_translated = None        
+        self.get_upcoming_tracks_callback = None
+        self.topic_translated = None
 
     def get_previous_spot_profile(self, idx=0):
         """Get the last spot profile that was actually spoken.

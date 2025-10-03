@@ -133,7 +133,8 @@ class DJPersona:
     def from_dict(cls, data: Dict[str, Any]) -> 'DJPersona':
         """Create a persona from a dictionary."""
         context_len = len(data.get("context", []))
-        logger.info(f"Deserializing {data['name']} persona with {context_len} tokens of context")
+        logger.info(f"Deserializing {data['name']} persona with {context_len} tokens of contex, last hello time {data.get('last_hello_time')}, last signoff time {data.get('last_signoff_time')}")
+        
         return cls(
             name=data["name"],
             voice_name=data["voice_name"],
@@ -260,24 +261,23 @@ class DJPersonaManager:
         persona = self.personas.get(voice_name)
         if persona:
             return persona
+        elif hasattr(self, "allow_mock_personas") and self.allow_mock_personas:
+            logger.warning(f"Mock persona not found, creating new: {voice_name}")
+            persona = DJPersona(
+                name=voice_name,
+                voice_name=voice_name,
+                s="a man",
+                tone="neutral",
+                characteristics=[],
+                system_prompt="",
+                language="English",
+                language_code="en"
+            )
+            self.personas[voice_name] = persona
+            return persona
         else:
-            if hasattr(self, "allow_mock_personas") and self.allow_mock_personas:
-                logger.warning(f"Mock persona not found, creating new: {voice_name}")
-                persona = DJPersona(
-                    name=voice_name,
-                    voice_name=voice_name,
-                    s="a man",
-                    tone="neutral",
-                    characteristics=[],
-                    system_prompt="",
-                    language="English",
-                    language_code="en"
-                )
-                self.personas[voice_name] = persona
-                return persona
-            else:
-                logger.error(f"Persona not found: {voice_name}")
-                return None
+            logger.error(f"Persona not found: {voice_name}")
+            return None
 
     def set_current_persona(self, voice_name: str) -> Optional[DJPersona]:
         """Set the current persona by voice name."""

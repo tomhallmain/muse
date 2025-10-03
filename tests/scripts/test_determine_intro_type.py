@@ -167,8 +167,9 @@ def main():
     reference_timestamp = mktime(reference_time)
     
     MuseMemory.load()
-    MuseMemory.get_persona_manager().allow_mock_personas = True
-    MuseMemory.get_persona_manager().set_current_persona("test_voice")
+    from muse.muse_memory import muse_memory
+    muse_memory.get_persona_manager().allow_mock_personas = True
+    muse_memory.get_persona_manager().set_current_persona("test_voice")
     muse = get_mock_muse()
     
     # Test Case 1: First-time introduction (no previous interactions)
