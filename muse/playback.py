@@ -250,9 +250,9 @@ class Playback:
             spot_profile.immediate = True
             if self.has_played_first_track:
                 logger.info("Delayed preparation.")
-            self.get_muse().prepare(spot_profile, self.ui_callbacks)
+            self.get_muse().prepare(spot_profile)
         else:
-            Utils.start_thread(self.get_muse().prepare, use_asyncio=False, args=(spot_profile, self.ui_callbacks))
+            Utils.start_thread(self.get_muse().prepare, use_asyncio=False, args=(spot_profile,))
         if delayed_prep:
             self.has_attempted_track_split = False
         return round(time.time() - start)

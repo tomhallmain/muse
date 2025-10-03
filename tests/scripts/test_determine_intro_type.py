@@ -28,7 +28,7 @@ def create_test_persona(last_hello_time=None, last_signoff_time=None):
 def get_mock_muse():
     class MockMuseArgs:
         placeholder = True
-    return Muse(MockMuseArgs(), None)
+    return Muse(MockMuseArgs(), None, ui_callbacks=None)
 
 def format_time(timestamp):
     """Format a timestamp into a readable string."""

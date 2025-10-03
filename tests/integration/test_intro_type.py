@@ -40,7 +40,7 @@ class TestIntroType:
         # Set up mock args with placeholder=True
         mock_args.placeholder = True  # Set placeholder=True specifically for these tests
         run_context = RunContext()  # Create a new RunContext
-        self.muse = Muse(mock_args, None, run_context)  # Pass the run_context
+        self.muse = Muse(mock_args, None, run_context, ui_callbacks=None)  # Pass the run_context
         
         # Use a fixed reference time: 2024-03-20 12:00:00
         self.reference_time = datetime.datetime(2024, 3, 20, 12, 0, 0)

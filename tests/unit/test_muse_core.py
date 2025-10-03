@@ -9,7 +9,7 @@ class TestMuse:
     def test_muse_creation(self, mock_data_callbacks, mock_args):
         """Test basic Muse instance creation."""
         run_context = RunContext()  # Create a new RunContext
-        muse = Muse(args=mock_args, library_data=mock_data_callbacks, run_context=run_context)
+        muse = Muse(args=mock_args, library_data=mock_data_callbacks, run_context=run_context, ui_callbacks=None)
         assert isinstance(muse, Muse)
         assert muse.args == mock_args
         assert muse.library_data == mock_data_callbacks

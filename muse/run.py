@@ -32,7 +32,7 @@ class Run:
         self.app_actions = app_actions
         self.library_data = None if args.placeholder else LibraryData(app_actions)
         self._run_context = RunContext()
-        self.muse = Muse(self.args, self.library_data, self._run_context)
+        self.muse = Muse(self.args, self.library_data, self._run_context, ui_callbacks=app_actions)
         self._playback = None
 
     def is_infinite(self):

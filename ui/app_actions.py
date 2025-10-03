@@ -3,6 +3,7 @@ from typing import Callable, Dict, Any
 class AppActions:
     REQUIRED_ACTIONS = set([
         "track_details_callback",
+        "update_dj_persona_callback",
         "update_next_up_callback",
         "update_prior_track_callback",
         "update_spot_profile_topics_text",

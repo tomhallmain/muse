@@ -170,6 +170,7 @@ class App():
 
         self.app_actions = AppActions({
             "track_details_callback": self.update_track_text,
+            "update_dj_persona_callback": self.update_dj_persona_callback,
             "update_next_up_callback": self.update_next_up_text,
             "update_prior_track_callback": self.update_previous_track_text,
             "update_spot_profile_topics_text": self.update_spot_profile_topics_text,
@@ -203,6 +204,10 @@ class App():
         # Directory count label at the very top
         self.label_directory_count = Label(self.sidebar)
         self.add_label(self.label_directory_count, "", columnspan=3)
+
+        # DJ persona label
+        self.label_dj_persona = Label(self.sidebar)
+        self.add_label(self.label_dj_persona, _("DJ"), columnspan=3)
 
         self.label_title_text = Label(self.sidebar)
         self.add_label(self.label_title_text, _("Title"), columnspan=3)
@@ -525,8 +530,8 @@ class App():
             self.job_queue.job_running = True
             self.destroy_progress_bar()
             self.progress_bar = Progressbar(self.sidebar, orient=HORIZONTAL, length=300, mode='determinate')
-            self.progress_bar.grid(row=10, column=0, columnspan=3, sticky="EW")
-            self.cancel_btn.grid(row=13, column=2)
+            self.progress_bar.grid(row=11, column=0, columnspan=3, sticky="EW")
+            self.cancel_btn.grid(row=14, column=2)
             self.current_run = Run(args, app_actions=self.app_actions)
             self.current_run.execute()
             self.cancel_btn.grid_forget()
@@ -845,6 +850,16 @@ class App():
         
         text = _("Directories: {0}").format(count)
         self.label_directory_count["text"] = text
+        self.master.update()
+
+    def update_dj_persona_callback(self, persona_name):
+        """Update the DJ persona label with the current persona name."""
+        if persona_name is None or persona_name.strip() == "":
+            persona_name = ""
+        else:
+            persona_name = _("DJ: ") + persona_name
+        text = Utils._wrap_text_to_fit_length(persona_name[:100], 90)
+        self.label_dj_persona["text"] = text
         self.master.update()
 
     def update_album_artwork(self, image_filepath):

@@ -36,10 +36,11 @@ class Muse:
     preparation_starts_minutes_from_end = float(config.muse_config["preparation_starts_minutes_from_end"])
     preparation_starts_after_seconds_sleep = int(config.muse_config["preparation_starts_after_seconds_sleep"])
 
-    def __init__(self, args, library_data, run_context):
+    def __init__(self, args, library_data, run_context, ui_callbacks=None):
         self.args = args
         self.library_data = library_data
         self._run_context = run_context
+        self.ui_callbacks = ui_callbacks
         if not args.placeholder:
             assert self.library_data is not None # The DJ should have access to the music library.
             assert self._run_context is not None
@@ -52,7 +53,11 @@ class Muse:
         
         initial_voice = self._schedule.voice
         persona = self.memory.get_persona_manager().get_persona(initial_voice)
-        
+
+        # Update UI with nothing, the actual persona will be set based on the result of check_schedules
+        if self.ui_callbacks and self.ui_callbacks.update_dj_persona_callback is not None:
+            self.ui_callbacks.update_dj_persona_callback("")
+
         if persona:
             self.memory.get_persona_manager().set_current_persona(persona.voice_name)
             self.voice = Voice(persona.voice_name, run_context=self._run_context)
@@ -122,16 +127,16 @@ class Muse:
             and not self.has_started_prep \
             and ms_remaining < int(Muse.preparation_starts_minutes_from_end * 60 * 1000)
 
-    def prepare(self, spot_profile, update_ui_callbacks=None):
+    def prepare(self, spot_profile):
         self.has_started_prep = True
         self.set_topic(spot_profile)
-        if update_ui_callbacks is not None:
-            if update_ui_callbacks.update_next_up_callback is not None:
-                update_ui_callbacks.update_next_up_callback(spot_profile.get_upcoming_track_title())
-            if update_ui_callbacks.update_prior_track_callback is not None:
-                update_ui_callbacks.update_prior_track_callback(spot_profile.get_previous_track_title())
-            if update_ui_callbacks.update_spot_profile_topics_text is not None:
-                update_ui_callbacks.update_spot_profile_topics_text(spot_profile.get_topic_text())
+        if self.ui_callbacks is not None:
+            if self.ui_callbacks.update_next_up_callback is not None:
+                self.ui_callbacks.update_next_up_callback(spot_profile.get_upcoming_track_title())
+            if self.ui_callbacks.update_prior_track_callback is not None:
+                self.ui_callbacks.update_prior_track_callback(spot_profile.get_previous_track_title())
+            if self.ui_callbacks.update_spot_profile_topics_text is not None:
+                self.ui_callbacks.update_spot_profile_topics_text(spot_profile.get_topic_text())
         if spot_profile.is_going_to_say_something():
             logger.debug(f"Preparing muse:\n{spot_profile}")
             if spot_profile.say_good_day:
@@ -146,16 +151,16 @@ class Muse:
         spot_profile.set_preparation_time()
         spot_profile.is_prepared = True
 
-    def cancel_preparation(self, spot_profile, update_ui_callbacks=None):
+    def cancel_preparation(self, spot_profile):
         logger.debug(f"Canceling muse prep:\n{spot_profile}")
         self.is_cancelled_prep = True
-        if update_ui_callbacks is not None:
-            if update_ui_callbacks.update_next_up_callback is not None:
-                update_ui_callbacks.update_next_up_callback(spot_profile.get_upcoming_track_title())
-            if update_ui_callbacks.update_prior_track_callback is not None:
-                update_ui_callbacks.update_prior_track_callback(spot_profile.get_previous_track_title())
-            if update_ui_callbacks.update_spot_profile_topics_text is not None:
-                update_ui_callbacks.update_spot_profile_topics_text(spot_profile.get_topic_text())
+        if self.ui_callbacks is not None:
+            if self.ui_callbacks.update_next_up_callback is not None:
+                self.ui_callbacks.update_next_up_callback(spot_profile.get_upcoming_track_title())
+            if self.ui_callbacks.update_prior_track_callback is not None:
+                self.ui_callbacks.update_prior_track_callback(spot_profile.get_previous_track_title())
+            if self.ui_callbacks.update_spot_profile_topics_text is not None:
+                self.ui_callbacks.update_spot_profile_topics_text(spot_profile.get_topic_text())
 
     def maybe_dj(self, spot_profile):
         """If the DJ is prepared and will speak, wait for the speech queue to clear, then return immediately."""
@@ -201,6 +206,10 @@ class Muse:
                 # Set the new persona
                 self.memory.get_persona_manager().set_current_persona(persona.voice_name)
                 self.voice = Voice(persona.voice_name, run_context=self._run_context)
+                
+                # Update UI with new persona
+                if self.ui_callbacks and self.ui_callbacks.update_dj_persona_callback is not None:
+                    self.ui_callbacks.update_dj_persona_callback(persona.name)
 
                 try:
                     # Determine what type of introduction to use
@@ -224,6 +233,9 @@ class Muse:
             else:
                 logger.warning(f"No persona found for voice {voice_name}, using default voice")
                 self.voice = Voice(voice_name, run_context=self._run_context)
+                # Update UI with fallback
+                if self.ui_callbacks and self.ui_callbacks.update_dj_persona_callback is not None:
+                    self.ui_callbacks.update_dj_persona_callback("")
                 self.say(_("Hello, I'm your DJ"), locale=I18N.locale)
                 
         except Exception as e:

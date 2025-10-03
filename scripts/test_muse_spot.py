@@ -16,7 +16,7 @@ MULTI_MODEL = ("tts_models/multilingual/multi-dataset/xtts_v2", "Royston Min", "
 
 if __name__ == '__main__':
     track = MediaTrack(r"F:\iTunes Music\conductor Evgeny Svetlanov\Symphony No. 3\03 5th Movement_ Lustig En Tempo Und.m4a")
-    muse = Muse(RunConfig())
+    muse = Muse(RunConfig(), ui_callbacks=None)
     spot_profile = MuseSpotProfile(None, track, False, True)
     muse.teach_language(spot_profile)
 
