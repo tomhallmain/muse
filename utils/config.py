@@ -3,6 +3,7 @@ import os
 import sys
 import time
 
+from utils.globals import Globals, Topic
 from utils.utils import Utils
 from utils.logging_setup import get_logger
 
@@ -26,16 +27,16 @@ class Config:
         self.dj_personas = []
         self.dj_persona_refresh_context = False
         self.muse_config = {
-            "enable_preparation": True,
-            "preparation_starts_minutes_from_end": 2,
-            "preparation_starts_after_seconds_sleep": 10,
-            "chance_speak_after_track": 0.3,
-            "chance_speak_before_track": 0.3,
-            "topic_discussion_chance_factor": 0.2,
-            "min_seconds_between_spots": 500,
+            Globals.ConfigKeys.ENABLE_PREPARATION: True,
+            Globals.ConfigKeys.PREPARATION_STARTS_MINUTES_FROM_END: 2,
+            Globals.ConfigKeys.PREPARATION_STARTS_AFTER_SECONDS_SLEEP: 10,
+            Globals.ConfigKeys.CHANCE_SPEAK_AFTER_TRACK: 0.3,
+            Globals.ConfigKeys.CHANCE_SPEAK_BEFORE_TRACK: 0.3,
+            Globals.ConfigKeys.TOPIC_DISCUSSION_CHANCE_FACTOR: 0.2,
+            Globals.ConfigKeys.MIN_SECONDS_BETWEEN_SPOTS: 500,
         }
-        self.save_tts_output_topics = ["language_learning", "poem", "random_wiki_article", "aphorism"]
-        self.prompts_directory = "prompts"
+        self.save_tts_output_topics = [Topic.LANGUAGE_LEARNING.value, Topic.POEM.value, Topic.RANDOM_WIKI_ARTICLE.value, Topic.APHORISM.value]
+        self.prompts_directory = Globals.DEFAULT_PROMPTS_DIRECTORY
         self.tongue_twisters_dir = None
         self.artists_file = "artists.json"
         self.composers_file = "composers.json"

@@ -50,6 +50,7 @@ class Prompter:
     """
 
     TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M"
+    PERSONA_INIT_PROMPT_NAME = "persona_init"
 
     @staticmethod
     def minutes_since(measure_time, from_time=None):
@@ -249,4 +250,7 @@ class Prompter:
                 return self.get_translation_prompt(language_code, I18N.get_english_language_name(language_code), english_prompt)
             raise
 
+    def get_persona_initialization_prompt(self, language_code: str) -> str:
+        """Get a prompt for a persona initialization."""
+        return self.get_prompt(Prompter.PERSONA_INIT_PROMPT_NAME, language_code)
 

@@ -13,7 +13,7 @@ from tts.speakers import speakers
 from utils.config import config
 from utils.globals import ProtectedActions, PersonaSex
 from utils.logging_setup import get_logger
-from utils.translations import I18N
+from utils.translations import I18N, SUPPORTED_LANGUAGE_CODES
 from utils.utils import Utils
 
 _ = I18N._
@@ -211,7 +211,7 @@ class PersonasWindow(BaseWindow):
         lang_code_frame = Frame(self.basic_tab, bg=AppStyle.BG_COLOR)
         lang_code_frame.grid(row=5, column=1, sticky=W, pady=5, padx=(10, 0))
         
-        self.language_code_combo = OptionMenu(lang_code_frame, self.persona_vars['language_code'], "en", "de", "es", "fr", "it", "pt", "ru", command=self.on_language_code_change)
+        self.language_code_combo = OptionMenu(lang_code_frame, self.persona_vars['language_code'], *SUPPORTED_LANGUAGE_CODES, command=self.on_language_code_change)
         self.language_code_combo.grid(row=0, column=0, sticky=W)
 
     def create_characteristics_tab(self):

@@ -1,3 +1,4 @@
+from datetime import datetime
 import glob
 import os
 import pickle
@@ -234,27 +235,60 @@ class LibraryData:
     MEDIA_TRACK_CACHE = {}
     all_tracks = [] # this list should be contained within the values of MEDIA_TRACK_CACHE, but may not be equivalent to the values
     get_tracks_lock = threading.Lock()
+    CACHE_FILENAME = "app_media_track_cache"
+    DIRECTORIES_CACHE_KEY = "directories_cache"
+    LIBRARY_REFRESH_TIME_KEY = "library_refresh_time"
 
     @staticmethod
     def store_caches():
-        app_info_cache.set("directories_cache", LibraryData.DIRECTORIES_CACHE)
+        app_info_cache.set(LibraryData.DIRECTORIES_CACHE_KEY, LibraryData.DIRECTORIES_CACHE)
         try:
-            with open("app_media_track_cache", "wb") as f:
+            with open(LibraryData.CACHE_FILENAME, "wb") as f:
                 pickle.dump(LibraryData.MEDIA_TRACK_CACHE,  f)
         except Exception as e:
             logger.error(f"Error storing media track cache: {e}")
 
     @staticmethod
     def load_directory_cache():
-        LibraryData.DIRECTORIES_CACHE = app_info_cache.get("directories_cache", default_val={})
+        LibraryData.DIRECTORIES_CACHE = app_info_cache.get(LibraryData.DIRECTORIES_CACHE_KEY, default_val={})
     
     @staticmethod
     def load_media_track_cache():
         try:
-            with open("app_media_track_cache", "rb") as f:
+            with open(LibraryData.CACHE_FILENAME, "rb") as f:
                 LibraryData.MEDIA_TRACK_CACHE = pickle.load(f)
         except FileNotFoundError as e:
             logger.info("No media track cache found, creating new one")
+
+    @staticmethod
+    def get_cache_update_time():
+        """Get the last modification time of the media track cache file."""
+        # First try to get the actual library refresh time from app_info_cache
+        refresh_time_str = app_info_cache.get(LibraryData.LIBRARY_REFRESH_TIME_KEY)
+        if refresh_time_str:
+            try:
+                return datetime.fromisoformat(refresh_time_str)
+            except Exception as e:
+                logger.warning(f"Error parsing library refresh time: {e}")
+        
+        # Fallback to file modification time if no refresh time is recorded
+        if os.path.exists(LibraryData.CACHE_FILENAME):
+            try:
+                mtime = os.path.getmtime(LibraryData.CACHE_FILENAME)
+                return datetime.fromtimestamp(mtime)
+            except Exception as e:
+                logger.warning(f"Error getting cache file modification time: {e}")
+                return None
+        return None
+
+    @staticmethod
+    def _record_library_refresh_time():
+        """Record the current time as the library refresh time in app_info_cache."""
+        try:
+            current_time = datetime.now()
+            app_info_cache.set(LibraryData.LIBRARY_REFRESH_TIME_KEY, current_time.isoformat())
+        except Exception as e:
+            logger.warning(f"Error recording library refresh time: {e}")
 
     @staticmethod
     def get_directory_files(directory, overwrite=False):
@@ -325,6 +359,9 @@ class LibraryData:
                 
                 # Write any collected errors to file after cache refresh
                 MediaTrack.write_errors_to_file()
+                
+                # Record the library refresh time in app_info_cache
+                LibraryData._record_library_refresh_time()
             return LibraryData.all_tracks
 
     @staticmethod

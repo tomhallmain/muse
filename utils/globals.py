@@ -15,6 +15,19 @@ class Globals:
     HOME = os.path.expanduser("~")
     DELAY_TIME_SECONDS = 5
     DEFAULT_VOLUME_THRESHOLD = 60
+    
+    # Directory and file constants
+    DEFAULT_PROMPTS_DIRECTORY = "prompts"
+    
+    # Configuration key constants
+    class ConfigKeys:
+        ENABLE_PREPARATION = "enable_preparation"
+        PREPARATION_STARTS_MINUTES_FROM_END = "preparation_starts_minutes_from_end"
+        PREPARATION_STARTS_AFTER_SECONDS_SLEEP = "preparation_starts_after_seconds_sleep"
+        CHANCE_SPEAK_AFTER_TRACK = "chance_speak_after_track"
+        CHANCE_SPEAK_BEFORE_TRACK = "chance_speak_before_track"
+        TOPIC_DISCUSSION_CHANCE_FACTOR = "topic_discussion_chance_factor"
+        MIN_SECONDS_BETWEEN_SPOTS = "min_seconds_between_spots"
 
     @classmethod
     def set_delay(cls, delay=5):
@@ -388,6 +401,33 @@ class Topic(Enum):
             return "news"
         return str(self.value)
 
+    @staticmethod
+    def from_value(value):
+        """Convert various input types to a Topic enum value.
+        
+        Args:
+            value: Can be a Topic enum, string, or None
+            
+        Returns:
+            Topic: The corresponding Topic enum value, or None if conversion fails
+            
+        Examples:
+            Topic.from_value("weather") -> Topic.WEATHER
+            Topic.from_value(Topic.NEWS) -> Topic.NEWS
+            Topic.from_value(None) -> None
+        """
+        if value is None:
+            return None
+        elif isinstance(value, Topic):
+            return value
+        elif isinstance(value, str):
+            try:
+                return Topic(value)
+            except ValueError:
+                return None
+        else:
+            return None
+
 class HistoryType(Enum):
     TRACKS = "recently_played_filepaths"
     ALBUMS = "recently_played_albums"
@@ -533,6 +573,54 @@ class PersonaSex(Enum):
     def to_translated_display(legacy_value):
         """Convert a legacy single character value to translated display string."""
         return PersonaSex.from_legacy_value(legacy_value).get_translation()
+
+
+class IntroType(Enum):
+    """Enumeration of introduction types for DJ personas."""
+    INTRO = "intro"
+    REINTRO = "reintro"
+    NONE = None
+
+    def get_translation(self):
+        if self == IntroType.INTRO:
+            return _("Introduction")
+        elif self == IntroType.REINTRO:
+            return _("Re-introduction")
+        elif self == IntroType.NONE:
+            return _("No introduction")
+        else:
+            raise Exception(f"Unhandled intro type: {self}")
+
+    def get_template_name(self):
+        """Get the template name for this intro type."""
+        if self == IntroType.INTRO:
+            return "persona_intro"
+        elif self == IntroType.REINTRO:
+            return "persona_reintro"
+        elif self == IntroType.NONE:
+            return None
+        else:
+            raise Exception(f"Unhandled intro type: {self}")
+
+    @staticmethod
+    def get_translated_names():
+        return [
+            _("Introduction"),
+            _("Re-introduction"),
+            _("No introduction"),
+        ]
+
+    @staticmethod
+    def get_from_translation(translation):
+        types = [
+            IntroType.INTRO,
+            IntroType.REINTRO,
+            IntroType.NONE,
+        ]
+        try:
+            return types[IntroType.get_translated_names().index(translation)]
+        except ValueError:
+            return IntroType.NONE
 
 
 class ProtectedActions(Enum):

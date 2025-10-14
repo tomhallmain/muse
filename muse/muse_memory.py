@@ -6,6 +6,7 @@ from typing import Optional, Dict
 
 from muse.dj_persona import DJPersonaManager
 from muse.muse_spot_profile import MuseSpotProfile
+from utils.globals import Topic
 from utils.logging_setup import get_logger
 from utils import Utils
 
@@ -32,7 +33,7 @@ class SpotProfileSnapshot:
             previous_track_title=profile.previous_track.title if profile.previous_track else None,
             current_track_title=profile.track.title if profile.track else None,
             was_spoken=profile.was_spoken,
-            topic=profile.topic,
+            topic=str(Topic.from_value(profile.topic)),
             topic_translated=profile.topic_translated,
             grouping_type=profile.grouping_type,
             old_grouping=profile.old_grouping,
@@ -311,10 +312,43 @@ class MuseMemory:
         logger.debug(f"Returning profile at target index {target_idx}: creation_time={spot_profile.creation_time}, was_spoken={spot_profile.was_spoken}")
         return spot_profile
 
+    def update_last_topic(self, topic):
+        """Update the last topic that was discussed.
+        
+        Args:
+            topic: The topic that was discussed (Topic enum or string)
+        """
+        self.last_topic = Topic.from_value(topic)
+        if topic is not None and self.last_topic is None:
+            logger.warning(f"Failed to convert topic to Topic enum: {topic} (type: {type(topic)})")
+
     def is_recent_topics(self, topics_to_check=[], n=1):
+        """Check if any of the specified topics were discussed recently.
+        
+        Args:
+            topics_to_check: List of topics to check. Can contain strings or Topic enum values.
+            n: Number of tracks to look back (default 1)
+            
+        Returns:
+            bool: True if any topic in topics_to_check was discussed within the last n tracks
+        """
         if n >= self.tracks_since_last_topic:
             return False
-        return self.last_topic in topics_to_check
+        
+        if not self.last_topic:
+            return False
+            
+        # Convert topics_to_check to a set of Topic enum values for comparison
+        topic_enums = set()
+        for topic in topics_to_check:
+            converted_topic = Topic.from_value(topic)
+            if converted_topic is not None:
+                topic_enums.add(converted_topic)
+            elif topic is not None:
+                logger.error(f"Failed to convert topic to Topic enum: {topic} (type: {type(topic)})")
+
+        # Check if last_topic matches any of the topics_to_check
+        return self.last_topic in topic_enums
 
     def get_spot_profile(self, previous_track=None, track=None, last_track_failed=False, skip_track=False,
                          old_grouping=None, new_grouping=None, grouping_type=None, get_upcoming_tracks_callback=None):

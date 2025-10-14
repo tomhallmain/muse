@@ -7,6 +7,9 @@ from utils.utils import Utils
 logger = get_logger(__name__)
 _locale = Utils.get_default_user_language()
 
+# Supported language codes for translation features
+SUPPORTED_LANGUAGE_CODES = ["en", "de", "es", "fr", "it", "pt", "ru"]
+
 class I18N:
     localedir = os.path.join(os.path.dirname(os.path.abspath(os.path.dirname(__file__))), 'locale')
     locale = _locale

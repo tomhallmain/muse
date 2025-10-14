@@ -10,7 +10,7 @@ from tts.speakers import speakers
 from utils.config import config
 from utils.logging_setup import get_logger
 from utils.utils import Utils
-from utils.translations import I18N
+from utils.translations import I18N, SUPPORTED_LANGUAGE_CODES
 
 logger = get_logger(__name__)
 
@@ -42,9 +42,8 @@ class DJPersona:
             self.is_mock = False
             
         # Validate language code
-        valid_language_codes = ["en", "de", "es", "fr", "it", "pt", "ru"]
-        if self.language_code not in valid_language_codes:
-            raise ValueError(f"Invalid language code: {self.language_code}. Must be one of {valid_language_codes}")
+        if self.language_code not in SUPPORTED_LANGUAGE_CODES:
+            raise ValueError(f"Invalid language code: {self.language_code}. Must be one of {SUPPORTED_LANGUAGE_CODES}")
         
         if self.voice_name not in speakers:
             try: 
@@ -101,6 +100,18 @@ class DJPersona:
 
     def get_artwork_paths(self) -> Optional[List[str]]:
         return self.artwork_paths if hasattr(self, "artwork_paths") else None
+
+    def get_last_tuned_in_str(self) -> str:
+        """Get a human-readable string describing when the listener last tuned in.
+        
+        Returns:
+            str: A translated string like "The listener last tuned in 2 hours ago"
+        """
+        if self.last_signoff_time:
+            time_diff = time.time() - self.last_signoff_time
+            num_units, unit = I18N.time_ago(time_diff)
+            return _("The listener last tuned in {0} {1} ago").format(num_units, unit)
+        return _("The listener last tuned in recently")
 
     def update_from_dict(self, new_data: 'DJPersona', refresh_context=False) -> None:
         """Update the persona from a new DJPersona object."""

@@ -20,9 +20,9 @@ from muse.playback import Playback
 from muse.prompter import Prompter
 from muse.voice import Voice
 from utils.config import config
-from utils.globals import Topic
+from utils.globals import Topic, IntroType, Globals
 from utils.logging_setup import get_logger
-from utils.translations import I18N
+from utils.translations import I18N, SUPPORTED_LANGUAGE_CODES
 from utils.utils import Utils
 
 _ = I18N._
@@ -32,9 +32,9 @@ logger = get_logger(__name__)
 
 class Muse:
     SYSTEM_LANGUAGE_NAME_IN_ENGLISH = Utils.get_english_language_name(Utils.get_default_user_language())
-    enable_preparation = config.muse_config["enable_preparation"]
-    preparation_starts_minutes_from_end = float(config.muse_config["preparation_starts_minutes_from_end"])
-    preparation_starts_after_seconds_sleep = int(config.muse_config["preparation_starts_after_seconds_sleep"])
+    enable_preparation = config.muse_config[Globals.ConfigKeys.ENABLE_PREPARATION]
+    preparation_starts_minutes_from_end = float(config.muse_config[Globals.ConfigKeys.PREPARATION_STARTS_MINUTES_FROM_END])
+    preparation_starts_after_seconds_sleep = int(config.muse_config[Globals.ConfigKeys.PREPARATION_STARTS_AFTER_SECONDS_SLEEP])
 
     def __init__(self, args, library_data, run_context, ui_callbacks=None):
         self.args = args
@@ -99,7 +99,9 @@ class Muse:
     def get_current_persona(self):
         return self.memory.get_persona_manager().get_current_persona()
 
-    def get_locale(self):
+    def get_locale(self, locale: Optional[str] = None):
+        if locale is not None:
+            return locale
         persona = self.get_current_persona()
         if persona is not None:
             return persona.language_code
@@ -114,12 +116,10 @@ class Muse:
             self.prepare_to_say(text, topic=topic_str, save_mp3=save_mp3)
 
     def say(self, text, topic="", save_mp3=False, locale=None):
-        locale = locale if locale is not None else self.get_locale()
-        self.voice.say(text=text, topic=topic, save_mp3=save_mp3, locale=locale)
+        self.voice.say(text=text, topic=topic, save_mp3=save_mp3, locale=self.get_locale(locale))
 
     def prepare_to_say(self, text, topic="", save_mp3=False, locale=None):
-        locale = locale if locale is not None else self.get_locale()
-        self.voice.prepare_to_say(text=text, topic=topic, save_mp3=save_mp3, locale=locale)
+        self.voice.prepare_to_say(text=text, topic=topic, save_mp3=save_mp3, locale=self.get_locale(locale))
 
     def ready_to_prepare(self, cumulative_sleep_seconds, ms_remaining):
         return Muse.enable_preparation \
@@ -227,6 +227,7 @@ class Muse:
                         persona.last_hello_time = time.time()
                 except Exception as e:
                     logger.error(f"Failed to generate introduction: {e}")
+                    logger.error(f"Traceback: {traceback.format_exc()}")
                     self.say(_("Hello, I'm your DJ"), locale=I18N.locale)
 
                 self.wiki_search = WikiOpenSearchAPI(language_code=persona.language_code)
@@ -392,15 +393,15 @@ class Muse:
         playlist_context_hours = random.uniform(0, 4) 
         min_repeat_hours = random.uniform(12, 16)   # 12-16 hours minimum repeat
         
-        if Prompter.over_n_hours_since_last(Topic.WEATHER, n_hours=weather_hours) and not self.memory.is_recent_topics(["news", "hackernews"], n=3):
+        if Prompter.over_n_hours_since_last(Topic.WEATHER, n_hours=weather_hours) and not self.memory.is_recent_topics([Topic.NEWS, Topic.HACKERNEWS], n=3):
             topic = Topic.WEATHER
-        elif Prompter.over_n_hours_since_last(Topic.NEWS, n_hours=news_hours) and not self.memory.is_recent_topics(["weather", "hackernews"], n=3):
+        elif Prompter.over_n_hours_since_last(Topic.NEWS, n_hours=news_hours) and not self.memory.is_recent_topics([Topic.WEATHER, Topic.HACKERNEWS], n=3):
             topic = Topic.NEWS
-        elif Prompter.over_n_hours_since_last(Topic.HACKERNEWS, n_hours=hackernews_hours) and not self.memory.is_recent_topics(["weather", "news"], n=3):
+        elif Prompter.over_n_hours_since_last(Topic.HACKERNEWS, n_hours=hackernews_hours) and not self.memory.is_recent_topics([Topic.WEATHER, Topic.NEWS], n=3):
             topic = Topic.HACKERNEWS
         elif (Prompter.over_n_hours_since_last(Topic.PLAYLIST_CONTEXT, n_hours=playlist_context_hours) 
-                and not self.memory.is_recent_topics(["weather", "news", "hackernews"], n=1)
-                and not self.memory.is_recent_topics(["playlist_context"], n=5)):
+                and not self.memory.is_recent_topics([Topic.WEATHER, Topic.NEWS, Topic.HACKERNEWS], n=1)
+                and not self.memory.is_recent_topics([Topic.PLAYLIST_CONTEXT], n=5)):
             topic = Topic.PLAYLIST_CONTEXT
         else:
             # Add randomness to topic selection by occasionally skipping the oldest topic
@@ -486,6 +487,9 @@ class Muse:
             return
 
         self._wrap_function(spot_profile, topic, func, args, kwargs)
+        
+        # Update the last topic that was discussed
+        self.memory.update_last_topic(topic)
 
     def talk_about_weather(self, city="Washington", spot_profile=None):
         weather = self.open_weather_api.get_weather_for_city(city)
@@ -631,7 +635,7 @@ class Muse:
             language_code = Utils.get_default_user_language()
         
         # If language is English or not supported, use English
-        if language_code == "en" or language_code not in ["de", "es", "fr", "it"]:
+        if language_code == "en" or language_code not in SUPPORTED_LANGUAGE_CODES:
             logger.warning(f"No translation available for language {language_code} topic {topic}, using English")
             return prompt
         
@@ -753,7 +757,7 @@ class Muse:
         # NOTE the below needs to happen before "persona_init" prompt because
         # `persona.update_context` will set the last signoff time
         intro_type = self._determine_intro_type(time.time(), persona)
-        if intro_type is None:
+        if intro_type == IntroType.NONE:
             return None, None
 
         # Get current time information
@@ -766,8 +770,8 @@ class Muse:
         language_name = persona.language
         
         # Get the persona initialization prompt and format it
-        persona_prompt = self.prompter.get_prompt("persona_init", language_code)
-        persona_prompt = persona_prompt.format(
+        persona_init_prompt = self.prompter.get_persona_initialization_prompt(language_code)
+        persona_init_prompt = persona_init_prompt.format(
             name=persona.name,
             sex=persona.get_s(),
             tone=persona.tone,
@@ -781,10 +785,9 @@ class Muse:
         )
         
         # Make an initial call to seed the context, using the old context
-        result = self.llm.ask(persona_prompt, context=None)
+        result = self.llm.ask(persona_init_prompt, context=None)
         if result:
-            if result.context:
-                self.memory.get_persona_manager().update_context(result)
+            self.memory.get_persona_manager().update_context(result)
         else:
             logger.warning(f"Result was None for {persona.name} initial persona prompt, possibly due to user skip.")
             return None, None
@@ -803,7 +806,10 @@ class Muse:
                 logger.info(f"Error getting upcoming tracks: {e}")
 
         # Get the appropriate introduction prompt
-        intro_prompt = self.prompter.get_prompt(f"persona_{intro_type}", language_code)
+        template_name = intro_type.get_template_name()
+        if not template_name: # Should never happen
+            raise Exception(f"Unhandled intro type: {intro_type}")
+        intro_prompt = self.prompter.get_prompt(template_name, language_code)
         format_args = {
             "name": persona.name,
             "time": now.strftime("%I:%M %p"),
@@ -813,20 +819,20 @@ class Muse:
             "language_name": language_name,
             "starting_tracks": starting_tracks_str,
         }
-        if intro_type == "reintro":
-            last_tuned_in_str = self._get_last_tuned_in_str(persona)
-            format_args["last_signoff"] = last_tuned_in_str
+        if intro_type == IntroType.REINTRO:
+            last_tuned_in_str = persona.get_last_tuned_in_str()
+            format_args["last_tuned_in_str"] = last_tuned_in_str
         intro_prompt = intro_prompt.format(**format_args)
         return intro_prompt, result
 
-    def _determine_intro_type(self, now_time: float, persona: DJPersona) -> str:
+    def _determine_intro_type(self, now_time: float, persona: DJPersona) -> IntroType:
         last_hello = persona.last_hello_time or 0
         last_signoff = persona.last_signoff_time or 0
 
         # If neither hello nor signoff has been said recently, or it's been a long time
         if last_hello == 0 or last_signoff == 0 or (now_time - last_hello > 6 * 3600 and now_time - last_signoff > 6 * 3600):
             logger.debug("intro case 1: last_hello: {0}, last_signoff: {1}, now_time: {2}".format(last_hello, last_signoff, now_time))
-            return "intro"  
+            return IntroType.INTRO  
         
         # Check if the time difference spans across sleeping hours
         last_signoff_dt = datetime.datetime.fromtimestamp(last_signoff)
@@ -838,28 +844,15 @@ class Muse:
                 ((last_signoff_dt.hour >= 23 or last_signoff_dt.hour < 6) and
                  (now_dt.hour > 4 and now_dt.hour < 10))):
             logger.debug("intro case 2: last_hello: {0}, last_signoff: {1}, now_time: {2}".format(last_hello, last_signoff, now_time))
-            return "intro"
+            return IntroType.INTRO
             
         # If hello hasn't been said recently but signoff was recent (1-6 hours ago)
         elif now_time - last_hello > 2 * 3600 and 1 * 3600 < now_time - last_signoff <= 6 * 3600:
             logger.debug("reintro: last_hello: {0}, last_signoff: {1}, now_time: {2}".format(last_hello, last_signoff, now_time))
-            return "reintro"
+            return IntroType.REINTRO
         else:
             # If both hello and signoff were recent, don't say anything
             logger.debug("no intro: last_hello: {0}, last_signoff: {1}, now_time: {2}".format(last_hello, last_signoff, now_time))
-            return None
-
-    def _get_last_tuned_in_str(self, persona: DJPersona) -> str:
-        """Get a human-readable string describing when the listener last tuned in.
-        
-        Returns:
-            str: A translated string like "The listener last tuned in 2 hours ago"
-        """
-        if persona.last_signoff_time:
-            time_diff = time.time() - persona.last_signoff_time
-            num_units, unit = I18N.time_ago(time_diff)
-            return _("The listener last tuned in {0} {1} ago").format(num_units, unit)
-        return None
-
+            return IntroType.NONE
 
 

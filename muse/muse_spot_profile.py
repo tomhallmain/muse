@@ -1,6 +1,7 @@
 import random
 import time
 
+from utils.globals import Globals
 from utils.config import config
 from utils.translations import I18N
 from utils.logging_setup import get_logger
@@ -10,10 +11,10 @@ logger = get_logger(__name__)
 
 
 class MuseSpotProfile:
-    chance_speak_after_track = config.muse_config["chance_speak_after_track"]
-    chance_speak_before_track = config.muse_config["chance_speak_before_track"]
-    topic_discussion_chance_factor = config.muse_config["topic_discussion_chance_factor"]
-    min_seconds_between_spots = config.muse_config["min_seconds_between_spots"]
+    chance_speak_after_track = config.muse_config[Globals.ConfigKeys.CHANCE_SPEAK_AFTER_TRACK]
+    chance_speak_before_track = config.muse_config[Globals.ConfigKeys.CHANCE_SPEAK_BEFORE_TRACK]
+    topic_discussion_chance_factor = config.muse_config[Globals.ConfigKeys.TOPIC_DISCUSSION_CHANCE_FACTOR]
+    min_seconds_between_spots = config.muse_config[Globals.ConfigKeys.MIN_SECONDS_BETWEEN_SPOTS]
 
     # Class-level track history management
     _track_history = []  # List of (track, timestamp) tuples
@@ -46,7 +47,10 @@ class MuseSpotProfile:
                 self._track_history = self._track_history[-self._max_track_history:]
         
         # say good day on the second spot (i.e. first spot after the first track)
-        self.say_good_day = previous_track is not None and self.get_previous_spot_profile().previous_track is None and random.random() < 0.5
+        self.say_good_day = previous_track is not None and (
+                self.get_previous_spot_profile().previous_track is None and random.random() < 0.5
+                # TODO: say good day if there has been a long time since the last good day
+        )
         
         # Determine if this is the first track in a session
         self.is_first_track = previous_track is None and not self._track_history

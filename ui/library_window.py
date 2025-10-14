@@ -101,6 +101,12 @@ class LibraryWindow(BaseWindow):
         self.total_forms_label.grid(row=current_row, column=0, columnspan=2, sticky='w', pady=2)
         current_row += 1
 
+        # Cache information
+        self.cache_update_label = Label(self.sidebar, 
+                                      bg=AppStyle.BG_COLOR, fg=AppStyle.FG_COLOR)
+        self.cache_update_label.grid(row=current_row, column=0, columnspan=2, sticky='w', pady=2)
+        current_row += 1
+
         # Browse section
         Label(self.sidebar, text=_("Browse By"), 
               bg=AppStyle.BG_COLOR, fg=AppStyle.FG_COLOR).grid(
@@ -197,6 +203,14 @@ class LibraryWindow(BaseWindow):
                 forms.add(form)
         self.total_forms_label.config(
             text=_("Total Forms: {}").format(len(forms)))
+
+        # Update cache information
+        cache_time = self.library_data.get_cache_update_time()
+        if cache_time:
+            cache_text = _("Cache Updated: {}").format(cache_time.strftime("%Y-%m-%d %H:%M"))
+        else:
+            cache_text = _("No Cache Available")
+        self.cache_update_label.config(text=cache_text)
 
         # Update the treeview with the current attribute
         self._update_treeview()

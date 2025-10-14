@@ -11,7 +11,6 @@ import threading
 import time
 import traceback
 import unicodedata
-from pathlib import Path
 import subprocess
 
 from utils.logging_setup import get_logger
@@ -439,9 +438,9 @@ class Utils:
             offset = 0
             for match in re.finditer(regex_string, text):
                 maybe_id = match.group()[1:-1]
-                print("Maybe id: " + maybe_id)
+                logger.debug("Maybe id: " + maybe_id)
                 if Utils.is_id(maybe_id):
-                    print("is id: " + maybe_id)
+                    logger.info("is id: " + maybe_id)
                     left = text[:match.start() + offset]
                     right = text[match.end() + offset:]
                     original_len = len(maybe_id)
