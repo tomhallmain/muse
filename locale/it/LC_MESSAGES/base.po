@@ -2,8 +2,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
-"POT-Creation-Date: 2025-09-25 18:17-0400\n"
-"PO-Revision-Date: 2025-09-25 18:17-0400\n"
+"POT-Creation-Date: 2025-10-14 20:52-0400\n"
+"PO-Revision-Date: 2025-10-14 20:52-0400\n"
 "Last-Translator: Translator Name <translator@example.com>\n"
 "Language-Team: it Team <<EMAIL>>\n"
 "Language: it\n"
@@ -40,11 +40,11 @@ msgstr "Mostra schermo intero"
 msgid "Toggle Theme"
 msgstr "Modifica tema"
 
-#: app.py:151 app.py:245
+#: app.py:151 app.py:258
 msgid "Playlists"
 msgstr "Elenchi di brani"
 
-#: app.py:152 app.py:286 ui/favorites_window.py:232 ui/favorites_window.py:565
+#: app.py:152 app.py:303 ui/favorites_window.py:232 ui/favorites_window.py:565
 msgid "Favorites"
 msgstr "Preferiti"
 
@@ -52,9 +52,13 @@ msgstr "Preferiti"
 msgid "History"
 msgstr "Storia"
 
-#: app.py:154 utils/globals.py:418
+#: app.py:154 utils/globals.py:458
 msgid "Composers"
 msgstr "Compositori"
+
+#: app.py:155
+msgid "Personas"
+msgstr "Personaggi"
 
 #: app.py:159
 msgid "Tools"
@@ -77,6 +81,10 @@ msgstr "Orari"
 msgid "Extensions"
 msgstr "Estensioni"
 
+#: app.py:163
+msgid "Blacklist"
+msgstr "Lista nera"
+
 #: app.py:164 ui/weather_window.py:27 ui/weather_window.py:37
 #: ui/weather_window.py:67
 msgid "Weather"
@@ -86,6 +94,10 @@ msgstr "Il tempo"
 msgid "Text to Speech"
 msgstr "Testo in voce"
 
+#: app.py:166
+msgid "Timer"
+msgstr "Contaminuti"
+
 #: app.py:168
 msgid "Configuration"
 msgstr "Configurazione"
@@ -94,130 +106,138 @@ msgstr "Configurazione"
 msgid "Security Configuration"
 msgstr "Configurazione della sicurezza"
 
-#: app.py:208 ui/extensions_window.py:181 ui/track_details_window.py:64
-#: utils/globals.py:223
+#: app.py:214
+msgid "DJ"
+msgstr "DJ"
+
+#: app.py:217 ui/extensions_window.py:181 ui/track_details_window.py:64
+#: utils/globals.py:236
 msgid "Title"
 msgstr "Titolo"
 
-#: app.py:211 ui/track_details_window.py:67 utils/globals.py:125
-#: utils/globals.py:224
+#: app.py:220 ui/track_details_window.py:67 utils/globals.py:138
+#: utils/globals.py:237
 msgid "Album"
 msgstr "Album"
 
-#: app.py:214 ui/track_details_window.py:70 utils/globals.py:127
-#: utils/globals.py:225 utils/globals.py:294
+#: app.py:223 ui/track_details_window.py:70 utils/globals.py:140
+#: utils/globals.py:238 utils/globals.py:307
 msgid "Artist"
 msgstr "Artista"
 
-#: app.py:217 ui/track_details_window.py:76 utils/globals.py:129
-#: utils/globals.py:226 utils/globals.py:293
+#: app.py:226 ui/track_details_window.py:76 utils/globals.py:142
+#: utils/globals.py:239 utils/globals.py:306
 msgid "Composer"
 msgstr "Compositore"
 
-#: app.py:220
+#: app.py:229 ui/track_details_window.py:82
+msgid "Year"
+msgstr "Anno"
+
+#: app.py:232
 msgid "Next Up"
 msgstr "Prossimamente"
 
-#: app.py:223
+#: app.py:235
 msgid "Prior Track"
 msgstr "Traccia precedente"
 
-#: app.py:226
+#: app.py:238
 msgid "Spot Details"
 msgstr "Dettagli del spot"
 
-#: app.py:229
+#: app.py:241
 msgid "Extension Status"
 msgstr "Stato dell'estensione"
 
-#: app.py:232
+#: app.py:244
 msgid "Volume"
 msgstr "Volume"
 
-#: app.py:242 ui/extensions_window.py:269 ui/favorites_window.py:374
+#: app.py:255 ui/extensions_window.py:269 ui/favorites_window.py:374
 #: ui/favorites_window.py:509 ui/network_media_window.py:168
 #: ui/network_media_window.py:268 ui/search_window.py:268
 #: ui/search_window.py:440
 msgid "Play"
 msgstr "Gioco"
 
-#: app.py:248
+#: app.py:261
 msgid "Next"
 msgstr "Avanti"
 
-#: app.py:251
+#: app.py:264
 msgid "Next Grouping"
 msgstr "Raggruppamento successivo"
 
-#: app.py:254
+#: app.py:267
 msgid "Pause"
 msgstr "Pausa"
 
-#: app.py:256
+#: app.py:269
 msgid "Stop"
 msgstr "Stop"
 
-#: app.py:259
+#: app.py:276
 msgid "Delay Seconds"
 msgstr "Ritardo secondi"
 
-#: app.py:266
+#: app.py:283
 msgid "Playlist"
 msgstr "Playlist"
 
-#: app.py:274
+#: app.py:291
 msgid "Playlist Sort"
 msgstr "Ordinamento della playlist"
 
-#: app.py:282
+#: app.py:299
 msgid "Favorite"
 msgstr "Il preferito"
 
-#: app.py:289
+#: app.py:306
 msgid "Overwrite"
 msgstr "Sovrascrivere"
 
-#: app.py:293
+#: app.py:310
 msgid "Muse"
 msgstr "Musa"
 
-#: app.py:297
+#: app.py:314
 msgid "Extension"
 msgstr "Estensione"
 
-#: app.py:301
+#: app.py:318
 msgid "Enable track splitting"
 msgstr "Abilita la suddivisione dei brani"
 
-#: app.py:305
+#: app.py:322
 msgid "Use system language for all topics"
 msgstr "Utilizzare il linguaggio di sistema"
 
-#: app.py:309
+#: app.py:326
 msgid "Thorough playlist memory check"
 msgstr "Controllo della memoria di playlist"
 
-#: app.py:383
+#: app.py:400
 msgid "Confirm Quit"
 msgstr "Confermare l'uscita"
 
-#: app.py:383
+#: app.py:400
 msgid "Would you like to quit the application?"
 msgstr "Volete abbandonare l'applicazione?"
 
-#: app.py:512
+#: app.py:530
 msgid "Confirm Run"
 msgstr "Confermare l'esecuzione"
 
-#: app.py:513
+#: app.py:531
 msgid "Are you sure you want to proceed?"
 msgstr "È sicuro di voler procedere?"
 
-#: app.py:576
+#: app.py:594
 msgid "Copied album art to clipboard."
 msgstr "Copiato l'album art negli appunti."
 
-#: app.py:700 app.py:895 app.py:906 app.py:936 ui/auth/password_dialog.py:251
+#: app.py:718 app.py:926 app.py:937 app.py:967 ui/auth/password_dialog.py:251
 #: ui/blacklist_window.py:143 ui/composers_window.py:251
 #: ui/composers_window.py:266 ui/configuration_window.py:154
 #: ui/configuration_window.py:157 ui/extensions_window.py:378
@@ -228,43 +248,51 @@ msgstr "Copiato l'album art negli appunti."
 msgid "Error"
 msgstr "Errore"
 
-#: app.py:799 muse/muse_spot_profile.py:209
+#: app.py:818 muse/muse_spot_profile.py:213
 msgid "Track: "
 msgstr "Traccia: "
 
-#: app.py:800
+#: app.py:819
 msgid "Album: "
 msgstr "Album: "
 
-#: app.py:801
+#: app.py:820
 msgid "Artist: "
 msgstr "Artista: "
 
-#: app.py:802
+#: app.py:821
 msgid "Composer: "
 msgstr "Compositore: "
 
-#: app.py:813
+#: app.py:822
+msgid "Year: "
+msgstr "Anno: "
+
+#: app.py:834
 msgid "Next Up: "
 msgstr "Prossimamente: "
 
-#: app.py:822 muse/muse_spot_profile.py:210
+#: app.py:843 muse/muse_spot_profile.py:214
 msgid "Previous Track: "
 msgstr "Traccia precedente: "
 
-#: app.py:846
+#: app.py:867
 msgid "Directories: {0}"
 msgstr "Elenchi: {0}"
 
-#: app.py:869
+#: app.py:876
+msgid "DJ: "
+msgstr "DJ: "
+
+#: app.py:900
 msgid "Staged Playlist: "
 msgstr "Elenco programmato: "
 
-#: app.py:895
+#: app.py:926
 msgid "Track not found in library for query: "
 msgstr "Traccia non trovata nella libreria per la richiesta: "
 
-#: app.py:1026
+#: app.py:1057
 msgid " Muse "
 msgstr " Musa "
 
@@ -288,6 +316,14 @@ msgstr "Estensione “{0}” in attesa di {1} minuti"
 msgid "Extension \"{0}\" ready"
 msgstr "Estensione \"{0}\" pronta"
 
+#: lib/caps_lock_mixin.py:64
+msgid "⚠ Caps Lock is ON"
+msgstr "⚠ Il blocco maiuscole è attivo"
+
+#: library_data/blacklist.py:259
+msgid "Filtering concepts for blacklist: "
+msgstr "Concetti di filtraggio per la lista nera: "
+
 #: library_data/composer.py:44
 msgid "Composer name cannot be empty"
 msgstr "Il nome del compositore non può essere vuoto"
@@ -308,7 +344,7 @@ msgstr "La data di fine non può essere in futuro"
 msgid "Start date cannot be after end date"
 msgstr "La data di inizio non può essere dopo la data di fine"
 
-#: library_data/composer.py:192 library_data/library_data.py:67
+#: library_data/composer.py:192 library_data/library_data.py:68
 #: ui/favorites_window.py:38 ui/history_window.py:31
 msgid "({0} results)"
 msgstr "({0} risultati)"
@@ -353,15 +389,15 @@ msgstr "Dati del compositore non valido"
 msgid "Composer not found"
 msgstr "Compositore non trovato"
 
-#: library_data/library_data.py:298
+#: library_data/library_data.py:332
 msgid "Updating tracks"
 msgstr "Aggiornamento dei brani"
 
-#: library_data/library_data.py:314
+#: library_data/library_data.py:348
 msgid "Refreshing cache... ({0}/{1} files)"
 msgstr "Aggiornamento della cache... ({0}/{1} file)"
 
-#: library_data/library_data.py:380
+#: library_data/library_data.py:417
 msgid ""
 "Searching for tracks... ({0} files searched, {1} files may be remaining)"
 msgstr "Ricerca di tracce... ({0} file cercati, {1} file rimanenti)"
@@ -391,129 +427,137 @@ msgstr "\\1testo a voce\\2"
 msgid " Opus \\2"
 msgstr " Opus \\2"
 
-#: muse/dj_persona.py:96
+#: muse/dj_persona.py:95
 msgid "a man"
 msgstr "un uomo"
 
-#: muse/dj_persona.py:98
+#: muse/dj_persona.py:97
 msgid "a woman"
 msgstr "una donna"
 
-#: muse/muse.py:217
+#: muse/dj_persona.py:113
+msgid "The listener last tuned in {0} {1} ago"
+msgstr "L'ascoltatore si è sintonizzato l'ultima volta {0} {1} fa"
+
+#: muse/dj_persona.py:114
+msgid "The listener last tuned in recently"
+msgstr "L'ascoltatore si è sintonizzato di recente"
+
+#: muse/muse.py:226
 msgid "Hello, I'm {0}"
 msgstr "Salve, sono {0}"
 
-#: muse/muse.py:221 muse/muse.py:227
+#: muse/muse.py:231 muse/muse.py:240
 msgid "Hello, I'm your DJ"
 msgstr "Ciao, sono il tuo DJ"
 
-#: muse/muse.py:234
+#: muse/muse.py:247
 msgid "Hello"
 msgstr "Ciao."
 
-#: muse/muse.py:246
+#: muse/muse.py:259
 msgid "tonight"
 msgstr "stasera"
 
-#: muse/muse.py:246
+#: muse/muse.py:259
 msgid "today"
 msgstr "oggi"
 
-#: muse/muse.py:248
+#: muse/muse.py:261
 msgid "The scheduled shutdown time has arrived. That's it for {0}."
 msgstr "È arrivato l'orario di spegnimento previsto. Questo è tutto per {0}."
 
-#: muse/muse.py:252
+#: muse/muse.py:265
 msgid "I'll be on again tomorrow."
 msgstr "Sarò di nuovo in linea domani."
 
-#: muse/muse.py:254
+#: muse/muse.py:267
 msgid "Tomorrow you'll hear from {0}."
 msgstr "Domani avrete notizie di {0}."
 
-#: muse/muse.py:258
+#: muse/muse.py:271
 msgid "The next time I'll be on is next week, at the same time."
 msgstr ""
 "La prossima volta che sarò in onda sarà la settimana prossima, alla stessa "
 "ora."
 
-#: muse/muse.py:260
+#: muse/muse.py:273
 msgid "I'll be on again this coming {0}."
 msgstr "Sarò di nuovo in onda il prossimo {0}."
 
-#: muse/muse.py:271
+#: muse/muse.py:284
 msgid "Good morning"
 msgstr "Buongiorno"
 
-#: muse/muse.py:273
+#: muse/muse.py:286
 msgid "Good day"
 msgstr "Buona giornata"
 
-#: muse/muse.py:275
+#: muse/muse.py:288
 msgid "Good afternoon"
 msgstr "Buon pomeriggio"
 
-#: muse/muse.py:277
+#: muse/muse.py:290
 msgid "Good evening"
 msgstr "Buona sera"
 
-#: muse/muse.py:292
+#: muse/muse.py:305
 msgid "That was \"{0}\" in \"{1}\""
 msgstr "Era “{0}” in “{1}”"
 
-#: muse/muse.py:294 muse/muse.py:336
+#: muse/muse.py:307 muse/muse.py:349
 msgid " by \"{0}\"."
 msgstr " da “{0}”."
 
-#: muse/muse.py:299
+#: muse/muse.py:312
 msgid "That was a new track. How'd you like that?"
 msgstr "Era un brano nuovo. Ti è piaciuto?"
 
-#: muse/muse.py:301
+#: muse/muse.py:314
 msgid "That was a new one. How'd you like it?"
 msgstr "Questo era nuovo. Ti è piaciuta?"
 
-#: muse/muse.py:332
+#: muse/muse.py:345
 msgid "To start, we'll be playing: \"{0}\" from \"{1}\""
 msgstr "Per iniziare, giocheremo: “{0}” da “{1}”."
 
-#: muse/muse.py:334
+#: muse/muse.py:347
 msgid "Next up, we'll be playing: \"{0}\" from \"{1}\""
 msgstr "Il prossimo appuntamento è con il gioco: \"{0}\" from \"{1}\""
 
-#: muse/muse.py:341
+#: muse/muse.py:354
 msgid "This one is a new track."
 msgstr "Questo è un brano nuovo."
 
-#: muse/muse.py:353
+#: muse/muse.py:366
 msgid "After that short interlude, we're back to our {0} shuffle."
 msgstr "Dopo questa breve parentesi, torniamo al nostro shuffle {0}."
 
-#: muse/muse.py:356
+#: muse/muse.py:369
 msgid "We've been listening to a group of tracks from the {0} {1}"
 msgstr "Abbiamo ascoltato un gruppo di brani del {0} {1}"
 
-#: muse/muse.py:366
+#: muse/muse.py:379
 msgid "We're listening to a group of tracks from the {0} {1}."
 msgstr "Stiamo ascoltando un gruppo di brani del {0} {1}."
 
-#: muse/muse.py:369
+#: muse/muse.py:382
 msgid "We're going to start a new group of tracks from the {0} {1}."
 msgstr "Inizieremo un nuovo gruppo di tracce dal punto {0} {1}."
 
-#: muse/muse.py:420
+#: muse/muse.py:433
 msgid "First let's hear about {0}"
 msgstr "Per prima cosa parliamo di {0}"
 
-#: muse/muse.py:422
+#: muse/muse.py:435
 msgid "But first, let's hear about {0}."
 msgstr "Ma prima parliamo di {0}."
 
-#: muse/muse.py:558
+#: muse/muse.py:574
 msgid " [already mentioned]"
 msgstr " [già menzionato]"
 
-#: muse/muse.py:709
+#: muse/muse.py:725
 msgid ""
 "We're having some technical difficulties in accessing our source for {0}. "
 "We'll try again later"
@@ -521,7 +565,7 @@ msgstr ""
 "Stiamo riscontrando alcune difficoltà tecniche nell'accesso alla nostra "
 "fonte per {0}. Riproveremo più tardi"
 
-#: muse/muse.py:713
+#: muse/muse.py:729
 msgid ""
 "It seems our writer for {0} is unexpectedly away at the moment. Did we "
 "forget to pay his salary again?"
@@ -529,47 +573,43 @@ msgstr ""
 "Sembra che il nostro scrittore per {0} sia inaspettatamente assente al "
 "momento. Abbiamo dimenticato di pagare di nuovo il suo stipendio?"
 
-#: muse/muse.py:717
+#: muse/muse.py:733
 msgid ""
 "We've found problems with all of our {0} ideas. Please try again later."
 msgstr ""
 "Abbiamo riscontrato problemi con tutte le nostre idee {0}. Si prega di "
 "riprovare più tardi."
 
-#: muse/muse.py:722
+#: muse/muse.py:738
 msgid "Something went wrong. We'll try to fix it soon."
 msgstr ""
 "Qualcosa è andato storto. Cercheremo di risolvere il problema al più presto."
 
-#: muse/muse.py:789
+#: muse/muse.py:804
 msgid "Starting tracks:"
 msgstr "Tracce di partenza:"
 
-#: muse/muse.py:849
-msgid "The listener last tuned in {0} {1} ago"
-msgstr "L'ascoltatore si è sintonizzato l'ultima volta {0} {1} fa"
-
-#: muse/muse_spot_profile.py:200
+#: muse/muse_spot_profile.py:204
 msgid "Talking about: "
 msgstr "Parlando di: "
 
-#: muse/muse_spot_profile.py:209
+#: muse/muse_spot_profile.py:213
 msgid "No track"
 msgstr "Nessuna traccia"
 
-#: muse/muse_spot_profile.py:210
+#: muse/muse_spot_profile.py:214
 msgid "No previous track"
 msgstr "Nessuna traccia precedente"
 
-#: muse/muse_spot_profile.py:212
+#: muse/muse_spot_profile.py:216
 msgid "Speaking about prior track"
 msgstr "Parlando della pista precedente"
 
-#: muse/muse_spot_profile.py:214
+#: muse/muse_spot_profile.py:218
 msgid "Speaking about upcoming track"
 msgstr "Parlando del brano in uscita"
 
-#: muse/muse_spot_profile.py:216
+#: muse/muse_spot_profile.py:220
 msgid "Talking about something"
 msgstr "Parlare di qualcosa"
 
@@ -618,6 +658,298 @@ msgid "*This text contains {0}, I can't read it but it looks interesting*"
 msgstr ""
 "*Questo testo contiene {0}, non riesco a leggerlo ma sembra interessante*"
 
+#: ui/blacklist_window.py:33
+msgid "Modify Blacklist Item: {0}"
+msgstr "Modifica elemento nella lista nera: {0}"
+
+#: ui/blacklist_window.py:52
+msgid "Blacklist String"
+msgstr "Stringa nella lista nera"
+
+#: ui/blacklist_window.py:62
+msgid "Enabled"
+msgstr "Abilitato"
+
+#: ui/blacklist_window.py:74
+msgid "Use glob-based regex"
+msgstr "Utilizza espressioni regolari basate su glob"
+
+#: ui/blacklist_window.py:86
+msgid "Use word boundary matching"
+msgstr "Utilizza la corrispondenza dei confini delle parole"
+
+#: ui/blacklist_window.py:98
+msgid "Convert spaces to optional non-word characters"
+msgstr "Converti gli spazi in caratteri non alfabetici opzionali"
+
+#: ui/blacklist_window.py:108
+msgid "Exception Pattern (optional regex to unfilter tags)"
+msgstr ""
+"Modello di eccezione (espressione regolare facoltativa per non filtrare i "
+"tag)"
+
+#: ui/blacklist_window.py:116
+msgid "Done"
+msgstr "Fatto"
+
+#: ui/blacklist_window.py:143
+msgid "Blacklist string cannot be empty."
+msgstr "La stringa della lista nera non può essere vuota."
+
+#: ui/blacklist_window.py:169
+msgid "No changes were made"
+msgstr "Non sono state apportate modifiche"
+
+#: ui/blacklist_window.py:181
+msgid "Unsaved Changes"
+msgstr "Modifiche non salvate"
+
+#: ui/blacklist_window.py:181
+msgid "Do you want to save changes before closing?"
+msgstr "Vuoi salvare le modifiche prima di chiudere?"
+
+#: ui/blacklist_window.py:223
+msgid ""
+"WARNING: Are you sure you want to reveal the blacklist concepts? These concepts are damaging or offensive and WILL cause you severe psychological harm. Do not, under any circumstances, reveal these concepts to minors.\n"
+"\n"
+"If you are young, not sure, or even an adult, click the close button on this window now and do something fun instead."
+msgstr ""
+"ATTENZIONE: sei sicuro di voler rivelare i concetti della lista nera? Questi concetti sono dannosi o offensivi e ti causeranno gravi danni psicologici. Non rivelare questi concetti ai minori in nessuna circostanza.\n"
+"\n"
+"Se sei giovane, non sei sicuro o sei un adulto, clicca subito sul pulsante Chiudi di questa finestra e fai qualcosa di divertente."
+
+#: ui/blacklist_window.py:284
+msgid "Confirm Load Default Blacklist"
+msgstr "Conferma caricamento blacklist predefinita"
+
+#: ui/blacklist_window.py:285
+msgid ""
+"Are you sure you want to load the default blacklist?\n"
+"\n"
+"⚠️ WARNING: This will erase your current blacklist and replace it with the default items.\n"
+"• All your current blacklist items will be permanently deleted\n"
+"• You will need to rebuild your blacklist from scratch if you want to restore it later\n"
+"\n"
+"Do you want to continue?"
+msgstr ""
+"Sei sicuro di voler caricare la lista nera predefinita?\n"
+"\n"
+"⚠️ AVVERTENZA: questa operazione cancellerà la tua lista nera attuale e la sostituirà con gli elementi predefiniti.\n"
+"• Tutti gli elementi attualmente presenti nella tua lista nera saranno eliminati in modo permanente.\n"
+"• Se desideri ripristinarla in un secondo momento, dovrai ricostruire la tua lista nera da zero.\n"
+"\n"
+"Vuoi continuare?"
+
+#: ui/blacklist_window.py:298
+msgid "Loaded default blacklist"
+msgstr "Lista nera predefinita caricata"
+
+#: ui/blacklist_window.py:302
+msgid "Error loading default blacklist"
+msgstr "Errore durante il caricamento della lista nera predefinita"
+
+#: ui/blacklist_window.py:332
+msgid "Tags/Models Blacklist"
+msgstr "Tag/Modelli Lista nera"
+
+#: ui/blacklist_window.py:368
+msgid "Global Settings:"
+msgstr "Impostazioni globali:"
+
+#: ui/blacklist_window.py:370
+msgid "These settings affect how the blacklist is applied globally."
+msgstr ""
+"Queste impostazioni influiscono sul modo in cui la lista nera viene "
+"applicata a livello globale."
+
+#: ui/blacklist_window.py:379
+msgid "Choose how the blacklist is enforced: block, warn, or allow."
+msgstr "Scegli come applicare la lista nera: blocca, avvisa o consenti."
+
+#: ui/blacklist_window.py:385
+msgid "Silent Removal"
+msgstr "Rimozione silenziosa"
+
+#: ui/blacklist_window.py:393
+msgid ""
+"If enabled, blacklisted words are removed silently without notification."
+msgstr ""
+"Se abilitato, le parole inserite nella lista nera vengono rimosse "
+"silenziosamente senza notifica."
+
+#: ui/blacklist_window.py:399
+msgid "Import"
+msgstr "Importazione"
+
+#: ui/blacklist_window.py:400
+msgid "Export"
+msgstr "Esportazione"
+
+#: ui/blacklist_window.py:401
+msgid "Load Default"
+msgstr "Carica predefinito"
+
+#: ui/blacklist_window.py:405
+msgid "Add to blacklist"
+msgstr "Aggiungi alla lista nera"
+
+#: ui/blacklist_window.py:407
+msgid "Clear items"
+msgstr "Cancella articoli"
+
+#: ui/blacklist_window.py:428
+msgid ""
+"No blacklist items found. You can add items by clicking the 'Add to "
+"blacklist' button below, or load the default blacklist."
+msgstr ""
+"Nessun elemento trovato nella lista nera. È possibile aggiungere elementi "
+"cliccando sul pulsante “Aggiungi alla lista nera” qui sotto, oppure caricare"
+" la lista nera predefinita."
+
+#: ui/blacklist_window.py:430
+msgid "Click below to reveal blacklist concepts."
+msgstr ""
+"Clicca qui sotto per visualizzare i concetti relativi alla lista nera."
+
+#: ui/blacklist_window.py:432
+msgid ""
+"Default blacklist is loaded. You can load your own blacklist by editing the "
+"existing concepts, clearing the blacklist and adding your own, or importing "
+"concepts from a file."
+msgstr ""
+"La lista nera predefinita è stata caricata. È possibile caricare la propria "
+"lista nera modificando i concetti esistenti, cancellando la lista nera e "
+"aggiungendo la propria, oppure importando i concetti da un file."
+
+#: ui/blacklist_window.py:438
+msgid "Reveal Concepts"
+msgstr "Rivelare concetti"
+
+#: ui/blacklist_window.py:457
+msgid "[regex]"
+msgstr "[regex]"
+
+#: ui/blacklist_window.py:459
+msgid "[no boundary]"
+msgstr "[senza confini]"
+
+#: ui/blacklist_window.py:461
+msgid "[no space conversion]"
+msgstr "[nessuna conversione dello spazio]"
+
+#: ui/blacklist_window.py:463
+msgid "[exception: {0}]"
+msgstr "[eccezione: {0}]"
+
+#: ui/blacklist_window.py:467 ui/blacklist_window.py:732
+msgid "Disabled"
+msgstr "Non abilitato"
+
+#: ui/blacklist_window.py:475 ui/schedules_window.py:210
+msgid "Modify"
+msgstr "Modificare"
+
+#: ui/blacklist_window.py:483 ui/favorites_window.py:388
+#: ui/favorites_window.py:523 ui/search_window.py:284
+msgid "Remove"
+msgstr "Rimuovi"
+
+#: ui/blacklist_window.py:546 ui/blacklist_window.py:581
+msgid "Added item to blacklist: {0}"
+msgstr "Elemento aggiunto alla lista nera: {0}"
+
+#: ui/blacklist_window.py:548
+msgid "Modified blacklist item: {0}"
+msgstr "Voce della lista nera modificata: {0}"
+
+#: ui/blacklist_window.py:561
+msgid "Removed item: {0}"
+msgstr "Elemento rimosso: {0}"
+
+#: ui/blacklist_window.py:571
+msgid "Warning"
+msgstr "Avvertenza"
+
+#: ui/blacklist_window.py:571
+msgid "Please enter a string to add to the blacklist."
+msgstr "Inserisci una stringa da aggiungere alla lista nera."
+
+#: ui/blacklist_window.py:661
+msgid "Confirm Clear Blacklist"
+msgstr "Conferma Cancella lista nera"
+
+#: ui/blacklist_window.py:662
+msgid ""
+"Are you sure you want to clear all blacklist items?\n"
+"\n"
+"⚠️ WARNING: This action cannot be undone!\n"
+"• All blacklist items will be permanently deleted\n"
+"• The blacklist helps improve image output quality\n"
+"• You will need to rebuild your blacklist from scratch\n"
+"\n"
+"Do you want to continue?"
+msgstr ""
+"Sei sicuro di voler cancellare tutti gli elementi dalla lista nera?\n"
+"\n"
+"⚠️ ATTENZIONE: questa azione non può essere annullata!\n"
+"• Tutti gli elementi della lista nera saranno eliminati definitivamente.\n"
+"• La lista nera contribuisce a migliorare la qualità delle immagini prodotte.\n"
+"• Dovrai ricostruire la lista nera da zero.\n"
+"\n"
+"Vuoi continuare?"
+
+#: ui/blacklist_window.py:681
+msgid "Cleared item blacklist"
+msgstr "Elenco nero degli articoli cancellati"
+
+#: ui/blacklist_window.py:735
+msgid "Item \"{0}\" is now {1}"
+msgstr "L'elemento “{0}” è ora {1}"
+
+#: ui/blacklist_window.py:737
+msgid "enabled"
+msgstr "abilitato"
+
+#: ui/blacklist_window.py:737
+msgid "disabled"
+msgstr "disattivato"
+
+#: ui/blacklist_window.py:747
+msgid "Concepts revealed"
+msgstr "Concetti rivelati"
+
+#: ui/blacklist_window.py:759
+msgid "Import Blacklist"
+msgstr "Importa lista nera"
+
+#: ui/blacklist_window.py:778
+msgid "Successfully imported blacklist"
+msgstr "Blacklist importata con successo"
+
+#: ui/blacklist_window.py:780
+msgid "Import Error"
+msgstr "Errore di importazione"
+
+#: ui/blacklist_window.py:791
+msgid "Export Blacklist"
+msgstr "Elenco nero delle esportazioni"
+
+#: ui/blacklist_window.py:806
+msgid "Successfully exported blacklist"
+msgstr "Esecuzione riuscita dell'esportazione della lista nera"
+
+#: ui/blacklist_window.py:808
+msgid "Export Error"
+msgstr "Errore di esportazione"
+
+#: ui/blacklist_window.py:818
+msgid "Blacklist mode set to: {0}"
+msgstr "Modalità blacklist impostata su: {0}"
+
+#: ui/blacklist_window.py:824
+msgid "Silent removal set to: {0}"
+msgstr "Rimozione silenziosa impostata su: {0}"
+
 #: ui/composers_window.py:40 ui/composers_window.py:55
 #: ui/composers_window.py:337
 msgid "New Composer"
@@ -631,7 +963,7 @@ msgstr "Modifica del compositore: {0}"
 msgid "Modify Composer"
 msgstr "Modificare il Compositore"
 
-#: ui/composers_window.py:54 ui/library_window.py:135 ui/personas_window.py:99
+#: ui/composers_window.py:54 ui/library_window.py:141 ui/personas_window.py:99
 msgid "Name"
 msgstr "Nome"
 
@@ -659,7 +991,7 @@ msgstr "Date incerte"
 msgid "Dates are uncertain"
 msgstr "Le date sono incerte"
 
-#: ui/composers_window.py:90 utils/globals.py:419
+#: ui/composers_window.py:90 utils/globals.py:459
 msgid "Genres"
 msgstr "Generi"
 
@@ -1064,11 +1396,6 @@ msgstr "Nessun favorito trovato."
 msgid "No title or filepath available"
 msgstr "Nessun titolo o filepath disponibile"
 
-#: ui/blacklist_window.py:483 ui/favorites_window.py:388
-#: ui/favorites_window.py:523 ui/search_window.py:284
-msgid "Remove"
-msgstr "Rimuovi"
-
 #: ui/favorites_window.py:588
 msgid "No valid play query could be generated for this favorite"
 msgstr ""
@@ -1119,41 +1446,49 @@ msgstr "Biblioteca"
 msgid "Library Statistics"
 msgstr "Statistiche della biblioteca"
 
-#: ui/library_window.py:105
+#: ui/library_window.py:111
 msgid "Browse By"
 msgstr "Sfoglia per"
 
-#: ui/library_window.py:120
+#: ui/library_window.py:126
 msgid "Search:"
 msgstr "Ricerca:"
 
-#: ui/library_window.py:136
+#: ui/library_window.py:142
 msgid "Count"
 msgstr "Conte"
 
-#: ui/library_window.py:157
+#: ui/library_window.py:163
 msgid "Total Tracks: {}"
 msgstr "Tracce totali: {}"
 
-#: ui/library_window.py:165
+#: ui/library_window.py:171
 msgid "Total Albums: {}"
 msgstr "Totali degli album: {}"
 
-#: ui/library_window.py:173
+#: ui/library_window.py:179
 msgid "Total Artists: {}"
 msgstr "Artisti totali: {}"
 
-#: ui/library_window.py:181
+#: ui/library_window.py:187
 msgid "Total Composers: {}"
 msgstr "Compositori totali: {}"
 
-#: ui/library_window.py:190
+#: ui/library_window.py:196
 msgid "Total Instruments: {}"
 msgstr "Strumenti totali: {}"
 
-#: ui/library_window.py:199
+#: ui/library_window.py:205
 msgid "Total Forms: {}"
 msgstr "Forme totali: {}"
+
+#: ui/library_window.py:210
+msgid "Cache Updated: {}"
+msgstr "Cache aggiornata: {}"
+
+#: ui/library_window.py:212
+msgid "No Cache Available"
+msgstr "Nessuna cache disponibile"
 
 #: ui/network_media_window.py:78 ui/search_window.py:110
 msgid "Search Library"
@@ -1180,6 +1515,223 @@ msgstr "Attendere, sovrascrivere la cache e la ricerca..."
 #: ui/network_media_window.py:202 ui/search_window.py:326
 msgid "Searching..."
 msgstr "Ricerca..."
+
+#: ui/personas_window.py:34 ui/personas_window.py:87
+msgid "DJ Personas"
+msgstr "DJ Personaggi"
+
+#: ui/personas_window.py:100
+msgid "Display Name"
+msgstr "Nome visualizzato"
+
+#: ui/personas_window.py:101
+msgid "Voice"
+msgstr "Voce"
+
+#: ui/personas_window.py:119
+msgid "Add New"
+msgstr "Aggiungi nuovo"
+
+#: ui/personas_window.py:122
+msgid "Edit"
+msgstr "Modifica"
+
+#: ui/personas_window.py:141
+msgid "Basic Info"
+msgstr "Informazioni di base"
+
+#: ui/personas_window.py:145
+msgid "Characteristics"
+msgstr "Caratteristiche"
+
+#: ui/personas_window.py:149
+msgid "System Prompt"
+msgstr "Richiesta di sistema"
+
+#: ui/personas_window.py:160
+msgid "Save Changes"
+msgstr "Salva modifiche"
+
+#: ui/auth/password_admin_window.py:452 ui/auth/password_dialog.py:154
+#: ui/auth/password_dialog.py:223 ui/auth/password_dialog.py:240
+#: ui/personas_window.py:163 ui/playlist_window.py:318
+msgid "Cancel"
+msgstr "Annulla"
+
+#: ui/personas_window.py:166
+msgid "Reload from Config"
+msgstr "Ricarica dalla configurazione"
+
+#: ui/personas_window.py:177
+msgid "Display Name:"
+msgstr "Nome visualizzato:"
+
+#: ui/personas_window.py:182
+msgid "Voice Name:"
+msgstr "Nome voce:"
+
+#: ui/personas_window.py:191
+msgid "Sex:"
+msgstr "Sesso:"
+
+#: ui/personas_window.py:199
+msgid "Tone:"
+msgstr "Tono:"
+
+#: ui/personas_window.py:204
+msgid "Language:"
+msgstr "Lingua:"
+
+#: ui/personas_window.py:209
+msgid "Language Code:"
+msgstr "Codice lingua:"
+
+#: ui/personas_window.py:220
+msgid "Characteristics:"
+msgstr "Caratteristiche:"
+
+#: ui/personas_window.py:233
+msgid ""
+"Enter one characteristic per line. These describe the persona's personality "
+"and expertise."
+msgstr ""
+"Inserisci una caratteristica per riga. Queste descrivono la personalità e le"
+" competenze del personaggio."
+
+#: ui/personas_window.py:244
+msgid "System Prompt:"
+msgstr "Richiesta di sistema:"
+
+#: ui/personas_window.py:257
+msgid ""
+"Enter the system prompt that defines how this persona should behave and "
+"speak."
+msgstr ""
+"Inserisci il prompt di sistema che definisce come questo personaggio "
+"dovrebbe comportarsi e parlare."
+
+#: ui/personas_window.py:298
+msgid "New Persona"
+msgstr "Nuova Persona"
+
+#: ui/personas_window.py:299
+msgid "friendly and engaging"
+msgstr "amichevole e coinvolgente"
+
+#: ui/personas_window.py:300
+msgid "English"
+msgstr "italiano"
+
+#: ui/personas_window.py:306
+msgid "music enthusiast"
+msgstr "appassionato di musica"
+
+#: ui/personas_window.py:307
+msgid "knowledgeable about various genres"
+msgstr "conoscitore di vari generi"
+
+#: ui/personas_window.py:308
+msgid "engaging storyteller"
+msgstr "affascinante narratore"
+
+#: ui/personas_window.py:309
+msgid "passionate about sharing music"
+msgstr "appassionato di condivisione musicale"
+
+#: ui/personas_window.py:315
+msgid ""
+"You are a knowledgeable and engaging DJ with a passion for music. Your "
+"speaking style is friendly and engaging, with a talent for connecting with "
+"your audience. You love sharing interesting facts about music, artists, and "
+"genres, and you have a gift for making every song feel special and "
+"meaningful. When discussing tracks, you often provide context about the "
+"artist, the genre, or the cultural significance of the music. Your "
+"enthusiasm is infectious, and you have a way of making listeners feel like "
+"they're discovering something wonderful together with you."
+msgstr ""
+"Sei un DJ esperto e coinvolgente con una grande passione per la musica. Il "
+"tuo modo di parlare è amichevole e coinvolgente, con un talento particolare "
+"nel creare un legame con il tuo pubblico. Ti piace condividere curiosità su "
+"musica, artisti e generi musicali e hai un talento speciale nel rendere ogni"
+" brano speciale e significativo. Quando parli dei brani, spesso fornisci "
+"informazioni sul contesto dell'artista, sul genere o sul significato "
+"culturale della musica. Il tuo entusiasmo è contagioso e hai un modo tutto "
+"tuo di far sentire gli ascoltatori come se stessero scoprendo qualcosa di "
+"meraviglioso insieme a te."
+
+#: ui/personas_window.py:353 ui/personas_window.py:360
+msgid "No Selection"
+msgstr "Nessuna selezione"
+
+#: ui/personas_window.py:353
+msgid "Please select a persona to edit."
+msgstr "Seleziona un personaggio da modificare."
+
+#: ui/personas_window.py:360
+msgid "Please select a persona to delete."
+msgstr "Seleziona un personaggio da eliminare."
+
+#: ui/personas_window.py:364
+msgid "Are you sure you want to delete the persona '{}'?"
+msgstr "Sei sicuro di voler eliminare il personaggio “{}”?"
+
+#: ui/personas_window.py:372
+msgid "Failed to remove persona from manager."
+msgstr "Impossibile rimuovere il personaggio dal manager."
+
+#: ui/personas_window.py:378 ui/personas_window.py:446
+#: ui/personas_window.py:491 ui/playlist_window.py:223
+#: ui/playlist_window.py:375
+msgid "Success"
+msgstr "Successo"
+
+#: ui/personas_window.py:378
+msgid "Persona deleted successfully."
+msgstr "Persona eliminata con successo."
+
+#: ui/personas_window.py:386
+msgid "Display name is required."
+msgstr "Il nome visualizzato è obbligatorio."
+
+#: ui/personas_window.py:390
+msgid "Voice name is required."
+msgstr "Il nome della voce è obbligatorio."
+
+#: ui/personas_window.py:394
+msgid "Tone is required."
+msgstr "È richiesto il tono."
+
+#: ui/personas_window.py:398
+msgid "System prompt is required."
+msgstr "È richiesta una richiesta di sistema."
+
+#: ui/personas_window.py:428
+msgid "Invalid persona data: {}"
+msgstr "Dati personali non validi: {}"
+
+#: ui/personas_window.py:446
+msgid "Persona saved successfully."
+msgstr "Personaggio salvato con successo."
+
+#: ui/personas_window.py:450
+msgid "Failed to save persona: {}"
+msgstr "Impossibile salvare il personaggio: {}"
+
+#: ui/personas_window.py:461
+msgid "Failed to save personas to configuration."
+msgstr "Impossibile salvare i personaggi nella configurazione."
+
+#: ui/personas_window.py:464
+msgid "Failed to save personas to configuration: {}"
+msgstr "Impossibile salvare i personaggi nella configurazione: {}"
+
+#: ui/personas_window.py:491
+msgid "Personas reloaded from configuration."
+msgstr "Personaggi ricaricati dalla configurazione."
+
+#: ui/personas_window.py:494
+msgid "Failed to reload personas: {}"
+msgstr "Impossibile ricaricare i personaggi: {}"
 
 #: ui/playlist_window.py:89
 msgid "Available Playlists"
@@ -1212,12 +1764,6 @@ msgstr "Salva la playlist principale"
 #: ui/playlist_window.py:210
 msgid "Enter a name for this master playlist:"
 msgstr "Inserisci un nome per questo elenco master:"
-
-#: ui/personas_window.py:378 ui/personas_window.py:446
-#: ui/personas_window.py:491 ui/playlist_window.py:223
-#: ui/playlist_window.py:375
-msgid "Success"
-msgstr "Successo"
 
 #: ui/playlist_window.py:223
 msgid "Master playlist created successfully"
@@ -1254,12 +1800,6 @@ msgstr "Aggiungi alla lista di gioco attuale"
 #: ui/playlist_window.py:314
 msgid "Add to New Master Playlist"
 msgstr "Aggiungi a Nuova Playlist Master"
-
-#: ui/auth/password_admin_window.py:452 ui/auth/password_dialog.py:154
-#: ui/auth/password_dialog.py:223 ui/auth/password_dialog.py:240
-#: ui/personas_window.py:163 ui/playlist_window.py:318
-msgid "Cancel"
-msgstr "Annulla"
 
 #: ui/playlist_window.py:326
 msgid "Please enter a playlist name"
@@ -1341,10 +1881,6 @@ msgstr "Creare e modificare le pianificazioni"
 msgid "Clear schedules"
 msgstr "Orari chiari"
 
-#: ui/blacklist_window.py:475 ui/schedules_window.py:210
-msgid "Modify"
-msgstr "Modificare"
-
 #: ui/search_window.py:96
 msgid "No matching tracks found"
 msgstr "Nessuna traccia corrispondente trovata"
@@ -1377,14 +1913,10 @@ msgstr "Aggiornamento"
 msgid "Album Artist"
 msgstr "Artista dell'album"
 
-#: ui/track_details_window.py:79 utils/globals.py:131 utils/globals.py:227
-#: utils/globals.py:295
+#: ui/track_details_window.py:79 utils/globals.py:144 utils/globals.py:240
+#: utils/globals.py:308
 msgid "Genre"
 msgstr "Genere"
-
-#: ui/track_details_window.py:82
-msgid "Year"
-msgstr "Anno"
 
 #: ui/track_details_window.py:89
 msgid "Track Number"
@@ -1767,191 +2299,239 @@ msgstr ""
 msgid "Incorrect password"
 msgstr "Password errata"
 
-#: utils/globals.py:133 utils/globals.py:228 utils/globals.py:296
+#: utils/globals.py:146 utils/globals.py:241 utils/globals.py:309
 msgid "Form"
 msgstr "Forma musicale"
 
-#: utils/globals.py:135 utils/globals.py:229 utils/globals.py:297
+#: utils/globals.py:148 utils/globals.py:242 utils/globals.py:310
 msgid "Instrument"
 msgstr "Strumento musicale"
 
-#: utils/globals.py:141 utils/globals.py:298
+#: utils/globals.py:154 utils/globals.py:311
 msgid "Random"
 msgstr "Casuale"
 
-#: utils/globals.py:142
+#: utils/globals.py:155
 msgid "Sequence"
 msgstr "Sequenza"
 
-#: utils/globals.py:143
+#: utils/globals.py:156
 msgid "Album Shuffle"
 msgstr "Mischia di albumi"
 
-#: utils/globals.py:144
+#: utils/globals.py:157
 msgid "Artist Shuffle"
 msgstr "Mischia di artisti"
 
-#: utils/globals.py:145
+#: utils/globals.py:158
 msgid "Composer Shuffle"
 msgstr "Mischia di compositori"
 
-#: utils/globals.py:146
+#: utils/globals.py:159
 msgid "Genre Shuffle"
 msgstr "Mischiare i generi"
 
-#: utils/globals.py:147
+#: utils/globals.py:160
 msgid "Form Shuffle"
 msgstr "Mischiare le forme"
 
-#: utils/globals.py:148
+#: utils/globals.py:161
 msgid "Instrument Shuffle"
 msgstr "Mischia di strumenti"
 
-#: utils/globals.py:183
+#: utils/globals.py:196
 msgid "All Music"
 msgstr "Tutta la musica"
 
-#: utils/globals.py:184
+#: utils/globals.py:197
 msgid "Playlist Config"
 msgstr "Configurazione dell'elenco di canzoni"
 
-#: utils/globals.py:346
+#: utils/globals.py:359
 msgid "weather"
 msgstr "tempo"
 
-#: utils/globals.py:348
+#: utils/globals.py:361
 msgid "news"
 msgstr "notizie"
 
-#: utils/globals.py:352
+#: utils/globals.py:365
 msgid "joke"
 msgstr "scherzo"
 
-#: utils/globals.py:354
+#: utils/globals.py:367
 msgid "fact"
 msgstr "fatto"
 
-#: utils/globals.py:356
+#: utils/globals.py:369
 msgid "fable"
 msgstr "favola"
 
-#: utils/globals.py:358
+#: utils/globals.py:371
 msgid "truth and lie"
 msgstr "verità e menzogna"
 
-#: utils/globals.py:360
+#: utils/globals.py:373
 msgid "aphorism"
 msgstr "aforisma"
 
-#: utils/globals.py:362
+#: utils/globals.py:375
 msgid "poem"
 msgstr "poesia"
 
-#: utils/globals.py:364
+#: utils/globals.py:377
 msgid "quote"
 msgstr "citazione"
 
-#: utils/globals.py:366
+#: utils/globals.py:379
 msgid "tongue twister"
 msgstr "scioglilingua"
 
-#: utils/globals.py:368
+#: utils/globals.py:381
 msgid "motivation"
 msgstr "motivazione"
 
-#: utils/globals.py:370
+#: utils/globals.py:383
 msgid "calendar"
 msgstr "calendario"
 
-#: utils/globals.py:372
+#: utils/globals.py:385
 msgid "more about the next track"
 msgstr "più sul brano successivo"
 
-#: utils/globals.py:374
+#: utils/globals.py:387
 msgid "more about the last track"
 msgstr "più sull'ultimo brano"
 
-#: utils/globals.py:376
+#: utils/globals.py:389
 msgid "more about our playlist"
 msgstr "più sulla nostra playlist"
 
-#: utils/globals.py:378
+#: utils/globals.py:391
 msgid "random wiki article"
 msgstr "articolo wiki a caso"
 
-#: utils/globals.py:380
+#: utils/globals.py:393
 msgid "funny story"
 msgstr "storia divertente"
 
-#: utils/globals.py:382
+#: utils/globals.py:395
 msgid "language learning"
 msgstr "apprendimento delle lingue"
 
-#: utils/globals.py:415
+#: utils/globals.py:455
 msgid "Tracks"
 msgstr "Tracce"
 
-#: utils/globals.py:416
+#: utils/globals.py:456
 msgid "Albums"
 msgstr "Album"
 
-#: utils/globals.py:417
+#: utils/globals.py:457
 msgid "Artists"
 msgstr "Artisti"
 
-#: utils/globals.py:420
+#: utils/globals.py:460
 msgid "Forms"
 msgstr "Forme"
 
-#: utils/globals.py:421
+#: utils/globals.py:461
 msgid "Instruments"
 msgstr "Strumenti"
 
-#: utils/globals.py:567
+#: utils/globals.py:506
+msgid "Remove word/phrase (only the blacklisted part)"
+msgstr "Rimuovi parola/frase (solo la parte inserita nella lista nera)"
+
+#: utils/globals.py:507
+msgid "Remove entire tag (if any part matches)"
+msgstr "Rimuovi l'intero tag (se una parte corrisponde)"
+
+#: utils/globals.py:508
+msgid "Fail prompt (block generation)"
+msgstr "Messaggio di errore (generazione di blocchi)"
+
+#: utils/globals.py:509
+msgid "Log only (do not remove, just log)"
+msgstr "Solo registrazione (non rimuovere, solo registrare)"
+
+#: utils/globals.py:539
+msgid "Male"
+msgstr "Maschio"
+
+#: utils/globals.py:540
+msgid "Female"
+msgstr "Femmina"
+
+#: utils/globals.py:586 utils/globals.py:608
+msgid "Introduction"
+msgstr "Introduzione"
+
+#: utils/globals.py:588 utils/globals.py:609
+msgid "Re-introduction"
+msgstr "Reintroduzione"
+
+#: utils/globals.py:590 utils/globals.py:610
+msgid "No introduction"
+msgstr "Nessuna introduzione"
+
+#: utils/globals.py:655
 msgid "Run Search"
 msgstr "Esegui la ricerca"
 
-#: utils/globals.py:568
+#: utils/globals.py:656
 msgid "View Library"
 msgstr "Visualizza la biblioteca"
 
-#: utils/globals.py:569
+#: utils/globals.py:657
 msgid "View History"
 msgstr "Visualizza la storia"
 
-#: utils/globals.py:570
+#: utils/globals.py:658
 msgid "Edit Composers"
 msgstr "Modifica i compositori"
 
-#: utils/globals.py:572
+#: utils/globals.py:659
+msgid "Edit Personas"
+msgstr "Modifica personaggi"
+
+#: utils/globals.py:660
 msgid "Edit Schedules"
 msgstr "Modificare gli orari"
 
-#: utils/globals.py:573
+#: utils/globals.py:661
 msgid "Edit Extensions"
 msgstr "Modificare le estensioni"
 
-#: utils/globals.py:574
+#: utils/globals.py:662
 msgid "Edit Playlists"
 msgstr "Modifica degli elenchi di riproduzione"
 
-#: utils/globals.py:575
+#: utils/globals.py:663
 msgid "Edit Favorites"
 msgstr "Modifica i preferiti"
 
-#: utils/globals.py:578
+#: utils/globals.py:664
+msgid "Edit Blacklist"
+msgstr "Modifica lista nera"
+
+#: utils/globals.py:665
+msgid "Reveal Blacklist Concepts"
+msgstr "Rivelare i concetti della lista nera"
+
+#: utils/globals.py:666
 msgid "Delete Media"
 msgstr "Eliminare i media"
 
-#: utils/globals.py:579
+#: utils/globals.py:667
 msgid "Edit Configuration"
 msgstr "Modifica la configurazione"
 
-#: utils/globals.py:580
+#: utils/globals.py:668
 msgid "Start Application"
 msgstr "Avvio dell'applicazione"
 
-#: utils/globals.py:581
+#: utils/globals.py:669
 msgid "Access Password Administration"
 msgstr "Accesso all'amministrazione della password"
 
@@ -1959,602 +2539,58 @@ msgstr "Accesso all'amministrazione della password"
 msgid " (Pending runs: {0})"
 msgstr " (Esecuzioni in corso: {0})"
 
-#: utils/translations.py:34
+#: utils/translations.py:37
 msgid "Monday"
 msgstr "Lunedì"
 
-#: utils/translations.py:36
+#: utils/translations.py:39
 msgid "Tuesday"
 msgstr "Martedì"
 
-#: utils/translations.py:38
+#: utils/translations.py:41
 msgid "Wednesday"
 msgstr "Mercoledì"
 
-#: utils/translations.py:40
+#: utils/translations.py:43
 msgid "Thursday"
 msgstr "Giovedì"
 
-#: utils/translations.py:42
+#: utils/translations.py:45
 msgid "Friday"
 msgstr "Venerdì"
 
-#: utils/translations.py:44
+#: utils/translations.py:47
 msgid "Saturday"
 msgstr "Sabato"
 
-#: utils/translations.py:46
+#: utils/translations.py:49
 msgid "Sunday"
 msgstr "Domenica"
 
-#: utils/translations.py:58
+#: utils/translations.py:61
 msgid "seconds"
 msgstr "secondi"
 
-#: utils/translations.py:60
+#: utils/translations.py:63
 msgid "minutes"
 msgstr "minuti"
 
-#: utils/translations.py:62
+#: utils/translations.py:65
 msgid "hours"
 msgstr "ore"
 
-#: utils/translations.py:64
+#: utils/translations.py:67
 msgid "days"
 msgstr "giorni"
 
-#: utils/translations.py:66
+#: utils/translations.py:69
 msgid "weeks"
 msgstr "settimane"
 
-#: utils/translations.py:68
+#: utils/translations.py:71
 msgid "months"
 msgstr "mesi"
 
-#: utils/translations.py:70
+#: utils/translations.py:73
 msgid "years"
 msgstr "anni"
-
-#: app.py:155
-msgid "Personas"
-msgstr "Personaggi"
-
-#: app.py:163
-msgid "Blacklist"
-msgstr "Lista nera"
-
-#: app.py:166
-msgid "Timer"
-msgstr "Contaminuti"
-
-#: lib/caps_lock_mixin.py:64
-msgid "⚠ Caps Lock is ON"
-msgstr "⚠ Il blocco maiuscole è attivo"
-
-#: library_data/blacklist.py:259
-msgid "Filtering concepts for blacklist: "
-msgstr "Concetti di filtraggio per la lista nera: "
-
-#: ui/blacklist_window.py:33
-msgid "Modify Blacklist Item: {0}"
-msgstr "Modifica elemento nella lista nera: {0}"
-
-#: ui/blacklist_window.py:52
-msgid "Blacklist String"
-msgstr "Stringa nella lista nera"
-
-#: ui/blacklist_window.py:62
-msgid "Enabled"
-msgstr "Abilitato"
-
-#: ui/blacklist_window.py:74
-msgid "Use glob-based regex"
-msgstr "Utilizza espressioni regolari basate su glob"
-
-#: ui/blacklist_window.py:86
-msgid "Use word boundary matching"
-msgstr "Utilizza la corrispondenza dei confini delle parole"
-
-#: ui/blacklist_window.py:98
-msgid "Convert spaces to optional non-word characters"
-msgstr "Converti gli spazi in caratteri non alfabetici opzionali"
-
-#: ui/blacklist_window.py:108
-msgid "Exception Pattern (optional regex to unfilter tags)"
-msgstr ""
-"Modello di eccezione (espressione regolare facoltativa per non filtrare i "
-"tag)"
-
-#: ui/blacklist_window.py:116
-msgid "Done"
-msgstr "Fatto"
-
-#: ui/blacklist_window.py:143
-msgid "Blacklist string cannot be empty."
-msgstr "La stringa della lista nera non può essere vuota."
-
-#: ui/blacklist_window.py:169
-msgid "No changes were made"
-msgstr "Non sono state apportate modifiche"
-
-#: ui/blacklist_window.py:181
-msgid "Unsaved Changes"
-msgstr "Modifiche non salvate"
-
-#: ui/blacklist_window.py:181
-msgid "Do you want to save changes before closing?"
-msgstr "Vuoi salvare le modifiche prima di chiudere?"
-
-#: ui/blacklist_window.py:223
-msgid ""
-"WARNING: Are you sure you want to reveal the blacklist concepts? These concepts are damaging or offensive and WILL cause you severe psychological harm. Do not, under any circumstances, reveal these concepts to minors.\n"
-"\n"
-"If you are young, not sure, or even an adult, click the close button on this window now and do something fun instead."
-msgstr ""
-"ATTENZIONE: sei sicuro di voler rivelare i concetti della lista nera? Questi concetti sono dannosi o offensivi e ti causeranno gravi danni psicologici. Non rivelare questi concetti ai minori in nessuna circostanza.\n"
-"\n"
-"Se sei giovane, non sei sicuro o sei un adulto, clicca subito sul pulsante Chiudi di questa finestra e fai qualcosa di divertente."
-
-#: ui/blacklist_window.py:284
-msgid "Confirm Load Default Blacklist"
-msgstr "Conferma caricamento blacklist predefinita"
-
-#: ui/blacklist_window.py:285
-msgid ""
-"Are you sure you want to load the default blacklist?\n"
-"\n"
-"⚠️ WARNING: This will erase your current blacklist and replace it with the default items.\n"
-"• All your current blacklist items will be permanently deleted\n"
-"• You will need to rebuild your blacklist from scratch if you want to restore it later\n"
-"\n"
-"Do you want to continue?"
-msgstr ""
-"Sei sicuro di voler caricare la lista nera predefinita?\n"
-"\n"
-"⚠️ AVVERTENZA: questa operazione cancellerà la tua lista nera attuale e la sostituirà con gli elementi predefiniti.\n"
-"• Tutti gli elementi attualmente presenti nella tua lista nera saranno eliminati in modo permanente.\n"
-"• Se desideri ripristinarla in un secondo momento, dovrai ricostruire la tua lista nera da zero.\n"
-"\n"
-"Vuoi continuare?"
-
-#: ui/blacklist_window.py:298
-msgid "Loaded default blacklist"
-msgstr "Lista nera predefinita caricata"
-
-#: ui/blacklist_window.py:302
-msgid "Error loading default blacklist"
-msgstr "Errore durante il caricamento della lista nera predefinita"
-
-#: ui/blacklist_window.py:332
-msgid "Tags/Models Blacklist"
-msgstr "Tag/Modelli Lista nera"
-
-#: ui/blacklist_window.py:368
-msgid "Global Settings:"
-msgstr "Impostazioni globali:"
-
-#: ui/blacklist_window.py:370
-msgid "These settings affect how the blacklist is applied globally."
-msgstr ""
-"Queste impostazioni influiscono sul modo in cui la lista nera viene "
-"applicata a livello globale."
-
-#: ui/blacklist_window.py:379
-msgid "Choose how the blacklist is enforced: block, warn, or allow."
-msgstr "Scegli come applicare la lista nera: blocca, avvisa o consenti."
-
-#: ui/blacklist_window.py:385
-msgid "Silent Removal"
-msgstr "Rimozione silenziosa"
-
-#: ui/blacklist_window.py:393
-msgid ""
-"If enabled, blacklisted words are removed silently without notification."
-msgstr ""
-"Se abilitato, le parole inserite nella lista nera vengono rimosse "
-"silenziosamente senza notifica."
-
-#: ui/blacklist_window.py:399
-msgid "Import"
-msgstr "Importazione"
-
-#: ui/blacklist_window.py:400
-msgid "Export"
-msgstr "Esportazione"
-
-#: ui/blacklist_window.py:401
-msgid "Load Default"
-msgstr "Carica predefinito"
-
-#: ui/blacklist_window.py:405
-msgid "Add to blacklist"
-msgstr "Aggiungi alla lista nera"
-
-#: ui/blacklist_window.py:407
-msgid "Clear items"
-msgstr "Cancella articoli"
-
-#: ui/blacklist_window.py:428
-msgid ""
-"No blacklist items found. You can add items by clicking the 'Add to "
-"blacklist' button below, or load the default blacklist."
-msgstr ""
-"Nessun elemento trovato nella lista nera. È possibile aggiungere elementi "
-"cliccando sul pulsante “Aggiungi alla lista nera” qui sotto, oppure caricare"
-" la lista nera predefinita."
-
-#: ui/blacklist_window.py:430
-msgid "Click below to reveal blacklist concepts."
-msgstr ""
-"Clicca qui sotto per visualizzare i concetti relativi alla lista nera."
-
-#: ui/blacklist_window.py:432
-msgid ""
-"Default blacklist is loaded. You can load your own blacklist by editing the "
-"existing concepts, clearing the blacklist and adding your own, or importing "
-"concepts from a file."
-msgstr ""
-"La lista nera predefinita è stata caricata. È possibile caricare la propria "
-"lista nera modificando i concetti esistenti, cancellando la lista nera e "
-"aggiungendo la propria, oppure importando i concetti da un file."
-
-#: ui/blacklist_window.py:438
-msgid "Reveal Concepts"
-msgstr "Rivelare concetti"
-
-#: ui/blacklist_window.py:457
-msgid "[regex]"
-msgstr "[regex]"
-
-#: ui/blacklist_window.py:459
-msgid "[no boundary]"
-msgstr "[senza confini]"
-
-#: ui/blacklist_window.py:461
-msgid "[no space conversion]"
-msgstr "[nessuna conversione dello spazio]"
-
-#: ui/blacklist_window.py:463
-msgid "[exception: {0}]"
-msgstr "[eccezione: {0}]"
-
-#: ui/blacklist_window.py:467 ui/blacklist_window.py:732
-msgid "Disabled"
-msgstr "Non abilitato"
-
-#: ui/blacklist_window.py:546 ui/blacklist_window.py:581
-msgid "Added item to blacklist: {0}"
-msgstr "Elemento aggiunto alla lista nera: {0}"
-
-#: ui/blacklist_window.py:548
-msgid "Modified blacklist item: {0}"
-msgstr "Voce della lista nera modificata: {0}"
-
-#: ui/blacklist_window.py:561
-msgid "Removed item: {0}"
-msgstr "Elemento rimosso: {0}"
-
-#: ui/blacklist_window.py:571
-msgid "Warning"
-msgstr "Avvertenza"
-
-#: ui/blacklist_window.py:571
-msgid "Please enter a string to add to the blacklist."
-msgstr "Inserisci una stringa da aggiungere alla lista nera."
-
-#: ui/blacklist_window.py:661
-msgid "Confirm Clear Blacklist"
-msgstr "Conferma Cancella lista nera"
-
-#: ui/blacklist_window.py:662
-msgid ""
-"Are you sure you want to clear all blacklist items?\n"
-"\n"
-"⚠️ WARNING: This action cannot be undone!\n"
-"• All blacklist items will be permanently deleted\n"
-"• The blacklist helps improve image output quality\n"
-"• You will need to rebuild your blacklist from scratch\n"
-"\n"
-"Do you want to continue?"
-msgstr ""
-"Sei sicuro di voler cancellare tutti gli elementi dalla lista nera?\n"
-"\n"
-"⚠️ ATTENZIONE: questa azione non può essere annullata!\n"
-"• Tutti gli elementi della lista nera saranno eliminati definitivamente.\n"
-"• La lista nera contribuisce a migliorare la qualità delle immagini prodotte.\n"
-"• Dovrai ricostruire la lista nera da zero.\n"
-"\n"
-"Vuoi continuare?"
-
-#: ui/blacklist_window.py:681
-msgid "Cleared item blacklist"
-msgstr "Elenco nero degli articoli cancellati"
-
-#: ui/blacklist_window.py:735
-msgid "Item \"{0}\" is now {1}"
-msgstr "L'elemento “{0}” è ora {1}"
-
-#: ui/blacklist_window.py:737
-msgid "enabled"
-msgstr "abilitato"
-
-#: ui/blacklist_window.py:737
-msgid "disabled"
-msgstr "disattivato"
-
-#: ui/blacklist_window.py:747
-msgid "Concepts revealed"
-msgstr "Concetti rivelati"
-
-#: ui/blacklist_window.py:759
-msgid "Import Blacklist"
-msgstr "Importa lista nera"
-
-#: ui/blacklist_window.py:778
-msgid "Successfully imported blacklist"
-msgstr "Blacklist importata con successo"
-
-#: ui/blacklist_window.py:780
-msgid "Import Error"
-msgstr "Errore di importazione"
-
-#: ui/blacklist_window.py:791
-msgid "Export Blacklist"
-msgstr "Elenco nero delle esportazioni"
-
-#: ui/blacklist_window.py:806
-msgid "Successfully exported blacklist"
-msgstr "Esecuzione riuscita dell'esportazione della lista nera"
-
-#: ui/blacklist_window.py:808
-msgid "Export Error"
-msgstr "Errore di esportazione"
-
-#: ui/blacklist_window.py:818
-msgid "Blacklist mode set to: {0}"
-msgstr "Modalità blacklist impostata su: {0}"
-
-#: ui/blacklist_window.py:824
-msgid "Silent removal set to: {0}"
-msgstr "Rimozione silenziosa impostata su: {0}"
-
-#: ui/personas_window.py:34 ui/personas_window.py:87
-msgid "DJ Personas"
-msgstr "DJ Personaggi"
-
-#: ui/personas_window.py:100
-msgid "Display Name"
-msgstr "Nome visualizzato"
-
-#: ui/personas_window.py:101
-msgid "Voice"
-msgstr "Voce"
-
-#: ui/personas_window.py:119
-msgid "Add New"
-msgstr "Aggiungi nuovo"
-
-#: ui/personas_window.py:122
-msgid "Edit"
-msgstr "Modifica"
-
-#: ui/personas_window.py:141
-msgid "Basic Info"
-msgstr "Informazioni di base"
-
-#: ui/personas_window.py:145
-msgid "Characteristics"
-msgstr "Caratteristiche"
-
-#: ui/personas_window.py:149
-msgid "System Prompt"
-msgstr "Richiesta di sistema"
-
-#: ui/personas_window.py:160
-msgid "Save Changes"
-msgstr "Salva modifiche"
-
-#: ui/personas_window.py:166
-msgid "Reload from Config"
-msgstr "Ricarica dalla configurazione"
-
-#: ui/personas_window.py:177
-msgid "Display Name:"
-msgstr "Nome visualizzato:"
-
-#: ui/personas_window.py:182
-msgid "Voice Name:"
-msgstr "Nome voce:"
-
-#: ui/personas_window.py:191
-msgid "Sex:"
-msgstr "Sesso:"
-
-#: ui/personas_window.py:199
-msgid "Tone:"
-msgstr "Tono:"
-
-#: ui/personas_window.py:204
-msgid "Language:"
-msgstr "Lingua:"
-
-#: ui/personas_window.py:209
-msgid "Language Code:"
-msgstr "Codice lingua:"
-
-#: ui/personas_window.py:220
-msgid "Characteristics:"
-msgstr "Caratteristiche:"
-
-#: ui/personas_window.py:233
-msgid ""
-"Enter one characteristic per line. These describe the persona's personality "
-"and expertise."
-msgstr ""
-"Inserisci una caratteristica per riga. Queste descrivono la personalità e le"
-" competenze del personaggio."
-
-#: ui/personas_window.py:244
-msgid "System Prompt:"
-msgstr "Richiesta di sistema:"
-
-#: ui/personas_window.py:257
-msgid ""
-"Enter the system prompt that defines how this persona should behave and "
-"speak."
-msgstr ""
-"Inserisci il prompt di sistema che definisce come questo personaggio "
-"dovrebbe comportarsi e parlare."
-
-#: ui/personas_window.py:298
-msgid "New Persona"
-msgstr "Nuova Persona"
-
-#: ui/personas_window.py:299
-msgid "friendly and engaging"
-msgstr "amichevole e coinvolgente"
-
-#: ui/personas_window.py:300
-msgid "English"
-msgstr "italiano"
-
-#: ui/personas_window.py:306
-msgid "music enthusiast"
-msgstr "appassionato di musica"
-
-#: ui/personas_window.py:307
-msgid "knowledgeable about various genres"
-msgstr "conoscitore di vari generi"
-
-#: ui/personas_window.py:308
-msgid "engaging storyteller"
-msgstr "affascinante narratore"
-
-#: ui/personas_window.py:309
-msgid "passionate about sharing music"
-msgstr "appassionato di condivisione musicale"
-
-#: ui/personas_window.py:315
-msgid ""
-"You are a knowledgeable and engaging DJ with a passion for music. Your "
-"speaking style is friendly and engaging, with a talent for connecting with "
-"your audience. You love sharing interesting facts about music, artists, and "
-"genres, and you have a gift for making every song feel special and "
-"meaningful. When discussing tracks, you often provide context about the "
-"artist, the genre, or the cultural significance of the music. Your "
-"enthusiasm is infectious, and you have a way of making listeners feel like "
-"they're discovering something wonderful together with you."
-msgstr ""
-"Sei un DJ esperto e coinvolgente con una grande passione per la musica. Il "
-"tuo modo di parlare è amichevole e coinvolgente, con un talento particolare "
-"nel creare un legame con il tuo pubblico. Ti piace condividere curiosità su "
-"musica, artisti e generi musicali e hai un talento speciale nel rendere ogni"
-" brano speciale e significativo. Quando parli dei brani, spesso fornisci "
-"informazioni sul contesto dell'artista, sul genere o sul significato "
-"culturale della musica. Il tuo entusiasmo è contagioso e hai un modo tutto "
-"tuo di far sentire gli ascoltatori come se stessero scoprendo qualcosa di "
-"meraviglioso insieme a te."
-
-#: ui/personas_window.py:353 ui/personas_window.py:360
-msgid "No Selection"
-msgstr "Nessuna selezione"
-
-#: ui/personas_window.py:353
-msgid "Please select a persona to edit."
-msgstr "Seleziona un personaggio da modificare."
-
-#: ui/personas_window.py:360
-msgid "Please select a persona to delete."
-msgstr "Seleziona un personaggio da eliminare."
-
-#: ui/personas_window.py:364
-msgid "Are you sure you want to delete the persona '{}'?"
-msgstr "Sei sicuro di voler eliminare il personaggio “{}”?"
-
-#: ui/personas_window.py:372
-msgid "Failed to remove persona from manager."
-msgstr "Impossibile rimuovere il personaggio dal manager."
-
-#: ui/personas_window.py:378
-msgid "Persona deleted successfully."
-msgstr "Persona eliminata con successo."
-
-#: ui/personas_window.py:386
-msgid "Display name is required."
-msgstr "Il nome visualizzato è obbligatorio."
-
-#: ui/personas_window.py:390
-msgid "Voice name is required."
-msgstr "Il nome della voce è obbligatorio."
-
-#: ui/personas_window.py:394
-msgid "Tone is required."
-msgstr "È richiesto il tono."
-
-#: ui/personas_window.py:398
-msgid "System prompt is required."
-msgstr "È richiesta una richiesta di sistema."
-
-#: ui/personas_window.py:428
-msgid "Invalid persona data: {}"
-msgstr "Dati personali non validi: {}"
-
-#: ui/personas_window.py:446
-msgid "Persona saved successfully."
-msgstr "Personaggio salvato con successo."
-
-#: ui/personas_window.py:450
-msgid "Failed to save persona: {}"
-msgstr "Impossibile salvare il personaggio: {}"
-
-#: ui/personas_window.py:461
-msgid "Failed to save personas to configuration."
-msgstr "Impossibile salvare i personaggi nella configurazione."
-
-#: ui/personas_window.py:464
-msgid "Failed to save personas to configuration: {}"
-msgstr "Impossibile salvare i personaggi nella configurazione: {}"
-
-#: ui/personas_window.py:491
-msgid "Personas reloaded from configuration."
-msgstr "Personaggi ricaricati dalla configurazione."
-
-#: ui/personas_window.py:494
-msgid "Failed to reload personas: {}"
-msgstr "Impossibile ricaricare i personaggi: {}"
-
-#: utils/globals.py:466
-msgid "Remove word/phrase (only the blacklisted part)"
-msgstr "Rimuovi parola/frase (solo la parte inserita nella lista nera)"
-
-#: utils/globals.py:467
-msgid "Remove entire tag (if any part matches)"
-msgstr "Rimuovi l'intero tag (se una parte corrisponde)"
-
-#: utils/globals.py:468
-msgid "Fail prompt (block generation)"
-msgstr "Messaggio di errore (generazione di blocchi)"
-
-#: utils/globals.py:469
-msgid "Log only (do not remove, just log)"
-msgstr "Solo registrazione (non rimuovere, solo registrare)"
-
-#: utils/globals.py:499
-msgid "Male"
-msgstr "Maschio"
-
-#: utils/globals.py:500
-msgid "Female"
-msgstr "Femmina"
-
-#: utils/globals.py:571
-msgid "Edit Personas"
-msgstr "Modifica personaggi"
-
-#: utils/globals.py:576
-msgid "Edit Blacklist"
-msgstr "Modifica lista nera"
-
-#: utils/globals.py:577
-msgid "Reveal Blacklist Concepts"
-msgstr "Rivelare i concetti della lista nera"
