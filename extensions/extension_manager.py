@@ -44,10 +44,18 @@ class ExtensionManager:
     @staticmethod
     def load_extensions() -> None:
         ExtensionManager.extensions = app_info_cache.get("extensions", [])
+        # Load strategy from cache, defaulting to RANDOM if not found
+        strategy_name = app_info_cache.get("extension_strategy", "RANDOM")
+        try:
+            ExtensionManager.strategy = ExtensionStrategy[strategy_name]
+        except KeyError:
+            ExtensionManager.strategy = ExtensionStrategy.RANDOM
+            logger.warning(f"Invalid strategy '{strategy_name}' found in cache, defaulting to RANDOM")
     
     @staticmethod
     def store_extensions() -> None:
         app_info_cache.set("extensions", list(ExtensionManager.extensions))
+        app_info_cache.set("extension_strategy", ExtensionManager.strategy.name)
 
     def __init__(self, ui_callbacks: Optional[Any], data_callbacks: Optional[Any]) -> None:
         self.llm = LLM()
@@ -241,36 +249,49 @@ class ExtensionManager:
         r = self.s(q, m)
         if r is not None and r.i():
             a = r.o()
-            b = random.choice(a)
-            counter = 0
-            failed = False
             for i in a:
-                logger.info("Extension option: " + i.n + " " + i.x())
-            while (b is None or b.y
-                   or b.xfgi(self.minimum_allowed_duration_seconds)
-                   or self.is_in_library(b)
-                   or (strict and self._strict_test(b, attr, strict))
-                   or self._is_blacklisted(b)
-                   or (Utils.contains_emoji(b.n) and random.random() > 0.05)):  # 95% chance to skip emoji titles
-                counter += 1
-                b = random.choice(a)
-                if counter > 10:
-                    failed = True
-                    break
-            if failed:
+                i.n = SoupUtils.clean_html(i.n)
+                i.d = SoupUtils.clean_html(i.d)
+                i.m = self._m(q, i.n)
+                logger.info(f"Extension option: {i.n} {i.x()}")            
+            opts = []
+            shuffled = a.copy()
+            random.shuffle(shuffled)
+            # Slightly bias toward higher quality results
+            for i in range(len(shuffled) - 1):
+                if shuffled[i].ggi() < shuffled[i + 1].ggi() and random.random() < 0.3:
+                    shuffled[i], shuffled[i + 1] = shuffled[i + 1], shuffled[i]
+            for b in shuffled:
+                if not self._bad_option(b, strict, attr):
+                    opts.append(b)
+                    if len(opts) >= 2:  # Found two valid options
+                        break
+            if len(opts) == 0:
                 if depth > 4:
+                    logger.error(f"Unable to find valid results after multiple attempts: {q}")
                     raise Exception(f"Unable to find valid results: {q}")
                 self._simple(q, m=m*2, depth=depth+1, attr=attr, strict=strict)
                 return
-            name = SoupUtils.clean_html(b.n)
-            logger.warning(f"Selected option: {name} - {b.x()}")
+            b = opts[0]
+            b1 = opts[1] if len(opts) > 1 else None
+            logger.warning(f"Selected option: {b.n} - {b.x()}")
+            if b1:
+                logger.info(f"Backup option: {b1.n} - {b1.x()}")
             logger.info(b.d)
-            self.delayed(b, attr, s=q)
+            self.delayed(b, attr, s=q, b1=b1)
         else:
             if r is None:
                 logger.warning("Tracking too many requests.")
             else:
                 logger.warning(f'No results found for "{q}"')
+
+    def _bad_option(self, b, strict: bool = False, attr: Optional[TrackAttribute] = None) -> bool:
+        return (b is None or b.y
+                or b.xfgi(self.minimum_allowed_duration_seconds)
+                or self.is_in_library(b)
+                or (strict and self._strict_test(b, attr, strict))
+                or self._is_blacklisted(b)
+                or (Utils.contains_emoji(b.n) and random.random() > 0.05))  # 95% chance to skip emoji titles
 
     def is_in_library(self, b) -> bool:
         if b.w is None or b.w.strip() == "":
@@ -291,7 +312,7 @@ class ExtensionManager:
 
     def _is_blacklisted(self, b) -> bool:
         from library_data.blacklist import Blacklist
-        item = Blacklist.get_violation_item(SoupUtils.clean_html(b.n))
+        item = Blacklist.get_violation_item(b.n)
         if item is not None:
             logger.warning(f"Blacklisted: {item.string} ({b.n})")
             return True
@@ -301,11 +322,11 @@ class ExtensionManager:
             return True
         return False
 
-    def delayed(self, b, attr: Optional[TrackAttribute], s: str) -> None:
-        thread = Utils.start_thread(self._delayed, use_asyncio=False, args=[b, attr, s,])
+    def delayed(self, b, attr: Optional[TrackAttribute], s: str, b1=None) -> None:
+        thread = Utils.start_thread(self._delayed, use_asyncio=False, args=[b, attr, s, b1])
         ExtensionManager.DELAYED_THREADS.append(thread)
 
-    def _delayed(self, b, attr: Optional[TrackAttribute], s: str, sleep: bool = True) -> None:
+    def _delayed(self, b, attr: Optional[TrackAttribute], s: str, b1=None, sleep: bool = True) -> None:
         if sleep:
             time_seconds = self.get_extension_sleep_time(1000, 2000)
             check_cadence = 150
@@ -316,6 +337,22 @@ class ExtensionManager:
                 if self.ui_callbacks is not None:
                     self.ui_callbacks.update_extension_status(_("Extension \"{0}\" waiting for {1} minutes").format(SoupUtils.clean_html(b.n), round(float(time_seconds) / 60)))
                 Utils.long_sleep(check_cadence, "Extension thread delay wait", total=time_seconds, print_cadence=180)
+
+        try:
+            f, b = self._a(b, b1)
+            self._append(b, f, attr, s)
+            PlaybackConfig.assign_extension(f)
+            if self.ui_callbacks is not None:
+                self.ui_callbacks.update_extension_status(_("Extension \"{0}\" ready").format(b.n))
+                # TODO update ExtensionsWindow as well if it's open
+            ExtensionManager.extension_thread_delayed_complete = True
+        except Exception as e:
+            logger.error(f"Extension delayed processing failed: {e}")
+            self._append(b, None, attr, s, str(e))
+            ExtensionManager.extension_thread_delayed_complete = True
+            raise e
+
+    def _a(self, b, b1=None) -> tuple[str, Any]:
         a = b.da(g=config.directories[0])
         e1 = " Destination: "
         logger.warning(f"extending delayed: {a}")
@@ -338,6 +375,9 @@ class ExtensionManager:
                 close_match = self.check_dir_for_close_match(_e)
                 if close_match is not None:
                     _f = close_match
+                elif b1 is not None:
+                    logger.info(f"Primary option failed, trying backup: {b1.n}")
+                    return self._a(b1)  # Try backup, no backup parameter on this call
                 else:
                     ExtensionManager.extension_thread_delayed_complete = True
                     raise Exception(f"No output found {b}")
@@ -355,19 +395,64 @@ class ExtensionManager:
                 _f = new_path
             except Exception as e:
                 logger.error(f"Failed to rename file to remove emoji: {e}")
+        return _f, b
+
+    def _m(self, q: str, t: str) -> Dict[str, float]:
+        q_lower = q.lower()
+        t_lower = t.lower()
         
+        metrics = {}
+        
+        # 1. Substring containment (most important)
+        if q_lower in t_lower:
+            metrics['substring_match'] = len(q) / len(t)
+        else:
+            metrics['substring_match'] = 0.0
+        
+        # 2. Word overlap
+        q_words = set(q_lower.split())
+        t_words = set(t_lower.split())
+        common_words = q_words.intersection(t_words)
+        metrics['word_overlap'] = len(common_words) / len(q_words) if q_words else 0.0
+        
+        # 3. Levenshtein distance (normalized)
+        levenshtein_dist = Utils.string_distance(q, t)
+        max_len = max(len(q), len(t))
+        metrics['levenshtein_similarity'] = 1.0 - (levenshtein_dist / max_len) if max_len > 0 else 0.0
+        
+        # 4. Overall quality score (weighted combination)
+        metrics['overall_quality'] = (
+            metrics['substring_match'] * 0.5 +      # Most important
+            metrics['word_overlap'] * 0.3 +          # Important
+            metrics['levenshtein_similarity'] * 0.2  # Less important
+        )
+        
+        return metrics
+
+    def _append(self, b, f: Optional[str], attr: Optional[TrackAttribute], s: str, exception: Optional[str] = None):
         obj = dict(b.u)
-        obj["filename"] = _f
+        obj["filename"] = f
         obj["date"] = datetime.datetime.now().isoformat()
         obj["strategy"] = ExtensionManager.strategy.name
         obj["track_attr"] = attr.name if attr is not None else "<unknown>"
         obj["search_query"] = s
+        
+        # Calculate quality metrics if we have a valid result
+        if exception is None and hasattr(b, 'n') and b.n:
+            quality_metrics = self._m(s, b.n)
+            obj.update(quality_metrics)
+        else:
+            # Set default values for failed extensions
+            obj.update({
+                'substring_match': 0.0,
+                'word_overlap': 0.0,
+                'levenshtein_similarity': 0.0,
+                'overall_quality': 0.0
+            })
+        
+        obj["failed"] = exception is not None
+        obj["exception"] = exception
         ExtensionManager.extensions.append(obj)
-        PlaybackConfig.assign_extension(_f)
-        if self.ui_callbacks is not None:
-            self.ui_callbacks.update_extension_status(_("Extension \"{0}\" ready").format(SoupUtils.clean_html(b.n)))
-            # TODO update ExtensionsWindow as well if it's open
-        ExtensionManager.extension_thread_delayed_complete = True
 
     def check_dir_for_close_match(self, t: Optional[str]) -> Optional[str]:
         if t is None or t.strip() == "":

@@ -25,10 +25,10 @@ class ExtensionsWindow(BaseWindow):
     '''
     CURRENT_EXTENSION_TEXT = _("Extensions")
     COL_0_WIDTH = 150
-    MAX_EXTENSIONS = 500
+    MAX_EXTENSIONS = 100
     top_level = None
 
-    def __init__(self, master, app_actions):
+    def __init__(self, master, app_actions, library_data):
         super().__init__()
         
         # Create and configure top level window
@@ -39,6 +39,7 @@ class ExtensionsWindow(BaseWindow):
         
         self.master = ExtensionsWindow.top_level
         self.app_actions = app_actions
+        self.library_data = library_data
 
         # Main container
         self.main = Frame(self.master, bg=AppStyle.BG_COLOR)
@@ -94,9 +95,9 @@ class ExtensionsWindow(BaseWindow):
         Label(self.sidebar, text=_("Strategy"), 
               bg=AppStyle.BG_COLOR, fg=AppStyle.FG_COLOR).grid(
                   row=current_row, column=0, sticky='w', pady=2)
-        self.strategy_var = StringVar(value=ExtensionManager.strategy.name)
-        strategy_menu = OptionMenu(self.sidebar, self.strategy_var, 
-                                 *[s.name for s in ExtensionStrategy],
+        self.strategy_var = StringVar(value=ExtensionManager.strategy.get_translation())
+        strategy_menu = OptionMenu(self.sidebar, self.strategy_var, ExtensionManager.strategy.get_translation(),
+                                 *ExtensionStrategy.get_translated_names(),
                                  command=self._on_strategy_change)
         strategy_menu.grid(row=current_row, column=1, sticky='ew', pady=2)
         current_row += 1
@@ -144,6 +145,7 @@ class ExtensionsWindow(BaseWindow):
         self.strategy_labels = []
         self.attribute_labels = []
         self.query_labels = []
+        self.status_labels = []
         self.details_buttons = []
         self.delete_buttons = []
         self.play_buttons = []
@@ -166,6 +168,7 @@ class ExtensionsWindow(BaseWindow):
         self.strategy_labels.clear()
         self.attribute_labels.clear()
         self.query_labels.clear()
+        self.status_labels.clear()
         self.details_buttons.clear()
         self.delete_buttons.clear()
         self.play_buttons.clear()
@@ -188,8 +191,10 @@ class ExtensionsWindow(BaseWindow):
               bg=header_bg, fg=header_fg).grid(row=0, column=5, sticky='w', padx=5, pady=2)
         Label(self.scroll_frame.viewPort, text=_('Search Query'), 
               bg=header_bg, fg=header_fg).grid(row=0, column=6, sticky='w', padx=5, pady=2)
+        Label(self.scroll_frame.viewPort, text=_('Status'), 
+              bg=header_bg, fg=header_fg).grid(row=0, column=7, sticky='w', padx=5, pady=2)
         Label(self.scroll_frame.viewPort, text=_('Actions'), 
-              bg=header_bg, fg=header_fg).grid(row=0, column=7, columnspan=3, sticky='w', padx=5, pady=2)
+              bg=header_bg, fg=header_fg).grid(row=0, column=8, columnspan=3, sticky='w', padx=5, pady=2)
 
         # Get recent extensions (most recent first, limited to 500)
         recent_extensions = sorted(
@@ -257,9 +262,16 @@ class ExtensionsWindow(BaseWindow):
             query_label.grid(row=row, column=6, sticky='w', padx=5, pady=2)
             self.query_labels.append(query_label)
 
+            # Status column - show X for failed extensions, blank for successful ones
+            status_text = "X" if ext.get('failed', False) else ""
+            status_label = Label(self.scroll_frame.viewPort, text=status_text,
+                              bg=AppStyle.BG_COLOR, fg=AppStyle.FG_COLOR)
+            status_label.grid(row=row, column=7, sticky='w', padx=5, pady=2)
+            self.status_labels.append(status_label)
+
             # Add Details button
             details_btn = Button(self.scroll_frame.viewPort, text=_("Details"))
-            details_btn.grid(row=row, column=7, padx=2, pady=2)
+            details_btn.grid(row=row, column=8, padx=2, pady=2)
             self.details_buttons.append(details_btn)
             def details_handler(event, self=self, extension=ext):
                 self._show_extension_details(extension)
@@ -267,7 +279,7 @@ class ExtensionsWindow(BaseWindow):
 
             # Add Play button
             play_btn = Button(self.scroll_frame.viewPort, text=_("Play"))
-            play_btn.grid(row=row, column=8, padx=2, pady=2)
+            play_btn.grid(row=row, column=9, padx=2, pady=2)
             self.play_buttons.append(play_btn)
             def play_handler(event, self=self, extension=ext):
                 self._play_extension(extension)
@@ -275,7 +287,7 @@ class ExtensionsWindow(BaseWindow):
 
             # Add Delete button
             delete_btn = Button(self.scroll_frame.viewPort, text=_("Delete"))
-            delete_btn.grid(row=row, column=9, padx=2, pady=2)
+            delete_btn.grid(row=row, column=10, padx=2, pady=2)
             self.delete_buttons.append(delete_btn)
             def delete_handler(event, self=self, extension=ext):
                 self._delete_extension(extension)
@@ -300,12 +312,15 @@ class ExtensionsWindow(BaseWindow):
     def _on_strategy_change(self, *args):
         """Handle strategy change."""
         try:
-            new_strategy = ExtensionStrategy[self.strategy_var.get()]
+            # Convert from display value back to enum
+            new_strategy = ExtensionStrategy.get_from_translation(self.strategy_var.get())
             ExtensionManager.strategy = new_strategy
             logger.info(f"Extension strategy changed to: {new_strategy.name}")
-            ExtensionManager.reset_extension()
-        except KeyError:
-            logger.warning(f"Invalid strategy selected: {self.strategy_var.get()}")
+            ExtensionManager.store_extensions()
+            self.library_data.extension_manager.reset_extension()
+            self._refresh_extension_list()
+        except Exception as e:
+            logger.warning(f"Invalid strategy selected: {self.strategy_var.get()} - {e}")
 
     @require_password(ProtectedActions.EDIT_EXTENSIONS)
     def _clear_history(self):
@@ -482,6 +497,16 @@ class ExtensionDetailsWindow(BaseWindow):
                   row=current_row, column=1, sticky='w', padx=5, pady=2)
         current_row += 1
 
+        # Status field for failed/successful extensions
+        Label(details_frame, text=_("Status:"), 
+              bg=AppStyle.BG_COLOR, fg=AppStyle.FG_COLOR).grid(
+                  row=current_row, column=0, sticky='w', padx=5, pady=2)
+        status_text = _("Failed") if extension.get('failed', False) else _("Success")
+        Label(details_frame, text=status_text,
+              bg=AppStyle.BG_COLOR, fg=AppStyle.FG_COLOR).grid(
+                  row=current_row, column=1, sticky='w', padx=5, pady=2)
+        current_row += 1
+
         Label(details_frame, text=_("Description:"), 
               bg=AppStyle.BG_COLOR, fg=AppStyle.FG_COLOR).grid(
                   row=current_row, column=0, sticky='w', padx=5, pady=2)
@@ -493,7 +518,14 @@ class ExtensionDetailsWindow(BaseWindow):
         Label(details_frame, text=_("File:"), 
               bg=AppStyle.BG_COLOR, fg=AppStyle.FG_COLOR).grid(
                   row=current_row, column=0, sticky='w', padx=5, pady=2)
-        Label(details_frame, text=extension.get('filename', ''),
+        
+        # Show filename or exception for failed extensions
+        if extension.get('failed', False) and extension.get('exception'):
+            file_text = extension.get('exception', '')
+        else:
+            file_text = extension.get('filename', '')
+            
+        Label(details_frame, text=file_text,
               bg=AppStyle.BG_COLOR, fg=AppStyle.FG_COLOR, wraplength=500).grid(
                   row=current_row, column=1, sticky='w', padx=5, pady=2)
 

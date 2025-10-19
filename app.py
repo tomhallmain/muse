@@ -720,7 +720,7 @@ class App():
     @require_password(ProtectedActions.EDIT_EXTENSIONS)
     def open_extensions_window(self):
         try:
-            extensions_window = ExtensionsWindow(self.master, self.app_actions)
+            extensions_window = ExtensionsWindow(self.master, self.app_actions, self.library_data)
         except Exception as e:
             logger.error(f"Exception opening extensions window: {e}")
 

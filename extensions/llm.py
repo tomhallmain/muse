@@ -236,10 +236,10 @@ class LLM:
 
     def generate_json_get_value(self, query, json_key, timeout=DEFAULT_TIMEOUT, context=None, system_prompt=None, system_prompt_drop_rate=DEFAULT_SYSTEM_PROMPT_DROP_RATE):
         """Generate a response and extract a specific JSON value."""
-        self.generate_response_async(query, timeout=timeout, context=context, system_prompt=system_prompt, system_prompt_drop_rate=system_prompt_drop_rate)
-        if self._result is None:
+        result = self.generate_response_async(query, timeout=timeout, context=context, system_prompt=system_prompt, system_prompt_drop_rate=system_prompt_drop_rate)
+        if result is None:
             raise LLMResponseException("Failed to generate LLM response - Result is None")
-        return self._result._get_json_attr(json_key)
+        return result._get_json_attr(json_key)
 
     def _is_thinking_model(self) -> bool:
         """Check if the current model is a thinking model that uses internal prompts."""
