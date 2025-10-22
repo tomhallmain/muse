@@ -2,8 +2,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
-"POT-Creation-Date: 2025-10-14 20:52-0400\n"
-"PO-Revision-Date: 2025-10-14 20:52-0400\n"
+"POT-Creation-Date: 2025-10-22 17:13-0400\n"
+"PO-Revision-Date: 2025-10-22 17:13-0400\n"
 "Last-Translator: Translator Name <translator@example.com>\n"
 "Language-Team: fr Team <<EMAIL>>\n"
 "Language: fr\n"
@@ -77,7 +77,7 @@ msgid "Schedules"
 msgstr "Horaires"
 
 #: app.py:162 ui/extensions_window.py:26 ui/extensions_window.py:36
-#: ui/extensions_window.py:333
+#: ui/extensions_window.py:348
 msgid "Extensions"
 msgstr "Extensions"
 
@@ -110,7 +110,7 @@ msgstr "Configuration de la sécurité"
 msgid "DJ"
 msgstr "DJ"
 
-#: app.py:217 ui/extensions_window.py:181 ui/track_details_window.py:64
+#: app.py:217 ui/extensions_window.py:184 ui/track_details_window.py:64
 #: utils/globals.py:236
 msgid "Title"
 msgstr "Titre"
@@ -154,7 +154,7 @@ msgstr "Statut de l'extension"
 msgid "Volume"
 msgstr "Volume"
 
-#: app.py:255 ui/extensions_window.py:269 ui/favorites_window.py:374
+#: app.py:255 ui/extensions_window.py:281 ui/favorites_window.py:374
 #: ui/favorites_window.py:509 ui/network_media_window.py:168
 #: ui/network_media_window.py:268 ui/search_window.py:268
 #: ui/search_window.py:440
@@ -240,7 +240,7 @@ msgstr "Copie de la pochette d'album dans le presse-papiers."
 #: app.py:718 app.py:926 app.py:937 app.py:967 ui/auth/password_dialog.py:251
 #: ui/blacklist_window.py:143 ui/composers_window.py:251
 #: ui/composers_window.py:266 ui/configuration_window.py:154
-#: ui/configuration_window.py:157 ui/extensions_window.py:378
+#: ui/configuration_window.py:157 ui/extensions_window.py:393
 #: ui/favorites_window.py:605 ui/personas_window.py:372
 #: ui/personas_window.py:450 ui/personas_window.py:461
 #: ui/personas_window.py:464 ui/personas_window.py:494
@@ -296,23 +296,23 @@ msgstr "Piste non trouvée dans la bibliothèque pour la requête : "
 msgid " Muse "
 msgstr " Muse "
 
-#: extensions/extension_manager.py:126 extensions/extension_manager.py:139
+#: extensions/extension_manager.py:134 extensions/extension_manager.py:147
 msgid "Extension thread waiting for {0} minutes"
 msgstr "Le thread d'extension attend {0} minutes"
 
-#: extensions/extension_manager.py:167
+#: extensions/extension_manager.py:175
 msgid "Coming up soon, we'll be listening to a new track from the {0} {1}."
 msgstr "Bientôt, nous écouterons un nouveau morceau du groupe {0} {1}."
 
-#: extensions/extension_manager.py:186
+#: extensions/extension_manager.py:194
 msgid "Extension failed for {0} with value '{1}': {2}"
 msgstr "L'extension a échoué pour {0} avec la valeur « {1} » : {2}"
 
-#: extensions/extension_manager.py:317
+#: extensions/extension_manager.py:338
 msgid "Extension \"{0}\" waiting for {1} minutes"
 msgstr "Extension « {0} » en attente depuis {1} minutes"
 
-#: extensions/extension_manager.py:368
+#: extensions/extension_manager.py:346
 msgid "Extension \"{0}\" ready"
 msgstr "Extension « {0} » prête"
 
@@ -547,19 +547,19 @@ msgid "We're going to start a new group of tracks from the {0} {1}."
 msgstr ""
 "Nous allons commencer un nouveau groupe de pistes à partir de {0} {1}."
 
-#: muse/muse.py:433
+#: muse/muse.py:445
 msgid "First let's hear about {0}"
 msgstr "Tout d'abord, parlons de {0}"
 
-#: muse/muse.py:435
+#: muse/muse.py:447
 msgid "But first, let's hear about {0}."
 msgstr "Mais tout d'abord, parlons de {0}"
 
-#: muse/muse.py:574
+#: muse/muse.py:586
 msgid " [already mentioned]"
 msgstr " [déjà mentionné]"
 
-#: muse/muse.py:725
+#: muse/muse.py:737
 msgid ""
 "We're having some technical difficulties in accessing our source for {0}. "
 "We'll try again later"
@@ -567,7 +567,7 @@ msgstr ""
 "Nous rencontrons des difficultés techniques pour accéder à notre source pour"
 " {0}. Nous réessayerons plus tard"
 
-#: muse/muse.py:729
+#: muse/muse.py:741
 msgid ""
 "It seems our writer for {0} is unexpectedly away at the moment. Did we "
 "forget to pay his salary again?"
@@ -575,18 +575,18 @@ msgstr ""
 "Il semble que notre rédacteur pour {0} soit absent en ce moment. Avons-nous "
 "encore oublié de lui verser son salaire ?"
 
-#: muse/muse.py:733
+#: muse/muse.py:745
 msgid ""
 "We've found problems with all of our {0} ideas. Please try again later."
 msgstr ""
 "Nous avons trouvé des problèmes avec toutes nos {0} idées. Veuillez "
 "réessayer plus tard."
 
-#: muse/muse.py:738
+#: muse/muse.py:750
 msgid "Something went wrong. We'll try to fix it soon."
 msgstr "Un problème s'est produit. Nous essaierons d'y remédier rapidement."
 
-#: muse/muse.py:804
+#: muse/muse.py:816
 msgid "Starting tracks:"
 msgstr "Pistes de début:"
 
@@ -1011,7 +1011,7 @@ msgid "Save"
 msgstr "Enregistrer"
 
 #: ui/composers_window.py:120 ui/composers_window.py:141
-#: ui/extensions_window.py:277 ui/personas_window.py:125
+#: ui/extensions_window.py:289 ui/personas_window.py:125
 #: ui/presets_window.py:146 ui/schedules_window.py:217
 msgid "Delete"
 msgstr "Supprimer"
@@ -1080,7 +1080,7 @@ msgstr "Date de fin avant de"
 msgid "No recent searches found."
 msgstr "Aucune recherche récente n'a été effectuée."
 
-#: ui/composers_window.py:538 ui/extensions_window.py:261
+#: ui/composers_window.py:538 ui/extensions_window.py:273
 #: ui/favorites_window.py:381 ui/favorites_window.py:516
 #: ui/history_window.py:220 ui/history_window.py:292
 #: ui/network_media_window.py:261 ui/search_window.py:433
@@ -1207,98 +1207,98 @@ msgstr "Configuration enregistrée avec succès"
 msgid "Failed to save configuration"
 msgstr "Impossible d'enregistrer la configuration"
 
-#: ui/extensions_window.py:71
+#: ui/extensions_window.py:72
 msgid "Extension Settings"
 msgstr "Paramètres d'extension"
 
-#: ui/extensions_window.py:77
+#: ui/extensions_window.py:78
 msgid "Thread Status"
 msgstr "État du fil"
 
-#: ui/extensions_window.py:82
+#: ui/extensions_window.py:83
 msgid "Click Check Status to see thread state"
 msgstr "Cliquez sur l'état de vérification pour voir l'état du thread"
 
-#: ui/extensions_window.py:88
+#: ui/extensions_window.py:89
 msgid "Check Status"
 msgstr "Vérifier l'état"
 
-#: ui/extensions_window.py:94 ui/extensions_window.py:185
+#: ui/extensions_window.py:95 ui/extensions_window.py:188
 msgid "Strategy"
 msgstr "Stratégie"
 
-#: ui/extensions_window.py:105
+#: ui/extensions_window.py:106
 msgid "Clear History"
 msgstr "Effacer l' historique"
 
-#: ui/extensions_window.py:111
+#: ui/extensions_window.py:112
 msgid "Statistics"
 msgstr "Statistiques"
 
-#: ui/extensions_window.py:177
+#: ui/extensions_window.py:180
 msgid "Date"
 msgstr "Date"
 
-#: ui/extensions_window.py:179
+#: ui/extensions_window.py:182
 msgid "Published"
 msgstr "Publié"
 
-#: ui/extensions_window.py:183
+#: ui/extensions_window.py:186
 msgid "Duration"
 msgstr "Durée"
 
-#: ui/extensions_window.py:187
+#: ui/extensions_window.py:190
 msgid "Attribute"
 msgstr "Attribut"
 
-#: ui/extensions_window.py:189
+#: ui/extensions_window.py:192
 msgid "Search Query"
 msgstr "Recherche Requête"
 
-#: ui/extensions_window.py:191
+#: ui/extensions_window.py:196
 msgid "Actions"
 msgstr "Actions"
 
-#: ui/extensions_window.py:205 ui/extensions_window.py:445
-#: ui/extensions_window.py:455
+#: ui/extensions_window.py:210 ui/extensions_window.py:460
+#: ui/extensions_window.py:470
 msgid "N/A"
 msgstr "Sans objet"
 
-#: ui/extensions_window.py:290
+#: ui/extensions_window.py:302
 msgid "Total Extensions: {}"
 msgstr "Total des extensions : {}"
 
-#: ui/extensions_window.py:296
+#: ui/extensions_window.py:308
 msgid "Average Duration: {}"
 msgstr "Durée moyenne: {}"
 
-#: ui/extensions_window.py:298
+#: ui/extensions_window.py:310
 msgid "Average Duration: N/A"
 msgstr "Durée moyenne: S.O."
 
-#: ui/extensions_window.py:313
+#: ui/extensions_window.py:328
 msgid "Confirm Clear"
 msgstr "Confirmer Effacer"
 
-#: ui/extensions_window.py:314
+#: ui/extensions_window.py:329
 msgid "Are you sure you want to clear all extension history?"
 msgstr "Voulez-vous vraiment effacer tout l'historique de l'extension ?"
 
-#: ui/extensions_window.py:344 ui/personas_window.py:363
+#: ui/extensions_window.py:359 ui/personas_window.py:363
 msgid "Confirm Delete"
 msgstr "Confirmer Supprimer"
 
-#: ui/extensions_window.py:345
+#: ui/extensions_window.py:360
 msgid "Are you sure you want to delete this extension?"
 msgstr "Voulez-vous vraiment supprimer cette extension ?"
 
-#: ui/extensions_window.py:361
+#: ui/extensions_window.py:376
 msgid "No original filename or id found in extension data"
 msgstr ""
 "Aucun nom de fichier ou identifiant d'origine n'a été trouvé dans les "
 "données d'extension."
 
-#: ui/extensions_window.py:376 ui/favorites_window.py:603
+#: ui/extensions_window.py:391 ui/favorites_window.py:603
 msgid ""
 "Tip: If you've recently added or moved files, try checking 'Overwrite Cache'"
 " in the search options."
@@ -1306,59 +1306,59 @@ msgstr ""
 "Conseil : si vous avez récemment ajouté ou déplacé des fichiers, essayez de "
 "cocher « Remplacer le cache » dans les options de recherche."
 
-#: ui/extensions_window.py:383
+#: ui/extensions_window.py:398
 msgid "No extension thread running"
 msgstr "Pas de visserie d'extension"
 
-#: ui/extensions_window.py:385
+#: ui/extensions_window.py:400
 msgid "Extension thread terminated"
 msgstr "Visserie d'extension terminé"
 
-#: ui/extensions_window.py:387
+#: ui/extensions_window.py:402
 msgid "Extension thread running"
 msgstr "Visserie d'extension en cours"
 
-#: ui/extensions_window.py:389
+#: ui/extensions_window.py:404
 msgid " (with pending jobs)"
 msgstr " (avec emplois en attente)"
 
-#: ui/extensions_window.py:391
+#: ui/extensions_window.py:406
 msgid " (processing delayed operation)"
 msgstr " (traitement des opérations retardées)"
 
-#: ui/extensions_window.py:404
+#: ui/extensions_window.py:419
 msgid "Extension Details"
 msgstr "Détails de l'extension"
 
-#: ui/extensions_window.py:438
+#: ui/extensions_window.py:453
 msgid "Published:"
 msgstr "Publié :"
 
-#: ui/extensions_window.py:451
+#: ui/extensions_window.py:466
 msgid "Duration:"
 msgstr "Durée:"
 
-#: ui/extensions_window.py:461
+#: ui/extensions_window.py:476
 msgid "Strategy:"
 msgstr "Stratégie :"
 
-#: ui/extensions_window.py:469
+#: ui/extensions_window.py:484
 msgid "Attribute:"
 msgstr "Attribut :"
 
-#: ui/extensions_window.py:477
+#: ui/extensions_window.py:492
 msgid "Search Query:"
 msgstr "Demande de recherche :"
 
-#: ui/extensions_window.py:485
+#: ui/extensions_window.py:510
 msgid "Description:"
 msgstr "Description:"
 
-#: ui/extensions_window.py:493
+#: ui/extensions_window.py:518
 msgid "File:"
 msgstr "Fichier :"
 
-#: ui/auth/password_admin_window.py:251 ui/extensions_window.py:500
+#: ui/auth/password_admin_window.py:251 ui/extensions_window.py:532
 #: ui/favorites_window.py:699
 msgid "Close"
 msgstr "Fermer"
@@ -1683,9 +1683,9 @@ msgstr "Êtes-vous sûr de vouloir supprimer le personnage « {} » ?"
 msgid "Failed to remove persona from manager."
 msgstr "Impossible de supprimer le persona du gestionnaire."
 
-#: ui/personas_window.py:378 ui/personas_window.py:446
-#: ui/personas_window.py:491 ui/playlist_window.py:223
-#: ui/playlist_window.py:375
+#: ui/extensions_window.py:504 ui/personas_window.py:378
+#: ui/personas_window.py:446 ui/personas_window.py:491
+#: ui/playlist_window.py:223 ui/playlist_window.py:375
 msgid "Success"
 msgstr "Succès"
 
@@ -2000,7 +2000,7 @@ msgstr "Parlez texte"
 msgid "Speak File"
 msgstr "Parlez un fichier"
 
-#: ui/tts_window.py:91
+#: ui/extensions_window.py:194 ui/tts_window.py:91
 msgid "Status"
 msgstr "État"
 
@@ -2601,3 +2601,27 @@ msgstr "mois"
 #: utils/translations.py:73
 msgid "years"
 msgstr "années"
+
+#: muse/muse.py:389
+msgid "This {0} has {1} tracks in total."
+msgstr "Ce {0} contient {1} pistes au total."
+
+#: muse/muse.py:390
+msgid "There are {0} tracks in this {1}."
+msgstr "Il y a {0} pistes dans cet {1}."
+
+#: muse/muse.py:391
+msgid "We've got {0} tracks from this {1} coming up."
+msgstr "Nous avons {0} titres issus de cet {1} à venir."
+
+#: muse/muse.py:392
+msgid "This {0} contains {1} tracks."
+msgstr "Ce {0} contient {1} pistes."
+
+#: ui/extensions_window.py:501
+msgid "Status:"
+msgstr "Statut :"
+
+#: ui/extensions_window.py:504
+msgid "Failed"
+msgstr "Échec"

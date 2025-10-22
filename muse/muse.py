@@ -381,6 +381,18 @@ class Muse:
                 else:
                     dj_remark = _("We're going to start a new group of tracks from the {0} {1}.").format(
                         spot_profile.grouping_type.get_grouping_readable_name(), new_group)
+                
+                # Sometimes add information about the group length for variety
+                if random.random() < 0.7:  # 70% chance to mention group length
+                    group_name = spot_profile.grouping_type.get_grouping_readable_name().lower()
+                    length_remarks = [
+                        _("This {0} has {1} tracks in total.").format(group_name, group_count),
+                        _("There are {0} tracks in this {1}.").format(group_count, group_name),
+                        _("We've got {0} tracks from this {1} coming up.").format(group_count, group_name),
+                        _("This {0} contains {1} tracks.").format(group_name, group_count)
+                    ]
+                    dj_remark += " " + random.choice(length_remarks)
+                
                 self.say_at_some_point(dj_remark, spot_profile, None)
 
     def get_topic(self, previous_track, excluded_topics=[]):
