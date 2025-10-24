@@ -141,3 +141,5 @@ weasel==0.4.1
 webencodings==0.5.1
 Werkzeug==3.0.4
 wrapt==1.16.0
+pycaw==20240210
+comtypes==1.2.0

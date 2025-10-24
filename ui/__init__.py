@@ -2,6 +2,7 @@
 
 from ui.app_actions import AppActions
 from ui.app_style import AppStyle
+from ui.audio_device_window import AudioDeviceWindow
 from ui.base_window import BaseWindow
 from ui.composers_window import ComposersWindow
 from ui.extensions_window import ExtensionsWindow
@@ -20,6 +21,7 @@ from ui.weather_window import WeatherWindow
 __all__ = [
     'AppActions',
     'AppStyle',
+    'AudioDeviceWindow',
     'BaseWindow',
     'ComposersWindow',
     'ExtensionsWindow',

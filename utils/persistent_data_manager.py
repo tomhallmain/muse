@@ -7,6 +7,7 @@ from ui.composers_window import ComposersWindow
 from ui.favorites_window import FavoritesWindow
 from ui.playlist_window import MasterPlaylistWindow
 from ui.search_window import SearchWindow
+from utils.audio_device_manager import AudioDeviceManager
 
 
 class PersistentDataManager:
@@ -21,6 +22,7 @@ class PersistentDataManager:
         SearchWindow.store_recent_searches()
         ComposersWindow.store_recent_searches()
         FavoritesWindow.store_favorites()
+        AudioDeviceManager.store_settings()
 
     @staticmethod
     def load():
@@ -34,4 +36,5 @@ class PersistentDataManager:
         SearchWindow.load_recent_searches()
         ComposersWindow.load_recent_searches()
         FavoritesWindow.load_favorites()
+        AudioDeviceManager.load_settings()
 

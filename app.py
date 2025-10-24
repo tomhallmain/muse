@@ -22,6 +22,7 @@ from ui.auth.password_admin_window import PasswordAdminWindow
 from ui.auth.password_utils import require_password
 from ui.app_actions import AppActions
 from ui.app_style import AppStyle
+from ui.audio_device_window import AudioDeviceWindow
 from ui.blacklist_window import BlacklistWindow
 from ui.composers_window import ComposersWindow
 from ui.configuration_window import ConfigurationWindow
@@ -164,6 +165,7 @@ class App():
         self.tools_menu.add_command(label=_("Weather"), command=self.open_weather_window)
         self.tools_menu.add_command(label=_("Text to Speech"), command=self.open_tts_window)
         self.tools_menu.add_command(label=_("Timer"), command=self.open_timer_window)
+        self.tools_menu.add_command(label=_("Audio Devices"), command=self.open_audio_device_window)
         self.tools_menu.add_separator()
         self.tools_menu.add_command(label=_("Configuration"), command=self.open_configuration_window)
         self.tools_menu.add_command(label=_("Security Configuration"), command=self.open_password_admin_window)
@@ -347,6 +349,13 @@ class App():
         self.master.update()
         # self.close_autocomplete_popups()
         
+        # Check for administrator privileges for audio device management (Windows only)
+        import platform
+        if platform.system() == "Windows":
+            from utils.admin_utils import is_admin
+            if not is_admin():
+                logger.debug("Application started without administrator privileges - audio device switching will be limited")
+        
         # Initialize blacklist
         BlacklistWindow.set_blacklist()
 
@@ -523,6 +532,17 @@ class App():
 
         # Update directory count when starting a new run
         self.update_directory_count(args.directories)
+
+        # Check and apply audio device settings before starting playback
+        try:
+            from utils.audio_device_manager import AudioDeviceManager
+            audio_manager = AudioDeviceManager()
+            audio_manager.check_and_apply_settings(toast_callback=self.toast)
+        except ImportError:
+            logger.debug("Audio device management not available (pycaw not installed)")
+        except Exception as e:
+            logger.error(f"Error checking audio device settings: {e}")
+            # Don't raise the exception to avoid breaking playback
 
         try:
             args.validate()
@@ -762,6 +782,13 @@ class App():
             tts_window = TTSWindow(self.master, self.app_actions)
         except Exception as e:
             logger.error(f"Exception opening TTS window: {e}")
+
+    def open_audio_device_window(self, event=None):
+        try:
+            audio_device_window = AudioDeviceWindow(self.master, self.app_actions)
+        except Exception as e:
+            logger.error(f"Exception opening audio device window: {e}")
+            self.alert(_("Error"), str(e), kind="error")
 
     @require_password(ProtectedActions.EDIT_FAVORITES)
     def open_favorites_window(self):
@@ -1048,6 +1075,7 @@ class App():
         print("Test not implemented")
         # from extensions import WikiOpenSearchAPI
         # print(WikiOpenSearchAPI().random_wiki())
+
 
 
 if __name__ == "__main__":
