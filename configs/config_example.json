@@ -282,6 +282,20 @@
             "simple_replacement": false
         }
     ],
+    "number_words": {
+        "de": {
+            "ones": {"0": "null", "1": "eins", "2": "zwei", "3": "drei", "4": "vier", "5": "fünf", "6": "sechs", "7": "sieben", "8": "acht", "9": "neun"},
+            "teens": {"10": "zehn", "11": "elf", "12": "zwölf", "13": "dreizehn", "14": "vierzehn", "15": "fünfzehn", "16": "sechzehn", "17": "siebzehn", "18": "achtzehn", "19": "neunzehn"},
+            "tens": {"20": "zwanzig", "30": "dreißig", "40": "vierzig", "50": "fünfzig", "60": "sechzig", "70": "siebzig", "80": "achtzig", "90": "neunzig"},
+            "hundred": "hundert",
+            "thousand": "tausend",
+            "million": "millionen",
+            "and": "und",
+            "approximately": "ungefähr",
+            "negative": "negativ",
+            "to": "bis"
+        }
+    },
     "coqui_tts_model": ["tts_models/multilingual/multi-dataset/xtts_v2", "Royston Min", "en"],
     "llm_model_name": "deepseek-r1:14b",
     "max_chunk_tokens": 200,

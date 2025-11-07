@@ -55,6 +55,7 @@ class Config:
         self.llm_model_name = "deepseek-r1:14b"
 
         self.text_cleaner_ruleset = []
+        self.number_words = {}  # Locale-specific number word configurations
         self.coqui_tts_location = ""
         self.coqui_tts_model = ("tts_models/multilingual/multi-dataset/xtts_v2", "Royston Min", "en")
         self.max_chunk_tokens = 200
@@ -132,6 +133,7 @@ class Config:
         self.set_values(dict,
             "muse_config",
             "news_api_source_trustworthiness",
+            "number_words",
         )
         self.set_directories(
             "prompts_directory",
