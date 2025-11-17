@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 import json
+import math
 import random
 import threading
 import time
@@ -96,29 +97,73 @@ class LLM:
     DEFAULT_TIMEOUT = 180
     DEFAULT_SYSTEM_PROMPT_DROP_RATE = 0.9  # 90% chance to drop system prompt
     CHECK_INTERVAL = 0.1  # How often to check for cancellation
+    FAILURE_THRESHOLD = 3  # Number of consecutive failures before considering LLM unavailable
+    DEFAULT_STATE = "local"  # Default state key for instances without a specific state
+    
+    # Class-level failure tracking: maps state keys to failure counts
+    _failure_counts = {}
 
-    def __init__(self, model_name="deepseek-r1:14b", run_context=None):
+    def __init__(self, model_name="deepseek-r1:14b", run_context=None, state_key=None):
         self.model_name = model_name
         self.run_context = run_context
+        self.state_key = state_key if state_key is not None else LLM.DEFAULT_STATE
         self._cancelled = False
         self._result = None
         self._exception = None
         self._thread = None
-        self.failure_count = 0  # Track consecutive LLM failures
-        logger.info(f"Using LLM model: {self.model_name}")
+        logger.info(f"Using LLM model: {self.model_name} (state: {self.state_key})")
+
+    @classmethod
+    def _get_failure_count_for_state(cls, state_key):
+        """Get the failure count for a specific state."""
+        return cls._failure_counts.get(state_key, 0)
+
+    @classmethod
+    def _increment_failure_count_for_state(cls, state_key):
+        """Increment the failure count for a specific state."""
+        if state_key not in cls._failure_counts:
+            cls._failure_counts[state_key] = 0
+        cls._failure_counts[state_key] += 1
+        logger.warning(f"LLM failure count increased to {cls._failure_counts[state_key]} for state '{state_key}'")
+
+    @classmethod
+    def _reset_failure_count_for_state(cls, state_key):
+        """Reset the failure count for a specific state."""
+        if state_key in cls._failure_counts and cls._failure_counts[state_key] > 0:
+            logger.info(f"Resetting LLM failure count from {cls._failure_counts[state_key]} to 0 for state '{state_key}'")
+        cls._failure_counts[state_key] = 0
+
+    @classmethod
+    def _is_failing_for_state(cls, state_key):
+        """Check if the LLM is in a failing state for a specific state key."""
+        return cls._get_failure_count_for_state(state_key) >= cls.FAILURE_THRESHOLD
 
     def get_failure_count(self):
-        return self.failure_count
+        """Get the failure count for this instance's state."""
+        return self._get_failure_count_for_state(self.state_key)
 
     def increment_failure_count(self):
-        self.failure_count += 1
+        """Increment the failure count for this instance's state."""
+        self._increment_failure_count_for_state(self.state_key)
 
     def reset_failure_count(self):
-        self.failure_count = 0
+        """Reset the failure count for this instance's state."""
+        self._reset_failure_count_for_state(self.state_key)
+
+    def is_failing(self):
+        """Check if the LLM is in a failing state for this instance's state."""
+        return self._is_failing_for_state(self.state_key)
+
+    @classmethod
+    def is_failing_for_state(cls, state_key=None):
+        """Check if the LLM is in a failing state for a specific state (or default)."""
+        if state_key is None:
+            state_key = cls.DEFAULT_STATE
+        return cls._is_failing_for_state(state_key)
 
     def get_llm_penalty(self):
-        import math
-        return 1.0 / (1.0 + math.log2(1.0 + self.failure_count))
+        """Get penalty value based on failure count for this instance's state."""
+        return 1.0 / (1.0 + math.log2(1.0 + self.get_failure_count()))
 
     def ask(self, query, json_key=None, timeout=DEFAULT_TIMEOUT, context=None, system_prompt=None, system_prompt_drop_rate=DEFAULT_SYSTEM_PROMPT_DROP_RATE):
         """Ask the LLM a question and optionally extract a JSON value."""

@@ -223,9 +223,13 @@ class ExtensionManager:
         self._simple("album title: \"" + album + "\"", attr=TrackAttribute.ALBUM, strict=(album if strict else None))
 
     def extend_by_artist(self, artist: str, strict: bool = False) -> None:
-        prompt = self.prompter.get_prompt("search_artist")
-        result = self.llm.generate_json_get_value(prompt.replace("ARTIST", artist), "search_query")
-        query = result.response if result else artist
+        # Skip LLM call if it's been failing
+        if self.llm.is_failing():
+            query = artist
+        else:
+            prompt = self.prompter.get_prompt("search_artist")
+            result = self.llm.generate_json_get_value(prompt.replace("ARTIST", artist), "search_query")
+            query = result.response if result else artist
         self._simple(query, attr=TrackAttribute.ARTIST, strict=(artist if strict else None))
 
     def extend_by_composer(self, composer_name: str) -> None:
@@ -233,16 +237,24 @@ class ExtensionManager:
         self._simple("music composed by " + composer_name, attr=TrackAttribute.COMPOSER, strict=composer)
 
     def extend_by_genre(self, genre: str, strict: bool = False) -> None:
-        prompt = self.prompter.get_prompt("search_genre")
-        result = self.llm.generate_json_get_value(prompt.replace("GENRE", genre), "search_query")
-        query = result.response if result else genre
+        # Skip LLM call if it's been failing
+        if self.llm.is_failing():
+            query = genre
+        else:
+            prompt = self.prompter.get_prompt("search_genre")
+            result = self.llm.generate_json_get_value(prompt.replace("GENRE", genre), "search_query")
+            query = result.response if result else genre
         self._simple(query, attr=TrackAttribute.GENRE, strict=(genre if strict else None))
 
     def extend_by_instrument(self, instrument: str, genre: str = "Classical", strict: bool = False) -> None:
-        prompt = self.prompter.get_prompt("search_instrument")
-        prompt = prompt.replace("INSTRUMENT", instrument).replace("GENRE", genre)
-        result = self.llm.generate_json_get_value(prompt, "search_query")
-        query = result.response if result else f"{instrument} {genre}"
+        # Skip LLM call if it's been failing
+        if self.llm.is_failing():
+            query = f"{instrument} {genre}"
+        else:
+            prompt = self.prompter.get_prompt("search_instrument")
+            prompt = prompt.replace("INSTRUMENT", instrument).replace("GENRE", genre)
+            result = self.llm.generate_json_get_value(prompt, "search_query")
+            query = result.response if result else f"{instrument} {genre}"
         self._simple(query, attr=TrackAttribute.INSTRUMENT, strict=(instrument if strict else None))
 
     def _simple(self, q: str, m: int = 6, depth: int = 0, attr: Optional[TrackAttribute] = None, strict: Optional[Union[str, 'Composer']] = None) -> None:
