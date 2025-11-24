@@ -1,4 +1,5 @@
 
+import os
 import re
 
 from utils.config import config
@@ -378,6 +379,16 @@ class TextCleanerRuleset:
         # Load number words configuration from config if available
         if hasattr(config, 'number_words') and config.number_words:
             self._load_number_words_from_config(config.number_words)
+        
+        # Load English detection words from dictionary_en.txt in the tts directory
+        self.english_detection_words = set()
+        dictionary_path = os.path.join(os.path.dirname(__file__), 'dictionary_en.txt')
+        try:
+            with open(dictionary_path, 'r', encoding='utf-8') as f:
+                self.english_detection_words = set(line.strip().lower() for line in f if line.strip())
+            logger.info(f"Loaded {len(self.english_detection_words)} English detection words from {dictionary_path}")
+        except Exception as e:
+            logger.warning(f"Failed to load English detection words from {dictionary_path}: {e}")
     
     def _load_number_words_from_config(self, number_words_config):
         """
@@ -433,12 +444,68 @@ class TextCleanerRuleset:
                 logger.info(f"Registered number words for locale: {locale}")
             except Exception as e:
                 logger.warning(f"Failed to load number words for locale {locale}: {e}")
+    
+    def _is_likely_english(self, text):
+        """
+        Detect if text has a high probability of being English.
+        Uses heuristics including common English words and patterns.
+        
+        Args:
+            text: Text string to analyze
+            
+        Returns:
+            bool: True if text is likely English, False otherwise
+        """
+        if not text or not text.strip():
+            return False
+        
+        # Normalize text for analysis
+        text_lower = text.lower()
+        
+        # Extract words (alphanumeric sequences)
+        words = re.findall(r'\b[a-z]+\b', text_lower)
+        
+        if not words:
+            return False
+        
+        # Calculate English word matches if we have detection words loaded
+        english_word_count = 0
+        if self.english_detection_words:
+            english_word_count = sum(1 for word in words if word in self.english_detection_words)
+            # If we have a good ratio of English words, likely English
+            if len(words) > 0:
+                english_ratio = english_word_count / len(words)
+                if english_ratio > 0.3:  # At least 30% of words are common English words
+                    return True
+        
+        # Pattern-based heuristics for English
+        # Check for common English patterns and structures
+        english_patterns = [
+            r'\b(the|and|or|but|in|on|at|to|for|of|with|from|as|is|are|was|were|be|been|being|have|has|had|do|does|did|will|would|could|should|may|might|can|this|that|these|those|a|an)\b',
+            r'\bing\b',  # Common English suffix
+            r'\b(ed|ly|tion|ness|ment)\b',  # Common English suffixes
+        ]
+        
+        pattern_matches = 0
+        for pattern in english_patterns:
+            matches = len(re.findall(pattern, text_lower))
+            pattern_matches += matches
+        
+        # If we have significant pattern matches relative to word count, likely English
+        if len(words) > 0:
+            pattern_ratio = pattern_matches / len(words)
+            if pattern_ratio > 0.15:  # At least 15% pattern matches
+                return True
+        
+        # Default: if we can't determine, assume not English (conservative approach)
+        return False
         
     def clean(self, text, locale=None):
         for rule in self.rules:
             text = rule.apply(text, locale)
         # Convert numeric digits to words for TTS processing
-        text = NumberToWordsConverter.convert_text_numbers(text, locale)
+        if not self._is_likely_english(text):
+            text = NumberToWordsConverter.convert_text_numbers(text, locale)
         # Unfortunately, the quote characters from other languages are not well supported by most TTS models.
         text = text.replace("\u201c", '"').replace('\u201e', '"')
         text = text.replace("\u201c", '"').replace('\u201d', '"')
