@@ -1,9 +1,10 @@
 import time
 
-from tkinter import Toplevel, Frame, Label, Checkbutton, BooleanVar, StringVar, LEFT, W, messagebox
+from tkinter import Frame, Label, Checkbutton, BooleanVar, StringVar, LEFT, W, messagebox
 import tkinter.font as fnt
 from tkinter.ttk import Button, Entry
 
+from lib.multi_display import SmartToplevel
 from lib.tk_scroll_demo import ScrollFrame
 from library_data.composer import Composer, ComposersDataSearch, ComposersData
 from ui.app_style import AppStyle
@@ -30,8 +31,7 @@ class ComposerDetailsWindow():
 
     def __init__(self, master, composers_window, composer=None, dimensions="600x600"):
         # super().__init__()
-        ComposerDetailsWindow.top_level = Toplevel(master, bg=AppStyle.BG_COLOR)
-        ComposerDetailsWindow.top_level.geometry(dimensions)
+        ComposerDetailsWindow.top_level = SmartToplevel(persistent_parent=master, geometry=dimensions)
         self.master = ComposerDetailsWindow.top_level
         self.composers_window = composers_window
         self.app_actions = composers_window.app_actions
@@ -310,8 +310,7 @@ class ComposersWindow:
 
     def __init__(self, master, app_actions, dimensions="600x600"):
 
-        ComposersWindow.top_level = Toplevel(master, bg=AppStyle.BG_COLOR) 
-        ComposersWindow.top_level.geometry(dimensions)
+        ComposersWindow.top_level = SmartToplevel(persistent_parent=master, geometry=dimensions)
         ComposersWindow.set_title(_("Search Composers"))
         self.master = ComposersWindow.top_level
         self.master.resizable(True, True)

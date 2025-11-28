@@ -1,7 +1,8 @@
-from tkinter import Toplevel, Label, StringVar, LEFT, W, Text, BOTH, END, messagebox
+from tkinter import Label, StringVar, LEFT, W, Text, BOTH, END, messagebox
 from tkinter.ttk import Button, Entry, Frame, Scrollbar
 
 from extensions.open_weather import OpenWeatherAPI
+from lib.multi_display import SmartToplevel
 from lib.tk_scroll_demo import ScrollFrame
 from ui.app_style import AppStyle
 from ui.base_window import BaseWindow
@@ -40,8 +41,7 @@ class TrackDetailsWindow(BaseWindow):
 
     def __init__(self, master, app_actions, audio_track, dimensions="800x800"):
         super().__init__()
-        TrackDetailsWindow.top_level = Toplevel(master, bg=AppStyle.BG_COLOR)
-        TrackDetailsWindow.top_level.geometry(dimensions)
+        TrackDetailsWindow.top_level = SmartToplevel(persistent_parent=master, geometry=dimensions)
         TrackDetailsWindow.set_title(_("Track Details"))
         TrackDetailsWindow.AUDIO_TRACK = audio_track
         self.master = TrackDetailsWindow.top_level

@@ -1,9 +1,10 @@
 from datetime import datetime, time as dt_time
 
-from tkinter import Toplevel, Frame, Label, Checkbutton, BooleanVar, StringVar, messagebox, Listbox, Scrollbar
+from tkinter import Frame, Label, Checkbutton, BooleanVar, StringVar, messagebox, Listbox, Scrollbar
 from tkinter.ttk import Button, Entry, OptionMenu, Separator
 from tkinter.constants import W, BOTH, YES, END, SINGLE
 
+from lib.multi_display import SmartToplevel
 from ui.app_style import AppStyle
 from ui.base_window import BaseWindow
 from utils.translations import I18N
@@ -23,9 +24,7 @@ class AudioDeviceWindow(BaseWindow):
         super().__init__()
         
         # Create and configure top level window
-        AudioDeviceWindow.top_level = Toplevel(master)
-        AudioDeviceWindow.top_level.title(_("Audio Device Management"))
-        AudioDeviceWindow.top_level.geometry("800x600")
+        AudioDeviceWindow.top_level = SmartToplevel(persistent_parent=master, title=_("Audio Device Management"), geometry="800x600")
         AudioDeviceWindow.top_level.protocol("WM_DELETE_WINDOW", self.on_closing)
         
         self.master = AudioDeviceWindow.top_level

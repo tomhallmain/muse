@@ -1,10 +1,11 @@
 """Personas Window for managing DJ personas in the Muse application."""
 
-from tkinter import Toplevel, Frame, Label, StringVar, Text, messagebox, BooleanVar, Checkbutton
+from tkinter import Frame, Label, StringVar, Text, messagebox, BooleanVar, Checkbutton
 from tkinter.ttk import Button, Entry, OptionMenu, Treeview, Scrollbar, Notebook
 from tkinter.constants import W, E, N, S, BOTH, YES, END
 import tkinter.font as fnt
 
+from lib.multi_display import SmartToplevel
 from ui.app_style import AppStyle
 from ui.auth.password_utils import require_password
 from ui.base_window import BaseWindow
@@ -30,9 +31,7 @@ class PersonasWindow(BaseWindow):
         super().__init__()
         
         # Create and configure top level window
-        PersonasWindow.top_level = Toplevel(master)
-        PersonasWindow.top_level.title(_("DJ Personas"))
-        PersonasWindow.top_level.geometry("1200x800")
+        PersonasWindow.top_level = SmartToplevel(persistent_parent=master, title=_("DJ Personas"), geometry="1200x800")
         PersonasWindow.top_level.protocol("WM_DELETE_WINDOW", self.on_closing)
         
         self.master = PersonasWindow.top_level

@@ -1,9 +1,10 @@
-from tkinter import Toplevel, Frame, Label, Button, Entry, Scale, StringVar, IntVar, messagebox
+from tkinter import Frame, Label, Button, Entry, Scale, StringVar, IntVar, messagebox
 from tkinter.ttk import Frame as TtkFrame, Label as TtkLabel, Button as TtkButton, Entry as TtkEntry, Progressbar, LabelFrame
 from tkinter.constants import W, E, N, S, BOTH, YES, X, HORIZONTAL, DISABLED, NORMAL
 import threading
 import time
 
+from lib.multi_display import SmartToplevel
 from muse.timer import Timer
 from ui.base_window import BaseWindow
 from utils.logging_setup import get_logger
@@ -29,9 +30,7 @@ class TimerWindow(BaseWindow):
             print(f"Warning: Could not set playback instance for timer: {e}")
         
         # Create and configure top level window
-        self.top_level = Toplevel(master)
-        self.top_level.title("Timer")
-        self.top_level.geometry("400x360")
+        self.top_level = SmartToplevel(persistent_parent=master, title="Timer", geometry="400x360", auto_position=False)
         self.top_level.resizable(True, True)
         
         # Configure grid weights

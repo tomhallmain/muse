@@ -1,11 +1,12 @@
 from datetime import datetime
 import os
 
-from tkinter import Toplevel, Label, StringVar, Frame, messagebox
+from tkinter import Label, StringVar, Frame, messagebox
 from tkinter.ttk import Button, OptionMenu
 
 from extensions.extension_manager import ExtensionManager
 from extensions.library_extender import q20, q23
+from lib.multi_display import SmartToplevel
 from lib.tk_scroll_demo import ScrollFrame
 from library_data.library_data import LibraryDataSearch
 from ui.app_style import AppStyle
@@ -32,9 +33,7 @@ class ExtensionsWindow(BaseWindow):
         super().__init__()
         
         # Create and configure top level window
-        ExtensionsWindow.top_level = Toplevel(master)
-        ExtensionsWindow.top_level.title(_("Extensions"))
-        ExtensionsWindow.top_level.geometry("1400x800")
+        ExtensionsWindow.top_level = SmartToplevel(persistent_parent=master, title=_("Extensions"), geometry="1400x800")
         ExtensionsWindow.top_level.protocol("WM_DELETE_WINDOW", self.on_closing)
         
         self.master = ExtensionsWindow.top_level
@@ -415,8 +414,7 @@ class ExtensionDetailsWindow(BaseWindow):
         super().__init__()
         
         # Create and configure top level window
-        self.top_level = Toplevel(master)
-        self.top_level.title(_("Extension Details"))
+        self.top_level = SmartToplevel(persistent_parent=master, title=_("Extension Details"))
         self.top_level.geometry("800x600")
         self.top_level.protocol("WM_DELETE_WINDOW", self.on_closing)
         

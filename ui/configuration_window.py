@@ -1,7 +1,8 @@
-from tkinter import Toplevel, Frame, Label, Checkbutton, BooleanVar, StringVar, messagebox
+from tkinter import Frame, Label, Checkbutton, BooleanVar, StringVar, messagebox
 from tkinter.ttk import Notebook, Button, Entry
 from tkinter.constants import W, BOTH, YES
 
+from lib.multi_display import SmartToplevel
 from ui.app_style import AppStyle
 from ui.auth.password_utils import require_password
 from ui.base_window import BaseWindow
@@ -18,9 +19,7 @@ class ConfigurationWindow(BaseWindow):
         super().__init__()
         
         # Create and configure top level window
-        ConfigurationWindow.top_level = Toplevel(master)
-        ConfigurationWindow.top_level.title(_("Configuration Settings"))
-        ConfigurationWindow.top_level.geometry("1000x800")
+        ConfigurationWindow.top_level = SmartToplevel(persistent_parent=master, title=_("Configuration Settings"), geometry="1000x800")
         ConfigurationWindow.top_level.protocol("WM_DELETE_WINDOW", self.confirm_close)
         
         self.master = ConfigurationWindow.top_level

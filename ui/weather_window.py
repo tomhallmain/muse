@@ -1,7 +1,8 @@
-from tkinter import Toplevel, Label, StringVar, LEFT, W
+from tkinter import Label, StringVar, LEFT, W
 from tkinter.ttk import Button, Entry
 
 from extensions.open_weather import OpenWeatherAPI
+from lib.multi_display import SmartToplevel
 from lib.tk_scroll_demo import ScrollFrame
 from ui.app_style import AppStyle
 from ui.base_window import BaseWindow
@@ -22,8 +23,7 @@ class WeatherWindow(BaseWindow):
 
     def __init__(self, master, app_actions, dimensions="600x600"):
         super().__init__()
-        WeatherWindow.top_level = Toplevel(master, bg=AppStyle.BG_COLOR)
-        WeatherWindow.top_level.geometry(dimensions)
+        WeatherWindow.top_level = SmartToplevel(persistent_parent=master, geometry=dimensions)
         WeatherWindow.set_title(_("Weather"))
         self.master = WeatherWindow.top_level
         self.app_actions = app_actions

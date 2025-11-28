@@ -1,9 +1,10 @@
 import random
 
-from tkinter import Toplevel, Frame, Label, Checkbutton, BooleanVar, StringVar, LEFT, W
+from tkinter import Frame, Label, Checkbutton, BooleanVar, StringVar, LEFT, W
 import tkinter.font as fnt
 from tkinter.ttk import Button, Entry, OptionMenu
 
+from lib.multi_display import SmartToplevel
 from lib.tk_scroll_demo import ScrollFrame
 from library_data.favorite import Favorite
 from ui.app_style import AppStyle
@@ -227,8 +228,7 @@ class FavoritesWindow:
         return True
 
     def __init__(self, master, app_actions, library_data, dimensions="600x600"):
-        FavoritesWindow.top_level = Toplevel(master, bg=AppStyle.BG_COLOR) 
-        FavoritesWindow.top_level.geometry(dimensions)
+        FavoritesWindow.top_level = SmartToplevel(persistent_parent=master, geometry=dimensions)
         FavoritesWindow.set_title(_("Favorites"))
         self.master = FavoritesWindow.top_level
         self.master.resizable(True, True)
@@ -622,9 +622,7 @@ class FavoriteWindow:
     Window to view and edit a specific favorite.
     """
     def __init__(self, master, favorites_window, favorite, library_data, is_new=False):
-        self.master = Toplevel(master, bg=AppStyle.BG_COLOR)
-        self.master.geometry("400x300")
-        self.master.title(_("Favorite Details"))
+        self.master = SmartToplevel(persistent_parent=master, geometry="400x300", title=_("Favorite Details"))
         self.favorites_window = favorites_window
         self.favorite = favorite
         self.library_data = library_data

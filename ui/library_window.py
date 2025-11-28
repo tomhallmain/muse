@@ -1,6 +1,7 @@
-from tkinter import Toplevel, Label, StringVar, Frame, Entry
+from tkinter import Label, StringVar, Frame, Entry
 from tkinter.ttk import OptionMenu, Treeview, Scrollbar
 
+from lib.multi_display import SmartToplevel
 from ui.app_style import AppStyle
 from ui.base_window import BaseWindow
 from utils.globals import TrackAttribute
@@ -22,9 +23,7 @@ class LibraryWindow(BaseWindow):
         super().__init__()
         
         # Create and configure top level window
-        LibraryWindow.top_level = Toplevel(master)
-        LibraryWindow.top_level.title(_("Library"))
-        LibraryWindow.top_level.geometry("1000x600")
+        LibraryWindow.top_level = SmartToplevel(persistent_parent=master, title=_("Library"), geometry="1000x600")
         LibraryWindow.top_level.protocol("WM_DELETE_WINDOW", self.on_closing)
         
         self.master = LibraryWindow.top_level

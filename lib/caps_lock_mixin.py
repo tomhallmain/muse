@@ -38,7 +38,7 @@ class CapsLockMixin:
     
     def _create_caps_lock_label(self, parent_frame):
         """Create the caps lock indicator label."""
-        from utils.app_style import AppStyle
+        from ui.app_style import AppStyle
         from tkinter import Label
         
         # Create a Label widget (not using parent_frame.__class__)

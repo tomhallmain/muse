@@ -1,6 +1,7 @@
-from tkinter import Toplevel, Frame, Label, StringVar, BooleanVar, Checkbutton, LEFT, W
+from tkinter import Frame, Label, StringVar, BooleanVar, Checkbutton, LEFT, W
 from tkinter.ttk import Button, Entry
 
+from lib.multi_display import SmartToplevel
 from lib.tk_scroll_demo import ScrollFrame
 from library_data.library_data import LibraryDataSearch
 from ui.auth.password_utils import require_password
@@ -105,8 +106,37 @@ class SearchWindow(BaseWindow):
 
     def __init__(self, master, app_actions, library_data, dimensions="1550x700"):
         super().__init__()
-        SearchWindow.top_level = Toplevel(master, bg=AppStyle.BG_COLOR) 
-        SearchWindow.top_level.geometry(dimensions)
+        # Get parent window position to determine positioning
+        parent_x = master.winfo_x()
+        parent_y = master.winfo_y()
+        
+        # Extract window dimensions
+        width, height = map(int, dimensions.split('x'))
+        
+        # Position at least 50 pixels away from the left side of the main window
+        offset_x = 50
+        new_x = parent_x + offset_x
+        
+        # Get screen width to check bounds
+        screen_width = master.winfo_screenwidth()
+        
+        # If window would go off-screen to the right, adjust so right edge is within bounds
+        if new_x + width > screen_width:
+            # Position so right edge is at screen edge (with small margin)
+            margin = 10
+            new_x = screen_width - width - margin
+            # Ensure we don't go negative (window too wide for screen)
+            if new_x < 0:
+                new_x = 0
+        
+        # Use default vertical offset
+        offset_y = 30
+        new_y = parent_y + offset_y
+        
+        # Create geometry string with custom positioning
+        positioned_geometry = f"{dimensions}+{new_x}+{new_y}"
+        
+        SearchWindow.top_level = SmartToplevel(persistent_parent=master, geometry=positioned_geometry, auto_position=False)
         SearchWindow.set_title(_("Search Library"))
         self.master = SearchWindow.top_level
         self.master.resizable(True, True)

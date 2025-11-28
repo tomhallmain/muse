@@ -1,6 +1,7 @@
-from tkinter import Toplevel, Frame, Label, StringVar, LEFT, RIGHT, W, Entry
+from tkinter import Frame, Label, StringVar, LEFT, RIGHT, W, Entry
 from tkinter.ttk import Button, OptionMenu
 
+from lib.multi_display import SmartToplevel
 from utils.globals import HistoryType, ProtectedActions
 from ui.auth.password_utils import require_password
 from lib.tk_scroll_demo import ScrollFrame
@@ -84,8 +85,7 @@ class HistoryWindow:
 
     def __init__(self, master, app_actions, library_data, dimensions="600x600"):
         logger.info(f"Opening HistoryWindow with dimensions {dimensions}")
-        HistoryWindow.top_level = Toplevel(master, bg=AppStyle.BG_COLOR) 
-        HistoryWindow.top_level.geometry(dimensions)
+        HistoryWindow.top_level = SmartToplevel(persistent_parent=master, geometry=dimensions)
         HistoryWindow.set_title(_("History"))
         self.master = HistoryWindow.top_level
         self.master.resizable(True, True)

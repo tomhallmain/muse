@@ -7,7 +7,7 @@ import traceback
 from tkinter import (
     BOTH, END, HORIZONTAL, N, NW, W, E, YES,
     BooleanVar, Checkbutton, Frame, Label, PhotoImage,
-    StringVar, Text, Toplevel, messagebox, Menu
+    StringVar, Text, messagebox, Menu
 )
 import tkinter.font as fnt
 from tkinter.ttk import Button, Entry, OptionMenu, Progressbar, Scale, Style
@@ -17,6 +17,7 @@ from utils.globals import Globals, PlaylistSortType, PlaybackMasterStrategy, Pro
 
 # Local imports - UI components
 from lib.autocomplete_entry import AutocompleteEntry, matches
+from lib.multi_display import SmartToplevel
 from library_data.library_data import LibraryData
 from ui.auth.password_admin_window import PasswordAdminWindow
 from ui.auth.password_utils import require_password
@@ -1004,8 +1005,9 @@ class App():
         y = 0
 
         # Create the toast on the top level
-        toast = Toplevel(self.master, bg=AppStyle.BG_COLOR)
-        toast.geometry(f'{width}x{height}+{int(x)}+{int(y)}')
+        toast = SmartToplevel(persistent_parent=self.master, bg=AppStyle.BG_COLOR, 
+                             geometry=f'{width}x{height}+{int(x)}+{int(y)}', 
+                             auto_position=False)
         self.container = Frame(toast, bg=AppStyle.BG_COLOR)
         self.container.pack(fill=BOTH, expand=YES)
         label = Label(

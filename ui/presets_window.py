@@ -1,9 +1,10 @@
 import os
 
-from tkinter import Toplevel, Frame, Label, StringVar, LEFT, W
+from tkinter import Frame, Label, StringVar, LEFT, W
 import tkinter.font as fnt
 from tkinter.ttk import Entry, Button
 
+from lib.multi_display import SmartToplevel
 from ui.app_style import AppStyle
 from ui.preset import Preset
 from utils.app_info_cache import app_info_cache
@@ -88,8 +89,7 @@ class PresetsWindow():
 
     def __init__(self, master, app_actions, construct_preset_callback,
                  set_widgets_from_preset_callback, dimensions=None):
-        PresetsWindow.top_level = Toplevel(master, bg=AppStyle.BG_COLOR) 
-        PresetsWindow.top_level.geometry(dimensions if dimensions else PresetsWindow.get_geometry())
+        PresetsWindow.top_level = SmartToplevel(persistent_parent=master, bg=AppStyle.BG_COLOR, geometry=dimensions if dimensions else PresetsWindow.get_geometry())
         PresetsWindow.set_title(_("Presets Window"))
         self.master = PresetsWindow.top_level
         self.app_actions = app_actions

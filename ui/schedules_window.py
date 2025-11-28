@@ -1,9 +1,10 @@
 import os
 
-from tkinter import Toplevel, Frame, Label, Checkbutton, OptionMenu, StringVar, BooleanVar, LEFT, W
+from tkinter import Frame, Label, Checkbutton, OptionMenu, StringVar, BooleanVar, LEFT, W
 import tkinter.font as fnt
 from tkinter.ttk import Entry, Button
 
+from lib.multi_display import SmartToplevel
 from muse.schedule import Schedule
 from muse.schedules_manager import schedules_manager
 from tts.speakers import speakers
@@ -24,8 +25,7 @@ class ScheduleModifyWindow(BaseWindow):
 
     def __init__(self, master, refresh_callback, schedule, dimensions="600x600"):
         super().__init__()
-        ScheduleModifyWindow.top_level = Toplevel(master, bg=AppStyle.BG_COLOR)
-        ScheduleModifyWindow.top_level.geometry(dimensions)
+        ScheduleModifyWindow.top_level = SmartToplevel(persistent_parent=master, geometry=dimensions)
         self.master = ScheduleModifyWindow.top_level
         self.refresh_callback = refresh_callback
         self.schedule = schedule if schedule is not None else Schedule()
@@ -161,9 +161,7 @@ class SchedulesWindow(BaseWindow):
 
     def __init__(self, master, toast_callback, runner_app_config=RunnerAppConfig()):
         super().__init__()
-        SchedulesWindow.top_level = Toplevel(master, bg=AppStyle.BG_COLOR)
-        SchedulesWindow.top_level.geometry(SchedulesWindow.get_geometry())
-        SchedulesWindow.top_level.title(_("Preset Schedules"))
+        SchedulesWindow.top_level = SmartToplevel(persistent_parent=master, geometry=SchedulesWindow.get_geometry(), title=_("Preset Schedules"))
         self.master = SchedulesWindow.top_level
         self.toast_callback = toast_callback
         self.filter_text = ""

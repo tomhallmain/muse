@@ -1,6 +1,7 @@
-from tkinter import Toplevel, Frame, Label, StringVar, BooleanVar, Checkbutton, LEFT, W
+from tkinter import Frame, Label, StringVar, BooleanVar, Checkbutton, LEFT, W
 from tkinter.ttk import Button, Entry
 
+from lib.multi_display import SmartToplevel
 from lib.tk_scroll_demo import ScrollFrame
 from library_data.library_data import LibraryData, LibraryDataSearch
 from ui.app_style import AppStyle
@@ -73,8 +74,7 @@ class NetworkMediaWindow(BaseWindow):
 
     def __init__(self, master, app_actions, dimensions="1550x700"):
         super().__init__()
-        NetworkMediaWindow.top_level = Toplevel(master, bg=AppStyle.BG_COLOR) 
-        NetworkMediaWindow.top_level.geometry(dimensions)
+        NetworkMediaWindow.top_level = SmartToplevel(persistent_parent=master, geometry=dimensions)
         NetworkMediaWindow.set_title(_("Search Library"))
         self.master = NetworkMediaWindow.top_level
         self.master.resizable(True, True)

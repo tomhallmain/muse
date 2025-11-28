@@ -1,9 +1,10 @@
 from typing import Callable, Optional
 
-from tkinter import Toplevel, Entry, Frame, Label, StringVar, filedialog, LEFT, W, BooleanVar, Checkbutton, Scrollbar, Listbox, IntVar, messagebox
+from tkinter import Entry, Frame, Label, StringVar, filedialog, LEFT, W, BooleanVar, Checkbutton, Scrollbar, Listbox, IntVar, messagebox
 import tkinter.font as fnt
 from tkinter.ttk import Button, Combobox
 
+from lib.multi_display import SmartToplevel
 from library_data.blacklist import BlacklistItem, Blacklist
 from ui.app_style import AppStyle
 from ui.auth.password_utils import require_password
@@ -23,8 +24,7 @@ class BlacklistModifyWindow():
     COL_0_WIDTH = 600
 
     def __init__(self, master, refresh_callback: Callable, blacklist_item: BlacklistItem, dimensions: str = "600x400"):
-        BlacklistModifyWindow.top_level = Toplevel(master, bg=AppStyle.BG_COLOR)
-        BlacklistModifyWindow.top_level.geometry(dimensions)
+        BlacklistModifyWindow.top_level = SmartToplevel(persistent_parent=master, geometry=dimensions)
         self.master = BlacklistModifyWindow.top_level
         self.refresh_callback = refresh_callback
         self.is_new_item = blacklist_item is None
@@ -328,9 +328,7 @@ If you are young, not sure, or even an adult, click the close button on this win
         return f"{width}x{height}"
 
     def __init__(self, master, app_actions):
-        BlacklistWindow.top_level = Toplevel(master, bg=AppStyle.BG_COLOR)
-        BlacklistWindow.top_level.title(_("Tags/Models Blacklist"))
-        BlacklistWindow.top_level.geometry(BlacklistWindow.get_geometry(is_gui=True))
+        BlacklistWindow.top_level = SmartToplevel(persistent_parent=master, title=_("Tags/Models Blacklist"), geometry=BlacklistWindow.get_geometry(is_gui=True))
 
         self.master = BlacklistWindow.top_level
         self.app_actions = app_actions

@@ -1,9 +1,10 @@
 from copy import deepcopy
 
-from tkinter import Frame, Label, Text, StringVar, Scale, Listbox, Button, Toplevel, simpledialog, Entry, Checkbutton, BooleanVar
+from tkinter import Frame, Label, Text, StringVar, Scale, Listbox, Button, simpledialog, Entry, Checkbutton, BooleanVar
 from tkinter.constants import W
 from tkinter.ttk import OptionMenu, Scale
 
+from lib.multi_display import SmartToplevel
 from utils.globals import PlaylistSortType, PlaybackMasterStrategy
 
 from muse.playback_config import PlaybackConfig
@@ -186,7 +187,7 @@ class MasterPlaylistWindow(BaseWindow):
 
     def open_new_playlist(self):
         """Open the new playlist creation window."""
-        new_window = Toplevel(self.master)
+        new_window = SmartToplevel(persistent_parent=self.master)
         NewPlaylistWindow(new_window, self.app_actions, self)
 
     def set_playlist(self, playback_config):
@@ -369,7 +370,7 @@ class NewPlaylistWindow(BaseWindow):
             if self.current_master_window:
                 self.current_master_window.add_playlist(playback_config)
         elif action == "new_master":
-            new_window = Toplevel(self.master)
+            new_window = SmartToplevel(persistent_parent=self.master)
             MasterPlaylistWindow(new_window, self.runner_app_config, [playback_config])
         
         messagebox.showinfo(_("Success"), _("Playlist created successfully"))

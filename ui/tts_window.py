@@ -2,7 +2,7 @@ import os
 
 from tkinter import (
     BOTH, END, WORD, X, LEFT, RIGHT,
-    BooleanVar, StringVar, Toplevel,
+    BooleanVar, StringVar,
     scrolledtext, filedialog
 )
 from tkinter.ttk import (
@@ -12,6 +12,7 @@ from tkinter.ttk import (
 
 from .base_window import BaseWindow
 from .app_style import AppStyle
+from lib.multi_display import SmartToplevel
 from tts.speakers import speakers
 from muse.voice import Voice
 from utils.translations import I18N
@@ -29,8 +30,7 @@ class TTSWindow(BaseWindow):
     
     def __init__(self, master, app_actions, dimensions="800x600"):
         super().__init__()
-        TTSWindow.top_level = Toplevel(master, bg=AppStyle.BG_COLOR)
-        TTSWindow.top_level.geometry(dimensions)
+        TTSWindow.top_level = SmartToplevel(persistent_parent=master, geometry=dimensions)
         TTSWindow.set_title(_("Text to Speech"))
         self.master = TTSWindow.top_level
         self.master.resizable(True, True)
