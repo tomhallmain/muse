@@ -131,7 +131,15 @@ class Playlist:
         return self.sorted_tracks[self.current_track_index + 1:self.current_track_index + 1 + count]
 
     def next_track(self, skip_grouping=False, places_from_current=0):
-        # NOTE - Modifies self.current_track_index and pending / played tracks properties
+        """Returns the next track, old grouping, and new grouping.
+        NOTE - Modifies self.current_track_index and pending / played tracks properties.
+
+        Args:
+            skip_grouping: If True, skip the grouping check
+            places_from_current: The number of places from the current track to get the next track
+        Returns:
+            tuple: (next_track, old_grouping, new_grouping)
+        """
         if len(self.sorted_tracks) == 0 or (self.current_track_index + places_from_current) >= len(self.sorted_tracks):
             return None, None, None
         self.print_upcoming("next_track before")
@@ -177,7 +185,15 @@ class Playlist:
         return next_track, old_grouping, new_grouping
 
     def upcoming_track(self, places_from_current=1):
-        # NOTE - Does not modify playlist properties
+        """Returns the upcoming track, old grouping, and new grouping.
+        NOTE - Does not modify playlist properties.
+        
+        Args:
+            places_from_current: The number of places from the current track to get the upcoming track
+        
+        Returns:
+            tuple: (upcoming_track, old_grouping, new_grouping)
+        """
         upcoming_track_index = self.current_track_index + places_from_current
         if len(self.sorted_tracks) == 0 or (upcoming_track_index) >= len(self.sorted_tracks):
             return None, None, None
@@ -211,6 +227,45 @@ class Playlist:
             return self.sorted_tracks[self.current_track_index]
         except IndexError:
             return None
+
+    def get_next_grouping(self):
+        """Get the next grouping that will be encountered in the playlist.
+        
+        This method finds the first upcoming track that belongs to a different group
+        than the current track's group. If no grouping change is found (all remaining
+        tracks are in the same group), returns None.
+        
+        Returns:
+            str or None: The name of the next grouping, or None if no grouping change found
+        """
+        if not self.sort_type.is_grouping_type():
+            return None
+        
+        if len(self.sorted_tracks) == 0 or self.current_track_index < 0:
+            return None
+        
+        # Get current track's grouping
+        current_track = self.current_track()
+        if current_track is None:
+            return None
+        
+        attr_getter_name = self.sort_type.getter_name_mapping()
+        current_track_attr = getattr(current_track, attr_getter_name)
+        if callable(current_track_attr):
+            current_track_attr = current_track_attr()
+        
+        # Iterate through upcoming tracks to find the first different grouping
+        for i in range(self.current_track_index + 1, len(self.sorted_tracks)):
+            upcoming_track = self.sorted_tracks[i]
+            upcoming_track_attr = getattr(upcoming_track, attr_getter_name)
+            if callable(upcoming_track_attr):
+                upcoming_track_attr = upcoming_track_attr()
+            
+            if upcoming_track_attr != current_track_attr:
+                return upcoming_track_attr
+        
+        # No grouping change found - all remaining tracks are in the same group
+        return None
 
     def sort(self, check_entire_playlist=False):
         """Sorts the playlist according to the specified sort type with optional memory-based shuffling.

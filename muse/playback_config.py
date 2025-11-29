@@ -94,6 +94,15 @@ class PlaybackConfig:
     def current_track(self):
         return self.get_list().current_track()
 
+    def upcoming_grouping(self):
+        """Get the next grouping that will be encountered in the playlist.
+        
+        Returns:
+            str or None: The name of the next grouping, or None if no grouping change found
+        """
+        l = self.get_list()
+        return l.get_next_grouping()
+
     def set_next_track_override(self, new_file):
         self.next_track_override = new_file
 

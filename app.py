@@ -177,6 +177,7 @@ class App():
             "update_next_up_callback": self.update_next_up_text,
             "update_prior_track_callback": self.update_previous_track_text,
             "update_spot_profile_topics_text": self.update_spot_profile_topics_text,
+            "update_upcoming_group_callback": self.update_upcoming_group_text,
             "update_progress_callback": self.update_progress_bar,
             "update_extension_status": self.update_label_extension_status,
             "update_album_artwork": self.update_album_artwork,
@@ -236,6 +237,9 @@ class App():
 
         self.label_previous_title = Label(self.sidebar)
         self.add_label(self.label_previous_title, _("Prior Track"), columnspan=3)
+
+        self.label_upcoming_group = Label(self.sidebar)
+        self.add_label(self.label_upcoming_group, _("Upcoming Group"), columnspan=3)
 
         self.label_muse = Label(self.sidebar)
         self.add_label(self.label_muse, _("Spot Details"), columnspan=3)
@@ -871,6 +875,28 @@ class App():
             previous_track_text = _("Previous Track: ") + previous_track_text
         text = Utils._wrap_text_to_fit_length(previous_track_text[:500], 90)
         self.label_previous_title["text"]   = text
+        self.master.update()
+
+    def update_upcoming_group_text(self, upcoming_group_text, grouping_type=None):
+        """Update the upcoming group label with the next group name.
+        
+        Args:
+            upcoming_group_text: The text to display for the upcoming group, or None/empty to clear
+            grouping_type: Optional PlaylistSortType to get the readable grouping name
+        """
+        if upcoming_group_text is None or upcoming_group_text.strip() == "":
+            upcoming_group_text = ""
+        else:
+            if grouping_type is not None:
+                grouping_name = grouping_type.get_grouping_readable_name()
+                if grouping_name:
+                    upcoming_group_text = _("Upcoming {0}: {1}").format(grouping_name, upcoming_group_text)
+                else:
+                    upcoming_group_text = _("Upcoming Group: {0}").format(upcoming_group_text)
+            else:
+                upcoming_group_text = _("Upcoming Group: {0}").format(upcoming_group_text)
+        text = Utils._wrap_text_to_fit_length(upcoming_group_text[:500], 90)
+        self.label_upcoming_group["text"] = text
         self.master.update()
 
     def update_spot_profile_topics_text(self, muse_text):

@@ -9,7 +9,7 @@ from library_data.media_track import MediaTrack
 from muse.playback_config import PlaybackConfig
 from muse.run_context import RunContext
 from utils.config import config
-from utils.globals import Globals
+from utils.globals import Globals, PlaylistSortType
 from utils.logging_setup import get_logger
 from utils.utils import Utils
 from utils.translations import I18N
@@ -339,6 +339,28 @@ class Playback:
                 self.ui_callbacks.update_prior_track_callback(spot_profile.get_previous_track_title())
             if self.ui_callbacks.update_spot_profile_topics_text is not None:
                 self.ui_callbacks.update_spot_profile_topics_text(spot_profile.get_topic_text())
+        
+        # Update upcoming group if using a grouping sort type
+        if self.ui_callbacks.update_upcoming_group_callback is not None:
+            try:
+                sort_type = self.get_grouping_type()
+                if sort_type and isinstance(sort_type, PlaylistSortType) and sort_type.is_grouping_type():
+                    # Get the next grouping that will be encountered in the playlist
+                    next_grouping = self._playback_config.upcoming_grouping()
+                    if next_grouping is not None:
+                        self.ui_callbacks.update_upcoming_group_callback(next_grouping, grouping_type=sort_type)
+                    else:
+                        # No grouping change found - all remaining tracks are in the same group
+                        self.ui_callbacks.update_upcoming_group_callback("")
+                else:
+                    # Not using a grouping sort type, clear the label
+                    self.ui_callbacks.update_upcoming_group_callback("")
+            except Exception as e:
+                logger.debug(f"Error updating upcoming group: {e}")
+                # Clear the label on error
+                if self.ui_callbacks.update_upcoming_group_callback is not None:
+                    self.ui_callbacks.update_upcoming_group_callback("")
+        
         if self.ui_callbacks.update_favorite_status is not None:
             self.ui_callbacks.update_favorite_status(self.track)
         if self.ui_callbacks.update_album_artwork is not None:
