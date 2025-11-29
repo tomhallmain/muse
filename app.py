@@ -422,6 +422,9 @@ class App():
                 if self.config_history_index > 0:
                     self.config_history_index -= 1
         app_info_cache.set("config_history_index", self.config_history_index)
+        # Store window position and virtual screen info
+        app_info_cache.set_display_position(self.master)
+        app_info_cache.set_virtual_screen_info(self.master)
         PersistentDataManager.store()
         app_info_cache.store()
 
@@ -433,6 +436,43 @@ class App():
         except Exception as e:
             logger.error(e)
             return RunnerAppConfig()
+
+    @staticmethod
+    def get_initial_window_geometry(root, default_geometry="1200x700"):
+        """
+        Get the initial window geometry from cache if available and valid.
+        This should be called immediately after creating the root window.
+        
+        Args:
+            root: The root Tk window
+            default_geometry: Default geometry string to use if no valid cache
+            
+        Returns:
+            str: Geometry string to use for the window
+        """
+        try:
+            # Ensure cache is loaded
+            PersistentDataManager.load()
+            
+            position_data = app_info_cache.get_display_position()
+            if position_data is None or not position_data.is_valid():
+                logger.debug("No valid cached window position found, using default")
+                return default_geometry
+            
+            # Get cached virtual screen info for validation
+            cached_virtual_screen = app_info_cache.get_virtual_screen_info()
+            
+            # Check if the position is still visible on any display
+            if position_data.is_visible_on_display(root, cached_virtual_screen):
+                geometry = position_data.get_geometry()
+                logger.debug(f"Using cached window position: {geometry}")
+                return geometry
+            else:
+                logger.debug(f"Cached window position is no longer visible on any display: {position_data}")
+                return default_geometry
+        except Exception as e:
+            logger.warning(f"Failed to get cached window position: {e}")
+            return default_geometry
 
     def one_config_away(self, change=1):
         assert type(self.config_history_index) == int, "History index must be an integer"
@@ -1114,7 +1154,9 @@ if __name__ == "__main__":
         assets = os.path.join(os.path.dirname(os.path.realpath(__file__)), "assets")
         icon = PhotoImage(file=os.path.join(assets, "icon.png"))
         root.iconphoto(False, icon)
-        root.geometry("1200x700")
+        # Get initial geometry from cache if available, otherwise use default
+        initial_geometry = App.get_initial_window_geometry(root, default_geometry="1200x700")
+        root.geometry(initial_geometry)
         # root.attributes('-fullscreen', True)
         root.resizable(1, 1)
         root.columnconfigure(0, weight=1)
