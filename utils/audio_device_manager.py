@@ -24,8 +24,10 @@ from typing import List, Dict, Optional, Tuple
 import threading
 
 from utils.logging_setup import get_logger
+from utils.translations import I18N
 
 logger = get_logger(__name__)
+_ = I18N._
 
 try:
     from pycaw.pycaw import AudioUtilities
@@ -57,6 +59,14 @@ except ImportError as e:
     AudioEndpointVolumeCallback = None
     comtypes = None
     comtypes_client = None
+
+# Try to import sounddevice for more reliable device detection
+try:
+    import sounddevice as sd
+    sounddevice_available = True
+except ImportError:
+    sounddevice_available = False
+    logger.debug("sounddevice not available. Install with: pip install sounddevice")
 
 
 class AudioDeviceManager:
@@ -491,50 +501,118 @@ class AudioDeviceManager:
             devices = self.list_devices()
             return devices[:limit]
     
-    def get_default_device(self) -> Optional[Dict[str, str]]:
+    def get_current_device(self) -> Optional[Dict[str, str]]:
         """
-        Get the current default audio output device.
+        Get the current active audio output device (not a placeholder).
+        
+        This method attempts to find the actual device that is currently being used,
+        filtering out generic "Default Device" placeholders that Windows may return.
         
         Returns:
-            Dictionary containing default device information, or None if not found
+            Dictionary containing current device information, or None if not found
         """
+        # Helper function to check if a device name is a placeholder
+        def is_placeholder_name(name: str) -> bool:
+            """Check if a device name is a generic placeholder."""
+            if not name:
+                return True
+            name_lower = name.lower().strip()
+            placeholder_names = ['default device', 'default audio device', 'default', 'unknown device']
+            return name_lower in placeholder_names or len(name_lower) < 3
+        
         try:
             # Method 1: Try using AudioUtilities.GetSpeakers() - this is the correct method
             if hasattr(AudioUtilities, 'GetSpeakers'):
                 default_device = AudioUtilities.GetSpeakers()
                 if default_device:
-                    device_info = {
-                        'id': getattr(default_device, 'id', 'default'),
-                        'name': getattr(default_device, 'FriendlyName', '') or 'Default Device',
-                        'description': getattr(default_device, 'Description', '') or 'Default Audio Device',
-                        'state': getattr(default_device, 'State', 0),
-                        'is_default': True
-                    }
-                    logger.debug(f"Found default device via GetSpeakers: {device_info['name']}")
-                    self._current_device = device_info
-                    return device_info
+                    device_id = getattr(default_device, 'id', None)
+                    device_name = getattr(default_device, 'FriendlyName', '') or getattr(default_device, 'name', '')
+                    
+                    # Even if name is a placeholder, try to match by device ID first
+                    if device_id:
+                        devices = self.list_devices()
+                        # Try to match by device ID (most reliable)
+                        for device in devices:
+                            if device['id'] == device_id:
+                                device['is_default'] = True
+                                logger.debug(f"Found current device via GetSpeakers (matched by ID): {device['name']}")
+                                self._current_device = device
+                                return device
+                        
+                        # If not found by ID, try matching by name (if name is not a placeholder)
+                        if not is_placeholder_name(device_name):
+                            for device in devices:
+                                if device['name'] == device_name:
+                                    device['is_default'] = True
+                                    logger.debug(f"Found current device via GetSpeakers (matched by name): {device['name']}")
+                                    self._current_device = device
+                                    return device
+                            
+                            # If not in filtered list but has a real name, return it
+                            device_info = {
+                                'id': device_id,
+                                'name': device_name,
+                                'description': getattr(default_device, 'Description', '') or device_name,
+                                'state': getattr(default_device, 'State', 0),
+                                'is_default': True
+                            }
+                            logger.debug(f"Found current device via GetSpeakers: {device_info['name']}")
+                            self._current_device = device_info
+                            return device_info
+                        else:
+                            logger.debug(f"GetSpeakers returned placeholder name but device ID {device_id[:50]}... - will try other methods")
+                    else:
+                        logger.debug(f"Skipping device from GetSpeakers: no device ID available")
             else:
                 logger.debug("GetSpeakers not available in this pycaw version")
         except Exception as e:
-            logger.debug(f"Could not get default device via GetSpeakers: {e}")
+            logger.debug(f"Could not get current device via GetSpeakers: {e}")
         
         # Method 2: Try GetDefaultAudioEndpoint if available
         try:
             if hasattr(AudioUtilities, 'GetDefaultAudioEndpoint'):
                 default_device = AudioUtilities.GetDefaultAudioEndpoint(0, 0)  # eRender, eConsole
                 if default_device:
-                    device_info = {
-                        'id': getattr(default_device, 'id', 'default'),
-                        'name': getattr(default_device, 'FriendlyName', '') or 'Default Device',
-                        'description': getattr(default_device, 'Description', '') or 'Default Audio Device',
-                        'state': getattr(default_device, 'State', 0),
-                        'is_default': True
-                    }
-                    logger.debug(f"Found default device via GetDefaultAudioEndpoint: {device_info['name']}")
-                    self._current_device = device_info
-                    return device_info
+                    device_id = getattr(default_device, 'id', None)
+                    device_name = getattr(default_device, 'FriendlyName', '') or getattr(default_device, 'name', '')
+                    
+                    # Even if name is a placeholder, try to match by device ID first
+                    if device_id:
+                        devices = self.list_devices()
+                        # Try to match by device ID (most reliable)
+                        for device in devices:
+                            if device['id'] == device_id:
+                                device['is_default'] = True
+                                logger.debug(f"Found current device via GetDefaultAudioEndpoint (matched by ID): {device['name']}")
+                                self._current_device = device
+                                return device
+                        
+                        # If not found by ID, try matching by name (if name is not a placeholder)
+                        if not is_placeholder_name(device_name):
+                            for device in devices:
+                                if device['name'] == device_name:
+                                    device['is_default'] = True
+                                    logger.debug(f"Found current device via GetDefaultAudioEndpoint (matched by name): {device['name']}")
+                                    self._current_device = device
+                                    return device
+                            
+                            # If not in filtered list but has a real name, return it
+                            device_info = {
+                                'id': device_id,
+                                'name': device_name,
+                                'description': getattr(default_device, 'Description', '') or device_name,
+                                'state': getattr(default_device, 'State', 0),
+                                'is_default': True
+                            }
+                            logger.debug(f"Found current device via GetDefaultAudioEndpoint: {device_info['name']}")
+                            self._current_device = device_info
+                            return device_info
+                        else:
+                            logger.debug(f"GetDefaultAudioEndpoint returned placeholder name but device ID {device_id[:50]}... - will try other methods")
+                    else:
+                        logger.debug(f"Skipping device from GetDefaultAudioEndpoint: no device ID available")
         except Exception as e:
-            logger.debug(f"Could not get default device via GetDefaultAudioEndpoint: {e}")
+            logger.debug(f"Could not get current device via GetDefaultAudioEndpoint: {e}")
         
         # Method 3: Try using Windows Registry to get the default audio device
         try:
@@ -561,20 +639,25 @@ class AudioDeviceManager:
                                 default_value = winreg.QueryValueEx(subkey, "{0.0.0.00000000}.{e06d8033-0db7-4b9f-bc56-5c2ce654c4d0}")
                                 if default_value[0] == 1:  # This is the default device
                                     # Get the device name
+                                    device_name = None
                                     try:
                                         device_name_value = winreg.QueryValueEx(subkey, "FriendlyName")
                                         device_name = device_name_value[0]
-                                        logger.debug(f"Found default device via Registry: {device_name}")
-                                        
-                                        # Find matching device in our list
-                                        devices = self.list_devices()
-                                        for device in devices:
-                                            if device['name'] == device_name:
-                                                device['is_default'] = True
-                                                self._current_device = device
-                                                return device
-                                        
-                                        # If not found in our list, create a device info entry
+                                    except FileNotFoundError:
+                                        pass  # FriendlyName not found, continue
+                                    
+                                    # Try to match by device ID first (subkey_name contains the device ID)
+                                    devices = self.list_devices()
+                                    for device in devices:
+                                        # Try matching by ID (subkey_name might match device ID)
+                                        if device['id'] == subkey_name or (device_name and device['name'] == device_name):
+                                            device['is_default'] = True
+                                            logger.debug(f"Found current device via Registry (matched by {'ID' if device['id'] == subkey_name else 'name'}): {device['name']}")
+                                            self._current_device = device
+                                            return device
+                                    
+                                    # If not found in our list but has a real name, create a device info entry
+                                    if device_name and not is_placeholder_name(device_name):
                                         device_info = {
                                             'id': subkey_name,
                                             'name': device_name,
@@ -582,11 +665,13 @@ class AudioDeviceManager:
                                             'state': 1,  # Assume active
                                             'is_default': True
                                         }
+                                        logger.debug(f"Found current device via Registry: {device_info['name']}")
                                         self._current_device = device_info
                                         return device_info
-                                        
-                                    except FileNotFoundError:
-                                        pass  # FriendlyName not found, continue
+                                    elif device_name:
+                                        logger.debug(f"Registry found default device but name is placeholder: {device_name}")
+                                    else:
+                                        logger.debug(f"Registry found default device but no FriendlyName available (ID: {subkey_name[:50]}...)")
                                         
                             except FileNotFoundError:
                                 pass  # Default value not found, continue
@@ -606,26 +691,88 @@ class AudioDeviceManager:
         except Exception as e:
             logger.debug(f"Error in Registry fallback: {e}")
         
-        # Method 4: Try to find the default device by checking all devices
+        # Method 4: Try to match device ID from GetSpeakers with our filtered list
+        # This handles the case where GetSpeakers returns a placeholder name but valid ID
+        try:
+            if hasattr(AudioUtilities, 'GetSpeakers'):
+                default_device = AudioUtilities.GetSpeakers()
+                if default_device:
+                    device_id = getattr(default_device, 'id', None)
+                    if device_id:
+                        devices = self.list_devices()
+                        # Try to find the device by matching the ID with GetAllDevices
+                        all_devices = AudioUtilities.GetAllDevices()
+                        for api_device in all_devices:
+                            try:
+                                api_device_id = getattr(api_device, 'id', None)
+                                if api_device_id == device_id:
+                                    # Found the matching device in GetAllDevices, now match with filtered list
+                                    api_device_name = getattr(api_device, 'FriendlyName', '') or getattr(api_device, 'name', '')
+                                    if not is_placeholder_name(api_device_name):
+                                        # Try to match by name with our filtered devices
+                                        for device in devices:
+                                            if device['name'] == api_device_name:
+                                                logger.debug(f"Found current device via GetSpeakers ID matching: {device['name']}")
+                                                device['is_default'] = True
+                                                self._current_device = device
+                                                return device
+                                        
+                                        # Try matching by ID
+                                        for device in devices:
+                                            if device['id'] == device_id:
+                                                logger.debug(f"Found current device via GetSpeakers ID matching (by ID): {device['name']}")
+                                                device['is_default'] = True
+                                                self._current_device = device
+                                                return device
+                                    break
+                            except Exception:
+                                continue
+        except Exception as e:
+            logger.debug(f"Error in GetSpeakers ID matching: {e}")
+        
+        # Method 5: Try to find the active device from our filtered list
         try:
             devices = self.list_devices()
-            logger.debug(f"Checking {len(devices)} devices to find default")
+            logger.debug(f"Checking {len(devices)} devices to find current device")
             
-            # Try to get the default device using a different approach
+            # First, try to find devices that are active (State == 1)
+            active_devices = [d for d in devices if d.get('state', 0) == 1]
+            if active_devices:
+                # Prefer devices that are not placeholders
+                for device in active_devices:
+                    if not is_placeholder_name(device.get('name', '')):
+                        logger.debug(f"Found current active device: {device['name']}")
+                        device['is_default'] = True
+                        self._current_device = device
+                        return device
+                
+                # If all active devices are placeholders, return the first active one
+                if active_devices:
+                    logger.debug(f"Using first active device (may be placeholder): {active_devices[0]['name']}")
+                    active_devices[0]['is_default'] = True
+                    self._current_device = active_devices[0]
+                    return active_devices[0]
+            
+            # If no active devices, try to match with devices from GetAllDevices
             all_devices = AudioUtilities.GetAllDevices()
             for device in all_devices:
                 try:
-                    # Check if this device is the default by trying to get its properties
+                    device_id = getattr(device, 'id', None)
                     device_name = getattr(device, 'FriendlyName', '') or getattr(device, 'name', '')
-                    if device_name:
-                        # Try to match with our filtered devices
-                        for our_device in devices:
-                            if our_device['name'] == device_name:
-                                # This might be the default device
-                                logger.debug(f"Potential default device found: {device_name}")
-                                our_device['is_default'] = True
-                                self._current_device = our_device
-                                return our_device
+                    device_state = getattr(device, 'State', 0)
+                    
+                    # Skip placeholders and inactive devices
+                    if is_placeholder_name(device_name) or device_state != 1:
+                        continue
+                    
+                    # Try to match with our filtered devices
+                    for our_device in devices:
+                        if our_device['id'] == device_id or our_device['name'] == device_name:
+                            logger.debug(f"Found current device via enumeration: {our_device['name']}")
+                            our_device['is_default'] = True
+                            self._current_device = our_device
+                            return our_device
+                            
                 except Exception as device_error:
                     logger.debug(f"Error checking device: {device_error}")
                     continue
@@ -633,8 +780,52 @@ class AudioDeviceManager:
         except Exception as e:
             logger.debug(f"Error in device enumeration: {e}")
         
-        # Final fallback: return None if we can't determine the default
-        logger.warning("Could not determine the current default audio device")
+        # Method 6: Try using sounddevice library (more reliable for device detection)
+        if sounddevice_available:
+            try:
+                default_output_id = sd.default.device['output']
+                if default_output_id is not None:
+                    device_info = sd.query_devices(default_output_id)
+                    device_name = device_info.get('name', '')
+                    
+                    if device_name and not is_placeholder_name(device_name):
+                        logger.debug(f"Found current device via sounddevice: {device_name}")
+                        
+                        # Try to match with our filtered device list
+                        devices = self.list_devices()
+                        for device in devices:
+                            # Try exact name match first
+                            if device['name'] == device_name:
+                                device['is_default'] = True
+                                logger.debug(f"Matched sounddevice device with filtered list: {device['name']}")
+                                self._current_device = device
+                                return device
+                            
+                            # Try partial name match (device names might vary slightly)
+                            if device_name.lower() in device['name'].lower() or device['name'].lower() in device_name.lower():
+                                device['is_default'] = True
+                                logger.debug(f"Matched sounddevice device (partial match): {device['name']}")
+                                self._current_device = device
+                                return device
+                        
+                        # If not found in filtered list, create device info entry
+                        device_info_dict = {
+                            'id': str(default_output_id),
+                            'name': device_name,
+                            'description': device_info.get('name', ''),
+                            'state': 1,  # Assume active if it's the default
+                            'is_default': True
+                        }
+                        logger.debug(f"Found current device via sounddevice (not in filtered list): {device_info_dict['name']}")
+                        self._current_device = device_info_dict
+                        return device_info_dict
+                    else:
+                        logger.debug(f"sounddevice returned placeholder device: {device_name}")
+            except Exception as e:
+                logger.debug(f"Error using sounddevice: {e}")
+        
+        # Final fallback: return None if we can't determine the current device
+        logger.warning("Could not determine the current audio device using any method")
         return None
     
     def switch_to_device(self, device_name: str) -> bool:
@@ -1258,12 +1449,13 @@ class AudioDeviceManager:
         
         return False
     
-    def check_and_apply_settings(self, toast_callback=None):
+    def check_and_apply_settings(self, app_actions=None):
         """
         Check and apply audio device settings based on current time and schedule.
+        Alerts the user if there's a device mismatch.
         
         Args:
-            toast_callback: Optional callback function to show toast notifications
+            app_actions: Optional AppActions instance for showing alerts and toasts
         """
         try:
             # Check if we have day/night devices configured
@@ -1292,34 +1484,77 @@ class AudioDeviceManager:
             
             # Get the target device for current time
             target_device = self.day_device if is_day_time else self.night_device
+            time_period = 'day' if is_day_time else 'night'
             
             if target_device:
                 # Check if we need to switch devices
-                current_default = self.get_default_device()
-                logger.info(f"Current default device: {current_default.get('name') if current_default else 'None'}")
-                logger.info(f"Target device for {'day' if is_day_time else 'night'} time: {target_device}")
+                current_default = self.get_current_device()
+                current_device_name = current_default.get('name') if current_default else None
                 
-                if current_default and current_default.get('name') != target_device:
-                    logger.info(f"Would switch audio device from '{current_default.get('name')}' to '{target_device}' for {'day' if is_day_time else 'night'} time")
+                logger.info(f"Current device: {current_device_name or 'Could not detect'}")
+                logger.info(f"Target device for {time_period} time: {target_device}")
+                
+                # Check for mismatch (case-insensitive comparison)
+                mismatch = False
+                device_detection_failed = False
+                
+                if current_device_name and target_device:
+                    # Use case-insensitive comparison since device names might vary in casing
+                    mismatch = current_device_name.lower() != target_device.lower()
+                elif not current_device_name and target_device:
+                    # Device detection failed but we have a target device - this is also a problem
+                    device_detection_failed = True
+                    mismatch = True  # Treat as mismatch so user gets warned
+                
+                if mismatch:
+                    if device_detection_failed:
+                        logger.warning(f"Could not detect current audio device. Expected device for {time_period} time: {target_device}")
+                        
+                        # Alert user if app_actions is available
+                        if app_actions and hasattr(app_actions, 'alert'):
+                            message = _("Audio Device Detection Failed") + "\n\n"
+                            message += _("Could not detect the current audio output device.") + "\n"
+                            message += _("Expected device for {0} time: {1}").format(time_period, target_device) + "\n\n"
+                            message += _("Please verify that your audio device is connected and turned on, and switch to the expected device manually if needed.")
+                            
+                            app_actions.alert(
+                                _("Audio Device Warning"),
+                                message,
+                                kind="warning"
+                            )
+                    else:
+                        logger.warning(f"Audio device mismatch: Current='{current_device_name}', Expected='{target_device}' for {time_period} time")
+                        
+                        # Alert user if app_actions is available
+                        if app_actions and hasattr(app_actions, 'alert'):
+                            message = _("Audio Device Mismatch") + "\n\n"
+                            message += _("Current device: {0}").format(current_device_name or 'Unknown') + "\n"
+                            message += _("Expected device for {0} time: {1}").format(time_period, target_device) + "\n\n"
+                            message += _("Please switch to the expected device manually if needed.")
+                            
+                            app_actions.alert(
+                                _("Audio Device Warning"),
+                                message,
+                                kind="warning"
+                            )
                     
                     # TODO: Audio device switching disabled until safe methods are validated
                     # Device switching methods need thorough testing before enabling
                     # to avoid potential system instability or unexpected behavior
-                    logger.warning("TODO: Audio device switching is disabled for safety")
-                    logger.warning("TODO: Enable device switching after validating safe methods")
+                    logger.warning("TODO: Audio device switching is disabled for safety - Enable device switching after validating safe methods")
                     
                     # DISABLED CODE BELOW - DO NOT ENABLE WITHOUT THOROUGH TESTING
                     # success = self.switch_to_device(target_device)
                     # if success:
                     #     logger.info(f"Successfully switched to audio device: {target_device}")
-                    #     if toast_callback:
-                    #         toast_callback(f"Switched to {target_device} for {'day' if is_day_time else 'night'} time")
+                    #     if app_actions and hasattr(app_actions, 'toast'):
+                    #         app_actions.toast(f"Switched to {target_device} for {time_period} time")
                     # else:
                     #     logger.warning(f"Failed to switch to audio device: {target_device}")
                 else:
                     logger.debug(f"Audio device already set correctly: {target_device}")
             else:
-                logger.warning(f"No target device configured for {'day' if is_day_time else 'night'} time")
+                logger.warning(f"No target device configured for {time_period} time")
                 
         except Exception as e:
             logger.error(f"Error checking audio device settings: {e}")
@@ -1463,10 +1698,10 @@ if __name__ == "__main__":
     for device in devices:
         print(f"  - {device['name']} ({'Default' if device['is_default'] else 'Available'})")
     
-    # Get current default device
-    default = manager.get_default_device()
-    if default:
-        print(f"\nCurrent default device: {default['name']}")
+    # Get current device
+    current = manager.get_current_device()
+    if current:
+        print(f"\nCurrent device: {current['name']}")
     
     # Example: Set up day/night switching
     # manager.set_day_night_schedule("Speakers", "Headphones")

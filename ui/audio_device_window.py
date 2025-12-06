@@ -294,12 +294,12 @@ class AudioDeviceWindow(BaseWindow):
                 device_text = f"★ {device['name']}"
                 self.device_listbox.insert(END, device_text)
             
-            # Get current default device
-            default_device = self.audio_manager.get_default_device()
-            if default_device:
+            # Get current device
+            current_device = self.audio_manager.get_current_device()
+            if current_device:
                 self.device_listbox.insert(END, "")
-                self.device_listbox.insert(END, f"Current Default: {default_device['name']}")
-                logger.info(f"Current default device: {default_device['name']}")
+                self.device_listbox.insert(END, f"Current Device: {current_device['name']}")
+                logger.info(f"Current device: {current_device['name']}")
             
         except Exception as e:
             logger.error(f"Error refreshing devices: {e}")

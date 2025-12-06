@@ -2,8 +2,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
-"POT-Creation-Date: 2025-11-29 16:32-0500\n"
-"PO-Revision-Date: 2025-11-29 16:32-0500\n"
+"POT-Creation-Date: 2025-12-06 16:07-0500\n"
+"PO-Revision-Date: 2025-12-06 16:07-0500\n"
 "Last-Translator: Translator Name <translator@example.com>\n"
 "Language-Team: fr Team <<EMAIL>>\n"
 "Language: fr\n"
@@ -98,6 +98,10 @@ msgstr "Texte à voix"
 msgid "Timer"
 msgstr "Minuterie"
 
+#: app.py:169
+msgid "Audio Devices"
+msgstr "Appareils audio"
+
 #: app.py:171
 msgid "Configuration"
 msgstr "Configuration"
@@ -141,6 +145,10 @@ msgstr "Prochaine étape"
 #: app.py:239
 msgid "Prior Track"
 msgstr "Piste antérieure"
+
+#: app.py:242
+msgid "Upcoming Group"
+msgstr "Groupe à venir"
 
 #: app.py:245
 msgid "Spot Details"
@@ -225,19 +233,19 @@ msgstr "Confirmer Quitter"
 msgid "Would you like to quit the application?"
 msgstr "Souhaitez-vous quitter l'application ?"
 
-#: app.py:555
+#: app.py:595
 msgid "Confirm Run"
 msgstr "Confirmer l'exécution"
 
-#: app.py:556
+#: app.py:596
 msgid "Are you sure you want to proceed?"
 msgstr "Êtes-vous sûr de vouloir continuer ?"
 
-#: app.py:619
+#: app.py:659
 msgid "Copied album art to clipboard."
 msgstr "Copie de la pochette d'album dans le presse-papiers."
 
-#: app.py:743 app.py:796 app.py:980 app.py:991 app.py:1021
+#: app.py:783 app.py:836 app.py:1020 app.py:1031 app.py:1061
 #: ui/audio_device_window.py:336 ui/audio_device_window.py:348
 #: ui/audio_device_window.py:356 ui/audio_device_window.py:361
 #: ui/audio_device_window.py:370 ui/audio_device_window.py:397
@@ -254,51 +262,59 @@ msgstr "Copie de la pochette d'album dans le presse-papiers."
 msgid "Error"
 msgstr "Erreur"
 
-#: app.py:850 muse/muse_spot_profile.py:213
+#: app.py:890 muse/muse_spot_profile.py:213
 msgid "Track: "
 msgstr "Piste : "
 
-#: app.py:851
+#: app.py:891
 msgid "Album: "
 msgstr "Album : "
 
-#: app.py:852
+#: app.py:892
 msgid "Artist: "
 msgstr "Artiste : "
 
-#: app.py:853
+#: app.py:893
 msgid "Composer: "
 msgstr "Compositeur : "
 
-#: app.py:854
+#: app.py:894
 msgid "Year: "
 msgstr "Année : "
 
-#: app.py:866
+#: app.py:906
 msgid "Next Up: "
 msgstr "Prochaine étape : "
 
-#: app.py:875 muse/muse_spot_profile.py:214
+#: app.py:915 muse/muse_spot_profile.py:214
 msgid "Previous Track: "
 msgstr "Piste précédente : "
 
-#: app.py:921
+#: app.py:933
+msgid "Upcoming {0}: {1}"
+msgstr "À venir {0} : {1}"
+
+#: app.py:935 app.py:937
+msgid "Upcoming Group: {0}"
+msgstr "Groupe à venir: {0}"
+
+#: app.py:961
 msgid "Directories: {0}"
 msgstr "Répertoires: {0}"
 
-#: app.py:930
+#: app.py:970
 msgid "DJ: "
 msgstr "DJ : "
 
-#: app.py:954
+#: app.py:994
 msgid "Staged Playlist: "
 msgstr "Liste de lecture mise en scène : "
 
-#: app.py:980
+#: app.py:1020
 msgid "Track not found in library for query: "
 msgstr "Piste non trouvée dans la bibliothèque pour la requête : "
 
-#: app.py:1113
+#: app.py:1153
 msgid " Muse "
 msgstr " Muse "
 
@@ -314,11 +330,11 @@ msgstr "Bientôt, nous écouterons un nouveau morceau du groupe {0} {1}."
 msgid "Extension failed for {0} with value '{1}': {2}"
 msgstr "L'extension a échoué pour {0} avec la valeur « {1} » : {2}"
 
-#: extensions/extension_manager.py:350
+#: extensions/extension_manager.py:362
 msgid "Extension \"{0}\" waiting for {1} minutes"
 msgstr "Extension « {0} » en attente depuis {1} minutes"
 
-#: extensions/extension_manager.py:358
+#: extensions/extension_manager.py:370
 msgid "Extension \"{0}\" ready"
 msgstr "Extension « {0} » prête"
 
@@ -680,6 +696,105 @@ msgstr " et "
 msgid "*This text contains {0}, I can't read it but it looks interesting*"
 msgstr ""
 "*Ce texte contient {0}, je ne peux pas le lire mais il a l'air intéressant.*"
+
+#: ui/audio_device_window.py:27
+msgid "Audio Device Management"
+msgstr "Gestion des périphériques audio"
+
+#: ui/audio_device_window.py:104
+msgid "Available Audio Devices"
+msgstr "Périphériques audio disponibles"
+
+#: ui/audio_device_window.py:124
+msgid "Refresh Devices"
+msgstr "Actualiser les appareils"
+
+#: ui/audio_device_window.py:129
+msgid "Show all devices (including virtual)"
+msgstr ""
+"Afficher tous les périphériques (y compris les périphériques virtuels)"
+
+#: ui/audio_device_window.py:143
+msgid "Day/Night Device Switching"
+msgstr "Commutation jour/nuit"
+
+#: ui/audio_device_window.py:155
+msgid "Day Device:"
+msgstr "Dispositif de jour :"
+
+#: ui/audio_device_window.py:163
+msgid "Night Device:"
+msgstr "Dispositif nocturne :"
+
+#: ui/audio_device_window.py:175
+msgid "Day Start:"
+msgstr "Début de la journée :"
+
+#: ui/audio_device_window.py:191
+msgid "Night Start:"
+msgstr "Début de nuit :"
+
+#: ui/audio_device_window.py:208
+msgid "Enable automatic day/night switching"
+msgstr "Activer la commutation automatique jour/nuit"
+
+#: ui/audio_device_window.py:230
+msgid "Apply Settings"
+msgstr "Appliquer les paramètres"
+
+#: ui/audio_device_window.py:234
+msgid "Test Day/Night Switch"
+msgstr "Tester le commutateur jour/nuit"
+
+#: ui/audio_device_window.py:238 ui/auth/password_admin_window.py:264
+#: ui/extensions_window.py:530 ui/favorites_window.py:697
+msgid "Close"
+msgstr "Fermer"
+
+#: ui/audio_device_window.py:245 ui/audio_device_window.py:336
+#: ui/audio_device_window.py:361 ui/audio_device_window.py:405
+msgid "Audio device management not available"
+msgstr "Gestion des périphériques audio indisponible"
+
+#: ui/audio_device_window.py:246
+msgid "Install pycaw and comtypes to enable this feature"
+msgstr "Installez pycaw et comtypes pour activer cette fonctionnalité."
+
+#: ui/audio_device_window.py:262
+msgid "No audio devices found"
+msgstr "Aucun périphérique audio trouvé"
+
+#: ui/audio_device_window.py:344
+msgid "Audio device monitoring started"
+msgstr "Surveillance du périphérique audio démarrée"
+
+#: ui/audio_device_window.py:348
+msgid "Failed to start monitoring"
+msgstr "Échec du démarrage de la surveillance"
+
+#: ui/audio_device_window.py:352
+msgid "Audio device monitoring stopped"
+msgstr "Surveillance du périphérique audio arrêtée"
+
+#: ui/audio_device_window.py:370 ui/audio_device_window.py:415
+msgid "Please select both day and night devices"
+msgstr "Veuillez sélectionner les appareils de jour et de nuit."
+
+#: ui/audio_device_window.py:391
+msgid "Audio device settings applied successfully"
+msgstr "Paramètres du périphérique audio appliqués avec succès"
+
+#: ui/audio_device_window.py:397
+msgid "Failed to apply audio device settings"
+msgstr "Échec de l'application des paramètres du périphérique audio"
+
+#: ui/audio_device_window.py:439
+msgid "Switched to {} device for {} time"
+msgstr "Passage à l'appareil {} pendant {} temps"
+
+#: ui/audio_device_window.py:441
+msgid "Failed to switch audio device"
+msgstr "Échec de la commutation du périphérique audio"
 
 #: ui/blacklist_window.py:33
 msgid "Modify Blacklist Item: {0}"
@@ -1397,11 +1512,6 @@ msgstr "Description:"
 #: ui/extensions_window.py:516
 msgid "File:"
 msgstr "Fichier :"
-
-#: ui/audio_device_window.py:238 ui/auth/password_admin_window.py:264
-#: ui/extensions_window.py:530 ui/favorites_window.py:697
-msgid "Close"
-msgstr "Fermer"
 
 #: ui/favorites_window.py:203 ui/favorites_window.py:212
 #: ui/favorites_window.py:216
@@ -2632,111 +2742,38 @@ msgstr "mois"
 msgid "years"
 msgstr "années"
 
-#: app.py:169
-msgid "Audio Devices"
+#: utils/audio_device_manager.py:1515
+msgid "Audio Device Detection Failed"
+msgstr "Détection du périphérique audio échouée"
+
+#: utils/audio_device_manager.py:1516
+msgid "Could not detect the current audio output device."
+msgstr "Impossible de détecter le périphérique de sortie audio actuel."
+
+#: utils/audio_device_manager.py:1517 utils/audio_device_manager.py:1532
+msgid "Expected device for {0} time: {1}"
+msgstr "Dispositif attendu pendant {0} temps : {1}"
+
+#: utils/audio_device_manager.py:1518
+msgid ""
+"Please verify that your audio device is connected and turned on, and switch "
+"to the expected device manually if needed."
 msgstr ""
+"Veuillez vérifier que votre périphérique audio est connecté et allumé, puis "
+"passez manuellement au périphérique souhaité si nécessaire."
 
-#: app.py:242
-msgid "Upcoming Group"
-msgstr "Groupe à venir"
+#: utils/audio_device_manager.py:1521 utils/audio_device_manager.py:1536
+msgid "Audio Device Warning"
+msgstr "Avertissement concernant les appareils audio"
 
-#: app.py:893
-msgid "Upcoming {0}: {1}"
-msgstr "À venir {0} : {1}"
+#: utils/audio_device_manager.py:1530
+msgid "Audio Device Mismatch"
+msgstr "Incompatibilité des périphériques audio"
 
-#: app.py:895 app.py:897
-msgid "Upcoming Group: {0}"
-msgstr "Groupe à venir: {0}"
+#: utils/audio_device_manager.py:1531
+msgid "Current device: {0}"
+msgstr "Appareil actuel : {0}"
 
-#: ui/audio_device_window.py:27
-msgid "Audio Device Management"
-msgstr ""
-
-#: ui/audio_device_window.py:104
-msgid "Available Audio Devices"
-msgstr ""
-
-#: ui/audio_device_window.py:124
-msgid "Refresh Devices"
-msgstr ""
-
-#: ui/audio_device_window.py:129
-msgid "Show all devices (including virtual)"
-msgstr ""
-
-#: ui/audio_device_window.py:143
-msgid "Day/Night Device Switching"
-msgstr ""
-
-#: ui/audio_device_window.py:155
-msgid "Day Device:"
-msgstr ""
-
-#: ui/audio_device_window.py:163
-msgid "Night Device:"
-msgstr ""
-
-#: ui/audio_device_window.py:175
-msgid "Day Start:"
-msgstr ""
-
-#: ui/audio_device_window.py:191
-msgid "Night Start:"
-msgstr ""
-
-#: ui/audio_device_window.py:208
-msgid "Enable automatic day/night switching"
-msgstr ""
-
-#: ui/audio_device_window.py:230
-msgid "Apply Settings"
-msgstr ""
-
-#: ui/audio_device_window.py:234
-msgid "Test Day/Night Switch"
-msgstr ""
-
-#: ui/audio_device_window.py:245 ui/audio_device_window.py:336
-#: ui/audio_device_window.py:361 ui/audio_device_window.py:405
-msgid "Audio device management not available"
-msgstr ""
-
-#: ui/audio_device_window.py:246
-msgid "Install pycaw and comtypes to enable this feature"
-msgstr ""
-
-#: ui/audio_device_window.py:262
-msgid "No audio devices found"
-msgstr ""
-
-#: ui/audio_device_window.py:344
-msgid "Audio device monitoring started"
-msgstr ""
-
-#: ui/audio_device_window.py:348
-msgid "Failed to start monitoring"
-msgstr ""
-
-#: ui/audio_device_window.py:352
-msgid "Audio device monitoring stopped"
-msgstr ""
-
-#: ui/audio_device_window.py:370 ui/audio_device_window.py:415
-msgid "Please select both day and night devices"
-msgstr ""
-
-#: ui/audio_device_window.py:391
-msgid "Audio device settings applied successfully"
-msgstr ""
-
-#: ui/audio_device_window.py:397
-msgid "Failed to apply audio device settings"
-msgstr ""
-
-#: ui/audio_device_window.py:439
-msgid "Switched to {} device for {} time"
-msgstr ""
-
-#: ui/audio_device_window.py:441
-msgid "Failed to switch audio device"
-msgstr ""
+#: utils/audio_device_manager.py:1533
+msgid "Please switch to the expected device manually if needed."
+msgstr "Veuillez passer manuellement à l'appareil souhaité si nécessaire."

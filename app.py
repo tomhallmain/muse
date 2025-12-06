@@ -582,7 +582,7 @@ class App():
         try:
             from utils.audio_device_manager import AudioDeviceManager
             audio_manager = AudioDeviceManager()
-            audio_manager.check_and_apply_settings(toast_callback=self.toast)
+            audio_manager.check_and_apply_settings(app_actions=self.app_actions)
         except ImportError:
             logger.debug("Audio device management not available (pycaw not installed)")
         except Exception as e:

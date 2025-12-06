@@ -111,6 +111,7 @@ shellingham==1.5.4
 six==1.16.0
 smart-open==7.0.5
 soundfile==0.12.1
+sounddevice
 soupsieve==2.6
 soxr==0.5.0.post1
 spacy==3.8.2

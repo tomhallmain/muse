@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: APPLICATION 1.0\n"
 "Report-Msgid-Bugs-To: Translator Name <translator@example.com>\n"
-"POT-Creation-Date: 2025-11-29 16:28-0500\n"
-"PO-Revision-Date: 2025-11-29 16:28-0500\n"
+"POT-Creation-Date: 2025-12-06 15:43-0500\n"
+"PO-Revision-Date: 2025-12-06 15:43-0500\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -227,19 +227,19 @@ msgstr ""
 msgid "Would you like to quit the application?"
 msgstr ""
 
-#: app.py:555
+#: app.py:595
 msgid "Confirm Run"
 msgstr ""
 
-#: app.py:556
+#: app.py:596
 msgid "Are you sure you want to proceed?"
 msgstr ""
 
-#: app.py:619
+#: app.py:659
 msgid "Copied album art to clipboard."
 msgstr ""
 
-#: app.py:743 app.py:796 app.py:980 app.py:991 app.py:1021 ui/audio_device_window.py:336 ui/audio_device_window.py:348
+#: app.py:783 app.py:836 app.py:1020 app.py:1031 app.py:1061 ui/audio_device_window.py:336 ui/audio_device_window.py:348
 #: ui/audio_device_window.py:356 ui/audio_device_window.py:361 ui/audio_device_window.py:370 ui/audio_device_window.py:397
 #: ui/audio_device_window.py:400 ui/audio_device_window.py:405 ui/audio_device_window.py:415 ui/audio_device_window.py:441
 #: ui/audio_device_window.py:444 ui/auth/password_dialog.py:261 ui/blacklist_window.py:143 ui/composers_window.py:251
@@ -249,59 +249,59 @@ msgstr ""
 msgid "Error"
 msgstr ""
 
-#: app.py:850 muse/muse_spot_profile.py:213
+#: app.py:890 muse/muse_spot_profile.py:213
 msgid "Track: "
 msgstr ""
 
-#: app.py:851
+#: app.py:891
 msgid "Album: "
 msgstr ""
 
-#: app.py:852
+#: app.py:892
 msgid "Artist: "
 msgstr ""
 
-#: app.py:853
+#: app.py:893
 msgid "Composer: "
 msgstr ""
 
-#: app.py:854
+#: app.py:894
 msgid "Year: "
 msgstr ""
 
-#: app.py:866
+#: app.py:906
 msgid "Next Up: "
 msgstr ""
 
-#: app.py:875 muse/muse_spot_profile.py:214
+#: app.py:915 muse/muse_spot_profile.py:214
 msgid "Previous Track: "
 msgstr ""
 
-#: app.py:893
+#: app.py:933
 msgid "Upcoming {0}: {1}"
 msgstr ""
 
-#: app.py:895 app.py:897
+#: app.py:935 app.py:937
 msgid "Upcoming Group: {0}"
 msgstr ""
 
-#: app.py:921
+#: app.py:961
 msgid "Directories: {0}"
 msgstr ""
 
-#: app.py:930
+#: app.py:970
 msgid "DJ: "
 msgstr ""
 
-#: app.py:954
+#: app.py:994
 msgid "Staged Playlist: "
 msgstr ""
 
-#: app.py:980
+#: app.py:1020
 msgid "Track not found in library for query: "
 msgstr ""
 
-#: app.py:1113
+#: app.py:1153
 msgid " Muse "
 msgstr ""
 
@@ -317,11 +317,11 @@ msgstr ""
 msgid "Extension failed for {0} with value '{1}': {2}"
 msgstr ""
 
-#: extensions/extension_manager.py:350
+#: extensions/extension_manager.py:362
 msgid "Extension \"{0}\" waiting for {1} minutes"
 msgstr ""
 
-#: extensions/extension_manager.py:358
+#: extensions/extension_manager.py:370
 msgid "Extension \"{0}\" ready"
 msgstr ""
 
@@ -2301,6 +2301,38 @@ msgstr ""
 
 #: ui/auth/password_dialog.py:261
 msgid "Incorrect password"
+msgstr ""
+
+#: utils/audio_device_manager.py:1515
+msgid "Audio Device Detection Failed"
+msgstr ""
+
+#: utils/audio_device_manager.py:1516
+msgid "Could not detect the current audio output device."
+msgstr ""
+
+#: utils/audio_device_manager.py:1517 utils/audio_device_manager.py:1532
+msgid "Expected device for {0} time: {1}"
+msgstr ""
+
+#: utils/audio_device_manager.py:1518
+msgid "Please verify that your audio device is connected and turned on, and switch to the expected device manually if needed."
+msgstr ""
+
+#: utils/audio_device_manager.py:1521 utils/audio_device_manager.py:1536
+msgid "Audio Device Warning"
+msgstr ""
+
+#: utils/audio_device_manager.py:1530
+msgid "Audio Device Mismatch"
+msgstr ""
+
+#: utils/audio_device_manager.py:1531
+msgid "Current device: {0}"
+msgstr ""
+
+#: utils/audio_device_manager.py:1533
+msgid "Please switch to the expected device manually if needed."
 msgstr ""
 
 #: utils/globals.py:146 utils/globals.py:241 utils/globals.py:309

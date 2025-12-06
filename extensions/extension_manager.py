@@ -4,7 +4,7 @@ import random
 import subprocess
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 
-from extensions.llm import LLM
+from extensions.llm import LLM, LLMResponseException
 from extensions.library_extender import LibraryExtender
 from extensions.soup_utils import SoupUtils
 from muse.playback_config import PlaybackConfig
@@ -227,9 +227,13 @@ class ExtensionManager:
         if self.llm.is_failing():
             query = artist
         else:
-            prompt = self.prompter.get_prompt("search_artist")
-            result = self.llm.generate_json_get_value(prompt.replace("ARTIST", artist), "search_query")
-            query = result.response if result else artist
+            try:
+                prompt = self.prompter.get_prompt("search_artist")
+                result = self.llm.generate_json_get_value(prompt.replace("ARTIST", artist), "search_query")
+                query = result.response if result else artist
+            except LLMResponseException as e:
+                logger.warning(f"LLM call failed for artist '{artist}', falling back to simple query: {e}")
+                query = artist
         self._simple(query, attr=TrackAttribute.ARTIST, strict=(artist if strict else None))
 
     def extend_by_composer(self, composer_name: str) -> None:
@@ -241,9 +245,13 @@ class ExtensionManager:
         if self.llm.is_failing():
             query = genre
         else:
-            prompt = self.prompter.get_prompt("search_genre")
-            result = self.llm.generate_json_get_value(prompt.replace("GENRE", genre), "search_query")
-            query = result.response if result else genre
+            try:
+                prompt = self.prompter.get_prompt("search_genre")
+                result = self.llm.generate_json_get_value(prompt.replace("GENRE", genre), "search_query")
+                query = result.response if result else genre
+            except LLMResponseException as e:
+                logger.warning(f"LLM call failed for genre '{genre}', falling back to simple query: {e}")
+                query = genre
         self._simple(query, attr=TrackAttribute.GENRE, strict=(genre if strict else None))
 
     def extend_by_instrument(self, instrument: str, genre: str = "Classical", strict: bool = False) -> None:
@@ -251,10 +259,14 @@ class ExtensionManager:
         if self.llm.is_failing():
             query = f"{instrument} {genre}"
         else:
-            prompt = self.prompter.get_prompt("search_instrument")
-            prompt = prompt.replace("INSTRUMENT", instrument).replace("GENRE", genre)
-            result = self.llm.generate_json_get_value(prompt, "search_query")
-            query = result.response if result else f"{instrument} {genre}"
+            try:
+                prompt = self.prompter.get_prompt("search_instrument")
+                prompt = prompt.replace("INSTRUMENT", instrument).replace("GENRE", genre)
+                result = self.llm.generate_json_get_value(prompt, "search_query")
+                query = result.response if result else f"{instrument} {genre}"
+            except LLMResponseException as e:
+                logger.warning(f"LLM call failed for instrument '{instrument}' with genre '{genre}', falling back to simple query: {e}")
+                query = f"{instrument} {genre}"
         self._simple(query, attr=TrackAttribute.INSTRUMENT, strict=(instrument if strict else None))
 
     def _simple(self, q: str, m: int = 6, depth: int = 0, attr: Optional[TrackAttribute] = None, strict: Optional[Union[str, 'Composer']] = None) -> None:
