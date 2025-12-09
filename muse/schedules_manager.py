@@ -4,8 +4,10 @@ import datetime
 from muse.schedule import Schedule
 from utils.app_info_cache import app_info_cache
 from utils.logging_setup import get_logger
+from utils.translations import I18N
 
 logger = get_logger(__name__)
+_ = I18N._
 
 class ScheduledShutdownException(Exception):
     """Exception raised when a scheduled shutdown is requested."""
@@ -17,6 +19,7 @@ class SchedulesManager:
     recent_schedules = []
     last_set_schedule = None
     MAX_PRESETS = 50
+    MAX_RECENT_SCHEDULES = 200  # Maximum number of schedules to persist
     schedule_history = []
 
     def __init__(self):
@@ -34,14 +37,39 @@ class SchedulesManager:
 
     @staticmethod
     def set_schedules():
+        # Clear existing schedules to prevent duplicates if called multiple times
+        SchedulesManager.recent_schedules.clear()
+        
+        # Load schedules from cache and deduplicate by name
+        seen_names = set()
         for schedule_dict in list(app_info_cache.get("recent_schedules", default_val=[])):
-            SchedulesManager.recent_schedules.append(Schedule.from_dict(schedule_dict))
+            schedule = Schedule.from_dict(schedule_dict)
+            # Only add if we haven't seen this schedule name before
+            if schedule.name not in seen_names:
+                SchedulesManager.recent_schedules.append(schedule)
+                seen_names.add(schedule.name)
+        
+        # Limit to MAX_RECENT_SCHEDULES to prevent excessive growth
+        if len(SchedulesManager.recent_schedules) > SchedulesManager.MAX_RECENT_SCHEDULES:
+            logger.warning(f"Limiting schedules from {len(SchedulesManager.recent_schedules)} to {SchedulesManager.MAX_RECENT_SCHEDULES}")
+            SchedulesManager.recent_schedules = SchedulesManager.recent_schedules[:SchedulesManager.MAX_RECENT_SCHEDULES]
 
     @staticmethod
     def store_schedules():
-        schedule_dicts = []
+        # Deduplicate schedules by name before storing
+        seen_names = set()
+        unique_schedules = []
         for schedule in SchedulesManager.recent_schedules:
-            schedule_dicts.append(schedule.to_dict())
+            if schedule.name not in seen_names:
+                unique_schedules.append(schedule)
+                seen_names.add(schedule.name)
+        
+        # Limit to MAX_RECENT_SCHEDULES
+        if len(unique_schedules) > SchedulesManager.MAX_RECENT_SCHEDULES:
+            logger.warning(f"Limiting stored schedules from {len(unique_schedules)} to {SchedulesManager.MAX_RECENT_SCHEDULES}")
+            unique_schedules = unique_schedules[:SchedulesManager.MAX_RECENT_SCHEDULES]
+        
+        schedule_dicts = [schedule.to_dict() for schedule in unique_schedules]
         app_info_cache.set("recent_schedules", schedule_dicts)
 
     @staticmethod
@@ -83,14 +111,15 @@ class SchedulesManager:
     @staticmethod
     def refresh_schedule(schedule):
         SchedulesManager.update_history(schedule)
-        if schedule in SchedulesManager.recent_schedules:
-            SchedulesManager.recent_schedules.remove(schedule)
+        # Remove all instances of schedules with the same name (handles duplicates)
+        SchedulesManager.recent_schedules = [s for s in SchedulesManager.recent_schedules if s.name != schedule.name]
         SchedulesManager.recent_schedules.insert(0, schedule)
 
     @staticmethod
     def delete_schedule(schedule):
-        if schedule is not None and schedule in SchedulesManager.recent_schedules:
-            SchedulesManager.recent_schedules.remove(schedule)
+        # Remove all instances of schedules with the same name (handles duplicates)
+        if schedule is not None:
+            SchedulesManager.recent_schedules = [s for s in SchedulesManager.recent_schedules if s.name != schedule.name]
 
     @staticmethod
     def get_active_schedule(datetime):

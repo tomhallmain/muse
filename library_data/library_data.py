@@ -1,4 +1,5 @@
 from datetime import datetime
+import copy
 import glob
 import os
 import pickle
@@ -236,12 +237,21 @@ class LibraryData:
     all_tracks = [] # this list should be contained within the values of MEDIA_TRACK_CACHE, but may not be equivalent to the values
     get_tracks_lock = threading.Lock()
     CACHE_FILENAME = "app_media_track_cache"
-    DIRECTORIES_CACHE_KEY = "directories_cache"
+    DIRECTORIES_CACHE_FILENAME = "app_directories_cache"
+    DIRECTORIES_CACHE_KEY = "directories_cache"  # Keep for migration/backward compatibility
     LIBRARY_REFRESH_TIME_KEY = "library_refresh_time"
+    _directory_cache_loaded = False
 
     @staticmethod
     def store_caches():
-        app_info_cache.set(LibraryData.DIRECTORIES_CACHE_KEY, LibraryData.DIRECTORIES_CACHE)
+        # Store DIRECTORIES_CACHE in separate pickle file (not in app_info_cache JSON)
+        # This prevents MemoryError when cache is large
+        try:
+            with open(LibraryData.DIRECTORIES_CACHE_FILENAME, "wb") as f:
+                pickle.dump(LibraryData.DIRECTORIES_CACHE, f)
+        except Exception as e:
+            logger.error(f"Error storing directories cache: {e}")
+        
         try:
             with open(LibraryData.CACHE_FILENAME, "wb") as f:
                 pickle.dump(LibraryData.MEDIA_TRACK_CACHE,  f)
@@ -249,8 +259,54 @@ class LibraryData:
             logger.error(f"Error storing media track cache: {e}")
 
     @staticmethod
-    def load_directory_cache():
-        LibraryData.DIRECTORIES_CACHE = app_info_cache.get(LibraryData.DIRECTORIES_CACHE_KEY, default_val={})
+    def load_directory_cache(force_reload=False):
+        # Prevent double loading unless force_reload is True
+        if LibraryData._directory_cache_loaded and not force_reload:
+            return
+        
+        # Reset flag if forcing reload
+        if force_reload:
+            LibraryData._directory_cache_loaded = False
+        
+        # Try loading from pickle file first (new method)
+        try:
+            if os.path.exists(LibraryData.DIRECTORIES_CACHE_FILENAME):
+                with open(LibraryData.DIRECTORIES_CACHE_FILENAME, "rb") as f:
+                    LibraryData.DIRECTORIES_CACHE = pickle.load(f)
+                logger.debug(f"Loaded directories cache from {LibraryData.DIRECTORIES_CACHE_FILENAME}")
+                LibraryData._directory_cache_loaded = True
+                return
+        except Exception as e:
+            logger.warning(f"Failed to load directories cache from pickle file: {e}")
+        
+        # Fallback: try loading from app_info_cache (for migration from old format)
+        try:
+            cached_data = app_info_cache.get(LibraryData.DIRECTORIES_CACHE_KEY, default_val={})
+            if cached_data:
+                # Make a deep copy to avoid reference issues that could cause duplication
+                LibraryData.DIRECTORIES_CACHE = copy.deepcopy(cached_data)
+                logger.info("Loaded directories cache from app_info_cache (migrating to pickle file)")
+                # Migrate to pickle file
+                try:
+                    with open(LibraryData.DIRECTORIES_CACHE_FILENAME, "wb") as f:
+                        pickle.dump(LibraryData.DIRECTORIES_CACHE, f)
+                    # Remove from app_info_cache to free up memory and persist immediately
+                    app_info_cache.set(LibraryData.DIRECTORIES_CACHE_KEY, {})
+                    try:
+                        app_info_cache.store()
+                        logger.info("Migrated directories cache to pickle file and removed from app_info_cache")
+                    except Exception as e:
+                        logger.warning(f"Migrated directories cache but failed to persist removal from app_info_cache: {e}")
+                except Exception as e:
+                    logger.warning(f"Failed to migrate directories cache to pickle file: {e}")
+                LibraryData._directory_cache_loaded = True
+                return
+        except Exception as e:
+            logger.debug(f"Failed to load directories cache from app_info_cache: {e}")
+        
+        # If both fail, start with empty cache
+        LibraryData.DIRECTORIES_CACHE = {}
+        LibraryData._directory_cache_loaded = True
     
     @staticmethod
     def load_media_track_cache():
@@ -327,7 +383,9 @@ class LibraryData:
         # If both are provided, both will be called for progress updates.
         any_callback = search_status_callback or (app_actions and app_actions.update_extension_status)
         if overwrite:
+            # Clear caches when overwriting to force fresh reads
             LibraryData.MEDIA_TRACK_CACHE = {}
+            LibraryData.DIRECTORIES_CACHE = {}
             if app_actions is not None:
                 app_actions.update_extension_status(_("Updating tracks"))
         with LibraryData.get_tracks_lock:

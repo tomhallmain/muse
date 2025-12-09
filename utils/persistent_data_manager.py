@@ -11,6 +11,8 @@ from utils.audio_device_manager import AudioDeviceManager
 
 
 class PersistentDataManager:
+    _is_loaded = False
+    
     @staticmethod
     def store():
         muse_memory.save()
@@ -26,6 +28,10 @@ class PersistentDataManager:
 
     @staticmethod
     def load():
+        # Prevent double loading
+        if PersistentDataManager._is_loaded:
+            return
+        
         muse_memory.load()
         LibraryData.load_directory_cache()
         LibraryData.load_media_track_cache()
@@ -37,4 +43,6 @@ class PersistentDataManager:
         ComposersWindow.load_recent_searches()
         FavoritesWindow.load_favorites()
         AudioDeviceManager.load_settings()
+        
+        PersistentDataManager._is_loaded = True
 

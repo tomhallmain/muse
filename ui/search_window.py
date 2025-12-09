@@ -31,26 +31,58 @@ class SearchWindow(BaseWindow):
     COL_0_WIDTH = 300
     top_level = None
     MAX_RESULTS = config.max_search_results
-    MAX_RECENT_SEARCHES = config.max_recent_searches
+    MAX_RECENT_SEARCHES = 200  # Maximum number of recent searches to persist
     recent_searches = []
 
     @staticmethod
     def load_recent_searches():
+        # Clear existing searches to prevent duplicates if called multiple times
+        SearchWindow.recent_searches.clear()
+        
         recent_searches = app_info_cache.get("recent_searches", [])
         assert recent_searches is not None
+        
+        # Deduplicate by using a set to track seen searches
+        seen_searches = set()
+        skip_count = 0
         for search_json in recent_searches:
             library_data_search = LibraryDataSearch.from_json(search_json)
             if library_data_search.is_valid() and library_data_search.stored_results_count > 0:
-                SearchWindow.recent_searches.append(library_data_search)
+                # Only add if we haven't seen this search before (using hash/eq)
+                if library_data_search not in seen_searches:
+                    SearchWindow.recent_searches.append(library_data_search)
+                    seen_searches.add(library_data_search)
+                else:
+                    skip_count += 1
             else:
                 logger.warning(f"Invalid search removed: {search_json}")
+        
+        if skip_count > 0:
+            logger.warning(f"Skipped {skip_count} duplicate searches")
+
+        # Limit to MAX_RECENT_SEARCHES to prevent excessive growth
+        if len(SearchWindow.recent_searches) > SearchWindow.MAX_RECENT_SEARCHES:
+            logger.warning(f"Limiting searches from {len(SearchWindow.recent_searches)} to {SearchWindow.MAX_RECENT_SEARCHES}")
+            SearchWindow.recent_searches = SearchWindow.recent_searches[:SearchWindow.MAX_RECENT_SEARCHES]
 
     @staticmethod
     def store_recent_searches():
-        json_searches = []
+        # Deduplicate searches before storing
+        seen_searches = set()
+        unique_searches = []
         for library_data_search in SearchWindow.recent_searches:
             if library_data_search.is_valid() and library_data_search.stored_results_count > 0:
-                json_searches.append(library_data_search.to_json())
+                # Only add if we haven't seen this search before
+                if library_data_search not in seen_searches:
+                    unique_searches.append(library_data_search)
+                    seen_searches.add(library_data_search)
+        
+        # Limit to MAX_RECENT_SEARCHES
+        if len(unique_searches) > SearchWindow.MAX_RECENT_SEARCHES:
+            logger.warning(f"Limiting stored searches from {len(unique_searches)} to {SearchWindow.MAX_RECENT_SEARCHES}")
+            unique_searches = unique_searches[:SearchWindow.MAX_RECENT_SEARCHES]
+        
+        json_searches = [search.to_json() for search in unique_searches]
         app_info_cache.set("recent_searches", json_searches)
 
     @staticmethod
@@ -82,7 +114,7 @@ class SearchWindow(BaseWindow):
                 # Save to recent searches if requested
                 if save_to_recent:
                     library_data_search.set_selected_track_path(results[0])
-                    LibraryDataSearch.update_recent_searches(library_data_search)
+                    SearchWindow.update_recent_searches(library_data_search)
             elif library_data_search.title:
                 # If no results and we have a title search with sufficient length, try fuzzy matching
                 matches = library_data.find_track_by_fuzzy_title(
@@ -405,16 +437,17 @@ class SearchWindow(BaseWindow):
     @staticmethod
     def update_recent_searches(library_data_search, remove_searches_with_no_selected_filepath=False):
         assert library_data_search is not None
-        if library_data_search in SearchWindow.recent_searches:
-            SearchWindow.recent_searches.remove(library_data_search)
+        # Remove all instances of this search (handles duplicates)
+        SearchWindow.recent_searches = [s for s in SearchWindow.recent_searches if s != library_data_search]
+        
         if remove_searches_with_no_selected_filepath:
-            searches_to_remove = []
-            for search in SearchWindow.recent_searches:
-                if (search.selected_track_path == None or search.selected_track_path.strip() == "") and \
-                        search.matches_no_selected_track_path(library_data_search):
-                    SearchWindow.recent_searches.remove(search)
-            for search in searches_to_remove:
-                SearchWindow.recent_searches.remove(search)
+            # Remove all searches that match but have no selected track path
+            SearchWindow.recent_searches = [
+                s for s in SearchWindow.recent_searches 
+                if not ((s.selected_track_path is None or s.selected_track_path.strip() == "") and 
+                        s.matches_no_selected_track_path(library_data_search))
+            ]
+        
         SearchWindow.recent_searches.insert(0, library_data_search)
         if len(SearchWindow.recent_searches) > SearchWindow.MAX_RECENT_SEARCHES:
             del SearchWindow.recent_searches[-1]
@@ -511,8 +544,8 @@ class SearchWindow(BaseWindow):
 
     def remove_search(self, search):
         assert search is not None
-        if search in SearchWindow.recent_searches:
-            SearchWindow.recent_searches.remove(search)
+        # Remove all instances of this search (handles duplicates)
+        SearchWindow.recent_searches = [s for s in SearchWindow.recent_searches if s != search]
         self.store_recent_searches()
         self.clear_widget_lists()
         self.show_recent_searches()

@@ -288,23 +288,58 @@ class ComposersWindow:
     COL_0_WIDTH = 150
     top_level = None
     MAX_RESULTS = 200
+    MAX_RECENT_SEARCHES = 200  # Maximum number of recent composer searches to persist
     details_window = None
     recent_searches = []
 
     @staticmethod
     def load_recent_searches():
+        # Clear existing searches to prevent duplicates if called multiple times
+        ComposersWindow.recent_searches.clear()
+        
         # NOTE be sure not to modify the key to "recent_searches" as this is shared with another key.
         json_searches = app_info_cache.get("recent_composer_searches", [])
         assert isinstance(json_searches, list)
+        
+        # Deduplicate by using a set to track seen searches
+        seen_searches = set()
+        skip_count = 0
         for search_details in json_searches:
-            ComposersWindow.recent_searches.append(ComposersDataSearch(**search_details))
+            search = ComposersDataSearch(**search_details)
+            if search.is_valid() and search.stored_results_count > 0:
+                # Only add if we haven't seen this search before (using hash/eq)
+                if search not in seen_searches:
+                    ComposersWindow.recent_searches.append(search)
+                    seen_searches.add(search)
+                else:
+                    skip_count += 1
+        
+        if skip_count > 0:
+            logger.warning(f"Skipped {skip_count} duplicate composer searches")
+        
+        # Limit to MAX_RECENT_SEARCHES to prevent excessive growth
+        if len(ComposersWindow.recent_searches) > ComposersWindow.MAX_RECENT_SEARCHES:
+            logger.warning(f"Limiting composer searches from {len(ComposersWindow.recent_searches)} to {ComposersWindow.MAX_RECENT_SEARCHES}")
+            ComposersWindow.recent_searches = ComposersWindow.recent_searches[:ComposersWindow.MAX_RECENT_SEARCHES]
 
     @staticmethod
     def store_recent_searches():
-        json_searches = []
+        # Deduplicate searches before storing
+        seen_searches = set()
+        unique_searches = []
         for search in ComposersWindow.recent_searches:
             if search.is_valid() and search.stored_results_count > 0:
-                json_searches.append(search.get_dict())
+                # Only add if we haven't seen this search before
+                if search not in seen_searches:
+                    unique_searches.append(search)
+                    seen_searches.add(search)
+        
+        # Limit to MAX_RECENT_SEARCHES
+        if len(unique_searches) > ComposersWindow.MAX_RECENT_SEARCHES:
+            logger.warning(f"Limiting stored composer searches from {len(unique_searches)} to {ComposersWindow.MAX_RECENT_SEARCHES}")
+            unique_searches = unique_searches[:ComposersWindow.MAX_RECENT_SEARCHES]
+        
+        json_searches = [search.get_dict() for search in unique_searches]
         app_info_cache.set("recent_composer_searches", json_searches)
 
 
@@ -499,9 +534,12 @@ class ComposersWindow:
         assert self.composer_data_search is not None
         self._refresh_widgets(add_results=False)
         self.composers_data.do_search(self.composer_data_search)
-        if self.composer_data_search in ComposersWindow.recent_searches:
-            ComposersWindow.recent_searches.remove(self.composer_data_search)
+        # Remove all instances of this search (handles duplicates)
+        ComposersWindow.recent_searches = [s for s in ComposersWindow.recent_searches if s != self.composer_data_search]
         ComposersWindow.recent_searches.insert(0, self.composer_data_search)
+        # Limit to MAX_RECENT_SEARCHES
+        if len(ComposersWindow.recent_searches) > ComposersWindow.MAX_RECENT_SEARCHES:
+            ComposersWindow.recent_searches = ComposersWindow.recent_searches[:ComposersWindow.MAX_RECENT_SEARCHES]
         self._refresh_widgets()
 
     def add_widgets_for_results(self):
