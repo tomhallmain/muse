@@ -491,7 +491,7 @@ class SearchWindow(BaseWindow):
         SearchWindow.recent_searches = [s for s in SearchWindow.recent_searches if s != library_data_search]
         
         if remove_searches_with_no_selected_filepath:
-            # Remove all searches that match but have no selected track path
+            # Remove all searches that match, without considering the selected track path
             SearchWindow.recent_searches = [
                 s for s in SearchWindow.recent_searches 
                 if not ((s.selected_track_path is None or s.selected_track_path.strip() == "") and 
@@ -527,6 +527,33 @@ class SearchWindow(BaseWindow):
         total_results = len(results)
         stored_count = self.library_data_search.stored_results_count
         
+        # Apply filter if filter text is provided
+        filter_text = self.filter_text.get().strip().lower() if self.filter_text else ""
+        if filter_text:
+            # Filter results based on filter text matching any displayed field
+            filtered_results = []
+            for track in results:
+                # Check if filter text appears in any of the displayed fields
+                if (filter_text in (track.title or "").lower() or
+                    filter_text in (track.artist or "").lower() or
+                    filter_text in (track.album or "").lower() or
+                    filter_text in (track.composer or "").lower()):
+                    filtered_results.append(track)
+            display_results = filtered_results
+        else:
+            # No filter, show all results
+            display_results = results
+        
+        display_count = len(display_results)
+        
+        # Show message if filter returns no results
+        if filter_text and display_count == 0:
+            self.searching_label = Label(self.results_frame.viewPort)
+            self.add_label(self.searching_label, text=_("No results match the filter '{0}'.").format(self.filter_text.get()), row=1, column=1)
+            self.title_list.append(self.searching_label)
+            self.master.update()
+            return
+        
         # Check if there are more results available
         # For the first search, check if we got more than INITIAL_MAX_RESULTS
         # For loading more, check if stored_count indicates more than what we have
@@ -536,10 +563,6 @@ class SearchWindow(BaseWindow):
         else:
             # Loading more - check if stored_count indicates there are more results available
             has_more_detected = stored_count > total_results
-        
-        # Display all accumulated results (they're already accumulated in LibraryDataSearch.results)
-        display_results = results
-        display_count = len(display_results)
         
         # Calculate display range - results accumulate in LibraryDataSearch object
         total_displayed = total_results
@@ -563,7 +586,16 @@ class SearchWindow(BaseWindow):
             # Update warning text
             # Note: Results accumulate (showing all results loaded so far, not just current batch)
             # Show both values only if they are different
-            if stored_count != total_displayed:
+            filter_text = self.filter_text.get().strip().lower() if self.filter_text else ""
+            if filter_text:
+                # Show filtered count vs total count when filtering is active
+                if stored_count != display_count:
+                    warning_text = _("Found {0} total results. Showing {1} filtered results.").format(
+                        stored_count, display_count
+                    )
+                else:
+                    warning_text = _("Showing {0} filtered results.").format(display_count)
+            elif stored_count != total_displayed:
                 warning_text = _("Found {0} total results. Showing all results up to {1}.").format(
                     stored_count, total_displayed
                 )
