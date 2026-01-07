@@ -30,7 +30,7 @@ class SearchWindow(BaseWindow):
     '''
     COL_0_WIDTH = 300
     top_level = None
-    MAX_RESULTS = config.max_search_results
+    INITIAL_MAX_RESULTS = config.max_search_results
     MAX_RECENT_SEARCHES = 200  # Maximum number of recent searches to persist
     recent_searches = []
 
@@ -187,11 +187,16 @@ class SearchWindow(BaseWindow):
         self.results_frame = ScrollFrame(self.outer_frame, bg_color=AppStyle.BG_COLOR, width=1500)
         self.results_frame.grid(row=0, column=0, sticky="nsew")
 
+        # Pagination frame (fixed, not scrollable) - between results and search controls
+        self.pagination_frame = Frame(self.outer_frame, bg=AppStyle.BG_COLOR, width=1500)
+        self.pagination_frame.grid_columnconfigure(0, weight=1)
+        self.pagination_frame.grid(row=1, column=0, sticky="ew")
+
         self.inner_frame = Frame(self.outer_frame, bg=AppStyle.BG_COLOR, width=1500)
         self.inner_frame.grid_columnconfigure(0, weight=1)
         self.inner_frame.grid_columnconfigure(1, weight=1)
         self.inner_frame.grid_columnconfigure(2, weight=1)
-        self.inner_frame.grid(row=1, column=0, sticky="nsew")
+        self.inner_frame.grid(row=2, column=0, sticky="nsew")
 
         self.title_list = []
         self.album_list = []
@@ -200,6 +205,15 @@ class SearchWindow(BaseWindow):
         self.open_details_btn_list = []
         self.play_btn_list = []
         self.remove_btn_list = []
+        
+        # Load more state (for accumulating results)
+        self.current_offset = 0
+        self.pagination_warning_label = None
+        self.pagination_next_btn = None  # "Find More" button
+        
+        # Filter state
+        self.filter_text = StringVar(self.inner_frame)
+        self.filter_entry = None
 
         self.search_btn = None
         self.add_btn("search_btn", _("Search"), self.do_search, row=0)
@@ -277,6 +291,14 @@ class SearchWindow(BaseWindow):
         self.overwrite_cache = BooleanVar(self.inner_frame)
         self._overwrite = Checkbutton(self.inner_frame, text=_("Overwrite Cache"), variable=self.overwrite_cache)
         self._overwrite.grid(row=9, columnspan=2)
+        
+        # Filter field for filtering search results
+        self._filter_label = Label(self.inner_frame)
+        self.add_label(self._filter_label, "Filter Results", row=10)
+        self.filter_entry = Entry(self.inner_frame, textvariable=self.filter_text)
+        self.filter_entry.grid(row=10, column=1)
+        self.filter_entry.bind("<KeyRelease>", self.apply_filter)
+        self.filter_entry.grid_remove()  # Hidden by default, shown after search
 
         # self.master.bind("<Key>", self.filter_targets)
         # self.master.bind("<Return>", self.do_action)
@@ -362,10 +384,13 @@ class SearchWindow(BaseWindow):
         instrument = self.instrument.get().strip()
         form = self.form.get().strip()
         overwrite = self.overwrite_cache.get()
+        # Reset offset and filter when starting a new search
+        self.current_offset = 0
+        self.filter_text.set("")
         self.library_data_search = LibraryDataSearch(all, title=title, album=album,
                                                      artist=artist, composer=composer,
                                                      genre=genre, instrument=instrument,
-                                                     form=form, max_results=SearchWindow.MAX_RESULTS)
+                                                     form=form, max_results=SearchWindow.INITIAL_MAX_RESULTS, offset=0)
         self._do_search(overwrite=overwrite)
 
     def load_stored_search(self, library_data_search):
@@ -383,6 +408,26 @@ class SearchWindow(BaseWindow):
     @require_password(ProtectedActions.RUN_SEARCH)
     def _do_search(self, event=None, overwrite=False):
         assert self.library_data_search is not None
+        # Set the offset on the search object for loading more results
+        self.library_data_search.offset = self.current_offset
+        # Preserve total_matches_count when loading more (only reset on new search)
+        # Store the previous total before clearing results
+        previous_total = getattr(self.library_data_search, 'total_matches_count', 0)
+        # Store existing results if loading more (to preserve them for accumulation in LibraryDataSearch)
+        existing_results = []
+        if self.current_offset > 0 and not overwrite:
+            existing_results = self.library_data_search.results.copy()
+        
+        # Only reset if this is a new search (offset is 0) or if overwriting
+        if self.current_offset == 0 or overwrite:
+            self.library_data_search.total_matches_count = 0
+            self.library_data_search.results = []
+        # When loading more, we need to continue counting from the offset
+        # Initialize total_matches_count to offset so it continues counting correctly
+        # Preserve existing results so new ones will be appended to them during search
+        else:
+            self.library_data_search.total_matches_count = self.current_offset
+            self.library_data_search.results = existing_results
         self._refresh_widgets(add_results=False)
         self.searching_label = Label(self.results_frame.viewPort)
         searching_text = _("Please wait, overwriting cache and searching...") if overwrite else _("Searching...")
@@ -392,6 +437,8 @@ class SearchWindow(BaseWindow):
 
         def search_complete(search_results):
             """Callback for when search completes."""
+            # Results are already accumulated in library_data_search.results
+            # (existing results were preserved, and new ones were appended during search)
             # Schedule UI update on main thread
             self.master.after(0, lambda: self._update_ui_after_search())
 
@@ -419,6 +466,9 @@ class SearchWindow(BaseWindow):
     def _update_ui_after_search(self):
         """Update the UI after a search completes."""
         SearchWindow.update_recent_searches(self.library_data_search)
+        # Show filter field after search completes
+        if self.filter_entry is not None:
+            self.filter_entry.grid()
         self._refresh_widgets()
 
     def _show_search_error(self, error_msg):
@@ -471,11 +521,79 @@ class SearchWindow(BaseWindow):
             
             self.master.update()
             return
+        
         self.library_data_search.sort_results_by()
         results = self.library_data_search.get_results()
-        for i in range(len(results)):
-            row = i + 1
-            track = results[i]
+        total_results = len(results)
+        stored_count = self.library_data_search.stored_results_count
+        
+        # Check if there are more results available
+        # For the first search, check if we got more than INITIAL_MAX_RESULTS
+        # For loading more, check if stored_count indicates more than what we have
+        if self.current_offset == 0:
+            # First search - check if we got more than INITIAL_MAX_RESULTS
+            has_more_detected = total_results > SearchWindow.INITIAL_MAX_RESULTS
+        else:
+            # Loading more - check if stored_count indicates there are more results available
+            has_more_detected = stored_count > total_results
+        
+        # Display all accumulated results (they're already accumulated in LibraryDataSearch.results)
+        display_results = results
+        display_count = len(display_results)
+        
+        # Calculate display range - results accumulate in LibraryDataSearch object
+        total_displayed = total_results
+        
+        # Determine if we should show load more controls
+        # Show warning if: 
+        # - We detected more results (have max_results + 1)
+        # - We know there are more total results than displayed
+        # - We've loaded more results (current_offset > 0)
+        has_more_total = stored_count > (self.current_offset + display_count)
+        has_loaded_more = self.current_offset > 0
+        
+        # Add warning and load more controls in the fixed frame (not scrollable)
+        if has_more_detected or has_more_total or has_loaded_more:
+            # Create warning label if it doesn't exist
+            if self.pagination_warning_label is None:
+                self.pagination_warning_label = Label(self.pagination_frame)
+                # Use light yellow/orange color for warning text
+                self.pagination_warning_label.config(bg=AppStyle.BG_COLOR, fg="#FFB84D", wraplength=800, justify=LEFT)
+            
+            # Update warning text
+            # Note: Results accumulate (showing all results loaded so far, not just current batch)
+            # Show both values only if they are different
+            if stored_count != total_displayed:
+                warning_text = _("Found {0} total results. Showing all results up to {1}.").format(
+                    stored_count, total_displayed
+                )
+            else:
+                warning_text = _("Showing all results up to {0}.").format(
+                    total_displayed
+                )
+            
+            self.pagination_warning_label.config(text=warning_text)
+            self.pagination_warning_label.grid(row=0, column=0, columnspan=3, sticky=W, padx=5, pady=5)
+            
+            # Find More button - show if we detected more results or know there are more
+            if has_more_detected or has_more_total:
+                if self.pagination_next_btn is None:
+                    self.pagination_next_btn = Button(self.pagination_frame, text=_("Find More"), command=self.load_more_results)
+                self.pagination_next_btn.grid(row=0, column=1, padx=5, pady=5)
+            elif self.pagination_next_btn is not None:
+                self.pagination_next_btn.grid_remove()
+        else:
+            # Hide warning and load more widgets if not needed
+            if self.pagination_warning_label is not None:
+                self.pagination_warning_label.grid_remove()
+            if self.pagination_next_btn is not None:
+                self.pagination_next_btn.grid_remove()
+        
+        # Display results (only show first max_results, not the extra one used for detection)
+        # Results start at row 1 (row 0 is for any header if needed)
+        results_start_row = 1
+        for i, track in enumerate(display_results):
+            row = results_start_row + i
 
             title_label = Label(self.results_frame.viewPort)
             self.add_label(title_label, track.title, row=row, column=1, wraplength=200)
@@ -555,6 +673,11 @@ class SearchWindow(BaseWindow):
         if add_results:
             self.add_widgets_for_results()
         self.master.update()
+    
+    def apply_filter(self, event=None):
+        """Apply filter to search results."""
+        # Just refresh the widgets to re-display with filter applied
+        self._refresh_widgets()
 
     def clear_widget_lists(self):
         for label in self.title_list:
@@ -571,6 +694,8 @@ class SearchWindow(BaseWindow):
             btn.destroy()
         for btn in self.remove_btn_list:
             btn.destroy()
+        # Note: Pagination widgets are in pagination_frame (not scrollable), so they persist
+        # They are managed in add_widgets_for_results() with grid_remove/grid
         self.title_list = []
         self.artist_list = []
         self.album_list = []
@@ -600,4 +725,27 @@ class SearchWindow(BaseWindow):
         if hasattr(self, 'searching_label') and self.searching_label.winfo_exists():
             self.searching_label.config(text=status_text)
             self.master.update()
+    
+    def load_more_results(self):
+        """Load more results by re-running the search with an increased offset."""
+        if self.library_data_search is None:
+            return
+        
+        stored_count = self.library_data_search.stored_results_count
+        page_size = SearchWindow.INITIAL_MAX_RESULTS
+        current_end = self.current_offset + page_size
+        current_results = len(self.library_data_search.results)
+        
+        # Check if there are more results to load
+        # We know there are more if we got max_results + 1 results (has_more_detected)
+        # OR if stored_count > current_end
+        has_more_detected = current_results > SearchWindow.INITIAL_MAX_RESULTS
+        has_more_known = stored_count > current_end
+        
+        if has_more_detected or has_more_known:
+            self.current_offset += page_size
+            # Re-run the search with the new offset to load more results
+            self._do_search(overwrite=False)
+        else:
+            logger.info("Reached end of results")
 

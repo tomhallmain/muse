@@ -79,6 +79,8 @@ class AudioDeviceManager:
     - Set up automatic day/night switching
     - Monitor device changes
     """
+
+    LAST_WARNED_IN_PERIOD_KEY = 'audio_device_last_warned_period'
     
     # Class variables for cached settings
     _cached_day_device = None
@@ -511,6 +513,9 @@ class AudioDeviceManager:
         Returns:
             Dictionary containing current device information, or None if not found
         """
+        # Clear cached current device to ensure fresh detection
+        self._current_device = None
+        
         # Helper function to check if a device name is a placeholder
         def is_placeholder_name(name: str) -> bool:
             """Check if a device name is a generic placeholder."""
@@ -530,7 +535,7 @@ class AudioDeviceManager:
                     
                     # Even if name is a placeholder, try to match by device ID first
                     if device_id:
-                        devices = self.list_devices()
+                        devices = self.list_devices(refresh=True)
                         # Try to match by device ID (most reliable)
                         for device in devices:
                             if device['id'] == device_id:
@@ -578,7 +583,7 @@ class AudioDeviceManager:
                     
                     # Even if name is a placeholder, try to match by device ID first
                     if device_id:
-                        devices = self.list_devices()
+                        devices = self.list_devices(refresh=True)
                         # Try to match by device ID (most reliable)
                         for device in devices:
                             if device['id'] == device_id:
@@ -647,7 +652,7 @@ class AudioDeviceManager:
                                         pass  # FriendlyName not found, continue
                                     
                                     # Try to match by device ID first (subkey_name contains the device ID)
-                                    devices = self.list_devices()
+                                    devices = self.list_devices(refresh=True)
                                     for device in devices:
                                         # Try matching by ID (subkey_name might match device ID)
                                         if device['id'] == subkey_name or (device_name and device['name'] == device_name):
@@ -699,7 +704,7 @@ class AudioDeviceManager:
                 if default_device:
                     device_id = getattr(default_device, 'id', None)
                     if device_id:
-                        devices = self.list_devices()
+                        devices = self.list_devices(refresh=True)
                         # Try to find the device by matching the ID with GetAllDevices
                         all_devices = AudioUtilities.GetAllDevices()
                         for api_device in all_devices:
@@ -732,7 +737,7 @@ class AudioDeviceManager:
         
         # Method 5: Try to find the active device from our filtered list
         try:
-            devices = self.list_devices()
+            devices = self.list_devices(refresh=True)
             logger.debug(f"Checking {len(devices)} devices to find current device")
             
             # First, try to find devices that are active (State == 1)
@@ -792,7 +797,7 @@ class AudioDeviceManager:
                         logger.debug(f"Found current device via sounddevice: {device_name}")
                         
                         # Try to match with our filtered device list
-                        devices = self.list_devices()
+                        devices = self.list_devices(refresh=True)
                         for device in devices:
                             # Try exact name match first
                             if device['name'] == device_name:
@@ -1454,6 +1459,9 @@ class AudioDeviceManager:
         Check and apply audio device settings based on current time and schedule.
         Alerts the user if there's a device mismatch.
         
+        Only shows alerts once per time period (day/night) to avoid annoying the user
+        with repeated warnings. The warning state persists across app sessions.
+        
         Args:
             app_actions: Optional AppActions instance for showing alerts and toasts
         """
@@ -1507,7 +1515,11 @@ class AudioDeviceManager:
                     mismatch = True  # Treat as mismatch so user gets warned
                 
                 if mismatch:
-                    if device_detection_failed:
+                    # Check if we've already warned the user in this time period
+                    if self._has_warned_in_period(time_period):
+                        logger.debug(f"Already warned user about device mismatch for {time_period} period, skipping alert")
+                    elif device_detection_failed:
+                    # Show warning and mark that we've warned for this period
                         logger.warning(f"Could not detect current audio device. Expected device for {time_period} time: {target_device}")
                         
                         # Alert user if app_actions is available
@@ -1522,6 +1534,8 @@ class AudioDeviceManager:
                                 message,
                                 kind="warning"
                             )
+                            # Mark that we've warned for this period
+                            self._mark_warned_in_period(time_period)
                     else:
                         logger.warning(f"Audio device mismatch: Current='{current_device_name}', Expected='{target_device}' for {time_period} time")
                         
@@ -1537,6 +1551,8 @@ class AudioDeviceManager:
                                 message,
                                 kind="warning"
                             )
+                            # Mark that we've warned for this period
+                            self._mark_warned_in_period(time_period)
                     
                     # TODO: Audio device switching disabled until safe methods are validated
                     # Device switching methods need thorough testing before enabling
@@ -1559,6 +1575,82 @@ class AudioDeviceManager:
         except Exception as e:
             logger.error(f"Error checking audio device settings: {e}")
             # Don't raise the exception to avoid breaking playback
+    
+    def _get_effective_date(self) -> str:
+        """
+        Get the effective date for period tracking.
+        If it's before 6 AM, use the previous day's date to avoid splitting
+        night periods at midnight.
+        
+        Returns:
+            Date string in YYYY-MM-DD format
+        """
+        import datetime
+        
+        now = datetime.datetime.now()
+        # If it's before 6 AM, use yesterday's date
+        if now.hour < 6:
+            yesterday = now.date() - datetime.timedelta(days=1)
+            return yesterday.isoformat()
+        else:
+            return now.date().isoformat()
+    
+    def _has_warned_in_period(self, time_period: str) -> bool:
+        """
+        Check if we've already warned the user in the current time period today.
+        Uses effective date (backs into previous day if before 6 AM).
+        
+        Args:
+            time_period: 'day' or 'night'
+            
+        Returns:
+            True if we've already warned in this period today, False otherwise
+        """
+        try:
+            from utils.app_info_cache import app_info_cache
+            
+            # Get effective date (previous day if before 6 AM)
+            effective_date = self._get_effective_date()
+            current_period_key = f"{effective_date}-{time_period}"
+            
+            # Get the last warned period key from cache
+            last_warned_key = app_info_cache.get(AudioDeviceManager.LAST_WARNED_IN_PERIOD_KEY, None)
+            
+            # If we've warned for the current period today, return True
+            if last_warned_key == current_period_key:
+                return True
+            
+            return False
+            
+        except Exception as e:
+            logger.debug(f"Error checking warned period: {e}")
+            return False
+    
+    def _mark_warned_in_period(self, time_period: str):
+        """
+        Mark that we've warned the user in the current time period today.
+        Uses effective date (backs into previous day if before 6 AM).
+        This persists across app sessions, but resets each day.
+        
+        Args:
+            time_period: 'day' or 'night'
+        """
+        try:
+            from utils.app_info_cache import app_info_cache
+            
+            # Get effective date (previous day if before 6 AM)
+            effective_date = self._get_effective_date()
+            current_period_key = f"{effective_date}-{time_period}"
+            
+            # Store the date-period combination we've warned for
+            app_info_cache.set(AudioDeviceManager.LAST_WARNED_IN_PERIOD_KEY, current_period_key)
+            # Persist immediately to ensure it's saved
+            app_info_cache.store()
+            
+            logger.debug(f"Marked as warned for {time_period} period on effective date {effective_date}")
+            
+        except Exception as e:
+            logger.error(f"Error marking warned period: {e}")
 
     @property
     def day_device(self) -> Optional[str]:

@@ -30,7 +30,7 @@ logger = get_logger(__name__)
 
 class LibraryDataSearch:
     def __init__(self, all="", title="", album="", artist="", composer="", genre="", instrument="", form="",
-                 selected_track_path=None, stored_results_count=0, max_results=200, id=None):
+                 selected_track_path=None, stored_results_count=0, max_results=200, id=None, offset=0):
         self.all = all.lower()
         self.title = title.lower()
         self.album = album.lower()
@@ -43,8 +43,10 @@ class LibraryDataSearch:
         self.selected_track_path = selected_track_path
         self.max_results = max_results
         self.id = id
+        self.offset = offset  # Offset for pagination
 
         self.results = []
+        self.total_matches_count = 0  # Total matches found (including skipped ones)
 
     def is_valid(self):
         all_fields_empty = True
@@ -74,42 +76,63 @@ class LibraryDataSearch:
         logger.info(f"Set selected track path on {self}: {self.selected_track_path}")
 
     def test(self, audio_track):
+        # Check if we've collected enough results for this page (max_results + 1 to detect if there are more)
         if len(self.results) > self.max_results:
             return None
+        
+        # Track total matches (including skipped ones)
+        is_match = False
+        
         # NOTE - don't use _get_searchable_track_attr here because would be slower
         if len(self.all) > 0:
             for field in [audio_track.searchable_title, audio_track.searchable_artist,
                           audio_track.searchable_composer, audio_track.searchable_album,
                           audio_track.searchable_genre, audio_track.get_instrument(), audio_track.get_form()]:
                 if field is not None and self.all in field:
-                    self.results.append(audio_track)
-                    return True
-        attrs_to_get = []
-        if len(self.title) > 0:
-            attrs_to_get.append(("title", "searchable_title"))
-        if len(self.album) > 0:
-            attrs_to_get.append(("album", "searchable_album"))
-        if len(self.artist) > 0:
-            attrs_to_get.append(("artist", "searchable_artist"))
-        if len(self.composer) > 0:
-            attrs_to_get.append(("composer", "searchable_composer"))
-        if len(self.genre) > 0:
-            attrs_to_get.append(("genre", "searchable_genre"))
-        if len(self.instrument) > 0:
-            attrs_to_get.append(("instrument", "get_instrument"))
-        if len(self.form) > 0:
-            attrs_to_get.append(("form", "get_form"))
-        for search_attr, track_attr in attrs_to_get:
-            track_value = getattr(audio_track, track_attr)
-            if track_attr.startswith("get_"):
-                track_value = track_value()
-            if track_value is None or track_value.strip() == "":
-                return False
-            search_value = self.__dict__[search_attr]
-            if search_value not in track_value:
-                return False
-        self.results.append(audio_track)
-        return True
+                    is_match = True
+                    break
+        else:
+            attrs_to_get = []
+            if len(self.title) > 0:
+                attrs_to_get.append(("title", "searchable_title"))
+            if len(self.album) > 0:
+                attrs_to_get.append(("album", "searchable_album"))
+            if len(self.artist) > 0:
+                attrs_to_get.append(("artist", "searchable_artist"))
+            if len(self.composer) > 0:
+                attrs_to_get.append(("composer", "searchable_composer"))
+            if len(self.genre) > 0:
+                attrs_to_get.append(("genre", "searchable_genre"))
+            if len(self.instrument) > 0:
+                attrs_to_get.append(("instrument", "get_instrument"))
+            if len(self.form) > 0:
+                attrs_to_get.append(("form", "get_form"))
+            
+            is_match = True
+            for search_attr, track_attr in attrs_to_get:
+                track_value = getattr(audio_track, track_attr)
+                if track_attr.startswith("get_"):
+                    track_value = track_value()
+                if track_value is None or track_value.strip() == "":
+                    is_match = False
+                    break
+                search_value = self.__dict__[search_attr]
+                if search_value not in track_value:
+                    is_match = False
+                    break
+        
+        if is_match:
+            self.total_matches_count += 1
+            
+            # Only add to results if we're past the offset and haven't exceeded max_results + 1
+            if self.total_matches_count > self.offset:
+                self.results.append(audio_track)
+                return True
+            else:
+                # Match found but we're still skipping due to offset
+                return True  # Continue searching
+        
+        return False
 
     def get_results(self):
         return self.results
@@ -196,20 +219,20 @@ class LibraryDataSearch:
         if not isinstance(value, LibraryDataSearch):
             return False
         for key in self.__dict__.keys():
-            if key not in ("results", "stored_results_count") and getattr(value, key) != getattr(self, key):
+            if key not in ("results", "stored_results_count", "total_matches_count", "offset") and getattr(value, key) != getattr(self, key):
                 return False
         return True
 
     def __hash__(self):
         hash = 0
         for key in self.__dict__.keys():
-            if key not in ("results", "stored_results_count"):
+            if key not in ("results", "stored_results_count", "total_matches_count", "offset"):
                 hash += getattr(self, key).__hash__()
         return hash
 
     def to_json(self):
         if self.stored_results_count == 0:
-            self.stored_results_count = len(self.results)
+            self.set_stored_results_count()
         return {
             "all": self.all,
             "title": self.title,

@@ -475,7 +475,7 @@ class TextCleanerRuleset:
             # If we have a good ratio of English words, likely English
             if len(words) > 0:
                 english_ratio = english_word_count / len(words)
-                if english_ratio > 0.3:  # At least 30% of words are common English words
+                if english_ratio > 0.5:  # At least 50% of words are common English words
                     return True
         
         # Pattern-based heuristics for English
@@ -494,7 +494,7 @@ class TextCleanerRuleset:
         # If we have significant pattern matches relative to word count, likely English
         if len(words) > 0:
             pattern_ratio = pattern_matches / len(words)
-            if pattern_ratio > 0.15:  # At least 15% pattern matches
+            if pattern_ratio > 0.30:  # At least 30% pattern matches
                 return True
         
         # Default: if we can't determine, assume not English (conservative approach)
