@@ -1,5 +1,5 @@
 from tkinter import Frame, Label, StringVar, BooleanVar, Checkbutton, LEFT, W
-from tkinter.ttk import Button, Entry
+from tkinter.ttk import Button, Entry, Combobox
 
 from lib.multi_display import SmartToplevel
 from lib.tk_scroll_demo import ScrollFrame
@@ -282,7 +282,7 @@ class SearchWindow(BaseWindow):
         self._form_label = Label(self.inner_frame)
         self.add_label(self._form_label, "Search Form", row=8)
         self.form = StringVar(self.inner_frame)
-        self.form_entry = Entry(self.inner_frame)
+        self.form_entry = Entry(self.inner_frame, textvariable=self.form)
         self.form_entry.grid(row=8, column=1)
         self.form_entry.bind("<Return>", self.do_search)
         self.sort_by_form_button = Button(self.inner_frame, text=_("Sort by"), command=lambda: self.sort_by("form"))
@@ -290,11 +290,28 @@ class SearchWindow(BaseWindow):
 
         self.overwrite_cache = BooleanVar(self.inner_frame)
         self._overwrite = Checkbutton(self.inner_frame, text=_("Overwrite Cache"), variable=self.overwrite_cache)
-        self._overwrite.grid(row=9, columnspan=2)
+        self._overwrite.grid(row=9, column=0, sticky=W)
+        
+        # Playlist sort type dropdown
+        self._playlist_sort_label = Label(self.inner_frame)
+        self.add_label(self._playlist_sort_label, _("Playlist Sort"), row=9, column=1)
+        self.playlist_sort_type_var = StringVar(self.inner_frame)
+        self.playlist_sort_combo = Combobox(
+            self.inner_frame, 
+            textvariable=self.playlist_sort_type_var,
+            values=PlaylistSortType.get_translated_names(),
+            state="readonly",
+            width=20
+        )
+        self.playlist_sort_combo.grid(row=9, column=2, sticky=W)
+        # Set initial value to RANDOM
+        self.playlist_sort_type_var.set(PlaylistSortType.RANDOM.get_translation())
+        # Update dropdown based on initial search fields
+        self._update_playlist_sort_dropdown()
         
         # Filter field for filtering search results
         self._filter_label = Label(self.inner_frame)
-        self.add_label(self._filter_label, "Filter Results", row=10)
+        self.add_label(self._filter_label, _("Filter Results"), row=10)
         self.filter_entry = Entry(self.inner_frame, textvariable=self.filter_text)
         self.filter_entry.grid(row=10, column=1)
         self.filter_entry.bind("<KeyRelease>", self.apply_filter)
@@ -387,6 +404,8 @@ class SearchWindow(BaseWindow):
         # Reset offset and filter when starting a new search
         self.current_offset = 0
         self.filter_text.set("")
+        # Update playlist sort dropdown based on search fields
+        self._update_playlist_sort_dropdown()
         self.library_data_search = LibraryDataSearch(all, title=title, album=album,
                                                      artist=artist, composer=composer,
                                                      genre=genre, instrument=instrument,
@@ -404,6 +423,8 @@ class SearchWindow(BaseWindow):
         self.instrument.set(library_data_search.instrument)
         self.form.set(library_data_search.form)
         self.library_data_search = library_data_search
+        # Update playlist sort dropdown based on loaded search fields
+        self._update_playlist_sort_dropdown()
 
     @require_password(ProtectedActions.RUN_SEARCH)
     def _do_search(self, event=None, overwrite=False):
@@ -677,20 +698,23 @@ class SearchWindow(BaseWindow):
         playlist_sort_type = self.get_playlist_sort_type()
         self.app_actions.start_play_callback(track=track, playlist_sort_type=playlist_sort_type, overwrite=self.overwrite_cache.get())
 
+    def _update_playlist_sort_dropdown(self):
+        """Update the playlist sort dropdown to reflect the largest scope in the search fields."""
+        largest_scope = PlaylistSortType.get_largest_scope_from_search_fields(
+            composer=self.composer.get(),
+            artist=self.artist.get(),
+            genre=self.genre.get(),
+            instrument=self.instrument.get(),
+            form=self.form.get(),
+            album=self.album.get()
+        )
+        self.playlist_sort_type_var.set(largest_scope.get_translation())
+
     def get_playlist_sort_type(self):
-        if len(self.composer.get()) > 0:
-            return PlaylistSortType.COMPOSER_SHUFFLE
-        elif len(self.artist.get()) > 0:
-            return PlaylistSortType.ARTIST_SHUFFLE
-        elif len(self.genre.get()) > 0:
-            return PlaylistSortType.GENRE_SHUFFLE
-        elif len(self.instrument.get()) > 0:
-            return PlaylistSortType.INSTRUMENT_SHUFFLE
-        elif len(self.form.get()) > 0:
-            return PlaylistSortType.FORM_SHUFFLE
-        elif len(self.album.get()) > 0:
-            return PlaylistSortType.ALBUM_SHUFFLE
-        return PlaylistSortType.RANDOM
+        # TODO: In the future, send all scopes from the search to the playlist for multi-level sorting
+        # Currently, only the selected sort type is used
+        selected_translation = self.playlist_sort_type_var.get()
+        return PlaylistSortType.get_from_translation(selected_translation)
 
     def remove_search(self, search):
         assert search is not None

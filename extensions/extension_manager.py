@@ -1,6 +1,7 @@
 import datetime
 import os
 import random
+import re
 import subprocess
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 
@@ -315,7 +316,8 @@ class ExtensionManager:
                 or self.is_in_library(b)
                 or (strict and self._strict_test(b, attr, strict))
                 or self._is_blacklisted(b)
-                or (Utils.contains_emoji(b.n) and random.random() > 0.05))  # 95% chance to skip emoji titles
+                or (Utils.contains_emoji(b.n) and random.random() > 0.05)  # 95% chance to skip emoji titles
+                or self._is_compilation(b))  # Skip compilation albums/playlists
 
     def is_in_library(self, b) -> bool:
         if b.w is None or b.w.strip() == "":
@@ -344,6 +346,50 @@ class ExtensionManager:
         if item is not None:
             logger.warning(f"Blacklisted: {item.string}\n{b.d}")
             return True
+        return False
+
+    def _is_compilation(self, b) -> bool:
+        """
+        Detect compilation albums/playlists that are typically bad choices for single track selection.
+        Example: "50 Most Beautiful X"
+        """
+        if not hasattr(b, 'n') or b.n is None:
+            return False
+        
+        name = b.n.lower()
+        description = b.d.lower() if hasattr(b, 'd') and b.d else ""
+        
+        # Compilation patterns to detect
+        compilation_patterns = [
+            # Number + "Most" patterns (e.g., "50 Most Beautiful", "100 Most")
+            r'\d+\s+most\s+(beautiful|greatest|best|popular|famous|essential)',
+            # "Best of" patterns
+            r'best\s+of\s+',
+            # "Essential" patterns
+            r'essential\s+(classical|music|collection)',
+            # "Greatest Hits" patterns
+            r'greatest\s+hits',
+            # "Collection" patterns (when it's clearly a compilation)
+            r'(the\s+)?(complete|definitive|ultimate|premium)\s+collection',
+            # "Top X" patterns
+            r'top\s+\d+',
+            # "Ultimate" patterns
+            r'ultimate\s+(collection|anthology|best)',
+            # "Anthology" patterns
+            r'anthology',
+            # "Compilation" patterns
+            r'compilation',
+            # "Various Artists" or similar
+            r'various\s+artists',
+        ]
+        
+        # Check name and description for compilation patterns
+        text_to_check = f"{name} {description}".lower()
+        for pattern in compilation_patterns:
+            if re.search(pattern, text_to_check, re.IGNORECASE):
+                logger.warning(f"Detected compilation by pattern /{pattern}/: {b.n}")
+                return True
+        
         return False
 
     def delayed(self, b, attr: Optional[TrackAttribute], s: str, b1=None) -> None:

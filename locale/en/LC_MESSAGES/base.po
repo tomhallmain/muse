@@ -2,8 +2,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
-"POT-Creation-Date: 2025-12-06 16:07-0500\n"
-"PO-Revision-Date: 2025-12-06 16:07-0500\n"
+"POT-Creation-Date: 2026-01-13 19:52-0500\n"
+"PO-Revision-Date: 2026-01-13 19:52-0500\n"
 "Last-Translator: Translator Name <translator@example.com>\n"
 "Language-Team: en Team <<EMAIL>>\n"
 "Language: en\n"
@@ -52,7 +52,7 @@ msgstr "Favorites"
 msgid "History"
 msgstr "History"
 
-#: app.py:156 utils/globals.py:458
+#: app.py:156 utils/globals.py:507
 msgid "Composers"
 msgstr "Composers"
 
@@ -64,11 +64,11 @@ msgstr "Personas"
 msgid "Tools"
 msgstr "Tools"
 
-#: app.py:162 ui/composers_window.py:393 ui/composers_window.py:426
-#: ui/composers_window.py:545 ui/favorites_window.py:282
+#: app.py:162 ui/composers_window.py:428 ui/composers_window.py:461
+#: ui/composers_window.py:583 ui/favorites_window.py:282
 #: ui/history_window.py:130 ui/network_media_window.py:108
 #: ui/network_media_window.py:160 ui/network_media_window.py:338
-#: ui/search_window.py:173 ui/search_window.py:290 ui/search_window.py:551
+#: ui/search_window.py:219 ui/search_window.py:361 ui/search_window.py:765
 msgid "Search"
 msgstr "Search"
 
@@ -115,22 +115,22 @@ msgid "DJ"
 msgstr "DJ"
 
 #: app.py:221 ui/extensions_window.py:183 ui/track_details_window.py:64
-#: utils/globals.py:236
+#: utils/globals.py:285
 msgid "Title"
 msgstr "Title"
 
 #: app.py:224 ui/track_details_window.py:67 utils/globals.py:138
-#: utils/globals.py:237
+#: utils/globals.py:286
 msgid "Album"
 msgstr "Album"
 
 #: app.py:227 ui/track_details_window.py:70 utils/globals.py:140
-#: utils/globals.py:238 utils/globals.py:307
+#: utils/globals.py:287 utils/globals.py:356
 msgid "Artist"
 msgstr "Artist"
 
 #: app.py:230 ui/track_details_window.py:76 utils/globals.py:142
-#: utils/globals.py:239 utils/globals.py:306
+#: utils/globals.py:288 utils/globals.py:355
 msgid "Composer"
 msgstr "Composer"
 
@@ -164,8 +164,8 @@ msgstr "Volume"
 
 #: app.py:262 ui/extensions_window.py:280 ui/favorites_window.py:374
 #: ui/favorites_window.py:509 ui/network_media_window.py:168
-#: ui/network_media_window.py:268 ui/search_window.py:298
-#: ui/search_window.py:470
+#: ui/network_media_window.py:268 ui/search_window.py:369
+#: ui/search_window.py:674
 msgid "Play"
 msgstr "Play"
 
@@ -193,7 +193,7 @@ msgstr "Delay Seconds"
 msgid "Playlist"
 msgstr "Playlist"
 
-#: app.py:298
+#: app.py:298 ui/search_window.py:297
 msgid "Playlist Sort"
 msgstr "Playlist Sort"
 
@@ -318,23 +318,23 @@ msgstr "Track not found in library for query: "
 msgid " Muse "
 msgstr " Muse "
 
-#: extensions/extension_manager.py:134 extensions/extension_manager.py:147
+#: extensions/extension_manager.py:135 extensions/extension_manager.py:148
 msgid "Extension thread waiting for {0} minutes"
 msgstr "Extension thread waiting for {0} minutes"
 
-#: extensions/extension_manager.py:175
+#: extensions/extension_manager.py:176
 msgid "Coming up soon, we'll be listening to a new track from the {0} {1}."
 msgstr "Coming up soon, we'll be listening to a new track from the {0} {1}."
 
-#: extensions/extension_manager.py:194
+#: extensions/extension_manager.py:195
 msgid "Extension failed for {0} with value '{1}': {2}"
 msgstr "Extension failed for {0} with value '{1}': {2}"
 
-#: extensions/extension_manager.py:362
+#: extensions/extension_manager.py:408
 msgid "Extension \"{0}\" waiting for {1} minutes"
 msgstr "Extension \"{0}\" waiting for {1} minutes"
 
-#: extensions/extension_manager.py:370
+#: extensions/extension_manager.py:416
 msgid "Extension \"{0}\" ready"
 msgstr "Extension \"{0}\" ready"
 
@@ -366,7 +366,7 @@ msgstr "End date cannot be in the future"
 msgid "Start date cannot be after end date"
 msgstr "Start date cannot be after end date"
 
-#: library_data/composer.py:192 library_data/library_data.py:68
+#: library_data/composer.py:192 library_data/library_data.py:71
 #: ui/favorites_window.py:39 ui/history_window.py:32
 msgid "({0} results)"
 msgstr "({0} results)"
@@ -411,15 +411,15 @@ msgstr "Invalid composer data"
 msgid "Composer not found"
 msgstr "Composer not found"
 
-#: library_data/library_data.py:332
+#: library_data/library_data.py:413
 msgid "Updating tracks"
 msgstr "Updating tracks"
 
-#: library_data/library_data.py:348
+#: library_data/library_data.py:429
 msgid "Refreshing cache... ({0}/{1} files)"
 msgstr "Refreshing cache... ({0}/{1} files)"
 
-#: library_data/library_data.py:417
+#: library_data/library_data.py:498
 msgid ""
 "Searching for tracks... ({0} files searched, {1} files may be remaining)"
 msgstr ""
@@ -668,7 +668,7 @@ msgstr "Every day"
 msgid "{0} - DJ: {1} - Days: {2} - Times: {3}-{4} - Shutdown: {5}"
 msgstr "{0} - DJ: {1} - Days: {2} - Times: {3}-{4} - Shutdown: {5}"
 
-#: muse/schedules_manager.py:77
+#: muse/schedules_manager.py:105
 msgid "Not enough schedules found."
 msgstr "Not enough schedules found."
 
@@ -975,7 +975,7 @@ msgid "Modify"
 msgstr "Modify"
 
 #: ui/blacklist_window.py:481 ui/favorites_window.py:388
-#: ui/favorites_window.py:523 ui/search_window.py:314
+#: ui/favorites_window.py:523 ui/search_window.py:385
 msgid "Remove"
 msgstr "Remove"
 
@@ -1076,7 +1076,7 @@ msgid "Silent removal set to: {0}"
 msgstr "Silent removal set to: {0}"
 
 #: ui/composers_window.py:40 ui/composers_window.py:55
-#: ui/composers_window.py:336
+#: ui/composers_window.py:371
 msgid "New Composer"
 msgstr "New Composer"
 
@@ -1116,7 +1116,7 @@ msgstr "Dates uncertain"
 msgid "Dates are uncertain"
 msgstr "Dates are uncertain"
 
-#: ui/composers_window.py:90 utils/globals.py:459
+#: ui/composers_window.py:90 utils/globals.py:508
 msgid "Genres"
 msgstr "Genres"
 
@@ -1169,46 +1169,46 @@ msgstr "Are you sure you want to delete {0}? This action cannot be undone."
 msgid "Failed to delete composer:"
 msgstr "Failed to delete composer:"
 
-#: ui/composers_window.py:314
+#: ui/composers_window.py:349
 msgid "Search Composers"
 msgstr "Search Composers"
 
-#: ui/composers_window.py:342
+#: ui/composers_window.py:377
 msgid "Search Composer"
 msgstr "Search Composer"
 
-#: ui/composers_window.py:350
+#: ui/composers_window.py:385
 msgid "Search Genre"
 msgstr "Search Genre"
 
-#: ui/composers_window.py:358
+#: ui/composers_window.py:393
 msgid "Start Date After"
 msgstr "Start Date After"
 
-#: ui/composers_window.py:365
+#: ui/composers_window.py:400
 msgid "Start Date Before"
 msgstr "Start Date Before"
 
-#: ui/composers_window.py:373
+#: ui/composers_window.py:408
 msgid "End Date After"
 msgstr "End Date After"
 
-#: ui/composers_window.py:380
+#: ui/composers_window.py:415
 msgid "End Date Before"
 msgstr "End Date Before"
 
-#: ui/composers_window.py:404 ui/search_window.py:259
+#: ui/composers_window.py:439 ui/search_window.py:330
 msgid "No recent searches found."
 msgstr "No recent searches found."
 
-#: ui/composers_window.py:537 ui/extensions_window.py:272
+#: ui/composers_window.py:575 ui/extensions_window.py:272
 #: ui/favorites_window.py:381 ui/favorites_window.py:516
 #: ui/history_window.py:220 ui/history_window.py:292
-#: ui/network_media_window.py:261 ui/search_window.py:463
+#: ui/network_media_window.py:261 ui/search_window.py:667
 msgid "Details"
 msgstr "Details"
 
-#: ui/composers_window.py:588
+#: ui/composers_window.py:626
 msgid "Composer Search"
 msgstr "Composer Search"
 
@@ -1625,13 +1625,13 @@ msgstr "Cache Updated: {}"
 msgid "No Cache Available"
 msgstr "No Cache Available"
 
-#: ui/network_media_window.py:78 ui/search_window.py:140
+#: ui/network_media_window.py:78 ui/search_window.py:172
 msgid "Search Library"
 msgstr "Search Library"
 
-#: ui/network_media_window.py:116 ui/search_window.py:188
-#: ui/search_window.py:197 ui/search_window.py:206 ui/search_window.py:215
-#: ui/search_window.py:224 ui/search_window.py:233 ui/search_window.py:242
+#: ui/network_media_window.py:116 ui/search_window.py:234
+#: ui/search_window.py:243 ui/search_window.py:252 ui/search_window.py:261
+#: ui/search_window.py:270 ui/search_window.py:279 ui/search_window.py:288
 msgid "Sort by"
 msgstr "Sort by"
 
@@ -1639,15 +1639,15 @@ msgstr "Sort by"
 msgid "No recent urls found."
 msgstr "No recent urls found."
 
-#: ui/network_media_window.py:141 ui/search_window.py:271
+#: ui/network_media_window.py:141 ui/search_window.py:342
 msgid "(No track selected)"
 msgstr "(No track selected)"
 
-#: ui/network_media_window.py:202 ui/search_window.py:356
+#: ui/network_media_window.py:202 ui/search_window.py:454
 msgid "Please wait, overwriting cache and searching..."
 msgstr "Please wait, overwriting cache and searching..."
 
-#: ui/network_media_window.py:202 ui/search_window.py:356
+#: ui/network_media_window.py:202 ui/search_window.py:454
 msgid "Searching..."
 msgstr "Searching..."
 
@@ -2009,19 +2009,19 @@ msgstr "Create and modify schedules"
 msgid "Clear schedules"
 msgstr "Clear schedules"
 
-#: ui/search_window.py:97
+#: ui/search_window.py:129
 msgid "No matching tracks found"
 msgstr "No matching tracks found"
 
-#: ui/search_window.py:246
+#: ui/search_window.py:292
 msgid "Overwrite Cache"
 msgstr "Overwrite Cache"
 
-#: ui/search_window.py:431
+#: ui/search_window.py:535
 msgid "No results found."
 msgstr "No results found."
 
-#: ui/search_window.py:436
+#: ui/search_window.py:540
 msgid ""
 "Tip: If you've recently added or moved files, try checking 'Overwrite Cache'"
 " in the search options below."
@@ -2041,8 +2041,8 @@ msgstr "Update"
 msgid "Album Artist"
 msgstr "Album Artist"
 
-#: ui/track_details_window.py:79 utils/globals.py:144 utils/globals.py:240
-#: utils/globals.py:308
+#: ui/track_details_window.py:79 utils/globals.py:144 utils/globals.py:289
+#: utils/globals.py:357
 msgid "Genre"
 msgstr "Genre"
 
@@ -2415,239 +2415,275 @@ msgstr ""
 msgid "Incorrect password"
 msgstr "Incorrect password"
 
-#: utils/globals.py:146 utils/globals.py:241 utils/globals.py:309
+#: utils/audio_device_manager.py:1527
+msgid "Audio Device Detection Failed"
+msgstr "Audio Device Detection Failed"
+
+#: utils/audio_device_manager.py:1528
+msgid "Could not detect the current audio output device."
+msgstr "Could not detect the current audio output device."
+
+#: utils/audio_device_manager.py:1529 utils/audio_device_manager.py:1546
+msgid "Expected device for {0} time: {1}"
+msgstr "Expected device for {0} time: {1}"
+
+#: utils/audio_device_manager.py:1530
+msgid ""
+"Please verify that your audio device is connected and turned on, and switch "
+"to the expected device manually if needed."
+msgstr ""
+"Please verify that your audio device is connected and turned on, and switch "
+"to the expected device manually if needed."
+
+#: utils/audio_device_manager.py:1533 utils/audio_device_manager.py:1550
+msgid "Audio Device Warning"
+msgstr "Audio Device Warning"
+
+#: utils/audio_device_manager.py:1544
+msgid "Audio Device Mismatch"
+msgstr "Audio Device Mismatch"
+
+#: utils/audio_device_manager.py:1545
+msgid "Current device: {0}"
+msgstr "Current device: {0}"
+
+#: utils/audio_device_manager.py:1547
+msgid "Please switch to the expected device manually if needed."
+msgstr "Please switch to the expected device manually if needed."
+
+#: utils/globals.py:146 utils/globals.py:290 utils/globals.py:358
 msgid "Form"
 msgstr "Form"
 
-#: utils/globals.py:148 utils/globals.py:242 utils/globals.py:310
+#: utils/globals.py:148 utils/globals.py:291 utils/globals.py:359
 msgid "Instrument"
 msgstr "Instrument"
 
-#: utils/globals.py:154 utils/globals.py:311
+#: utils/globals.py:203 utils/globals.py:360
 msgid "Random"
 msgstr "Random"
 
-#: utils/globals.py:155
+#: utils/globals.py:204
 msgid "Sequence"
 msgstr "Sequence"
 
-#: utils/globals.py:156
+#: utils/globals.py:205
 msgid "Album Shuffle"
 msgstr "Album Shuffle"
 
-#: utils/globals.py:157
+#: utils/globals.py:206
 msgid "Artist Shuffle"
 msgstr "Artist Shuffle"
 
-#: utils/globals.py:158
+#: utils/globals.py:207
 msgid "Composer Shuffle"
 msgstr "Composer Shuffle"
 
-#: utils/globals.py:159
+#: utils/globals.py:208
 msgid "Genre Shuffle"
 msgstr "Genre Shuffle"
 
-#: utils/globals.py:160
+#: utils/globals.py:209
 msgid "Form Shuffle"
 msgstr "Form Shuffle"
 
-#: utils/globals.py:161
+#: utils/globals.py:210
 msgid "Instrument Shuffle"
 msgstr "Instrument Shuffle"
 
-#: utils/globals.py:196
+#: utils/globals.py:245
 msgid "All Music"
 msgstr "All Music"
 
-#: utils/globals.py:197
+#: utils/globals.py:246
 msgid "Playlist Config"
 msgstr "Playlist Config"
 
-#: utils/globals.py:359
+#: utils/globals.py:408
 msgid "weather"
 msgstr "weather"
 
-#: utils/globals.py:361
+#: utils/globals.py:410
 msgid "news"
 msgstr "news"
 
-#: utils/globals.py:365
+#: utils/globals.py:414
 msgid "joke"
 msgstr "joke"
 
-#: utils/globals.py:367
+#: utils/globals.py:416
 msgid "fact"
 msgstr "fact"
 
-#: utils/globals.py:369
+#: utils/globals.py:418
 msgid "fable"
 msgstr "fable"
 
-#: utils/globals.py:371
+#: utils/globals.py:420
 msgid "truth and lie"
 msgstr "truth and lie"
 
-#: utils/globals.py:373
+#: utils/globals.py:422
 msgid "aphorism"
 msgstr "aphorism"
 
-#: utils/globals.py:375
+#: utils/globals.py:424
 msgid "poem"
 msgstr "poem"
 
-#: utils/globals.py:377
+#: utils/globals.py:426
 msgid "quote"
 msgstr "quote"
 
-#: utils/globals.py:379
+#: utils/globals.py:428
 msgid "tongue twister"
 msgstr "tongue twister"
 
-#: utils/globals.py:381
+#: utils/globals.py:430
 msgid "motivation"
 msgstr "motivation"
 
-#: utils/globals.py:383
+#: utils/globals.py:432
 msgid "calendar"
 msgstr "calendar"
 
-#: utils/globals.py:385
+#: utils/globals.py:434
 msgid "more about the next track"
 msgstr "more about the next track"
 
-#: utils/globals.py:387
+#: utils/globals.py:436
 msgid "more about the last track"
 msgstr "more about the last track"
 
-#: utils/globals.py:389
+#: utils/globals.py:438
 msgid "more about our playlist"
 msgstr "more about our playlist"
 
-#: utils/globals.py:391
+#: utils/globals.py:440
 msgid "random wiki article"
 msgstr "random wiki article"
 
-#: utils/globals.py:393
+#: utils/globals.py:442
 msgid "funny story"
 msgstr "funny story"
 
-#: utils/globals.py:395
+#: utils/globals.py:444
 msgid "language learning"
 msgstr "language learning"
 
-#: utils/globals.py:455
+#: utils/globals.py:504
 msgid "Tracks"
 msgstr "Tracks"
 
-#: utils/globals.py:456
+#: utils/globals.py:505
 msgid "Albums"
 msgstr "Albums"
 
-#: utils/globals.py:457
+#: utils/globals.py:506
 msgid "Artists"
 msgstr "Artists"
 
-#: utils/globals.py:460
+#: utils/globals.py:509
 msgid "Forms"
 msgstr "Forms"
 
-#: utils/globals.py:461
+#: utils/globals.py:510
 msgid "Instruments"
 msgstr "Instruments"
 
-#: utils/globals.py:506
+#: utils/globals.py:555
 msgid "Remove word/phrase (only the blacklisted part)"
 msgstr "Remove word/phrase (only the blacklisted part)"
 
-#: utils/globals.py:507
+#: utils/globals.py:556
 msgid "Remove entire tag (if any part matches)"
 msgstr "Remove entire tag (if any part matches)"
 
-#: utils/globals.py:508
+#: utils/globals.py:557
 msgid "Fail prompt (block generation)"
 msgstr "Fail prompt (block generation)"
 
-#: utils/globals.py:509
+#: utils/globals.py:558
 msgid "Log only (do not remove, just log)"
 msgstr "Log only (do not remove, just log)"
 
-#: utils/globals.py:539
+#: utils/globals.py:588
 msgid "Male"
 msgstr "Male"
 
-#: utils/globals.py:540
+#: utils/globals.py:589
 msgid "Female"
 msgstr "Female"
 
-#: utils/globals.py:586 utils/globals.py:608
+#: utils/globals.py:635 utils/globals.py:657
 msgid "Introduction"
 msgstr "Introduction"
 
-#: utils/globals.py:588 utils/globals.py:609
+#: utils/globals.py:637 utils/globals.py:658
 msgid "Re-introduction"
 msgstr "Re-introduction"
 
-#: utils/globals.py:590 utils/globals.py:610
+#: utils/globals.py:639 utils/globals.py:659
 msgid "No introduction"
 msgstr "No introduction"
 
-#: utils/globals.py:655
+#: utils/globals.py:704
 msgid "Run Search"
 msgstr "Run Search"
 
-#: utils/globals.py:656
+#: utils/globals.py:705
 msgid "View Library"
 msgstr "View Library"
 
-#: utils/globals.py:657
+#: utils/globals.py:706
 msgid "View History"
 msgstr "View History"
 
-#: utils/globals.py:658
+#: utils/globals.py:707
 msgid "Edit Composers"
 msgstr "Edit Composers"
 
-#: utils/globals.py:659
+#: utils/globals.py:708
 msgid "Edit Personas"
 msgstr "Edit Personas"
 
-#: utils/globals.py:660
+#: utils/globals.py:709
 msgid "Edit Schedules"
 msgstr "Edit Schedules"
 
-#: utils/globals.py:661
+#: utils/globals.py:710
 msgid "Edit Extensions"
 msgstr "Edit Extensions"
 
-#: utils/globals.py:662
+#: utils/globals.py:711
 msgid "Edit Playlists"
 msgstr "Edit Playlists"
 
-#: utils/globals.py:663
+#: utils/globals.py:712
 msgid "Edit Favorites"
 msgstr "Edit Favorites"
 
-#: utils/globals.py:664
+#: utils/globals.py:713
 msgid "Edit Blacklist"
 msgstr "Edit Blacklist"
 
-#: utils/globals.py:665
+#: utils/globals.py:714
 msgid "Reveal Blacklist Concepts"
 msgstr "Reveal Blacklist Concepts"
 
-#: utils/globals.py:666
+#: utils/globals.py:715
 msgid "Delete Media"
 msgstr "Delete Media"
 
-#: utils/globals.py:667
+#: utils/globals.py:716
 msgid "Edit Configuration"
 msgstr "Edit Configuration"
 
-#: utils/globals.py:668
+#: utils/globals.py:717
 msgid "Start Application"
 msgstr "Start Application"
 
-#: utils/globals.py:669
+#: utils/globals.py:718
 msgid "Access Password Administration"
 msgstr "Access Password Administration"
 
@@ -2711,38 +2747,30 @@ msgstr "months"
 msgid "years"
 msgstr "years"
 
-#: utils/audio_device_manager.py:1515
-msgid "Audio Device Detection Failed"
-msgstr "Audio Device Detection Failed"
+#: ui/search_window.py:314
+msgid "Filter Results"
+msgstr "Filter Results"
 
-#: utils/audio_device_manager.py:1516
-msgid "Could not detect the current audio output device."
-msgstr "Could not detect the current audio output device."
+#: ui/search_window.py:573
+msgid "No results match the filter '{0}'."
+msgstr "No results match the filter '{0}'."
 
-#: utils/audio_device_manager.py:1517 utils/audio_device_manager.py:1532
-msgid "Expected device for {0} time: {1}"
-msgstr "Expected device for {0} time: {1}"
+#: ui/search_window.py:614
+msgid "Found {0} total results. Showing {1} filtered results."
+msgstr "Found {0} total results. Showing {1} filtered results."
 
-#: utils/audio_device_manager.py:1518
-msgid ""
-"Please verify that your audio device is connected and turned on, and switch "
-"to the expected device manually if needed."
-msgstr ""
-"Please verify that your audio device is connected and turned on, and switch "
-"to the expected device manually if needed."
+#: ui/search_window.py:618
+msgid "Showing {0} filtered results."
+msgstr "Showing {0} filtered results."
 
-#: utils/audio_device_manager.py:1521 utils/audio_device_manager.py:1536
-msgid "Audio Device Warning"
-msgstr "Audio Device Warning"
+#: ui/search_window.py:620
+msgid "Found {0} total results. Showing all results up to {1}."
+msgstr "Found {0} total results. Showing all results up to {1}."
 
-#: utils/audio_device_manager.py:1530
-msgid "Audio Device Mismatch"
-msgstr "Audio Device Mismatch"
+#: ui/search_window.py:624
+msgid "Showing all results up to {0}."
+msgstr "Showing all results up to {0}."
 
-#: utils/audio_device_manager.py:1531
-msgid "Current device: {0}"
-msgstr "Current device: {0}"
-
-#: utils/audio_device_manager.py:1533
-msgid "Please switch to the expected device manually if needed."
-msgstr "Please switch to the expected device manually if needed."
+#: ui/search_window.py:634
+msgid "Find More"
+msgstr "Find More"

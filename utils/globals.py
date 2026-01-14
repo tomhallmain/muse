@@ -148,6 +148,55 @@ class PlaylistSortType(Enum):
             return _("Instrument")
         raise Exception(f"Unhandled sort type {self}")
 
+    def get_scope_priority(self) -> int:
+        """
+        Returns the scope priority/size for sorting purposes.
+        Higher numbers indicate larger scopes (more tracks typically match).
+        Priority order: GENRE > COMPOSER > ARTIST > INSTRUMENT > FORM > ALBUM > RANDOM/SEQUENCE
+        """
+        priority_map = {
+            PlaylistSortType.GENRE_SHUFFLE: 6,
+            PlaylistSortType.COMPOSER_SHUFFLE: 5,
+            PlaylistSortType.ARTIST_SHUFFLE: 4,
+            PlaylistSortType.INSTRUMENT_SHUFFLE: 3,
+            PlaylistSortType.FORM_SHUFFLE: 2,
+            PlaylistSortType.ALBUM_SHUFFLE: 1,
+            PlaylistSortType.RANDOM: 0,
+            PlaylistSortType.SEQUENCE: 0,
+        }
+        return priority_map.get(self, 0)
+
+    @staticmethod
+    def get_largest_scope_from_search_fields(composer: str = "", artist: str = "", genre: str = "", 
+                                             instrument: str = "", form: str = "", album: str = "") -> 'PlaylistSortType':
+        """
+        Determines the largest scope from the provided search fields.
+        Returns the PlaylistSortType corresponding to the field with the largest scope.
+        Uses get_scope_priority() to determine which field has the largest scope.
+        """
+        # Map search fields to their corresponding PlaylistSortType
+        field_mappings = [
+            (composer, PlaylistSortType.COMPOSER_SHUFFLE),
+            (artist, PlaylistSortType.ARTIST_SHUFFLE),
+            (genre, PlaylistSortType.GENRE_SHUFFLE),
+            (instrument, PlaylistSortType.INSTRUMENT_SHUFFLE),
+            (form, PlaylistSortType.FORM_SHUFFLE),
+            (album, PlaylistSortType.ALBUM_SHUFFLE),
+        ]
+        
+        # Find the field with the highest priority among non-empty fields
+        largest_scope = PlaylistSortType.RANDOM
+        highest_priority = -1
+        
+        for field_value, sort_type in field_mappings:
+            if field_value and field_value.strip():
+                priority = sort_type.get_scope_priority()
+                if priority > highest_priority:
+                    highest_priority = priority
+                    largest_scope = sort_type
+        
+        return largest_scope
+
     @staticmethod
     def get_translated_names():
         return [
