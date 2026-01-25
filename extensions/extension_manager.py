@@ -317,7 +317,8 @@ class ExtensionManager:
                 or (strict and self._strict_test(b, attr, strict))
                 or self._is_blacklisted(b)
                 or (Utils.contains_emoji(b.n) and random.random() > 0.05)  # 95% chance to skip emoji titles
-                or self._is_compilation(b))  # Skip compilation albums/playlists
+                or self._is_compilation(b)
+                or self._not_music(b))
 
     def is_in_library(self, b) -> bool:
         if b.w is None or b.w.strip() == "":
@@ -353,12 +354,6 @@ class ExtensionManager:
         Detect compilation albums/playlists that are typically bad choices for single track selection.
         Example: "50 Most Beautiful X"
         """
-        if not hasattr(b, 'n') or b.n is None:
-            return False
-        
-        name = b.n.lower()
-        description = b.d.lower() if hasattr(b, 'd') and b.d else ""
-        
         # Compilation patterns to detect
         compilation_patterns = [
             # Number + "Most" patterns (e.g., "50 Most Beautiful", "100 Most")
@@ -382,14 +377,24 @@ class ExtensionManager:
             # "Various Artists" or similar
             r'various\s+artists',
         ]
-        
-        # Check name and description for compilation patterns
-        text_to_check = f"{name} {description}".lower()
-        for pattern in compilation_patterns:
+        return self._do_check(b, compilation_patterns)
+    
+    def _not_music(self, b) -> bool:
+        # Not music patterns to detect
+        patterns = [
+            r'biography',
+        ]
+        return self._do_check(b, patterns)
+
+    def _do_check(self, b, patterns: List[str], only_n: bool = False) -> bool:
+        if not hasattr(b, 'n') or b.n is None:
+            return False
+        n = b.n.lower()
+        d = b.d.lower() if hasattr(b, 'd') and b.d else ""
+        text_to_check = n if only_n else f"{n} | {d}"
+        for pattern in patterns:
             if re.search(pattern, text_to_check, re.IGNORECASE):
-                logger.warning(f"Detected compilation by pattern /{pattern}/: {b.n}")
                 return True
-        
         return False
 
     def delayed(self, b, attr: Optional[TrackAttribute], s: str, b1=None) -> None:
