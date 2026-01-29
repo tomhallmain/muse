@@ -566,6 +566,14 @@ If you are young, not sure, or even an adult, click the close button on this win
         Add or remove an item from the blacklist
         """
         if item is not None:
+            response = self.app_actions.alert(
+                _("Remove blacklist item"),
+                _("Are you sure you want to remove this blacklist concept?\n\n{0}").format(item.string),
+                kind="askyesno",
+                master=self.master
+            )
+            if not response:
+                return None
             Blacklist.remove_item(item)
             self.refresh()
             
