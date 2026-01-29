@@ -363,7 +363,7 @@ class SearchWindow(BaseWindow):
             search_btn.grid(row=row, column=5)
             def search_handler(event, self=self, search=search):
                 self.load_stored_search(library_data_search=search)
-                self._do_search(event)
+                self._do_search(event, overwrite=self.overwrite_cache.get())
             search_btn.bind("<Button-1>", search_handler)
 
             play_btn = Button(self.results_frame.viewPort, text=_("Play"))
@@ -371,7 +371,7 @@ class SearchWindow(BaseWindow):
             play_btn.grid(row=row, column=6)
             def play_handler(event, self=self, search=search, track=track):
                 self.load_stored_search(library_data_search=search)
-                self._do_search(event)
+                self._do_search(event)  # Avoid overwrite cache here since we probably just did it
                 if track is None:
                     logger.info("No specific track defined on search, using first available track.")
                     track = search.get_first_available_track()
@@ -801,6 +801,8 @@ class SearchWindow(BaseWindow):
         if has_more_detected or has_more_known:
             self.current_offset += page_size
             # Re-run the search with the new offset to load more results
+            # Either we just did a search and overwrote the cache, or we are loading more results
+            # so we don't need to overwrite it again
             self._do_search(overwrite=False)
         else:
             logger.info("Reached end of results")
