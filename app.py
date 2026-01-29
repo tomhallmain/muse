@@ -3,6 +3,7 @@ import os
 import signal
 import time
 import traceback
+from typing import Optional
 
 from tkinter import (
     BOTH, END, HORIZONTAL, N, NW, W, E, YES,
@@ -185,7 +186,7 @@ class App():
             "start_play_callback": self.start_playback,
             "shutdown_callback": self.on_closing,
             "toast": self.toast,
-            "alert": self.alert,
+            "_alert": self.alert,
             "update_playlist_state": self.update_playlist_state,
             "update_favorite_status": self.update_favorite_status,
             "get_current_track": self.get_current_track,
@@ -195,7 +196,7 @@ class App():
             "search_and_play": self.search_and_play,
             "update_directory_count": self.update_directory_count,
             "open_password_admin_window": self.open_password_admin_window,
-        })
+        }, self.master)
 
         # Sidebar
         self.sidebar = Sidebar(self.master)
@@ -1038,8 +1039,8 @@ class App():
             self._library_data = LibraryData()
         return self._library_data
 
-    def alert(self, title, message, kind="info", hidemain=True) -> None:
-        if kind not in ("error", "warning", "info", "askokcancel"):
+    def alert(self, title: str, message: str, kind: str = "info", severity: str = "normal", master: Optional[object] = None):
+        if kind not in ("error", "warning", "info", "askokcancel", "askyesno", "askyesnocancel"):
             raise ValueError("Unsupported alert kind.")
 
         if kind == "error":
@@ -1049,11 +1050,15 @@ class App():
         else:
             logger.info(f"Alert - Title: \"{title}\" Message: {message}")
 
-        if kind == "askokcancel":
-            show_method = getattr(messagebox, kind)
+        # Use provided master or fall back to self.master
+        parent_window = master if master is not None else self.master
+
+        # Use standard messagebox for normal cases
+        if kind in ("askokcancel", "askyesno", "askyesnocancel"):
+            alert_method = getattr(messagebox, kind)
         else:
-            show_method = getattr(messagebox, "show{}".format(kind))
-        return show_method(title, message)
+            alert_method = getattr(messagebox, f"show{kind}")
+        return alert_method(title=title, message=message, parent=parent_window)
 
     def handle_error(self, error_text, title=None, kind="error"):
         traceback.print_exc()

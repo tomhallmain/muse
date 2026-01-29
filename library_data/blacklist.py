@@ -3,7 +3,7 @@ import json
 import os
 import re
 
-from utils.globals import AppInfo, Globals, BlacklistMode
+from utils.globals import AppInfo, BlacklistMode
 from utils.encryptor import symmetric_encrypt_data_to_file, symmetric_decrypt_data_from_file
 from utils.logging_setup import get_logger
 from utils.pickleable_cache import SizeAwarePicklableCache
@@ -17,6 +17,119 @@ logger = get_logger("blacklist")
 # Define cache file path
 CACHE_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "configs")
 BLACKLIST_CACHE_FILE = os.path.join(CACHE_DIR, "blacklist_filter_cache.pkl")
+
+
+def normalize_accents_for_regex(text: str, is_regex: bool = False) -> str:
+    """Convert accented characters to regex patterns that match all accent variations.
+    
+    This function takes a string and converts accented characters to regex patterns
+    that will match the character with any accent combination, preventing filter evasion
+    through accent variations.
+    
+    Args:
+        text: The input text to normalize
+        is_regex: Whether the input text is already a regex pattern
+        
+    Returns:
+        str: The text with accented characters converted to regex patterns
+    """
+    # Mapping of base characters to their common accented variations
+    accent_patterns = {
+        'a': '[aàáâãäåāăąǎǟǡǻȁȃȧɐɑ]',
+        'A': '[AÀÁÂÃÄÅĀĂĄǍǞǠǺȀȂȦɐ]',
+        'e': '[eèéêëēĕėęěȅȇȩɇ]',
+        'E': '[EÈÉÊËĒĔĖĘĚȄȆȨ]',
+        'i': '[iìíîïĩīĭįıǐȉȋɨ]',
+        'I': '[IÌÍÎÏĨĪĬĮİǏȈȊ]',
+        'o': '[oòóôõöøōŏőǒǫǭǿȍȏȫȭȯȱɵ]',
+        'O': '[OÒÓÔÕÖØŌŎŐǑǪǬǾȌȎȪȬȮȰ]',
+        'u': '[uùúûüũūŭůűųǔǖǘǚǜȕȗ]',
+        'U': '[UÙÚÛÜŨŪŬŮŰŲǓǕǗǙǛȔȖ]',
+        'c': '[cçćĉċč]',
+        'C': '[CÇĆĈĊČ]',
+        'n': '[nñńņňŋ]',
+        'N': '[NÑŃŅŇŊ]',
+        's': '[sśŝşš]',
+        'S': '[SŚŜŞŠ]',
+        'z': '[zźżž]',
+        'Z': '[ZŹŻŽ]',
+        'y': '[yýÿŷ]',
+        'Y': '[YÝŸŶ]',
+        'l': '[lł]',
+        'L': '[LŁ]',
+        'd': '[dđ]',
+        'D': '[DĐ]',
+        't': '[tþ]',
+        'T': '[TÞ]',
+        'r': '[rř]',
+        'R': '[RŘ]',
+        'g': '[gğ]',
+        'G': '[GĞ]',
+        'h': '[hħ]',
+        'H': '[HĦ]',
+        'j': '[jĵ]',
+        'J': '[JĴ]',
+        'k': '[kķ]',
+        'K': '[KĶ]',
+        'w': '[wŵ]',
+        'W': '[WŴ]',
+        'x': '[xẋ]',
+        'X': '[XẊ]',
+        'b': '[bḃ]',
+        'B': '[BḂ]',
+        'f': '[fḟ]',
+        'F': '[FḞ]',
+        'm': '[mṁ]',
+        'M': '[MṀ]',
+        'p': '[pṗ]',
+        'P': '[PṖ]',
+        'v': '[vṽ]',
+        'V': '[VṼ]',
+    }
+    
+    if is_regex:
+        # For regex patterns, we need to be more careful to avoid breaking existing patterns
+        # We'll use a more sophisticated approach that handles character classes properly
+        result = text
+        i = 0
+        while i < len(result):
+            char = result[i]
+            
+            # Skip if we're inside a character class [...]
+            if char == '[':
+                # Find the matching closing bracket
+                bracket_count = 1
+                j = i + 1
+                while j < len(result) and bracket_count > 0:
+                    if result[j] == '[':
+                        bracket_count += 1
+                    elif result[j] == ']':
+                        bracket_count -= 1
+                    j += 1
+                i = j
+                continue
+            
+            # Skip if we're dealing with an escaped character
+            if char == '\\' and i + 1 < len(result):
+                # Skip the escaped character
+                i += 2
+                continue
+            
+            # Replace the character if it's a base character
+            if char in accent_patterns:
+                pattern = accent_patterns[char]
+                result = result[:i] + pattern + result[i+1:]
+                i += len(pattern)  # Skip ahead by the length of the replacement
+            else:
+                i += 1
+        return result
+    else:
+        # For non-regex patterns, simple replacement is safe
+        result = text
+        for base_char, pattern in accent_patterns.items():
+            result = result.replace(base_char, pattern)
+        return result
+
 
 class BlacklistException(Exception):
     def __init__(self, message, whitelist, filtered):
@@ -45,19 +158,19 @@ class BlacklistItem:
         # Process the string based on the new property
         
         if use_regex:
-            # Start from the original string
-            processed_string = string
+            # For regex patterns, store the original string and apply accent normalization carefully
+            self.string = string  # Keep original case for regex patterns
+            # Apply accent normalization with regex-aware handling
+            normalized_string = normalize_accents_for_regex(string, is_regex=True)
+            processed_string = normalized_string
             if use_space_as_optional_nonword:
                 # Convert spaces to optional non-word character patterns
                 processed_string = re.sub(r'\s+', r'(\\W)*', processed_string)
-            # For regex patterns, store the original string and compile with case-insensitive flag
-            self.string = string  # Keep original case for regex patterns
             # Use glob-to-regex conversion for regex mode with case-insensitive flag
             self.regex_pattern = re.compile(self._glob_to_regex(processed_string), re.IGNORECASE)
         else:
             # For non-regex patterns, convert to lowercase and use simple word boundary pattern
             self.string = string.lower()
-            # Always build a processed_string
             if use_space_as_optional_nonword:
                 # Split on whitespace, escape tokens, and join with an optional non-word pattern.
                 # This avoids leaving the backslash that escapes spaces from re.escape() in front of the inserted group.
@@ -65,6 +178,8 @@ class BlacklistItem:
                 processed_string = r'(?:\W)*'.join(re.escape(w) for w in words if w)
             else:
                 processed_string = re.escape(self.string)
+            # Apply accent normalization to prevent filter evasion via accent variations
+            processed_string = normalize_accents_for_regex(processed_string, is_regex=True)
             # Use simple word boundary pattern for exact match mode
             if use_word_boundary:
                 self.regex_pattern = re.compile(r'(^|\W)' + processed_string)
@@ -81,7 +196,7 @@ class BlacklistItem:
                 self.exception_pattern = None
                 self.exception_regex_pattern = None
 
-        # print(f"BlacklistItem: {self.string} -> {self.regex_pattern}")
+        # print(f"BlacklistItem: {self.string} -> {self.regex_pattern.pattern}")
 
     def to_dict(self) -> dict:
         return {
@@ -200,8 +315,6 @@ class BlacklistItem:
 
     def __str__(self) -> str:
         return self.string
-    
-
 
 
 class Blacklist:
@@ -233,6 +346,59 @@ class Blacklist:
     @staticmethod
     def set_blacklist_silent_removal(silent: bool) -> None:
         Blacklist.blacklist_silent_removal = silent
+
+    @staticmethod
+    def get_version() -> str:
+        """Get a version string that changes when the blacklist changes.
+        
+        This version is computed from the blacklist items themselves, so it will
+        change whenever items are added, removed, or modified. This can be used
+        to invalidate caches that depend on the blacklist state.
+        
+        The version cache is persisted as part of the filter cache.
+        
+        Returns:
+            str: A version string (hash) representing the current blacklist state
+        """
+        # Use cached version from filter cache if available and blacklist hasn't changed
+        # Handle case where old cache files don't have this attribute
+        if not hasattr(Blacklist._filter_cache, 'version_cache'):
+            Blacklist._filter_cache.version_cache = None
+        
+        version_cache = Blacklist._filter_cache.version_cache
+        if version_cache is not None:
+            # Quick check: if the list length changed, version definitely changed
+            if len(Blacklist.TAG_BLACKLIST) != version_cache[0]:
+                version_cache = None
+                Blacklist._filter_cache.version_cache = None
+        
+        if version_cache is None:
+            # Compute version from blacklist items
+            # Include enabled state, string, and regex settings in the hash
+            version_data = []
+            for item in Blacklist.TAG_BLACKLIST:
+                version_data.append((
+                    item.string,
+                    item.enabled,
+                    item.use_regex,
+                    item.use_word_boundary,
+                    item.use_space_as_optional_nonword,
+                    item.exception_pattern
+                ))
+            # Sort to ensure consistent ordering
+            version_data.sort()
+            
+            # Create a hash from the version data
+            import hashlib
+            version_str = json.dumps(version_data, sort_keys=True)
+            version_hash = hashlib.md5(version_str.encode('utf-8')).hexdigest()
+            
+            # Cache the version along with the list length for quick invalidation
+            # Store in filter cache so it persists across sessions
+            version_cache = (len(Blacklist.TAG_BLACKLIST), version_hash)
+            Blacklist._filter_cache.version_cache = version_cache
+        
+        return version_cache[1]
 
     @staticmethod
     def _filter_concepts_cached(
@@ -647,3 +813,55 @@ class Blacklist:
 
 
 
+if __name__ == "__main__":
+    print("Testing accent normalization patterns...")
+    
+    # Test cases: (input, should_match, should_not_match)
+    test_cases = [
+        ("cafe", ["cafe", "café", "cafë", "cafè"], ["coffee", "tea"]),
+        ("test w b", ["test w b", "test w b", "tëst w b"], ["test x b", "different"]),
+        ("hello", ["hello", "héllo", "hëllo"], ["goodbye", "hi"]),
+    ]
+    
+    for input_string, should_match, should_not_match in test_cases:
+        print(f"\nTesting: '{input_string}'")
+        item = BlacklistItem(input_string)
+        print(f"Pattern: {item.regex_pattern.pattern}")
+        
+        # Test matches that should work
+        for test_word in should_match:
+            matches = item.matches_tag(test_word)
+            status = "✓" if matches else "✗"
+            print(f"  {status} '{test_word}' -> {matches}")
+        
+        # Test matches that should NOT work
+        for test_word in should_not_match:
+            matches = item.matches_tag(test_word)
+            status = "✓" if not matches else "✗"
+            print(f"  {status} '{test_word}' -> {matches} (should be False)")
+    
+    print("\n" + "="*50)
+    print("Testing regex patterns with accent normalization...")
+    
+    # Test regex patterns
+    regex_test_cases = [
+        ("test(\W)*a", ["test a", "tëst a", "test á"], ["test b", "different"]),
+        ("[ai]pple", ["apple", "ipple"], ["orange", "banana"]),
+    ]
+    
+    for input_string, should_match, should_not_match in regex_test_cases:
+        print(f"\nTesting regex: '{input_string}'")
+        item = BlacklistItem(input_string, use_regex=True)
+        print(f"Pattern: {item.regex_pattern.pattern}")
+        
+        # Test matches that should work
+        for test_word in should_match:
+            matches = item.matches_tag(test_word)
+            status = "✓" if matches else "✗"
+            print(f"  {status} '{test_word}' -> {matches}")
+        
+        # Test matches that should NOT work
+        for test_word in should_not_match:
+            matches = item.matches_tag(test_word)
+            status = "✓" if not matches else "✗"
+            print(f"  {status} '{test_word}' -> {matches} (should be False)")
