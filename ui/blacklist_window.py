@@ -7,6 +7,7 @@ from tkinter.ttk import Button, Combobox, Treeview
 from lib.multi_display import SmartToplevel
 from library_data.blacklist import BlacklistItem, Blacklist
 from ui.app_style import AppStyle
+from ui.blacklist_preview_window import BlacklistPreviewWindow
 from ui.auth.password_utils import require_password
 from utils.globals import ProtectedActions, BlacklistMode
 from utils.app_info_cache import app_info_cache
@@ -410,9 +411,11 @@ If you are young, not sure, or even an adult, click the close button on this win
         self.import_btn = None
         self.export_btn = None
         self.load_default_btn = None
+        self.preview_btn = None
         self.add_btn_to(self.header_frame, "import_btn", _("Import"), self.import_blacklist, row=1, column=0)
         self.add_btn_to(self.header_frame, "export_btn", _("Export"), self.export_blacklist, row=1, column=1)
         self.add_btn_to(self.header_frame, "load_default_btn", _("Load Default"), self.load_default_blacklist, row=1, column=2)
+        self.add_btn_to(self.header_frame, "preview_btn", _("Preview"), self.open_preview_window, row=1, column=3)
 
         # Add a row for the interface buttons
         self.add_item_btn = None
@@ -541,6 +544,11 @@ If you are young, not sure, or even an adult, click the close button on this win
         if BlacklistWindow.blacklist_modify_window is not None:
             BlacklistWindow.blacklist_modify_window.master.destroy()
         BlacklistWindow.blacklist_modify_window = BlacklistModifyWindow(self.master, self.refresh_blacklist_item, blacklist_item, self.app_actions)
+
+    @require_password(ProtectedActions.EDIT_BLACKLIST)
+    def open_preview_window(self, event=None):
+        """Open the blacklist preview window to test text against the blacklist."""
+        BlacklistPreviewWindow(self.master, self.app_actions)
 
     def refresh_blacklist_item(self, blacklist_item: BlacklistItem, is_new_item: bool, original_string: str):
         """Callback for when a blacklist item is created or modified"""
