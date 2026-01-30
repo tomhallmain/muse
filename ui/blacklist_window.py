@@ -1,8 +1,8 @@
 from typing import Callable, Optional
 
-from tkinter import Entry, Frame, Label, StringVar, LEFT, W, BooleanVar, Checkbutton, filedialog
+from tkinter import Entry, Frame, Label, StringVar, LEFT, W, BooleanVar, Checkbutton, filedialog, Scrollbar
 import tkinter.font as fnt
-from tkinter.ttk import Button, Combobox
+from tkinter.ttk import Button, Combobox, Treeview
 
 from lib.multi_display import SmartToplevel
 from library_data.blacklist import BlacklistItem, Blacklist
@@ -13,7 +13,6 @@ from utils.app_info_cache import app_info_cache
 from utils.config import config
 from utils.translations import I18N
 from lib.aware_entry import AwareEntry
-from lib.tk_scroll_demo import ScrollFrame
 from lib.tooltip import Tooltip
 
 _ = I18N._
@@ -326,7 +325,7 @@ If you are young, not sure, or even an adult, click the close button on this win
     @staticmethod
     def get_geometry(is_gui=True):
         width = 1000
-        height = 800
+        height = 560
         return f"{width}x{height}"
 
     def __init__(self, master, app_actions):
@@ -355,13 +354,14 @@ If you are young, not sure, or even an adult, click the close button on this win
         self.remove_item_btn_list = []
         self.label_list = []
         self.modify_item_btn_list = []
+        self.blacklist_tree = None
         self.reveal_concepts_btn = None
         self.concepts_revealed = False  # Track whether concepts have been revealed in this window instance
 
         # Set up widgets
         self.setup_blacklist_ui()
 
-        self.scroll_frame.after(1, lambda: self.scroll_frame.focus_force())
+        self.content_frame.after(1, lambda: self.content_frame.focus_force())
 
         self.master.bind("<Key>", self.filter_items)
         self.master.bind("<Return>", self.do_action)
@@ -420,23 +420,40 @@ If you are young, not sure, or even an adult, click the close button on this win
         self.clear_blacklist_btn = None
         self.add_btn_to(self.header_frame, "clear_blacklist_btn", _("Clear items"), self.clear_items, row=2, column=1)
 
-        self.scroll_frame = ScrollFrame(self.master, bg_color=AppStyle.BG_COLOR)
-        self.scroll_frame.grid(column=0, row=1, sticky="nsew")
+        self.content_frame = Frame(self.master, bg=AppStyle.BG_COLOR)
+        self.content_frame.grid(column=0, row=1, sticky="nsew")
         self.master.grid_rowconfigure(1, weight=1)
         self.master.grid_columnconfigure(0, weight=1)
         self.filtered_items = Blacklist.get_items()[:]
         self.add_blacklist_widgets()
 
+    def _get_selected_blacklist_item(self):
+        """Return the BlacklistItem for the current tree selection, or None."""
+        if not getattr(self, 'blacklist_tree', None):
+            return None
+        tree = self.blacklist_tree
+        sel = tree.selection()
+        if not sel:
+            return None
+        try:
+            iid = sel[0]
+            idx = int(iid)
+            if 0 <= idx < len(self.filtered_items):
+                return self.filtered_items[idx]
+        except (ValueError, IndexError):
+            pass
+        return None
 
     def add_blacklist_widgets(self):
         # Clear previous widgets
-        for widget in self.scroll_frame.viewPort.winfo_children():
+        for widget in self.content_frame.winfo_children():
             widget.destroy()
+        self.blacklist_tree = None
 
         # Always show reveal concepts button initially, unless concepts have already been revealed
         if not self.concepts_revealed:
             # Show reveal concepts button instead of blacklist items
-            self._label_info = Label(self.scroll_frame.viewPort)
+            self._label_info = Label(self.content_frame)
             self.label_list.append(self._label_info)
             if Blacklist.is_empty():
                 label_text = _("No blacklist items found. You can add items by clicking the 'Add to blacklist' button below, or load the default blacklist.")
@@ -449,57 +466,74 @@ If you are young, not sure, or even an adult, click the close button on this win
                 return
 
             # Add reveal concepts button
-            reveal_btn = Button(self.scroll_frame.viewPort, text=_("Reveal Concepts"))
+            reveal_btn = Button(self.content_frame, text=_("Reveal Concepts"))
             self.reveal_concepts_btn = reveal_btn
             reveal_btn.grid(row=2, column=0, pady=20)
             def reveal_handler(event, self=self):
                 return self.reveal_concepts(event)
             reveal_btn.bind("<Button-1>", reveal_handler)
             return
-        
-        # Normal blacklist items display (after concepts have been revealed)
-        base_col = 0
-        for i in range(len(self.filtered_items)):
-            row = i+1
-            item = self.filtered_items[i]
-            self._label_info = Label(self.scroll_frame.viewPort)
-            self.label_list.append(self._label_info)
-            
-            # Display item with regex indicator
-            display_text = str(item)
-            if item.use_regex:
-                display_text += " " + _("[regex]")
-            if not item.use_word_boundary:
-                display_text += " " + _("[no boundary]")
-            if not item.use_space_as_optional_nonword:
-                display_text += " " + _("[no space conversion]")
-            if item.exception_pattern:
-                display_text += " " + _("[exception: {0}]").format(item.exception_pattern)
-            self.add_label(self._label_info, display_text, row=row, column=base_col, wraplength=BlacklistWindow.COL_0_WIDTH)
-            
-            # Add enable/disable toggle
-            toggle_btn = Button(self.scroll_frame.viewPort, text="✓" if item.enabled else _("Disabled"))
-            self.enable_item_btn_list.append(toggle_btn)
-            toggle_btn.grid(row=row, column=base_col+1)
-            def toggle_handler(event, self=self, item=item, toggle_btn=toggle_btn):
-                return self.toggle_item(event, item, toggle_btn)
-            toggle_btn.bind("<Button-1>", toggle_handler)
-            
-            # Add modify button
-            modify_btn = Button(self.scroll_frame.viewPort, text=_("Modify"))
-            self.modify_item_btn_list.append(modify_btn)
-            modify_btn.grid(row=row, column=base_col+2)
-            def modify_handler(event, self=self, item=item):
-                return self.modify_item(event, item)
-            modify_btn.bind("<Button-1>", modify_handler)
-            
-            # Add remove button
-            remove_item_btn = Button(self.scroll_frame.viewPort, text=_("Remove"))
-            self.remove_item_btn_list.append(remove_item_btn)
-            remove_item_btn.grid(row=row, column=base_col+3)
-            def remove_item_handler(event, self=self, item=item):
-                return self.remove_item(event, item)
-            remove_item_btn.bind("<Button-1>", remove_item_handler)
+
+        # Normal blacklist items display (after concepts have been revealed) – use Treeview for scalability
+        list_frame = Frame(self.content_frame, bg=AppStyle.BG_COLOR)
+        list_frame.pack(fill="both", expand=True)
+
+        columns = ("item", "enabled")
+        tree = Treeview(list_frame, columns=columns, show="headings", height=14, selectmode="browse")
+        tree.heading("item", text=_("Item"))
+        tree.heading("enabled", text=_("Enabled"))
+        tree.column("item", width=BlacklistWindow.COL_0_WIDTH, stretch=True)
+        tree.column("enabled", width=80, stretch=False)
+        scrollbar = Scrollbar(list_frame)
+        tree.configure(yscrollcommand=scrollbar.set)
+        scrollbar.configure(command=tree.yview)
+        scrollbar.pack(side="right", fill="y")
+        tree.pack(side="left", fill="both", expand=True)
+        self.blacklist_tree = tree
+
+        for i, item in enumerate(self.filtered_items):
+            display_text = item.display_text()
+            enabled_str = "✓" if item.enabled else _("Disabled")
+            tree.insert("", "end", iid=str(i), values=(display_text, enabled_str))
+
+        def on_double_click(event):
+            item = self._get_selected_blacklist_item()
+            if item is not None:
+                self.modify_item(None, item)
+
+        tree.bind("<Double-1>", on_double_click)
+
+        # Action buttons row (act on selection)
+        actions_frame = Frame(self.content_frame, bg=AppStyle.BG_COLOR)
+        actions_frame.pack(fill="x", pady=(4, 0))
+
+        def modify_selected(event=None):
+            item = self._get_selected_blacklist_item()
+            if item is None:
+                self.app_actions.toast(_("Select an item first"))
+                return
+            self.modify_item(None, item)
+
+        def remove_selected(event=None):
+            item = self._get_selected_blacklist_item()
+            if item is None:
+                self.app_actions.toast(_("Select an item first"))
+                return
+            self.remove_item(None, item)
+
+        def toggle_selected(event=None):
+            item = self._get_selected_blacklist_item()
+            if item is None:
+                self.app_actions.toast(_("Select an item first"))
+                return
+            self.toggle_item(None, item=item, button=None)
+
+        mod_btn = Button(actions_frame, text=_("Modify"), command=lambda: modify_selected())
+        mod_btn.pack(side="left", padx=(0, 4))
+        rem_btn = Button(actions_frame, text=_("Remove"), command=lambda: remove_selected())
+        rem_btn.pack(side="left", padx=(0, 4))
+        tog_btn = Button(actions_frame, text=_("Toggle"), command=lambda: toggle_selected())
+        tog_btn.pack(side="left", padx=(0, 4))
 
 
     @require_password(ProtectedActions.EDIT_BLACKLIST)
@@ -744,16 +778,22 @@ If you are young, not sure, or even an adult, click the close button on this win
 
     @require_password(ProtectedActions.EDIT_BLACKLIST)
     def toggle_item(self, event=None, item: Optional[BlacklistItem] = None, button: Optional[Button] = None):
-        """Toggle the enabled state of an item."""
-        if item is None or button is None:
+        """Toggle the enabled state of an item. If button is None, we are in tree mode and update the tree row."""
+        if item is None:
             return
-            
         # Find the item in the blacklist
         for blacklist_item in Blacklist.get_items():
             if blacklist_item == item:
                 blacklist_item.enabled = not blacklist_item.enabled
                 new_text = "✓" if blacklist_item.enabled else _("Disabled")
-                button.config(text=new_text)
+                if button is not None:
+                    button.config(text=new_text)
+                else:
+                    # Tree mode: update the row in place
+                    tree = getattr(self, 'blacklist_tree', None)
+                    if tree and item in self.filtered_items:
+                        idx = self.filtered_items.index(item)
+                        tree.item(str(idx), values=(blacklist_item.display_text(), new_text))
                 self.store_blacklist()
                 self.app_actions.toast(_("Item \"{0}\" is now {1}").format(
                     blacklist_item.string,

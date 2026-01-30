@@ -127,9 +127,8 @@ def normalize_accents_for_regex(text: str, is_regex: bool = False) -> str:
 
 
 class BlacklistException(Exception):
-    def __init__(self, message, whitelist, filtered):
+    def __init__(self, message, filtered=None):
         self.message = message
-        self.whitelist = whitelist
         self.filtered = filtered
         super().__init__(self.message)
 
@@ -192,6 +191,19 @@ class BlacklistItem:
                 self.exception_regex_pattern = None
 
         # print(f"BlacklistItem: {self.string} -> {self.regex_pattern.pattern}")
+
+    def display_text(self) -> str:
+        """Build display text for this item (string + options) for UI listing."""
+        display_text = str(self)
+        if self.use_regex:
+            display_text += " " + _("[regex]")
+        if not self.use_word_boundary:
+            display_text += " " + _("[no boundary]")
+        if not self.use_space_as_optional_nonword:
+            display_text += " " + _("[no space conversion]")
+        if self.exception_pattern:
+            display_text += " " + _("[exception: {0}]").format(self.exception_pattern)
+        return display_text
 
     def to_dict(self) -> dict:
         return {
@@ -480,6 +492,22 @@ class Blacklist:
             while tag.endswith(')') or tag.endswith(']'):
                 tag = tag[:-1].strip()
                 
+            for blacklist_item in Blacklist.TAG_BLACKLIST:
+                if not blacklist_item.enabled:
+                    continue
+                if blacklist_item.matches_tag(tag):
+                    filtered[tag] = blacklist_item.string
+                    break
+
+        user_tags_dot = text.split('.')
+        for tag in user_tags_dot:
+            tag = tag.strip()
+            if not tag:
+                continue
+            while tag.startswith('(') or tag.startswith('['):
+                tag = tag[1:].strip()
+            while tag.endswith(')') or tag.endswith(']'):
+                tag = tag[:-1].strip()
             for blacklist_item in Blacklist.TAG_BLACKLIST:
                 if not blacklist_item.enabled:
                     continue

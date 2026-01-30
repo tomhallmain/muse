@@ -725,7 +725,10 @@ class Muse:
             if attempts > 2:
                 blacklist_items_str = ", ".join(sorted([str(i) for i in all_blacklist_items]))
                 texts_str = "\n".join(generations)
-                raise BlacklistException(f"Failed to generate text - blacklist items found: {blacklist_items_str}\n{texts_str}")
+                raise BlacklistException(
+                    f"Failed to generate text - blacklist items found: {blacklist_items_str}\n{texts_str}",
+                    filtered=all_blacklist_items
+                )
         return text
 
     def _wrap_function(self, spot_profile, topic, func, _args=[], _kwargs={}):
