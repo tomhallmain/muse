@@ -28,16 +28,18 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QSizePolicy,
 )
-from PySide6.QtCore import Qt, QTimer
-from PySide6.QtGui import QIcon
+from PySide6.QtCore import Qt, QTimer, Signal
+from PySide6.QtGui import QIcon, QShortcut, QKeySequence
 
-from utils.globals import Globals, PlaylistSortType, PlaybackMasterStrategy
+from utils.globals import Globals, PlaylistSortType, PlaybackMasterStrategy, ProtectedActions
 from library_data.library_data import LibraryData
 from ui_qt.app_actions import AppActions
+from ui_qt.auth.password_utils import require_password
 from ui_qt.app_style import AppStyle
+from ui_qt.media_frame import MediaFrame
 from muse.run import Run
 from muse.run_config import RunConfig
-from utils.persistent_data_manager import PersistentDataManager
+from utils.persistent_data_manager_qt import PersistentDataManagerQt
 from utils import (
     app_info_cache,
     config,
@@ -87,42 +89,30 @@ def _qt_alert(parent: Optional[QWidget], title: str, message: str, kind: str = "
     return None
 
 
-class MediaFrameWidget(QFrame):
-    """Album art / video area. Provides winId() for VLC embedding."""
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setMinimumSize(320, 320)
-        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.setStyleSheet(f"background-color: {AppStyle.MEDIA_BG};")
-        self._label = QLabel(self)
-        self._label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self._label.setStyleSheet(f"color: {AppStyle.FG_COLOR};")
-        self._label.setText(_("Album art"))
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(self._label)
-
-    def show_image(self, image_filepath: Optional[str]):
-        if image_filepath and os.path.isfile(image_filepath):
-            from PySide6.QtGui import QPixmap
-            pix = QPixmap(image_filepath)
-            if not pix.isNull():
-                self._label.setPixmap(pix.scaled(self.size(), Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
-                return
-        self._label.clear()
-        self._label.setText(_("Album art"))
-
-    def set_background_color(self, color: str):
-        self.setStyleSheet(f"background-color: {color or AppStyle.MEDIA_BG};")
-
-
 class MuseAppQt(QMainWindow):
-    """PySide6 main window for Muse. Callbacks are passed to internal modules via AppActions."""
+    """PySide6 main window for Muse. Callbacks are passed to internal modules via AppActions.
+    UI-updating callbacks are marshalled to the main thread via signals so that worker
+    threads (run_async, extension_manager) never touch Qt widgets directly.
+    """
+
+    # Signals for marshalling UI updates from worker threads to main thread
+    _sig_track_text = Signal(object)
+    _sig_next_up = Signal(str, bool)
+    _sig_prior_track = Signal(str)
+    _sig_spot_profile = Signal(str)
+    _sig_upcoming_group = Signal(object, object)
+    _sig_progress = Signal(int, float, float)
+    _sig_extension_status = Signal(str)
+    _sig_album_artwork = Signal(str)
+    _sig_dj_persona = Signal(str)
+    _sig_favorite_status = Signal(object)
+    _sig_run_finished = Signal(object)
 
     def __init__(self):
         super().__init__()
         self.setWindowTitle(_(" Muse "))
         self.progress_bar: Optional[QProgressBar] = None
+        self._cached_media_frame_handle = None
         self.job_queue = JobQueue("Playlist Runs")
         self.job_queue_preset_schedules = JobQueue("Preset Schedules")
         self.runner_app_config = self._load_info_cache()
@@ -160,6 +150,22 @@ class MuseAppQt(QMainWindow):
         self._build_menus()
         self._build_central()
         self._apply_theme()
+
+        # Connect signals so UI updates from worker threads run on main thread
+        self._sig_track_text.connect(self._do_update_track_text)
+        self._sig_next_up.connect(self._do_update_next_up_text)
+        self._sig_prior_track.connect(self._do_update_previous_track_text)
+        self._sig_spot_profile.connect(self._do_update_spot_profile_topics_text)
+        self._sig_upcoming_group.connect(self._do_update_upcoming_group_text)
+        self._sig_progress.connect(self._do_update_progress_bar)
+        self._sig_extension_status.connect(self._do_update_label_extension_status)
+        self._sig_album_artwork.connect(self._do_update_album_artwork)
+        self._sig_dj_persona.connect(self._do_update_dj_persona_callback)
+        self._sig_favorite_status.connect(self._do_update_favorite_status)
+        self._sig_run_finished.connect(self._on_run_finished)
+
+        # Cache media frame handle on main thread so worker threads can use it without touching Qt
+        QTimer.singleShot(0, self._cache_media_frame_handle)
 
         try:
             from ui_qt.blacklist_window import BlacklistWindow
@@ -205,7 +211,10 @@ class MuseAppQt(QMainWindow):
         tools_menu.addAction(_("Audio Devices"), self.open_audio_device_window)
         tools_menu.addSeparator()
         tools_menu.addAction(_("Configuration"), self.open_configuration_window)
-        tools_menu.addAction(_("Security Configuration"), self.open_password_admin_window)
+        security_action = tools_menu.addAction(
+            _("Security Configuration"), self.open_password_admin_window
+        )
+        security_action.setShortcut(QKeySequence("Ctrl+P"))
 
     def _build_central(self):
         central = QWidget()
@@ -251,11 +260,9 @@ class MuseAppQt(QMainWindow):
 
         self.run_btn = QPushButton(_("Play"))
         self.run_btn.clicked.connect(lambda: self.run())
-        sidebar_layout.addWidget(self.run_btn, row, 0)
-        row += 1
-
         self.playlists_btn = QPushButton(_("Playlists"))
         self.playlists_btn.clicked.connect(self.open_presets_window)
+        sidebar_layout.addWidget(self.run_btn, row, 0)
         sidebar_layout.addWidget(self.playlists_btn, row, 1, 1, 2)
         row += 1
 
@@ -351,7 +358,7 @@ class MuseAppQt(QMainWindow):
         main_layout.addWidget(sidebar)
         self._sidebar_layout = sidebar_layout
 
-        self.media_frame = MediaFrameWidget(self)
+        self.media_frame = MediaFrame(self, fill_canvas=True)
         main_layout.addWidget(self.media_frame, 1)
 
     def _apply_theme(self):
@@ -360,7 +367,7 @@ class MuseAppQt(QMainWindow):
 
     def _load_info_cache(self):
         try:
-            PersistentDataManager.load()
+            PersistentDataManagerQt.load()
             self.config_history_index = app_info_cache.get("config_history_index", default_val=0)
             return app_info_cache.get_history_latest()
         except Exception as e:
@@ -389,7 +396,7 @@ class MuseAppQt(QMainWindow):
                 if self.config_history_index > 0:
                     self.config_history_index -= 1
         app_info_cache.set("config_history_index", self.config_history_index)
-        PersistentDataManager.store()
+        PersistentDataManagerQt.store()
         app_info_cache.store()
 
     def quit(self):
@@ -517,26 +524,25 @@ class MuseAppQt(QMainWindow):
 
         def run_async(a):
             self.job_queue.job_running = True
-            self.destroy_progress_bar()
-            self.progress_bar = QProgressBar()
-            self.progress_bar.setMaximum(100)
-            self.progress_bar.setValue(0)
-            if hasattr(self, "_sidebar_layout") and hasattr(self, "_progress_bar_row"):
-                self._sidebar_layout.addWidget(self.progress_bar, self._progress_bar_row, 0, 1, 3)
-            self.cancel_btn.show()
             self.current_run = Run(a, app_actions=self.app_actions)
             self.current_run.execute()
-            self.cancel_btn.hide()
-            self.destroy_progress_bar()
             self.job_queue.job_running = False
             next_args = self.job_queue.take()
-            if next_args:
-                Utils.start_thread(run_async, use_asyncio=False, args=[next_args])
+            self._sig_run_finished.emit(next_args)
 
         if not override_scheduled and self.job_queue.has_pending():
             self.job_queue.add(args)
         else:
             self.runner_app_config.set_from_run_config(args_copy)
+            # Create progress bar on main thread before starting worker (Qt thread affinity)
+            self.destroy_progress_bar()
+            self.progress_bar = QProgressBar()
+            self.progress_bar.setMaximum(100)
+            self.progress_bar.setValue(0)
+            self.progress_bar.setTextVisible(False)
+            if hasattr(self, "_sidebar_layout") and hasattr(self, "_progress_bar_row"):
+                self._sidebar_layout.addWidget(self.progress_bar, self._progress_bar_row, 0, 1, 3)
+            self.cancel_btn.show()
             Utils.start_thread(run_async, use_asyncio=False, args=[args])
 
     def start_playback(self, track=None, playlist_sort_type=None, overwrite=None):
@@ -547,9 +553,38 @@ class MuseAppQt(QMainWindow):
         override_scheduled = self.current_run is not None and not self.current_run.is_placeholder()
         self.run(track=track, override_scheduled=override_scheduled)
 
+    def _on_run_finished(self, next_args):
+        """Slot: run finished (called on main thread). Hide cancel, destroy progress bar, optionally start next."""
+        self.cancel_btn.hide()
+        self.destroy_progress_bar()
+        if next_args:
+            self.progress_bar = QProgressBar()
+            self.progress_bar.setMaximum(100)
+            self.progress_bar.setValue(0)
+            self.progress_bar.setTextVisible(False)
+            if hasattr(self, "_sidebar_layout") and hasattr(self, "_progress_bar_row"):
+                self._sidebar_layout.addWidget(self.progress_bar, self._progress_bar_row, 0, 1, 3)
+            self.cancel_btn.show()
+            Utils.start_thread(
+                lambda: self._run_async_next(next_args),
+                use_asyncio=False,
+            )
+
+    def _run_async_next(self, next_args):
+        """Worker for chained run (same as run_async body, no progress bar creation)."""
+        self.job_queue.job_running = True
+        self.current_run = Run(next_args, app_actions=self.app_actions)
+        self.current_run.execute()
+        self.job_queue.job_running = False
+        next_args = self.job_queue.take()
+        self._sig_run_finished.emit(next_args)
+
     def update_progress_bar(self, progress, elapsed_time, total_duration):
+        self._sig_progress.emit(int(progress), float(elapsed_time), float(total_duration))
+
+    def _do_update_progress_bar(self, progress, elapsed_time, total_duration):
         if self.progress_bar is not None:
-            self.progress_bar.setValue(int(progress))
+            self.progress_bar.setValue(progress)
             QApplication.processEvents()
 
     def next(self, event=None):
@@ -571,6 +606,9 @@ class MuseAppQt(QMainWindow):
         self.current_run.cancel()
 
     def update_track_text(self, audio_track):
+        self._sig_track_text.emit(audio_track)
+
+    def _do_update_track_text(self, audio_track):
         if isinstance(audio_track, str):
             title_text, album_text, artist_text, composer_text, year_text = audio_track, "", "", "", ""
         else:
@@ -587,6 +625,12 @@ class MuseAppQt(QMainWindow):
         QApplication.processEvents()
 
     def update_next_up_text(self, next_up_text, no_title=False):
+        self._sig_next_up.emit(
+            "" if next_up_text is None else str(next_up_text),
+            no_title,
+        )
+
+    def _do_update_next_up_text(self, next_up_text, no_title):
         if next_up_text is None or (isinstance(next_up_text, str) and next_up_text.strip() == ""):
             next_up_text = ""
         elif not no_title and isinstance(next_up_text, str):
@@ -595,6 +639,11 @@ class MuseAppQt(QMainWindow):
         QApplication.processEvents()
 
     def update_previous_track_text(self, previous_track_text):
+        self._sig_prior_track.emit(
+            "" if previous_track_text is None else str(previous_track_text),
+        )
+
+    def _do_update_previous_track_text(self, previous_track_text):
         if previous_track_text is None or (isinstance(previous_track_text, str) and previous_track_text.strip() == ""):
             previous_track_text = ""
         else:
@@ -603,10 +652,13 @@ class MuseAppQt(QMainWindow):
         QApplication.processEvents()
 
     def update_upcoming_group_text(self, upcoming_group_text, grouping_type=None):
+        self._sig_upcoming_group.emit(upcoming_group_text, grouping_type)
+
+    def _do_update_upcoming_group_text(self, upcoming_group_text, grouping_type):
         if upcoming_group_text is None or (isinstance(upcoming_group_text, str) and upcoming_group_text.strip() == ""):
             upcoming_group_text = ""
         else:
-            if grouping_type is not None:
+            if grouping_type is not None and hasattr(grouping_type, "get_grouping_readable_name"):
                 name = grouping_type.get_grouping_readable_name()
                 upcoming_group_text = _("Upcoming {0}: {1}").format(name or "Group", upcoming_group_text)
             else:
@@ -615,10 +667,16 @@ class MuseAppQt(QMainWindow):
         QApplication.processEvents()
 
     def update_spot_profile_topics_text(self, muse_text):
+        self._sig_spot_profile.emit(str(muse_text) if muse_text is not None else "")
+
+    def _do_update_spot_profile_topics_text(self, muse_text):
         self.label_muse.setText(Utils._wrap_text_to_fit_length(str(muse_text)[:500], 90))
         QApplication.processEvents()
 
     def update_label_extension_status(self, extension):
+        self._sig_extension_status.emit(str(extension) if extension is not None else "")
+
+    def _do_update_label_extension_status(self, extension):
         self.label_extension_status.setText(Utils._wrap_text_to_fit_length(str(extension)[:500], 90))
         QApplication.processEvents()
 
@@ -628,6 +686,9 @@ class MuseAppQt(QMainWindow):
         QApplication.processEvents()
 
     def update_dj_persona_callback(self, persona_name):
+        self._sig_dj_persona.emit(str(persona_name) if persona_name is not None else "")
+
+    def _do_update_dj_persona_callback(self, persona_name):
         if persona_name is None or (isinstance(persona_name, str) and persona_name.strip() == ""):
             persona_name = ""
         else:
@@ -635,11 +696,23 @@ class MuseAppQt(QMainWindow):
         self.label_dj_persona.setText(Utils._wrap_text_to_fit_length(str(persona_name)[:100], 90))
         QApplication.processEvents()
 
-    def update_album_artwork(self, image_filepath):
-        self.media_frame.show_image(image_filepath)
+    def update_album_artwork(self, image_filepath=None):
+        self._sig_album_artwork.emit(image_filepath or "")
+
+    def _do_update_album_artwork(self, image_filepath):
+        self._cached_media_frame_handle = self.media_frame.get_media_frame_handle() if hasattr(self.media_frame, "get_media_frame_handle") else None
+        self.media_frame.show_image(image_filepath if image_filepath else None)
+
+    def _cache_media_frame_handle(self):
+        """Update cached window handle for VLC (must run on main thread)."""
+        if hasattr(self, "media_frame") and hasattr(self.media_frame, "get_media_frame_handle"):
+            self._cached_media_frame_handle = self.media_frame.get_media_frame_handle()
 
     def get_media_frame_handle(self):
-        return self.media_frame.winId() if hasattr(self.media_frame, "winId") else None
+        # Return handle cached on main thread; worker threads must not call widget methods
+        if self._cached_media_frame_handle is not None:
+            return self._cached_media_frame_handle
+        return self.media_frame.get_media_frame_handle() if hasattr(self.media_frame, "get_media_frame_handle") else None
 
     def update_playlist_state(self, strategy=None, staged_playlist=None):
         if strategy is not None:
@@ -651,6 +724,9 @@ class MuseAppQt(QMainWindow):
             self.update_next_up_text("")
 
     def update_favorite_status(self, track):
+        self._sig_favorite_status.emit(track)
+
+    def _do_update_favorite_status(self, track):
         try:
             from ui_qt.favorites_window import FavoritesWindow
             is_favorited = FavoritesWindow.is_track_favorited(track)
@@ -740,6 +816,7 @@ class MuseAppQt(QMainWindow):
         QApplication.processEvents()
 
     # Open-window methods: assume ui_qt modules exist; toast on ImportError until ported
+    @require_password(ProtectedActions.VIEW_LIBRARY)
     def open_library_window(self):
         try:
             from ui_qt.library_window import LibraryWindow
@@ -748,6 +825,7 @@ class MuseAppQt(QMainWindow):
             logger.debug("LibraryWindow: %s", e)
             self.toast(_("Open Library not yet available."))
 
+    @require_password(ProtectedActions.EDIT_COMPOSERS)
     def open_composers_window(self):
         try:
             from ui_qt.composers_window import ComposersWindow
@@ -756,6 +834,7 @@ class MuseAppQt(QMainWindow):
             logger.debug("ComposersWindow: %s", e)
             self.toast(_("Composers not yet available."))
 
+    @require_password(ProtectedActions.EDIT_PERSONAS)
     def open_personas_window(self):
         try:
             from ui_qt.personas_window import PersonasWindow
@@ -764,6 +843,7 @@ class MuseAppQt(QMainWindow):
             logger.debug("PersonasWindow: %s", e)
             self.toast(_("Personas not yet available."))
 
+    @require_password(ProtectedActions.EDIT_SCHEDULES)
     def open_schedules_window(self):
         try:
             from ui_qt.schedules_window import SchedulesWindow
@@ -772,6 +852,7 @@ class MuseAppQt(QMainWindow):
             logger.debug("SchedulesWindow: %s", e)
             self.toast(_("Schedules not yet available."))
 
+    @require_password(ProtectedActions.RUN_SEARCH)
     def open_search_window(self):
         try:
             from ui_qt.search_window import SearchWindow
@@ -790,6 +871,7 @@ class MuseAppQt(QMainWindow):
         except Exception as e:
             self.alert(_("Error"), str(e), kind="error")
 
+    @require_password(ProtectedActions.EDIT_EXTENSIONS)
     def open_extensions_window(self):
         try:
             from ui_qt.extensions_window import ExtensionsWindow
@@ -798,6 +880,7 @@ class MuseAppQt(QMainWindow):
             logger.debug("ExtensionsWindow: %s", e)
             self.toast(_("Extensions not yet available."))
 
+    @require_password(ProtectedActions.EDIT_BLACKLIST)
     def open_blacklist_window(self):
         try:
             from ui_qt.blacklist_window import BlacklistWindow
@@ -806,6 +889,7 @@ class MuseAppQt(QMainWindow):
             logger.debug("BlacklistWindow: %s", e)
             self.toast(_("Blacklist not yet available."))
 
+    @require_password(ProtectedActions.EDIT_PLAYLISTS)
     def open_presets_window(self):
         try:
             from ui_qt.presets_window import PresetsWindow
@@ -814,6 +898,7 @@ class MuseAppQt(QMainWindow):
             logger.debug("PresetsWindow: %s", e)
             self.toast(_("Playlists not yet available."))
 
+    @require_password(ProtectedActions.EDIT_FAVORITES)
     def open_favorites_window(self):
         try:
             from ui_qt.favorites_window import FavoritesWindow
@@ -822,6 +907,7 @@ class MuseAppQt(QMainWindow):
             logger.debug("FavoritesWindow: %s", e)
             self.toast(_("Favorites not yet available."))
 
+    @require_password(ProtectedActions.VIEW_HISTORY)
     def open_history_window(self):
         try:
             from ui_qt.history_window import HistoryWindow
@@ -854,6 +940,7 @@ class MuseAppQt(QMainWindow):
             logger.debug("TimerWindow: %s", e)
             self.toast(_("Timer not yet available."))
 
+    @require_password(ProtectedActions.EDIT_CONFIGURATION)
     def open_audio_device_window(self):
         try:
             from ui_qt.audio_device_window import AudioDeviceWindow
@@ -864,6 +951,7 @@ class MuseAppQt(QMainWindow):
         except Exception as e:
             self.alert(_("Error"), str(e), kind="error")
 
+    @require_password(ProtectedActions.EDIT_CONFIGURATION)
     def open_configuration_window(self):
         try:
             from ui_qt.configuration_window import ConfigurationWindow
@@ -872,6 +960,7 @@ class MuseAppQt(QMainWindow):
             logger.debug("ConfigurationWindow: %s", e)
             self.toast(_("Configuration not yet available."))
 
+    @require_password(ProtectedActions.ACCESS_ADMIN)
     def open_password_admin_window(self):
         try:
             from ui_qt.auth.password_admin_window import PasswordAdminWindow

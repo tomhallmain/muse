@@ -52,7 +52,7 @@ Muse is a media player with an integrated voice synthesizer attached to an LLM. 
 
 ## Usage
 
-- In your virtual environment, run `python app.py` to start the application.
+- In your virtual environment, run `python app_qt.py` to start the application (Qt/PySide6 UI). On Windows you can use `start.bat`, which launches the Qt version. The legacy Tkinter UI is available via `python app.py` if needed.
 
 
 ## Directory Structure

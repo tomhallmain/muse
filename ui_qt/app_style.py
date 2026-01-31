@@ -27,20 +27,57 @@ class AppStyle:
 
     @staticmethod
     def get_stylesheet():
-        """Return a Qt stylesheet string for the application (dark blue theme)."""
+        """Return a Qt stylesheet string for the application (dark blue theme).
+        Applied once on the top-level window; all child widgets inherit.
+        QComboBox is styled only at top level (no ::drop-down or ::down-arrow) so the
+        platform draws the arrow; see BookmarkManager app_style for same approach."""
         return f"""
-            QMainWindow, QWidget {{
+            QMainWindow, QDialog, QWidget, QFrame {{
                 background-color: {AppStyle.BG_COLOR};
                 color: {AppStyle.FG_COLOR};
             }}
             QLabel {{
                 color: {AppStyle.FG_COLOR};
+                padding: 2px 0;
+            }}
+            QLineEdit {{
+                background-color: {AppStyle.BG_INPUT};
+                color: {AppStyle.FG_COLOR};
+                border: 1px solid {AppStyle.BORDER_COLOR};
+                padding: 4px 8px;
+                border-radius: 4px;
+            }}
+            QPlainTextEdit, QTextEdit {{
+                background-color: {AppStyle.BG_INPUT};
+                color: {AppStyle.FG_COLOR};
+                border: 1px solid {AppStyle.BORDER_COLOR};
+                padding: 6px 8px;
+                border-radius: 4px;
+                selection-background-color: {AppStyle.BG_BUTTON_HOVER};
+            }}
+            QTableWidget {{
+                background-color: {AppStyle.BG_COLOR};
+                color: {AppStyle.FG_COLOR};
+                gridline-color: {AppStyle.BORDER_COLOR};
+            }}
+            QTableWidget::item {{
+                color: {AppStyle.FG_COLOR};
+            }}
+            QHeaderView::section {{
+                background-color: {AppStyle.BG_BUTTON};
+                color: {AppStyle.FG_COLOR};
+                padding: 6px;
+                border: 1px solid {AppStyle.BORDER_COLOR};
+            }}
+            QScrollArea {{
+                background-color: {AppStyle.BG_COLOR};
+                border: none;
             }}
             QPushButton {{
                 background-color: {AppStyle.BG_BUTTON};
                 color: {AppStyle.FG_COLOR};
                 border: 1px solid {AppStyle.BORDER_COLOR};
-                padding: 6px 12px;
+                padding: 3px 10px;
                 border-radius: 4px;
             }}
             QPushButton:hover {{
@@ -53,16 +90,12 @@ class AppStyle:
                 background-color: {AppStyle.BG_INPUT};
                 color: {AppStyle.FG_COLOR};
                 border: 1px solid {AppStyle.BORDER_COLOR};
-                padding: 4px 8px;
+                padding: 3px 8px;
                 border-radius: 4px;
                 min-height: 1.2em;
             }}
             QComboBox:hover {{
                 border-color: {AppStyle.PROGRESS_CHUNK};
-            }}
-            QComboBox::drop-down {{
-                border: none;
-                background: transparent;
             }}
             QComboBox QAbstractItemView {{
                 background-color: {AppStyle.BG_INPUT};
@@ -102,7 +135,6 @@ class AppStyle:
             QProgressBar {{
                 border: 1px solid {AppStyle.BORDER_COLOR};
                 border-radius: 4px;
-                text-align: center;
                 background: {AppStyle.BG_INPUT};
             }}
             QProgressBar::chunk {{
