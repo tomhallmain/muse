@@ -40,8 +40,9 @@ from ui_qt.media_frame import MediaFrame
 from muse.run import Run
 from muse.run_config import RunConfig
 from utils.persistent_data_manager_qt import PersistentDataManagerQt
+from lib.qt_alert import qt_alert
+from utils.app_info_cache_qt import app_info_cache
 from utils import (
-    app_info_cache,
     config,
     FFmpegHandler,
     JobQueue,
@@ -54,39 +55,6 @@ from utils import (
 
 logger = get_logger(__name__)
 _ = I18N._
-
-
-def _qt_alert(parent: Optional[QWidget], title: str, message: str, kind: str = "info"):
-    """Show a Qt message box. kind: info, warning, error, askokcancel, askyesno, askyesnocancel."""
-    if kind == "askokcancel":
-        result = QMessageBox.question(
-            parent, title, message,
-            QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel,
-            QMessageBox.StandardButton.Cancel,
-        )
-        return result == QMessageBox.StandardButton.Ok
-    if kind == "askyesno":
-        result = QMessageBox.question(
-            parent, title, message,
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-            QMessageBox.StandardButton.No,
-        )
-        return result == QMessageBox.StandardButton.Yes
-    if kind == "askyesnocancel":
-        result = QMessageBox.question(
-            parent, title, message,
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No | QMessageBox.StandardButton.Cancel,
-            QMessageBox.StandardButton.Cancel,
-        )
-        return result
-    if kind == "error":
-        QMessageBox.critical(parent, title, message)
-        return None
-    if kind == "warning":
-        QMessageBox.warning(parent, title, message)
-        return None
-    QMessageBox.information(parent, title, message)
-    return None
 
 
 class MuseAppQt(QMainWindow):
@@ -120,6 +88,8 @@ class MuseAppQt(QMainWindow):
         self.fullscreen = False
         self.current_run = Run(RunConfig(placeholder=True))
         self._library_data: Optional[LibraryData] = None
+        # So @require_password and dialogs (e.g. PasswordDialog) have a parent window
+        self.master = self
 
         self.app_actions = AppActions({
             "track_details_callback": self.update_track_text,
@@ -181,6 +151,28 @@ class MuseAppQt(QMainWindow):
                     logger.debug("Application started without administrator privileges - audio device switching will be limited")
             except ImportError:
                 pass
+
+    def _apply_cached_geometry(self):
+        """Apply cached main window position/size if valid and visible on a display. Returns True if applied."""
+        try:
+            position_data = app_info_cache.get_display_position()
+            if not position_data or not position_data.is_valid():
+                return False
+            cached_virtual_screen = app_info_cache.get_virtual_screen_info()
+            if position_data.is_visible_on_display(None, cached_virtual_screen):
+                self.setGeometry(
+                    position_data.x,
+                    position_data.y,
+                    position_data.width,
+                    position_data.height,
+                )
+                logger.debug("Applied cached window geometry: %s", position_data)
+                return True
+            logger.debug("Cached window position not visible on any display: %s", position_data)
+            return False
+        except Exception as e:
+            logger.warning("Failed to apply cached window geometry: %s", e)
+            return False
 
     def _build_menus(self):
         menubar = self.menuBar()
@@ -396,19 +388,24 @@ class MuseAppQt(QMainWindow):
                 if self.config_history_index > 0:
                     self.config_history_index -= 1
         app_info_cache.set("config_history_index", self.config_history_index)
+        app_info_cache.set_display_position(self)
+        try:
+            app_info_cache.set_virtual_screen_info(self)
+        except Exception as e:
+            logger.debug("Could not save virtual screen info: %s", e)
         PersistentDataManagerQt.store()
         app_info_cache.store()
 
     def quit(self):
-        if _qt_alert(self, _("Confirm Quit"), _("Would you like to quit the application?"), "askokcancel"):
+        if qt_alert(self, _("Confirm Quit"), _("Would you like to quit the application?"), "askokcancel"):
             logger.info("Exiting application")
             self.on_closing()
 
     def alert(self, title: str, message: str, kind: str = "info", severity: str = "normal", master: Optional[object] = None):
         parent = master if master is not None else self
         if isinstance(parent, QWidget):
-            return _qt_alert(parent, title, message, kind)
-        return _qt_alert(self, title, message, kind)
+            return qt_alert(parent, title, message, kind)
+        return qt_alert(self, title, message, kind)
 
     def handle_error(self, error_text, title=None, kind="error"):
         traceback.print_exc()
@@ -516,7 +513,7 @@ class MuseAppQt(QMainWindow):
         try:
             args.validate()
         except Exception as e:
-            if not _qt_alert(self, _("Confirm Run"), str(e) + "\n\n" + _("Are you sure you want to proceed?"), "askokcancel"):
+            if not qt_alert(self, _("Confirm Run"), str(e) + "\n\n" + _("Are you sure you want to proceed?"), "askokcancel"):
                 return
         if override_scheduled:
             self.cancel()
@@ -980,7 +977,8 @@ def main():
     if os.path.isfile(icon_path):
         app.setWindowIcon(QIcon(icon_path))
     window = MuseAppQt()
-    window.resize(1200, 700)
+    if not window._apply_cached_geometry():
+        window.resize(1200, 700)
     window.show()
 
     def graceful_shutdown(*args):

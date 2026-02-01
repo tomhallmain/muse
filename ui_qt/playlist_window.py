@@ -8,7 +8,6 @@ get_track, get_all_filepaths (and optionally set_playback_master_strategy) for f
 from types import SimpleNamespace
 
 from PySide6.QtWidgets import (
-    QDialog,
     QVBoxLayout,
     QHBoxLayout,
     QGridLayout,
@@ -23,6 +22,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt
 
+from lib.multi_display_qt import SmartWindow
 from muse.playback_config import PlaybackConfig
 from muse.playlist import Playlist
 from ui_qt.app_style import AppStyle
@@ -43,7 +43,7 @@ class PlaybackMaster:
         self.playback_configs = list(initial_configs or [])
 
 
-class MasterPlaylistWindow(QDialog):
+class MasterPlaylistWindow(SmartWindow):
     """Main window for managing playlists using PlaybackMaster.
 
     TODO: WIP / currently in development. No menu or callback in app_qt opens this
@@ -68,12 +68,15 @@ class MasterPlaylistWindow(QDialog):
         )
 
     def __init__(self, master, app_actions, initial_configs=None, is_current_playlist=True):
-        super().__init__(master)
+        super().__init__(
+            persistent_parent=master,
+            position_parent=master,
+            title=_("Playlists"),
+            geometry="700x500",
+            offset_x=50,
+            offset_y=50,
+        )
         MasterPlaylistWindow.top_level = self
-        self.setWindowTitle(_("Playlists"))
-        self.resize(700, 500)
-        self.setWindowFlags(self.windowFlags() | Qt.WindowType.Window)
-
         self.master = master
         self.app_actions = app_actions
         self.is_current_playlist = is_current_playlist
@@ -259,13 +262,18 @@ class MasterPlaylistWindow(QDialog):
         event.accept()
 
 
-class NewPlaylistWindow(QDialog):
+class NewPlaylistWindow(SmartWindow):
     """Window for creating new playlists and playback configs."""
 
     def __init__(self, parent, app_actions, current_master_window=None):
-        super().__init__(parent)
-        self.setWindowTitle(_("New Playlist"))
-        self.setWindowFlags(self.windowFlags() | Qt.WindowType.Window)
+        super().__init__(
+            persistent_parent=parent,
+            position_parent=parent,
+            title=_("New Playlist"),
+            geometry="500x300",
+            offset_x=50,
+            offset_y=50,
+        )
         self.app_actions = app_actions
         self.current_master_window = current_master_window
 

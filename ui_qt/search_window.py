@@ -4,7 +4,6 @@ Port of ui/search_window.py; static methods and __init__ only for now.
 """
 
 from PySide6.QtWidgets import (
-    QDialog,
     QVBoxLayout,
     QHBoxLayout,
     QGridLayout,
@@ -19,6 +18,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt, QTimer, Signal
 
+from lib.multi_display_qt import SmartWindow
 from library_data.library_data import LibraryDataSearch
 from ui_qt.app_style import AppStyle
 from ui_qt.auth.password_utils import require_password
@@ -33,7 +33,7 @@ _ = I18N._
 logger = get_logger(__name__)
 
 
-class SearchWindow(QDialog):
+class SearchWindow(SmartWindow):
     """Window to search media library."""
 
     # Emit from worker thread; slots run on main thread
@@ -145,20 +145,16 @@ class SearchWindow(QDialog):
             del SearchWindow.recent_searches[-1]
 
     def __init__(self, master, app_actions, library_data, dimensions="1100x700"):
-        super().__init__(master)
+        super().__init__(
+            persistent_parent=master,
+            position_parent=master,
+            title=_("Search Library"),
+            geometry=dimensions,
+            offset_x=50,
+            offset_y=50,
+        )
         SearchWindow.top_level = self
-        self.setWindowTitle(_("Search Library"))
-        try:
-            width, height = map(int, dimensions.split("x"))
-            self.resize(width, height)
-        except Exception:
-            self.resize(1100, 700)
-        self.setWindowFlags(self.windowFlags() | Qt.WindowType.Window)
         self.setMinimumSize(400, 400)
-
-        if hasattr(master, "geometry"):
-            geo = master.geometry()
-            self.move(geo.x() + 50, geo.y() + 30)
 
         self.app_actions = app_actions
         self.library_data = library_data

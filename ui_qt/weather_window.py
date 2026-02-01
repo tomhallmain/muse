@@ -4,7 +4,6 @@ Port of ui/weather_window.py; logic preserved, UI uses Qt.
 """
 
 from PySide6.QtWidgets import (
-    QDialog,
     QVBoxLayout,
     QHBoxLayout,
     QLabel,
@@ -15,6 +14,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt, Signal
 
+from lib.multi_display_qt import SmartWindow
 from extensions.open_weather import OpenWeatherAPI
 from ui_qt.app_style import AppStyle
 from utils.config import config
@@ -24,7 +24,7 @@ from utils.utils import Utils
 _ = I18N._
 
 
-class WeatherWindow(QDialog):
+class WeatherWindow(SmartWindow):
     """Window to show weather data."""
 
     CITY = None
@@ -34,18 +34,17 @@ class WeatherWindow(QDialog):
     weather_result = Signal(str, str)
 
     def __init__(self, master, app_actions, dimensions="600x600"):
-        super().__init__(master)
         if WeatherWindow.CITY is None:
             WeatherWindow.CITY = getattr(config, "open_weather_city", "Washington")
+        super().__init__(
+            persistent_parent=master,
+            position_parent=master,
+            title=_("Weather") + " - " + WeatherWindow.CITY,
+            geometry=dimensions,
+            offset_x=50,
+            offset_y=50,
+        )
         WeatherWindow.top_level = self
-        self.setWindowTitle(_("Weather") + " - " + WeatherWindow.CITY)
-        try:
-            w, h = dimensions.split("x")
-            self.resize(int(w), int(h))
-        except Exception:
-            self.resize(600, 600)
-        self.setWindowFlags(self.windowFlags() | Qt.WindowType.Window)
-
         self.master = master
         self.app_actions = app_actions
         self.open_weather_api = OpenWeatherAPI()

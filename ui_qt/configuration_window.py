@@ -4,7 +4,6 @@ Port of ui/configuration_window.py; logic preserved, UI uses Qt.
 """
 
 from PySide6.QtWidgets import (
-    QDialog,
     QVBoxLayout,
     QHBoxLayout,
     QGridLayout,
@@ -18,6 +17,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt
 
+from lib.multi_display_qt import SmartWindow
 from ui_qt.app_style import AppStyle
 from ui_qt.auth.password_utils import require_password
 from utils.config import config
@@ -27,18 +27,21 @@ from utils.translations import I18N
 _ = I18N._
 
 
-class ConfigurationWindow(QDialog):
+class ConfigurationWindow(SmartWindow):
     """Configuration settings dialog with tabbed interface."""
 
     top_level = None
 
     def __init__(self, master, app_actions):
-        super().__init__(master)
+        super().__init__(
+            persistent_parent=master,
+            position_parent=master,
+            title=_("Configuration Settings"),
+            geometry="1000x800",
+            offset_x=50,
+            offset_y=50,
+        )
         ConfigurationWindow.top_level = self
-        self.setWindowTitle(_("Configuration Settings"))
-        self.resize(1000, 800)
-        self.setWindowFlags(self.windowFlags() | Qt.WindowType.Window)
-
         self.master = master
         self.app_actions = app_actions
 

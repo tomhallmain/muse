@@ -4,7 +4,6 @@ Port of ui/network_media_window.py.
 """
 
 from PySide6.QtWidgets import (
-    QDialog,
     QVBoxLayout,
     QHBoxLayout,
     QGridLayout,
@@ -17,6 +16,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt, QTimer
 
+from lib.multi_display_qt import SmartWindow
 from library_data.library_data import LibraryData, LibraryDataSearch
 from ui_qt.app_style import AppStyle
 from utils.app_info_cache import app_info_cache
@@ -77,7 +77,7 @@ class NetworkMediaURL:
         return False
 
 
-class NetworkMediaWindow(QDialog):
+class NetworkMediaWindow(SmartWindow):
     """Window to start playlists from a URL.
 
     TODO: WIP / currently in development. No menu or other entry point in app_qt
@@ -109,20 +109,16 @@ class NetworkMediaWindow(QDialog):
         app_info_cache.set("recent_media_urls", json_urls)
 
     def __init__(self, master, app_actions, dimensions="1550x700"):
-        super().__init__(master)
+        super().__init__(
+            persistent_parent=master,
+            position_parent=master,
+            title=_("Search") + " - " + _("Search Library"),
+            geometry=dimensions,
+            offset_x=50,
+            offset_y=50,
+        )
         NetworkMediaWindow.top_level = self
-        NetworkMediaWindow.set_title(_("Search Library"))
-        try:
-            width, height = map(int, dimensions.split("x"))
-            self.resize(width, height)
-        except Exception:
-            self.resize(1550, 700)
-        self.setWindowFlags(self.windowFlags() | Qt.WindowType.Window)
         self.setMinimumSize(400, 400)
-
-        if hasattr(master, "geometry"):
-            geo = master.geometry()
-            self.move(geo.x() + 50, geo.y() + 30)
 
         self.app_actions = app_actions
         self.library_data = LibraryData()

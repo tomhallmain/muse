@@ -5,7 +5,6 @@ Uses ui_qt.preset.Preset.
 """
 
 from PySide6.QtWidgets import (
-    QDialog,
     QVBoxLayout,
     QHBoxLayout,
     QLabel,
@@ -16,6 +15,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt
 
+from lib.multi_display_qt import SmartWindow
 from ui_qt.app_style import AppStyle
 from ui_qt.preset import Preset
 from utils.app_info_cache import app_info_cache
@@ -24,7 +24,7 @@ from utils.translations import I18N
 _ = I18N._
 
 
-class PresetsWindow(QDialog):
+class PresetsWindow(SmartWindow):
     """Presets window: list presets, set/delete/add, filter by key."""
 
     top_level = None
@@ -109,19 +109,16 @@ class PresetsWindow(QDialog):
         set_widgets_from_preset_callback,
         dimensions=None,
     ):
-        super().__init__(master)
+        geom = dimensions if dimensions else PresetsWindow.get_geometry()
+        super().__init__(
+            persistent_parent=master,
+            position_parent=master,
+            title=_("Presets Window"),
+            geometry=geom,
+            offset_x=50,
+            offset_y=50,
+        )
         PresetsWindow.top_level = self
-        self.setWindowTitle(_("Presets Window"))
-        if dimensions:
-            try:
-                w, h = dimensions.split("x")
-                self.resize(int(w), int(h))
-            except Exception:
-                self.resize(700, 400)
-        else:
-            self.resize(700, 400)
-        self.setWindowFlags(self.windowFlags() | Qt.WindowType.Window)
-
         self.master = master
         self.app_actions = app_actions
         self.construct_preset_callback = construct_preset_callback

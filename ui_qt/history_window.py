@@ -4,7 +4,6 @@ Port of ui/history_window.py; logic preserved, UI uses Qt.
 """
 
 from PySide6.QtWidgets import (
-    QDialog,
     QVBoxLayout,
     QHBoxLayout,
     QGridLayout,
@@ -19,6 +18,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt
 
+from lib.multi_display_qt import SmartWindow
 from muse.playlist import Playlist
 from ui_qt.app_style import AppStyle
 from ui_qt.auth.password_utils import require_password
@@ -72,7 +72,7 @@ class HistoryDataSearch:
         self.results = [item for _, item in self.results[: self.max_results]]
 
 
-class HistoryWindow(QDialog):
+class HistoryWindow(SmartWindow):
     """Window to view playback history data."""
 
     COL_0_WIDTH = 150
@@ -81,16 +81,15 @@ class HistoryWindow(QDialog):
     MAX_RESULTS = 200
 
     def __init__(self, master, app_actions, library_data, dimensions="800x600"):
-        super().__init__(master)
+        super().__init__(
+            persistent_parent=master,
+            position_parent=master,
+            title=_("History") + " - " + _("History"),
+            geometry=dimensions,
+            offset_x=50,
+            offset_y=50,
+        )
         HistoryWindow.top_level = self
-        self.setWindowTitle(_("History") + " - " + _("History"))
-        try:
-            w, h = dimensions.split("x")
-            self.resize(int(w), int(h))
-        except Exception:
-            self.resize(600, 600)
-        self.setWindowFlags(self.windowFlags() | Qt.WindowType.Window)
-
         logger.info("Opening HistoryWindow with dimensions %s", dimensions)
         self.master = master
         self.app_actions = app_actions

@@ -16,6 +16,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont
 
+from lib.multi_display_qt import SmartDialog
 from ui_qt.app_style import AppStyle
 
 # Qt.KeyboardModifier has no CapsLockModifier in standard Qt; use getattr for compatibility
@@ -49,7 +50,7 @@ class PasswordLineEdit(QLineEdit):
         super().keyReleaseEvent(event)
 
 
-class PasswordDialog(QDialog):
+class PasswordDialog(SmartDialog):
     """Simple password dialog for authentication."""
 
     def __init__(
@@ -63,7 +64,25 @@ class PasswordDialog(QDialog):
         custom_text=None,
         allow_unauthenticated=False,
     ):
-        super().__init__(master)
+        password_configured = PasswordManager.is_security_configured()
+        if custom_text and len(custom_text) > 100:
+            width = 500 if password_configured else 550
+            height = 400 if password_configured else 450
+        else:
+            width = 450 if password_configured else 500
+            height = 300 if password_configured else 350
+
+        title = (
+            _("Password Required")
+            if password_configured
+            else _("Password Protection")
+        )
+        super().__init__(
+            parent=master,
+            title=title,
+            geometry=f"{width}x{height}",
+            center=True,
+        )
         self.master = master
         self.config = config
         self.action_name = action_name
@@ -74,32 +93,11 @@ class PasswordDialog(QDialog):
         self.allow_unauthenticated = allow_unauthenticated
         self.result = False
         self._cancel_called = False
+        self.password_configured = password_configured
 
-        self.password_configured = self._is_password_configured()
-
-        self.setWindowTitle(
-            _("Password Required")
-            if self.password_configured
-            else _("Password Protection")
-        )
-
-        if self.custom_text and len(self.custom_text) > 100:
-            width = 500 if self.password_configured else 550
-            height = 400 if self.password_configured else 450
-        else:
-            width = 450 if self.password_configured else 500
-            height = 300 if self.password_configured else 350
-
-        self.resize(width, height)
         self.setFixedSize(width, height)
         self.setWindowFlags(self.windowFlags() | Qt.WindowType.Dialog)
         self.setModal(True)
-
-        if hasattr(master, "geometry"):
-            geo = master.geometry()
-            cx = geo.x() + (geo.width() // 2) - (width // 2)
-            cy = geo.y() + (geo.height() // 2) - (height // 2)
-            self.move(cx, cy)
 
         self.setStyleSheet(AppStyle.get_stylesheet())
         self.setup_ui()

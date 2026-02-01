@@ -5,7 +5,6 @@ Port of ui/composers_window.py; logic preserved, UI uses Qt.
 import time
 
 from PySide6.QtWidgets import (
-    QDialog,
     QVBoxLayout,
     QHBoxLayout,
     QGridLayout,
@@ -19,6 +18,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt, QTimer
 
+from lib.multi_display_qt import SmartWindow
 from library_data.composer import Composer, ComposersDataSearch, ComposersData
 from ui_qt.app_style import AppStyle
 from ui_qt.auth.password_utils import require_password
@@ -33,7 +33,7 @@ _ = I18N._
 COL_0_WIDTH = 600
 
 
-class ComposerDetailsWindow(QDialog):
+class ComposerDetailsWindow(SmartWindow):
     """Window to show and edit composer details."""
 
     top_level = None
@@ -45,26 +45,28 @@ class ComposerDetailsWindow(QDialog):
         composer: Composer = None,
         dimensions: str = "600x600",
     ):
-        super().__init__(master)
+        comp = composer if composer is not None else Composer(None, None)
+        is_new = composer is None
+        title = (
+            _("New Composer")
+            if is_new
+            else _("Modify Composer: {0}").format(comp.name)
+        )
+        super().__init__(
+            persistent_parent=master,
+            position_parent=master,
+            title=title,
+            geometry=dimensions,
+            offset_x=50,
+            offset_y=50,
+        )
         ComposerDetailsWindow.top_level = self
         self.master = master
         self.composers_window = composers_window
         self.app_actions = composers_window.app_actions
-        self.composer = composer if composer is not None else Composer(None, None)
-        self.is_new = composer is None
+        self.composer = comp
+        self.is_new = is_new
 
-        self.setWindowTitle(
-            _("New Composer")
-            if self.is_new
-            else _("Modify Composer: {0}").format(self.composer.name)
-        )
-        try:
-            w, h = dimensions.split("x")
-            self.resize(int(w), int(h))
-        except Exception:
-            self.resize(600, 600)
-
-        self.setWindowFlags(self.windowFlags() | Qt.WindowType.Window)
         self.setStyleSheet(AppStyle.get_stylesheet())
 
         self.note_key_edits = []
@@ -318,7 +320,7 @@ class ComposerDetailsWindow(QDialog):
                 )
 
 
-class ComposersWindow(QDialog):
+class ComposersWindow(SmartWindow):
     """Window to search composers data."""
 
     COL_0_WIDTH = 150
@@ -366,16 +368,15 @@ class ComposersWindow(QDialog):
         app_info_cache.set("recent_composer_searches", json_searches)
 
     def __init__(self, master: QWidget, app_actions, dimensions: str = "600x600"):
-        super().__init__(master)
+        super().__init__(
+            persistent_parent=master,
+            position_parent=master,
+            title=_("Composer Search") + " - " + _("Search Composers"),
+            geometry=dimensions,
+            offset_x=50,
+            offset_y=50,
+        )
         ComposersWindow.top_level = self
-        self.setWindowTitle(_("Composer Search") + " - " + _("Search Composers"))
-        try:
-            w, h = dimensions.split("x")
-            self.resize(int(w), int(h))
-        except Exception:
-            self.resize(600, 600)
-        self.setWindowFlags(self.windowFlags() | Qt.WindowType.Window)
-
         self.master = master
         self.app_actions = app_actions
         self.composers_data = ComposersData()

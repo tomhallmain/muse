@@ -4,7 +4,6 @@ Port of ui/blacklist_preview_window.py; logic preserved, UI uses Qt.
 """
 
 from PySide6.QtWidgets import (
-    QDialog,
     QVBoxLayout,
     QLabel,
     QPlainTextEdit,
@@ -12,6 +11,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt
 
+from lib.multi_display_qt import SmartWindow
 from library_data.blacklist import Blacklist
 from ui_qt.app_style import AppStyle
 from utils.translations import I18N
@@ -19,13 +19,12 @@ from utils.translations import I18N
 _ = I18N._
 
 
-class BlacklistPreviewWindow(QDialog):
+class BlacklistPreviewWindow(SmartWindow):
     """Window to test arbitrary text against the current blacklist."""
 
     top_level = None
 
     def __init__(self, master, app_actions, dimensions: str = "520x420"):
-        super().__init__(master)
         if BlacklistPreviewWindow.top_level is not None:
             try:
                 BlacklistPreviewWindow.top_level.close()
@@ -34,17 +33,17 @@ class BlacklistPreviewWindow(QDialog):
                 pass
             BlacklistPreviewWindow.top_level = None
 
+        super().__init__(
+            persistent_parent=master,
+            position_parent=master,
+            title=_("Blacklist Preview"),
+            geometry=dimensions,
+            offset_x=50,
+            offset_y=50,
+        )
         BlacklistPreviewWindow.top_level = self
         self.master = master
         self.app_actions = app_actions
-
-        self.setWindowTitle(_("Blacklist Preview"))
-        try:
-            w, h = dimensions.split("x")
-            self.resize(int(w), int(h))
-        except Exception:
-            self.resize(520, 420)
-        self.setWindowFlags(self.windowFlags() | Qt.WindowType.Window)
         self.setMinimumSize(400, 300)
 
         self.setStyleSheet(AppStyle.get_stylesheet())
@@ -102,7 +101,7 @@ class BlacklistPreviewWindow(QDialog):
     def _on_close(self):
         if BlacklistPreviewWindow.top_level is self:
             BlacklistPreviewWindow.top_level = None
-        self.accept()
+        self.close()
 
     def closeEvent(self, event):
         self._on_close()

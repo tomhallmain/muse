@@ -7,7 +7,6 @@ import random
 from datetime import datetime
 
 from PySide6.QtWidgets import (
-    QDialog,
     QVBoxLayout,
     QHBoxLayout,
     QGridLayout,
@@ -21,6 +20,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt, QTimer
 
+from lib.multi_display_qt import SmartWindow
 from library_data.favorite import Favorite
 from ui_qt.app_style import AppStyle
 from ui_qt.auth.password_utils import require_password
@@ -75,7 +75,7 @@ class FavoritesDataSearch:
         self.results = [fav for _, fav in self.results[: self.max_results]]
 
 
-class FavoritesWindow(QDialog):
+class FavoritesWindow(SmartWindow):
     """Window to search and manage favorites."""
 
     COL_0_WIDTH = 150
@@ -227,16 +227,15 @@ class FavoritesWindow(QDialog):
         return True
 
     def __init__(self, master, app_actions, library_data, dimensions="600x600"):
-        super().__init__(master)
+        super().__init__(
+            persistent_parent=master,
+            position_parent=master,
+            title=_("Favorites") + " - " + _("Favorites"),
+            geometry=dimensions,
+            offset_x=50,
+            offset_y=50,
+        )
         FavoritesWindow.top_level = self
-        self.setWindowTitle(_("Favorites") + " - " + _("Favorites"))
-        try:
-            w, h = dimensions.split("x")
-            self.resize(int(w), int(h))
-        except Exception:
-            self.resize(600, 600)
-        self.setWindowFlags(self.windowFlags() | Qt.WindowType.Window)
-
         self.master = master
         self.app_actions = app_actions
         self.library_data = library_data
@@ -577,15 +576,18 @@ class FavoritesWindow(QDialog):
         self._play_favorite(random_favorite)
 
 
-class FavoriteWindow(QDialog):
+class FavoriteWindow(SmartWindow):
     """Subsidiary window to view and edit a specific favorite."""
 
     def __init__(self, master, favorites_window, favorite, library_data, is_new=False):
-        super().__init__(master)
-        self.setWindowTitle(_("Favorite Details"))
-        self.resize(400, 300)
-        self.setWindowFlags(self.windowFlags() | Qt.WindowType.Window)
-
+        super().__init__(
+            persistent_parent=master,
+            position_parent=master,
+            title=_("Favorite Details"),
+            geometry="400x300",
+            offset_x=50,
+            offset_y=50,
+        )
         self.master = master
         self.favorites_window = favorites_window
         self.favorite = favorite

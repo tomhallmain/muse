@@ -6,7 +6,6 @@ Port of ui/track_details_window.py; logic preserved, UI uses Qt.
 import os
 
 from PySide6.QtWidgets import (
-    QDialog,
     QVBoxLayout,
     QHBoxLayout,
     QGridLayout,
@@ -19,6 +18,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt
 
+from lib.multi_display_qt import SmartWindow
 from extensions.open_weather import OpenWeatherAPI
 from ui_qt.app_style import AppStyle
 from utils.translations import I18N
@@ -26,7 +26,7 @@ from utils.translations import I18N
 _ = I18N._
 
 
-class TrackDetailsWindow(QDialog):
+class TrackDetailsWindow(SmartWindow):
     """Window to display and edit track metadata."""
 
     AUDIO_TRACK = None
@@ -34,17 +34,17 @@ class TrackDetailsWindow(QDialog):
     top_level = None
 
     def __init__(self, master, app_actions, audio_track, dimensions="800x800"):
-        super().__init__(master)
+        title = _("Track Details") + " - " + (audio_track.title or _("Track Details"))
+        super().__init__(
+            persistent_parent=master,
+            position_parent=master,
+            title=title,
+            geometry=dimensions,
+            offset_x=50,
+            offset_y=50,
+        )
         TrackDetailsWindow.top_level = self
         TrackDetailsWindow.AUDIO_TRACK = audio_track
-        self.setWindowTitle(_("Track Details") + " - " + (audio_track.title or _("Track Details")))
-        try:
-            w, h = dimensions.split("x")
-            self.resize(int(w), int(h))
-        except Exception:
-            self.resize(800, 800)
-        self.setWindowFlags(self.windowFlags() | Qt.WindowType.Window)
-
         self.master = master
         self.app_actions = app_actions
         self.open_weather_api = OpenWeatherAPI()

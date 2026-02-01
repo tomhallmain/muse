@@ -6,7 +6,6 @@ Port of ui/tts_window.py; logic preserved, UI uses Qt.
 import os
 
 from PySide6.QtWidgets import (
-    QDialog,
     QVBoxLayout,
     QHBoxLayout,
     QLabel,
@@ -21,6 +20,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt, Signal
 
+from lib.multi_display_qt import SmartWindow
 from muse.voice import Voice
 from tts.speakers import speakers
 from ui_qt.app_style import AppStyle
@@ -30,7 +30,7 @@ from utils.utils import Utils
 _ = I18N._
 
 
-class TTSWindow(QDialog):
+class TTSWindow(SmartWindow):
     """Window for text-to-speech conversion."""
 
     top_level = None
@@ -39,15 +39,15 @@ class TTSWindow(QDialog):
     status_message = Signal(str)
 
     def __init__(self, master, app_actions, dimensions="800x600"):
-        super().__init__(master)
+        super().__init__(
+            persistent_parent=master,
+            position_parent=master,
+            title=_("Text to Speech"),
+            geometry=dimensions,
+            offset_x=50,
+            offset_y=50,
+        )
         TTSWindow.top_level = self
-        self.setWindowTitle(_("Text to Speech"))
-        try:
-            w, h = dimensions.split("x")
-            self.resize(int(w), int(h))
-        except Exception:
-            self.resize(800, 600)
-        self.setWindowFlags(self.windowFlags() | Qt.WindowType.Window)
         self.setMinimumSize(400, 400)
 
         self.master = master

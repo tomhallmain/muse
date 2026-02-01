@@ -4,7 +4,6 @@ Port of ui/schedules_window.py; logic preserved, UI uses Qt.
 """
 
 from PySide6.QtWidgets import (
-    QDialog,
     QVBoxLayout,
     QHBoxLayout,
     QGridLayout,
@@ -18,6 +17,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt
 
+from lib.multi_display_qt import SmartWindow
 from muse.schedule import Schedule
 from muse.schedules_manager import schedules_manager
 from tts.speakers import speakers
@@ -29,26 +29,26 @@ from utils.translations import I18N
 _ = I18N._
 
 
-class ScheduleModifyWindow(QDialog):
+class ScheduleModifyWindow(SmartWindow):
     """Dialog to create or edit one schedule."""
 
     top_level = None
     COL_0_WIDTH = 600
 
     def __init__(self, master, refresh_callback, schedule=None, dimensions="600x600"):
-        super().__init__(master)
+        sched = schedule if schedule is not None else Schedule()
+        title = _("Modify Preset Schedule: {0}").format(sched.name)
+        super().__init__(
+            persistent_parent=master,
+            position_parent=master,
+            title=title,
+            geometry=dimensions,
+            offset_x=50,
+            offset_y=50,
+        )
         ScheduleModifyWindow.top_level = self
         self.refresh_callback = refresh_callback
-        self.schedule = schedule if schedule is not None else Schedule()
-        self.setWindowTitle(
-            _("Modify Preset Schedule: {0}").format(self.schedule.name)
-        )
-        try:
-            w, h = dimensions.split("x")
-            self.resize(int(w), int(h))
-        except Exception:
-            self.resize(600, 600)
-        self.setWindowFlags(self.windowFlags() | Qt.WindowType.Window)
+        self.schedule = sched
 
         self.setStyleSheet(AppStyle.get_stylesheet())
         layout = QGridLayout(self)
@@ -195,7 +195,7 @@ class ScheduleModifyWindow(QDialog):
         event.accept()
 
 
-class SchedulesWindow(QDialog):
+class SchedulesWindow(SmartWindow):
     """Main schedules window: list schedules, add/modify/delete."""
 
     top_level = None
@@ -209,16 +209,15 @@ class SchedulesWindow(QDialog):
         return "700x400"
 
     def __init__(self, master, app_actions, runner_app_config=None):
-        super().__init__(master)
+        super().__init__(
+            persistent_parent=master,
+            position_parent=master,
+            title=_("Preset Schedules"),
+            geometry=SchedulesWindow.get_geometry(),
+            offset_x=50,
+            offset_y=50,
+        )
         SchedulesWindow.top_level = self
-        self.setWindowTitle(_("Preset Schedules"))
-        try:
-            w, h = SchedulesWindow.get_geometry().split("x")
-            self.resize(int(w), int(h))
-        except Exception:
-            self.resize(700, 400)
-        self.setWindowFlags(self.windowFlags() | Qt.WindowType.Window)
-
         self.master = master
         self.app_actions = app_actions
         self.filter_text = ""

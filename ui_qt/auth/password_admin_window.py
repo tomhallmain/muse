@@ -20,6 +20,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont
 
+from lib.multi_display_qt import SmartWindow, display_manager
 from ui_qt.app_style import AppStyle
 from ui_qt.auth.password_core import PasswordManager, get_security_config
 from ui_qt.auth.password_utils import require_password
@@ -38,6 +39,13 @@ class PasswordChangeDialog(QDialog):
         self.setWindowTitle(_("Change Password"))
         self.setFixedSize(400, 320)
         self.setModal(True)
+        if parent:
+            try:
+                display_manager.position_window_on_same_display(
+                    parent, self, offset_x=50, offset_y=50, geometry="400x320"
+                )
+            except Exception:
+                pass
         self.setStyleSheet(AppStyle.get_stylesheet())
 
         layout = QVBoxLayout(self)
@@ -123,24 +131,23 @@ class PasswordChangeDialog(QDialog):
             QMessageBox.critical(self, _("Error"), message)
 
 
-class PasswordAdminWindow(QDialog):
+class PasswordAdminWindow(SmartWindow):
     top_level = None
 
     def __init__(self, master, app_actions):
-        super().__init__(master)
+        # Match Tk: position at top of same display (new_y=0), offset horizontally from parent
+        new_x = master.geometry().x() + 50 if master and hasattr(master, "geometry") else 50
+        new_y = 0
+        positioned_geometry = f"{PasswordAdminWindow.get_geometry()}+{new_x}+{new_y}"
+
+        super().__init__(
+            persistent_parent=master,
+            title=_("Password Administration"),
+            geometry=positioned_geometry,
+            auto_position=False,
+        )
         self._parent = master
         self.app_actions = app_actions
-
-        parent_geo = getattr(master, "geometry", lambda: None)()
-        if parent_geo:
-            new_x = parent_geo.x() + 50
-            new_y = 0
-            self.move(new_x, new_y)
-
-        width, height = 900, 700
-        self.resize(width, height)
-        self.setWindowTitle(_("Password Administration"))
-        self.setWindowFlags(self.windowFlags() | Qt.WindowType.Window)
         self.setMinimumSize(400, 400)
 
         PasswordAdminWindow.top_level = self
@@ -513,7 +520,7 @@ class PasswordAdminWindow(QDialog):
         """Refresh the UI to reflect current state."""
         if PasswordAdminWindow.top_level is self:
             PasswordAdminWindow.top_level = None
-        self.accept()
+        self.close()
         new_win = PasswordAdminWindow(self._parent, self.app_actions)
         new_win.show()
 
@@ -521,7 +528,7 @@ class PasswordAdminWindow(QDialog):
         """Close the window."""
         if PasswordAdminWindow.top_level is self:
             PasswordAdminWindow.top_level = None
-        self.reject()
+        self.close()
 
     def _show_toast_or_messagebox(self, message, error=False):
         """Show a toast if available, otherwise use a messagebox."""

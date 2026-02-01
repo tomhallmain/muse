@@ -6,7 +6,6 @@ from datetime import datetime
 import os
 
 from PySide6.QtWidgets import (
-    QDialog,
     QVBoxLayout,
     QHBoxLayout,
     QGridLayout,
@@ -19,6 +18,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt
 
+from lib.multi_display_qt import SmartWindow
 from extensions.extension_manager import ExtensionManager
 from extensions.library_extender import q20, q23
 from library_data.library_data import LibraryDataSearch
@@ -32,7 +32,7 @@ _ = I18N._
 logger = get_logger(__name__)
 
 
-class ExtensionsWindow(QDialog):
+class ExtensionsWindow(SmartWindow):
     """Window to display and manage extension history."""
 
     CURRENT_EXTENSION_TEXT = _("Extensions")
@@ -41,12 +41,15 @@ class ExtensionsWindow(QDialog):
     top_level = None
 
     def __init__(self, master, app_actions, library_data):
-        super().__init__(master)
+        super().__init__(
+            persistent_parent=master,
+            position_parent=master,
+            title=_("Extensions"),
+            geometry="1400x800",
+            offset_x=50,
+            offset_y=50,
+        )
         ExtensionsWindow.top_level = self
-        self.setWindowTitle(_("Extensions"))
-        self.resize(1400, 800)
-        self.setWindowFlags(self.windowFlags() | Qt.WindowType.Window)
-
         self.master = master
         self.app_actions = app_actions
         self.library_data = library_data
@@ -380,15 +383,18 @@ class ExtensionsWindow(QDialog):
         self.status_label.setText(status)
 
 
-class ExtensionDetailsWindow(QDialog):
+class ExtensionDetailsWindow(SmartWindow):
     """Window to display detailed information about an extension."""
 
     def __init__(self, master, extension):
-        super().__init__(master)
-        self.setWindowTitle(_("Extension Details"))
-        self.resize(800, 600)
-        self.setWindowFlags(self.windowFlags() | Qt.WindowType.Window)
-
+        super().__init__(
+            persistent_parent=master,
+            position_parent=master,
+            title=_("Extension Details"),
+            geometry="800x600",
+            offset_x=50,
+            offset_y=50,
+        )
         self.master = master
         self.extension = extension
         self.has_closed = False

@@ -5,7 +5,6 @@ Port of ui/audio_device_window.py; logic preserved, UI uses Qt.
 from datetime import datetime, time as dt_time
 
 from PySide6.QtWidgets import (
-    QDialog,
     QVBoxLayout,
     QHBoxLayout,
     QLabel,
@@ -17,6 +16,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt
 
+from lib.multi_display_qt import SmartWindow
 from ui_qt.app_style import AppStyle
 from utils.translations import I18N
 from utils.audio_device_manager import AudioDeviceManager
@@ -26,18 +26,21 @@ _ = I18N._
 logger = get_logger(__name__)
 
 
-class AudioDeviceWindow(QDialog):
+class AudioDeviceWindow(SmartWindow):
     """Window for managing audio device settings and day/night switching."""
 
     top_level = None
 
     def __init__(self, master, app_actions):
-        super().__init__(master)
+        super().__init__(
+            persistent_parent=master,
+            position_parent=master,
+            title=_("Audio Device Management"),
+            geometry="800x600",
+            offset_x=50,
+            offset_y=50,
+        )
         AudioDeviceWindow.top_level = self
-        self.setWindowTitle(_("Audio Device Management"))
-        self.resize(800, 600)
-        self.setWindowFlags(self.windowFlags() | Qt.WindowType.Window)
-
         self.master = master
         self.app_actions = app_actions
 
@@ -406,7 +409,7 @@ class AudioDeviceWindow(QDialog):
             self.audio_manager.stop_monitoring()
 
         AudioDeviceWindow.top_level = None
-        self.accept()
+        self.close()
 
     def closeEvent(self, event):
         self.on_closing()

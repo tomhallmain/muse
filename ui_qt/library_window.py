@@ -4,7 +4,6 @@ Port of ui/library_window.py; logic preserved, UI uses Qt.
 """
 
 from PySide6.QtWidgets import (
-    QDialog,
     QVBoxLayout,
     QHBoxLayout,
     QLabel,
@@ -18,6 +17,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt
 
+from lib.multi_display_qt import SmartWindow
 from ui_qt.app_style import AppStyle
 from utils.globals import TrackAttribute
 from utils.logging_setup import get_logger
@@ -27,19 +27,22 @@ _ = I18N._
 logger = get_logger(__name__)
 
 
-class LibraryWindow(QDialog):
+class LibraryWindow(SmartWindow):
     """Window to display and manage library statistics and browsing."""
 
     CURRENT_LIBRARY_TEXT = _("Library")
     top_level = None
 
     def __init__(self, master, app_actions, library_data):
-        super().__init__(master)
+        super().__init__(
+            persistent_parent=master,
+            position_parent=master,
+            title=_("Library"),
+            geometry="1000x600",
+            offset_x=50,
+            offset_y=50,
+        )
         LibraryWindow.top_level = self
-        self.setWindowTitle(_("Library"))
-        self.resize(1000, 600)
-        self.setWindowFlags(self.windowFlags() | Qt.WindowType.Window)
-
         self.master = master
         self.app_actions = app_actions
         self.library_data = library_data

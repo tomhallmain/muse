@@ -5,7 +5,6 @@ Port of ui/blacklist_window.py; logic preserved, UI uses Qt.
 from typing import Callable, Optional
 
 from PySide6.QtWidgets import (
-    QDialog,
     QVBoxLayout,
     QHBoxLayout,
     QGridLayout,
@@ -26,6 +25,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt
 
+from lib.multi_display_qt import SmartWindow
 from library_data.blacklist import BlacklistItem, Blacklist
 from ui_qt.app_style import AppStyle
 from ui_qt.auth.password_utils import require_password
@@ -38,7 +38,7 @@ _ = I18N._
 COL_0_WIDTH = 600
 
 
-class BlacklistModifyWindow(QDialog):
+class BlacklistModifyWindow(SmartWindow):
     """Dialog for adding or editing a single blacklist item."""
 
     top_level = None
@@ -51,27 +51,32 @@ class BlacklistModifyWindow(QDialog):
         app_actions,
         dimensions: str = "600x400",
     ):
-        super().__init__(master)
+        is_new_item = blacklist_item is None
+        item_for_title = (
+            BlacklistItem("", enabled=True, use_regex=False, use_word_boundary=True, use_space_as_optional_nonword=True)
+            if is_new_item
+            else blacklist_item
+        )
+        title = (
+            _("New Blacklist Item")
+            if is_new_item
+            else _("Modify Blacklist Item: {0}").format(item_for_title.string)
+        )
+        super().__init__(
+            persistent_parent=master,
+            position_parent=master,
+            title=title,
+            geometry=dimensions,
+            offset_x=50,
+            offset_y=50,
+        )
         BlacklistModifyWindow.top_level = self
         self.master = master
         self.refresh_callback = refresh_callback
         self.app_actions = app_actions
-        self.is_new_item = blacklist_item is None
-        self.original_string = "" if self.is_new_item else blacklist_item.string
-        self.blacklist_item: BlacklistItem = (
-            BlacklistItem(
-                "",
-                enabled=True,
-                use_regex=False,
-                use_word_boundary=True,
-                use_space_as_optional_nonword=True,
-            )
-            if self.is_new_item
-            else blacklist_item
-        )
-
-        title = _("Modify Blacklist Item: {0}").format(self.blacklist_item.string)
-        self.setWindowTitle(title)
+        self.is_new_item = is_new_item
+        self.original_string = "" if is_new_item else blacklist_item.string
+        self.blacklist_item: BlacklistItem = item_for_title
 
         self.original_values = {
             "string": self.original_string,
@@ -82,13 +87,6 @@ class BlacklistModifyWindow(QDialog):
             "use_space_as_optional_nonword": self.blacklist_item.use_space_as_optional_nonword,
         }
 
-        try:
-            w, h = dimensions.split("x")
-            self.resize(int(w), int(h))
-        except Exception:
-            self.resize(600, 400)
-
-        self.setWindowFlags(self.windowFlags() | Qt.WindowType.Window)
         self.setStyleSheet(AppStyle.get_stylesheet())
         self._build_ui()
 
@@ -229,7 +227,7 @@ class BlacklistModifyWindow(QDialog):
             event.accept()
 
 
-class BlacklistWindow(QDialog):
+class BlacklistWindow(SmartWindow):
     """Main blacklist management window."""
 
     top_level = None
@@ -330,13 +328,16 @@ If you are young, not sure, or even an adult, click the close button on this win
         return (1000, 560)
 
     def __init__(self, master: QWidget, app_actions):
-        super().__init__(master)
-        BlacklistWindow.top_level = self
-        self.setWindowTitle(_("Blacklist"))
         w, h = BlacklistWindow.get_geometry(is_gui=True)
-        self.resize(w, h)
-        self.setWindowFlags(self.windowFlags() | Qt.WindowType.Window)
-
+        super().__init__(
+            persistent_parent=master,
+            position_parent=master,
+            title=_("Blacklist"),
+            geometry=f"{w}x{h}",
+            offset_x=50,
+            offset_y=50,
+        )
+        BlacklistWindow.top_level = self
         self.master = master
         self.app_actions = app_actions
         self.base_item = ""

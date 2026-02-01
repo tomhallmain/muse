@@ -5,7 +5,6 @@ Styles inherit from the global stylesheet (no per-widget color/background overri
 """
 
 from PySide6.QtWidgets import (
-    QDialog,
     QVBoxLayout,
     QHBoxLayout,
     QGridLayout,
@@ -23,6 +22,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt
 
+from lib.multi_display_qt import SmartWindow
 from ui_qt.app_style import AppStyle
 from ui_qt.auth.password_utils import require_password
 from muse.dj_persona import DJPersona, DJPersonaManager
@@ -36,18 +36,21 @@ _ = I18N._
 logger = get_logger(__name__)
 
 
-class PersonasWindow(QDialog):
+class PersonasWindow(SmartWindow):
     """Window for managing DJ personas - creating, editing, and deleting personas."""
 
     top_level = None
 
     def __init__(self, master, app_actions):
-        super().__init__(master)
+        super().__init__(
+            persistent_parent=master,
+            position_parent=master,
+            title=_("DJ Personas"),
+            geometry="1200x800",
+            offset_x=50,
+            offset_y=50,
+        )
         PersonasWindow.top_level = self
-        self.setWindowTitle(_("DJ Personas"))
-        self.resize(1200, 800)
-        self.setWindowFlags(self.windowFlags() | Qt.WindowType.Window)
-
         self.master = master
         self.app_actions = app_actions
 

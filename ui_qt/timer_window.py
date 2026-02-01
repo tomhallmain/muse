@@ -4,7 +4,6 @@ Port of ui/timer_window.py; logic preserved, UI uses Qt.
 """
 
 from PySide6.QtWidgets import (
-    QDialog,
     QVBoxLayout,
     QHBoxLayout,
     QGridLayout,
@@ -18,6 +17,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QFont
 
+from lib.multi_display_qt import SmartWindow
 from muse.timer import Timer
 from ui_qt.app_style import AppStyle
 from utils.logging_setup import get_logger
@@ -27,14 +27,18 @@ _ = I18N._
 logger = get_logger(__name__)
 
 
-class TimerWindow(QDialog):
+class TimerWindow(SmartWindow):
     """Timer dialog: set duration, start/pause/stop/reset, display countdown."""
 
     def __init__(self, master, app_actions):
-        super().__init__(master)
-        self.setWindowTitle(_("Timer"))
-        self.resize(400, 360)
-        self.setWindowFlags(self.windowFlags() | Qt.WindowType.Window)
+        super().__init__(
+            persistent_parent=master,
+            position_parent=master,
+            title=_("Timer"),
+            geometry="400x360",
+            offset_x=50,
+            offset_y=50,
+        )
         self.setMinimumSize(320, 300)
 
         self.master = master
