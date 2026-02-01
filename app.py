@@ -290,17 +290,18 @@ class App():
         self.label_playlist_strategy = Label(self.sidebar)
         self.add_label(self.label_playlist_strategy, _("Playlist"), increment_row_counter=False)
         self.playlist_strategy = StringVar(master)
-        self.playlist_strategy_choice = OptionMenu(self.sidebar, self.playlist_strategy, str(self.runner_app_config.playback_master_strategy),
-                *PlaybackMasterStrategy.__members__.keys(), command=self.set_playback_master_strategy)
+        self.playlist_strategy_choice = OptionMenu(self.sidebar, self.playlist_strategy,
+                PlaybackMasterStrategy.get(self.runner_app_config.playback_master_strategy).get_translation(),
+                *PlaybackMasterStrategy.get_translated_names(), command=self.set_playback_master_strategy)
         self.apply_to_grid(self.playlist_strategy_choice, interior_column=2, sticky=W)
 
         # TODO multiselect
         self.label_sort_type = Label(self.sidebar)
         self.add_label(self.label_sort_type, _("Playlist Sort"), increment_row_counter=False)
         self.sort_type = StringVar(master)
-        current_type = PlaylistSortType[self.runner_app_config.workflow_type].get_translation()
-        self.sort_type_choice = OptionMenu(self.sidebar, self.sort_type, current_type,
-                                           *PlaylistSortType.get_translated_names(), command=self.set_playlist_sort_type)
+        self.sort_type_choice = OptionMenu(self.sidebar, self.sort_type,
+                PlaylistSortType.get(self.runner_app_config.workflow_type).get_translation(),
+                *PlaylistSortType.get_translated_names(), command=self.set_playlist_sort_type)
         self.apply_to_grid(self.sort_type_choice, interior_column=2, sticky=W)
 
         self.favorite = BooleanVar(value=False)
@@ -521,10 +522,10 @@ class App():
     def set_playlist_sort_type(self, event=None, playlist_sort_type=None):
         if playlist_sort_type is None:
             playlist_sort_type = self.sort_type.get()
-        self.runner_app_config.workflow_type = PlaylistSortType.get_from_translation(playlist_sort_type).value
+        self.runner_app_config.workflow_type = PlaylistSortType.get(playlist_sort_type).value
 
     def set_playback_master_strategy(self, event=None):
-        self.runner_app_config.playback_master_strategy = self.playlist_strategy.get()
+        self.runner_app_config.playback_master_strategy = PlaybackMasterStrategy.get_from_translation(self.playlist_strategy.get()).value
 
     def set_delay(self, event=None):
         self.runner_app_config.delay_time_seconds = self.delay.get()
@@ -870,8 +871,9 @@ class App():
     def get_directories(self):
         directories = []
         selection = self.playlist_strategy.get()
+        strategy = PlaybackMasterStrategy.get_from_translation(selection)
         all_dirs = config.get_subdirectories()
-        if selection == "ALL_MUSIC":
+        if strategy == PlaybackMasterStrategy.ALL_MUSIC:
             return True, list(all_dirs.keys())
         else:
             for full_path, key in all_dirs.items():
@@ -987,7 +989,7 @@ class App():
     def update_playlist_state(self, strategy=None, staged_playlist=None):
         """Update the playlist state, including strategy and staged playlist info."""
         if strategy is not None:
-            self.playlist_strategy.set(strategy.value)
+            self.playlist_strategy.set(strategy.get_translation())
             self.runner_app_config.playback_master_strategy = strategy.value
         
         if staged_playlist is not None and not self.current_run.is_started:

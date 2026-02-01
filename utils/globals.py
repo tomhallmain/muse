@@ -1,9 +1,12 @@
 from enum import Enum
 import os
 
+from utils.logging_setup import get_logger
 from utils.translations import I18N
 
 _ = I18N._
+
+logger = get_logger(__name__)
 
 
 class AppInfo:
@@ -198,6 +201,27 @@ class PlaylistSortType(Enum):
         return largest_scope
 
     @staticmethod
+    def get(name):
+        if isinstance(name, PlaylistSortType):
+            return name
+
+        try:
+            return PlaylistSortType[name]
+        except ValueError:
+            pass
+
+        if not isinstance(name, str):
+            logger.error(f"Unknown playlist sort type: {name} - Tried conversion from type: {type(name)}", exc_info=True)
+            return PlaylistSortType.RANDOM
+
+        for sort_type in PlaylistSortType:
+            if sort_type.name.upper() == name.upper() or sort_type.get_translation() == name:
+                return sort_type
+
+        logger.error(f"Unknown playlist sort type: {name}", exc_info=True)
+        return PlaylistSortType.RANDOM
+
+    @staticmethod
     def get_translated_names():
         return [
             _('Random'),
@@ -231,6 +255,27 @@ class PlaylistSortType(Enum):
 class PlaybackMasterStrategy(Enum):
     ALL_MUSIC = "ALL_MUSIC"
     PLAYLIST_CONFIG = "PLAYLIST_CONFIG"
+
+    @staticmethod
+    def get(name):
+        if isinstance(name, PlaybackMasterStrategy):
+            return name
+        
+        try:
+            return PlaybackMasterStrategy[name]
+        except ValueError:
+            pass
+        
+        if not isinstance(name, str):
+            logger.error(f"Unknown playback master strategy: {name} - Tried conversion from type: {type(name)}", exc_info=True)
+            return PlaybackMasterStrategy.ALL_MUSIC
+
+        for strategy in PlaybackMasterStrategy:
+            if strategy.name.upper() == name.upper() or strategy.get_translation() == name:
+                return strategy
+
+        logger.error(f"Unknown playback master strategy: {name}", exc_info=True)
+        return PlaybackMasterStrategy.ALL_MUSIC
 
     def get_translation(self):
         strategies = [

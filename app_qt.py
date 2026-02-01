@@ -287,8 +287,8 @@ class MuseAppQt(QMainWindow):
         self.label_playlist_strategy = QLabel(_("Playlist"))
         sidebar_layout.addWidget(self.label_playlist_strategy, row, 0)
         self.playlist_strategy_combo = QComboBox()
-        self.playlist_strategy_combo.addItems(list(PlaybackMasterStrategy.__members__.keys()))
-        self.playlist_strategy_combo.setCurrentText(str(self.runner_app_config.playback_master_strategy))
+        self.playlist_strategy_combo.addItems(PlaybackMasterStrategy.get_translated_names())
+        self.playlist_strategy_combo.setCurrentText(PlaybackMasterStrategy.get(self.runner_app_config.playback_master_strategy).get_translation())
         self.playlist_strategy_combo.currentTextChanged.connect(self.set_playback_master_strategy)
         sidebar_layout.addWidget(self.playlist_strategy_combo, row, 1, 1, 2)
         row += 1
@@ -296,9 +296,8 @@ class MuseAppQt(QMainWindow):
         self.label_sort_type = QLabel(_("Playlist Sort"))
         sidebar_layout.addWidget(self.label_sort_type, row, 0)
         self.sort_type_combo = QComboBox()
-        current_type = PlaylistSortType[self.runner_app_config.workflow_type].get_translation()
         self.sort_type_combo.addItems(PlaylistSortType.get_translated_names())
-        self.sort_type_combo.setCurrentText(current_type)
+        self.sort_type_combo.setCurrentText(PlaylistSortType.get(self.runner_app_config.workflow_type).get_translation())
         self.sort_type_combo.currentTextChanged.connect(self.set_playlist_sort_type)
         sidebar_layout.addWidget(self.sort_type_combo, row, 1, 1, 2)
         row += 1
@@ -418,7 +417,8 @@ class MuseAppQt(QMainWindow):
         Globals.set_delay(int(self.runner_app_config.delay_time_seconds))
 
     def set_playback_master_strategy(self, _value=None):
-        self.runner_app_config.playback_master_strategy = self.playlist_strategy_combo.currentText()
+        strategy_text = self.playlist_strategy_combo.currentText()
+        self.runner_app_config.playback_master_strategy = PlaybackMasterStrategy.get_from_translation(strategy_text).value
 
     def set_volume(self, _value=None):
         self.runner_app_config.volume = self.volume_slider.value()
@@ -484,8 +484,9 @@ class MuseAppQt(QMainWindow):
 
     def get_directories(self):
         selection = self.playlist_strategy_combo.currentText()
+        strategy = PlaybackMasterStrategy.get_from_translation(selection)
         all_dirs = config.get_subdirectories()
-        if selection == "ALL_MUSIC":
+        if strategy == PlaybackMasterStrategy.ALL_MUSIC:
             return True, list(all_dirs.keys())
         directories = []
         for full_path, key in all_dirs.items():
@@ -713,7 +714,7 @@ class MuseAppQt(QMainWindow):
 
     def update_playlist_state(self, strategy=None, staged_playlist=None):
         if strategy is not None:
-            self.playlist_strategy_combo.setCurrentText(strategy.value)
+            self.playlist_strategy_combo.setCurrentText(strategy.get_translation())
             self.runner_app_config.playback_master_strategy = strategy.value
         if staged_playlist is not None and not self.current_run.is_started:
             self.update_next_up_text(_("Staged Playlist: ") + str(staged_playlist))
