@@ -16,8 +16,12 @@ Usage:
     devices = manager.list_devices()
     manager.switch_to_device("Headphones")
     manager.set_day_night_schedule()
+
+Troubleshooting: enable "Verbose device logging" in the Audio Device window to log
+device identification and inclusion/exclusion reasons to the application log.
 """
 
+import os
 import time
 from datetime import datetime, time as dt_time
 from typing import List, Dict, Optional, Tuple
@@ -28,6 +32,31 @@ from utils.translations import I18N
 
 logger = get_logger(__name__)
 _ = I18N._
+
+# Toggled by the Audio Device window checkbox for troubleshooting device detection.
+_verbose_audio_logging_enabled = False
+
+
+def set_verbose_audio_logging(enabled: bool) -> None:
+    """Enable or disable verbose audio device debug logging (e.g. from UI checkbox)."""
+    global _verbose_audio_logging_enabled
+    _verbose_audio_logging_enabled = enabled
+
+
+def get_verbose_audio_logging() -> bool:
+    """Return whether verbose audio device logging is currently enabled."""
+    return _verbose_audio_logging_enabled
+
+
+def _verbose_audio_logging() -> bool:
+    """Return True if verbose audio device logging is enabled (for troubleshooting)."""
+    return _verbose_audio_logging_enabled
+
+
+def _log_audio_debug(msg: str) -> None:
+    """Log at debug level only when verbose audio logging is enabled."""
+    if _verbose_audio_logging():
+        logger.debug(msg)
 
 try:
     from pycaw.pycaw import AudioUtilities
@@ -217,7 +246,7 @@ class AudioDeviceManager:
         
         for keyword in input_keywords:
             if keyword in name_lower or keyword in desc_lower:
-                logger.debug(f"Identified input device: {device_name} (keyword: {keyword})")
+                _log_audio_debug(f"Identified input device: {device_name} (keyword: {keyword})")
                 return True
         
         return False
@@ -249,11 +278,11 @@ class AudioDeviceManager:
         
         for keyword in output_keywords:
             if keyword in name_lower or keyword in desc_lower:
-                logger.debug(f"Identified output device: {device_name} (keyword: {keyword})")
+                _log_audio_debug(f"Identified output device: {device_name} (keyword: {keyword})")
                 return True
         
         # If we can't determine, be conservative and exclude it
-        logger.debug(f"Could not determine device type for: {device_name}")
+        _log_audio_debug(f"Could not determine device type for: {device_name}")
         return False
     
     def list_all_devices(self, refresh: bool = False) -> List[Dict[str, str]]:
@@ -337,10 +366,10 @@ class AudioDeviceManager:
         if device_name and device_name[0].isdigit():
             # Check if it's an input device first
             if self._is_input_device(device_name, device_description):
-                logger.debug(f"Excluding numbered input device: '{device_info['name']}'")
+                _log_audio_debug(f"Excluding numbered input device: '{device_info['name']}'")
                 return False
             else:
-                logger.debug(f"Including numbered output device: '{device_info['name']}'")
+                _log_audio_debug(f"Including numbered output device: '{device_info['name']}'")
                 return True
         
         # Filter out virtual/graphics audio devices and input devices
@@ -366,7 +395,7 @@ class AudioDeviceManager:
         # Check if device name or description contains exclude keywords
         for keyword in exclude_keywords:
             if keyword in device_name or keyword in device_description:
-                logger.debug(f"Excluding device '{device_info['name']}' due to keyword '{keyword}'")
+                _log_audio_debug(f"Excluding device '{device_info['name']}' due to keyword '{keyword}'")
                 return False
         
         # Filter out devices with very generic names
@@ -377,7 +406,7 @@ class AudioDeviceManager:
         
         # Only exclude if it's just a generic name without additional context
         if device_name in generic_names and len(device_name) < 15:
-            logger.debug(f"Excluding generic device '{device_info['name']}'")
+            _log_audio_debug(f"Excluding generic device '{device_info['name']}'")
             return False
         
         # Include devices that are likely real audio output hardware
@@ -399,10 +428,10 @@ class AudioDeviceManager:
             # Only include Realtek if it's clearly connected to actual speakers/headphones
             realtek_speaker_keywords = ['speaker', 'headphone', 'headset', 'monitor', 'hdmi', 'optical', 'spdif']
             if any(keyword in device_name for keyword in realtek_speaker_keywords):
-                logger.debug(f"Including Realtek device with actual speakers: '{device_info['name']}'")
+                _log_audio_debug(f"Including Realtek device with actual speakers: '{device_info['name']}'")
                 return True
             else:
-                logger.debug(f"Excluding generic Realtek device: '{device_info['name']}'")
+                _log_audio_debug(f"Excluding generic Realtek device: '{device_info['name']}'")
                 return False
         
         # If it contains include keywords, it's likely a real device
@@ -411,7 +440,7 @@ class AudioDeviceManager:
                 return True
         
         # If we can't determine, exclude it to be safe
-        logger.debug(f"Excluding uncertain device '{device_info['name']}'")
+        _log_audio_debug(f"Excluding uncertain device '{device_info['name']}'")
         return False
     
     def _sort_devices_by_priority(self, devices: List[Dict[str, str]]) -> List[Dict[str, str]]:

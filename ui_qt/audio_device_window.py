@@ -19,7 +19,11 @@ from PySide6.QtCore import Qt
 from lib.multi_display_qt import SmartWindow
 from ui_qt.app_style import AppStyle
 from utils.translations import I18N
-from utils.audio_device_manager import AudioDeviceManager
+from utils.audio_device_manager import (
+    AudioDeviceManager,
+    get_verbose_audio_logging,
+    set_verbose_audio_logging,
+)
 from utils.logging_setup import get_logger
 
 _ = I18N._
@@ -95,12 +99,21 @@ class AudioDeviceWindow(SmartWindow):
         self.show_all_checkbox = QCheckBox(_("Show all devices (including virtual)"))
         self.show_all_checkbox.stateChanged.connect(self._on_show_all_changed)
         control_row.addWidget(self.show_all_checkbox)
+
+        self.verbose_logging_checkbox = QCheckBox(_("Verbose device logging (for troubleshooting)"))
+        self.verbose_logging_checkbox.setChecked(get_verbose_audio_logging())
+        self.verbose_logging_checkbox.stateChanged.connect(self._on_verbose_logging_changed)
+        control_row.addWidget(self.verbose_logging_checkbox)
+
         control_row.addStretch()
         parent_layout.addLayout(control_row)
 
     def _on_show_all_changed(self, _state):
         self.show_all_devices = self.show_all_checkbox.isChecked()
         self.refresh_devices()
+
+    def _on_verbose_logging_changed(self, _state):
+        set_verbose_audio_logging(self.verbose_logging_checkbox.isChecked())
 
     def _create_day_night_section(self, parent_layout):
         title = QLabel(_("Day/Night Device Switching"))

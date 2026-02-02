@@ -8,7 +8,11 @@ from lib.multi_display import SmartToplevel
 from ui.app_style import AppStyle
 from ui.base_window import BaseWindow
 from utils.translations import I18N
-from utils.audio_device_manager import AudioDeviceManager
+from utils.audio_device_manager import (
+    AudioDeviceManager,
+    get_verbose_audio_logging,
+    set_verbose_audio_logging,
+)
 from utils.logging_setup import get_logger
 
 _ = I18N._
@@ -54,6 +58,7 @@ class AudioDeviceWindow(BaseWindow):
         self.night_start_hour_var = StringVar(value="22")
         self.night_start_minute_var = StringVar(value="0")
         self.monitoring_enabled_var = BooleanVar(value=False)
+        self.verbose_logging_var = BooleanVar(value=get_verbose_audio_logging())
         
         # Create UI elements
         self.create_device_list_section()
@@ -132,6 +137,18 @@ class AudioDeviceWindow(BaseWindow):
                                       bg=AppStyle.BG_COLOR, fg=AppStyle.FG_COLOR,
                                       selectcolor=AppStyle.BG_COLOR)
         show_all_checkbox.pack(side="left")
+        
+        # Verbose device logging checkbox
+        verbose_logging_checkbox = Checkbutton(control_frame,
+                                              text=_("Verbose device logging (for troubleshooting)"),
+                                              variable=self.verbose_logging_var,
+                                              command=self._on_verbose_logging_changed,
+                                              bg=AppStyle.BG_COLOR, fg=AppStyle.FG_COLOR,
+                                              selectcolor=AppStyle.BG_COLOR)
+        verbose_logging_checkbox.pack(side="left", padx=(20, 0))
+
+    def _on_verbose_logging_changed(self):
+        set_verbose_audio_logging(self.verbose_logging_var.get())
 
     def create_day_night_section(self):
         """Create the day/night switching section"""

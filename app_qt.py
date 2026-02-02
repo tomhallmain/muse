@@ -214,13 +214,20 @@ class MuseAppQt(QMainWindow):
         main_layout = QHBoxLayout(central)
 
         sidebar = QWidget()
-        sidebar.setMaximumWidth(380)
+        sidebar.setFixedWidth(380)
+        sidebar.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
         sidebar_layout = QGridLayout(sidebar)
         row = 0
 
         def add_label(text, colspan=3):
             nonlocal row
             lbl = QLabel(text)
+            lbl.setWordWrap(True)
+            # Prevent layout from shrinking label width on height-for-width passes,
+            # which would make the first line full-width but subsequent lines narrow.
+            lbl.setMinimumWidth(380)
+            lbl.setMaximumWidth(380)
+            lbl.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
             sidebar_layout.addWidget(lbl, row, 0, 1, colspan)
             row += 1
             return lbl
@@ -615,11 +622,11 @@ class MuseAppQt(QMainWindow):
             artist_text = (_("Artist: ") + audio_track.artist) if audio_track.artist else ""
             composer_text = (_("Composer: ") + audio_track.composer) if audio_track.composer else ""
             year_text = (_("Year: ") + str(audio_track.year)) if audio_track.year else ""
-        self.label_title_text.setText(Utils._wrap_text_to_fit_length(title_text, 100))
-        self.label_album_text.setText(Utils._wrap_text_to_fit_length(album_text, 100))
-        self.label_artist_text.setText(Utils._wrap_text_to_fit_length(artist_text, 100))
-        self.label_composer_text.setText(Utils._wrap_text_to_fit_length(composer_text, 100))
-        self.label_year_text.setText(Utils._wrap_text_to_fit_length(year_text, 100))
+        self.label_title_text.setText(title_text)
+        self.label_album_text.setText(album_text)
+        self.label_artist_text.setText(artist_text)
+        self.label_composer_text.setText(composer_text)
+        self.label_year_text.setText(year_text)
         QApplication.processEvents()
 
     def update_next_up_text(self, next_up_text, no_title=False):
