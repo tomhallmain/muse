@@ -276,7 +276,7 @@ class MuseMemory:
         Returns:
             MuseSpotProfile or None: The previous spot profile if found and valid, None otherwise
         """
-        logger.debug(f"get_previous_session_spot_profile called: idx={idx}, creation_time={creation_time}, list_length={len(self.current_session_spot_profiles)}")
+        # logger.debug(f"get_previous_session_spot_profile called: idx={idx}, creation_time={creation_time}, list_length={len(self.current_session_spot_profiles)}")
         
         # Check if requested index is beyond list length
         if len(self.current_session_spot_profiles) <= idx:
@@ -285,14 +285,14 @@ class MuseMemory:
             
         # If no creation time specified, return profile at requested index
         if creation_time is None:
-            logger.debug(f"Returning profile at index {idx}")
+            # logger.debug(f"Returning profile at index {idx}")
             return self.current_session_spot_profiles[idx]
             
         # Find first profile created before the given creation time
         base_idx = idx
         while base_idx < len(self.current_session_spot_profiles):
             profile = self.current_session_spot_profiles[base_idx]
-            logger.debug(f"Checking profile at {base_idx}: creation_time={profile.creation_time}, target_time={creation_time}, was_spoken={profile.was_spoken}")
+            # logger.debug(f"Checking profile at {base_idx}: creation_time={profile.creation_time}, target_time={creation_time}, was_spoken={profile.was_spoken}")
             if profile.creation_time < creation_time:
                 break
             base_idx += 1
@@ -305,11 +305,11 @@ class MuseMemory:
         # Return profile at (base_idx + requested_idx) if it exists
         target_idx = base_idx + idx
         if target_idx >= len(self.current_session_spot_profiles):
-            logger.debug(f"Target index {target_idx} beyond list length, returning None")
+            # logger.debug(f"Target index {target_idx} beyond list length, returning None")
             return None
 
         spot_profile = self.current_session_spot_profiles[target_idx]
-        logger.debug(f"Returning profile at target index {target_idx}: creation_time={spot_profile.creation_time}, was_spoken={spot_profile.was_spoken}")
+        # logger.debug(f"Returning profile at target index {target_idx}: creation_time={spot_profile.creation_time}, was_spoken={spot_profile.was_spoken}")
         return spot_profile
 
     def update_last_topic(self, topic):

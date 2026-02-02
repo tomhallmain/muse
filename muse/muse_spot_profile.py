@@ -161,7 +161,7 @@ class MuseSpotProfile:
         NOTE: Currently this is set during preparation but at some point it could be a callback via the Muse Voice instance."""
         if self.get_previous_spot_profile_callback is None:
             raise Exception("Previous spot profile callback was not set properly")
-        logger.debug(f"Getting previous spot profile: idx={idx}, creation_time={self.creation_time}")
+        # logger.debug(f"Getting previous spot profile: idx={idx}, creation_time={self.creation_time}")
         return self.get_previous_spot_profile_callback(idx=idx, creation_time=self.creation_time)
 
     def get_time(self):
@@ -226,20 +226,20 @@ class MuseSpotProfile:
         Returns:
             MuseSpotProfile or None: The most recent spot profile where was_spoken is True, or None if none found
         """
-        logger.debug(f"Starting get_last_spoken_profile for profile created at {self.creation_time}")
+        # logger.debug(f"Starting get_last_spoken_profile for profile created at {self.creation_time}")
         idx = 0
         max_iterations = 100  # Failsafe to prevent infinite loops
         
         while True:
             profile = self.get_previous_spot_profile(idx=idx)
             if profile is None:
-                logger.debug(f"No profile found at index {idx}")
+                # logger.debug(f"No profile found at index {idx}")
                 return None
                 
-            logger.debug(f"Checking profile at index {idx}: creation_time={profile.creation_time}, was_spoken={profile.was_spoken}")
+            # logger.debug(f"Checking profile at index {idx}: creation_time={profile.creation_time}, was_spoken={profile.was_spoken}")
             
             if profile.was_spoken:
-                logger.debug(f"Found spoken profile at index {idx}: creation_time={profile.creation_time}")
+                # logger.debug(f"Found spoken profile at index {idx}: creation_time={profile.creation_time}")
                 return profile
                 
             idx += 1
