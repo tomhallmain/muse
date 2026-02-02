@@ -11,6 +11,7 @@ Muse is a media player with an integrated voice synthesizer attached to an LLM. 
 - Download and install Ollama following the instructions at https://github.com/ollama/ollama
 - Ensure Ollama is operational and serving with `ollama serve`
 - In a virtual environment, run `pip install -r requirements.txt` on this directory.
+- Optional (platform-specific): `pip install -r requirements-optional.txt` installs extras for your OS only (e.g. on macOS, Foundation/Cocoa for keychain integration).
 - Note: To run TTS by itself, run the run_tts.py file with a text file.
 
 
