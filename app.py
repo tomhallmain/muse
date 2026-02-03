@@ -18,6 +18,7 @@ from utils.globals import Globals, PlaylistSortType, PlaybackMasterStrategy, Pro
 
 # Local imports - UI components
 from lib.autocomplete_entry import AutocompleteEntry, matches
+from lib.debounce import Debouncer
 from lib.multi_display import SmartToplevel
 from library_data.library_data import LibraryData
 from ui.auth.password_admin_window import PasswordAdminWindow
@@ -197,6 +198,8 @@ class App():
             "update_directory_count": self.update_directory_count,
             "open_password_admin_window": self.open_password_admin_window,
         }, self.master)
+
+        self._run_debouncer = Debouncer(self.master, 0.4, self._run_impl)
 
         # Sidebar
         self.sidebar = Sidebar(self.master)
@@ -575,6 +578,10 @@ class App():
         self.run(track=track, override_scheduled=override_scheduled)
 
     def run(self, event=None, track=None, override_scheduled=False):
+        """Debounced entry point: schedules a single run after a short quiet period."""
+        self._run_debouncer.schedule(event=event, track=track, override_scheduled=override_scheduled)
+
+    def _run_impl(self, event=None, track=None, override_scheduled=False):
         args, args_copy = self.get_args(track=track)
 
         # Update directory count when starting a new run

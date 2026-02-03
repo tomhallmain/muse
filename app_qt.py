@@ -40,6 +40,7 @@ from ui_qt.media_frame import MediaFrame
 from muse.run import Run
 from muse.run_config import RunConfig
 from utils.persistent_data_manager_qt import PersistentDataManagerQt
+from lib.debounce_qt import QtDebouncer
 from lib.qt_alert import qt_alert
 from utils.app_info_cache_qt import app_info_cache
 from utils import (
@@ -120,6 +121,8 @@ class MuseAppQt(QMainWindow):
         self._build_menus()
         self._build_central()
         self._apply_theme()
+
+        self._run_debouncer = QtDebouncer(self, 0.4, self._run_impl)
 
         # Connect signals so UI updates from worker threads run on main thread
         self._sig_track_text.connect(self._do_update_track_text)
@@ -508,6 +511,10 @@ class MuseAppQt(QMainWindow):
             self.progress_bar = None
 
     def run(self, event=None, track=None, override_scheduled=False):
+        """Debounced entry point: schedules a single run after a short quiet period."""
+        self._run_debouncer.schedule(event=event, track=track, override_scheduled=override_scheduled)
+
+    def _run_impl(self, event=None, track=None, override_scheduled=False):
         args, args_copy = self.get_args(track=track)
         self.update_directory_count(args.directories)
         try:
