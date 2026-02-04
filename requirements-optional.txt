@@ -15,3 +15,9 @@ pyobjc-framework-Cocoa; sys_platform == 'darwin'
 # Linux: D-Bus for optional Secret Service keyring lock (utils/encryptor.py).
 # Not required for basic keyring get/set.
 dbus-python; sys_platform == 'linux'
+
+# Cross-platform: Media key support for keyboard media control buttons (previous, play/pause, next).
+# Required for media key functionality in the Tkinter version (app.py) on all platforms.
+# Required for the PySide6 version (app_qt.py) on macOS and Linux (Windows uses native Qt key detection).
+# Used by lib/media_keys.py for global hotkey detection when the window doesn't have focus.
+pynput

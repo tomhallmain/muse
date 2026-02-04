@@ -20,6 +20,7 @@ from utils.globals import Globals, PlaylistSortType, PlaybackMasterStrategy, Pro
 from lib.autocomplete_entry import AutocompleteEntry, matches
 from lib.debounce import Debouncer
 from lib.multi_display import SmartToplevel
+from lib.media_keys import MediaKeyHandler
 from library_data.library_data import LibraryData
 from ui.auth.password_admin_window import PasswordAdminWindow
 from ui.auth.password_utils import require_password
@@ -133,6 +134,8 @@ class App():
         self.current_run = Run(RunConfig(placeholder=True))
         # Initialize library_data as None for lazy instantiation
         self._library_data = None
+        # Initialize media key handler
+        self._media_key_handler = None
 
         # Create menu bar
         self.menu_bar = Menu(self.master)
@@ -355,6 +358,10 @@ class App():
         self.master.bind("<Control-l>", lambda event: Utils.open_log_file())
         self.master.bind("<Control-b>", self.open_blacklist_window)
         self.master.bind("<Control-t>", self.test)
+        
+        # Set up media key bindings
+        self._setup_media_keys()
+        
         self.toggle_theme()
         self.master.update()
         # self.close_autocomplete_popups()
@@ -368,6 +375,22 @@ class App():
         
         # Initialize blacklist
         BlacklistWindow.set_blacklist()
+
+    def _setup_media_keys(self):
+        """Set up media key bindings for keyboard media control buttons."""
+        def play_pause_handler():
+            """Handle play/pause toggle based on current playback state."""
+            if self.current_run and self.current_run.is_started and not self.current_run.is_complete:
+                self.pause()
+            else:
+                self.run()
+        
+        self._media_key_handler = MediaKeyHandler(
+            previous_callback=self.previous,
+            next_callback=self.next,
+            play_pause_callback=play_pause_handler,
+        )
+        self._media_key_handler.setup_tkinter(self.master)
 
     def toggle_theme(self, to_theme=None, do_toast=True):
         if (to_theme is None and AppStyle.IS_DEFAULT_THEME) or to_theme == AppStyle.LIGHT_THEME:
@@ -405,6 +428,9 @@ class App():
     def on_closing(self):
         BlacklistWindow.store_blacklist()
         self.store_info_cache()
+        # Stop media key listener if it was started
+        if self._media_key_handler is not None:
+            self._media_key_handler.stop()
         # if self.server is not None:
         #     try:
         #         self.server.stop()
@@ -653,6 +679,12 @@ class App():
 
     def pause(self, event=None) -> None:
         self.current_run.pause()
+
+    def previous(self, event=None) -> None:
+        """Handle previous track media key. Currently not implemented in the playback system."""
+        # Note: The application doesn't currently support going to previous tracks
+        # This method is bound to the media key but does nothing for now
+        logger.debug("Previous track media key pressed (not implemented)")
 
     def cancel(self, event=None):
         self.current_run.cancel()

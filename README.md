@@ -11,7 +11,7 @@ Muse is a media player with an integrated voice synthesizer attached to an LLM. 
 - Download and install Ollama following the instructions at https://github.com/ollama/ollama
 - Ensure Ollama is operational and serving with `ollama serve`
 - In a virtual environment, run `pip install -r requirements.txt` on this directory.
-- Optional (platform-specific): `pip install -r requirements-optional.txt` installs extras for your OS only (e.g. on macOS, Foundation/Cocoa for keychain integration).
+- Optional (platform-specific): `pip install -r requirements-optional.txt` installs extras for your OS only (e.g. on macOS, Foundation/Cocoa for keychain integration). Note: For keyboard media key support (previous, play/pause, next), install `pynput` via the optional requirements (required for Tkinter on all platforms, and for PySide6 on macOS/Linux).
 - Note: To run TTS by itself, run the run_tts.py file with a text file.
 
 
@@ -54,6 +54,7 @@ Muse is a media player with an integrated voice synthesizer attached to an LLM. 
 ## Usage
 
 - In your virtual environment, run `python app_qt.py` to start the application (Qt/PySide6 UI). On Windows you can use `start.bat`, which launches the Qt version. The legacy Tkinter UI is available via `python app.py` if needed.
+- Keyboard media keys (previous, play/pause, next) are supported when the optional `pynput` dependency is installed. Media keys work globally (even when the window doesn't have focus) in both UI versions when `pynput` is installed.
 
 
 ## Directory Structure

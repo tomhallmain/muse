@@ -29,7 +29,7 @@ from PySide6.QtWidgets import (
     QSizePolicy,
 )
 from PySide6.QtCore import Qt, QTimer, Signal
-from PySide6.QtGui import QIcon, QShortcut, QKeySequence
+from PySide6.QtGui import QIcon, QShortcut, QKeySequence, QKeyEvent
 
 from utils.globals import Globals, PlaylistSortType, PlaybackMasterStrategy, ProtectedActions
 from library_data.library_data import LibraryData
@@ -42,6 +42,7 @@ from muse.run_config import RunConfig
 from utils.persistent_data_manager_qt import PersistentDataManagerQt
 from lib.debounce_qt import QtDebouncer
 from lib.qt_alert import qt_alert
+from lib.media_keys import MediaKeyHandler
 from utils.app_info_cache_qt import app_info_cache
 from utils import (
     config,
@@ -91,6 +92,8 @@ class MuseAppQt(QMainWindow):
         self._library_data: Optional[LibraryData] = None
         # So @require_password and dialogs (e.g. PasswordDialog) have a parent window
         self.master = self
+        # Initialize media key handler
+        self._media_key_handler = None
 
         self.app_actions = AppActions({
             "track_details_callback": self.update_track_text,
@@ -139,6 +142,9 @@ class MuseAppQt(QMainWindow):
 
         # Cache media frame handle on main thread so worker threads can use it without touching Qt
         QTimer.singleShot(0, self._cache_media_frame_handle)
+        
+        # Enable media key handling
+        self._setup_media_keys()
 
         try:
             from ui_qt.blacklist_window import BlacklistWindow
@@ -385,6 +391,9 @@ class MuseAppQt(QMainWindow):
             BlacklistWindow.store_blacklist()
         except ImportError:
             pass
+        # Stop media key handler if it was started
+        if self._media_key_handler is not None:
+            self._media_key_handler.stop()
         self.store_info_cache()
         app_info_cache.wipe_instance()
         FFmpegHandler.cleanup_cache()
@@ -614,6 +623,12 @@ class MuseAppQt(QMainWindow):
     def pause(self, event=None):
         self.current_run.pause()
 
+    def previous(self, event=None):
+        """Handle previous track media key. Currently not implemented in the playback system."""
+        # Note: The application doesn't currently support going to previous tracks
+        # This method is bound to the media key but does nothing for now
+        logger.debug("Previous track media key pressed (not implemented)")
+
     def cancel(self, event=None):
         self.current_run.cancel()
 
@@ -719,6 +734,34 @@ class MuseAppQt(QMainWindow):
         """Update cached window handle for VLC (must run on main thread)."""
         if hasattr(self, "media_frame") and hasattr(self.media_frame, "get_media_frame_handle"):
             self._cached_media_frame_handle = self.media_frame.get_media_frame_handle()
+
+    def _setup_media_keys(self):
+        """Set up media key bindings for keyboard media control buttons."""
+        def play_pause_handler():
+            """Handle play/pause toggle based on current playback state."""
+            if self.current_run and self.current_run.is_started and not self.current_run.is_complete:
+                self.pause()
+            else:
+                self.run()
+        
+        self._media_key_handler = MediaKeyHandler(
+            previous_callback=self.previous,
+            next_callback=self.next,
+            play_pause_callback=play_pause_handler,
+        )
+        self._media_key_handler.setup_qt(self)
+
+    def keyPressEvent(self, event: QKeyEvent):
+        """Handle key press events, including media keys."""
+        # Try to handle media keys first (fallback when pynput is not available)
+        # If pynput is installed, media keys are handled globally via setup_qt()
+        if self._media_key_handler is not None:
+            if self._media_key_handler.handle_qt_key_event(event.nativeVirtualKey()):
+                event.accept()
+                return
+        
+        # Call parent implementation for other keys
+        super().keyPressEvent(event)
 
     def get_media_frame_handle(self):
         # Return handle cached on main thread; worker threads must not call widget methods
