@@ -2,6 +2,7 @@ import datetime
 import json
 import os
 import shutil
+import threading
 
 from lib.position_data import PositionData
 from utils.encryptor import encrypt_data_to_file, decrypt_data_from_file
@@ -23,37 +24,40 @@ class AppInfoCache:
     NUM_BACKUPS = 4  # Number of backup files to maintain
 
     def __init__(self):
+        self._lock = threading.RLock()
         self._cache = {AppInfoCache.INFO_KEY: {}, AppInfoCache.HISTORY_KEY: [], AppInfoCache.DIRECTORIES_KEY: {}}
         self.load()
         self.validate()
 
     def wipe_instance(self):
-        self._cache = {AppInfoCache.INFO_KEY: {}, AppInfoCache.HISTORY_KEY: [], AppInfoCache.DIRECTORIES_KEY: {}}
+        with self._lock:
+            self._cache = {AppInfoCache.INFO_KEY: {}, AppInfoCache.HISTORY_KEY: [], AppInfoCache.DIRECTORIES_KEY: {}}
 
     def store(self):
         """Persist cache to encrypted file. Returns True on success, False if encrypted store failed but JSON fallback succeeded. Raises on encoding or JSON fallback failure."""
-        try:
-            cache_data = json.dumps(self._cache).encode('utf-8')
-        except Exception:
-            raise Exception(f"Error compiling application cache", e)
+        with self._lock:
+            try:
+                cache_data = json.dumps(self._cache).encode('utf-8')
+            except Exception as e:
+                raise Exception(f"Error compiling application cache: {e}")
 
-        try:
-            encrypt_data_to_file(
-                cache_data,
-                AppInfo.SERVICE_NAME,
-                AppInfo.APP_IDENTIFIER,
-                AppInfoCache.CACHE_LOC
-            )
-            return True  # Encryption successful
-        except Exception as e:
-            logger.error(f"Error encrypting cache: {e}")
+            try:
+                encrypt_data_to_file(
+                    cache_data,
+                    AppInfo.SERVICE_NAME,
+                    AppInfo.APP_IDENTIFIER,
+                    AppInfoCache.CACHE_LOC
+                )
+                return True  # Encryption successful
+            except Exception as e:
+                logger.error(f"Error encrypting cache: {e}")
 
-        try:
-            with open(AppInfoCache.JSON_LOC, "w", encoding="utf-8") as f:
-                json.dump(self._cache, f)
-            return False  # Encryption failed, but JSON fallback succeeded
-        except Exception as e:
-            raise Exception(f"Error storing application cache", e)
+            try:
+                with open(AppInfoCache.JSON_LOC, "w", encoding="utf-8") as f:
+                    json.dump(self._cache, f)
+                return False  # Encryption failed, but JSON fallback succeeded
+            except Exception as e:
+                raise Exception(f"Error storing application cache: {e}")
 
     def _try_load_cache_from_file(self, path):
         """Attempt to load and decrypt the cache from the given file path. Raises on failure."""
@@ -65,74 +69,81 @@ class AppInfoCache:
         return json.loads(encrypted_data.decode('utf-8'))
 
     def load(self):
-        try:
-            if os.path.exists(AppInfoCache.JSON_LOC):
-                logger.info(f"Detected JSON-format application cache, will attempt migration to encrypted store")
-                with open(AppInfoCache.JSON_LOC, "r", encoding="utf-8") as f:
-                    self._cache = json.load(f)
-                if self.store():
-                    logger.info(f"Migrated application cache from {AppInfoCache.JSON_LOC} to encrypted store")
-                    os.remove(AppInfoCache.JSON_LOC)
-                else:
-                    logger.warning("Encrypted store of application cache failed; keeping JSON cache file")
-                return
+        with self._lock:
+            try:
+                if os.path.exists(AppInfoCache.JSON_LOC):
+                    logger.info(f"Detected JSON-format application cache, will attempt migration to encrypted store")
+                    with open(AppInfoCache.JSON_LOC, "r", encoding="utf-8") as f:
+                        self._cache = json.load(f)
+                    if self.store():
+                        logger.info(f"Migrated application cache from {AppInfoCache.JSON_LOC} to encrypted store")
+                        os.remove(AppInfoCache.JSON_LOC)
+                    else:
+                        logger.warning("Encrypted store of application cache failed; keeping JSON cache file")
+                    return
 
-            # Try encrypted cache and backups in order
-            cache_paths = [self.CACHE_LOC] + self._get_backup_paths()
-            any_exist = any(os.path.exists(path) for path in cache_paths)
-            if not any_exist:
-                logger.info(f"No cache file found at {AppInfoCache.CACHE_LOC}, creating new cache")
-                return
+                # Try encrypted cache and backups in order
+                cache_paths = [self.CACHE_LOC] + self._get_backup_paths()
+                any_exist = any(os.path.exists(path) for path in cache_paths)
+                if not any_exist:
+                    logger.info(f"No cache file found at {AppInfoCache.CACHE_LOC}, creating new cache")
+                    return
 
-            for path in cache_paths:
-                if os.path.exists(path):
-                    try:
-                        self._cache = self._try_load_cache_from_file(path)
-                        # Only shift backups if we loaded from the main file
-                        if path == self.CACHE_LOC:
-                            message = f"Loaded cache from {self.CACHE_LOC}"
-                            rotated_count = self._rotate_backups()
-                            if rotated_count > 0:
-                                message += f", rotated {rotated_count} backups"
-                            logger.info(message)
-                        else:
-                            logger.warning(f"Loaded cache from backup: {path}")
-                        return
-                    except Exception as e:
-                        logger.error(f"Failed to load cache from {path}: {e}")
-                        continue
-            # If we get here, all attempts failed (but at least one file existed)
-            raise Exception(f"Failed to load cache from all locations: {cache_paths}")
-        except FileNotFoundError:
-            pass
+                for path in cache_paths:
+                    if os.path.exists(path):
+                        try:
+                            self._cache = self._try_load_cache_from_file(path)
+                            # Only shift backups if we loaded from the main file
+                            if path == self.CACHE_LOC:
+                                message = f"Loaded cache from {self.CACHE_LOC}"
+                                rotated_count = self._rotate_backups()
+                                if rotated_count > 0:
+                                    message += f", rotated {rotated_count} backups"
+                                logger.info(message)
+                            else:
+                                logger.warning(f"Loaded cache from backup: {path}")
+                            return
+                        except Exception as e:
+                            logger.error(f"Failed to load cache from {path}: {e}")
+                            continue
+                # If we get here, all attempts failed (but at least one file existed)
+                raise Exception(f"Failed to load cache from all locations: {cache_paths}")
+            except FileNotFoundError:
+                pass
 
     def validate(self):
-        pass
+        with self._lock:
+            pass
 
     def _get_history(self) -> list:
+        """Get history list. Must be called from within a locked context."""
         if AppInfoCache.HISTORY_KEY not in self._cache:
             self._cache[AppInfoCache.HISTORY_KEY] = {}
         return self._cache[AppInfoCache.HISTORY_KEY]
 
     def _get_directory_info(self):
+        """Get directory info dict. Must be called from within a locked context."""
         if AppInfoCache.DIRECTORIES_KEY not in self._cache:
             self._cache[AppInfoCache.DIRECTORIES_KEY] = {}
         return self._cache[AppInfoCache.DIRECTORIES_KEY]
 
     def _get_trackers(self) -> dict:
+        """Get trackers dict. Must be called from within a locked context."""
         if AppInfoCache.TRACKERS_KEY not in self._cache:
             self._cache[AppInfoCache.TRACKERS_KEY] = {}
         return self._cache[AppInfoCache.TRACKERS_KEY]
 
     def set(self, key, value):
-        if AppInfoCache.INFO_KEY not in self._cache:
-            self._cache[AppInfoCache.INFO_KEY] = {}
-        self._cache[AppInfoCache.INFO_KEY][key] = value
+        with self._lock:
+            if AppInfoCache.INFO_KEY not in self._cache:
+                self._cache[AppInfoCache.INFO_KEY] = {}
+            self._cache[AppInfoCache.INFO_KEY][key] = value
 
     def get(self, key, default_val=None):
-        if AppInfoCache.INFO_KEY not in self._cache or key not in self._cache[AppInfoCache.INFO_KEY]:
-            return default_val
-        return self._cache[AppInfoCache.INFO_KEY][key]
+        with self._lock:
+            if AppInfoCache.INFO_KEY not in self._cache or key not in self._cache[AppInfoCache.INFO_KEY]:
+                return default_val
+            return self._cache[AppInfoCache.INFO_KEY][key]
 
     def set_display_position(self, master):
         """Store the main window's display position and size."""
@@ -160,65 +171,73 @@ class AppInfoCache:
         return PositionData.from_dict(position_data)
 
     def set_history(self, runner_config):
-        history = self._get_history()
-        if len(history) > 0 and runner_config == RunnerAppConfig.from_dict(history[0]):
-            return False
-        config_dict = runner_config.to_dict()
-        history.insert(0, config_dict)
-        # Remove the oldest entry from history if over the limit of entries
-        while len(history) >= AppInfoCache.MAX_HISTORY_ENTRIES:
-            history = history[0:-1]
-        return True
+        with self._lock:
+            history = self._get_history()
+            if len(history) > 0 and runner_config == RunnerAppConfig.from_dict(history[0]):
+                return False
+            config_dict = runner_config.to_dict()
+            history.insert(0, config_dict)
+            # Remove the oldest entry from history if over the limit of entries
+            while len(history) >= AppInfoCache.MAX_HISTORY_ENTRIES:
+                history = history[0:-1]
+            return True
 
     def get_last_history_index(self):
-        history = self._get_history()
-        return len(history) - 1
+        with self._lock:
+            history = self._get_history()
+            return len(history) - 1
 
     def get_history(self, _idx=0):
-        history = self._get_history()
-        if _idx >= len(history):
-            raise Exception("Invalid history index " + str(_idx))
-        return history[_idx]
+        with self._lock:
+            history = self._get_history()
+            if _idx >= len(history):
+                raise Exception("Invalid history index " + str(_idx))
+            return history[_idx]
 
     def get_history_latest(self):
-        history = self._get_history()
-        if len(history) == 0:
-            return RunnerAppConfig()
-        return RunnerAppConfig.from_dict(history[0])
+        with self._lock:
+            history = self._get_history()
+            if len(history) == 0:
+                return RunnerAppConfig()
+            return RunnerAppConfig.from_dict(history[0])
 
     def set_directory(self, directory, key, value):
-        directory = AppInfoCache.normalize_directory_key(directory)
-        if directory is None or directory.strip() == "":
-            raise Exception(f"Invalid directory provided to app_info_cache.set(). key={key} value={value}")
-        directory_info = self._get_directory_info()
-        if directory not in directory_info:
-            directory_info[directory] = {}
-        directory_info[directory][key] = value
+        with self._lock:
+            directory = AppInfoCache.normalize_directory_key(directory)
+            if directory is None or directory.strip() == "":
+                raise Exception(f"Invalid directory provided to app_info_cache.set(). key={key} value={value}")
+            directory_info = self._get_directory_info()
+            if directory not in directory_info:
+                directory_info[directory] = {}
+            directory_info[directory][key] = value
 
     def get_directory(self, directory, key, default_val=None):
-        directory = AppInfoCache.normalize_directory_key(directory)
-        directory_info = self._get_directory_info()
-        if directory not in directory_info or key not in directory_info[directory]:
-            return default_val
-        return directory_info[directory][key]
+        with self._lock:
+            directory = AppInfoCache.normalize_directory_key(directory)
+            directory_info = self._get_directory_info()
+            if directory not in directory_info or key not in directory_info[directory]:
+                return default_val
+            return directory_info[directory][key]
 
     def get_tracker(self, tracker):
-        trackers = self._get_trackers()
-        if tracker not in trackers:
-            trackers[tracker] = {"count": 0, "last": datetime.datetime.now().strftime("%Y-%m-%d %H:%M")}
-        return trackers[tracker]
+        with self._lock:
+            trackers = self._get_trackers()
+            if tracker not in trackers:
+                trackers[tracker] = {"count": 0, "last": datetime.datetime.now().strftime("%Y-%m-%d %H:%M")}
+            return trackers[tracker]
 
     def increment_tracker(self, tracker):
-        tracker = self.get_tracker(tracker)
-        now = datetime.datetime.now()
-        last_track = datetime.datetime.strptime(tracker["last"], "%Y-%m-%d %H:%M")
-        if now.year <= last_track.year and now.month <= last_track.month and now.day <= last_track.day:
-            tracker["count"] += 1
-        else:
-            tracker["count"] = 1
-        tracker["last"] = now.strftime("%Y-%m-%d %H:%M")
-        hours_since_last = (now - last_track).total_seconds()/3600
-        return int(tracker["count"]), float(hours_since_last)
+        with self._lock:
+            tracker = self.get_tracker(tracker)
+            now = datetime.datetime.now()
+            last_track = datetime.datetime.strptime(tracker["last"], "%Y-%m-%d %H:%M")
+            if now.year <= last_track.year and now.month <= last_track.month and now.day <= last_track.day:
+                tracker["count"] += 1
+            else:
+                tracker["count"] = 1
+            tracker["last"] = now.strftime("%Y-%m-%d %H:%M")
+            hours_since_last = (now - last_track).total_seconds()/3600
+            return int(tracker["count"]), float(hours_since_last)
 
     @staticmethod
     def normalize_directory_key(directory):
@@ -228,8 +247,9 @@ class AppInfoCache:
         """Export the current cache as a JSON file (not encrypted)."""
         if json_path is None:
             json_path = AppInfoCache.JSON_LOC
-        with open(json_path, "w", encoding="utf-8") as f:
-            json.dump(self._cache, f, ensure_ascii=False, indent=2)
+        with self._lock:
+            with open(json_path, "w", encoding="utf-8") as f:
+                json.dump(self._cache, f, ensure_ascii=False, indent=2)
         return json_path
 
     def _get_backup_paths(self):
