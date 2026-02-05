@@ -27,4 +27,4 @@ class PlaybackStateManager:
     @classmethod
     def clear_current_config(cls) -> None:
         """Clear the current playback configuration."""
-        cls._current_config = None 
+        cls._current_config = None

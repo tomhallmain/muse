@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Any, Callable, Optional
 from library_data.media_track import MediaTrack
 from muse.playback_config import PlaybackConfig
 from muse.run_context import RunContext
+from muse.schedules_manager import ScheduledShutdownException
 from utils.config import config
 from utils.globals import Globals, PlaylistSortType
 from utils.logging_setup import get_logger
@@ -142,6 +143,11 @@ class Playback:
                 self.update_ui_art_for_muse()
             self.get_muse().check_schedules(self._get_upcoming_tracks_callback())
         while self.get_track() and not self._run.is_cancelled():
+            # Check if user requested shutdown after the previous track finished
+            if self.has_played_first_track and self._run_context.shutdown_after_track:
+                logger.info("Shutdown after track requested - initiating shutdown")
+                self._run_context.set_shutdown_after_track(False)
+                raise ScheduledShutdownException("User requested shutdown after track")
             self.set_delay_seconds()
             self.get_muse().check_for_shutdowns()
             if self.has_muse():

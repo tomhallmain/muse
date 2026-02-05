@@ -15,6 +15,7 @@ class UserAction(Enum):
     SKIP_GROUPING = auto()
     PAUSE = auto()
     CANCEL = auto()
+    SHUTDOWN_AFTER_TRACK = auto()
 
 @dataclass
 class RunContext:
@@ -32,6 +33,7 @@ class RunContext:
     skip_grouping: bool = False
     is_paused: bool = False
     is_cancelled: bool = False
+    shutdown_after_track: bool = False
     
     # Map of interaction times for each action type
     interaction_times: Dict[UserAction, float] = field(default_factory=dict)
@@ -61,6 +63,9 @@ class RunContext:
             self.skip_track = True
             self.skip_grouping = False
             self.skip_delay = True
+        elif action == UserAction.SHUTDOWN_AFTER_TRACK:
+            logger.info("Shutdown scheduled after current track finishes.")
+            self.shutdown_after_track = True
 
         timestamp = datetime.fromtimestamp(self.interaction_times[action]).strftime('%Y-%m-%d %H:%M:%S')
         logger.info(f"User initiated action {action} at {timestamp}")
@@ -76,6 +81,7 @@ class RunContext:
         self.skip_delay = False
         self.skip_grouping = False
         self.is_paused = False
+        self.shutdown_after_track = False
         self.interaction_times.clear()
 
     def should_skip(self) -> bool:
@@ -89,3 +95,11 @@ class RunContext:
     def was_cancelled(self) -> bool:
         """Check if this context was cancelled at any point."""
         return UserAction.CANCEL in self.interaction_times
+
+    def set_shutdown_after_track(self, shutdown: bool) -> None:
+        """Set the shutdown after track flag."""
+        if shutdown:
+            self.update_action(UserAction.SHUTDOWN_AFTER_TRACK)
+        else:
+            logger.info("Scheduled shutdown after track cancelled")
+            self.shutdown_after_track = False

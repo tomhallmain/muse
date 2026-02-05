@@ -286,6 +286,9 @@ class App():
         self.row_counter0 += 1
         self.row_counter1 += 1
 
+        self.shutdown_after_track_btn = Button(self.sidebar, text=_("Shutdown After Current Track"), command=self.toggle_shutdown_after_track)
+        self.apply_to_grid(self.shutdown_after_track_btn, columnspan=3)
+
         self.label_delay = Label(self.sidebar)
         self.add_label(self.label_delay, _("Delay Seconds"), increment_row_counter=False)
         self.delay = StringVar(master)
@@ -688,6 +691,25 @@ class App():
 
     def cancel(self, event=None):
         self.current_run.cancel()
+
+    def toggle_shutdown_after_track(self, event=None):
+        """Toggle the 'shutdown after current track' mode."""
+        run_context = self.current_run._run_context
+        if run_context.shutdown_after_track:
+            # Cancel the scheduled shutdown
+            run_context.set_shutdown_after_track(False)
+            self.shutdown_after_track_btn.config(text=_("Shutdown After Current Track"))
+        else:
+            # Confirm before scheduling shutdown
+            confirmed = self.alert(
+                _("Confirm Shutdown"),
+                _("Are you sure you want to shutdown after the current track finishes?"),
+                kind="askyesno"
+            )
+            if confirmed:
+                # Schedule shutdown after current track
+                run_context.set_shutdown_after_track(True)
+                self.shutdown_after_track_btn.config(text=_("Cancel Scheduled Shutdown"))
 
     def switch_extension(self, event=None):
         self.current_run.switch_extension()

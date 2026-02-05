@@ -293,6 +293,11 @@ class MuseAppQt(QMainWindow):
         self.cancel_btn.hide()
         row += 1
 
+        self.shutdown_after_track_btn = QPushButton(_("Shutdown After Current Track"))
+        self.shutdown_after_track_btn.clicked.connect(self.toggle_shutdown_after_track)
+        sidebar_layout.addWidget(self.shutdown_after_track_btn, row, 0, 1, 3)
+        row += 1
+
         self.label_delay = QLabel(_("Delay Seconds"))
         sidebar_layout.addWidget(self.label_delay, row, 0)
         self.delay_combo = QComboBox()
@@ -641,6 +646,25 @@ class MuseAppQt(QMainWindow):
 
     def cancel(self, event=None):
         self.current_run.cancel()
+
+    def toggle_shutdown_after_track(self):
+        """Toggle the 'shutdown after current track' mode."""
+        run_context = self.current_run._run_context
+        if run_context.shutdown_after_track:
+            # Cancel the scheduled shutdown
+            run_context.set_shutdown_after_track(False)
+            self.shutdown_after_track_btn.setText(_("Shutdown After Current Track"))
+        else:
+            # Confirm before scheduling shutdown
+            confirmed = self.alert(
+                _("Confirm Shutdown"),
+                _("Are you sure you want to shutdown after the current track finishes?"),
+                kind="askyesno"
+            )
+            if confirmed:
+                # Schedule shutdown after current track
+                run_context.set_shutdown_after_track(True)
+                self.shutdown_after_track_btn.setText(_("Cancel Scheduled Shutdown"))
 
     def update_track_text(self, audio_track):
         self._sig_track_text.emit(audio_track)
