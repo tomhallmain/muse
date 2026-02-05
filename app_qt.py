@@ -32,6 +32,7 @@ from PySide6.QtCore import Qt, QTimer, Signal
 from PySide6.QtGui import QIcon, QShortcut, QKeySequence, QKeyEvent
 
 from ui_qt.custom_title_bar import FramelessWindowMixin, WindowResizeHandler
+from lib.multi_display_qt import SmartMainWindow
 
 from utils.globals import Globals, PlaylistSortType, PlaybackMasterStrategy, ProtectedActions
 from library_data.library_data import LibraryData
@@ -61,11 +62,13 @@ logger = get_logger(__name__)
 _ = I18N._
 
 
-class MuseAppQt(FramelessWindowMixin, QMainWindow):
+class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
     """PySide6 main window for Muse with custom title bar.
     Callbacks are passed to internal modules via AppActions.
     UI-updating callbacks are marshalled to the main thread via signals so that worker
     threads (run_async, extension_manager) never touch Qt widgets directly.
+    
+    Inherits from SmartMainWindow for automatic geometry persistence.
     """
 
     # Signals for marshalling UI updates from worker threads to main thread
@@ -83,7 +86,8 @@ class MuseAppQt(FramelessWindowMixin, QMainWindow):
     _sig_shutdown = Signal()
 
     def __init__(self):
-        super().__init__()
+        # Initialize SmartMainWindow with geometry persistence enabled
+        super().__init__(restore_geometry=True)
         # Set up frameless window with custom title bar
         self.setup_frameless_window(title=_(" Muse "), corner_radius=10)
         self.setWindowTitle(_(" Muse "))
@@ -172,28 +176,6 @@ class MuseAppQt(FramelessWindowMixin, QMainWindow):
                     logger.debug("Application started without administrator privileges - audio device switching will be limited")
             except ImportError:
                 pass
-
-    def _apply_cached_geometry(self):
-        """Apply cached main window position/size if valid and visible on a display. Returns True if applied."""
-        try:
-            position_data = app_info_cache.get_display_position()
-            if not position_data or not position_data.is_valid():
-                return False
-            cached_virtual_screen = app_info_cache.get_virtual_screen_info()
-            if position_data.is_visible_on_display(None, cached_virtual_screen):
-                self.setGeometry(
-                    position_data.x,
-                    position_data.y,
-                    position_data.width,
-                    position_data.height,
-                )
-                logger.debug("Applied cached window geometry: %s", position_data)
-                return True
-            logger.debug("Cached window position not visible on any display: %s", position_data)
-            return False
-        except Exception as e:
-            logger.warning("Failed to apply cached window geometry: %s", e)
-            return False
 
     def _build_menus(self):
         """Build menus and add them to the custom title bar."""
@@ -451,46 +433,63 @@ class MuseAppQt(FramelessWindowMixin, QMainWindow):
             return RunnerAppConfig()
 
     def closeEvent(self, event):
-        self.on_closing()
-        event.accept()
+        """Handle window close - save state, cleanup, then let SmartMainWindow save geometry."""
+        if self._closing:
+            event.accept()
+            return
+        self._closing = True
+        
+        # Save application state (config, etc.) - not geometry, SmartMainWindow handles that
+        self._save_app_state()
+        
+        # Call parent closeEvent to save window geometry via SmartMainWindow
+        super().closeEvent(event)
+        
+        # Final cleanup after geometry is saved
+        self._final_cleanup()
 
     def _request_shutdown(self):
         """Request shutdown via signal to ensure it runs on the main thread."""
         self._sig_shutdown.emit()
 
     def on_closing(self):
+        """Legacy method for programmatic shutdown. Triggers close event."""
         if self._closing:
             return
-        self._closing = True
+        self.close()  # This will trigger closeEvent
+
+    def _save_app_state(self):
+        """Save application state (config, history, etc.) - called during close."""
         from ui_qt.blacklist_window import BlacklistWindow
         BlacklistWindow.store_blacklist()
+        
         # Stop media key handler if it was started
         if self._media_key_handler is not None:
             self._media_key_handler.stop()
+        
+        # Save app config (not geometry - SmartMainWindow handles that)
         self.store_info_cache()
+
+    def _final_cleanup(self):
+        """Final cleanup after all state is saved."""
         app_info_cache.wipe_instance()
         FFmpegHandler.cleanup_cache()
         TempDir.cleanup()
-        QApplication.quit()
 
     def store_info_cache(self):
+        """Save application config to cache. Geometry is handled by SmartMainWindow."""
         if self.runner_app_config is not None:
             if app_info_cache.set_history(self.runner_app_config):
                 if self.config_history_index > 0:
                     self.config_history_index -= 1
         app_info_cache.set("config_history_index", self.config_history_index)
-        app_info_cache.set_display_position(self)
-        try:
-            app_info_cache.set_virtual_screen_info(self)
-        except Exception as e:
-            logger.debug("Could not save virtual screen info: %s", e)
+        # Note: Window geometry is saved by SmartMainWindow.closeEvent()
         PersistentDataManagerQt.store()
-        app_info_cache.store()
 
     def quit(self):
         if qt_alert(self, _("Confirm Quit"), _("Would you like to quit the application?"), "askokcancel"):
             logger.info("Exiting application")
-            self.on_closing()
+            self.close()  # Triggers closeEvent which handles everything
 
     def alert(self, title: str, message: str, kind: str = "info", severity: str = "normal", master: Optional[object] = None):
         parent = master if master is not None else self
@@ -1061,14 +1060,15 @@ def main():
     if os.path.isfile(icon_path):
         app.setWindowIcon(QIcon(icon_path))
     window = MuseAppQt()
-    if not window._apply_cached_geometry():
-        window.resize(1200, 700)
+    # Set default size before restoring geometry (in case no saved geometry exists)
+    window.resize(1200, 700)
+    # Restore saved window geometry (handled by SmartMainWindow)
+    window.restore_window_geometry()
     window.show()
 
     def graceful_shutdown(*args):
         logger.info("Caught signal, shutting down gracefully...")
-        window.on_closing()
-        sys.exit(0)
+        window.close()  # Triggers closeEvent which handles everything
 
     try:
         signal.signal(signal.SIGINT, graceful_shutdown)
