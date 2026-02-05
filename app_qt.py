@@ -91,6 +91,7 @@ class MuseAppQt(QMainWindow):
         self.fullscreen = False
         self.current_run = Run(RunConfig(placeholder=True))
         self._library_data: Optional[LibraryData] = None
+        self._closing = False  # Guard for multiple on_closing calls
         # So @require_password and dialogs (e.g. PasswordDialog) have a parent window
         self.master = self
         # Initialize media key handler
@@ -148,11 +149,8 @@ class MuseAppQt(QMainWindow):
         # Enable media key handling
         self._setup_media_keys()
 
-        try:
-            from ui_qt.blacklist_window import BlacklistWindow
-            BlacklistWindow.set_blacklist()
-        except ImportError as e:
-            logger.debug("Blacklist init: %s", e)
+        from ui_qt.blacklist_window import BlacklistWindow
+        BlacklistWindow.set_blacklist()
 
         import platform
         if platform.system() == "Windows":
@@ -397,11 +395,11 @@ class MuseAppQt(QMainWindow):
         self._sig_shutdown.emit()
 
     def on_closing(self):
-        try:
-            from ui_qt.blacklist_window import BlacklistWindow
-            BlacklistWindow.store_blacklist()
-        except ImportError:
-            pass
+        if self._closing:
+            return
+        self._closing = True
+        from ui_qt.blacklist_window import BlacklistWindow
+        BlacklistWindow.store_blacklist()
         # Stop media key handler if it was started
         if self._media_key_handler is not None:
             self._media_key_handler.stop()
@@ -464,11 +462,8 @@ class MuseAppQt(QMainWindow):
         favorited = self.favorite_check.isChecked()
         current_track = self.current_run.get_current_track() if self.current_run else None
         if current_track is not None:
-            try:
-                from ui_qt.favorites_window import FavoritesWindow
-                FavoritesWindow.set_favorite(current_track, favorited)
-            except ImportError as e:
-                logger.debug("FavoritesWindow: %s", e)
+            from ui_qt.favorites_window import FavoritesWindow
+            FavoritesWindow.set_favorite(current_track, favorited)
 
     def set_muse(self, _state=None):
         self.runner_app_config.muse = self.muse_check.isChecked()
@@ -816,13 +811,10 @@ class MuseAppQt(QMainWindow):
         self._sig_favorite_status.emit(track)
 
     def _do_update_favorite_status(self, track):
-        try:
-            from ui_qt.favorites_window import FavoritesWindow
-            is_favorited = FavoritesWindow.is_track_favorited(track)
-            if self.favorite_check.isChecked() != is_favorited:
-                self.favorite_check.setChecked(is_favorited)
-        except ImportError:
-            pass
+        from ui_qt.favorites_window import FavoritesWindow
+        is_favorited = FavoritesWindow.is_track_favorited(track)
+        if self.favorite_check.isChecked() != is_favorited:
+            self.favorite_check.setChecked(is_favorited)
 
     def get_current_track(self):
         if self.current_run and not self.current_run.is_complete:
@@ -830,11 +822,8 @@ class MuseAppQt(QMainWindow):
         return None
 
     def _find_track(self, search_query):
-        try:
-            from ui_qt.search_window import SearchWindow
-            return SearchWindow.find_track(self.library_data, search_query)
-        except ImportError:
-            return None
+        from ui_qt.search_window import SearchWindow
+        return SearchWindow.find_track(self.library_data, search_query)
 
     def search_and_play(self, search_query):
         track = self._find_track(search_query)
@@ -848,9 +837,6 @@ class MuseAppQt(QMainWindow):
         try:
             from ui_qt.favorites_window import FavoritesWindow
             return FavoritesWindow.add_favorite(favorite, is_new=True, app_actions=self.app_actions, from_favorite_window=False)
-        except ImportError:
-            self.alert(_("Error"), _("Favorites window not available."), kind="error")
-            return False
         except Exception as e:
             self.alert(_("Error"), str(e), kind="error")
             return False
@@ -904,159 +890,93 @@ class MuseAppQt(QMainWindow):
             self.sort_type_combo.setCurrentText(sort_val)
         QApplication.processEvents()
 
-    # Open-window methods: assume ui_qt modules exist; toast on ImportError until ported
     @require_password(ProtectedActions.VIEW_LIBRARY)
     def open_library_window(self):
-        try:
-            from ui_qt.library_window import LibraryWindow
-            LibraryWindow(self, self.app_actions, self.library_data)
-        except ImportError as e:
-            logger.debug("LibraryWindow: %s", e)
-            self.toast(_("Open Library not yet available."))
+        from ui_qt.library_window import LibraryWindow
+        LibraryWindow(self, self.app_actions, self.library_data)
 
     @require_password(ProtectedActions.EDIT_COMPOSERS)
     def open_composers_window(self):
-        try:
-            from ui_qt.composers_window import ComposersWindow
-            ComposersWindow(self, self.app_actions)
-        except ImportError as e:
-            logger.debug("ComposersWindow: %s", e)
-            self.toast(_("Composers not yet available."))
+        from ui_qt.composers_window import ComposersWindow
+        ComposersWindow(self, self.app_actions)
 
     @require_password(ProtectedActions.EDIT_PERSONAS)
     def open_personas_window(self):
-        try:
-            from ui_qt.personas_window import PersonasWindow
-            PersonasWindow(self, self.app_actions)
-        except ImportError as e:
-            logger.debug("PersonasWindow: %s", e)
-            self.toast(_("Personas not yet available."))
+        from ui_qt.personas_window import PersonasWindow
+        PersonasWindow(self, self.app_actions)
 
     @require_password(ProtectedActions.EDIT_SCHEDULES)
     def open_schedules_window(self):
-        try:
-            from ui_qt.schedules_window import SchedulesWindow
-            SchedulesWindow(self, self.app_actions)
-        except ImportError as e:
-            logger.debug("SchedulesWindow: %s", e)
-            self.toast(_("Schedules not yet available."))
+        from ui_qt.schedules_window import SchedulesWindow
+        SchedulesWindow(self, self.app_actions)
 
     @require_password(ProtectedActions.RUN_SEARCH)
     def open_search_window(self):
-        try:
-            from ui_qt.search_window import SearchWindow
-            SearchWindow(self, self.app_actions, self.library_data)
-        except ImportError as e:
-            logger.debug("SearchWindow: %s", e)
-            self.toast(_("Search not yet available."))
+        from ui_qt.search_window import SearchWindow
+        SearchWindow(self, self.app_actions, self.library_data)
 
     def open_track_details_window(self, track):
         try:
             from ui_qt.track_details_window import TrackDetailsWindow
             TrackDetailsWindow(self, self.app_actions, track)
-        except ImportError as e:
-            logger.debug("TrackDetailsWindow: %s", e)
-            self.toast(_("Track Details not yet available."))
         except Exception as e:
             self.alert(_("Error"), str(e), kind="error")
 
     @require_password(ProtectedActions.EDIT_EXTENSIONS)
     def open_extensions_window(self):
-        try:
-            from ui_qt.extensions_window import ExtensionsWindow
-            ExtensionsWindow(self, self.app_actions, self.library_data)
-        except ImportError as e:
-            logger.debug("ExtensionsWindow: %s", e)
-            self.toast(_("Extensions not yet available."))
+        from ui_qt.extensions_window import ExtensionsWindow
+        ExtensionsWindow(self, self.app_actions, self.library_data)
 
     @require_password(ProtectedActions.EDIT_BLACKLIST)
     def open_blacklist_window(self):
-        try:
-            from ui_qt.blacklist_window import BlacklistWindow
-            BlacklistWindow(self, self.app_actions)
-        except ImportError as e:
-            logger.debug("BlacklistWindow: %s", e)
-            self.toast(_("Blacklist not yet available."))
+        from ui_qt.blacklist_window import BlacklistWindow
+        BlacklistWindow(self, self.app_actions)
 
     @require_password(ProtectedActions.EDIT_PLAYLISTS)
     def open_presets_window(self):
-        try:
-            from ui_qt.presets_window import PresetsWindow
-            PresetsWindow(self, self.app_actions, self.construct_preset, self.start_run_from_preset)
-        except ImportError as e:
-            logger.debug("PresetsWindow: %s", e)
-            self.toast(_("Playlists not yet available."))
+        from ui_qt.presets_window import PresetsWindow
+        PresetsWindow(self, self.app_actions, self.construct_preset, self.start_run_from_preset)
 
     @require_password(ProtectedActions.EDIT_FAVORITES)
     def open_favorites_window(self):
-        try:
-            from ui_qt.favorites_window import FavoritesWindow
-            FavoritesWindow(self, self.app_actions, self.library_data)
-        except ImportError as e:
-            logger.debug("FavoritesWindow: %s", e)
-            self.toast(_("Favorites not yet available."))
+        from ui_qt.favorites_window import FavoritesWindow
+        FavoritesWindow(self, self.app_actions, self.library_data)
 
     @require_password(ProtectedActions.VIEW_HISTORY)
     def open_history_window(self):
-        try:
-            from ui_qt.history_window import HistoryWindow
-            HistoryWindow(self, self.app_actions, self.library_data)
-        except ImportError as e:
-            logger.debug("HistoryWindow: %s", e)
-            self.toast(_("History not yet available."))
+        from ui_qt.history_window import HistoryWindow
+        HistoryWindow(self, self.app_actions, self.library_data)
 
     def open_weather_window(self):
-        try:
-            from ui_qt.weather_window import WeatherWindow
-            WeatherWindow(self, self.app_actions)
-        except ImportError as e:
-            logger.debug("WeatherWindow: %s", e)
-            self.toast(_("Weather not yet available."))
+        from ui_qt.weather_window import WeatherWindow
+        WeatherWindow(self, self.app_actions)
 
     def open_tts_window(self):
-        try:
-            from ui_qt.tts_window import TTSWindow
-            TTSWindow(self, self.app_actions)
-        except ImportError as e:
-            logger.debug("TTSWindow: %s", e)
-            self.toast(_("Text to Speech not yet available."))
+        from ui_qt.tts_window import TTSWindow
+        TTSWindow(self, self.app_actions)
 
     def open_timer_window(self):
-        try:
-            from ui_qt.timer_window import TimerWindow
-            TimerWindow(self, self.app_actions)
-        except ImportError as e:
-            logger.debug("TimerWindow: %s", e)
-            self.toast(_("Timer not yet available."))
+        from ui_qt.timer_window import TimerWindow
+        TimerWindow(self, self.app_actions)
 
     @require_password(ProtectedActions.EDIT_CONFIGURATION)
     def open_audio_device_window(self):
         try:
             from ui_qt.audio_device_window import AudioDeviceWindow
             AudioDeviceWindow(self, self.app_actions)
-        except ImportError as e:
-            logger.debug("AudioDeviceWindow: %s", e)
-            self.toast(_("Audio Devices not yet available."))
         except Exception as e:
             self.alert(_("Error"), str(e), kind="error")
 
     @require_password(ProtectedActions.EDIT_CONFIGURATION)
     def open_configuration_window(self):
-        try:
-            from ui_qt.configuration_window import ConfigurationWindow
-            ConfigurationWindow(self, self.app_actions)
-        except ImportError as e:
-            logger.debug("ConfigurationWindow: %s", e)
-            self.toast(_("Configuration not yet available."))
+        from ui_qt.configuration_window import ConfigurationWindow
+        ConfigurationWindow(self, self.app_actions)
 
     @require_password(ProtectedActions.ACCESS_ADMIN)
     def open_password_admin_window(self):
         try:
             from ui_qt.auth.password_admin_window import PasswordAdminWindow
             PasswordAdminWindow(self, self.app_actions)
-        except ImportError as e:
-            logger.debug("PasswordAdminWindow: %s", e)
-            self.toast(_("Security Configuration not yet available."))
         except Exception as e:
             self.handle_error(str(e), title=_("Password Admin Window Error"))
 
