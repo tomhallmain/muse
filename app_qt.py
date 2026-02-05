@@ -77,6 +77,7 @@ class MuseAppQt(QMainWindow):
     _sig_dj_persona = Signal(str)
     _sig_favorite_status = Signal(object)
     _sig_run_finished = Signal(object)
+    _sig_shutdown = Signal()
 
     def __init__(self):
         super().__init__()
@@ -107,7 +108,7 @@ class MuseAppQt(QMainWindow):
             "update_album_artwork": self.update_album_artwork,
             "get_media_frame_handle": self.get_media_frame_handle,
             "start_play_callback": self.start_playback,
-            "shutdown_callback": self.on_closing,
+            "shutdown_callback": self._request_shutdown,
             "toast": self.toast,
             "_alert": self.alert,
             "update_playlist_state": self.update_playlist_state,
@@ -139,6 +140,7 @@ class MuseAppQt(QMainWindow):
         self._sig_dj_persona.connect(self._do_update_dj_persona_callback)
         self._sig_favorite_status.connect(self._do_update_favorite_status)
         self._sig_run_finished.connect(self._on_run_finished)
+        self._sig_shutdown.connect(self.on_closing)
 
         # Cache media frame handle on main thread so worker threads can use it without touching Qt
         QTimer.singleShot(0, self._cache_media_frame_handle)
@@ -384,6 +386,10 @@ class MuseAppQt(QMainWindow):
     def closeEvent(self, event):
         self.on_closing()
         event.accept()
+
+    def _request_shutdown(self):
+        """Request shutdown via signal to ensure it runs on the main thread."""
+        self._sig_shutdown.emit()
 
     def on_closing(self):
         try:
