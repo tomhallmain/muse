@@ -490,6 +490,10 @@ class SearchWindow(BaseWindow):
         # Show filter field after search completes
         if self.filter_entry is not None:
             self.filter_entry.grid()
+        # Uncheck "Overwrite cache" after search completes so that playing a result
+        # does not unintentionally overwrite the cache again.
+        if self.overwrite_cache.get():
+            self.overwrite_cache.set(False)
         self._refresh_widgets()
 
     def _show_search_error(self, error_msg):

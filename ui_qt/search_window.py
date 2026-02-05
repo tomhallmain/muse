@@ -483,6 +483,10 @@ class SearchWindow(SmartWindow):
     def _update_ui_after_search(self):
         SearchWindow.update_recent_searches(self.library_data_search)
         self.filter_entry.show()
+        # Uncheck "Overwrite cache" after search completes so that playing a result
+        # does not unintentionally overwrite the cache again.
+        if self.overwrite_cache_check.isChecked():
+            self.overwrite_cache_check.setChecked(False)
         self._refresh_widgets()
 
     def _show_search_error(self, error_msg):

@@ -492,6 +492,10 @@ class MuseAppQt(QMainWindow):
         args.total = -1
         args.is_all_tracks, args.directories = self.get_directories()
         args.overwrite = self.overwrite_check.isChecked()
+        # Uncheck "Overwrite" after reading the value so that subsequent runs
+        # do not unintentionally overwrite the cache again.
+        if args.overwrite:
+            self.overwrite_check.setChecked(False)
         args.muse = self.muse_check.isChecked()
         args.extend = self.extend_check.isChecked()
         args.track = track

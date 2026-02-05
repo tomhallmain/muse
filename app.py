@@ -708,6 +708,10 @@ class App():
         args.total = -1
         args.is_all_tracks, args.directories = self.get_directories()
         args.overwrite = self.overwrite.get()
+        # Uncheck "Overwrite" after reading the value so that subsequent runs
+        # do not unintentionally overwrite the cache again.
+        if args.overwrite:
+            self.overwrite.set(False)
         args.muse = self.muse.get()
         args.extend = self.extend.get()
         args.track = track
