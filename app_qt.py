@@ -31,6 +31,8 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, QTimer, Signal
 from PySide6.QtGui import QIcon, QShortcut, QKeySequence, QKeyEvent
 
+from ui_qt.custom_title_bar import FramelessWindowMixin, WindowResizeHandler
+
 from utils.globals import Globals, PlaylistSortType, PlaybackMasterStrategy, ProtectedActions
 from library_data.library_data import LibraryData
 from ui_qt.app_actions import AppActions
@@ -59,8 +61,9 @@ logger = get_logger(__name__)
 _ = I18N._
 
 
-class MuseAppQt(QMainWindow):
-    """PySide6 main window for Muse. Callbacks are passed to internal modules via AppActions.
+class MuseAppQt(FramelessWindowMixin, QMainWindow):
+    """PySide6 main window for Muse with custom title bar.
+    Callbacks are passed to internal modules via AppActions.
     UI-updating callbacks are marshalled to the main thread via signals so that worker
     threads (run_async, extension_manager) never touch Qt widgets directly.
     """
@@ -81,7 +84,16 @@ class MuseAppQt(QMainWindow):
 
     def __init__(self):
         super().__init__()
+        # Set up frameless window with custom title bar
+        self.setup_frameless_window(title=_(" Muse "), corner_radius=10)
         self.setWindowTitle(_(" Muse "))
+        # Set icon in the custom title bar
+        assets = os.path.join(os.path.dirname(os.path.realpath(__file__)), "assets")
+        icon_path = os.path.join(assets, "icon.png")
+        if os.path.isfile(icon_path):
+            title_bar = self.get_title_bar()
+            if title_bar:
+                title_bar.set_icon(icon_path)
         self.progress_bar: Optional[QProgressBar] = None
         self._cached_media_frame_handle = None
         self.job_queue = JobQueue("Playlist Runs")
@@ -184,43 +196,90 @@ class MuseAppQt(QMainWindow):
             return False
 
     def _build_menus(self):
-        menubar = self.menuBar()
-        file_menu = menubar.addMenu(_("File"))
-        file_menu.addAction(_("Open Library"), self.open_library_window)
-        file_menu.addAction(_("Current Track Text"), self.open_text)
-        file_menu.addSeparator()
-        file_menu.addAction(_("Exit"), self.quit)
-
-        view_menu = menubar.addMenu(_("View"))
-        view_menu.addAction(_("Toggle Fullscreen"), self.toggle_fullscreen)
-        view_menu.addAction(_("Toggle Theme"), self.toggle_theme)
-        view_menu.addSeparator()
-        view_menu.addAction(_("Playlists"), self.open_presets_window)
-        view_menu.addAction(_("Favorites"), self.open_favorites_window)
-        view_menu.addAction(_("History"), self.open_history_window)
-        view_menu.addAction(_("Composers"), self.open_composers_window)
-        view_menu.addAction(_("Personas"), self.open_personas_window)
-
-        tools_menu = menubar.addMenu(_("Tools"))
-        tools_menu.addAction(_("Search"), self.open_search_window)
-        tools_menu.addAction(_("Schedules"), self.open_schedules_window)
-        tools_menu.addAction(_("Extensions"), self.open_extensions_window)
-        tools_menu.addAction(_("Blacklist"), self.open_blacklist_window)
-        tools_menu.addAction(_("Weather"), self.open_weather_window)
-        tools_menu.addAction(_("Text to Speech"), self.open_tts_window)
-        tools_menu.addAction(_("Timer"), self.open_timer_window)
-        tools_menu.addAction(_("Audio Devices"), self.open_audio_device_window)
-        tools_menu.addSeparator()
-        tools_menu.addAction(_("Configuration"), self.open_configuration_window)
-        security_action = tools_menu.addAction(
-            _("Security Configuration"), self.open_password_admin_window
-        )
-        security_action.setShortcut(QKeySequence("Ctrl+P"))
+        """Build menus and add them to the custom title bar."""
+        # Hide the native menubar since we're using custom title bar menus
+        native_menubar = self.menuBar()
+        native_menubar.setVisible(False)
+        native_menubar.setMaximumHeight(0)
+        
+        # Get the custom title bar
+        title_bar = self.get_title_bar()
+        if not title_bar:
+            return
+        
+        # Define menus as (title, list of (action_text, callback, [shortcut]))
+        # Use None for separators
+        menu_definitions = [
+            (_("File"), [
+                (_("Open Library"), self.open_library_window),
+                (_("Current Track Text"), self.open_text),
+                None,  # separator
+                (_("Exit"), self.quit),
+            ]),
+            (_("View"), [
+                (_("Toggle Fullscreen"), self.toggle_fullscreen),
+                (_("Toggle Theme"), self.toggle_theme),
+                None,
+                (_("Playlists"), self.open_presets_window),
+                (_("Favorites"), self.open_favorites_window),
+                (_("History"), self.open_history_window),
+                (_("Composers"), self.open_composers_window),
+                (_("Personas"), self.open_personas_window),
+            ]),
+            (_("Tools"), [
+                (_("Search"), self.open_search_window),
+                (_("Schedules"), self.open_schedules_window),
+                (_("Extensions"), self.open_extensions_window),
+                (_("Blacklist"), self.open_blacklist_window),
+                (_("Weather"), self.open_weather_window),
+                (_("Text to Speech"), self.open_tts_window),
+                (_("Timer"), self.open_timer_window),
+                (_("Audio Devices"), self.open_audio_device_window),
+                None,
+                (_("Configuration"), self.open_configuration_window),
+                (_("Security Configuration"), self.open_password_admin_window, "Ctrl+P"),
+            ]),
+        ]
+        
+        title_bar.add_menus(menu_definitions)
 
     def _build_central(self):
-        central = QWidget()
-        self.setCentralWidget(central)
-        main_layout = QHBoxLayout(central)
+        grip_size = getattr(self, '_frameless_grip_size', 8)
+        
+        # Outer widget for translucent background (needed for rounded corners)
+        outer_widget = QWidget()
+        outer_widget.setObjectName("transparentOuter")
+        outer_widget.setAttribute(Qt.WA_TranslucentBackground)
+        self.setCentralWidget(outer_widget)
+        outer_layout = QVBoxLayout(outer_widget)
+        outer_layout.setContentsMargins(0, 0, 0, 0)
+        outer_layout.setSpacing(0)
+        
+        # Main container frame with rounded corners
+        self._main_frame = QFrame()
+        self._main_frame.setObjectName("mainFrame")
+        outer_layout.addWidget(self._main_frame)
+        
+        root_layout = QVBoxLayout(self._main_frame)
+        root_layout.setContentsMargins(0, 0, 0, 0)
+        root_layout.setSpacing(0)
+        
+        # Add the custom title bar at the top
+        title_bar = self.get_title_bar()
+        if title_bar:
+            root_layout.addWidget(title_bar)
+        
+        # Content area below title bar
+        content_widget = QWidget()
+        content_widget.setObjectName("contentArea")
+        main_layout = QHBoxLayout(content_widget)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
+        
+        root_layout.addWidget(content_widget)
+        
+        # Install resize handler for edge resizing
+        self._resize_handler = WindowResizeHandler(self, grip_size)
 
         sidebar = QWidget()
         sidebar.setFixedWidth(380)
@@ -374,8 +433,13 @@ class MuseAppQt(QMainWindow):
         main_layout.addWidget(self.media_frame, 1)
 
     def _apply_theme(self):
-        self.setStyleSheet(AppStyle.get_stylesheet())
-        self.media_frame.set_background_color(AppStyle.MEDIA_BG)
+        is_dark = AppStyle.IS_DEFAULT_THEME
+        # Combine base stylesheet with frameless window styling
+        stylesheet = AppStyle.get_stylesheet() + AppStyle.get_frameless_stylesheet(is_dark)
+        self.setStyleSheet(stylesheet)
+        self.media_frame.set_background_color(AppStyle.MEDIA_BG if is_dark else AppStyle.LIGHT_MEDIA_BG)
+        # Apply theme to custom title bar
+        self.apply_frameless_theme(is_dark)
 
     def _load_info_cache(self):
         try:
@@ -861,7 +925,13 @@ class MuseAppQt(QMainWindow):
 
     def toggle_theme(self):
         AppStyle.IS_DEFAULT_THEME = not AppStyle.IS_DEFAULT_THEME
-        self._apply_theme()
+        is_dark = AppStyle.IS_DEFAULT_THEME
+        # Update main stylesheet
+        stylesheet = AppStyle.get_stylesheet() + AppStyle.get_frameless_stylesheet(is_dark)
+        self.setStyleSheet(stylesheet)
+        self.media_frame.set_background_color(AppStyle.MEDIA_BG if is_dark else AppStyle.LIGHT_MEDIA_BG)
+        # Apply theme to custom title bar
+        self.apply_frameless_theme(is_dark)
         self.toast(_("Theme switched to {0}.").format(AppStyle.get_theme_name()))
 
     def toast(self, message):
@@ -984,6 +1054,8 @@ class MuseAppQt(QMainWindow):
 def main():
     app = QApplication(sys.argv)
     app.setApplicationName("Muse")
+    # Set application-level icon (used for taskbar, Alt+Tab, etc.)
+    # Note: The title bar icon is set separately in MuseAppQt.__init__
     assets = os.path.join(os.path.dirname(os.path.realpath(__file__)), "assets")
     icon_path = os.path.join(assets, "icon.png")
     if os.path.isfile(icon_path):
