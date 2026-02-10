@@ -22,7 +22,7 @@ from lib.multi_display_qt import SmartWindow
 from library_data.library_data import LibraryDataSearch
 from ui_qt.app_style import AppStyle
 from ui_qt.auth.password_utils import require_password
-from utils.app_info_cache import app_info_cache
+from utils.app_info_cache_qt import app_info_cache
 from utils.config import config
 from utils.globals import PlaylistSortType, ProtectedActions
 from utils.translations import I18N

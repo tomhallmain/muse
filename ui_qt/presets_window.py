@@ -18,7 +18,7 @@ from PySide6.QtCore import Qt
 from lib.multi_display_qt import SmartWindow
 from ui_qt.app_style import AppStyle
 from ui_qt.preset import Preset
-from utils.app_info_cache import app_info_cache
+from utils.app_info_cache_qt import app_info_cache
 from utils.translations import I18N
 
 _ = I18N._

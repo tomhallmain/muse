@@ -26,7 +26,7 @@ from lib.multi_display_qt import SmartWindow
 from muse.playback_config import PlaybackConfig
 from muse.playlist import Playlist
 from ui_qt.app_style import AppStyle
-from utils.app_info_cache import app_info_cache
+from utils.app_info_cache_qt import app_info_cache
 from utils.config import config
 from utils.globals import PlaylistSortType, PlaybackMasterStrategy
 from utils.logging_setup import get_logger
