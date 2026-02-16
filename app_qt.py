@@ -408,6 +408,18 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         row += 1
 
         sidebar_layout.setRowStretch(row, 1)
+
+        # Prevent sidebar widgets from capturing keyboard focus so that
+        # stray key presses (e.g. Return) don't accidentally activate buttons.
+        for widget in sidebar.findChildren(QPushButton):
+            widget.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        for widget in sidebar.findChildren(QCheckBox):
+            widget.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        for widget in sidebar.findChildren(QComboBox):
+            widget.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        for widget in sidebar.findChildren(QSlider):
+            widget.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
         main_layout.addWidget(sidebar)
         self._sidebar_layout = sidebar_layout
 
@@ -754,7 +766,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
             next_up_text = ""
         elif not no_title and isinstance(next_up_text, str):
             next_up_text = _("Next Up: ") + next_up_text
-        self.label_next_up.setText(Utils._wrap_text_to_fit_length(str(next_up_text)[:500], 90))
+        self.label_next_up.setText(str(next_up_text)[:500])
         QApplication.processEvents()
 
     def update_previous_track_text(self, previous_track_text):
@@ -767,7 +779,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
             previous_track_text = ""
         else:
             previous_track_text = _("Previous Track: ") + str(previous_track_text)
-        self.label_previous_title.setText(Utils._wrap_text_to_fit_length(str(previous_track_text)[:500], 90))
+        self.label_previous_title.setText(str(previous_track_text)[:500])
         QApplication.processEvents()
 
     def update_upcoming_group_text(self, upcoming_group_text, grouping_type=None):
@@ -782,21 +794,21 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
                 upcoming_group_text = _("Upcoming {0}: {1}").format(name or "Group", upcoming_group_text)
             else:
                 upcoming_group_text = _("Upcoming Group: {0}").format(upcoming_group_text)
-        self.label_upcoming_group.setText(Utils._wrap_text_to_fit_length(str(upcoming_group_text)[:500], 90))
+        self.label_upcoming_group.setText(str(upcoming_group_text)[:500])
         QApplication.processEvents()
 
     def update_spot_profile_topics_text(self, muse_text):
         self._sig_spot_profile.emit(str(muse_text) if muse_text is not None else "")
 
     def _do_update_spot_profile_topics_text(self, muse_text):
-        self.label_muse.setText(Utils._wrap_text_to_fit_length(str(muse_text)[:500], 90))
+        self.label_muse.setText(str(muse_text)[:500])
         QApplication.processEvents()
 
     def update_label_extension_status(self, extension):
         self._sig_extension_status.emit(str(extension) if extension is not None else "")
 
     def _do_update_label_extension_status(self, extension):
-        self.label_extension_status.setText(Utils._wrap_text_to_fit_length(str(extension)[:500], 90))
+        self.label_extension_status.setText(str(extension)[:500])
         QApplication.processEvents()
 
     def update_directory_count(self, directories):
@@ -812,7 +824,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
             persona_name = ""
         else:
             persona_name = _("DJ: ") + str(persona_name)
-        self.label_dj_persona.setText(Utils._wrap_text_to_fit_length(str(persona_name)[:100], 90))
+        self.label_dj_persona.setText(str(persona_name)[:100])
         QApplication.processEvents()
 
     def update_album_artwork(self, image_filepath=None):
