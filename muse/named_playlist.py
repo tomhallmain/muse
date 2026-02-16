@@ -140,20 +140,44 @@ class NamedPlaylist:
 
     def _resolve_directories(self, library_data: 'LibraryData') -> List[str]:
         from library_data.library_data import LibraryData as LD
+        from utils.utils import Utils
 
-        filepaths = LD.get_all_filepaths(self.source_directories)
+        # Validate each directory with retry logic before passing to
+        # get_all_filepaths.  External / network drives on Windows may be
+        # asleep and need a moment to spin up.
+        valid_dirs = []
+        for d in self.source_directories:
+            if Utils.isdir_with_retry(d):
+                valid_dirs.append(d)
+            else:
+                logger.warning(
+                    f"NamedPlaylist '{self.name}': directory not found "
+                    f"(even after retries): {d}"
+                )
+
+        if not valid_dirs:
+            logger.warning(
+                f"NamedPlaylist '{self.name}': no valid directories found"
+            )
+            return []
+
+        filepaths = LD.get_all_filepaths(valid_dirs)
         logger.info(
             f"NamedPlaylist '{self.name}': directory source resolved "
-            f"{len(filepaths)} tracks from {len(self.source_directories)} "
-            f"director{'y' if len(self.source_directories) == 1 else 'ies'}"
+            f"{len(filepaths)} tracks from {len(valid_dirs)} "
+            f"director{'y' if len(valid_dirs) == 1 else 'ies'}"
         )
         return filepaths
 
     def _resolve_explicit_tracks(self) -> List[str]:
+        from utils.utils import Utils
+
+        # Use retry-aware file checks so that tracks on external / network
+        # drives that may be in a sleep state are not prematurely discarded.
         valid = []
         stale_count = 0
         for fp in self.track_filepaths:
-            if os.path.isfile(fp):
+            if Utils.isfile_with_retry(fp):
                 valid.append(fp)
             else:
                 stale_count += 1

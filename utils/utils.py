@@ -614,6 +614,46 @@ class Utils:
         return False
 
     @staticmethod
+    def isfile_with_retry(path, max_retries=3, retry_delay=1.0, wake_drive=True):
+        """
+        Check if a path is a file, with retry logic for sleeping external drives.
+        
+        On Windows, external drives may be in a sleep/standby state and report paths
+        as invalid before they have time to spin up. This function retries the check
+        with delays to allow the drive to wake.
+        
+        Args:
+            path: The path to check
+            max_retries: Maximum number of retry attempts (default: 3)
+            retry_delay: Seconds to wait between retries (default: 1.0)
+            wake_drive: If True, attempt to wake the drive by accessing its root first
+            
+        Returns:
+            bool: True if the path is a valid file, False otherwise
+        """
+        import time
+        
+        drive_root = os.path.splitdrive(path)[0]
+        if drive_root:
+            drive_root = drive_root + os.sep
+        
+        for attempt in range(max_retries + 1):
+            if wake_drive and drive_root and attempt == 0:
+                try:
+                    os.path.exists(drive_root)
+                except OSError:
+                    pass
+            
+            if os.path.isfile(path):
+                return True
+            
+            if attempt < max_retries:
+                logger.debug(f"File check failed for '{path}', retrying in {retry_delay}s (attempt {attempt + 1}/{max_retries})")
+                time.sleep(retry_delay)
+        
+        return False
+
+    @staticmethod
     def preprocess_data_for_encryption(data: str) -> bytes:
         """
         Enhanced preprocessing with multiple obfuscation layers.
