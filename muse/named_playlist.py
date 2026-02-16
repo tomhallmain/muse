@@ -1,0 +1,440 @@
+import datetime
+import os
+from dataclasses import dataclass, field
+from typing import Dict, List, Optional, TYPE_CHECKING
+
+from utils.globals import PlaylistSortType
+from utils.logging_setup import get_logger
+
+logger = get_logger(__name__)
+
+if TYPE_CHECKING:
+    from library_data.library_data import LibraryData, LibraryDataSearch
+
+
+NAMED_PLAYLISTS_CACHE_KEY = "named_playlists"
+LEGACY_NAMED_PLAYLIST_CONFIGS_KEY = "named_playlist_configs"
+
+
+@dataclass
+class NamedPlaylist:
+    """Persistent definition of a user-created playlist.
+
+    A playlist is a set of instructions for producing a track list, not
+    necessarily a resolved list of tracks. It supports three source modes:
+
+    - **search_query**: A ``LibraryDataSearch.to_json()`` dict that is
+      re-executed against the current library at runtime. Avoids staleness
+      and aligns with the saved-searches UX in ``SearchWindow``.
+    - **source_directories**: One or more directory paths whose media files
+      become the track list.
+    - **track_filepaths**: An explicit, ordered list of file paths
+      (hand-curated or a snapshot of resolved search results that have been
+      manually reordered).
+
+    Exactly one source mode should be populated.
+    """
+
+    name: str
+
+    # Track source -- exactly one of these should be populated.
+    search_query: Optional[dict] = None
+    source_directories: Optional[List[str]] = None
+    track_filepaths: Optional[List[str]] = None
+
+    # Sorting
+    sort_type: PlaylistSortType = PlaylistSortType.SEQUENCE
+
+    # Playback behaviour
+    loop: bool = False
+
+    # Metadata
+    created_at: Optional[str] = None
+    description: Optional[str] = None
+
+    # ------------------------------------------------------------------
+    # Source-mode helpers
+    # ------------------------------------------------------------------
+
+    def is_search_based(self) -> bool:
+        return self.search_query is not None and len(self.search_query) > 0
+
+    def is_directory_based(self) -> bool:
+        return self.source_directories is not None and len(self.source_directories) > 0
+
+    def is_track_based(self) -> bool:
+        return self.track_filepaths is not None and len(self.track_filepaths) > 0
+
+    def get_source_description(self) -> str:
+        """Return a human-readable summary of the track source."""
+        if self.is_search_based():
+            parts = []
+            for key in ("all", "title", "album", "artist", "composer",
+                        "genre", "instrument", "form"):
+                val = self.search_query.get(key, "")
+                if val:
+                    parts.append(f'{key}: "{val}"')
+            return "Search: " + ", ".join(parts) if parts else "Search: (empty)"
+        if self.is_directory_based():
+            dirs = [os.path.basename(d) or d for d in self.source_directories]
+            return "Directories: " + ", ".join(dirs)
+        if self.is_track_based():
+            count = len(self.track_filepaths)
+            return f"Tracks: {count} track{'s' if count != 1 else ''}"
+        return "(no source)"
+
+    # ------------------------------------------------------------------
+    # Track resolution
+    # ------------------------------------------------------------------
+
+    def resolve_tracks(self, library_data: 'LibraryData') -> List[str]:
+        """Resolve the playlist instructions into an ordered list of filepaths.
+
+        * **search_query** -- runs the query against the current library via
+          ``LibraryData.do_search()``.
+        * **source_directories** -- delegates to
+          ``LibraryData.get_all_filepaths()``.
+        * **track_filepaths** -- returns the stored list with stale (missing)
+          entries filtered out and a warning logged for each.
+
+        Args:
+            library_data: A ``LibraryData`` instance (needed for search and
+                directory resolution).
+
+        Returns:
+            An ordered list of absolute file paths.
+
+        Raises:
+            ValueError: If no source mode is populated.
+        """
+        if self.is_search_based():
+            return self._resolve_search(library_data)
+        if self.is_directory_based():
+            return self._resolve_directories(library_data)
+        if self.is_track_based():
+            return self._resolve_explicit_tracks()
+        raise ValueError(
+            f"NamedPlaylist '{self.name}' has no source mode set "
+            "(search_query, source_directories, or track_filepaths)"
+        )
+
+    def _resolve_search(self, library_data: 'LibraryData') -> List[str]:
+        from library_data.library_data import LibraryDataSearch
+
+        query_dict = dict(self.search_query)
+        # Remove UI-specific / non-query fields that shouldn't be passed to
+        # the search constructor, or that we want to override.
+        query_dict.pop("stored_results_count", None)
+        query_dict.pop("selected_track_path", None)
+        # Remove the max_results cap so we get all matching tracks.
+        query_dict["max_results"] = 100_000
+        query_dict["offset"] = 0
+
+        search = LibraryDataSearch(**query_dict)
+        library_data.do_search(search, overwrite=False)
+        filepaths = [track.filepath for track in search.get_results()]
+        logger.info(
+            f"NamedPlaylist '{self.name}': search resolved {len(filepaths)} tracks"
+        )
+        return filepaths
+
+    def _resolve_directories(self, library_data: 'LibraryData') -> List[str]:
+        from library_data.library_data import LibraryData as LD
+
+        filepaths = LD.get_all_filepaths(self.source_directories)
+        logger.info(
+            f"NamedPlaylist '{self.name}': directory source resolved "
+            f"{len(filepaths)} tracks from {len(self.source_directories)} "
+            f"director{'y' if len(self.source_directories) == 1 else 'ies'}"
+        )
+        return filepaths
+
+    def _resolve_explicit_tracks(self) -> List[str]:
+        valid = []
+        stale_count = 0
+        for fp in self.track_filepaths:
+            if os.path.isfile(fp):
+                valid.append(fp)
+            else:
+                stale_count += 1
+                logger.warning(
+                    f"NamedPlaylist '{self.name}': stale track removed: {fp}"
+                )
+        if stale_count > 0:
+            logger.warning(
+                f"NamedPlaylist '{self.name}': {stale_count} stale track(s) "
+                f"removed, {len(valid)} remaining"
+            )
+        return valid
+
+    # ------------------------------------------------------------------
+    # Serialisation
+    # ------------------------------------------------------------------
+
+    def to_dict(self) -> dict:
+        """Serialise to a JSON-compatible dict for ``app_info_cache`` storage."""
+        data: dict = {"name": self.name}
+
+        if self.search_query is not None:
+            data["search_query"] = self.search_query
+        if self.source_directories is not None:
+            data["source_directories"] = self.source_directories
+        if self.track_filepaths is not None:
+            data["track_filepaths"] = self.track_filepaths
+
+        data["sort_type"] = self.sort_type.value
+        data["loop"] = self.loop
+
+        if self.created_at is not None:
+            data["created_at"] = self.created_at
+        if self.description is not None:
+            data["description"] = self.description
+
+        return data
+
+    @staticmethod
+    def from_dict(data: dict) -> 'NamedPlaylist':
+        """Deserialise from a ``app_info_cache`` dict."""
+        sort_type_raw = data.get("sort_type", PlaylistSortType.SEQUENCE.value)
+        if isinstance(sort_type_raw, PlaylistSortType):
+            sort_type = sort_type_raw
+        else:
+            sort_type = PlaylistSortType.get(str(sort_type_raw))
+
+        return NamedPlaylist(
+            name=data["name"],
+            search_query=data.get("search_query"),
+            source_directories=data.get("source_directories"),
+            track_filepaths=data.get("track_filepaths"),
+            sort_type=sort_type,
+            loop=data.get("loop", False),
+            created_at=data.get("created_at"),
+            description=data.get("description"),
+        )
+
+    # ------------------------------------------------------------------
+    # Dunder helpers
+    # ------------------------------------------------------------------
+
+    def __str__(self) -> str:
+        return f"{self.name} ({self.get_source_description()}, {self.sort_type.value})"
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, NamedPlaylist):
+            return False
+        return self.name == other.name
+
+    def __hash__(self) -> int:
+        return hash(self.name)
+
+
+# ======================================================================
+# Store
+# ======================================================================
+
+class NamedPlaylistStore:
+    """CRUD operations for :class:`NamedPlaylist` objects.
+
+    Thin, stateless wrapper around ``app_info_cache``.  Every method accepts
+    an optional *cache* parameter so callers from either the Tkinter or Qt
+    code-path can pass the appropriate ``app_info_cache`` instance.  When
+    *cache* is ``None`` the Tkinter-side singleton is imported as the default.
+    """
+
+    @staticmethod
+    def _get_cache(cache=None):
+        if cache is not None:
+            return cache
+        from utils.app_info_cache import app_info_cache
+        return app_info_cache
+
+    @staticmethod
+    def _get_all_raw(cache=None) -> dict:
+        return NamedPlaylistStore._get_cache(cache).get(
+            NAMED_PLAYLISTS_CACHE_KEY, {}
+        )
+
+    @staticmethod
+    def _put_all_raw(data: dict, cache=None) -> None:
+        NamedPlaylistStore._get_cache(cache).set(
+            NAMED_PLAYLISTS_CACHE_KEY, data
+        )
+
+    # ------------------------------------------------------------------
+    # Public API
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def load_all(cache=None) -> Dict[str, NamedPlaylist]:
+        """Return all named playlists keyed by name."""
+        raw = NamedPlaylistStore._get_all_raw(cache)
+        playlists: Dict[str, NamedPlaylist] = {}
+        for name, data in raw.items():
+            try:
+                playlists[name] = NamedPlaylist.from_dict(data)
+            except Exception:
+                logger.exception(f"Failed to load named playlist '{name}'")
+        return playlists
+
+    @staticmethod
+    def save(playlist: NamedPlaylist, cache=None) -> None:
+        """Save (insert or update) a named playlist."""
+        raw = NamedPlaylistStore._get_all_raw(cache)
+        raw[playlist.name] = playlist.to_dict()
+        NamedPlaylistStore._put_all_raw(raw, cache)
+
+    @staticmethod
+    def delete(name: str, cache=None) -> bool:
+        """Delete a named playlist by name.  Returns True if it existed."""
+        raw = NamedPlaylistStore._get_all_raw(cache)
+        if name in raw:
+            del raw[name]
+            NamedPlaylistStore._put_all_raw(raw, cache)
+            return True
+        return False
+
+    @staticmethod
+    def get(name: str, cache=None) -> Optional[NamedPlaylist]:
+        """Retrieve a single named playlist, or None if not found."""
+        raw = NamedPlaylistStore._get_all_raw(cache)
+        data = raw.get(name)
+        if data is None:
+            return None
+        try:
+            return NamedPlaylist.from_dict(data)
+        except Exception:
+            logger.exception(f"Failed to load named playlist '{name}'")
+            return None
+
+    @staticmethod
+    def rename(old_name: str, new_name: str, cache=None) -> bool:
+        """Rename a named playlist.  Returns True on success."""
+        raw = NamedPlaylistStore._get_all_raw(cache)
+        if old_name not in raw:
+            logger.warning(f"Cannot rename: playlist '{old_name}' not found")
+            return False
+        if new_name in raw:
+            logger.warning(
+                f"Cannot rename: playlist '{new_name}' already exists"
+            )
+            return False
+        data = raw.pop(old_name)
+        data["name"] = new_name
+        raw[new_name] = data
+        NamedPlaylistStore._put_all_raw(raw, cache)
+        return True
+
+    @staticmethod
+    def exists(name: str, cache=None) -> bool:
+        """Check whether a named playlist with the given name exists."""
+        return name in NamedPlaylistStore._get_all_raw(cache)
+
+    # ------------------------------------------------------------------
+    # Migration from legacy format
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def migrate_legacy_configs(cache=None) -> int:
+        """Migrate the legacy ``named_playlist_configs`` dict to the new
+        :class:`NamedPlaylist` schema.
+
+        The legacy format (written by the earlier ``MasterPlaylistWindow``)
+        stores entries under the ``"named_playlist_configs"`` key in
+        ``app_info_cache``.  Each entry is one of two shapes:
+
+        **Single-playlist format**::
+
+            {
+                "tracks": ["path/a.mp3", ...],
+                "sort_type": "RANDOM",
+                "config_type": "RANDOM"
+            }
+
+        **Master-playlist format**::
+
+            {
+                "configs": [
+                    {"tracks": [...], "sort_type": ..., "tracks_per_play": 2},
+                    ...
+                ]
+            }
+
+        Both are converted to :class:`NamedPlaylist` objects with
+        ``track_filepaths`` as the source mode (since the legacy format stored
+        resolved filepaths, not queries).
+
+        Returns:
+            The number of playlists migrated.
+        """
+        _cache = NamedPlaylistStore._get_cache(cache)
+        legacy_raw: dict = _cache.get(LEGACY_NAMED_PLAYLIST_CONFIGS_KEY, {})
+        if not legacy_raw:
+            return 0
+
+        migrated = 0
+        existing = NamedPlaylistStore._get_all_raw(cache)
+        now = datetime.datetime.now().isoformat(timespec="seconds")
+
+        for name, entry in legacy_raw.items():
+            if name in existing:
+                # Don't overwrite playlists that already exist in the new format.
+                logger.info(
+                    f"Skipping legacy playlist '{name}': already exists"
+                )
+                continue
+
+            try:
+                if "configs" in entry:
+                    # Master-playlist format -- each sub-config becomes its
+                    # own named playlist, suffixed with an index.
+                    for i, cfg in enumerate(entry["configs"]):
+                        sub_name = f"{name} [{i + 1}]" if len(entry["configs"]) > 1 else name
+                        if sub_name in existing:
+                            continue
+                        playlist = _legacy_config_to_named_playlist(
+                            sub_name, cfg, now
+                        )
+                        existing[sub_name] = playlist.to_dict()
+                        migrated += 1
+                else:
+                    # Single-playlist format.
+                    playlist = _legacy_config_to_named_playlist(
+                        name, entry, now
+                    )
+                    existing[name] = playlist.to_dict()
+                    migrated += 1
+            except Exception:
+                logger.exception(
+                    f"Failed to migrate legacy playlist '{name}'"
+                )
+
+        if migrated > 0:
+            NamedPlaylistStore._put_all_raw(existing, cache)
+            logger.info(f"Migrated {migrated} legacy playlist(s)")
+
+        return migrated
+
+
+def _legacy_config_to_named_playlist(
+    name: str, cfg: dict, created_at: str
+) -> NamedPlaylist:
+    """Convert a single legacy config dict to a :class:`NamedPlaylist`."""
+    sort_type_raw = cfg.get("sort_type") or cfg.get("config_type")
+    if sort_type_raw is not None:
+        if isinstance(sort_type_raw, PlaylistSortType):
+            sort_type = sort_type_raw
+        else:
+            sort_type = PlaylistSortType.get(str(sort_type_raw))
+    else:
+        sort_type = PlaylistSortType.RANDOM
+
+    tracks = cfg.get("tracks", [])
+
+    return NamedPlaylist(
+        name=name,
+        track_filepaths=tracks if tracks else None,
+        sort_type=sort_type,
+        loop=False,
+        created_at=created_at,
+        description="Migrated from legacy playlist config",
+    )
