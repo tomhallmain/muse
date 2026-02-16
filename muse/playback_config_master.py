@@ -1,255 +1,279 @@
 from copy import deepcopy
 import datetime
 import time
-from utils.app_info_cache import app_info_cache
-from utils.globals import PlaylistSortType, TrackResult
+from typing import Dict, List, Optional, Any
+
+from library_data.media_track import MediaTrack
+from muse.playback_config import PlaybackConfig
+from muse.playlist import Playlist
+from utils.globals import TrackResult
 from utils.logging_setup import get_logger
 
 logger = get_logger(__name__)
 
+
 class PlaybackConfigMaster:
-    playlist_history_max_size = 1000
-    playlist_history = []
-    LAST_EXTENSION_PLAYED = datetime.datetime.now()
-    READY_FOR_EXTENSION = True
-    OPEN_CONFIGS = []
-    
-    @staticmethod
-    def load_playlist_history():
-        PlaybackConfigMaster.playlist_history = app_info_cache.get("playlist_history", default_val=[])
+    """Manages multiple PlaybackConfig instances with weighted round-robin interleaving.
+
+    Provides the same interface as PlaybackConfig so that Playback can use
+    either one transparently. When constructed with a single config and
+    default weights, it behaves identically to a bare PlaybackConfig (the
+    ALL_MUSIC code-path).
+
+    Interleaving algorithm (weighted round-robin with exhaustion handling)::
+
+        Given:  configs = [A, B, C]
+                weights = [2, 1, 3]
+
+        Cycle:  A, A, B, C, C, C, A, A, B, C, C, C, ...
+
+        When A is exhausted:
+                B, C, C, C, B, C, C, C, ...
+
+        When all are exhausted:
+                Playback stops (next_track returns TrackResult()).
+    """
+
+    LAST_EXTENSION_PLAYED: datetime.datetime = datetime.datetime.now()
+    READY_FOR_EXTENSION: bool = True
+    OPEN_CONFIGS: List['PlaybackConfigMaster'] = []
+
+    # ------------------------------------------------------------------
+    # Extension handling
+    # ------------------------------------------------------------------
 
     @staticmethod
-    def save_playlist_history():
-        app_info_cache.set("playlist_history", PlaybackConfigMaster.playlist_history)
-
-    @staticmethod
-    def assign_extension(new_file):
+    def assign_extension(new_file: str) -> None:
         while not PlaybackConfigMaster.READY_FOR_EXTENSION:
             logger.info("Waiting for config to accept extension...")
             time.sleep(5)
         logger.info("Assigning extension to playback")
         PlaybackConfigMaster.READY_FOR_EXTENSION = False
         for open_config in PlaybackConfigMaster.OPEN_CONFIGS:
-            open_config.overwrite = True
-            open_config.get_list()
             open_config.set_next_track_override(new_file)
 
-    def __init__(self, playback_configs=None, songs_per_config=None):
-        """Initialize PlaybackConfigMaster with ordered configurations.
-        
-        Args:
-            playback_configs (list): List of PlaybackConfig objects
-            songs_per_config (list): List of integers specifying how many songs to play from each config
-                                    (default: 1 song per config)
-        """
-        self.playback_configs = playback_configs or []
-        self.songs_per_config = songs_per_config or [1] * len(self.playback_configs)
-        if len(self.songs_per_config) != len(self.playback_configs):
-            self.songs_per_config = [1] * len(self.playback_configs)
-        
-        # Precompute the sequence of configurations and their playlist positions
-        self._precompute_sequence()
-        
-        self.current_playback_config = None
-        self.current_playback_config_index = -1
-        self.current_sequence_index = -1
-        self.played_tracks = []
-        self.next_track_override = None
-        self.playing = False
+    # ------------------------------------------------------------------
+    # Construction
+    # ------------------------------------------------------------------
+
+    def __init__(self, playback_configs: Optional[List[PlaybackConfig]] = None,
+                 weights: Optional[List[int]] = None) -> None:
+        self.playback_configs: List[PlaybackConfig] = playback_configs or []
+        self.weights: List[int] = weights or [1] * len(self.playback_configs)
+
+        if len(self.weights) != len(self.playback_configs):
+            raise ValueError(
+                f"weights length ({len(self.weights)}) != "
+                f"playback_configs length ({len(self.playback_configs)})"
+            )
+
+        # Interleaving state
+        self._config_cursor: int = 0
+        self._weight_counter: int = 0
+        self._active_mask: List[bool] = [True] * len(self.playback_configs)
+
+        # Playback state
+        self.playing: bool = False
+        self.played_tracks: List[MediaTrack] = []
+        self.next_track_override: Optional[str] = None
+
         PlaybackConfigMaster.OPEN_CONFIGS.append(self)
 
-    def _precompute_sequence(self):
-        """Precompute the sequence of configurations and their playlist positions."""
-        self.sequence = []
-        max_sequence_length = 100000  # Arbitrary large number
-        
-        # For each configuration, add its songs to the sequence
-        for config_index, config in enumerate(self.playback_configs):
-            for _ in range(self.songs_per_config[config_index]):
-                self.sequence.append((config_index, len(self.sequence)))
-                
-                # Stop if we've reached the maximum sequence length
-                if len(self.sequence) >= max_sequence_length:
-                    return
+    # ------------------------------------------------------------------
+    # Interleaving helpers
+    # ------------------------------------------------------------------
 
-    def get_master_playlist(self, previous_tracks=100, upcoming_tracks=100):
-        """Get a window of tracks around the current position in the sequence.
-        
-        Args:
-            previous_tracks (int): Number of previous tracks to include (default: 100)
-            upcoming_tracks (int): Number of upcoming tracks to include (default: 100)
-            
-        Returns:
-            tuple: (previous_tracks_list, upcoming_tracks_list)
+    def _advance_cursor(self) -> bool:
+        """Move to the next active config in the round-robin.
+
+        Returns True if an active config was found, False if all are exhausted.
         """
-        if not self.sequence:
-            return [], []
+        if not any(self._active_mask):
+            return False
+        start = self._config_cursor
+        while True:
+            self._config_cursor = (self._config_cursor + 1) % len(self.playback_configs)
+            self._weight_counter = 0
+            if self._active_mask[self._config_cursor]:
+                return True
+            if self._config_cursor == start:
+                return False
 
-        # Calculate the window boundaries
-        sequence_length = len(self.sequence)
-        current_pos = self.current_sequence_index if self.current_sequence_index >= 0 else 0
-        
-        # Get previous tracks
-        prev_start = max(0, current_pos - previous_tracks)
-        prev_tracks = []
-        for i in range(prev_start, current_pos):
-            config_index, _ = self.sequence[i]
-            config = self.playback_configs[config_index]
-            # Get the track that would be played at this position
-            track = config.get_list().get_track_at_position(i - prev_start)
-            if track:
-                prev_tracks.append(track)
-
-        # Get upcoming tracks
-        next_end = min(sequence_length, current_pos + upcoming_tracks + 1)
-        next_tracks = []
-        for i in range(current_pos + 1, next_end):
-            config_index, _ = self.sequence[i]
-            config = self.playback_configs[config_index]
-            # Get the track that would be played at this position
-            track = config.get_list().get_track_at_position(i - current_pos - 1)
-            if track:
-                next_tracks.append(track)
-
-        return prev_tracks, next_tracks
-
-    def get_playing_config(self):
-        """Get the currently playing configuration."""
-        if self.playing:
-            return self
-        return None
-
-    def get_playing_track(self):
-        """Get the currently playing track."""
-        if not self.playing:
+    def _peek_next_config(self) -> Optional[PlaybackConfig]:
+        """Return the config that *would* provide the next track without
+        mutating any interleaving state."""
+        if not any(self._active_mask):
             return None
-        return self.current_track()
 
-    def maximum_plays(self):
-        """Get maximum number of plays."""
-        return 1
+        cursor = self._config_cursor
+        counter = self._weight_counter
 
-    def length(self):
-        """Get total length of all configurations."""
-        return sum(config.length() for config in self.playback_configs)
+        # If we've already drawn enough from this slot, peek at the next.
+        if counter >= self.weights[cursor] or not self._active_mask[cursor]:
+            start = cursor
+            while True:
+                cursor = (cursor + 1) % len(self.playback_configs)
+                if self._active_mask[cursor]:
+                    return self.playback_configs[cursor]
+                if cursor == start:
+                    return None
+        return self.playback_configs[cursor]
 
-    def remaining_count(self):
-        """Get total remaining tracks across all configurations."""
-        return sum(config.remaining_count() for config in self.playback_configs)
+    # ------------------------------------------------------------------
+    # Core playback interface
+    # ------------------------------------------------------------------
 
-    def get_list(self):
-        """Get the current playlist from the active configuration."""
-        if self.current_playback_config:
-            return self.current_playback_config.get_list()
-        return None
+    def next_track(self, skip_grouping: bool = False,
+                   places_from_current: int = 0) -> TrackResult:
+        """Get the next track using weighted round-robin interleaving."""
+        self.playing = True
 
-    def set_playing(self, playing=True):
-        """Set playing state."""
-        self.playing = playing
-
-    def next_track(self, skip_grouping=False, places_from_current=0) -> TrackResult:
-        """Get next track from current configuration."""
-        self.set_playing()
+        # Handle override (e.g. from library extender)
         if self.next_track_override is not None:
-            next_track = self.next_track_override
+            track = MediaTrack(self.next_track_override)
+            track.set_is_extended()
             self.next_track_override = None
             PlaybackConfigMaster.READY_FOR_EXTENSION = True
-            return TrackResult(next_track)
+            return TrackResult(track)
 
-        # Move to next position in sequence
-        self.current_sequence_index = (self.current_sequence_index + 1) % len(self.sequence)
-        config_index, _ = self.sequence[self.current_sequence_index]
-        self.current_playback_config = self.playback_configs[config_index]
-        self.current_playback_config_index = config_index
+        if not any(self._active_mask):
+            return TrackResult()
 
-        # Get next track from current config
-        result = self.current_playback_config.next_track(
-            skip_grouping=skip_grouping, 
-            places_from_current=places_from_current
+        config = self.playback_configs[self._config_cursor]
+        result = config.next_track(
+            skip_grouping=skip_grouping,
+            places_from_current=places_from_current,
         )
 
-        # Handle random playback with history
-        if self.current_playback_config.type == PlaylistSortType.RANDOM:
-            max_attempts = 10  # Prevent infinite loops
-            attempts = 0
-            taper_history_to = min(
-                self.current_playback_config.remaining_count(), 
-                PlaybackConfigMaster.playlist_history_max_size
-            )
-            
-            while (attempts < max_attempts and 
-                   result.track.get_track_details() in PlaybackConfigMaster.playlist_history[:taper_history_to]):
-                result = self.current_playback_config.next_track(
+        if result.track is None:
+            # Current config exhausted -- check loop flag.
+            if config.loop:
+                playlist = config.get_list()
+                if hasattr(playlist, 'reset'):
+                    playlist.reset()
+                else:
+                    # Invalidate so get_list() rebuilds from the same source.
+                    config.list = Playlist(
+                        data_callbacks=config.data_callbacks,
+                        check_entire_playlist=config.check_entire_playlist,
+                    )
+                result = config.next_track(
                     skip_grouping=skip_grouping,
-                    places_from_current=places_from_current
+                    places_from_current=places_from_current,
                 )
-                taper_history_to = min(
-                    self.current_playback_config.remaining_count(),
-                    PlaybackConfigMaster.playlist_history_max_size
-                )
-                attempts += 1
 
-        # Update history
-        track_details = result.track.get_track_details()
-        if track_details not in PlaybackConfigMaster.playlist_history:
-            PlaybackConfigMaster.playlist_history.insert(0, track_details)
-            if len(PlaybackConfigMaster.playlist_history) > PlaybackConfigMaster.playlist_history_max_size:
-                PlaybackConfigMaster.playlist_history.pop()
+            if result.track is None:
+                self._active_mask[self._config_cursor] = False
+                if self._advance_cursor():
+                    return self.next_track(skip_grouping, places_from_current)
+                return TrackResult()
 
+        self._weight_counter += 1
         self.played_tracks.append(result.track)
+
+        if self._weight_counter >= self.weights[self._config_cursor]:
+            self._advance_cursor()
+
         return result
 
-    def upcoming_track(self, places_from_current=1) -> TrackResult:
-        """Get upcoming track from next configuration."""
+    def upcoming_track(self, places_from_current: int = 1) -> TrackResult:
+        """Peek at the next track without advancing interleaving state."""
         if self.next_track_override is not None:
-            return TrackResult(self.next_track_override)
+            track = MediaTrack(self.next_track_override)
+            track.set_is_extended()
+            return TrackResult(track)
 
-        # Get next position in sequence
-        next_sequence_index = (self.current_sequence_index + 1) % len(self.sequence)
-        config_index, _ = self.sequence[next_sequence_index]
-        next_config = self.playback_configs[config_index]
-        
-        return next_config.upcoming_track(places_from_current=places_from_current)
+        cfg = self._peek_next_config()
+        if cfg is None:
+            return TrackResult()
+        return cfg.upcoming_track(places_from_current=places_from_current)
 
-    def current_track(self):
-        """Get current track from current configuration."""
-        if self.current_playback_config:
-            return self.current_playback_config.current_track()
-        return None
+    def current_track(self) -> Optional[MediaTrack]:
+        cfg = self.current_playback_config
+        return cfg.current_track() if cfg else None
 
-    def set_next_track_override(self, new_file):
-        """Set next track override."""
+    def set_next_track_override(self, new_file: str) -> None:
         self.next_track_override = new_file
 
-    def split_track(self, track, do_split_override=True, offset=1):
-        """Split track using current configuration's method."""
-        if self.current_playback_config:
-            return self.current_playback_config.split_track(track, do_split_override, offset)
+    # ------------------------------------------------------------------
+    # Property proxies (Playback compatibility)
+    # ------------------------------------------------------------------
+
+    @property
+    def current_playback_config(self) -> Optional[PlaybackConfig]:
+        if 0 <= self._config_cursor < len(self.playback_configs):
+            return self.playback_configs[self._config_cursor]
+        return None
+
+    @property
+    def enable_long_track_splitting(self) -> bool:
+        cfg = self.current_playback_config
+        return cfg.enable_long_track_splitting if cfg else False
+
+    @property
+    def long_track_splitting_time_cutoff_minutes(self) -> int:
+        cfg = self.current_playback_config
+        return cfg.long_track_splitting_time_cutoff_minutes if cfg else 20
+
+    @property
+    def total(self) -> int:
+        """Master playlists run until all configs are exhausted."""
+        return -1
+
+    def get_list(self) -> Optional[Playlist]:
+        cfg = self.current_playback_config
+        return cfg.get_list() if cfg else None
+
+    def upcoming_grouping(self) -> Optional[str]:
+        cfg = self.current_playback_config
+        return cfg.upcoming_grouping() if cfg else None
+
+    def split_track(self, track: MediaTrack, do_split_override: bool = True,
+                    offset: int = 1) -> MediaTrack:
+        cfg = self.current_playback_config
+        if cfg:
+            return cfg.split_track(track, do_split_override, offset)
         raise Exception("No current configuration available")
 
-    def __str__(self) -> str:
-        """String representation of the master configuration."""
-        config_strs = [str(config) for config in self.playback_configs]
-        return f"PlaybackConfigMaster(configs=[{', '.join(config_strs)}], songs_per_config={self.songs_per_config})"
+    def maximum_plays(self) -> int:
+        return 1
 
-    def __eq__(self, other) -> bool:
-        """Equality comparison."""
+    def length(self) -> int:
+        return sum(c.length() for c in self.playback_configs)
+
+    def remaining_count(self) -> int:
+        return sum(c.remaining_count() for c in self.playback_configs)
+
+    def set_playing(self, playing: bool = True) -> None:
+        self.playing = playing
+
+    # ------------------------------------------------------------------
+    # Dunder helpers
+    # ------------------------------------------------------------------
+
+    def __str__(self) -> str:
+        config_strs = [str(c) for c in self.playback_configs]
+        weight_strs = [str(w) for w in self.weights]
+        active = sum(self._active_mask)
+        return (
+            f"PlaybackConfigMaster(configs=[{', '.join(config_strs)}], "
+            f"weights=[{', '.join(weight_strs)}], active={active}/{len(self.playback_configs)})"
+        )
+
+    def __eq__(self, other: Any) -> bool:
         if not isinstance(other, PlaybackConfigMaster):
             return False
-        return (self.playback_configs == other.playback_configs and 
-                self.songs_per_config == other.songs_per_config)
+        return (self.playback_configs == other.playback_configs
+                and self.weights == other.weights)
 
     def __hash__(self) -> int:
-        """Hash implementation."""
-        return hash((tuple(self.playback_configs), tuple(self.songs_per_config)))
+        return hash((tuple(self.playback_configs), tuple(self.weights)))
 
-    def __deepcopy__(self, memo):
-        """Deep copy implementation."""
+    def __deepcopy__(self, memo: Dict[int, Any]) -> 'PlaybackConfigMaster':
         cls = self.__class__
         result = cls.__new__(cls)
         memo[id(self)] = result
         for k, v in self.__dict__.items():
-            if not k == "playback_configs":  # Skip copying playback_configs as they should be shared
+            if k != "playback_configs":
                 setattr(result, k, deepcopy(v, memo))
         return result
-
