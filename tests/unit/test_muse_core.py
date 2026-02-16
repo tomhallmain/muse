@@ -1,6 +1,6 @@
 import pytest
 from muse import Muse, MuseSpotProfile, PlaybackConfig, Playlist
-from utils.globals import PlaylistSortType
+from utils.globals import PlaylistSortType, TrackResult
 from library_data.media_track import MediaTrack
 from muse.run_context import RunContext
 
@@ -26,11 +26,9 @@ class TestMuseSpot:
         # Test with only current track
         profile_single = MuseSpotProfile(
             previous_track=None,
-            track=track1,
+            track_result=TrackResult(track1),
             last_track_failed=False,
             skip_track=False,
-            old_grouping=None,
-            new_grouping=None,
             grouping_type=None
         )
         assert profile_single.track == track1
@@ -43,11 +41,9 @@ class TestMuseSpot:
         for i in range(3):  # Create 3 profiles in the chain
             profile = MuseSpotProfile(
                 previous_track=None,
-                track=track1,
+                track_result=TrackResult(track1),
                 last_track_failed=False,
                 skip_track=False,
-                old_grouping=None,
-                new_grouping=None,
                 grouping_type=None
             )
             profile.was_spoken = True  # Mark all as spoken
@@ -61,11 +57,9 @@ class TestMuseSpot:
         # Test with both previous and current track
         profile_both = MuseSpotProfile(
             previous_track=track1,
-            track=track2,
+            track_result=TrackResult(track2),
             last_track_failed=False,
             skip_track=False,
-            old_grouping=None,
-            new_grouping=None,
             grouping_type=None,
             get_previous_spot_profile_callback=get_previous_spot_profile_callback
         )

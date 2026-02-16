@@ -1,7 +1,7 @@
 import random
 import time
 
-from utils.globals import Globals
+from utils.globals import Globals, TrackResult
 from utils.config import config
 from utils.translations import I18N
 from utils.logging_setup import get_logger
@@ -23,14 +23,15 @@ class MuseSpotProfile:
     _max_spoken_tracks = 100  # Maximum number of spoken tracks to remember
 
     def __init__(self, previous_track,
-                 track,
+                 track_result: TrackResult,
                  last_track_failed,
                  skip_track,
-                 old_grouping,
-                 new_grouping,
                  grouping_type, 
                  get_previous_spot_profile_callback=None,
                  get_upcoming_tracks_callback=None):
+        track = track_result.track
+        old_grouping = track_result.old_grouping
+        new_grouping = track_result.new_grouping
         logger.info(f"Creating new spot profile: previous_track={previous_track is not None}, track={track is not None}, is_first_track={previous_track is None and not self._track_history}")
         self.previous_track = previous_track
         self.track = track

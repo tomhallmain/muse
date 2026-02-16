@@ -10,7 +10,7 @@ from muse.playback_config import PlaybackConfig
 from muse.run_context import RunContext
 from muse.schedules_manager import ScheduledShutdownException
 from utils.config import config
-from utils.globals import Globals, PlaylistSortType
+from utils.globals import Globals, PlaylistSortType, TrackResult
 from utils.logging_setup import get_logger
 from utils.utils import Utils
 from utils.translations import I18N
@@ -56,9 +56,8 @@ class Playback:
         self.count = 0
         self.muse_spot_profiles = []
         self.remaining_delay_seconds = Globals.DELAY_TIME_SECONDS
-        # Keep track of grouping i.e. if shuffling by artist, album, composer etc
-        self.old_grouping = None
-        self.new_grouping = None
+        # Last track result from next_track/upcoming_track, carries grouping info
+        self._track_result: TrackResult = TrackResult()
         
         # Timer volume override
         self._timer_volume_override = False
@@ -75,10 +74,12 @@ class Playback:
     def get_track(self) -> bool:
         self.previous_track = self.track
         if self.did_advance:
-            self.track, self.old_grouping, self.new_grouping = self._playback_config.next_track(
+            result = self._playback_config.next_track(
                 skip_grouping=self._run_context.skip_grouping, places_from_current=self.places_from_current)
         else:
-            self.track, self.old_grouping, self.new_grouping = self._playback_config.next_track(skip_grouping=self._run_context.skip_grouping)
+            result = self._playback_config.next_track(skip_grouping=self._run_context.skip_grouping)
+        self.track = result.track
+        self._track_result = result
         self._run_context.skip_grouping = False
         if not self.has_attempted_track_split:
             self.track, self.did_advance, self.places_from_current = self.ensure_splittable_track(self.track, True)
@@ -230,7 +231,8 @@ class Playback:
         if delayed_prep:
             next_track = self.track
         else:
-            next_track, self.old_grouping, self.new_grouping = self._playback_config.upcoming_track()
+            self._track_result = self._playback_config.upcoming_track()
+            next_track = self._track_result.track
 
         if not self.has_attempted_track_split: # this is alternately covered by self.get_track()
             next_track, self.did_advance, self.places_from_current = self.ensure_splittable_track(next_track, delayed_prep)
@@ -239,12 +241,10 @@ class Playback:
 
         # Get the spot profile with the upcoming tracks callback
         spot_profile = self.get_muse().get_spot_profile(
-            previous_track, 
-            next_track, 
-            self.last_track_failed, 
+            previous_track,
+            TrackResult(next_track, self._track_result.old_grouping, self._track_result.new_grouping),
+            self.last_track_failed,
             self._run_context.skip_track,
-            self.old_grouping, 
-            self.new_grouping, 
             self.get_grouping_type(),
             get_upcoming_tracks_callback=self._get_upcoming_tracks_callback()
         )
@@ -271,7 +271,8 @@ class Playback:
         if did_split and split_failed:
             places_from_current = 1 if delayed_prep else 2
             while did_split and split_failed:
-                next_track, self.old_grouping, self.new_grouping = self._playback_config.upcoming_track(places_from_current=places_from_current)
+                self._track_result = self._playback_config.upcoming_track(places_from_current=places_from_current)
+                next_track = self._track_result.track
                 next_track, did_split, split_failed = self.split_track_if_needed(next_track, delayed_prep=delayed_prep)
                 places_from_current += 1
                 if split_failed and places_from_current > (1 if delayed_prep else 5):
@@ -310,7 +311,8 @@ class Playback:
     def generate_silent_spot_profile(self) -> None:
         previous_track = self.previous_track if self.has_played_first_track else None
         spot_profile = self.get_muse().get_spot_profile(
-                previous_track, self.track, self.last_track_failed, self._run_context.skip_track,
+                previous_track, TrackResult(self.track),
+                self.last_track_failed, self._run_context.skip_track,
                 get_upcoming_tracks_callback=self._get_upcoming_tracks_callback())
         self.muse_spot_profiles.append(spot_profile)
 

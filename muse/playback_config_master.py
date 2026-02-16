@@ -2,7 +2,7 @@ from copy import deepcopy
 import datetime
 import time
 from utils.app_info_cache import app_info_cache
-from utils.globals import PlaylistSortType
+from utils.globals import PlaylistSortType, TrackResult
 from utils.logging_setup import get_logger
 
 logger = get_logger(__name__)
@@ -147,14 +147,14 @@ class PlaybackConfigMaster:
         """Set playing state."""
         self.playing = playing
 
-    def next_track(self, skip_grouping=False, places_from_current=0):
+    def next_track(self, skip_grouping=False, places_from_current=0) -> TrackResult:
         """Get next track from current configuration."""
         self.set_playing()
         if self.next_track_override is not None:
             next_track = self.next_track_override
             self.next_track_override = None
             PlaybackConfigMaster.READY_FOR_EXTENSION = True
-            return next_track, None, None
+            return TrackResult(next_track)
 
         # Move to next position in sequence
         self.current_sequence_index = (self.current_sequence_index + 1) % len(self.sequence)
@@ -163,7 +163,7 @@ class PlaybackConfigMaster:
         self.current_playback_config_index = config_index
 
         # Get next track from current config
-        next_track, old_grouping, new_grouping = self.current_playback_config.next_track(
+        result = self.current_playback_config.next_track(
             skip_grouping=skip_grouping, 
             places_from_current=places_from_current
         )
@@ -178,8 +178,8 @@ class PlaybackConfigMaster:
             )
             
             while (attempts < max_attempts and 
-                   next_track.get_track_details() in PlaybackConfigMaster.playlist_history[:taper_history_to]):
-                next_track, old_grouping, new_grouping = self.current_playback_config.next_track(
+                   result.track.get_track_details() in PlaybackConfigMaster.playlist_history[:taper_history_to]):
+                result = self.current_playback_config.next_track(
                     skip_grouping=skip_grouping,
                     places_from_current=places_from_current
                 )
@@ -190,19 +190,19 @@ class PlaybackConfigMaster:
                 attempts += 1
 
         # Update history
-        track_details = next_track.get_track_details()
+        track_details = result.track.get_track_details()
         if track_details not in PlaybackConfigMaster.playlist_history:
             PlaybackConfigMaster.playlist_history.insert(0, track_details)
             if len(PlaybackConfigMaster.playlist_history) > PlaybackConfigMaster.playlist_history_max_size:
                 PlaybackConfigMaster.playlist_history.pop()
 
-        self.played_tracks.append(next_track)
-        return next_track, old_grouping, new_grouping
+        self.played_tracks.append(result.track)
+        return result
 
-    def upcoming_track(self, places_from_current=1):
+    def upcoming_track(self, places_from_current=1) -> TrackResult:
         """Get upcoming track from next configuration."""
         if self.next_track_override is not None:
-            return self.next_track_override, None, None
+            return TrackResult(self.next_track_override)
 
         # Get next position in sequence
         next_sequence_index = (self.current_sequence_index + 1) % len(self.sequence)

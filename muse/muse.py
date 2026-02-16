@@ -83,10 +83,10 @@ class Muse:
             raise Exception("No music library data available")
         return self.library_data
 
-    def get_spot_profile(self, previous_track=None, track=None, last_track_failed=False, skip_track=False,
-                         old_grouping=None, new_grouping=None, grouping_type=None, get_upcoming_tracks_callback=None):
-        return self.memory.get_spot_profile(previous_track, track, last_track_failed, skip_track,
-                                            old_grouping, new_grouping, grouping_type, get_upcoming_tracks_callback)
+    def get_spot_profile(self, previous_track=None, track_result=None, last_track_failed=False, skip_track=False,
+                         grouping_type=None, get_upcoming_tracks_callback=None):
+        return self.memory.get_spot_profile(previous_track, track_result, last_track_failed, skip_track,
+                                            grouping_type, get_upcoming_tracks_callback)
 
     def set_get_playlist_callback(self, get_playlist_callback):
         self.get_playlist_callback = get_playlist_callback

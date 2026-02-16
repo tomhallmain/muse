@@ -23,9 +23,9 @@ class TestPlaybackIntegration:
         assert playlist.remaining_count() == 1
         
         # Get next track and verify
-        next_track, old_grouping, new_grouping = playlist.next_track()
-        assert next_track is not None
-        assert Path(next_track.filepath).exists()
+        result = playlist.next_track()
+        assert result.track is not None
+        assert Path(result.track.filepath).exists()
         
     @pytest.mark.slow
     def test_playback_config_with_directory(self, sample_audio_file, mock_data_callbacks):

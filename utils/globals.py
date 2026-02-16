@@ -1,5 +1,6 @@
 from enum import Enum
 import os
+from typing import Any, NamedTuple, Optional
 
 from utils.logging_setup import get_logger
 from utils.translations import I18N
@@ -763,4 +764,15 @@ class ProtectedActions(Enum):
             ProtectedActions.ACCESS_ADMIN: _("Access Password Administration")
         }
         return descriptions.get(self, self.value)
+
+
+class TrackResult(NamedTuple):
+    """Result from next_track() / upcoming_track() calls.
+
+    Backward-compatible with the previous ``(track, old_grouping, new_grouping)``
+    tuple return, so existing destructuring continues to work unchanged.
+    """
+    track: Optional[Any] = None          # MediaTrack or None
+    old_grouping: Optional[str] = None
+    new_grouping: Optional[str] = None
 

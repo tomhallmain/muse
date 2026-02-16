@@ -4,7 +4,7 @@ from typing import List, Optional, TYPE_CHECKING
 from library_data.media_track import MediaTrack
 from utils.app_info_cache import app_info_cache
 from utils.config import config
-from utils.globals import PlaylistSortType, HistoryType
+from utils.globals import PlaylistSortType, HistoryType, TrackResult
 from utils.logging_setup import get_logger
 
 logger = get_logger(__name__)
@@ -138,18 +138,16 @@ class Playlist:
         # NOTE: This returns the state of upcoming tracks assuming that no grouping will be skipped.
         return self.sorted_tracks[self.current_track_index + 1:self.current_track_index + 1 + count]
 
-    def next_track(self, skip_grouping: bool = False, places_from_current: int = 0) -> tuple[Optional[MediaTrack], Optional[str], Optional[str]]:
+    def next_track(self, skip_grouping: bool = False, places_from_current: int = 0) -> TrackResult:
         """Returns the next track, old grouping, and new grouping.
         NOTE - Modifies self.current_track_index and pending / played tracks properties.
 
         Args:
             skip_grouping: If True, skip the grouping check
             places_from_current: The number of places from the current track to get the next track
-        Returns:
-            tuple: (next_track, old_grouping, new_grouping)
         """
         if len(self.sorted_tracks) == 0 or (self.current_track_index + places_from_current) >= len(self.sorted_tracks):
-            return None, None, None
+            return TrackResult()
         self.print_upcoming("next_track before")
         old_grouping = None
         new_grouping = None
@@ -190,21 +188,18 @@ class Playlist:
                 logger.info("")
         Playlist.update_recently_played_lists(next_track)
         self.print_upcoming("next_track after")
-        return next_track, old_grouping, new_grouping
+        return TrackResult(next_track, old_grouping, new_grouping)
 
-    def upcoming_track(self, places_from_current: int = 1) -> tuple[Optional[MediaTrack], Optional[str], Optional[str]]:
+    def upcoming_track(self, places_from_current: int = 1) -> TrackResult:
         """Returns the upcoming track, old grouping, and new grouping.
         NOTE - Does not modify playlist properties.
         
         Args:
             places_from_current: The number of places from the current track to get the upcoming track
-        
-        Returns:
-            tuple: (upcoming_track, old_grouping, new_grouping)
         """
         upcoming_track_index = self.current_track_index + places_from_current
         if len(self.sorted_tracks) == 0 or (upcoming_track_index) >= len(self.sorted_tracks):
-            return None, None, None
+            return TrackResult()
         self.print_upcoming("upcoming_track before")
         old_grouping = None
         new_grouping = None
@@ -228,7 +223,7 @@ class Playlist:
                     old_grouping = current_track_attr
                     new_grouping = upcoming_track_attr
         self.print_upcoming("upcoming_track after")
-        return upcoming_track, old_grouping, new_grouping
+        return TrackResult(upcoming_track, old_grouping, new_grouping)
 
     def current_track(self) -> Optional[MediaTrack]:
         try:

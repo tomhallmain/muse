@@ -7,7 +7,7 @@ from typing import Dict, List, Optional, Any, TYPE_CHECKING
 from library_data.media_track import MediaTrack
 from muse.playlist import Playlist
 from utils.config import config
-from utils.globals import PlaylistSortType
+from utils.globals import PlaylistSortType, TrackResult
 from utils.logging_setup import get_logger
 
 logger = get_logger(__name__)
@@ -152,26 +152,22 @@ class PlaybackConfig:
     def set_playing(self, playing: bool = True) -> None:
         self.playing = playing
 
-    def next_track(self, skip_grouping: bool = False, places_from_current: int = 0) -> tuple[Optional[MediaTrack], Optional[str], Optional[str]]:
+    def next_track(self, skip_grouping: bool = False, places_from_current: int = 0) -> TrackResult:
         self.set_playing()
         if self.next_track_override is not None:
             next_track = MediaTrack(self.next_track_override)
             next_track.set_is_extended()
             self.next_track_override = None
             PlaybackConfig.READY_FOR_EXTENSION = True
-            return next_track, None, None
-        l = self.get_list()
-        next_track, old_grouping, new_grouping = l.next_track(skip_grouping=skip_grouping, places_from_current=places_from_current)
-        return next_track, old_grouping, new_grouping
+            return TrackResult(next_track)
+        return self.get_list().next_track(skip_grouping=skip_grouping, places_from_current=places_from_current)
 
-    def upcoming_track(self, places_from_current: int = 1) -> tuple[Optional[MediaTrack], Optional[str], Optional[str]]:
+    def upcoming_track(self, places_from_current: int = 1) -> TrackResult:
         if self.next_track_override is not None:
             upcoming_track = MediaTrack(self.next_track_override)
             upcoming_track.set_is_extended()
-            return upcoming_track, None, None
-        l = self.get_list()
-        upcoming_track, old_grouping, new_grouping = l.upcoming_track(places_from_current=places_from_current)
-        return upcoming_track, old_grouping, new_grouping
+            return TrackResult(upcoming_track)
+        return self.get_list().upcoming_track(places_from_current=places_from_current)
 
     def current_track(self) -> Optional[MediaTrack]:
         return self.get_list().current_track()
