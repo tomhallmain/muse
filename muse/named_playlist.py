@@ -1,6 +1,5 @@
-import datetime
 import os
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Dict, List, Optional, TYPE_CHECKING
 
 from utils.globals import PlaylistSortType
@@ -13,7 +12,6 @@ if TYPE_CHECKING:
 
 
 NAMED_PLAYLISTS_CACHE_KEY = "named_playlists"
-LEGACY_NAMED_PLAYLIST_CONFIGS_KEY = "named_playlist_configs"
 
 
 @dataclass
@@ -352,113 +350,3 @@ class NamedPlaylistStore:
     def exists(name: str, cache=None) -> bool:
         """Check whether a named playlist with the given name exists."""
         return name in NamedPlaylistStore._get_all_raw(cache)
-
-    # ------------------------------------------------------------------
-    # Migration from legacy format
-    # ------------------------------------------------------------------
-
-    @staticmethod
-    def migrate_legacy_configs(cache=None) -> int:
-        """Migrate the legacy ``named_playlist_configs`` dict to the new
-        :class:`NamedPlaylist` schema.
-
-        The legacy format (written by the earlier ``MasterPlaylistWindow``)
-        stores entries under the ``"named_playlist_configs"`` key in
-        ``app_info_cache``.  Each entry is one of two shapes:
-
-        **Single-playlist format**::
-
-            {
-                "tracks": ["path/a.mp3", ...],
-                "sort_type": "RANDOM",
-                "config_type": "RANDOM"
-            }
-
-        **Master-playlist format**::
-
-            {
-                "configs": [
-                    {"tracks": [...], "sort_type": ..., "tracks_per_play": 2},
-                    ...
-                ]
-            }
-
-        Both are converted to :class:`NamedPlaylist` objects with
-        ``track_filepaths`` as the source mode (since the legacy format stored
-        resolved filepaths, not queries).
-
-        Returns:
-            The number of playlists migrated.
-        """
-        _cache = NamedPlaylistStore._get_cache(cache)
-        legacy_raw: dict = _cache.get(LEGACY_NAMED_PLAYLIST_CONFIGS_KEY, {})
-        if not legacy_raw:
-            return 0
-
-        migrated = 0
-        existing = NamedPlaylistStore._get_all_raw(cache)
-        now = datetime.datetime.now().isoformat(timespec="seconds")
-
-        for name, entry in legacy_raw.items():
-            if name in existing:
-                # Don't overwrite playlists that already exist in the new format.
-                logger.info(
-                    f"Skipping legacy playlist '{name}': already exists"
-                )
-                continue
-
-            try:
-                if "configs" in entry:
-                    # Master-playlist format -- each sub-config becomes its
-                    # own named playlist, suffixed with an index.
-                    for i, cfg in enumerate(entry["configs"]):
-                        sub_name = f"{name} [{i + 1}]" if len(entry["configs"]) > 1 else name
-                        if sub_name in existing:
-                            continue
-                        playlist = _legacy_config_to_named_playlist(
-                            sub_name, cfg, now
-                        )
-                        existing[sub_name] = playlist.to_dict()
-                        migrated += 1
-                else:
-                    # Single-playlist format.
-                    playlist = _legacy_config_to_named_playlist(
-                        name, entry, now
-                    )
-                    existing[name] = playlist.to_dict()
-                    migrated += 1
-            except Exception:
-                logger.exception(
-                    f"Failed to migrate legacy playlist '{name}'"
-                )
-
-        if migrated > 0:
-            NamedPlaylistStore._put_all_raw(existing, cache)
-            logger.info(f"Migrated {migrated} legacy playlist(s)")
-
-        return migrated
-
-
-def _legacy_config_to_named_playlist(
-    name: str, cfg: dict, created_at: str
-) -> NamedPlaylist:
-    """Convert a single legacy config dict to a :class:`NamedPlaylist`."""
-    sort_type_raw = cfg.get("sort_type") or cfg.get("config_type")
-    if sort_type_raw is not None:
-        if isinstance(sort_type_raw, PlaylistSortType):
-            sort_type = sort_type_raw
-        else:
-            sort_type = PlaylistSortType.get(str(sort_type_raw))
-    else:
-        sort_type = PlaylistSortType.RANDOM
-
-    tracks = cfg.get("tracks", [])
-
-    return NamedPlaylist(
-        name=name,
-        track_filepaths=tracks if tracks else None,
-        sort_type=sort_type,
-        loop=False,
-        created_at=created_at,
-        description="Migrated from legacy playlist config",
-    )

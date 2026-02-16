@@ -1,6 +1,7 @@
 from copy import deepcopy
 import datetime
 import time
+from types import SimpleNamespace
 from typing import Dict, List, Optional, Any, TYPE_CHECKING
 
 from library_data.media_track import MediaTrack
@@ -12,7 +13,9 @@ from utils.logging_setup import get_logger
 logger = get_logger(__name__)
 
 if TYPE_CHECKING:
+    from library_data.library_data import LibraryData
     from library_data.library_data_callbacks import LibraryDataCallbacks
+    from muse.named_playlist import NamedPlaylist
 
 
 class PlaybackConfig:
@@ -39,8 +42,73 @@ class PlaybackConfig:
                           data_callbacks: Optional['LibraryDataCallbacks'] = None) -> 'PlaybackConfig':
         return PlaybackConfig(override_dir=override_dir, data_callbacks=data_callbacks)
 
-    def __init__(self, args: Optional[Any] = None, override_dir: Optional[str] = None, 
-                 data_callbacks: Optional['LibraryDataCallbacks'] = None) -> None:
+    @staticmethod
+    def from_named_playlist(named_playlist: 'NamedPlaylist',
+                            data_callbacks: 'LibraryDataCallbacks',
+                            library_data: Optional['LibraryData'] = None,
+                            **playback_overrides: Any) -> 'PlaybackConfig':
+        """Create a PlaybackConfig from a NamedPlaylist definition.
+
+        For search-based and track-based playlists the track list is resolved
+        eagerly and passed as ``explicit_tracks``.  Directory-based playlists
+        fall through to the standard directory-loading path in ``get_list()``.
+
+        Args:
+            named_playlist: The playlist definition to build from.
+            data_callbacks: LibraryDataCallbacks for Playlist construction.
+            library_data: Required for search-based playlists so the query can
+                be executed against the current library.
+            **playback_overrides: Optional overrides for playback settings
+                (``enable_dynamic_volume``, ``enable_long_track_splitting``,
+                ``long_track_splitting_time_cutoff_minutes``).
+        """
+        explicit: Optional[List[str]] = None
+
+        if named_playlist.is_search_based():
+            if library_data is None:
+                raise ValueError(
+                    f"library_data is required for search-based playlist "
+                    f"'{named_playlist.name}'"
+                )
+            explicit = named_playlist.resolve_tracks(library_data)
+        elif named_playlist.is_track_based():
+            explicit = named_playlist.resolve_tracks(library_data)
+        # Directory-based: explicit stays None, directories are set below.
+
+        args = SimpleNamespace(
+            playlist_sort_type=named_playlist.sort_type,
+            directories=named_playlist.source_directories or [],
+            total=-1,
+            overwrite=False,
+            enable_dynamic_volume=playback_overrides.get(
+                'enable_dynamic_volume', True
+            ),
+            enable_long_track_splitting=playback_overrides.get(
+                'enable_long_track_splitting', False
+            ),
+            long_track_splitting_time_cutoff_minutes=playback_overrides.get(
+                'long_track_splitting_time_cutoff_minutes', 20
+            ),
+            check_entire_playlist=False,
+            track=None,
+        )
+
+        pc = PlaybackConfig(
+            args=args,
+            data_callbacks=data_callbacks,
+            explicit_tracks=explicit,
+        )
+        pc.loop = named_playlist.loop
+        # SEQUENCE playlists are hand-ordered and should not be reshuffled
+        # via the memory-based deduplication logic in Playlist.sort().
+        pc.skip_memory_shuffle = (
+            named_playlist.sort_type == PlaylistSortType.SEQUENCE
+        )
+        return pc
+
+    def __init__(self, args: Optional[Any] = None, override_dir: Optional[str] = None,
+                 data_callbacks: Optional['LibraryDataCallbacks'] = None,
+                 explicit_tracks: Optional[List[str]] = None) -> None:
         self.total: int = int(args.total) if args else -1
         self.type: PlaylistSortType = args.playlist_sort_type if args else PlaylistSortType.RANDOM
         self.directories: List[str] = args.directories if args else ([override_dir] if override_dir else [])
@@ -55,6 +123,9 @@ class PlaybackConfig:
         self.start_track: Optional[str] = args.track if args else None
         self.next_track_override: Optional[str] = None
         self.playing: bool = False
+        self._explicit_tracks: Optional[List[str]] = explicit_tracks
+        self.loop: bool = False
+        self.skip_memory_shuffle: bool = False
         PlaybackConfig.OPEN_CONFIGS.append(self)
 
     def maximum_plays(self) -> int:
@@ -69,8 +140,12 @@ class PlaybackConfig:
     def get_list(self) -> Playlist:
         if self.list.is_valid():
             return self.list
-        l = self.data_callbacks.get_all_filepaths(self.directories, self.overwrite)
-        self.list = Playlist(l, self.type, data_callbacks=self.data_callbacks, start_track=self.start_track,
+        if self._explicit_tracks is not None:
+            track_list = self._explicit_tracks
+        else:
+            track_list = self.data_callbacks.get_all_filepaths(self.directories, self.overwrite)
+        self.list = Playlist(track_list, self.type, data_callbacks=self.data_callbacks,
+                             start_track=self.start_track,
                              check_entire_playlist=self.check_entire_playlist)
         return self.list
 
