@@ -1,359 +1,602 @@
-from copy import deepcopy
-
-from tkinter import Frame, Label, Text, StringVar, Scale, Listbox, Button, Toplevel, simpledialog, Entry, Checkbutton, BooleanVar, messagebox, END
-from tkinter.constants import W
-from tkinter.ttk import OptionMenu, Scale
+import os
+from datetime import datetime
+from tkinter import (
+    Frame, Label, StringVar, IntVar, BooleanVar,
+    Listbox, Spinbox, Checkbutton, Radiobutton,
+    messagebox, simpledialog, END, BOTH, YES, W, SINGLE,
+)
+from tkinter.ttk import Button, Entry, OptionMenu
 
 from lib.multi_display import SmartToplevel
-from utils.globals import PlaylistSortType, PlaybackMasterStrategy
-
+from muse.named_playlist import NamedPlaylist, NamedPlaylistStore
 from muse.playback_config import PlaybackConfig
 from muse.playback_config_master import PlaybackConfigMaster
 from muse.playback_state import PlaybackStateManager
-from muse.playlist import Playlist
-from muse.run_config import RunConfig
-from ui.base_window import BaseWindow
-from utils.app_info_cache import app_info_cache
+from utils.globals import PlaylistSortType, PlaybackMasterStrategy
 from utils.config import config
 from utils.translations import I18N
+from utils.logging_setup import get_logger
 
+logger = get_logger(__name__)
 _ = I18N._
 
 
-class MasterPlaylistWindow(BaseWindow):
-    '''
-    Main window for managing playlists using PlaybackMaster.
-    '''
-    named_playlist_configs = {}
+class MasterPlaylistWindow:
+    """Window for assembling a master playlist from named playlists.
 
-    @staticmethod
-    def load_named_playlist_configs():
-        MasterPlaylistWindow.named_playlist_configs = app_info_cache.get('named_playlist_configs', {})
+    Left panel shows available NamedPlaylists (from NamedPlaylistStore).
+    Right panel shows the current master playlist with per-entry weight /
+    loop controls and reordering.
+    Bottom shows an interspersed preview.
+    """
 
-    @staticmethod
-    def store_named_playlist_configs():
-        app_info_cache.set('named_playlist_configs', MasterPlaylistWindow.named_playlist_configs)
-
-    def __init__(self, master, app_actions, initial_configs=None, is_current_playlist=True):
-        super().__init__(master)
-        self.master = master
-        self.master.protocol("WM_DELETE_WINDOW", self.on_closing)
+    def __init__(self, master, app_actions, library_data=None):
         self.app_actions = app_actions
-        self.is_current_playlist = is_current_playlist
-        
-        # Load saved playlists
-        MasterPlaylistWindow.load_named_playlist_configs()
-        
-        # Main container
-        self.main = Frame(self.master)
-        self.main.columnconfigure(0, weight=1)
-        self.main.columnconfigure(1, weight=1)
-        self.main.grid(column=0, row=0)
-        
-        # Available playlists section
-        self.available_playlists_frame = Frame(self.main)
-        self.available_playlists_frame.grid(column=0, row=0, sticky="nsew", padx=10, pady=10)
-        
-        self.label_available = Label(self.available_playlists_frame, text=_("Available Playlists"))
-        self.label_available.grid(column=0, row=0, sticky="w", pady=(0, 10))
-        
-        self.available_playlists = Listbox(self.available_playlists_frame, width=40, height=15)
-        self.available_playlists.grid(column=0, row=1, sticky="nsew")
-        self.update_available_playlists()
-        
-        # Current playlist section
-        self.current_playlist_frame = Frame(self.main)
-        self.current_playlist_frame.grid(column=1, row=0, sticky="nsew", padx=10, pady=10)
-        
-        self.label_master = Label(self.current_playlist_frame, text=_("Current Playlist"))
-        self.label_master.grid(column=0, row=0, sticky="w", pady=(0, 10))
-        
-        self.master_playlist = Listbox(self.current_playlist_frame, width=40, height=15)
-        self.master_playlist.grid(column=0, row=1, sticky="nsew")
-        
-        # Playback config settings
-        self.settings_frame = Frame(self.main)
-        self.settings_frame.grid(column=0, row=1, columnspan=2, sticky="ew", padx=10, pady=10)
-        
-        # Tracks per config
-        self.label_tracks = Label(self.settings_frame, text=_("Tracks per Config"))
-        self.label_tracks.grid(column=0, row=0, sticky="w", padx=5)
-        self.tracks_per_config = StringVar(value="2")
-        self.entry_tracks = Entry(self.settings_frame, textvariable=self.tracks_per_config, width=5)
-        self.entry_tracks.grid(column=1, row=0, sticky="w", padx=5)
-        
-        # Controls
-        self.controls_frame = Frame(self.main)
-        self.controls_frame.grid(column=0, row=2, columnspan=2, sticky="ew", pady=10)
-        
-        self.btn_add = Button(self.controls_frame, text=_("Add to Master"),
-                            command=self.add_to_master)
-        self.btn_add.grid(column=0, row=0, padx=5)
-        
-        self.btn_remove = Button(self.controls_frame, text=_("Remove from Master"),
-                               command=self.remove_from_master)
-        self.btn_remove.grid(column=1, row=0, padx=5)
-        
-        self.btn_new_playlist = Button(self.controls_frame, text=_("New Playlist"),
-                                     command=self.open_new_playlist)
-        self.btn_new_playlist.grid(column=2, row=0, padx=5)
-        
-        self.btn_save = Button(self.controls_frame, text=_("Save Master Playlist"),
-                             command=self.save_master_playlist)
-        self.btn_save.grid(column=3, row=0, padx=5)
-        
-        # Initialize data
-        if initial_configs:
-            self.playback_config_master = PlaybackConfigMaster(initial_configs)
-            PlaybackStateManager.set_master_config(self.playback_config_master)
-        else:
-            self.playback_config_master = PlaybackStateManager.get_master_config() or PlaybackConfigMaster()
-            PlaybackStateManager.set_master_config(self.playback_config_master)
-        self.update_master_playlist_display()
+        self.library_data = library_data
 
-    def update_available_playlists(self):
-        """Update the list of available playlists."""
-        self.available_playlists.delete(0, END)
-        for name in MasterPlaylistWindow.named_playlist_configs.keys():
-            self.available_playlists.insert(END, name)
+        self.top = SmartToplevel(
+            persistent_parent=master,
+            title=_("Playlists"),
+            geometry="820x620",
+        )
+        self.top.protocol("WM_DELETE_WINDOW", self._on_closing)
 
-    def update_master_playlist_display(self):
-        """Update the display of the master playlist."""
-        self.master_playlist.delete(0, END)
-        for config in self.playback_config_master.playback_configs:
-            self.master_playlist.insert(END, str(config))
+        self._named_playlists = {}
+        self._master_entries = []  # list of dicts: {name, named_playlist, weight, loop}
 
-    def add_to_master(self):
-        """Add selected playlist to master playlist."""
-        selection = self.available_playlists.curselection()
-        if selection:
-            playlist_name = self.available_playlists.get(selection[0])
-            if playlist_name not in [str(config) for config in self.playback_config_master.playback_configs]:
-                config = MasterPlaylistWindow.named_playlist_configs[playlist_name]
-                playback_config = PlaybackConfig(
-                    args=RunConfig(
-                        playlist_sort_type=config['sort_type'],
-                        directories=[]  # Will be populated from tracks
-                    ),
-                    data_callbacks=self.app_actions
-                )
-                playback_config.list = Playlist(
-                    tracks=config['tracks'],
-                    _type=config['sort_type'],
-                    data_callbacks=self.app_actions
-                )
-                self.playback_config_master.playback_configs.append(playback_config)
-                PlaybackStateManager.set_master_config(self.playback_config_master)
-                self.update_master_playlist_display()
-                # Set the playback master strategy to PLAYLIST_CONFIG
-                self.app_actions.set_playback_master_strategy(PlaybackMasterStrategy.PLAYLIST_CONFIG)
+        self._build_ui()
+        self._load_available()
+        self._load_existing_master()
+        self._refresh_master_list()
 
-    def remove_from_master(self):
-        """Remove selected playlist from master playlist."""
-        selection = self.master_playlist.curselection()
-        if selection:
-            del self.playback_config_master.playback_configs[selection[0]]
-            PlaybackStateManager.set_master_config(self.playback_config_master)
-            self.update_master_playlist_display()
-            # If no playlists left, set strategy back to ALL_MUSIC
-            if not self.playback_config_master.playback_configs:
-                self.app_actions.set_playback_master_strategy(PlaybackMasterStrategy.ALL_MUSIC)
+    # ------------------------------------------------------------------
+    # UI construction
+    # ------------------------------------------------------------------
 
-    def open_new_playlist(self):
-        """Open the new playlist creation window."""
-        new_window = SmartToplevel(persistent_parent=self.master)
-        NewPlaylistWindow(new_window, self.app_actions, self)
+    def _build_ui(self):
+        outer = Frame(self.top)
+        outer.pack(fill=BOTH, expand=YES, padx=10, pady=10)
 
-    def set_playlist(self, playback_config):
-        """Set the current playlist to a new config."""
-        self.playback_config_master = PlaybackConfigMaster([playback_config])
-        PlaybackStateManager.set_master_config(self.playback_config_master)
-        self.update_master_playlist_display()
-        # Set the playback master strategy to PLAYLIST_CONFIG
-        self.app_actions.set_playback_master_strategy(PlaybackMasterStrategy.PLAYLIST_CONFIG)
+        panels = Frame(outer)
+        panels.pack(fill=BOTH, expand=YES)
+        panels.columnconfigure(0, weight=1)
+        panels.columnconfigure(1, weight=0)
+        panels.columnconfigure(2, weight=1)
 
-    def add_playlist(self, playback_config):
-        """Add a new playlist to the current master playlist."""
-        self.playback_config_master.playback_configs.append(playback_config)
-        PlaybackStateManager.set_master_config(self.playback_config_master)
-        self.update_master_playlist_display()
-        # Set the playback master strategy to PLAYLIST_CONFIG
-        self.app_actions.set_playback_master_strategy(PlaybackMasterStrategy.PLAYLIST_CONFIG)
+        # --- Left panel: available playlists ---
+        left = Frame(panels)
+        left.grid(row=0, column=0, sticky="nsew", padx=(0, 5))
+        left.rowconfigure(1, weight=1)
+        left.columnconfigure(0, weight=1)
 
-    def save_master_playlist(self):
-        """Save the master playlist configuration."""
-        if self.playback_config_master.playback_configs:
-            playlist_name = simpledialog.askstring(_("Save Master Playlist"),
-                                                 _("Enter a name for this master playlist:"))
-            if playlist_name:
-                # Save master playlist config
-                MasterPlaylistWindow.named_playlist_configs[playlist_name] = {
-                    'configs': [{
-                        'tracks': [track.filepath for track in config.list.sorted_tracks],
-                        'sort_type': config.list.sort_type,
-                        'config_type': config.type,
-                        'tracks_per_play': int(self.tracks_per_config.get())
-                    } for config in self.playback_config_master.playback_configs]
-                }
-                MasterPlaylistWindow.store_named_playlist_configs()
-                
-                messagebox.showinfo(_("Success"), _("Master playlist created successfully"))
+        Label(left, text=_("Available Playlists")).grid(row=0, column=0, sticky=W)
+        self._avail_listbox = Listbox(left, width=36, height=16, selectmode=SINGLE)
+        self._avail_listbox.grid(row=1, column=0, sticky="nsew")
 
-    def on_closing(self):
-        """Handle window closing."""
-        # Save any changes to playlists
-        MasterPlaylistWindow.store_named_playlist_configs()
-        self.master.destroy()
+        avail_btns = Frame(left)
+        avail_btns.grid(row=2, column=0, sticky="ew", pady=(5, 0))
+        Button(avail_btns, text=_("New Playlist"), command=self._open_new_playlist).pack(side="left", padx=(0, 5))
+        Button(avail_btns, text=_("Delete"), command=self._delete_available).pack(side="left")
 
+        # --- Centre: add/remove arrows ---
+        centre = Frame(panels)
+        centre.grid(row=0, column=1, padx=5)
+        Button(centre, text=">>>", command=self._add_to_master).pack(pady=(40, 5))
+        Button(centre, text="<<<", command=self._remove_from_master).pack()
 
-class NewPlaylistWindow(BaseWindow):
-    '''
-    Window for creating new playlists and playback configs.
-    '''
-    def __init__(self, master, runner_app_config, current_master_window=None):
-        super().__init__(master)
-        self.master = master
-        self.master.protocol("WM_DELETE_WINDOW", self.on_closing)
-        self.runner_app_config = runner_app_config
-        self.current_master_window = current_master_window
-        
-        # Main container
-        self.main = Frame(self.master)
-        self.main.columnconfigure(0, weight=1)
-        self.main.columnconfigure(1, weight=1)
-        self.main.grid(column=0, row=0)
-        
-        # Playlist settings
-        self.settings_frame = Frame(self.main)
-        self.settings_frame.grid(column=0, row=0, sticky="nsew", padx=10, pady=10)
-        
-        # Playlist name
-        self.label_name = Label(self.settings_frame, text=_("Playlist Name"))
-        self.label_name.grid(column=0, row=0, sticky="w", pady=(0, 5))
-        self.playlist_name = StringVar()
-        self.entry_name = Entry(self.settings_frame, textvariable=self.playlist_name)
-        self.entry_name.grid(column=0, row=1, sticky="ew", pady=(0, 10))
-        
-        # Sort type
-        self.label_sort = Label(self.settings_frame, text=_("Sort Type"))
-        self.label_sort.grid(column=0, row=2, sticky="w", pady=(0, 5))
-        self.sort_type = StringVar()
-        self.sort_type.set(PlaylistSortType.RANDOM.value)
-        self.sort_menu = OptionMenu(self.settings_frame, self.sort_type,
-                                  *[t.value for t in PlaylistSortType])
-        self.sort_menu.grid(column=0, row=3, sticky="ew", pady=(0, 10))
-        
-        # Directory selection
-        self.label_dir = Label(self.settings_frame, text=_("Directory"))
-        self.label_dir.grid(column=0, row=4, sticky="w", pady=(0, 5))
-        self.directory = StringVar()
-        self.directory.set("ALL_MUSIC")
-        directory_options = ["ALL_MUSIC"]
-        directory_options.extend(list(config.get_subdirectories().values()))
-        self.dir_menu = OptionMenu(self.settings_frame, self.directory, *directory_options)
-        self.dir_menu.grid(column=0, row=5, sticky="ew", pady=(0, 10))
-        
-        # Playback config settings
-        self.label_config = Label(self.settings_frame, text=_("Playback Config Settings"))
-        self.label_config.grid(column=0, row=6, sticky="w", pady=(0, 5))
-        
-        # Dynamic volume
-        self.enable_dynamic_volume = BooleanVar(value=True)
-        self.check_dynamic_volume = Checkbutton(self.settings_frame, text=_("Enable Dynamic Volume"),
-                                              variable=self.enable_dynamic_volume)
-        self.check_dynamic_volume.grid(column=0, row=7, sticky="w", pady=(0, 5))
-        
-        # Long track splitting
-        self.enable_long_track_splitting = BooleanVar(value=False)
-        self.check_long_track = Checkbutton(self.settings_frame, text=_("Enable Long Track Splitting"),
-                                          variable=self.enable_long_track_splitting)
-        self.check_long_track.grid(column=0, row=8, sticky="w", pady=(0, 5))
-        
-        # Track splitting cutoff
-        self.label_cutoff = Label(self.settings_frame, text=_("Track Splitting Cutoff (minutes)"))
-        self.label_cutoff.grid(column=0, row=9, sticky="w", pady=(0, 5))
-        self.cutoff_minutes = StringVar(value="20")
-        self.entry_cutoff = Entry(self.settings_frame, textvariable=self.cutoff_minutes)
-        self.entry_cutoff.grid(column=0, row=10, sticky="ew", pady=(0, 10))
-        
-        # Controls
-        self.controls_frame = Frame(self.main)
-        self.controls_frame.grid(column=0, row=1, sticky="ew", pady=10)
-        
-        self.btn_start = Button(self.controls_frame, text=_("Start Playlist"),
-                              command=lambda: self.create_playlist("start"))
-        self.btn_start.grid(column=0, row=0, padx=5)
-        
-        self.btn_add_current = Button(self.controls_frame, text=_("Add to Current Playlist"),
-                                    command=lambda: self.create_playlist("add_current"))
-        self.btn_add_current.grid(column=1, row=0, padx=5)
-        
-        self.btn_new_master = Button(self.controls_frame, text=_("Add to New Master Playlist"),
-                                   command=lambda: self.create_playlist("new_master"))
-        self.btn_new_master.grid(column=2, row=0, padx=5)
-        
-        self.btn_cancel = Button(self.controls_frame, text=_("Cancel"),
-                               command=self.on_closing)
-        self.btn_cancel.grid(column=3, row=0, padx=5)
+        # --- Right panel: master playlist ---
+        right = Frame(panels)
+        right.grid(row=0, column=2, sticky="nsew", padx=(5, 0))
+        right.rowconfigure(1, weight=1)
+        right.columnconfigure(0, weight=1)
 
-    def create_playlist(self, action):
-        """Create a new playlist and handle it according to the specified action."""
-        name = self.playlist_name.get().strip()
-        if not name:
-            messagebox.showerror(_("Error"), _("Please enter a playlist name"))
+        Label(right, text=_("Master Playlist")).grid(row=0, column=0, sticky=W)
+        self._master_listbox = Listbox(right, width=40, height=16, selectmode=SINGLE)
+        self._master_listbox.grid(row=1, column=0, sticky="nsew")
+        self._master_listbox.bind("<<ListboxSelect>>", self._on_master_select)
+
+        # Per-entry controls
+        ctrl = Frame(right)
+        ctrl.grid(row=2, column=0, sticky="ew", pady=(5, 0))
+
+        Label(ctrl, text=_("Weight:")).pack(side="left")
+        self._weight_var = IntVar(value=1)
+        self._weight_spin = Spinbox(ctrl, from_=1, to=99, width=4,
+                                    textvariable=self._weight_var,
+                                    command=self._on_weight_change)
+        self._weight_spin.pack(side="left", padx=(0, 10))
+
+        self._loop_var = BooleanVar(value=False)
+        Checkbutton(ctrl, text=_("Loop"), variable=self._loop_var,
+                    command=self._on_loop_change).pack(side="left", padx=(0, 10))
+
+        Button(ctrl, text=_("Up"), command=self._move_up).pack(side="left", padx=(0, 2))
+        Button(ctrl, text=_("Down"), command=self._move_down).pack(side="left")
+
+        # --- Bottom: preview ---
+        preview_frame = Frame(outer)
+        preview_frame.pack(fill=BOTH, expand=False, pady=(10, 0))
+        Label(preview_frame, text=_("Interspersed Preview")).pack(anchor=W)
+        self._preview_listbox = Listbox(preview_frame, height=5)
+        self._preview_listbox.pack(fill=BOTH, expand=False)
+
+    # ------------------------------------------------------------------
+    # Data loading
+    # ------------------------------------------------------------------
+
+    def _load_available(self):
+        self._named_playlists = NamedPlaylistStore.load_all()
+        self._refresh_available_list()
+
+    def _load_existing_master(self):
+        """Populate master entries from existing PlaybackStateManager config."""
+        master = PlaybackStateManager.get_master_config()
+        if master and master.playback_configs:
+            for i, pc in enumerate(master.playback_configs):
+                weight = master.weights[i] if i < len(master.weights) else 1
+                self._master_entries.append({
+                    "name": str(pc),
+                    "named_playlist": None,
+                    "playback_config": pc,
+                    "weight": weight,
+                    "loop": pc.loop,
+                })
+
+    # ------------------------------------------------------------------
+    # List refresh helpers
+    # ------------------------------------------------------------------
+
+    def _refresh_available_list(self):
+        self._avail_listbox.delete(0, END)
+        for name, np in self._named_playlists.items():
+            self._avail_listbox.insert(END, f"{name}  ({np.get_source_description()})")
+
+    def _refresh_master_list(self):
+        self._master_listbox.delete(0, END)
+        for entry in self._master_entries:
+            loop_label = _("yes") if entry["loop"] else _("no")
+            self._master_listbox.insert(
+                END,
+                f"{entry['name']}  [w:{entry['weight']}  loop:{loop_label}]"
+            )
+        self._update_preview()
+
+    # ------------------------------------------------------------------
+    # Available panel actions
+    # ------------------------------------------------------------------
+
+    def _open_new_playlist(self):
+        NewPlaylistWindow(self.top, self.app_actions, self.library_data,
+                          on_save=self._on_new_playlist_saved)
+
+    def _on_new_playlist_saved(self):
+        """Callback from NewPlaylistWindow after a playlist is saved."""
+        self._load_available()
+
+    def _delete_available(self):
+        sel = self._avail_listbox.curselection()
+        if not sel:
             return
-            
-        # Get tracks from selected directory
-        directories = []
-        selection = self.directory.get()
-        all_dirs = config.get_subdirectories()
-        if selection == "ALL_MUSIC":
-            directories = list(all_dirs.keys())
+        name = list(self._named_playlists.keys())[sel[0]]
+        if messagebox.askyesno(_("Delete"), _("Delete playlist \"{0}\"?").format(name)):
+            NamedPlaylistStore.delete(name)
+            self._load_available()
+
+    # ------------------------------------------------------------------
+    # Master panel actions
+    # ------------------------------------------------------------------
+
+    def _add_to_master(self):
+        sel = self._avail_listbox.curselection()
+        if not sel:
+            return
+        name = list(self._named_playlists.keys())[sel[0]]
+        np = self._named_playlists[name]
+
+        try:
+            pc = PlaybackConfig.from_named_playlist(
+                np,
+                data_callbacks=self.library_data.data_callbacks if self.library_data else None,
+                library_data=self.library_data,
+            )
+        except Exception as e:
+            logger.error(f"Failed to create PlaybackConfig from '{name}': {e}")
+            messagebox.showerror(_("Error"), str(e))
+            return
+
+        self._master_entries.append({
+            "name": name,
+            "named_playlist": np,
+            "playback_config": pc,
+            "weight": 1,
+            "loop": np.loop,
+        })
+        self._apply_master_change()
+
+    def _remove_from_master(self):
+        sel = self._master_listbox.curselection()
+        if not sel:
+            return
+        del self._master_entries[sel[0]]
+        self._apply_master_change()
+
+    def _on_master_select(self, event=None):
+        sel = self._master_listbox.curselection()
+        if not sel:
+            return
+        entry = self._master_entries[sel[0]]
+        self._weight_var.set(entry["weight"])
+        self._loop_var.set(entry["loop"])
+
+    def _on_weight_change(self):
+        sel = self._master_listbox.curselection()
+        if not sel:
+            return
+        try:
+            w = int(self._weight_var.get())
+        except (ValueError, TypeError):
+            w = 1
+        w = max(1, w)
+        self._master_entries[sel[0]]["weight"] = w
+        self._apply_master_change()
+
+    def _on_loop_change(self):
+        sel = self._master_listbox.curselection()
+        if not sel:
+            return
+        loop_val = self._loop_var.get()
+        self._master_entries[sel[0]]["loop"] = loop_val
+        pc = self._master_entries[sel[0]].get("playback_config")
+        if pc:
+            pc.loop = loop_val
+        self._apply_master_change()
+
+    def _move_up(self):
+        sel = self._master_listbox.curselection()
+        if not sel or sel[0] == 0:
+            return
+        idx = sel[0]
+        self._master_entries[idx], self._master_entries[idx - 1] = \
+            self._master_entries[idx - 1], self._master_entries[idx]
+        self._apply_master_change()
+        self._master_listbox.selection_set(idx - 1)
+
+    def _move_down(self):
+        sel = self._master_listbox.curselection()
+        if not sel or sel[0] >= len(self._master_entries) - 1:
+            return
+        idx = sel[0]
+        self._master_entries[idx], self._master_entries[idx + 1] = \
+            self._master_entries[idx + 1], self._master_entries[idx]
+        self._apply_master_change()
+        self._master_listbox.selection_set(idx + 1)
+
+    # ------------------------------------------------------------------
+    # Master config rebuild + strategy activation (3.9)
+    # ------------------------------------------------------------------
+
+    def _apply_master_change(self):
+        """Rebuild PlaybackConfigMaster from entries, update state, refresh UI."""
+        self._refresh_master_list()
+
+        if self._master_entries:
+            configs = [e["playback_config"] for e in self._master_entries]
+            weights = [e["weight"] for e in self._master_entries]
+            master = PlaybackConfigMaster(configs, weights)
+            PlaybackStateManager.set_master_config(master)
+            try:
+                self.app_actions.set_playback_master_strategy(
+                    PlaybackMasterStrategy.PLAYLIST_CONFIG
+                )
+            except (AttributeError, TypeError):
+                pass
         else:
-            for full_path, key in all_dirs.items():
-                if key == selection:
-                    directories.append(full_path)
-                    break
-        
-        # Create RunConfig for PlaybackConfig
-        run_config = RunConfig(
-            playlist_sort_type=PlaylistSortType(self.sort_type.get()),
-            directories=directories,
-            enable_dynamic_volume=self.enable_dynamic_volume.get(),
-            enable_long_track_splitting=self.enable_long_track_splitting.get(),
-            long_track_splitting_time_cutoff_minutes=int(self.cutoff_minutes.get())
+            PlaybackStateManager.clear_master_config()
+            try:
+                self.app_actions.set_playback_master_strategy(
+                    PlaybackMasterStrategy.ALL_MUSIC
+                )
+            except (AttributeError, TypeError):
+                pass
+
+    # ------------------------------------------------------------------
+    # Preview (3.8)
+    # ------------------------------------------------------------------
+
+    def _update_preview(self, max_tracks: int = 15):
+        """Show the first N track slots in weighted round-robin order."""
+        self._preview_listbox.delete(0, END)
+        if not self._master_entries:
+            return
+
+        names = [e["name"] for e in self._master_entries]
+        weights = [e["weight"] for e in self._master_entries]
+
+        preview_names = []
+        cursor = 0
+        counter = 0
+        for _ in range(max_tracks):
+            for _attempt in range(len(names)):
+                if counter >= weights[cursor]:
+                    cursor = (cursor + 1) % len(names)
+                    counter = 0
+                break
+            preview_names.append(names[cursor])
+            counter += 1
+            if counter >= weights[cursor]:
+                cursor = (cursor + 1) % len(names)
+                counter = 0
+
+        for i, n in enumerate(preview_names):
+            self._preview_listbox.insert(END, f"  {i + 1}. {n}")
+
+    # ------------------------------------------------------------------
+    # Lifecycle
+    # ------------------------------------------------------------------
+
+    def _on_closing(self):
+        self.top.destroy()
+
+
+class NewPlaylistWindow:
+    """Window for creating / editing a NamedPlaylist.
+
+    Supports three source modes:
+    - Directory: pick from configured library directories.
+    - Search Query: enter search fields (re-resolved at play time).
+    - Explicit Tracks: add individual tracks via search, reorder manually.
+    """
+
+    def __init__(self, master, app_actions, library_data=None, on_save=None):
+        self.app_actions = app_actions
+        self.library_data = library_data
+        self._on_save = on_save
+
+        self.top = SmartToplevel(
+            persistent_parent=master,
+            title=_("New Playlist"),
+            geometry="560x520",
         )
-        
-        # Create PlaybackConfig
-        playback_config = PlaybackConfig(
-            args=run_config,
-            data_callbacks=self.runner_app_config.data_callbacks
+        self.top.protocol("WM_DELETE_WINDOW", self._on_closing)
+
+        self._track_filepaths = []
+        self._build_ui()
+
+    # ------------------------------------------------------------------
+    # UI construction
+    # ------------------------------------------------------------------
+
+    def _build_ui(self):
+        outer = Frame(self.top)
+        outer.pack(fill=BOTH, expand=YES, padx=10, pady=10)
+
+        # Name
+        row = 0
+        Label(outer, text=_("Playlist Name")).grid(row=row, column=0, sticky=W)
+        row += 1
+        self._name_var = StringVar()
+        Entry(outer, textvariable=self._name_var, width=40).grid(
+            row=row, column=0, columnspan=2, sticky="ew"
         )
-        
-        # Save playlist
-        MasterPlaylistWindow.named_playlist_configs[name] = {
-            'tracks': [track.filepath for track in playback_config.list.sorted_tracks],
-            'sort_type': playback_config.list.sort_type,
-            'config_type': playback_config.type
-        }
-        MasterPlaylistWindow.store_named_playlist_configs()
-        
-        # Handle the playlist based on the action
-        if action == "start":
-            if self.current_master_window:
-                self.current_master_window.set_playlist(playback_config)
-        elif action == "add_current":
-            if self.current_master_window:
-                self.current_master_window.add_playlist(playback_config)
-        elif action == "new_master":
-            new_window = SmartToplevel(persistent_parent=self.master)
-            MasterPlaylistWindow(new_window, self.runner_app_config, [playback_config])
-        
-        messagebox.showinfo(_("Success"), _("Playlist created successfully"))
-        self.on_closing()
 
-    def on_closing(self):
-        """Handle window closing."""
-        self.master.destroy()
+        # Source mode
+        row += 1
+        Label(outer, text=_("Source Mode")).grid(row=row, column=0, sticky=W, pady=(10, 0))
+        row += 1
+        self._mode_var = StringVar(value="directory")
+        modes_frame = Frame(outer)
+        modes_frame.grid(row=row, column=0, columnspan=2, sticky=W)
+        for val, txt in [("directory", _("Directory")),
+                         ("search", _("Search Query")),
+                         ("tracks", _("Explicit Tracks"))]:
+            Radiobutton(modes_frame, text=txt, variable=self._mode_var,
+                        value=val, command=self._on_mode_change).pack(side="left", padx=(0, 10))
 
+        # Source-specific frame (swapped based on mode)
+        row += 1
+        self._source_frame = Frame(outer)
+        self._source_frame.grid(row=row, column=0, columnspan=2, sticky="nsew", pady=(5, 0))
+        outer.rowconfigure(row, weight=1)
+        outer.columnconfigure(0, weight=1)
 
+        # Sort type
+        row += 1
+        Label(outer, text=_("Sort Type")).grid(row=row, column=0, sticky=W, pady=(10, 0))
+        row += 1
+        self._sort_var = StringVar(value=PlaylistSortType.SEQUENCE.value)
+        OptionMenu(outer, self._sort_var, PlaylistSortType.SEQUENCE.value,
+                   *[t.value for t in PlaylistSortType]).grid(row=row, column=0, sticky="ew")
+
+        # Loop
+        row += 1
+        self._loop_var = BooleanVar(value=False)
+        Checkbutton(outer, text=_("Loop"), variable=self._loop_var).grid(
+            row=row, column=0, sticky=W, pady=(5, 0)
+        )
+
+        # Description
+        row += 1
+        Label(outer, text=_("Description (optional)")).grid(row=row, column=0, sticky=W, pady=(10, 0))
+        row += 1
+        self._desc_var = StringVar()
+        Entry(outer, textvariable=self._desc_var, width=40).grid(
+            row=row, column=0, columnspan=2, sticky="ew"
+        )
+
+        # Save button
+        row += 1
+        Button(outer, text=_("Save"), command=self._save).grid(
+            row=row, column=0, sticky=W, pady=(10, 0)
+        )
+
+        self._on_mode_change()
+
+    # ------------------------------------------------------------------
+    # Source-mode panels
+    # ------------------------------------------------------------------
+
+    def _on_mode_change(self):
+        for child in self._source_frame.winfo_children():
+            child.destroy()
+
+        mode = self._mode_var.get()
+        if mode == "directory":
+            self._build_directory_panel()
+        elif mode == "search":
+            self._build_search_panel()
+        elif mode == "tracks":
+            self._build_tracks_panel()
+
+    def _build_directory_panel(self):
+        f = self._source_frame
+        Label(f, text=_("Directory")).grid(row=0, column=0, sticky=W)
+        self._dir_var = StringVar()
+        all_dirs = config.get_subdirectories()
+        options = list(all_dirs.values()) if all_dirs else [_("(no directories)")]
+        self._dir_var.set(options[0] if options else "")
+        self._dir_map = {v: k for k, v in all_dirs.items()}
+        OptionMenu(f, self._dir_var, options[0] if options else "",
+                   *options).grid(row=1, column=0, sticky="ew")
+
+    def _build_search_panel(self):
+        f = self._source_frame
+        self._search_vars = {}
+        fields = ["all", "title", "album", "artist", "composer",
+                  "genre", "instrument", "form"]
+        for i, field in enumerate(fields):
+            Label(f, text=_(field.capitalize())).grid(row=i, column=0, sticky=W)
+            var = StringVar()
+            Entry(f, textvariable=var, width=30).grid(row=i, column=1, sticky="ew", padx=(5, 0))
+            self._search_vars[field] = var
+
+    def _build_tracks_panel(self):
+        f = self._source_frame
+        f.columnconfigure(0, weight=1)
+        f.rowconfigure(0, weight=1)
+
+        self._tracks_listbox = Listbox(f, height=8, selectmode=SINGLE)
+        self._tracks_listbox.grid(row=0, column=0, sticky="nsew")
+        self._refresh_tracks_listbox()
+
+        btns = Frame(f)
+        btns.grid(row=1, column=0, sticky="ew", pady=(5, 0))
+        Button(btns, text=_("Add Track via Search"), command=self._add_track).pack(side="left", padx=(0, 5))
+        Button(btns, text=_("Remove"), command=self._remove_track).pack(side="left", padx=(0, 5))
+        Button(btns, text=_("Up"), command=self._track_up).pack(side="left", padx=(0, 2))
+        Button(btns, text=_("Down"), command=self._track_down).pack(side="left")
+
+    def _refresh_tracks_listbox(self):
+        if not hasattr(self, "_tracks_listbox"):
+            return
+        self._tracks_listbox.delete(0, END)
+        for fp in self._track_filepaths:
+            self._tracks_listbox.insert(END, os.path.basename(fp))
+
+    def _add_track(self):
+        from ui.search_window import SearchWindow
+        if self.library_data is None:
+            messagebox.showerror(_("Error"), _("Library data not available"))
+            return
+        from library_data.library_data import LibraryDataSearch
+        search = LibraryDataSearch()
+        track = SearchWindow.find_track(self.library_data, search, save_to_recent=False)
+        if track and hasattr(track, "filepath"):
+            self._track_filepaths.append(track.filepath)
+            self._refresh_tracks_listbox()
+
+    def _remove_track(self):
+        sel = self._tracks_listbox.curselection()
+        if not sel:
+            return
+        del self._track_filepaths[sel[0]]
+        self._refresh_tracks_listbox()
+
+    def _track_up(self):
+        sel = self._tracks_listbox.curselection()
+        if not sel or sel[0] == 0:
+            return
+        idx = sel[0]
+        self._track_filepaths[idx], self._track_filepaths[idx - 1] = \
+            self._track_filepaths[idx - 1], self._track_filepaths[idx]
+        self._refresh_tracks_listbox()
+        self._tracks_listbox.selection_set(idx - 1)
+
+    def _track_down(self):
+        sel = self._tracks_listbox.curselection()
+        if not sel or sel[0] >= len(self._track_filepaths) - 1:
+            return
+        idx = sel[0]
+        self._track_filepaths[idx], self._track_filepaths[idx + 1] = \
+            self._track_filepaths[idx + 1], self._track_filepaths[idx]
+        self._refresh_tracks_listbox()
+        self._tracks_listbox.selection_set(idx + 1)
+
+    # ------------------------------------------------------------------
+    # Save
+    # ------------------------------------------------------------------
+
+    def _save(self):
+        name = self._name_var.get().strip()
+        if not name:
+            messagebox.showerror(_("Error"), _("Please enter a playlist name."))
+            return
+
+        if NamedPlaylistStore.exists(name):
+            if not messagebox.askyesno(_("Overwrite"), _("A playlist named \"{0}\" already exists. Overwrite?").format(name)):
+                return
+
+        mode = self._mode_var.get()
+        search_query = None
+        source_directories = None
+        track_filepaths = None
+
+        if mode == "directory":
+            label = self._dir_var.get()
+            full_path = self._dir_map.get(label)
+            if not full_path:
+                messagebox.showerror(_("Error"), _("Please select a directory."))
+                return
+            source_directories = [full_path]
+        elif mode == "search":
+            query = {}
+            for field, var in self._search_vars.items():
+                val = var.get().strip()
+                if val:
+                    query[field] = val
+            if not query:
+                messagebox.showerror(_("Error"), _("Please fill in at least one search field."))
+                return
+            search_query = query
+        elif mode == "tracks":
+            if not self._track_filepaths:
+                messagebox.showerror(_("Error"), _("Please add at least one track."))
+                return
+            track_filepaths = list(self._track_filepaths)
+
+        sort_type_str = self._sort_var.get()
+        sort_type = PlaylistSortType.get(sort_type_str)
+
+        np = NamedPlaylist(
+            name=name,
+            search_query=search_query,
+            source_directories=source_directories,
+            track_filepaths=track_filepaths,
+            sort_type=sort_type,
+            loop=self._loop_var.get(),
+            created_at=datetime.now().isoformat(),
+            description=self._desc_var.get().strip() or None,
+        )
+        NamedPlaylistStore.save(np)
+        logger.info(f"Saved named playlist: {np}")
+
+        if self._on_save:
+            self._on_save()
+
+        self.top.destroy()
+
+    # ------------------------------------------------------------------
+    # Lifecycle
+    # ------------------------------------------------------------------
+
+    def _on_closing(self):
+        self.top.destroy()

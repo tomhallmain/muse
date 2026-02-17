@@ -204,6 +204,7 @@ class SearchWindow(BaseWindow):
         self.composer_list = []
         self.open_details_btn_list = []
         self.play_btn_list = []
+        self.add_to_playlist_btn_list = []
         self.remove_btn_list = []
         
         # Load more state (for accumulating results)
@@ -308,12 +309,19 @@ class SearchWindow(BaseWindow):
         self.playlist_sort_type_var.set(PlaylistSortType.RANDOM.get_translation())
         # Update dropdown based on initial search fields
         self._update_playlist_sort_dropdown()
-        
+
+        # Save current search as a named playlist
+        self._save_as_playlist_btn = Button(
+            self.inner_frame, text=_("Save as Playlist"),
+            command=self._save_search_as_playlist,
+        )
+        self._save_as_playlist_btn.grid(row=10, column=0, sticky=W)
+
         # Filter field for filtering search results
         self._filter_label = Label(self.inner_frame)
-        self.add_label(self._filter_label, _("Filter Results"), row=10)
+        self.add_label(self._filter_label, _("Filter Results"), row=11)
         self.filter_entry = Entry(self.inner_frame, textvariable=self.filter_text)
-        self.filter_entry.grid(row=10, column=1)
+        self.filter_entry.grid(row=11, column=1)
         self.filter_entry.bind("<KeyRelease>", self.apply_filter)
         self.filter_entry.grid_remove()  # Hidden by default, shown after search
 
@@ -683,7 +691,12 @@ class SearchWindow(BaseWindow):
                 self.run_play_callback(audio_track)
             play_btn.bind("<Button-1>", play_handler)
 
-            # TODO add to playlist buttons
+            add_pl_btn = Button(self.results_frame.viewPort, text=_("+ Playlist"))
+            self.add_to_playlist_btn_list.append(add_pl_btn)
+            add_pl_btn.grid(row=row, column=7)
+            def add_to_playlist_handler(event, self=self, audio_track=track):
+                self._add_track_to_playlist(audio_track)
+            add_pl_btn.bind("<Button-1>", add_to_playlist_handler)
 
     def open_details(self, track):
         pass
@@ -720,6 +733,107 @@ class SearchWindow(BaseWindow):
         selected_translation = self.playlist_sort_type_var.get()
         return PlaylistSortType.get_from_translation(selected_translation)
 
+    def _save_search_as_playlist(self):
+        """Save the current search fields as a search-based NamedPlaylist."""
+        from tkinter import simpledialog
+        from datetime import datetime
+        from muse.named_playlist import NamedPlaylist, NamedPlaylistStore
+
+        query = {}
+        for field, var in [
+            ("all", self.all), ("title", self.title_field),
+            ("album", self.album), ("artist", self.artist),
+            ("composer", self.composer), ("genre", self.genre),
+            ("instrument", self.instrument), ("form", self.form),
+        ]:
+            val = var.get().strip()
+            if val:
+                query[field] = val
+
+        if not query:
+            self.app_actions.alert(
+                _("No Search"), _("Please fill in at least one search field first."),
+                kind="warning",
+            )
+            return
+
+        name = simpledialog.askstring(
+            _("Save as Playlist"),
+            _("Enter a name for this playlist:"),
+            parent=self.master,
+        )
+        if not name or not name.strip():
+            return
+        name = name.strip()
+
+        sort_type = self.get_playlist_sort_type()
+        np = NamedPlaylist(
+            name=name,
+            search_query=query,
+            sort_type=sort_type,
+            created_at=datetime.now().isoformat(),
+        )
+        NamedPlaylistStore.save(np)
+        self.app_actions.toast(
+            _("Playlist \"{0}\" saved").format(name)
+        )
+
+    def _add_track_to_playlist(self, track):
+        """Add a single track to an existing track-based NamedPlaylist."""
+        from tkinter import simpledialog
+        from muse.named_playlist import NamedPlaylist, NamedPlaylistStore
+
+        all_playlists = NamedPlaylistStore.load_all()
+        # Only show playlists that already have explicit tracks (or empty ones
+        # that could accept tracks).
+        candidates = {
+            name: np for name, np in all_playlists.items()
+            if np.is_track_based() or (
+                not np.is_search_based() and not np.is_directory_based()
+            )
+        }
+
+        if not candidates:
+            # No existing track-based playlists, offer to create one.
+            name = simpledialog.askstring(
+                _("New Playlist"),
+                _("No track-based playlists exist. Enter a name for a new one:"),
+                parent=self.master,
+            )
+            if not name or not name.strip():
+                return
+            name = name.strip()
+            np = NamedPlaylist(
+                name=name,
+                track_filepaths=[track.filepath],
+                sort_type=PlaylistSortType.SEQUENCE,
+            )
+            NamedPlaylistStore.save(np)
+            self.app_actions.toast(
+                _("Created playlist \"{0}\" with track").format(name)
+            )
+            return
+
+        names = list(candidates.keys())
+        name = simpledialog.askstring(
+            _("Add to Playlist"),
+            _("Available playlists: {0}\n\nEnter playlist name:").format(
+                ", ".join(names)
+            ),
+            parent=self.master,
+        )
+        if not name or name.strip() not in candidates:
+            return
+        name = name.strip()
+        np = candidates[name]
+        if np.track_filepaths is None:
+            np.track_filepaths = []
+        np.track_filepaths.append(track.filepath)
+        NamedPlaylistStore.save(np)
+        self.app_actions.toast(
+            _("Added to \"{0}\"").format(name)
+        )
+
     def remove_search(self, search):
         assert search is not None
         # Remove all instances of this search (handles duplicates)
@@ -752,6 +866,8 @@ class SearchWindow(BaseWindow):
             btn.destroy()
         for btn in self.play_btn_list:
             btn.destroy()
+        for btn in self.add_to_playlist_btn_list:
+            btn.destroy()
         for btn in self.remove_btn_list:
             btn.destroy()
         # Note: Pagination widgets are in pagination_frame (not scrollable), so they persist
@@ -762,6 +878,7 @@ class SearchWindow(BaseWindow):
         self.composer_list = []
         self.open_details_btn_list = []
         self.play_btn_list = []
+        self.add_to_playlist_btn_list = []
         self.remove_btn_list = []
 
     @staticmethod

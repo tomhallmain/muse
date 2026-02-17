@@ -47,6 +47,7 @@ from ui.timer_window import TimerWindow
 from ui.tts_window import TTSWindow
 
 # Core application imports
+from muse.playback_state import PlaybackStateManager
 from muse.run import Run
 from muse.run_config import RunConfig
 
@@ -121,7 +122,7 @@ class App():
         self.view_menu.add_command(label=_("Toggle Fullscreen"), command=self.toggle_fullscreen)
         self.view_menu.add_command(label=_("Toggle Theme"), command=self.toggle_theme)
         self.view_menu.add_separator()
-        self.view_menu.add_command(label=_("Playlists"), command=self.open_presets_window)
+        self.view_menu.add_command(label=_("Playlists"), command=self.open_playlist_window)
         self.view_menu.add_command(label=_("Favorites"), command=self.open_favorites_window)
         self.view_menu.add_command(label=_("History"), command=self.open_history_window)
         self.view_menu.add_command(label=_("Composers"), command=self.open_composers_window)
@@ -166,6 +167,7 @@ class App():
             "search_and_play": self.search_and_play,
             "update_directory_count": self.update_directory_count,
             "open_password_admin_window": self.open_password_admin_window,
+            "set_playback_master_strategy": self.set_playback_master_strategy,
         }, self.master)
 
         self._run_debouncer = Debouncer(self.master, 0.4, self._run_impl)
@@ -235,7 +237,7 @@ class App():
         self.add_button("run_btn", _("Play"), self.run, increment_row_counter=False)
 
         self.playlists_btn = None
-        self.add_button("playlists_btn", _("Playlists"), self.open_presets_window, interior_column=2)
+        self.add_button("playlists_btn", _("Playlists"), self.open_playlist_window, interior_column=2)
 
         self.next_btn = None
         self.add_button("next_btn", _("Next"), self.next, increment_row_counter=False)
@@ -523,7 +525,16 @@ class App():
         self.runner_app_config.workflow_type = PlaylistSortType.get(playlist_sort_type).value
 
     def set_playback_master_strategy(self, event=None):
-        self.runner_app_config.playback_master_strategy = PlaybackMasterStrategy.get_from_translation(self.playlist_strategy.get()).value
+        if isinstance(event, PlaybackMasterStrategy):
+            strategy = event
+            self.playlist_strategy.set(strategy.get_translation())
+        else:
+            strategy = PlaybackMasterStrategy.get_from_translation(self.playlist_strategy.get())
+        self.runner_app_config.playback_master_strategy = strategy.value
+        if strategy == PlaybackMasterStrategy.PLAYLIST_CONFIG:
+            master_config = PlaybackStateManager.get_master_config()
+            if master_config is None or not master_config.playback_configs:
+                self.open_playlist_window()
 
     def set_delay(self, event=None):
         self.runner_app_config.delay_time_seconds = self.delay.get()
@@ -833,7 +844,7 @@ class App():
     @require_password(ProtectedActions.EDIT_PLAYLISTS)
     def open_playlist_window(self):
         try:
-            playlist_window = MasterPlaylistWindow(self.master, self.app_actions)
+            MasterPlaylistWindow(self.master, self.app_actions, self.library_data)
         except Exception as e:
             logger.error(f"Exception opening playlist window: {e}")
 
