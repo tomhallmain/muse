@@ -105,10 +105,10 @@ class MasterPlaylistWindow(BaseWindow):
         # Initialize data
         if initial_configs:
             self.playback_config_master = PlaybackConfigMaster(initial_configs)
-            PlaybackStateManager.set_current_master_config(self.playback_config_master)
+            PlaybackStateManager.set_master_config(self.playback_config_master)
         else:
-            self.playback_config_master = PlaybackStateManager.get_current_master_config() or PlaybackConfigMaster()
-            PlaybackStateManager.set_current_master_config(self.playback_config_master)
+            self.playback_config_master = PlaybackStateManager.get_master_config() or PlaybackConfigMaster()
+            PlaybackStateManager.set_master_config(self.playback_config_master)
         self.update_master_playlist_display()
 
     def update_available_playlists(self):
@@ -143,7 +143,7 @@ class MasterPlaylistWindow(BaseWindow):
                     data_callbacks=self.app_actions
                 )
                 self.playback_config_master.playback_configs.append(playback_config)
-                PlaybackStateManager.set_current_master_config(self.playback_config_master)
+                PlaybackStateManager.set_master_config(self.playback_config_master)
                 self.update_master_playlist_display()
                 # Set the playback master strategy to PLAYLIST_CONFIG
                 self.app_actions.set_playback_master_strategy(PlaybackMasterStrategy.PLAYLIST_CONFIG)
@@ -153,7 +153,7 @@ class MasterPlaylistWindow(BaseWindow):
         selection = self.master_playlist.curselection()
         if selection:
             del self.playback_config_master.playback_configs[selection[0]]
-            PlaybackStateManager.set_current_master_config(self.playback_config_master)
+            PlaybackStateManager.set_master_config(self.playback_config_master)
             self.update_master_playlist_display()
             # If no playlists left, set strategy back to ALL_MUSIC
             if not self.playback_config_master.playback_configs:
@@ -167,7 +167,7 @@ class MasterPlaylistWindow(BaseWindow):
     def set_playlist(self, playback_config):
         """Set the current playlist to a new config."""
         self.playback_config_master = PlaybackConfigMaster([playback_config])
-        PlaybackStateManager.set_current_master_config(self.playback_config_master)
+        PlaybackStateManager.set_master_config(self.playback_config_master)
         self.update_master_playlist_display()
         # Set the playback master strategy to PLAYLIST_CONFIG
         self.app_actions.set_playback_master_strategy(PlaybackMasterStrategy.PLAYLIST_CONFIG)
@@ -175,7 +175,7 @@ class MasterPlaylistWindow(BaseWindow):
     def add_playlist(self, playback_config):
         """Add a new playlist to the current master playlist."""
         self.playback_config_master.playback_configs.append(playback_config)
-        PlaybackStateManager.set_current_master_config(self.playback_config_master)
+        PlaybackStateManager.set_master_config(self.playback_config_master)
         self.update_master_playlist_display()
         # Set the playback master strategy to PLAYLIST_CONFIG
         self.app_actions.set_playback_master_strategy(PlaybackMasterStrategy.PLAYLIST_CONFIG)

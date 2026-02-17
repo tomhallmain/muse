@@ -1,56 +1,72 @@
 from typing import Optional
-from muse.playback_config import PlaybackConfig
 from muse.playback_config_master import PlaybackConfigMaster
 
+
 class PlaybackStateManager:
+    """Singleton class to manage the current playback state.
+
+    Two separate slots:
+
+    - **master_config** -- The user-configured master playlist, set by the
+      playlist UI.  Persists across runs and is read by ``Run.do_workflow()``
+      when the ``PLAYLIST_CONFIG`` strategy is selected.
+    - **active_config** -- The config that is currently playing, set by
+      ``Run.run()`` at playback start and cleared when playback ends.
     """
-    Singleton class to manage the current playback state.
-    Provides a central place to access and update the current playback configuration.
-    """
+
     _instance = None
-    _current_config: Optional[PlaybackConfig] = None
-    _current_master_config: Optional[PlaybackConfigMaster] = None
+    _master_config: Optional[PlaybackConfigMaster] = None
+    _active_config: Optional[PlaybackConfigMaster] = None
 
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super(PlaybackStateManager, cls).__new__(cls)
         return cls._instance
 
-    @classmethod
-    def get_current_config(cls) -> Optional[PlaybackConfig]:
-        """Get the current playback configuration."""
-        return cls._current_config
+    # ------------------------------------------------------------------
+    # Active (running) config
+    # ------------------------------------------------------------------
 
     @classmethod
-    def set_current_config(cls, config: PlaybackConfig) -> None:
-        """Set the current playback configuration."""
-        cls._current_config = config
+    def get_active_config(cls) -> Optional[PlaybackConfigMaster]:
+        """Get the currently playing config (set at playback start)."""
+        return cls._active_config
 
     @classmethod
-    def clear_current_config(cls) -> None:
-        """Clear the current playback configuration."""
-        cls._current_config = None
+    def set_active_config(cls, config: PlaybackConfigMaster) -> None:
+        """Set the currently playing config."""
+        cls._active_config = config
 
     @classmethod
-    def get_current_master_config(cls) -> Optional[PlaybackConfigMaster]:
-        """Get the current master playback configuration."""
-        return cls._current_master_config
+    def clear_active_config(cls) -> None:
+        """Clear the currently playing config (called at playback end)."""
+        cls._active_config = None
+
+    # ------------------------------------------------------------------
+    # Master (UI-configured) config
+    # ------------------------------------------------------------------
 
     @classmethod
-    def set_current_master_config(cls, config: PlaybackConfigMaster) -> None:
-        """Set the current master playback configuration."""
-        cls._current_master_config = config
-        # Update the PlaybackConfigMaster singleton
-        PlaybackConfigMaster.set_instance(config)
+    def get_master_config(cls) -> Optional[PlaybackConfigMaster]:
+        """Get the user-configured master playlist."""
+        return cls._master_config
 
     @classmethod
-    def clear_current_master_config(cls) -> None:
-        """Clear the current master playback configuration."""
-        cls._current_master_config = None
-        PlaybackConfigMaster.reset_instance()
+    def set_master_config(cls, config: PlaybackConfigMaster) -> None:
+        """Set the user-configured master playlist."""
+        cls._master_config = config
+
+    @classmethod
+    def clear_master_config(cls) -> None:
+        """Clear the user-configured master playlist."""
+        cls._master_config = None
+
+    # ------------------------------------------------------------------
+    # Convenience
+    # ------------------------------------------------------------------
 
     @classmethod
     def reset(cls) -> None:
         """Reset all playback state."""
-        cls.clear_current_config()
-        cls.clear_current_master_config() 
+        cls.clear_active_config()
+        cls.clear_master_config()

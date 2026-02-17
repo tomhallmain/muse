@@ -92,14 +92,7 @@ class Run:
         try:
             self.is_started = True
             # Set the current config in the state manager
-            PlaybackStateManager.set_current_config(playback_config)
-            
-            # If we're using a master config, make sure it's set as the singleton
-            if self.args.playback_master_strategy == PlaybackMasterStrategy.PLAYLIST_CONFIG:
-                master_config = PlaybackStateManager.get_current_master_config()
-                if master_config and master_config.playback_configs:
-                    playback_config = master_config
-            
+            PlaybackStateManager.set_active_config(playback_config)
             self.get_playback().run()
             FFmpegHandler.cleanup_cache()
             TempDir.cleanup()
@@ -117,15 +110,27 @@ class Run:
             raise e
         finally:
             # Clear the current config when done
-            PlaybackStateManager.clear_current_config()
+            PlaybackStateManager.clear_active_config()
 
         self.last_config = deepcopy(self.get_playback()._playback_config)
 
     def do_workflow(self) -> None:
-        # Create a single-config master for the simple case
-        playback_config = PlaybackConfigMaster(
-            playback_configs=[PlaybackConfig(args=self.args, data_callbacks=self.library_data.data_callbacks)]
-        )
+        if self.args.playback_master_strategy == PlaybackMasterStrategy.PLAYLIST_CONFIG:
+            master_config = PlaybackStateManager.get_master_config()
+            if master_config and master_config.playback_configs:
+                playback_config = master_config
+            else:
+                raise ValueError(
+                    "PLAYLIST_CONFIG strategy selected but no master config set"
+                )
+        else:
+            playback_config = PlaybackConfigMaster(
+                playback_configs=[PlaybackConfig(
+                    args=self.args,
+                    data_callbacks=self.get_library_data().data_callbacks,
+                )]
+            )
+
         self._playback = Playback(playback_config, self.app_actions, self)
         self.last_config = None
 
