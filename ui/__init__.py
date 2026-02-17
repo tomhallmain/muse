@@ -12,7 +12,6 @@ from ui.network_media_window import NetworkMediaWindow
 from ui.personas_window import PersonasWindow
 from ui.playlist_window import MasterPlaylistWindow
 from ui.preset import Preset
-from ui.presets_window import PresetsWindow
 from ui.schedules_window import SchedulesWindow
 from ui.search_window import SearchWindow
 from ui.track_details_window import TrackDetailsWindow
@@ -31,7 +30,6 @@ __all__ = [
     'PersonasWindow',
     'MasterPlaylistWindow',
     'Preset',
-    'PresetsWindow',
     'SchedulesWindow',
     'SearchWindow',
     'TrackDetailsWindow',

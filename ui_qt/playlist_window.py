@@ -1,11 +1,11 @@
 """
 Playlist management window (PySide6).
-Port of ui/playlist_window.py; logic preserved, UI uses Qt.
-Feature is in partial development: requires app_actions to provide
-get_track, get_all_filepaths (and optionally set_playback_master_strategy) for full functionality.
+Port of ui/playlist_window.py; uses NamedPlaylist / NamedPlaylistStore for
+persistence and PlaybackConfigMaster for interleaved playback.
 """
 
-from types import SimpleNamespace
+import os
+from datetime import datetime
 
 from PySide6.QtWidgets import (
     QVBoxLayout,
@@ -17,14 +17,21 @@ from PySide6.QtWidgets import (
     QComboBox,
     QListWidget,
     QWidget,
-    QInputDialog,
+    QFrame,
     QCheckBox,
+    QSpinBox,
+    QRadioButton,
+    QButtonGroup,
+    QMessageBox,
+    QInputDialog,
 )
 from PySide6.QtCore import Qt
 
 from lib.multi_display_qt import SmartWindow
+from muse.named_playlist import NamedPlaylist, NamedPlaylistStore
 from muse.playback_config import PlaybackConfig
-from muse.playlist import Playlist
+from muse.playback_config_master import PlaybackConfigMaster
+from muse.playback_state import PlaybackStateManager
 from ui_qt.app_style import AppStyle
 from utils.app_info_cache_qt import app_info_cache
 from utils.config import config
@@ -36,370 +43,671 @@ _ = I18N._
 logger = get_logger(__name__)
 
 
-class PlaybackMaster:
-    """Container for a list of PlaybackConfigs (master playlist)."""
-
-    def __init__(self, initial_configs=None):
-        self.playback_configs = list(initial_configs or [])
-
-
 class MasterPlaylistWindow(SmartWindow):
-    """Main window for managing playlists using PlaybackMaster.
+    """Window for assembling a master playlist from named playlists.
 
-    TODO: WIP / currently in development. No menu or callback in app_qt opens this
-    window yet (View → Playlists opens PresetsWindow). This window will need to be
-    hooked up to the main window (e.g. open_playlist_window equivalent) when
-    master-playlist management should be available in the Qt UI.
+    Left panel shows available NamedPlaylists (from NamedPlaylistStore).
+    Right panel shows the current master playlist with per-entry weight /
+    loop controls and reordering.
+    Bottom shows an interspersed preview.
     """
 
-    named_playlist_configs = {}
     top_level = None
 
-    @staticmethod
-    def load_named_playlist_configs():
-        MasterPlaylistWindow.named_playlist_configs = app_info_cache.get(
-            "named_playlist_configs", {}
-        )
-
-    @staticmethod
-    def store_named_playlist_configs():
-        app_info_cache.set(
-            "named_playlist_configs", MasterPlaylistWindow.named_playlist_configs
-        )
-
-    def __init__(self, master, app_actions, initial_configs=None, is_current_playlist=True):
+    def __init__(self, master, app_actions, library_data=None, dimensions="860x660"):
         super().__init__(
             persistent_parent=master,
             position_parent=master,
             title=_("Playlists"),
-            geometry="700x500",
+            geometry=dimensions,
             offset_x=50,
             offset_y=50,
         )
         MasterPlaylistWindow.top_level = self
         self.master = master
         self.app_actions = app_actions
-        self.is_current_playlist = is_current_playlist
+        self.library_data = library_data
 
-        MasterPlaylistWindow.load_named_playlist_configs()
+        self._named_playlists = {}
+        self._master_entries = []  # list of dicts: {name, named_playlist, playback_config, weight, loop}
 
         self.setStyleSheet(AppStyle.get_stylesheet())
-        layout = QGridLayout(self)
-        layout.setContentsMargins(10, 10, 10, 10)
-
-        # Available playlists
-        avail_label = QLabel(_("Available Playlists"), self)
-        layout.addWidget(avail_label, 0, 0)
-        self.available_playlists = QListWidget(self)
-        self.available_playlists.setMinimumWidth(200)
-        self.update_available_playlists()
-        layout.addWidget(self.available_playlists, 1, 0)
-
-        # Current / master playlist
-        master_label = QLabel(_("Current Playlist"), self)
-        layout.addWidget(master_label, 0, 1)
-        self.master_playlist = QListWidget(self)
-        self.master_playlist.setMinimumWidth(200)
-        layout.addWidget(self.master_playlist, 1, 1)
-
-        # Settings row: tracks per config
-        settings_w = QWidget(self)
-        settings_layout = QHBoxLayout(settings_w)
-        settings_layout.addWidget(QLabel(_("Tracks per Config"), settings_w))
-        self.tracks_per_config_edit = QLineEdit(settings_w)
-        self.tracks_per_config_edit.setMaximumWidth(60)
-        self.tracks_per_config_edit.setText("2")
-        settings_layout.addWidget(self.tracks_per_config_edit)
-        settings_layout.addStretch()
-        layout.addWidget(settings_w, 2, 0, 1, 2)
-
-        # Buttons
-        btn_layout = QHBoxLayout()
-        self.btn_add = QPushButton(_("Add to Master"), self)
-        self.btn_add.clicked.connect(self.add_to_master)
-        btn_layout.addWidget(self.btn_add)
-        self.btn_remove = QPushButton(_("Remove from Master"), self)
-        self.btn_remove.clicked.connect(self.remove_from_master)
-        btn_layout.addWidget(self.btn_remove)
-        self.btn_new_playlist = QPushButton(_("New Playlist"), self)
-        self.btn_new_playlist.clicked.connect(self.open_new_playlist)
-        btn_layout.addWidget(self.btn_new_playlist)
-        self.btn_save = QPushButton(_("Save Master Playlist"), self)
-        self.btn_save.clicked.connect(self.save_master_playlist)
-        btn_layout.addWidget(self.btn_save)
-        btn_layout.addStretch()
-        layout.addLayout(btn_layout, 3, 0, 1, 2)
-
-        self.playback_master = PlaybackMaster(initial_configs or [])
-        self.update_master_playlist_display()
+        self._build_ui()
+        self._load_available()
+        self._load_existing_master()
+        self._refresh_master_list()
         self.show()
 
-    def update_available_playlists(self):
-        self.available_playlists.clear()
-        for name in MasterPlaylistWindow.named_playlist_configs.keys():
-            self.available_playlists.addItem(name)
+    # ------------------------------------------------------------------
+    # UI construction
+    # ------------------------------------------------------------------
 
-    def update_master_playlist_display(self):
-        self.master_playlist.clear()
-        for cfg in self.playback_master.playback_configs:
-            self.master_playlist.addItem(str(cfg))
+    def _build_ui(self):
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(10, 10, 10, 10)
 
-    def add_to_master(self):
-        row = self.available_playlists.currentRow()
-        if row < 0:
-            return
-        playlist_name = self.available_playlists.item(row).text()
-        if playlist_name in [str(c) for c in self.playback_master.playback_configs]:
-            return
-        raw = MasterPlaylistWindow.named_playlist_configs.get(playlist_name)
-        if not raw:
-            return
-        # Support both single-playlist format and master format (configs list)
-        configs_to_add = []
-        if "configs" in raw:
-            for c in raw["configs"]:
-                configs_to_add.append(self._playback_config_from_saved(c))
-        else:
-            configs_to_add.append(self._playback_config_from_saved(raw))
-        for pc in configs_to_add:
-            if pc:
-                self.playback_master.playback_configs.append(pc)
-        self.update_master_playlist_display()
-        self._set_playback_master_strategy(PlaybackMasterStrategy.PLAYLIST_CONFIG)
+        panels = QHBoxLayout()
 
-    def _playback_config_from_saved(self, c):
-        """Build one PlaybackConfig from a saved config dict (tracks, sort_type, etc.)."""
-        sort_type = c.get("sort_type")
-        if sort_type is not None and not hasattr(sort_type, "value"):
-            sort_type = PlaylistSortType(sort_type) if isinstance(sort_type, str) else sort_type
-        args = SimpleNamespace(
-            playlist_sort_type=sort_type or PlaylistSortType.RANDOM,
-            directories=[],
-            total=-1,
-            overwrite=False,
-            enable_dynamic_volume=True,
-            enable_long_track_splitting=False,
-            long_track_splitting_time_cutoff_minutes=20,
-            check_entire_playlist=False,
-            track=None,
-        )
-        try:
-            playback_config = PlaybackConfig(args=args, data_callbacks=self.app_actions)
-            tracks = c.get("tracks") or []
-            playback_config.list = Playlist(
-                tracks=tracks,
-                _type=playback_config.type,
-                data_callbacks=self.app_actions,
+        # --- Left panel: available playlists ---
+        left = QVBoxLayout()
+        left.addWidget(QLabel(_("Available Playlists"), self))
+        self._avail_list = QListWidget(self)
+        self._avail_list.setMinimumWidth(250)
+        left.addWidget(self._avail_list, 1)
+
+        avail_btns = QHBoxLayout()
+        new_pl_btn = QPushButton(_("New Playlist"), self)
+        new_pl_btn.clicked.connect(self._open_new_playlist)
+        avail_btns.addWidget(new_pl_btn)
+        del_btn = QPushButton(_("Delete"), self)
+        del_btn.clicked.connect(self._delete_available)
+        avail_btns.addWidget(del_btn)
+        avail_btns.addStretch()
+        left.addLayout(avail_btns)
+        panels.addLayout(left, 1)
+
+        # --- Centre: add/remove arrows ---
+        centre = QVBoxLayout()
+        centre.addStretch()
+        add_btn = QPushButton(">>>", self)
+        add_btn.clicked.connect(self._add_to_master)
+        centre.addWidget(add_btn)
+        rem_btn = QPushButton("<<<", self)
+        rem_btn.clicked.connect(self._remove_from_master)
+        centre.addWidget(rem_btn)
+        centre.addStretch()
+        panels.addLayout(centre)
+
+        # --- Right panel: master playlist ---
+        right = QVBoxLayout()
+        right.addWidget(QLabel(_("Master Playlist"), self))
+        self._master_list = QListWidget(self)
+        self._master_list.setMinimumWidth(280)
+        self._master_list.currentRowChanged.connect(self._on_master_select)
+        right.addWidget(self._master_list, 1)
+
+        # Per-entry controls
+        ctrl = QHBoxLayout()
+        ctrl.addWidget(QLabel(_("Weight:"), self))
+        self._weight_spin = QSpinBox(self)
+        self._weight_spin.setRange(1, 99)
+        self._weight_spin.setValue(1)
+        self._weight_spin.valueChanged.connect(self._on_weight_change)
+        ctrl.addWidget(self._weight_spin)
+        self._loop_check = QCheckBox(_("Loop"), self)
+        self._loop_check.stateChanged.connect(self._on_loop_change)
+        ctrl.addWidget(self._loop_check)
+        up_btn = QPushButton(_("Up"), self)
+        up_btn.clicked.connect(self._move_up)
+        ctrl.addWidget(up_btn)
+        down_btn = QPushButton(_("Down"), self)
+        down_btn.clicked.connect(self._move_down)
+        ctrl.addWidget(down_btn)
+        ctrl.addStretch()
+        right.addLayout(ctrl)
+        panels.addLayout(right, 1)
+
+        outer.addLayout(panels, 1)
+
+        # --- Bottom: preview ---
+        preview_frame = QFrame(self)
+        preview_layout = QVBoxLayout(preview_frame)
+        preview_layout.setContentsMargins(0, 5, 0, 0)
+        preview_layout.addWidget(QLabel(_("Interspersed Preview"), self))
+        self._preview_list = QListWidget(self)
+        self._preview_list.setMaximumHeight(120)
+        preview_layout.addWidget(self._preview_list)
+        outer.addWidget(preview_frame)
+
+    # ------------------------------------------------------------------
+    # Data loading
+    # ------------------------------------------------------------------
+
+    def _load_available(self):
+        self._named_playlists = NamedPlaylistStore.load_all(cache=app_info_cache)
+        self._refresh_available_list()
+
+    def _load_existing_master(self):
+        """Populate master entries from existing PlaybackStateManager config."""
+        master = PlaybackStateManager.get_master_config()
+        if master and master.playback_configs:
+            for i, pc in enumerate(master.playback_configs):
+                weight = master.weights[i] if i < len(master.weights) else 1
+                self._master_entries.append({
+                    "name": str(pc),
+                    "named_playlist": None,
+                    "playback_config": pc,
+                    "weight": weight,
+                    "loop": pc.loop,
+                })
+
+    # ------------------------------------------------------------------
+    # List refresh helpers
+    # ------------------------------------------------------------------
+
+    def _refresh_available_list(self):
+        self._avail_list.clear()
+        for name, np in self._named_playlists.items():
+            self._avail_list.addItem(f"{name}  ({np.get_source_description()})")
+
+    def _refresh_master_list(self):
+        self._master_list.blockSignals(True)
+        self._master_list.clear()
+        for entry in self._master_entries:
+            loop_label = _("yes") if entry["loop"] else _("no")
+            self._master_list.addItem(
+                f"{entry['name']}  [w:{entry['weight']}  loop:{loop_label}]"
             )
-            return playback_config
-        except Exception as e:
-            logger.exception("Error building playback config from saved: %s", e)
-            return None
+        self._master_list.blockSignals(False)
+        self._update_preview()
 
-    def remove_from_master(self):
-        row = self.master_playlist.currentRow()
+    # ------------------------------------------------------------------
+    # Available panel actions
+    # ------------------------------------------------------------------
+
+    def _open_new_playlist(self):
+        NewPlaylistWindow(self, self.app_actions, self.library_data,
+                          on_save=self._on_new_playlist_saved)
+
+    def _on_new_playlist_saved(self):
+        """Callback from NewPlaylistWindow after a playlist is saved."""
+        self._load_available()
+
+    def _delete_available(self):
+        row = self._avail_list.currentRow()
         if row < 0:
             return
-        del self.playback_master.playback_configs[row]
-        self.update_master_playlist_display()
-        if not self.playback_master.playback_configs:
-            self._set_playback_master_strategy(PlaybackMasterStrategy.ALL_MUSIC)
-
-    def _set_playback_master_strategy(self, strategy):
-        setter = getattr(self.app_actions, "set_playback_master_strategy", None)
-        if callable(setter):
-            try:
-                setter(strategy.name if hasattr(strategy, "name") else str(strategy))
-            except Exception as e:
-                logger.debug("set_playback_master_strategy: %s", e)
-
-    def open_new_playlist(self):
-        NewPlaylistWindow(self, self.app_actions, self)
-
-    def set_playlist(self, playback_config):
-        self.playback_master.playback_configs = [playback_config]
-        self.update_master_playlist_display()
-        self._set_playback_master_strategy(PlaybackMasterStrategy.PLAYLIST_CONFIG)
-
-    def add_playlist(self, playback_config):
-        self.playback_master.playback_configs.append(playback_config)
-        self.update_master_playlist_display()
-        self._set_playback_master_strategy(PlaybackMasterStrategy.PLAYLIST_CONFIG)
-
-    def save_master_playlist(self):
-        if not self.playback_master.playback_configs:
-            return
-        name, ok = QInputDialog.getText(
-            self,
-            _("Save Master Playlist"),
-            _("Enter a name for this master playlist:"),
+        name = list(self._named_playlists.keys())[row]
+        reply = QMessageBox.question(
+            self, _("Delete"),
+            _("Delete playlist \"{0}\"?").format(name),
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
-        if not ok or not (name and name.strip()):
+        if reply == QMessageBox.StandardButton.Yes:
+            NamedPlaylistStore.delete(name, cache=app_info_cache)
+            self._load_available()
+
+    # ------------------------------------------------------------------
+    # Master panel actions
+    # ------------------------------------------------------------------
+
+    def _add_to_master(self):
+        row = self._avail_list.currentRow()
+        if row < 0:
             return
-        name = name.strip()
+        name = list(self._named_playlists.keys())[row]
+        np = self._named_playlists[name]
+
         try:
-            tracks_per = int(self.tracks_per_config_edit.text() or "2")
-        except ValueError:
-            tracks_per = 2
-        MasterPlaylistWindow.named_playlist_configs[name] = {
-            "configs": [
-                {
-                    "tracks": [t.filepath for t in cfg.list.sorted_tracks],
-                    "sort_type": cfg.list.sort_type,
-                    "config_type": cfg.type,
-                    "tracks_per_play": tracks_per,
-                }
-                for cfg in self.playback_master.playback_configs
-            ]
-        }
-        MasterPlaylistWindow.store_named_playlist_configs()
-        self.app_actions.toast(_("Master playlist created successfully"))
+            pc = PlaybackConfig.from_named_playlist(
+                np,
+                data_callbacks=self.library_data.data_callbacks if self.library_data else None,
+                library_data=self.library_data,
+            )
+        except Exception as e:
+            logger.error(f"Failed to create PlaybackConfig from '{name}': {e}")
+            QMessageBox.critical(self, _("Error"), str(e))
+            return
+
+        self._master_entries.append({
+            "name": name,
+            "named_playlist": np,
+            "playback_config": pc,
+            "weight": 1,
+            "loop": np.loop,
+        })
+        self._apply_master_change()
+
+    def _remove_from_master(self):
+        row = self._master_list.currentRow()
+        if row < 0:
+            return
+        del self._master_entries[row]
+        self._apply_master_change()
+
+    def _on_master_select(self, row):
+        if row < 0 or row >= len(self._master_entries):
+            return
+        entry = self._master_entries[row]
+        self._weight_spin.blockSignals(True)
+        self._weight_spin.setValue(entry["weight"])
+        self._weight_spin.blockSignals(False)
+        self._loop_check.blockSignals(True)
+        self._loop_check.setChecked(entry["loop"])
+        self._loop_check.blockSignals(False)
+
+    def _on_weight_change(self, value):
+        row = self._master_list.currentRow()
+        if row < 0 or row >= len(self._master_entries):
+            return
+        self._master_entries[row]["weight"] = max(1, value)
+        self._apply_master_change()
+
+    def _on_loop_change(self, _state):
+        row = self._master_list.currentRow()
+        if row < 0 or row >= len(self._master_entries):
+            return
+        loop_val = self._loop_check.isChecked()
+        self._master_entries[row]["loop"] = loop_val
+        pc = self._master_entries[row].get("playback_config")
+        if pc:
+            pc.loop = loop_val
+        self._apply_master_change()
+
+    def _move_up(self):
+        row = self._master_list.currentRow()
+        if row <= 0:
+            return
+        self._master_entries[row], self._master_entries[row - 1] = \
+            self._master_entries[row - 1], self._master_entries[row]
+        self._apply_master_change()
+        self._master_list.setCurrentRow(row - 1)
+
+    def _move_down(self):
+        row = self._master_list.currentRow()
+        if row < 0 or row >= len(self._master_entries) - 1:
+            return
+        self._master_entries[row], self._master_entries[row + 1] = \
+            self._master_entries[row + 1], self._master_entries[row]
+        self._apply_master_change()
+        self._master_list.setCurrentRow(row + 1)
+
+    # ------------------------------------------------------------------
+    # Master config rebuild + strategy activation
+    # ------------------------------------------------------------------
+
+    def _apply_master_change(self):
+        """Rebuild PlaybackConfigMaster from entries, update state, refresh UI."""
+        self._refresh_master_list()
+
+        if self._master_entries:
+            configs = [e["playback_config"] for e in self._master_entries]
+            weights = [e["weight"] for e in self._master_entries]
+            master = PlaybackConfigMaster(configs, weights)
+            PlaybackStateManager.set_master_config(master)
+            try:
+                self.app_actions.set_playback_master_strategy(
+                    PlaybackMasterStrategy.PLAYLIST_CONFIG
+                )
+            except (AttributeError, TypeError):
+                pass
+        else:
+            PlaybackStateManager.clear_master_config()
+            try:
+                self.app_actions.set_playback_master_strategy(
+                    PlaybackMasterStrategy.ALL_MUSIC
+                )
+            except (AttributeError, TypeError):
+                pass
+
+    # ------------------------------------------------------------------
+    # Preview
+    # ------------------------------------------------------------------
+
+    def _update_preview(self, max_tracks: int = 15):
+        """Show the first N track slots in weighted round-robin order."""
+        self._preview_list.clear()
+        if not self._master_entries:
+            return
+
+        names = [e["name"] for e in self._master_entries]
+        weights = [e["weight"] for e in self._master_entries]
+
+        preview_names = []
+        cursor = 0
+        counter = 0
+        for _ in range(max_tracks):
+            for _attempt in range(len(names)):
+                if counter >= weights[cursor]:
+                    cursor = (cursor + 1) % len(names)
+                    counter = 0
+                break
+            preview_names.append(names[cursor])
+            counter += 1
+            if counter >= weights[cursor]:
+                cursor = (cursor + 1) % len(names)
+                counter = 0
+
+        for i, n in enumerate(preview_names):
+            self._preview_list.addItem(f"  {i + 1}. {n}")
+
+    # ------------------------------------------------------------------
+    # Lifecycle
+    # ------------------------------------------------------------------
 
     def closeEvent(self, event):
-        MasterPlaylistWindow.store_named_playlist_configs()
         if MasterPlaylistWindow.top_level is self:
             MasterPlaylistWindow.top_level = None
         event.accept()
 
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key.Key_Escape:
+            self.close()
+            return
+        super().keyPressEvent(event)
+
 
 class NewPlaylistWindow(SmartWindow):
-    """Window for creating new playlists and playback configs."""
+    """Window for creating / editing a NamedPlaylist.
 
-    def __init__(self, parent, app_actions, current_master_window=None):
+    Supports three source modes:
+    - Directory: pick from configured library directories.
+    - Search Query: enter search fields (re-resolved at play time).
+    - Explicit Tracks: add individual tracks via search, reorder manually.
+    """
+
+    def __init__(self, parent, app_actions, library_data=None, on_save=None,
+                 dimensions="600x560"):
         super().__init__(
             persistent_parent=parent,
             position_parent=parent,
             title=_("New Playlist"),
-            geometry="500x300",
+            geometry=dimensions,
             offset_x=50,
             offset_y=50,
         )
         self.app_actions = app_actions
-        self.current_master_window = current_master_window
+        self.library_data = library_data
+        self._on_save = on_save
+
+        self._track_filepaths = []
+        self._search_entries = {}
+        self._dir_combo = None
+        self._dir_map = {}
 
         self.setStyleSheet(AppStyle.get_stylesheet())
-        layout = QGridLayout(self)
-        layout.setContentsMargins(10, 10, 10, 10)
-        row = 0
-
-        layout.addWidget(QLabel(_("Playlist Name"), self), row, 0)
-        self.playlist_name_edit = QLineEdit(self)
-        self.playlist_name_edit.setMinimumWidth(280)
-        layout.addWidget(self.playlist_name_edit, row, 1)
-        row += 1
-
-        layout.addWidget(QLabel(_("Sort Type"), self), row, 0)
-        self.sort_combo = QComboBox(self)
-        self.sort_combo.addItems([t.value for t in PlaylistSortType])
-        self.sort_combo.setCurrentText(PlaylistSortType.RANDOM.value)
-        layout.addWidget(self.sort_combo, row, 1)
-        row += 1
-
-        layout.addWidget(QLabel(_("Directory"), self), row, 0)
-        self.dir_combo = QComboBox(self)
-        self.dir_combo.addItem("ALL_MUSIC")
-        for val in config.get_subdirectories().values():
-            self.dir_combo.addItem(val)
-        layout.addWidget(self.dir_combo, row, 1)
-        row += 1
-
-        layout.addWidget(QLabel(_("Playback Config Settings"), self), row, 0, 1, 2)
-        row += 1
-        self.enable_dynamic_volume = QCheckBox(_("Enable Dynamic Volume"), self)
-        self.enable_dynamic_volume.setChecked(True)
-        layout.addWidget(self.enable_dynamic_volume, row, 0, 1, 2)
-        row += 1
-        self.enable_long_track_splitting = QCheckBox(_("Enable Long Track Splitting"), self)
-        self.enable_long_track_splitting.setChecked(False)
-        layout.addWidget(self.enable_long_track_splitting, row, 0, 1, 2)
-        row += 1
-        layout.addWidget(QLabel(_("Track Splitting Cutoff (minutes)"), self), row, 0)
-        self.cutoff_edit = QLineEdit(self)
-        self.cutoff_edit.setMaximumWidth(80)
-        self.cutoff_edit.setText("20")
-        layout.addWidget(self.cutoff_edit, row, 1)
-        row += 1
-
-        btn_layout = QHBoxLayout()
-        btn_start = QPushButton(_("Start Playlist"), self)
-        btn_start.clicked.connect(lambda: self.create_playlist("start"))
-        btn_layout.addWidget(btn_start)
-        btn_add_current = QPushButton(_("Add to Current Playlist"), self)
-        btn_add_current.clicked.connect(lambda: self.create_playlist("add_current"))
-        btn_layout.addWidget(btn_add_current)
-        btn_new_master = QPushButton(_("Add to New Master Playlist"), self)
-        btn_new_master.clicked.connect(lambda: self.create_playlist("new_master"))
-        btn_layout.addWidget(btn_new_master)
-        btn_cancel = QPushButton(_("Cancel"), self)
-        btn_cancel.clicked.connect(self.close)
-        btn_layout.addWidget(btn_cancel)
-        btn_layout.addStretch()
-        layout.addLayout(btn_layout, row, 0, 1, 2)
+        self._build_ui()
         self.show()
 
-    def create_playlist(self, action):
-        name = self.playlist_name_edit.text().strip()
-        if not name:
-            self.app_actions.alert(
-                _("Error"),
-                _("Please enter a playlist name"),
-                kind="error",
-                master=self,
-            )
-            return
-        selection = self.dir_combo.currentText()
+    # ------------------------------------------------------------------
+    # UI construction
+    # ------------------------------------------------------------------
+
+    def _build_ui(self):
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(10, 10, 10, 10)
+
+        form = QGridLayout()
+        row = 0
+
+        # Name
+        form.addWidget(QLabel(_("Playlist Name"), self), row, 0)
+        self._name_edit = QLineEdit(self)
+        self._name_edit.setMinimumWidth(280)
+        form.addWidget(self._name_edit, row, 1)
+        row += 1
+
+        # Source mode
+        form.addWidget(QLabel(_("Source Mode"), self), row, 0)
+        row += 1
+        mode_frame = QWidget(self)
+        mode_layout = QHBoxLayout(mode_frame)
+        mode_layout.setContentsMargins(0, 0, 0, 0)
+        self._mode_group = QButtonGroup(self)
+        self._rb_directory = QRadioButton(_("Directory"), self)
+        self._rb_search = QRadioButton(_("Search Query"), self)
+        self._rb_tracks = QRadioButton(_("Explicit Tracks"), self)
+        self._rb_directory.setChecked(True)
+        self._mode_group.addButton(self._rb_directory, 0)
+        self._mode_group.addButton(self._rb_search, 1)
+        self._mode_group.addButton(self._rb_tracks, 2)
+        mode_layout.addWidget(self._rb_directory)
+        mode_layout.addWidget(self._rb_search)
+        mode_layout.addWidget(self._rb_tracks)
+        mode_layout.addStretch()
+        form.addWidget(mode_frame, row, 0, 1, 2)
+        row += 1
+
+        # Source-specific frame (swapped based on mode)
+        self._source_frame = QFrame(self)
+        self._source_layout = QVBoxLayout(self._source_frame)
+        self._source_layout.setContentsMargins(0, 0, 0, 0)
+        form.addWidget(self._source_frame, row, 0, 1, 2)
+        form.setRowStretch(row, 1)
+        row += 1
+
+        # Sort type
+        form.addWidget(QLabel(_("Sort Type"), self), row, 0)
+        self._sort_combo = QComboBox(self)
+        self._sort_combo.addItems([t.value for t in PlaylistSortType])
+        self._sort_combo.setCurrentText(PlaylistSortType.SEQUENCE.value)
+        form.addWidget(self._sort_combo, row, 1)
+        row += 1
+
+        # Loop
+        self._loop_check = QCheckBox(_("Loop"), self)
+        form.addWidget(self._loop_check, row, 0)
+        row += 1
+
+        # Description
+        form.addWidget(QLabel(_("Description (optional)"), self), row, 0)
+        self._desc_edit = QLineEdit(self)
+        form.addWidget(self._desc_edit, row, 1)
+        row += 1
+
+        # Save button
+        save_btn = QPushButton(_("Save"), self)
+        save_btn.clicked.connect(self._save)
+        form.addWidget(save_btn, row, 0)
+        row += 1
+
+        outer.addLayout(form)
+
+        self._mode_group.idClicked.connect(self._on_mode_change)
+        self._on_mode_change(0)
+
+    # ------------------------------------------------------------------
+    # Source-mode panels
+    # ------------------------------------------------------------------
+
+    def _clear_source_frame(self):
+        while self._source_layout.count():
+            item = self._source_layout.takeAt(0)
+            widget = item.widget()
+            if widget:
+                widget.setParent(None)
+                widget.deleteLater()
+            elif item.layout():
+                # Recursively clear sub-layouts
+                sub = item.layout()
+                while sub.count():
+                    sub_item = sub.takeAt(0)
+                    sub_w = sub_item.widget()
+                    if sub_w:
+                        sub_w.setParent(None)
+                        sub_w.deleteLater()
+
+    def _on_mode_change(self, mode_id):
+        self._clear_source_frame()
+        if mode_id == 0:
+            self._build_directory_panel()
+        elif mode_id == 1:
+            self._build_search_panel()
+        elif mode_id == 2:
+            self._build_tracks_panel()
+
+    def _build_directory_panel(self):
+        container = QWidget(self)
+        layout = QGridLayout(container)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(QLabel(_("Directory"), self), 0, 0)
+        self._dir_combo = QComboBox(self)
         all_dirs = config.get_subdirectories()
-        directories = []
-        if selection == "ALL_MUSIC":
-            directories = list(all_dirs.keys())
-        else:
-            for full_path, key in all_dirs.items():
-                if key == selection:
-                    directories.append(full_path)
-                    break
-        try:
-            cutoff = int(self.cutoff_edit.text() or "20")
-        except ValueError:
-            cutoff = 20
-        sort_type = PlaylistSortType(self.sort_combo.currentText())
-        args = SimpleNamespace(
-            playlist_sort_type=sort_type,
-            directories=directories,
-            total=-1,
-            overwrite=False,
-            enable_dynamic_volume=self.enable_dynamic_volume.isChecked(),
-            enable_long_track_splitting=self.enable_long_track_splitting.isChecked(),
-            long_track_splitting_time_cutoff_minutes=cutoff,
-            check_entire_playlist=False,
-            track=None,
-        )
-        data_callbacks = getattr(self.app_actions, "data_callbacks", self.app_actions)
-        try:
-            playback_config = PlaybackConfig(
-                args=args,
-                data_callbacks=data_callbacks,
-            )
-            playback_config.get_list()
-        except Exception as e:
-            logger.exception("Error creating playlist: %s", e)
-            self.app_actions.alert(
-                _("Error"),
-                _("Failed to build playlist. Ensure library/data callbacks are available."),
-                kind="error",
-                master=self,
-            )
+        self._dir_map = {v: k for k, v in all_dirs.items()}
+        options = list(all_dirs.values()) if all_dirs else [_("(no directories)")]
+        self._dir_combo.addItems(options)
+        layout.addWidget(self._dir_combo, 1, 0)
+        self._source_layout.addWidget(container)
+        self._source_layout.addStretch()
+
+    def _build_search_panel(self):
+        container = QWidget(self)
+        layout = QGridLayout(container)
+        layout.setContentsMargins(0, 0, 0, 0)
+        self._search_entries = {}
+        fields = ["all", "title", "album", "artist", "composer",
+                  "genre", "instrument", "form"]
+        for i, field in enumerate(fields):
+            layout.addWidget(QLabel(_(field.capitalize()), self), i, 0)
+            entry = QLineEdit(self)
+            entry.setMinimumWidth(200)
+            layout.addWidget(entry, i, 1)
+            self._search_entries[field] = entry
+        self._source_layout.addWidget(container)
+        self._source_layout.addStretch()
+
+    def _build_tracks_panel(self):
+        self._tracks_list = QListWidget(self)
+        self._tracks_list.setMinimumHeight(120)
+        self._refresh_tracks_list()
+        self._source_layout.addWidget(self._tracks_list, 1)
+
+        btns = QHBoxLayout()
+        add_btn = QPushButton(_("Add Track via Search"), self)
+        add_btn.clicked.connect(self._add_track)
+        btns.addWidget(add_btn)
+        rem_btn = QPushButton(_("Remove"), self)
+        rem_btn.clicked.connect(self._remove_track)
+        btns.addWidget(rem_btn)
+        up_btn = QPushButton(_("Up"), self)
+        up_btn.clicked.connect(self._track_up)
+        btns.addWidget(up_btn)
+        down_btn = QPushButton(_("Down"), self)
+        down_btn.clicked.connect(self._track_down)
+        btns.addWidget(down_btn)
+        btns.addStretch()
+        self._source_layout.addLayout(btns)
+
+    def _refresh_tracks_list(self):
+        if not hasattr(self, "_tracks_list"):
             return
-        MasterPlaylistWindow.named_playlist_configs[name] = {
-            "tracks": [t.filepath for t in playback_config.list.sorted_tracks],
-            "sort_type": playback_config.list.sort_type,
-            "config_type": playback_config.type,
-        }
-        MasterPlaylistWindow.store_named_playlist_configs()
-        if action == "start" and self.current_master_window:
-            self.current_master_window.set_playlist(playback_config)
-        elif action == "add_current" and self.current_master_window:
-            self.current_master_window.add_playlist(playback_config)
-        elif action == "new_master":
-            MasterPlaylistWindow(self.app_actions.get_master(), self.app_actions, [playback_config])
+        self._tracks_list.clear()
+        for fp in self._track_filepaths:
+            self._tracks_list.addItem(os.path.basename(fp))
+
+    def _add_track(self):
+        if self.library_data is None:
+            QMessageBox.critical(self, _("Error"), _("Library data not available"))
+            return
+        from ui_qt.search_window import SearchWindow
+        from library_data.library_data import LibraryDataSearch
+        search = LibraryDataSearch()
+        track = SearchWindow.find_track(self.library_data, search, save_to_recent=False)
+        if track and hasattr(track, "filepath"):
+            self._track_filepaths.append(track.filepath)
+            self._refresh_tracks_list()
+
+    def _remove_track(self):
+        row = self._tracks_list.currentRow()
+        if row < 0:
+            return
+        del self._track_filepaths[row]
+        self._refresh_tracks_list()
+
+    def _track_up(self):
+        row = self._tracks_list.currentRow()
+        if row <= 0:
+            return
+        self._track_filepaths[row], self._track_filepaths[row - 1] = \
+            self._track_filepaths[row - 1], self._track_filepaths[row]
+        self._refresh_tracks_list()
+        self._tracks_list.setCurrentRow(row - 1)
+
+    def _track_down(self):
+        row = self._tracks_list.currentRow()
+        if row < 0 or row >= len(self._track_filepaths) - 1:
+            return
+        self._track_filepaths[row], self._track_filepaths[row + 1] = \
+            self._track_filepaths[row + 1], self._track_filepaths[row]
+        self._refresh_tracks_list()
+        self._tracks_list.setCurrentRow(row + 1)
+
+    # ------------------------------------------------------------------
+    # Save
+    # ------------------------------------------------------------------
+
+    def _save(self):
+        name = self._name_edit.text().strip()
+        if not name:
+            QMessageBox.critical(self, _("Error"), _("Please enter a playlist name."))
+            return
+
+        if NamedPlaylistStore.exists(name, cache=app_info_cache):
+            reply = QMessageBox.question(
+                self, _("Overwrite"),
+                _("A playlist named \"{0}\" already exists. Overwrite?").format(name),
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            )
+            if reply != QMessageBox.StandardButton.Yes:
+                return
+
+        mode_id = self._mode_group.checkedId()
+        search_query = None
+        source_directories = None
+        track_filepaths = None
+
+        if mode_id == 0:  # directory
+            if self._dir_combo is None:
+                return
+            label = self._dir_combo.currentText()
+            full_path = self._dir_map.get(label)
+            if not full_path:
+                QMessageBox.critical(self, _("Error"), _("Please select a directory."))
+                return
+            source_directories = [full_path]
+        elif mode_id == 1:  # search
+            query = {}
+            for field, entry in self._search_entries.items():
+                val = entry.text().strip()
+                if val:
+                    query[field] = val
+            if not query:
+                QMessageBox.critical(
+                    self, _("Error"),
+                    _("Please fill in at least one search field.")
+                )
+                return
+            search_query = query
+        elif mode_id == 2:  # explicit tracks
+            if not self._track_filepaths:
+                QMessageBox.critical(
+                    self, _("Error"),
+                    _("Please add at least one track.")
+                )
+                return
+            track_filepaths = list(self._track_filepaths)
+
+        sort_type_str = self._sort_combo.currentText()
+        sort_type = PlaylistSortType.get(sort_type_str)
+
+        np = NamedPlaylist(
+            name=name,
+            search_query=search_query,
+            source_directories=source_directories,
+            track_filepaths=track_filepaths,
+            sort_type=sort_type,
+            loop=self._loop_check.isChecked(),
+            created_at=datetime.now().isoformat(),
+            description=self._desc_edit.text().strip() or None,
+        )
+        NamedPlaylistStore.save(np, cache=app_info_cache)
+        logger.info(f"Saved named playlist: {np}")
+
+        if self._on_save:
+            self._on_save()
+
         self.app_actions.toast(_("Playlist created successfully"))
         self.close()
+
+    # ------------------------------------------------------------------
+    # Lifecycle
+    # ------------------------------------------------------------------
+
+    def closeEvent(self, event):
+        event.accept()
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key.Key_Escape:
+            self.close()
+            return
+        super().keyPressEvent(event)

@@ -758,19 +758,21 @@ The real work is in `PlaybackConfig` (dual-mode track source) and `PlaybackConfi
 | 2.10 | Update `Run.do_workflow()` for unified code path (both strategies go through `PlaybackConfigMaster`) | `muse/run.py` | Low | **Done** |
 | 2.11 | Remove redundant `PLAYLIST_CONFIG` check in `Run.run()`; rename `PlaybackStateManager` slots for clarity (`active_config` / `master_config`) | `muse/run.py`, `muse/playback_state.py` | Low | **Done** |
 
-### Phase 3: UI -- Tkinter (Playlist Management Windows)
+### Phase 3: UI -- Tkinter (Playlist Management Windows) -- COMPLETE
 
-| # | Task | Files | Complexity |
-|---|------|-------|------------|
-| 3.1 | Wire `MasterPlaylistWindow` into Tkinter app menu; auto-open when `PLAYLIST_CONFIG` is selected with no master config | `app.py`, `ui/playlist_window.py` | Low |
-| 3.2 | Refactor `NewPlaylistWindow` to use `NamedPlaylist` model | `ui/playlist_window.py` | Medium |
-| 3.3 | Add "Add to Playlist" buttons in `SearchWindow` results (reuse or embed search functionality to add tracks to a named playlist from search results) | `ui/search_window.py`, `ui/playlist_window.py` | Medium |
-| 3.4 | Add "Create Playlist from Search" action in `SearchWindow` (promotes a saved search to a search-based `NamedPlaylist`) | `ui/search_window.py` | Medium |
-| 3.5 | Add track reordering UI in `NewPlaylistWindow` / playlist editor (move up/down buttons for SEQUENCE playlists) | `ui/playlist_window.py` | Medium |
-| 3.6 | Add weight configuration UI to `MasterPlaylistWindow` (per-config weight spinbox) | `ui/playlist_window.py` | Low |
-| 3.7 | Add loop toggle per-config in `MasterPlaylistWindow` | `ui/playlist_window.py` | Low |
-| 3.8 | Add playlist preview (show interspersed track order) | `ui/playlist_window.py` | Medium |
-| 3.9 | Activate `PLAYLIST_CONFIG` in main window when a master playlist is configured | `app.py` | Low |
+| # | Task | Files | Complexity | Status |
+|---|------|-------|------------|--------|
+| 3.1 | Wire `MasterPlaylistWindow` into Tkinter app menu (View > Playlists and sidebar button); auto-open when `PLAYLIST_CONFIG` is selected with no master config. Add `set_playback_master_strategy` to `AppActions` and register in `app.py`. | `app.py`, `ui/app_actions.py`, `ui/playlist_window.py` | Low | **Done** |
+| 3.2 | Full rewrite of `MasterPlaylistWindow`: two-panel layout (Available Playlists from `NamedPlaylistStore` / Master Playlist with per-entry controls). Removed old `named_playlist_configs` dict model. Accepts `library_data` for search-based resolution via `PlaybackConfig.from_named_playlist()`. | `ui/playlist_window.py` | Medium | **Done** |
+| 3.2b | Full rewrite of `NewPlaylistWindow`: three source modes (Directory, Search Query, Explicit Tracks) via radio buttons. Saves `NamedPlaylist` via `NamedPlaylistStore.save()`. `on_save` callback refreshes parent. | `ui/playlist_window.py` | Medium | **Done** |
+| 3.3 | Per-result "+ Playlist" button in `SearchWindow` results. Prompts for target track-based playlist or creates a new one. | `ui/search_window.py` | Medium | **Done** |
+| 3.4 | "Save as Playlist" button in `SearchWindow` creates a search-based `NamedPlaylist` from current search fields. | `ui/search_window.py` | Medium | **Done** |
+| 3.5 | Track reordering in `NewPlaylistWindow` Explicit Tracks mode: Up/Down/Remove buttons on tracks listbox. Also Up/Down in `MasterPlaylistWindow` master panel. | `ui/playlist_window.py` | Medium | **Done** |
+| 3.6 | Weight `Spinbox` (1-99) per master entry, updates `PlaybackConfigMaster` weights on change. | `ui/playlist_window.py` | Low | **Done** |
+| 3.7 | Loop `Checkbutton` per master entry, propagates to `PlaybackConfig.loop`. | `ui/playlist_window.py` | Low | **Done** |
+| 3.8 | Interspersed preview listbox (first 15 slots in weighted round-robin order) updates on every master change. | `ui/playlist_window.py` | Medium | **Done** |
+| 3.9 | Auto-activate `PLAYLIST_CONFIG` when configs are added to master; auto-revert to `ALL_MUSIC` when all removed. `set_playback_master_strategy` handles both programmatic `PlaybackMasterStrategy` enum and UI dropdown events. | `app.py`, `ui/playlist_window.py` | Low | **Done** |
+| -- | Remove old `named_playlist_configs` load/store calls from `PersistentDataManager` (Tkinter and Qt variants). `NamedPlaylistStore` writes through to `app_info_cache` directly. | `utils/persistent_data_manager.py`, `utils/persistent_data_manager_qt.py` | Low | **Done** |
 
 ### Phase 4: Polish + Edge Cases
 
@@ -778,17 +780,22 @@ The real work is in `PlaybackConfig` (dual-mode track source) and `PlaybackConfi
 |---|------|-------|------------|--------|
 | 4.1 | Handle tracks that no longer exist on disk (for explicit-track playlists: filter on load, warn user) | `muse/named_playlist.py`, `muse/playback_config.py` | Low | **Done** (filtering in `_resolve_explicit_tracks()` with `isfile_with_retry`) |
 | 4.2 | Enrich `TrackResult` with `config_index` / `config_changed` fields; suppress grouping speech at config boundaries (see Section 5.5) | `utils/globals.py`, `muse/playback_config_master.py`, `muse/muse_spot_profile.py`, `muse/playback.py`, `muse/muse.py`, `muse/muse_memory.py` | Medium | **Done** |
-| 4.3 | Persist master playlist state for resume-on-restart | `muse/playback_config_master.py`, `muse/playback_state.py` | Medium | Pending |
-| 4.4 | Unit tests for interleaving logic, loop behavior, and search-based resolution | `tests/` | Medium | Pending |
 
-### Phase 5: Qt Port (Future)
+### Phase 5: Qt Port
 
-| # | Task | Files | Complexity |
-|---|------|-------|------------|
-| 5.1 | Port finalized Tkinter `MasterPlaylistWindow` to PySide6 | `ui_qt/playlist_window.py` | Medium |
-| 5.2 | Port finalized Tkinter `NewPlaylistWindow` to PySide6 | `ui_qt/playlist_window.py` | Medium |
-| 5.3 | Wire Qt playlist window into `app_qt.py` menu | `app_qt.py` | Low |
-| 5.4 | Port search integration (add-to-playlist buttons) to Qt `SearchWindow` | `ui_qt/search_window.py` | Medium |
+> **Note:** Qt / PySide6 requires signal-based cross-thread communication.
+> Any operations triggered from background threads (e.g. search resolution,
+> library data loading) must emit Qt signals rather than calling widget
+> methods directly. Use `QMetaObject.invokeMethod` or custom `Signal`/`Slot`
+> pairs for all cross-thread UI updates.
+
+| # | Task | Files | Complexity | Status |
+|---|------|-------|------------|--------|
+| 5.1 | Port finalized Tkinter `MasterPlaylistWindow` to PySide6 (two-panel layout, weight/loop/reorder controls, preview) | `ui_qt/playlist_window.py` | Medium | **COMPLETE** |
+| 5.2 | Port finalized Tkinter `NewPlaylistWindow` to PySide6 (three source modes, track reordering) | `ui_qt/playlist_window.py` | Medium | **COMPLETE** |
+| 5.3 | Wire Qt playlist window into `app_qt.py` menu; add `set_playback_master_strategy` to Qt `AppActions`; auto-open on `PLAYLIST_CONFIG` with no config | `app_qt.py`, `ui_qt/app_actions.py` | Low | **COMPLETE** |
+| 5.4 | Port search integration ("Save as Playlist" + per-result "+ Playlist" buttons) to Qt `SearchWindow` | `ui_qt/search_window.py` | Medium | **COMPLETE** |
+| 5.5 | Remove dead `PresetsWindow` modules (both Tkinter and Qt); clean up references in `app.py`, `app_qt.py`, `ui/__init__.py` | `ui/presets_window.py` (deleted), `ui_qt/presets_window.py` (deleted), `app.py`, `app_qt.py`, `ui/__init__.py` | Low | **COMPLETE** |
 
 ---
 
@@ -907,7 +914,8 @@ The following items are explicitly deferred from v1 and noted here for future pa
 | **Post-exhaustion smart continuation** | When all dedicated playlists are exhausted, optionally fall back to a "smart continuation" playlist (e.g., play similar music, or switch to `ALL_MUSIC` mode). This requires a new `PlaybackMasterStrategy` value or an exhaustion callback. |
 | **Complex interleaving patterns** | Support for non-uniform weight sequences (e.g., "A, A, B, A, A, A, B" as a custom pattern rather than simple integer weights). |
 | **Drag-and-drop track reordering** | Full drag-and-drop in the UI. v1 provides move-up / move-down buttons. |
-| **Qt/PySide6 UI** | Port of finalized Tkinter UI to PySide6. Tracked in Phase 5. |
+| **Persist master playlist state for resume-on-restart** | Serialize the current `PlaybackConfigMaster` (config indices, cursor position, weight counters, active mask) so playback can resume after an app restart. Requires changes to `muse/playback_config_master.py` and `muse/playback_state.py`. (Moved from Phase 4.3.) |
+| **Unit tests for interleaving / loop / search resolution** | Unit tests for weighted round-robin interleaving, loop behavior, exhaustion handling, and search-based track resolution. (Moved from Phase 4.4.) |
 
 ---
 
@@ -929,8 +937,17 @@ The following items are explicitly deferred from v1 and noted here for future pa
 | `extensions/extension_manager.py` | Minor modify | Updated to call `PlaybackConfigMaster.assign_extension()` and `PlaybackConfigMaster.get_playing_track()`. | **Done** (Phase 2.9) |
 | `tests/integration/test_playback_integration.py` | Minor modify | Updated for `TrackResult` named fields and lowercase `open_configs`. | **Done** |
 | `tests/unit/test_muse_core.py` | Minor modify | Updated `MuseSpotProfile` constructor calls for `TrackResult`. | **Done** |
-| `ui/playlist_window.py` | **Modify** | Refactor to use `NamedPlaylist`, add weight/loop UI, track reordering, search integration. Updated `PlaybackStateManager` calls. | Pending (Phase 3) |
-| `ui/search_window.py` | **Modify** | Add "Add to Playlist" and "Create Playlist from Search" actions | Pending (Phase 3) |
-| `app.py` | **Modify** | Wire playlist window into menu, auto-open on `PLAYLIST_CONFIG` selection | Pending (Phase 3) |
-| `ui_qt/playlist_window.py` | Deferred (Phase 5) | Qt port of finalized Tkinter version |
-| `app_qt.py` | Deferred (Phase 5) | Qt wiring of playlist window |
+| `ui/playlist_window.py` | **Rewrite** | Full rewrite: `MasterPlaylistWindow` (two-panel, weight/loop/reorder, preview) + `NewPlaylistWindow` (three source modes, track reordering). Uses `NamedPlaylistStore`. | **Done** (Phase 3) |
+| `ui/search_window.py` | **Modify** | "Save as Playlist" button (search-based `NamedPlaylist`). Per-result "+ Playlist" button (add track to existing or new track-based playlist). | **Done** (Phase 3) |
+| `ui/app_actions.py` | Minor modify | Added `set_playback_master_strategy` to `REQUIRED_ACTIONS`. | **Done** (Phase 3) |
+| `app.py` | **Modify** | Wire playlist window into View menu and sidebar. `set_playback_master_strategy` registered in `app_actions`, handles both enum and dropdown events, auto-opens playlist window on `PLAYLIST_CONFIG` with no config. `PlaybackStateManager` imported. | **Done** (Phase 3) |
+| `utils/persistent_data_manager.py` | Minor modify | Removed old `MasterPlaylistWindow.load/store_named_playlist_configs()` calls. | **Done** (Phase 3) |
+| `utils/persistent_data_manager_qt.py` | Minor modify | Removed old `MasterPlaylistWindow.load/store_named_playlist_configs()` calls and import. | **Done** (Phase 3) |
+| `ui_qt/playlist_window.py` | **Rewrite** (Phase 5) | Qt port: `MasterPlaylistWindow` (two-panel, weight/loop/reorder, preview) + `NewPlaylistWindow` (three source modes, track reordering). Uses `NamedPlaylistStore` with Qt `app_info_cache`. | **Done** (Phase 5) |
+| `ui_qt/search_window.py` | **Modify** (Phase 5) | Qt port: "Save as Playlist" button, per-result "+ Playlist" button, `add_to_playlist_btn_list` tracking. Uses `QInputDialog` for naming prompts. | **Done** (Phase 5) |
+| `ui_qt/app_actions.py` | Minor modify (Phase 5) | Added `set_playback_master_strategy` to `REQUIRED_ACTIONS`. | **Done** (Phase 5) |
+| `app_qt.py` | **Modify** (Phase 5) | Qt wiring: `open_playlist_window()` method, View menu and sidebar rewired from PresetsWindow. `set_playback_master_strategy` registered in `app_actions`, handles both enum and dropdown events, auto-opens playlist window on `PLAYLIST_CONFIG` with no config. `PlaybackStateManager` imported. Removed dead `open_presets_window`. | **Done** (Phase 5) |
+| `ui/presets_window.py` | **Deleted** (Phase 5) | Dead code: incomplete preset management with no persistence; menu/sidebar already redirected to playlist window. | **Done** (Phase 5) |
+| `ui_qt/presets_window.py` | **Deleted** (Phase 5) | Dead code: Qt port of incomplete preset management. | **Done** (Phase 5) |
+| `app.py` | Minor modify (Phase 5) | Removed dead `PresetsWindow` import and `open_presets_window` method. | **Done** (Phase 5) |
+| `ui/__init__.py` | Minor modify (Phase 5) | Removed `PresetsWindow` import and export. | **Done** (Phase 5) |

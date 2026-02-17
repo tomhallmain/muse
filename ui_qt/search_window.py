@@ -15,6 +15,7 @@ from PySide6.QtWidgets import (
     QScrollArea,
     QWidget,
     QFrame,
+    QInputDialog,
 )
 from PySide6.QtCore import Qt, QTimer, Signal
 
@@ -166,6 +167,7 @@ class SearchWindow(SmartWindow):
         self.composer_list = []
         self.open_details_btn_list = []
         self.play_btn_list = []
+        self.add_to_playlist_btn_list = []
         self.remove_btn_list = []
         self.current_offset = 0
         self.pagination_warning_label = None
@@ -284,6 +286,11 @@ class SearchWindow(SmartWindow):
         self.playlist_sort_combo.addItems(PlaylistSortType.get_translated_names())
         self.playlist_sort_combo.setCurrentText(PlaylistSortType.RANDOM.get_translation())
         inner_layout.addWidget(self.playlist_sort_combo, row, 2)
+        row += 1
+
+        self._save_as_playlist_btn = QPushButton(_("Save as Playlist"), inner)
+        self._save_as_playlist_btn.clicked.connect(self._save_search_as_playlist)
+        inner_layout.addWidget(self._save_as_playlist_btn, row, 0)
         row += 1
 
         inner_layout.addWidget(QLabel(_("Filter Results"), inner), row, 0)
@@ -520,6 +527,9 @@ class SearchWindow(SmartWindow):
         for w in self.play_btn_list:
             w.setParent(None)
             w.deleteLater()
+        for w in self.add_to_playlist_btn_list:
+            w.setParent(None)
+            w.deleteLater()
         for w in self.remove_btn_list:
             w.setParent(None)
             w.deleteLater()
@@ -531,6 +541,7 @@ class SearchWindow(SmartWindow):
         self.composer_list = []
         self.open_details_btn_list = []
         self.play_btn_list = []
+        self.add_to_playlist_btn_list = []
         self.remove_btn_list = []
 
     def _refresh_widgets(self, add_results=True):
@@ -699,7 +710,17 @@ class SearchWindow(SmartWindow):
                 return handler
 
             play_btn.clicked.connect(make_play_handler(track))
-            # TODO add to playlist buttons
+
+            add_pl_btn = QPushButton(_("+ Playlist"), self.results_widget)
+            self.add_to_playlist_btn_list.append(add_pl_btn)
+            self.results_layout.addWidget(add_pl_btn, row, 7)
+
+            def make_add_to_playlist_handler(tr):
+                def handler():
+                    self._add_track_to_playlist(tr)
+                return handler
+
+            add_pl_btn.clicked.connect(make_add_to_playlist_handler(track))
 
     def open_details(self, track):
         pass
@@ -740,6 +761,94 @@ class SearchWindow(SmartWindow):
         # Currently, only the selected sort type is used
         selected_translation = self.playlist_sort_combo.currentText()
         return PlaylistSortType.get_from_translation(selected_translation)
+
+    def _save_search_as_playlist(self):
+        """Save the current search fields as a search-based NamedPlaylist."""
+        from datetime import datetime
+        from muse.named_playlist import NamedPlaylist, NamedPlaylistStore
+        from utils.app_info_cache_qt import app_info_cache
+
+        query = {}
+        for field, entry in [
+            ("all", self.all_entry), ("title", self.title_entry),
+            ("album", self.album_entry), ("artist", self.artist_entry),
+            ("composer", self.composer_entry), ("genre", self.genre_entry),
+            ("instrument", self.instrument_entry), ("form", self.form_entry),
+        ]:
+            val = entry.text().strip()
+            if val:
+                query[field] = val
+
+        if not query:
+            self.app_actions.alert(
+                _("No Search"),
+                _("Please fill in at least one search field first."),
+                kind="warning",
+            )
+            return
+
+        name, ok = QInputDialog.getText(
+            self, _("Save as Playlist"), _("Enter a name for this playlist:"),
+        )
+        if not ok or not (name and name.strip()):
+            return
+        name = name.strip()
+
+        sort_type = self.get_playlist_sort_type()
+        np = NamedPlaylist(
+            name=name,
+            search_query=query,
+            sort_type=sort_type,
+            created_at=datetime.now().isoformat(),
+        )
+        NamedPlaylistStore.save(np, cache=app_info_cache)
+        self.app_actions.toast(_("Playlist \"{0}\" saved").format(name))
+
+    def _add_track_to_playlist(self, track):
+        """Add a single track to an existing track-based NamedPlaylist."""
+        from muse.named_playlist import NamedPlaylist, NamedPlaylistStore
+        from utils.app_info_cache_qt import app_info_cache
+
+        all_playlists = NamedPlaylistStore.load_all(cache=app_info_cache)
+        candidates = {
+            name: np for name, np in all_playlists.items()
+            if np.is_track_based() or (
+                not np.is_search_based() and not np.is_directory_based()
+            )
+        }
+
+        if not candidates:
+            name, ok = QInputDialog.getText(
+                self, _("New Playlist"),
+                _("No track-based playlists exist. Enter a name for a new one:"),
+            )
+            if not ok or not (name and name.strip()):
+                return
+            name = name.strip()
+            np = NamedPlaylist(
+                name=name,
+                track_filepaths=[track.filepath],
+                sort_type=PlaylistSortType.SEQUENCE,
+            )
+            NamedPlaylistStore.save(np, cache=app_info_cache)
+            self.app_actions.toast(
+                _("Created playlist \"{0}\" with track").format(name)
+            )
+            return
+
+        names = list(candidates.keys())
+        name, ok = QInputDialog.getItem(
+            self, _("Add to Playlist"),
+            _("Select a playlist:"), names, 0, False,
+        )
+        if not ok or name not in candidates:
+            return
+        np = candidates[name]
+        if np.track_filepaths is None:
+            np.track_filepaths = []
+        np.track_filepaths.append(track.filepath)
+        NamedPlaylistStore.save(np, cache=app_info_cache)
+        self.app_actions.toast(_("Added to \"{0}\"").format(name))
 
     def remove_search(self, search):
         assert search is not None

@@ -35,6 +35,7 @@ from ui_qt.custom_title_bar import FramelessWindowMixin, WindowResizeHandler
 from lib.multi_display_qt import SmartMainWindow
 
 from utils.globals import Globals, PlaylistSortType, PlaybackMasterStrategy, ProtectedActions
+from muse.playback_state import PlaybackStateManager
 from library_data.library_data import LibraryData
 from ui_qt.app_actions import AppActions
 from ui_qt.auth.password_utils import require_password
@@ -137,6 +138,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
             "search_and_play": self.search_and_play,
             "update_directory_count": self.update_directory_count,
             "open_password_admin_window": self.open_password_admin_window,
+            "set_playback_master_strategy": self.set_playback_master_strategy,
         }, self)
 
         self._build_menus()
@@ -202,7 +204,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
                 (_("Toggle Fullscreen"), self.toggle_fullscreen),
                 (_("Toggle Theme"), self.toggle_theme),
                 None,
-                (_("Playlists"), self.open_presets_window),
+                (_("Playlists"), self.open_playlist_window),
                 (_("Favorites"), self.open_favorites_window),
                 (_("History"), self.open_history_window),
                 (_("Composers"), self.open_composers_window),
@@ -310,7 +312,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         self.run_btn = QPushButton(_("Play"))
         self.run_btn.clicked.connect(lambda: self.run())
         self.playlists_btn = QPushButton(_("Playlists"))
-        self.playlists_btn.clicked.connect(self.open_presets_window)
+        self.playlists_btn.clicked.connect(self.open_playlist_window)
         sidebar_layout.addWidget(self.run_btn, row, 0)
         sidebar_layout.addWidget(self.playlists_btn, row, 1, 1, 2)
         row += 1
@@ -519,9 +521,20 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         self.runner_app_config.delay_time_seconds = self.delay_combo.currentText()
         Globals.set_delay(int(self.runner_app_config.delay_time_seconds))
 
-    def set_playback_master_strategy(self, _value=None):
-        strategy_text = self.playlist_strategy_combo.currentText()
-        self.runner_app_config.playback_master_strategy = PlaybackMasterStrategy.get_from_translation(strategy_text).value
+    def set_playback_master_strategy(self, event=None):
+        if isinstance(event, PlaybackMasterStrategy):
+            strategy = event
+            self.playlist_strategy_combo.blockSignals(True)
+            self.playlist_strategy_combo.setCurrentText(strategy.get_translation())
+            self.playlist_strategy_combo.blockSignals(False)
+        else:
+            strategy_text = self.playlist_strategy_combo.currentText()
+            strategy = PlaybackMasterStrategy.get_from_translation(strategy_text)
+        self.runner_app_config.playback_master_strategy = strategy.value
+        if strategy == PlaybackMasterStrategy.PLAYLIST_CONFIG:
+            master = PlaybackStateManager.get_master_config()
+            if not master or not master.playback_configs:
+                self.open_playlist_window()
 
     def set_volume(self, _value=None):
         self.runner_app_config.volume = self.volume_slider.value()
@@ -1014,9 +1027,9 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         BlacklistWindow(self, self.app_actions)
 
     @require_password(ProtectedActions.EDIT_PLAYLISTS)
-    def open_presets_window(self):
-        from ui_qt.presets_window import PresetsWindow
-        PresetsWindow(self, self.app_actions, self.construct_preset, self.start_run_from_preset)
+    def open_playlist_window(self):
+        from ui_qt.playlist_window import MasterPlaylistWindow
+        MasterPlaylistWindow(self, self.app_actions, self.library_data)
 
     @require_password(ProtectedActions.EDIT_FAVORITES)
     def open_favorites_window(self):

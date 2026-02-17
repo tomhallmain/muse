@@ -33,6 +33,7 @@ class AppActions:
         "search_and_play",
         "update_directory_count",
         "open_password_admin_window",
+        "set_playback_master_strategy",
     ])
 
     def __init__(self, actions: Dict[str, Callable[..., Any]], master: Optional[object] = None):

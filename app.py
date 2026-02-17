@@ -38,7 +38,6 @@ from ui.media_frame import MediaFrame
 from ui.personas_window import PersonasWindow
 from ui.playlist_window import MasterPlaylistWindow
 from ui.preset import Preset
-from ui.presets_window import PresetsWindow
 from ui.schedules_window import SchedulesWindow
 from ui.search_window import SearchWindow
 from ui.track_details_window import TrackDetailsWindow
@@ -847,12 +846,6 @@ class App():
             MasterPlaylistWindow(self.master, self.app_actions, self.library_data)
         except Exception as e:
             logger.error(f"Exception opening playlist window: {e}")
-
-    def open_presets_window(self):
-        try:
-            presets_window = PresetsWindow(self.master, self.app_actions, self.construct_preset, self.start_run_from_preset)
-        except Exception as e:
-            logger.error(f"Exception opening presets window: {e}")
 
     def open_timer_window(self):
         try:
