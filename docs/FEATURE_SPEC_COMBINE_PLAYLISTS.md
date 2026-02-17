@@ -733,30 +733,30 @@ The real work is in `PlaybackConfig` (dual-mode track source) and `PlaybackConfi
 > **UI strategy:** Tkinter first. The Qt/PySide6 UI will be ported once the Tkinter
 > version is finalized and proven. Phase 3 targets `ui/` and `app.py` only.
 
-### Phase 1: Foundation (Named Playlist Data Model + Storage)
+### Phase 1: Foundation (Named Playlist Data Model + Storage) -- COMPLETE
 
-| # | Task | Files | Complexity |
-|---|------|-------|------------|
-| 1.1 | Create `NamedPlaylist` dataclass with search-query, directory, and explicit-track modes | `muse/named_playlist.py` (new) | Low |
-| 1.2 | Create `NamedPlaylistStore` (CRUD wrapper around `app_info_cache`) | `muse/named_playlist.py` | Low |
-| 1.3 | Implement `NamedPlaylist.resolve_tracks()` for all three source modes | `muse/named_playlist.py` | Medium |
-| 1.4 | Migrate existing `named_playlist_configs` format to new schema | `muse/named_playlist.py` | Low |
+| # | Task | Files | Complexity | Status |
+|---|------|-------|------------|--------|
+| 1.1 | Create `NamedPlaylist` dataclass with search-query, directory, and explicit-track modes | `muse/named_playlist.py` (new) | Low | **Done** |
+| 1.2 | Create `NamedPlaylistStore` (CRUD wrapper around `app_info_cache`) | `muse/named_playlist.py` | Low | **Done** |
+| 1.3 | Implement `NamedPlaylist.resolve_tracks()` for all three source modes (with retry logic for sleeping external drives via `Utils.isfile_with_retry` / `Utils.isdir_with_retry`) | `muse/named_playlist.py` | Medium | **Done** |
+| 1.4 | ~~Migrate existing `named_playlist_configs` format to new schema~~ | `muse/named_playlist.py` | Low | **Cancelled** -- no legacy data exists |
 
-### Phase 2: Backend Core (Playlist + PlaybackConfig + PlaybackConfigMaster)
+### Phase 2: Backend Core (Playlist + PlaybackConfig + PlaybackConfigMaster) -- COMPLETE
 
-| # | Task | Files | Complexity |
-|---|------|-------|------------|
-| 2.1 | Add `loop` and `skip_memory_shuffle` params to `Playlist.__init__` | `muse/playlist.py` | Low |
-| 2.2 | Implement `Playlist._reset_for_loop()` and loop-aware `next_track()` | `muse/playlist.py` | Medium |
-| 2.3 | Add `skip_memory_shuffle` guard in `Playlist.sort()` | `muse/playlist.py` | Low |
-| 2.4 | Add `explicit_tracks` param to `PlaybackConfig.__init__` | `muse/playback_config.py` | Low |
-| 2.5 | Update `PlaybackConfig.get_list()` for dual-mode (directory vs explicit) | `muse/playback_config.py` | Low |
-| 2.6 | Add `PlaybackConfig.from_named_playlist()` factory (handles search resolution) | `muse/playback_config.py` | Medium |
-| 2.7 | Rewrite `PlaybackConfigMaster` with cursor-based weighted round-robin interleaving | `muse/playback_config_master.py` | **High** |
-| 2.8 | Add property proxies on `PlaybackConfigMaster` for `Playback` compatibility | `muse/playback_config_master.py` | Medium |
-| 2.9 | Consolidate static state (`OPEN_CONFIGS`, extension handling) -- remove duplication between `PlaybackConfig` and `PlaybackConfigMaster` | `muse/playback_config.py`, `muse/playback_config_master.py` | Medium |
-| 2.10 | Update `Run.do_workflow()` for unified code path (both strategies go through `PlaybackConfigMaster`) | `muse/run.py` | Low |
-| 2.11 | Remove redundant `PLAYLIST_CONFIG` check in `Run.run()` | `muse/run.py` | Low |
+| # | Task | Files | Complexity | Status |
+|---|------|-------|------------|--------|
+| 2.1 | Add `loop` and `skip_memory_shuffle` params to `Playlist.__init__` | `muse/playlist.py` | Low | **Done** |
+| 2.2 | Implement `Playlist.reset()` / `_reset_for_loop()` and loop-aware `next_track()` | `muse/playlist.py` | Medium | **Done** |
+| 2.3 | Add `skip_memory_shuffle` guard in `Playlist.sort()` | `muse/playlist.py` | Low | **Done** |
+| 2.4 | Add `explicit_tracks` param to `PlaybackConfig.__init__` | `muse/playback_config.py` | Low | **Done** |
+| 2.5 | Update `PlaybackConfig.get_list()` for dual-mode (directory vs explicit); propagate `loop` and `skip_memory_shuffle` to `Playlist` constructor | `muse/playback_config.py` | Low | **Done** |
+| 2.6 | Add `PlaybackConfig.from_named_playlist()` factory (handles search resolution) | `muse/playback_config.py` | Medium | **Done** |
+| 2.7 | Rewrite `PlaybackConfigMaster` with cursor-based weighted round-robin interleaving | `muse/playback_config_master.py` | **High** | **Done** |
+| 2.8 | Add property proxies on `PlaybackConfigMaster` for `Playback` compatibility | `muse/playback_config_master.py` | Medium | **Done** |
+| 2.9 | Consolidate extension handling: remove `last_extension_played`, `ready_for_extension`, `assign_extension()`, `next_track_override`, `set_next_track_override()` from `PlaybackConfig`; keep solely on `PlaybackConfigMaster`. Add `get_playing_config()` and `get_playing_track()` on `PlaybackConfigMaster`. Update `extension_manager.py` to call `PlaybackConfigMaster`. Fix `reamining_count` typo on `PlaybackConfig`. | `muse/playback_config.py`, `muse/playback_config_master.py`, `extensions/extension_manager.py` | Medium | **Done** |
+| 2.10 | Update `Run.do_workflow()` for unified code path (both strategies go through `PlaybackConfigMaster`) | `muse/run.py` | Low | **Done** |
+| 2.11 | Remove redundant `PLAYLIST_CONFIG` check in `Run.run()`; rename `PlaybackStateManager` slots for clarity (`active_config` / `master_config`) | `muse/run.py`, `muse/playback_state.py` | Low | **Done** |
 
 ### Phase 3: UI -- Tkinter (Playlist Management Windows)
 
@@ -774,12 +774,12 @@ The real work is in `PlaybackConfig` (dual-mode track source) and `PlaybackConfi
 
 ### Phase 4: Polish + Edge Cases
 
-| # | Task | Files | Complexity |
-|---|------|-------|------------|
-| 4.1 | Handle tracks that no longer exist on disk (for explicit-track playlists: filter on load, warn user) | `muse/named_playlist.py`, `muse/playback_config.py` | Low |
-| 4.2 | Enrich `TrackResult` with `config_index` / `config_changed` fields; suppress grouping speech at config boundaries (see Section 5.5) | `utils/globals.py`, `muse/playback_config_master.py`, `muse/muse_spot_profile.py`, `muse/playback.py` | Medium |
-| 4.3 | Persist master playlist state for resume-on-restart | `muse/playback_config_master.py`, `muse/playback_state.py` | Medium |
-| 4.4 | Unit tests for interleaving logic, loop behavior, and search-based resolution | `tests/` | Medium |
+| # | Task | Files | Complexity | Status |
+|---|------|-------|------------|--------|
+| 4.1 | Handle tracks that no longer exist on disk (for explicit-track playlists: filter on load, warn user) | `muse/named_playlist.py`, `muse/playback_config.py` | Low | **Done** (filtering in `_resolve_explicit_tracks()` with `isfile_with_retry`) |
+| 4.2 | Enrich `TrackResult` with `config_index` / `config_changed` fields; suppress grouping speech at config boundaries (see Section 5.5) | `utils/globals.py`, `muse/playback_config_master.py`, `muse/muse_spot_profile.py`, `muse/playback.py`, `muse/muse.py`, `muse/muse_memory.py` | Medium | **Done** |
+| 4.3 | Persist master playlist state for resume-on-restart | `muse/playback_config_master.py`, `muse/playback_state.py` | Medium | Pending |
+| 4.4 | Unit tests for interleaving logic, loop behavior, and search-based resolution | `tests/` | Medium | Pending |
 
 ### Phase 5: Qt Port (Future)
 
@@ -851,7 +851,7 @@ Playback order: T1, T3, T2, T4 → STOP (all exhausted, playback ends)
 |------|--------|------------|
 | `Playback` accesses attributes not proxied by `PlaybackConfigMaster` | Runtime crash | Audit all attribute accesses in `Playback` and add proxies. Add integration test. |
 | Memory-based shuffling thrashes for small named playlists | Poor track ordering | Already handled: `Playlist.shuffle_with_memory_for_attr()` skips playlists < 200 tracks. Made explicit with `skip_memory_shuffle` flag. |
-| Extension system (`assign_extension`) conflicts between `PlaybackConfig` and `PlaybackConfigMaster` | Extension tracks assigned to wrong config | Consolidate extension handling in `PlaybackConfigMaster` only; have it delegate to the appropriate child config. |
+| ~~Extension system (`assign_extension`) conflicts between `PlaybackConfig` and `PlaybackConfigMaster`~~ | ~~Extension tracks assigned to wrong config~~ | **Resolved (2.9):** Extension state (`last_extension_played`, `ready_for_extension`, `assign_extension()`, `next_track_override`) now lives solely on `PlaybackConfigMaster`. `PlaybackConfig` no longer has override handling. `extension_manager.py` updated to call `PlaybackConfigMaster.assign_extension()`. |
 | Named playlist tracks become stale (files deleted/moved) | Crash on load or silent empty playlist | Search-based playlists avoid this entirely (re-resolved at runtime). For explicit-track playlists: validate filepaths on load, warn user, remove invalid entries. |
 | DJ (Muse) generates context-inappropriate remarks when switching between audiobook and music | Confusing DJ output | **Deferred** (see Out of Scope, Section 10). For v1, ensure no runtime errors at config boundaries; accept that DJ context may be imperfect. |
 | Search-based playlist resolution is slow for large libraries | Slow playlist startup | Search is already threaded. Show a loading indicator in the UI. Consider caching resolved results with a TTL. |
@@ -913,18 +913,24 @@ The following items are explicitly deferred from v1 and noted here for future pa
 
 ## 11. Summary of File Changes
 
-| File | Change Type | Description |
-|------|-------------|-------------|
-| `muse/named_playlist.py` | **New** | `NamedPlaylist` dataclass (search-query / directory / explicit-track modes) + `NamedPlaylistStore` |
-| `muse/playlist.py` | **Modify** | Add `loop` flag, `skip_memory_shuffle` flag, `_reset_for_loop()` method |
-| `muse/playback_config.py` | **Modify** | Add `explicit_tracks` parameter, dual-mode `get_list()`, `from_named_playlist()` factory |
-| `muse/playback_config_master.py` | **Rewrite** | Cursor-based weighted round-robin interleaving, property proxies, exhaustion handling |
-| `muse/playback_state.py` | Minor modify | Ensure master config is properly set/cleared |
-| `muse/run.py` | **Modify** | Unified code path in `do_workflow()`, remove redundant strategy check in `run()` |
-| `muse/playback.py` | Minor modify | Ensure no runtime errors at config boundaries (no-op handling) |
-| `utils/globals.py` | **Modify** | `TrackResult` NamedTuple: add `config_index` and `config_changed` fields for multi-playlist context (Phase 4) |
-| `ui/playlist_window.py` | **Modify** | Refactor to use `NamedPlaylist`, add weight/loop UI, track reordering, search integration |
-| `ui/search_window.py` | **Modify** | Add "Add to Playlist" and "Create Playlist from Search" actions |
-| `app.py` | **Modify** | Wire playlist window into menu, auto-open on `PLAYLIST_CONFIG` selection |
+| File | Change Type | Description | Status |
+|------|-------------|-------------|--------|
+| `muse/named_playlist.py` | **New** | `NamedPlaylist` dataclass (search-query / directory / explicit-track modes) + `NamedPlaylistStore` | **Done** (Phase 1) |
+| `muse/playlist.py` | **Modify** | Add `loop` flag, `skip_memory_shuffle` flag, `reset()` / `_reset_for_loop()` methods, loop-aware `next_track()`, `skip_memory_shuffle` guard in `sort()` | **Done** (Phase 2) |
+| `muse/playback_config.py` | **Modify** | Add `explicit_tracks` parameter, dual-mode `get_list()` (propagates `loop`/`skip_memory_shuffle`), `from_named_playlist()` factory. Remove extension state (`last_extension_played`, `ready_for_extension`, `assign_extension()`, `next_track_override`, `set_next_track_override()`). Fix `reamining_count` typo. | **Done** (Phase 2) |
+| `muse/playback_config_master.py` | **Rewrite** | Cursor-based weighted round-robin interleaving, property proxies, exhaustion/loop handling. Sole owner of extension state. Added `get_playing_config()`, `get_playing_track()`, `_stamp_result()` for `TrackResult` enrichment. | **Done** (Phase 2) |
+| `muse/playback_state.py` | **Modify** | Renamed slots for clarity: `active_config` (runtime) vs `master_config` (UI-configured). Removed dead `set_instance` / `reset_instance` calls. Added `reset()` convenience method. | **Done** (Phase 2) |
+| `muse/run.py` | **Modify** | Unified code path in `do_workflow()` -- both `ALL_MUSIC` and `PLAYLIST_CONFIG` produce a `PlaybackConfigMaster`. Remove redundant strategy check in `run()`. | **Done** (Phase 2) |
+| `muse/playback.py` | **Modify** | `TrackResult`-based flow: replaced separate `old_grouping`/`new_grouping` ivars with `_track_result`. Passes `TrackResult` to `get_spot_profile()`. | **Done** (Phase 4.2) |
+| `muse/muse_spot_profile.py` | **Modify** | Accept `TrackResult` instead of separate args. Suppress grouping speech when `config_changed` is `True`. | **Done** (Phase 4.2) |
+| `muse/muse.py`, `muse/muse_memory.py` | Minor modify | `get_spot_profile` signatures updated to accept `TrackResult`. | **Done** (Phase 4.2) |
+| `utils/globals.py` | **Modify** | `TrackResult` NamedTuple: add `config_index` and `config_changed` fields for multi-playlist context. | **Done** (Phase 4.2) |
+| `utils/utils.py` | Minor modify | Add `Utils.isfile_with_retry()` (mirrors `isdir_with_retry()`). | **Done** (Phase 1.3) |
+| `extensions/extension_manager.py` | Minor modify | Updated to call `PlaybackConfigMaster.assign_extension()` and `PlaybackConfigMaster.get_playing_track()`. | **Done** (Phase 2.9) |
+| `tests/integration/test_playback_integration.py` | Minor modify | Updated for `TrackResult` named fields and lowercase `open_configs`. | **Done** |
+| `tests/unit/test_muse_core.py` | Minor modify | Updated `MuseSpotProfile` constructor calls for `TrackResult`. | **Done** |
+| `ui/playlist_window.py` | **Modify** | Refactor to use `NamedPlaylist`, add weight/loop UI, track reordering, search integration. Updated `PlaybackStateManager` calls. | Pending (Phase 3) |
+| `ui/search_window.py` | **Modify** | Add "Add to Playlist" and "Create Playlist from Search" actions | Pending (Phase 3) |
+| `app.py` | **Modify** | Wire playlist window into menu, auto-open on `PLAYLIST_CONFIG` selection | Pending (Phase 3) |
 | `ui_qt/playlist_window.py` | Deferred (Phase 5) | Qt port of finalized Tkinter version |
 | `app_qt.py` | Deferred (Phase 5) | Qt wiring of playlist window |

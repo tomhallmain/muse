@@ -43,6 +43,22 @@ class PlaybackConfigMaster:
     # ------------------------------------------------------------------
 
     @staticmethod
+    def get_playing_config() -> Optional['PlaybackConfigMaster']:
+        """Return the currently playing master config, or None."""
+        for _config in PlaybackConfigMaster.open_configs:
+            if _config.playing:
+                return _config
+        return None
+
+    @staticmethod
+    def get_playing_track() -> Optional[MediaTrack]:
+        """Return the current track from the playing master config, or None."""
+        playing = PlaybackConfigMaster.get_playing_config()
+        if not playing:
+            return None
+        return playing.current_track()
+
+    @staticmethod
     def assign_extension(new_file: str) -> None:
         while not PlaybackConfigMaster.ready_for_extension:
             logger.info("Waiting for config to accept extension...")

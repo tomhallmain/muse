@@ -1,6 +1,4 @@
 from copy import deepcopy
-import datetime
-import time
 from types import SimpleNamespace
 from typing import Dict, List, Optional, Any, TYPE_CHECKING
 
@@ -19,15 +17,13 @@ if TYPE_CHECKING:
 
 
 class PlaybackConfig:
-    last_extension_played: datetime.datetime = datetime.datetime.now()
     open_configs: List['PlaybackConfig'] = []
-    ready_for_extension: bool = True
 
     @staticmethod
     def get_playing_config() -> Optional['PlaybackConfig']:
-        for config in PlaybackConfig.open_configs:
-            if config.playing:
-                return config
+        for _config in PlaybackConfig.open_configs:
+            if _config.playing:
+                return _config
         return None
 
     @staticmethod
@@ -121,7 +117,6 @@ class PlaybackConfig:
         self.check_entire_playlist: bool = args.check_entire_playlist if args else False
         self.list: Playlist = Playlist(data_callbacks=self.data_callbacks, check_entire_playlist=self.check_entire_playlist)
         self.start_track: Optional[str] = args.track if args else None
-        self.next_track_override: Optional[str] = None
         self.playing: bool = False
         self._explicit_tracks: Optional[List[str]] = explicit_tracks
         self.loop: bool = False
@@ -134,7 +129,7 @@ class PlaybackConfig:
     def length(self) -> int:
         return self.get_list().size()
     
-    def reamining_count(self) -> int:
+    def remaining_count(self) -> int:
         return self.get_list().remaining_count()
 
     def get_list(self) -> Playlist:
@@ -156,19 +151,9 @@ class PlaybackConfig:
 
     def next_track(self, skip_grouping: bool = False, places_from_current: int = 0) -> TrackResult:
         self.set_playing()
-        if self.next_track_override is not None:
-            next_track = MediaTrack(self.next_track_override)
-            next_track.set_is_extended()
-            self.next_track_override = None
-            PlaybackConfig.ready_for_extension = True
-            return TrackResult(next_track)
         return self.get_list().next_track(skip_grouping=skip_grouping, places_from_current=places_from_current)
 
     def upcoming_track(self, places_from_current: int = 1) -> TrackResult:
-        if self.next_track_override is not None:
-            upcoming_track = MediaTrack(self.next_track_override)
-            upcoming_track.set_is_extended()
-            return TrackResult(upcoming_track)
         return self.get_list().upcoming_track(places_from_current=places_from_current)
 
     def current_track(self) -> Optional[MediaTrack]:
@@ -183,9 +168,6 @@ class PlaybackConfig:
         l = self.get_list()
         return l.get_next_grouping()
 
-    def set_next_track_override(self, new_file: str) -> None:
-        self.next_track_override = new_file
-
     def split_track(self, track: MediaTrack, do_split_override: bool = True, offset: int = 1) -> MediaTrack:
         self.get_list().print_upcoming("split_track before")
         tracks = track.extract_non_silent_track_parts(select_random_track_part=not self.long_track_splitting_play_all)
@@ -197,18 +179,6 @@ class PlaybackConfig:
             logger.info(f"Assigned split track overrides: {tracks}")
         self.get_list().print_upcoming("split_track after")
         return tracks[0]
-
-    @staticmethod
-    def assign_extension(new_file: str) -> None:
-        while not PlaybackConfig.ready_for_extension:
-            logger.info("Waiting for config to accept extension...")
-            time.sleep(5)
-        logger.info("Assigning extension to playback")
-        PlaybackConfig.ready_for_extension = False
-        for open_config in PlaybackConfig.open_configs:
-            open_config.overwrite = True
-            open_config.get_list()
-            open_config.set_next_track_override(new_file)
 
     def __str__(self) -> str:
         return "PlaybackConfig(type=" + str(self.type) + ", directories=" + str(len(self.directories)) + ")"

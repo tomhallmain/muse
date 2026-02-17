@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 from extensions.llm import LLM, LLMResponseException
 from extensions.library_extender import LibraryExtender
 from extensions.soup_utils import SoupUtils
-from muse.playback_config import PlaybackConfig
+from muse.playback_config_master import PlaybackConfigMaster
 from muse.prompter import Prompter
 from utils.app_info_cache import app_info_cache
 from utils.config import config
@@ -115,7 +115,7 @@ class ExtensionManager:
             ExtensionManager.extension_thread_started = False
 
     def get_extension_sleep_time(self, min_value: int, max_value: int) -> int:
-        current_track = PlaybackConfig.get_playing_track()
+        current_track = PlaybackConfigMaster.get_playing_track()
         if current_track is not None and current_track.get_track_length() > max_value:
             length = int(current_track.get_track_length())
             min_value += length
@@ -416,7 +416,7 @@ class ExtensionManager:
         try:
             f, b = self._a(b, b1)
             self._append(b, f, attr, s)
-            PlaybackConfig.assign_extension(f)
+            PlaybackConfigMaster.assign_extension(f)
             if self.ui_callbacks is not None:
                 self.ui_callbacks.update_extension_status(_("Extension \"{0}\" ready").format(b.n))
                 # TODO update ExtensionsWindow as well if it's open
