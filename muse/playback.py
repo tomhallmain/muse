@@ -242,7 +242,7 @@ class Playback:
         # Get the spot profile with the upcoming tracks callback
         spot_profile = self.get_muse().get_spot_profile(
             previous_track,
-            TrackResult(next_track, self._track_result.old_grouping, self._track_result.new_grouping),
+            self._track_result._replace(track=next_track),
             self.last_track_failed,
             self._run_context.skip_track,
             self.get_grouping_type(),

@@ -45,4 +45,4 @@ class TestPlaybackIntegration:
         config.set_playing(True)
         assert config.playing
         assert PlaybackConfig.get_playing_config() == config
-        PlaybackConfig.OPEN_CONFIGS.clear()
+        PlaybackConfig.open_configs.clear()

@@ -19,13 +19,13 @@ if TYPE_CHECKING:
 
 
 class PlaybackConfig:
-    LAST_EXTENSION_PLAYED: datetime.datetime = datetime.datetime.now()
-    OPEN_CONFIGS: List['PlaybackConfig'] = []
-    READY_FOR_EXTENSION: bool = True
+    last_extension_played: datetime.datetime = datetime.datetime.now()
+    open_configs: List['PlaybackConfig'] = []
+    ready_for_extension: bool = True
 
     @staticmethod
     def get_playing_config() -> Optional['PlaybackConfig']:
-        for config in PlaybackConfig.OPEN_CONFIGS:
+        for config in PlaybackConfig.open_configs:
             if config.playing:
                 return config
         return None
@@ -126,7 +126,7 @@ class PlaybackConfig:
         self._explicit_tracks: Optional[List[str]] = explicit_tracks
         self.loop: bool = False
         self.skip_memory_shuffle: bool = False
-        PlaybackConfig.OPEN_CONFIGS.append(self)
+        PlaybackConfig.open_configs.append(self)
 
     def maximum_plays(self) -> int:
         return 1
@@ -158,7 +158,7 @@ class PlaybackConfig:
             next_track = MediaTrack(self.next_track_override)
             next_track.set_is_extended()
             self.next_track_override = None
-            PlaybackConfig.READY_FOR_EXTENSION = True
+            PlaybackConfig.ready_for_extension = True
             return TrackResult(next_track)
         return self.get_list().next_track(skip_grouping=skip_grouping, places_from_current=places_from_current)
 
@@ -198,12 +198,12 @@ class PlaybackConfig:
 
     @staticmethod
     def assign_extension(new_file: str) -> None:
-        while not PlaybackConfig.READY_FOR_EXTENSION:
+        while not PlaybackConfig.ready_for_extension:
             logger.info("Waiting for config to accept extension...")
             time.sleep(5)
         logger.info("Assigning extension to playback")
-        PlaybackConfig.READY_FOR_EXTENSION = False
-        for open_config in PlaybackConfig.OPEN_CONFIGS:
+        PlaybackConfig.ready_for_extension = False
+        for open_config in PlaybackConfig.open_configs:
             open_config.overwrite = True
             open_config.get_list()
             open_config.set_next_track_override(new_file)

@@ -771,8 +771,14 @@ class TrackResult(NamedTuple):
 
     Backward-compatible with the previous ``(track, old_grouping, new_grouping)``
     tuple return, so existing destructuring continues to work unchanged.
+
+    ``config_index`` and ``config_changed`` are populated by
+    ``PlaybackConfigMaster`` to give downstream consumers visibility into
+    multi-playlist interleaving boundaries.
     """
     track: Optional[Any] = None          # MediaTrack or None
     old_grouping: Optional[str] = None
     new_grouping: Optional[str] = None
+    config_index: Optional[int] = None   # Index of the config that produced this track
+    config_changed: bool = False         # True when config switched since the previous track
 

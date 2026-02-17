@@ -511,7 +511,120 @@ A: **Playback stops.** This is the default behavior. See "Out of Scope" (Section
 **Q: How does `Playback.get_track()` need to change?**
 A: Minimally. `Playback` already calls `self._playback_config.next_track()` which returns `(track, old_grouping, new_grouping)`. As long as `PlaybackConfigMaster` provides this interface (which it does), `Playback` works unchanged. The attribute accesses (`enable_long_track_splitting`, etc.) are handled by properties on `PlaybackConfigMaster` that delegate to the current config.
 
-### 5.5 Run Integration (Unified Code Path)
+### 5.5 TrackResult Enrichment for Multi-Playlist Context
+
+#### 5.5.1 Motivation
+
+`TrackResult` currently carries `(track, old_grouping, new_grouping)`. These grouping
+fields are always produced by a single `Playlist` instance and describe transitions
+*within* that playlist's sort order (e.g., switching from one composer to another in a
+`COMPOSER_SHUFFLE` playlist). Because `PlaybackConfigMaster.next_track()` passes the
+child config's `TrackResult` through unchanged, grouping values are never mixed across
+configs -- the grouping fields remain coherent.
+
+However, `Playback` and the DJ layer currently have no visibility into which config
+produced a given track, or whether the interleaving cursor just switched configs. This
+matters for two reasons:
+
+1. **Suppressing misleading grouping remarks at config boundaries.** When the cursor
+   moves from config A (music, `COMPOSER_SHUFFLE`) to config B (audiobook,
+   `SEQUENCE`), the DJ sees `old_grouping=None, new_grouping=None` from the audiobook
+   side -- harmless today. But if both configs use grouping sort types with
+   overlapping attribute names (e.g., two music playlists sorted by different
+   groupings), the DJ could see a grouping "change" that is really just a config
+   switch. The DJ needs a signal to distinguish the two.
+
+2. **Context-aware transitions (future).** For the DJ to make remarks like "Now let's
+   continue with our audiobook" or "Back to the jazz playlist," it needs to know the
+   full scope of what is being presented: which configs exist, which one is active,
+   and when a switch just happened. This is the foundation for the context-aware
+   transition work noted in Section 10.
+
+#### 5.5.2 Recommended Approach
+
+Enrich `TrackResult` with metadata that lets downstream consumers (primarily
+`MuseSpotProfile` and `Playback`) identify config boundaries and, eventually,
+describe transitions to the listener:
+
+```python
+class TrackResult(NamedTuple):
+    track: Optional[Any] = None
+    old_grouping: Optional[str] = None
+    new_grouping: Optional[str] = None
+    config_index: Optional[int] = None       # Index of the config that produced this track
+    config_changed: bool = False              # True when this track came from a different config than the previous one
+```
+
+Because `NamedTuple` fields with defaults are append-only, adding new fields at the
+end preserves full backward compatibility -- existing `(track, old_grouping,
+new_grouping)` destructuring continues to work, and code that doesn't know about the
+new fields simply ignores them.
+
+#### 5.5.3 Producer Side (PlaybackConfigMaster)
+
+`PlaybackConfigMaster.next_track()` is the natural place to populate the new fields.
+It already knows `_config_cursor` and can compare to the previous cursor value:
+
+```python
+def next_track(self, ...):
+    prev_cursor = self._config_cursor
+    # ... interleaving logic, get result from child config ...
+    return TrackResult(
+        track=result.track,
+        old_grouping=result.old_grouping,
+        new_grouping=result.new_grouping,
+        config_index=self._config_cursor,
+        config_changed=(self._config_cursor != prev_cursor),
+    )
+```
+
+When only a single config is present (the `ALL_MUSIC` case), `config_changed` is
+always `False` and the behavior is identical to today.
+
+#### 5.5.4 Consumer Side
+
+**v1 (Phase 4):** Suppress grouping speech at config boundaries as a safe default.
+
+**`Playback.prepare_muse()`** -- When constructing the `TrackResult` passed to
+`get_spot_profile`, propagate the config metadata from `self._track_result`.
+
+**`MuseSpotProfile.__init__()`** -- When `config_changed` is `True`, suppress
+grouping-related speech (`speak_about_prior_group`, `speak_about_upcoming_group`):
+
+```python
+if track_result.config_changed:
+    self.speak_about_prior_group = False
+    self.speak_about_upcoming_group = False
+```
+
+**Caveat -- equal-weight interleaving:** In a weight=1 scenario (A, B, A, B, ...),
+*every* track is a config boundary, so `config_changed` is always `True` and this
+guard suppresses *all* grouping speech. This is acceptable for v1 -- grouping remarks
+in that pattern would be disjointed anyway since the DJ only sees one config's
+groupings at a time. For weights > 1 (e.g., A, A, B), the second consecutive A-track
+has `config_changed=False` and grouping speech works normally within that run. The
+exact tuning of this behavior will become clearer once multi-config playback is
+testable end-to-end.
+
+**Future (context-aware DJ):** Once `config_index` and `config_changed` are flowing
+through the system, the DJ can be extended to:
+- Announce playlist transitions ("Now back to our audiobook...")
+- Reference the overall listening session structure
+- Tailor remarks based on the *type* of content in the active config
+
+This requires additional context beyond `config_index` (e.g., the `NamedPlaylist`
+name or description), which can be attached to `PlaybackConfig` and surfaced through
+`PlaybackConfigMaster.current_playback_config`. The `TrackResult` fields provide the
+trigger; the richer context lives on the config objects.
+
+#### 5.5.5 Implementation Status
+
+The `TrackResult` fields (`config_index`, `config_changed`) and the consumer-side
+guard in `MuseSpotProfile` are implemented. The context-aware DJ transitions are
+explicitly out of scope for v1 (see Section 10) but the `TrackResult` enrichment
+lays the groundwork.
+
+### 5.6 Run Integration (Unified Code Path)
 
 Both `ALL_MUSIC` and `PLAYLIST_CONFIG` strategies flow through `PlaybackConfigMaster`.
 This unifies the run/play code path: `ALL_MUSIC` is simply a master with a single
@@ -543,7 +656,7 @@ def do_workflow(self) -> None:
 
 The existing hook in `Run.run()` (lines 98-101) can be simplified since `do_workflow()` now handles the strategy check upfront. The `PLAYLIST_CONFIG` branch in `Run.run()` becomes redundant and should be removed to avoid double-wrapping.
 
-### 5.6 Playlist Class Changes
+### 5.7 Playlist Class Changes
 
 **What stays the same:**
 - `Playlist.__init__(tracks, _type, data_callbacks, ...)` -- already accepts an arbitrary track list
@@ -552,7 +665,7 @@ The existing hook in `Run.run()` (lines 98-101) can be simplified since `do_work
 
 **What changes:**
 
-#### 5.6.1 Loop Flag
+#### 5.7.1 Loop Flag
 
 Add a `loop: bool = False` parameter to `Playlist.__init__`. When `loop=True` and
 `next_track()` would return `None` (playlist exhausted), the playlist resets its
@@ -577,7 +690,7 @@ def _reset_for_loop(self):
 
 The `loop` flag is propagated from `NamedPlaylist.loop` through `PlaybackConfig`.
 
-#### 5.6.2 Lightweight Mode for Small / Curated Playlists
+#### 5.7.2 Lightweight Mode for Small / Curated Playlists
 
 Small curated playlists (e.g., 10 audiobook chapters) should not run through the
 memory-based shuffling logic. The existing `MIN_PLAYLIST_SIZE = 200` guard in
@@ -664,7 +777,7 @@ The real work is in `PlaybackConfig` (dual-mode track source) and `PlaybackConfi
 | # | Task | Files | Complexity |
 |---|------|-------|------------|
 | 4.1 | Handle tracks that no longer exist on disk (for explicit-track playlists: filter on load, warn user) | `muse/named_playlist.py`, `muse/playback_config.py` | Low |
-| 4.2 | Ensure no runtime errors from Muse/DJ at config boundaries (no-op handling, not context-aware remarks) | `muse/playback.py`, `muse/playback_config_master.py` | Low |
+| 4.2 | Enrich `TrackResult` with `config_index` / `config_changed` fields; suppress grouping speech at config boundaries (see Section 5.5) | `utils/globals.py`, `muse/playback_config_master.py`, `muse/muse_spot_profile.py`, `muse/playback.py` | Medium |
 | 4.3 | Persist master playlist state for resume-on-restart | `muse/playback_config_master.py`, `muse/playback_state.py` | Medium |
 | 4.4 | Unit tests for interleaving logic, loop behavior, and search-based resolution | `tests/` | Medium |
 
@@ -790,7 +903,7 @@ The following items are explicitly deferred from v1 and noted here for future pa
 | Item | Description |
 |------|-------------|
 | **Smart playlist criteria** | Filter-based playlist definitions (e.g., "all tracks by Bach longer than 5 minutes"). The search-query-based `NamedPlaylist` is a step toward this but does not cover duration filters, compound boolean logic, etc. |
-| **Muse/DJ context-aware transitions** | The DJ may generate contextually inappropriate remarks when switching between audiobook and music configs (e.g., discussing the "next artist" when the next track is an audiobook chapter). For v1, ensure no runtime errors at config boundaries; accept that DJ context may be imperfect. Future: add config-boundary awareness to spot profile generation. |
+| **Muse/DJ context-aware transitions** | The DJ may generate contextually inappropriate remarks when switching between audiobook and music configs (e.g., discussing the "next artist" when the next track is an audiobook chapter). For v1, the `TrackResult.config_changed` field (Section 5.5) provides the trigger to suppress grouping speech at boundaries; accept that DJ context may otherwise be imperfect. Future: use `config_index` plus `NamedPlaylist` metadata (name, description) surfaced through `PlaybackConfigMaster.current_playback_config` to enable contextual transition remarks ("Now back to our audiobook..."). |
 | **Post-exhaustion smart continuation** | When all dedicated playlists are exhausted, optionally fall back to a "smart continuation" playlist (e.g., play similar music, or switch to `ALL_MUSIC` mode). This requires a new `PlaybackMasterStrategy` value or an exhaustion callback. |
 | **Complex interleaving patterns** | Support for non-uniform weight sequences (e.g., "A, A, B, A, A, A, B" as a custom pattern rather than simple integer weights). |
 | **Drag-and-drop track reordering** | Full drag-and-drop in the UI. v1 provides move-up / move-down buttons. |
@@ -809,7 +922,7 @@ The following items are explicitly deferred from v1 and noted here for future pa
 | `muse/playback_state.py` | Minor modify | Ensure master config is properly set/cleared |
 | `muse/run.py` | **Modify** | Unified code path in `do_workflow()`, remove redundant strategy check in `run()` |
 | `muse/playback.py` | Minor modify | Ensure no runtime errors at config boundaries (no-op handling) |
-| `utils/globals.py` | No change | `PlaybackMasterStrategy` enum already has both values |
+| `utils/globals.py` | **Modify** | `TrackResult` NamedTuple: add `config_index` and `config_changed` fields for multi-playlist context (Phase 4) |
 | `ui/playlist_window.py` | **Modify** | Refactor to use `NamedPlaylist`, add weight/loop UI, track reordering, search integration |
 | `ui/search_window.py` | **Modify** | Add "Add to Playlist" and "Create Playlist from Search" actions |
 | `app.py` | **Modify** | Wire playlist window into menu, auto-open on `PLAYLIST_CONFIG` selection |

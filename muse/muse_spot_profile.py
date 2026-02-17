@@ -97,7 +97,9 @@ class MuseSpotProfile:
         self.old_grouping = old_grouping
         self.new_grouping = new_grouping
         self.grouping_type = grouping_type
-        if old_grouping is not None and new_grouping is not None and old_grouping != new_grouping:
+        self.config_changed = track_result.config_changed
+        if (old_grouping is not None and new_grouping is not None
+                and old_grouping != new_grouping and not self.config_changed):
             self.speak_about_prior_group = previous_track is not None and random.random() < 0.5
             self.speak_about_upcoming_group = track is not None and random.random() < 0.9
         else:

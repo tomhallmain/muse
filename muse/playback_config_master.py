@@ -34,9 +34,9 @@ class PlaybackConfigMaster:
                 Playback stops (next_track returns TrackResult()).
     """
 
-    LAST_EXTENSION_PLAYED: datetime.datetime = datetime.datetime.now()
-    READY_FOR_EXTENSION: bool = True
-    OPEN_CONFIGS: List['PlaybackConfigMaster'] = []
+    last_extension_played: datetime.datetime = datetime.datetime.now()
+    ready_for_extension: bool = True
+    open_configs: List['PlaybackConfigMaster'] = []
 
     # ------------------------------------------------------------------
     # Extension handling
@@ -44,12 +44,12 @@ class PlaybackConfigMaster:
 
     @staticmethod
     def assign_extension(new_file: str) -> None:
-        while not PlaybackConfigMaster.READY_FOR_EXTENSION:
+        while not PlaybackConfigMaster.ready_for_extension:
             logger.info("Waiting for config to accept extension...")
             time.sleep(5)
         logger.info("Assigning extension to playback")
-        PlaybackConfigMaster.READY_FOR_EXTENSION = False
-        for open_config in PlaybackConfigMaster.OPEN_CONFIGS:
+        PlaybackConfigMaster.ready_for_extension = False
+        for open_config in PlaybackConfigMaster.open_configs:
             open_config.set_next_track_override(new_file)
 
     # ------------------------------------------------------------------
@@ -69,6 +69,7 @@ class PlaybackConfigMaster:
 
         # Interleaving state
         self._config_cursor: int = 0
+        self._prev_config_cursor: int = 0
         self._weight_counter: int = 0
         self._active_mask: List[bool] = [True] * len(self.playback_configs)
 
@@ -77,7 +78,7 @@ class PlaybackConfigMaster:
         self.played_tracks: List[MediaTrack] = []
         self.next_track_override: Optional[str] = None
 
-        PlaybackConfigMaster.OPEN_CONFIGS.append(self)
+        PlaybackConfigMaster.open_configs.append(self)
 
     # ------------------------------------------------------------------
     # Interleaving helpers
@@ -123,6 +124,13 @@ class PlaybackConfigMaster:
     # Core playback interface
     # ------------------------------------------------------------------
 
+    def _stamp_result(self, result: TrackResult) -> TrackResult:
+        """Attach config-level metadata to a child config's TrackResult."""
+        return result._replace(
+            config_index=self._config_cursor,
+            config_changed=(self._config_cursor != self._prev_config_cursor),
+        )
+
     def next_track(self, skip_grouping: bool = False,
                    places_from_current: int = 0) -> TrackResult:
         """Get the next track using weighted round-robin interleaving."""
@@ -133,11 +141,13 @@ class PlaybackConfigMaster:
             track = MediaTrack(self.next_track_override)
             track.set_is_extended()
             self.next_track_override = None
-            PlaybackConfigMaster.READY_FOR_EXTENSION = True
+            PlaybackConfigMaster.ready_for_extension = True
             return TrackResult(track)
 
         if not any(self._active_mask):
             return TrackResult()
+
+        self._prev_config_cursor = self._config_cursor
 
         config = self.playback_configs[self._config_cursor]
         result = config.next_track(
@@ -174,7 +184,7 @@ class PlaybackConfigMaster:
         if self._weight_counter >= self.weights[self._config_cursor]:
             self._advance_cursor()
 
-        return result
+        return self._stamp_result(result)
 
     def upcoming_track(self, places_from_current: int = 1) -> TrackResult:
         """Peek at the next track without advancing interleaving state."""
@@ -186,7 +196,13 @@ class PlaybackConfigMaster:
         cfg = self._peek_next_config()
         if cfg is None:
             return TrackResult()
-        return cfg.upcoming_track(places_from_current=places_from_current)
+        result = cfg.upcoming_track(places_from_current=places_from_current)
+        # Determine if the peeked config differs from the current one.
+        peek_index = self.playback_configs.index(cfg)
+        return result._replace(
+            config_index=peek_index,
+            config_changed=(peek_index != self._config_cursor),
+        )
 
     def current_track(self) -> Optional[MediaTrack]:
         cfg = self.current_playback_config
