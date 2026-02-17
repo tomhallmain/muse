@@ -73,7 +73,9 @@ class Playlist:
 
     def __init__(self, tracks: List[str] = [], _type: PlaylistSortType = PlaylistSortType.SEQUENCE, 
                  data_callbacks: Optional['LibraryDataCallbacks'] = None, start_track: Optional[MediaTrack] = None, 
-                 check_entire_playlist: bool = False) -> None:
+                 check_entire_playlist: bool = False,
+                 loop: bool = False,
+                 skip_memory_shuffle: bool = False) -> None:
         self.in_sequence: List[str] = list(tracks)
         self.sort_type: PlaylistSortType = _type
         self.pending_tracks: List[str] = list(tracks)
@@ -82,6 +84,8 @@ class Playlist:
         self.current_track_index: int = -1
         self.start_track: Optional[MediaTrack] = start_track
         self.data_callbacks: Optional['LibraryDataCallbacks'] = data_callbacks
+        self.loop: bool = loop
+        self._skip_memory_shuffle: bool = skip_memory_shuffle
         assert self.data_callbacks is not None and \
                 self.data_callbacks.get_track is not None and \
                 self.data_callbacks.get_all_tracks is not None
@@ -102,6 +106,18 @@ class Playlist:
 
     def is_valid(self) -> bool:
         return len(self.in_sequence) > 0
+
+    def reset(self) -> None:
+        """Public reset for external callers (e.g. PlaybackConfigMaster loop handling)."""
+        self._reset_for_loop()
+
+    def _reset_for_loop(self) -> None:
+        """Reset playlist state for looping. Re-shuffles if not SEQUENCE."""
+        self.current_track_index = -1
+        self.pending_tracks = list(self.in_sequence)
+        self.played_tracks.clear()
+        if self.sort_type != PlaylistSortType.SEQUENCE:
+            self.sort()
 
     def insert_upcoming_tracks(self, tracks: List[MediaTrack], idx: Optional[int] = None, 
                              offset: int = 1, overwrite_existing_at_index: bool = True) -> None:
@@ -147,6 +163,9 @@ class Playlist:
             places_from_current: The number of places from the current track to get the next track
         """
         if len(self.sorted_tracks) == 0 or (self.current_track_index + places_from_current) >= len(self.sorted_tracks):
+            if self.loop and len(self.sorted_tracks) > 0:
+                self._reset_for_loop()
+                return self.next_track(skip_grouping, places_from_current)
             return TrackResult()
         self.print_upcoming("next_track before")
         old_grouping = None
@@ -310,8 +329,9 @@ class Playlist:
                     self.sorted_tracks.sort(key=lambda t: (all_attrs_list.index(getattr(t, grouping_attr_getter_name)()), t.filepath))
                 else:
                     self.sorted_tracks.sort(key=lambda t: (all_attrs_list.index(getattr(t, grouping_attr_getter_name)), t.filepath))
-            history_type = self.sort_type.grouping_list_name_mapping()
-            self.shuffle_with_memory_for_attr(grouping_attr_getter_name, history_type, check_entire_playlist)
+            if not self._skip_memory_shuffle:
+                history_type = self.sort_type.grouping_list_name_mapping()
+                self.shuffle_with_memory_for_attr(grouping_attr_getter_name, history_type, check_entire_playlist)
         if do_set_start_track:
             # The user specified a start track, it's not random
             self.set_start_track(grouping_attr_getter_name)

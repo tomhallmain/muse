@@ -158,15 +158,7 @@ class PlaybackConfigMaster:
         if result.track is None:
             # Current config exhausted -- check loop flag.
             if config.loop:
-                playlist = config.get_list()
-                if hasattr(playlist, 'reset'):
-                    playlist.reset()
-                else:
-                    # Invalidate so get_list() rebuilds from the same source.
-                    config.list = Playlist(
-                        data_callbacks=config.data_callbacks,
-                        check_entire_playlist=config.check_entire_playlist,
-                    )
+                config.get_list().reset()
                 result = config.next_track(
                     skip_grouping=skip_grouping,
                     places_from_current=places_from_current,

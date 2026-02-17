@@ -146,7 +146,9 @@ class PlaybackConfig:
             track_list = self.data_callbacks.get_all_filepaths(self.directories, self.overwrite)
         self.list = Playlist(track_list, self.type, data_callbacks=self.data_callbacks,
                              start_track=self.start_track,
-                             check_entire_playlist=self.check_entire_playlist)
+                             check_entire_playlist=self.check_entire_playlist,
+                             loop=self.loop,
+                             skip_memory_shuffle=self.skip_memory_shuffle)
         return self.list
 
     def set_playing(self, playing: bool = True) -> None:
