@@ -99,6 +99,9 @@ class MasterPlaylistWindow(SmartWindow):
         new_pl_btn = QPushButton(_("New Playlist"), self)
         new_pl_btn.clicked.connect(self._open_new_playlist)
         avail_btns.addWidget(new_pl_btn)
+        freeze_btn = QPushButton(_("Freeze to Tracks"), self)
+        freeze_btn.clicked.connect(self._freeze_to_tracks)
+        avail_btns.addWidget(freeze_btn)
         del_btn = QPushButton(_("Delete"), self)
         del_btn.clicked.connect(self._delete_available)
         avail_btns.addWidget(del_btn)
@@ -212,6 +215,45 @@ class MasterPlaylistWindow(SmartWindow):
     def _on_new_playlist_saved(self):
         """Callback from NewPlaylistWindow after a playlist is saved."""
         self._load_available()
+
+    def _freeze_to_tracks(self):
+        """Convert a search/directory playlist to an explicit track list."""
+        row = self._avail_list.currentRow()
+        if row < 0:
+            return
+        name = list(self._named_playlists.keys())[row]
+        np = self._named_playlists[name]
+        if not np.can_freeze():
+            QMessageBox.information(
+                self, _("Freeze to Tracks"),
+                _("This playlist is already track-based.")
+            )
+            return
+        if self.library_data is None:
+            QMessageBox.critical(self, _("Error"), _("Library data not available."))
+            return
+        reply = QMessageBox.question(
+            self, _("Freeze to Tracks"),
+            _("Convert \"{0}\" to an explicit track list?\n\n"
+              "This will resolve the current {1} source and replace it "
+              "with a fixed list of tracks. This cannot be undone.").format(
+                name, "search" if np.is_search_based() else "directory"
+            ),
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+        )
+        if reply != QMessageBox.StandardButton.Yes:
+            return
+        try:
+            count = np.freeze_to_tracks(self.library_data)
+            NamedPlaylistStore.save(np, cache=app_info_cache)
+            self._load_available()
+            QMessageBox.information(
+                self, _("Freeze to Tracks"),
+                _("Playlist \"{0}\" frozen to {1} tracks.").format(name, count)
+            )
+        except Exception as e:
+            logger.error(f"Failed to freeze playlist '{name}': {e}")
+            QMessageBox.critical(self, _("Error"), str(e))
 
     def _delete_available(self):
         row = self._avail_list.currentRow()

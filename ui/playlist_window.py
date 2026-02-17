@@ -76,6 +76,7 @@ class MasterPlaylistWindow:
         avail_btns = Frame(left)
         avail_btns.grid(row=2, column=0, sticky="ew", pady=(5, 0))
         Button(avail_btns, text=_("New Playlist"), command=self._open_new_playlist).pack(side="left", padx=(0, 5))
+        Button(avail_btns, text=_("Freeze to Tracks"), command=self._freeze_to_tracks).pack(side="left", padx=(0, 5))
         Button(avail_btns, text=_("Delete"), command=self._delete_available).pack(side="left")
 
         # --- Centre: add/remove arrows ---
@@ -172,6 +173,43 @@ class MasterPlaylistWindow:
     def _on_new_playlist_saved(self):
         """Callback from NewPlaylistWindow after a playlist is saved."""
         self._load_available()
+
+    def _freeze_to_tracks(self):
+        """Convert a search/directory playlist to an explicit track list."""
+        sel = self._avail_listbox.curselection()
+        if not sel:
+            return
+        name = list(self._named_playlists.keys())[sel[0]]
+        np = self._named_playlists[name]
+        if not np.can_freeze():
+            messagebox.showinfo(
+                _("Freeze to Tracks"),
+                _("This playlist is already track-based.")
+            )
+            return
+        if self.library_data is None:
+            messagebox.showerror(_("Error"), _("Library data not available."))
+            return
+        if not messagebox.askyesno(
+            _("Freeze to Tracks"),
+            _("Convert \"{0}\" to an explicit track list?\n\n"
+              "This will resolve the current {1} source and replace it "
+              "with a fixed list of tracks. This cannot be undone.").format(
+                name, "search" if np.is_search_based() else "directory"
+            )
+        ):
+            return
+        try:
+            count = np.freeze_to_tracks(self.library_data)
+            NamedPlaylistStore.save(np)
+            self._load_available()
+            messagebox.showinfo(
+                _("Freeze to Tracks"),
+                _("Playlist \"{0}\" frozen to {1} tracks.").format(name, count)
+            )
+        except Exception as e:
+            logger.error(f"Failed to freeze playlist '{name}': {e}")
+            messagebox.showerror(_("Error"), str(e))
 
     def _delete_available(self):
         sel = self._avail_listbox.curselection()

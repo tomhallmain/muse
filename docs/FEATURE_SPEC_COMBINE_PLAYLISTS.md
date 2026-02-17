@@ -797,6 +797,20 @@ The real work is in `PlaybackConfig` (dual-mode track source) and `PlaybackConfi
 | 5.4 | Port search integration ("Save as Playlist" + per-result "+ Playlist" buttons) to Qt `SearchWindow` | `ui_qt/search_window.py` | Medium | **COMPLETE** |
 | 5.5 | Remove dead `PresetsWindow` modules (both Tkinter and Qt); clean up references in `app.py`, `app_qt.py`, `ui/__init__.py` | `ui/presets_window.py` (deleted), `ui_qt/presets_window.py` (deleted), `app.py`, `app_qt.py`, `ui/__init__.py` | Low | **COMPLETE** |
 
+### Phase 6: Freeze to Tracks (Playlist Conversion)
+
+Allow users to convert search-based and directory-based playlist descriptors
+into explicit-track lists. This "snapshots" the resolved tracks at a point in
+time, allowing the user to then manually reorder, remove, or add individual
+tracks. The reverse conversion (explicit → search/directory) is intentionally
+**not** supported.
+
+| # | Task | Files | Complexity | Status |
+|---|------|-------|------------|--------|
+| 6.1 | Add `can_freeze()` and `freeze_to_tracks(library_data)` methods on `NamedPlaylist` that resolve tracks, clear search/directory source, set `track_filepaths` | `muse/named_playlist.py` | Low | **COMPLETE** |
+| 6.2 | Add "Freeze to Tracks" button in Tkinter `MasterPlaylistWindow` available-playlists panel (enabled only for search/directory playlists). On click: confirm dialog, call `freeze_to_tracks()`, refresh list. | `ui/playlist_window.py` | Low | **COMPLETE** |
+| 6.3 | Port "Freeze to Tracks" button to Qt `MasterPlaylistWindow` | `ui_qt/playlist_window.py` | Low | **COMPLETE** |
+
 ---
 
 ## 7. Interleaving Examples
@@ -914,6 +928,7 @@ The following items are explicitly deferred from v1 and noted here for future pa
 | **Post-exhaustion smart continuation** | When all dedicated playlists are exhausted, optionally fall back to a "smart continuation" playlist (e.g., play similar music, or switch to `ALL_MUSIC` mode). This requires a new `PlaybackMasterStrategy` value or an exhaustion callback. |
 | **Complex interleaving patterns** | Support for non-uniform weight sequences (e.g., "A, A, B, A, A, A, B" as a custom pattern rather than simple integer weights). |
 | **Drag-and-drop track reordering** | Full drag-and-drop in the UI. v1 provides move-up / move-down buttons. |
+| **Rename `NamedPlaylist` → `PlaylistDescriptor`** | Rename the class, module (`named_playlist.py` → `playlist_descriptor.py`), and store (`NamedPlaylistStore` → `PlaylistDescriptorStore`) to better reflect the indeterminate/recipe nature of the object. The cache key is already `playlist_descriptors`. Touches: `muse/named_playlist.py`, `muse/playback_config.py`, `ui/playlist_window.py`, `ui_qt/playlist_window.py`, `ui/search_window.py`, `ui_qt/search_window.py`, tests, feature spec. |
 | **Persist master playlist state for resume-on-restart** | Serialize the current `PlaybackConfigMaster` (config indices, cursor position, weight counters, active mask) so playback can resume after an app restart. Requires changes to `muse/playback_config_master.py` and `muse/playback_state.py`. (Moved from Phase 4.3.) |
 | **Unit tests for interleaving / loop / search resolution** | Unit tests for weighted round-robin interleaving, loop behavior, exhaustion handling, and search-based track resolution. (Moved from Phase 4.4.) |
 
@@ -923,7 +938,7 @@ The following items are explicitly deferred from v1 and noted here for future pa
 
 | File | Change Type | Description | Status |
 |------|-------------|-------------|--------|
-| `muse/named_playlist.py` | **New** | `NamedPlaylist` dataclass (search-query / directory / explicit-track modes) + `NamedPlaylistStore` | **Done** (Phase 1) |
+| `muse/named_playlist.py` | **New** | `NamedPlaylist` dataclass (search-query / directory / explicit-track modes) + `NamedPlaylistStore`. Cache key: `playlist_descriptors`. Added `can_freeze()` and `freeze_to_tracks()` for source-mode conversion (Phase 6). | **Done** (Phase 1, 6) |
 | `muse/playlist.py` | **Modify** | Add `loop` flag, `skip_memory_shuffle` flag, `reset()` / `_reset_for_loop()` methods, loop-aware `next_track()`, `skip_memory_shuffle` guard in `sort()` | **Done** (Phase 2) |
 | `muse/playback_config.py` | **Modify** | Add `explicit_tracks` parameter, dual-mode `get_list()` (propagates `loop`/`skip_memory_shuffle`), `from_named_playlist()` factory. Remove extension state (`last_extension_played`, `ready_for_extension`, `assign_extension()`, `next_track_override`, `set_next_track_override()`). Fix `reamining_count` typo. | **Done** (Phase 2) |
 | `muse/playback_config_master.py` | **Rewrite** | Cursor-based weighted round-robin interleaving, property proxies, exhaustion/loop handling. Sole owner of extension state. Added `get_playing_config()`, `get_playing_track()`, `_stamp_result()` for `TrackResult` enrichment. | **Done** (Phase 2) |

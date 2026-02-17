@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from library_data.library_data import LibraryData, LibraryDataSearch
 
 
-NAMED_PLAYLISTS_CACHE_KEY = "named_playlists"
+NAMED_PLAYLISTS_CACHE_KEY = "playlist_descriptors"
 
 
 @dataclass
@@ -80,6 +80,38 @@ class NamedPlaylist:
             count = len(self.track_filepaths)
             return f"Tracks: {count} track{'s' if count != 1 else ''}"
         return "(no source)"
+
+    def can_freeze(self) -> bool:
+        """Return True if this playlist can be frozen to an explicit track list."""
+        return self.is_search_based() or self.is_directory_based()
+
+    def freeze_to_tracks(self, library_data: 'LibraryData') -> int:
+        """Resolve the current source and convert to an explicit track list.
+
+        Clears ``search_query`` and ``source_directories``, replacing them
+        with the resolved ``track_filepaths``.  The caller is responsible
+        for persisting the updated object via ``NamedPlaylistStore.save()``.
+
+        Returns:
+            The number of resolved tracks.
+
+        Raises:
+            ValueError: If the playlist is already track-based or has no
+                resolvable source.
+        """
+        if self.is_track_based():
+            raise ValueError(
+                f"Playlist '{self.name}' is already track-based; "
+                "nothing to freeze."
+            )
+        filepaths = self.resolve_tracks(library_data)
+        self.search_query = None
+        self.source_directories = None
+        self.track_filepaths = filepaths
+        logger.info(
+            f"Froze playlist '{self.name}' to {len(filepaths)} explicit tracks"
+        )
+        return len(filepaths)
 
     # ------------------------------------------------------------------
     # Track resolution
