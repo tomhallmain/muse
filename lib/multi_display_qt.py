@@ -323,11 +323,11 @@ class SmartWindow(QWidget):
         if window_flags is None:
             window_flags = Qt.WindowType.Window
         
-        # Initialize the QWidget with persistent parent
-        # QWidget(parent, f=Qt.WindowFlags()) - parent first, then flags
-        super().__init__(persistent_parent, **kwargs)
-        if window_flags:
-            self.setWindowFlags(window_flags)
+        # Initialize the QWidget with persistent parent AND window flags
+        # together so Qt knows from the start this is a top-level window.
+        # Passing flags after construction causes Qt to recreate the native
+        # platform window, triggering "must be a top level window" warnings.
+        super().__init__(persistent_parent, window_flags, **kwargs)
         
         if position_parent is None:
             position_parent = persistent_parent

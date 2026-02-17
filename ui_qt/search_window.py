@@ -145,7 +145,7 @@ class SearchWindow(SmartWindow):
         if len(SearchWindow.recent_searches) > SearchWindow.MAX_RECENT_SEARCHES:
             del SearchWindow.recent_searches[-1]
 
-    def __init__(self, master, app_actions, library_data, dimensions="1100x700"):
+    def __init__(self, master, app_actions, library_data, dimensions="1100x820"):
         super().__init__(
             persistent_parent=master,
             position_parent=master,

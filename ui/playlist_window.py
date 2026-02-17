@@ -130,9 +130,15 @@ class MasterPlaylistWindow:
         self._refresh_available_list()
 
     def _load_existing_master(self):
-        """Populate master entries from existing PlaybackStateManager config."""
+        """Populate master entries from existing PlaybackStateManager config.
+
+        Falls back to the active (currently playing) config so that the
+        user can see the current playlist even in ALL_MUSIC mode.
+        """
         master = PlaybackStateManager.get_master_config()
-        if master and master.playback_configs:
+        if not master or not master.playback_configs:
+            master = PlaybackStateManager.get_active_config()
+        if master and hasattr(master, 'playback_configs') and master.playback_configs:
             for i, pc in enumerate(master.playback_configs):
                 weight = master.weights[i] if i < len(master.weights) else 1
                 self._master_entries.append({
@@ -140,7 +146,7 @@ class MasterPlaylistWindow:
                     "named_playlist": None,
                     "playback_config": pc,
                     "weight": weight,
-                    "loop": pc.loop,
+                    "loop": getattr(pc, 'loop', False),
                 })
 
     # ------------------------------------------------------------------
@@ -341,32 +347,74 @@ class MasterPlaylistWindow:
     # Preview (3.8)
     # ------------------------------------------------------------------
 
+    def _get_entry_tracks(self, entry):
+        """Return a list of track display strings from a master entry's playlist."""
+        pc = entry.get("playback_config")
+        if pc is None:
+            return []
+        playlist = getattr(pc, 'list', None)
+        if playlist is None:
+            return []
+        tracks = getattr(playlist, 'sorted_tracks', None)
+        if not tracks:
+            return []
+        result = []
+        for t in tracks:
+            title = getattr(t, 'title', None)
+            artist = getattr(t, 'artist', None)
+            if not title:
+                fp = getattr(t, 'filepath', '')
+                title = os.path.basename(fp) if fp else '?'
+            result.append(f"{title} - {artist}" if artist else title)
+        return result
+
     def _update_preview(self, max_tracks: int = 15):
-        """Show the first N track slots in weighted round-robin order."""
+        """Show the first N tracks in weighted round-robin order.
+
+        When the underlying playlists have resolved track lists, actual
+        track titles are shown.  Otherwise, falls back to playlist names.
+        """
         self._preview_listbox.delete(0, END)
         if not self._master_entries:
             return
 
         names = [e["name"] for e in self._master_entries]
         weights = [e["weight"] for e in self._master_entries]
+        entry_tracks = [self._get_entry_tracks(e) for e in self._master_entries]
+        has_tracks = any(len(t) > 0 for t in entry_tracks)
 
-        preview_names = []
-        cursor = 0
-        counter = 0
+        preview_items = []
+        track_cursors = [0] * len(names)
+        rr_cursor = 0
+        rr_counter = 0
+
         for _ in range(max_tracks):
             for _attempt in range(len(names)):
-                if counter >= weights[cursor]:
-                    cursor = (cursor + 1) % len(names)
-                    counter = 0
+                if rr_counter >= weights[rr_cursor]:
+                    rr_cursor = (rr_cursor + 1) % len(names)
+                    rr_counter = 0
                 break
-            preview_names.append(names[cursor])
-            counter += 1
-            if counter >= weights[cursor]:
-                cursor = (cursor + 1) % len(names)
-                counter = 0
 
-        for i, n in enumerate(preview_names):
-            self._preview_listbox.insert(END, f"  {i + 1}. {n}")
+            if has_tracks:
+                tracks = entry_tracks[rr_cursor]
+                idx = track_cursors[rr_cursor]
+                if tracks and idx < len(tracks):
+                    label = names[rr_cursor] if len(names) > 1 else ""
+                    prefix = f"[{label}] " if label else ""
+                    preview_items.append(f"{prefix}{tracks[idx]}")
+                    track_cursors[rr_cursor] += 1
+                else:
+                    preview_items.append(f"[{names[rr_cursor]}] —")
+            else:
+                preview_items.append(names[rr_cursor])
+
+            rr_counter += 1
+            if rr_counter >= weights[rr_cursor]:
+                rr_cursor = (rr_cursor + 1) % len(names)
+                rr_counter = 0
+
+        for i, item in enumerate(preview_items):
+            self._preview_listbox.insert(END, f"  {i + 1}. {item}")
 
     # ------------------------------------------------------------------
     # Lifecycle
