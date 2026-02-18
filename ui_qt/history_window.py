@@ -177,12 +177,17 @@ class HistoryWindow(SmartWindow):
 
         for item in history_list[: HistoryWindow.MAX_RESULTS]:
             if history_type == HistoryType.TRACKS:
-                track = self.library_data.get_track(item)
-                if track:
-                    display_text = f"{track.title} - {track.artist}"
-                else:
+                try:
+                    track = self.library_data.get_track(item)
+                    if track:
+                        display_text = f"{track.title} - {track.artist}"
+                    else:
+                        display_text = item
+                        logger.info("Could not find track details for: %s", item)
+                except Exception as e:
                     display_text = item
-                    logger.info("Could not find track details for: %s", item)
+                    track = None
+                    logger.error("Error getting track details for: %s (%s)", item, str(e))
             else:
                 display_text = item
                 track = None
@@ -193,10 +198,10 @@ class HistoryWindow(SmartWindow):
 
             label = QLabel(display_text, item_frame)
             label.setWordWrap(True)
-            label.setFixedWidth(HistoryWindow.TRACK_LABEL_MIN_WIDTH)
+            label.setMinimumWidth(HistoryWindow.TRACK_LABEL_MIN_WIDTH)
             label.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
             label.setSizePolicy(
-                QSizePolicy.Policy.Fixed,
+                QSizePolicy.Policy.Expanding,
                 QSizePolicy.Policy.MinimumExpanding,
             )
             label.setMinimumHeight(0)
@@ -204,16 +209,18 @@ class HistoryWindow(SmartWindow):
 
             if history_type == HistoryType.TRACKS and track:
                 details_btn = QPushButton(_("Details"), item_frame)
+                details_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
                 details_btn.clicked.connect(
                     lambda checked=False, t=track: self.app_actions.open_track_details(t)
                 )
-                row_layout.addWidget(details_btn)
+                row_layout.addWidget(details_btn, 0)
 
             favorite_btn = QPushButton("★", item_frame)
+            favorite_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
             favorite_btn.clicked.connect(
                 lambda checked=False, v=item, t=history_type: self.add_favorite(v, t)
             )
-            row_layout.addWidget(favorite_btn)
+            row_layout.addWidget(favorite_btn, 0)
 
             self.results_layout.addWidget(item_frame)
 
@@ -263,10 +270,10 @@ class HistoryWindow(SmartWindow):
 
             label = QLabel(display_text, item_frame)
             label.setWordWrap(True)
-            label.setFixedWidth(HistoryWindow.TRACK_LABEL_MIN_WIDTH)
+            label.setMinimumWidth(HistoryWindow.TRACK_LABEL_MIN_WIDTH)
             label.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
             label.setSizePolicy(
-                QSizePolicy.Policy.Fixed,
+                QSizePolicy.Policy.Expanding,
                 QSizePolicy.Policy.MinimumExpanding,
             )
             label.setMinimumHeight(0)
@@ -274,16 +281,18 @@ class HistoryWindow(SmartWindow):
 
             if history_type == HistoryType.TRACKS and track:
                 details_btn = QPushButton(_("Details"), item_frame)
+                details_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
                 details_btn.clicked.connect(
                     lambda checked=False, t=track: self.app_actions.open_track_details(t)
                 )
-                row_layout.addWidget(details_btn)
+                row_layout.addWidget(details_btn, 0)
 
             favorite_btn = QPushButton("★", item_frame)
+            favorite_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
             favorite_btn.clicked.connect(
                 lambda checked=False, v=item, t=history_type: self.add_favorite(v, t)
             )
-            row_layout.addWidget(favorite_btn)
+            row_layout.addWidget(favorite_btn, 0)
 
             self.results_layout.addWidget(item_frame)
 
