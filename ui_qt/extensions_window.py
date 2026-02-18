@@ -13,6 +13,7 @@ from PySide6.QtWidgets import (
     QPushButton,
     QComboBox,
     QScrollArea,
+    QSizePolicy,
     QWidget,
     QFrame,
 )
@@ -220,6 +221,7 @@ class ExtensionsWindow(SmartWindow):
                 ext.get("snippet", {}).get("title", ""), self.content_widget
             )
             title_label.setWordWrap(True)
+            title_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
             self.content_layout.addWidget(title_label, row, 2)
             self.title_labels.append(title_label)
 
@@ -237,6 +239,7 @@ class ExtensionsWindow(SmartWindow):
 
             query_label = QLabel(ext.get("search_query", ""), self.content_widget)
             query_label.setWordWrap(True)
+            query_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
             self.content_layout.addWidget(query_label, row, 6)
             self.query_labels.append(query_label)
 
@@ -246,6 +249,7 @@ class ExtensionsWindow(SmartWindow):
             self.status_labels.append(status_label)
 
             details_btn = QPushButton(_("Details"), self.content_widget)
+            details_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
             self.content_layout.addWidget(details_btn, row, 8)
             self.details_buttons.append(details_btn)
             details_btn.clicked.connect(
@@ -253,6 +257,7 @@ class ExtensionsWindow(SmartWindow):
             )
 
             play_btn = QPushButton(_("Play"), self.content_widget)
+            play_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
             self.content_layout.addWidget(play_btn, row, 9)
             self.play_buttons.append(play_btn)
             play_btn.clicked.connect(
@@ -260,6 +265,7 @@ class ExtensionsWindow(SmartWindow):
             )
 
             delete_btn = QPushButton(_("Delete"), self.content_widget)
+            delete_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
             self.content_layout.addWidget(delete_btn, row, 10)
             self.delete_buttons.append(delete_btn)
             delete_btn.clicked.connect(

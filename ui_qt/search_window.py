@@ -13,6 +13,7 @@ from PySide6.QtWidgets import (
     QComboBox,
     QCheckBox,
     QScrollArea,
+    QSizePolicy,
     QWidget,
     QFrame,
     QInputDialog,
@@ -333,30 +334,33 @@ class SearchWindow(SmartWindow):
 
             title_label = QLabel(title, self.results_widget)
             title_label.setWordWrap(True)
-            title_label.setMaximumWidth(200)
+            title_label.setMinimumWidth(200)
+            title_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
             self.results_layout.addWidget(title_label, row, 1)
             self.title_list.append(title_label)
 
             album_label = QLabel(album, self.results_widget)
             album_label.setWordWrap(True)
-            album_label.setMaximumWidth(200)
+            album_label.setMinimumWidth(200)
+            album_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
             self.results_layout.addWidget(album_label, row, 2)
             self.album_list.append(album_label)
 
             search_label = QLabel(str(search), self.results_widget)
             search_label.setWordWrap(True)
-            search_label.setMaximumWidth(200)
+            search_label.setMinimumWidth(200)
+            search_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
             self.results_layout.addWidget(search_label, row, 3)
             self.artist_list.append(search_label)
 
             results_count_label = QLabel(
                 search.get_readable_stored_results_count(), self.results_widget
             )
-            results_count_label.setMaximumWidth(200)
             self.results_layout.addWidget(results_count_label, row, 4)
             self.composer_list.append(results_count_label)
 
             search_btn = QPushButton(_("Search"), self.results_widget)
+            search_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
             self.open_details_btn_list.append(search_btn)
             self.results_layout.addWidget(search_btn, row, 5)
 
@@ -369,6 +373,7 @@ class SearchWindow(SmartWindow):
             search_btn.clicked.connect(make_search_handler(search))
 
             play_btn = QPushButton(_("Play"), self.results_widget)
+            play_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
             self.play_btn_list.append(play_btn)
             self.results_layout.addWidget(play_btn, row, 6)
 
@@ -392,6 +397,7 @@ class SearchWindow(SmartWindow):
             play_btn.clicked.connect(make_play_handler(search, track))
 
             remove_btn = QPushButton(_("Remove"), self.results_widget)
+            remove_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
             self.remove_btn_list.append(remove_btn)
             self.results_layout.addWidget(remove_btn, row, 7)
 
@@ -671,25 +677,30 @@ class SearchWindow(SmartWindow):
             row = results_start_row + i
             title_label = QLabel(track.title or "", self.results_widget)
             title_label.setWordWrap(True)
-            title_label.setMaximumWidth(200)
+            title_label.setMinimumWidth(200)
+            title_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
             self.results_layout.addWidget(title_label, row, 1)
             self.title_list.append(title_label)
             artist_label = QLabel(track.artist or "", self.results_widget)
             artist_label.setWordWrap(True)
-            artist_label.setMaximumWidth(200)
+            artist_label.setMinimumWidth(200)
+            artist_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
             self.results_layout.addWidget(artist_label, row, 2)
             self.artist_list.append(artist_label)
             album_label = QLabel(track.album or "", self.results_widget)
             album_label.setWordWrap(True)
-            album_label.setMaximumWidth(200)
+            album_label.setMinimumWidth(200)
+            album_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
             self.results_layout.addWidget(album_label, row, 3)
             self.album_list.append(album_label)
             composer_label = QLabel(track.composer or "", self.results_widget)
             composer_label.setWordWrap(True)
-            composer_label.setMaximumWidth(200)
+            composer_label.setMinimumWidth(200)
+            composer_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
             self.results_layout.addWidget(composer_label, row, 4)
             self.composer_list.append(composer_label)
             details_btn = QPushButton(_("Details"), self.results_widget)
+            details_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
             self.open_details_btn_list.append(details_btn)
             self.results_layout.addWidget(details_btn, row, 5)
 
@@ -700,6 +711,7 @@ class SearchWindow(SmartWindow):
 
             details_btn.clicked.connect(make_details_handler(track))
             play_btn = QPushButton(_("Play"), self.results_widget)
+            play_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
             self.play_btn_list.append(play_btn)
             self.results_layout.addWidget(play_btn, row, 6)
 
@@ -712,6 +724,7 @@ class SearchWindow(SmartWindow):
             play_btn.clicked.connect(make_play_handler(track))
 
             add_pl_btn = QPushButton(_("+ Playlist"), self.results_widget)
+            add_pl_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
             self.add_to_playlist_btn_list.append(add_pl_btn)
             self.results_layout.addWidget(add_pl_btn, row, 7)
 

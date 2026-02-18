@@ -13,6 +13,7 @@ from PySide6.QtWidgets import (
     QComboBox,
     QCheckBox,
     QScrollArea,
+    QSizePolicy,
     QWidget,
 )
 from PySide6.QtCore import Qt
@@ -202,7 +203,7 @@ class SchedulesWindow(SmartWindow):
     schedule_modify_window = None
     MAX_HEIGHT = 900
     N_TAGS_CUTOFF = 30
-    COL_0_WIDTH = 600
+    COL_0_WIDTH = 400
 
     @staticmethod
     def get_geometry(is_gui=True):
@@ -257,18 +258,21 @@ class SchedulesWindow(SmartWindow):
             row = QHBoxLayout()
             lbl = QLabel(str(schedule), self)
             lbl.setWordWrap(True)
-            lbl.setMaximumWidth(SchedulesWindow.COL_0_WIDTH)
-            row.addWidget(lbl)
+            lbl.setMinimumWidth(SchedulesWindow.COL_0_WIDTH)
+            lbl.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+            row.addWidget(lbl, 1)
             modify_btn = QPushButton(_("Modify"), self)
+            modify_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
             modify_btn.clicked.connect(
                 lambda checked=False, s=schedule: self.open_schedule_modify_window(s)
             )
-            row.addWidget(modify_btn)
+            row.addWidget(modify_btn, 0)
             delete_btn = QPushButton(_("Delete"), self)
+            delete_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
             delete_btn.clicked.connect(
                 lambda checked=False, s=schedule: self.delete_schedule(s)
             )
-            row.addWidget(delete_btn)
+            row.addWidget(delete_btn, 0)
             row_widget = QWidget(self)
             row_widget.setLayout(row)
             self.scroll_layout.addWidget(row_widget)

@@ -15,6 +15,7 @@ from PySide6.QtWidgets import (
     QPushButton,
     QComboBox,
     QScrollArea,
+    QSizePolicy,
     QWidget,
     QFrame,
 )
@@ -371,20 +372,24 @@ class FavoritesWindow(SmartWindow):
 
             title_label = QLabel(display_text, self.results_widget)
             title_label.setWordWrap(True)
+            title_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
             self.results_layout.addWidget(title_label, row, 0)
             self.favorite_list.append(title_label)
 
             play_btn = QPushButton(_("Play"), self.results_widget)
+            play_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
             self.results_layout.addWidget(play_btn, row, 1)
             self.play_btn_list.append(play_btn)
             play_btn.clicked.connect(lambda checked=False, f=favorite: self._play_favorite(f))
 
             details_btn = QPushButton(_("Details"), self.results_widget)
+            details_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
             self.results_layout.addWidget(details_btn, row, 2)
             self.open_details_btn_list.append(details_btn)
             details_btn.clicked.connect(lambda checked=False, f=favorite: self.open_details(f))
 
             remove_btn = QPushButton(_("Remove"), self.results_widget)
+            remove_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
             self.results_layout.addWidget(remove_btn, row, 3)
             self.open_details_btn_list.append(remove_btn)
             remove_btn.clicked.connect(
@@ -479,20 +484,24 @@ class FavoritesWindow(SmartWindow):
 
             title_label = QLabel(display_text, self.results_widget)
             title_label.setWordWrap(True)
+            title_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
             self.results_layout.addWidget(title_label, row, 0)
             self.favorite_list.append(title_label)
 
             play_btn = QPushButton(_("Play"), self.results_widget)
+            play_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
             self.results_layout.addWidget(play_btn, row, 1)
             self.play_btn_list.append(play_btn)
             play_btn.clicked.connect(lambda checked=False, f=favorite: self._play_favorite(f))
 
             details_btn = QPushButton(_("Details"), self.results_widget)
+            details_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
             self.results_layout.addWidget(details_btn, row, 2)
             self.open_details_btn_list.append(details_btn)
             details_btn.clicked.connect(lambda checked=False, f=favorite: self.open_details(f))
 
             remove_btn = QPushButton(_("Remove"), self.results_widget)
+            remove_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
             self.results_layout.addWidget(remove_btn, row, 3)
             self.open_details_btn_list.append(remove_btn)
             remove_btn.clicked.connect(
