@@ -76,6 +76,7 @@ class MasterPlaylistWindow:
         avail_btns = Frame(left)
         avail_btns.grid(row=2, column=0, sticky="ew", pady=(5, 0))
         Button(avail_btns, text=_("New Playlist"), command=self._open_new_playlist).pack(side="left", padx=(0, 5))
+        Button(avail_btns, text=_("Edit"), command=self._edit_playlist).pack(side="left", padx=(0, 5))
         Button(avail_btns, text=_("Freeze to Tracks"), command=self._freeze_to_tracks).pack(side="left", padx=(0, 5))
         Button(avail_btns, text=_("Delete"), command=self._delete_available).pack(side="left")
 
@@ -156,15 +157,29 @@ class MasterPlaylistWindow:
     def _refresh_available_list(self):
         self._avail_listbox.delete(0, END)
         for name, np in self._named_playlists.items():
-            self._avail_listbox.insert(END, f"{name}  ({np.get_source_description()})")
+            sort_label = np.sort_type.get_translation()
+            self._avail_listbox.insert(
+                END, f"{name}  ({np.get_source_description()})  [{sort_label}]"
+            )
 
     def _refresh_master_list(self):
         self._master_listbox.delete(0, END)
         for entry in self._master_entries:
             loop_label = _("yes") if entry["loop"] else _("no")
+            pc = entry.get("playback_config")
+            sort_label = ""
+            count_label = ""
+            if pc:
+                sort_label = pc.type.get_translation()
+                try:
+                    count_label = str(pc.get_list().size())
+                except Exception:
+                    count_label = "?"
+            meta = f"{sort_label}, {count_label} tracks" if sort_label else ""
             self._master_listbox.insert(
                 END,
                 f"{entry['name']}  [w:{entry['weight']}  loop:{loop_label}]"
+                + (f"  ({meta})" if meta else "")
             )
         self._update_preview()
 
@@ -173,11 +188,20 @@ class MasterPlaylistWindow:
     # ------------------------------------------------------------------
 
     def _open_new_playlist(self):
-        NewPlaylistWindow(self.top, self.app_actions, self.library_data,
-                          on_save=self._on_new_playlist_saved)
+        PlaylistModifyWindow(self.top, self.app_actions, self.library_data,
+                             on_save=self._on_playlist_saved)
 
-    def _on_new_playlist_saved(self):
-        """Callback from NewPlaylistWindow after a playlist is saved."""
+    def _edit_playlist(self):
+        sel = self._avail_listbox.curselection()
+        if not sel:
+            return
+        name = list(self._named_playlists.keys())[sel[0]]
+        np = self._named_playlists[name]
+        PlaylistModifyWindow(self.top, self.app_actions, self.library_data,
+                             on_save=self._on_playlist_saved, editing=np)
+
+    def _on_playlist_saved(self):
+        """Callback from PlaylistModifyWindow after a playlist is saved."""
         self._load_available()
 
     def _freeze_to_tracks(self):
@@ -352,8 +376,9 @@ class MasterPlaylistWindow:
         pc = entry.get("playback_config")
         if pc is None:
             return []
-        playlist = getattr(pc, 'list', None)
-        if playlist is None:
+        try:
+            playlist = pc.get_list()
+        except Exception:
             return []
         tracks = getattr(playlist, 'sorted_tracks', None)
         if not tracks:
@@ -424,29 +449,36 @@ class MasterPlaylistWindow:
         self.top.destroy()
 
 
-class NewPlaylistWindow:
-    """Window for creating / editing a NamedPlaylist.
+class PlaylistModifyWindow:
+    """Window for creating or editing a NamedPlaylist.
 
     Supports three source modes:
-    - Directory: pick from configured library directories.
     - Search Query: enter search fields (re-resolved at play time).
+    - Directory: pick from configured library directories.
     - Explicit Tracks: add individual tracks via search, reorder manually.
+
+    Pass *editing* (a ``NamedPlaylist`` instance) to open in edit mode,
+    pre-populating all fields from the existing playlist.
     """
 
-    def __init__(self, master, app_actions, library_data=None, on_save=None):
+    def __init__(self, master, app_actions, library_data=None, on_save=None, editing=None):
+        self._editing = editing
         self.app_actions = app_actions
         self.library_data = library_data
         self._on_save = on_save
 
+        title = _("Edit Playlist") if editing else _("New Playlist")
         self.top = SmartToplevel(
             persistent_parent=master,
-            title=_("New Playlist"),
+            title=title,
             geometry="560x520",
         )
         self.top.protocol("WM_DELETE_WINDOW", self._on_closing)
 
-        self._track_filepaths = []
+        self._track_filepaths = list(editing.track_filepaths) if editing and editing.track_filepaths else []
         self._build_ui()
+        if editing:
+            self._populate_from(editing)
 
     # ------------------------------------------------------------------
     # UI construction
@@ -469,11 +501,11 @@ class NewPlaylistWindow:
         row += 1
         Label(outer, text=_("Source Mode")).grid(row=row, column=0, sticky=W, pady=(10, 0))
         row += 1
-        self._mode_var = StringVar(value="directory")
+        self._mode_var = StringVar(value="search")
         modes_frame = Frame(outer)
         modes_frame.grid(row=row, column=0, columnspan=2, sticky=W)
-        for val, txt in [("directory", _("Directory")),
-                         ("search", _("Search Query")),
+        for val, txt in [("search", _("Search Query")),
+                         ("directory", _("Directory")),
                          ("tracks", _("Explicit Tracks"))]:
             Radiobutton(modes_frame, text=txt, variable=self._mode_var,
                         value=val, command=self._on_mode_change).pack(side="left", padx=(0, 10))
@@ -489,9 +521,10 @@ class NewPlaylistWindow:
         row += 1
         Label(outer, text=_("Sort Type")).grid(row=row, column=0, sticky=W, pady=(10, 0))
         row += 1
-        self._sort_var = StringVar(value=PlaylistSortType.SEQUENCE.value)
-        OptionMenu(outer, self._sort_var, PlaylistSortType.SEQUENCE.value,
-                   *[t.value for t in PlaylistSortType]).grid(row=row, column=0, sticky="ew")
+        translated_names = PlaylistSortType.get_translated_names()
+        self._sort_var = StringVar(value=PlaylistSortType.SEQUENCE.get_translation())
+        OptionMenu(outer, self._sort_var, self._sort_var.get(),
+                   *translated_names).grid(row=row, column=0, sticky="ew")
 
         # Loop
         row += 1
@@ -516,6 +549,32 @@ class NewPlaylistWindow:
         )
 
         self._on_mode_change()
+
+    def _populate_from(self, np: 'NamedPlaylist'):
+        """Pre-populate all fields from an existing NamedPlaylist for editing."""
+        self._name_var.set(np.name)
+        self._sort_var.set(np.sort_type.get_translation())
+        self._loop_var.set(np.loop)
+        self._desc_var.set(np.description or "")
+
+        if np.is_search_based():
+            self._mode_var.set("search")
+            self._on_mode_change()
+            for field, var in self._search_vars.items():
+                val = np.search_query.get(field, "")
+                var.set(val if val else "")
+        elif np.is_directory_based():
+            self._mode_var.set("directory")
+            self._on_mode_change()
+            if np.source_directories:
+                for label, path in self._dir_map.items():
+                    if path == np.source_directories[0]:
+                        self._dir_var.set(label)
+                        break
+        elif np.is_track_based():
+            self._mode_var.set("tracks")
+            self._on_mode_change()
+            self._refresh_tracks_listbox()
 
     # ------------------------------------------------------------------
     # Source-mode panels
@@ -546,14 +605,52 @@ class NewPlaylistWindow:
 
     def _build_search_panel(self):
         f = self._source_frame
+        row = 0
+
+        # Stored searches dropdown
+        Label(f, text=_("Load Stored Search")).grid(row=row, column=0, sticky=W)
+        self._stored_searches = self._get_stored_searches()
+        labels = [""] + [lbl for lbl, _s in self._stored_searches]
+        self._stored_search_var = StringVar(value="")
+        stored_menu = OptionMenu(f, self._stored_search_var, "",
+                                 *labels, command=self._on_stored_search_selected)
+        stored_menu.grid(row=row, column=1, sticky="ew", padx=(5, 0))
+        row += 1
+
         self._search_vars = {}
         fields = ["all", "title", "album", "artist", "composer",
                   "genre", "instrument", "form"]
-        for i, field in enumerate(fields):
-            Label(f, text=_(field.capitalize())).grid(row=i, column=0, sticky=W)
+        for field in fields:
+            Label(f, text=_(field.capitalize())).grid(row=row, column=0, sticky=W)
             var = StringVar()
-            Entry(f, textvariable=var, width=30).grid(row=i, column=1, sticky="ew", padx=(5, 0))
+            Entry(f, textvariable=var, width=30).grid(row=row, column=1, sticky="ew", padx=(5, 0))
             self._search_vars[field] = var
+            row += 1
+
+    def _get_stored_searches(self):
+        """Return list of (display_label, LibraryDataSearch) from recent searches."""
+        from ui.search_window import SearchWindow
+        results = []
+        for search in SearchWindow.recent_searches:
+            label = str(search)
+            count = search.get_readable_stored_results_count()
+            if count:
+                label = f"{label}  ({count})"
+            results.append((label, search))
+        return results
+
+    def _on_stored_search_selected(self, _event=None):
+        """Populate search fields and sort type from a selected stored search."""
+        selected = self._stored_search_var.get()
+        if not selected:
+            return
+        for label, search in self._stored_searches:
+            if label == selected:
+                for field, var in self._search_vars.items():
+                    val = getattr(search, field, "")
+                    var.set(val if val else "")
+                self._sort_var.set(search.get_inferred_sort_type().get_translation())
+                break
 
     def _build_tracks_panel(self):
         f = self._source_frame
@@ -627,7 +724,8 @@ class NewPlaylistWindow:
             messagebox.showerror(_("Error"), _("Please enter a playlist name."))
             return
 
-        if NamedPlaylistStore.exists(name):
+        editing_same_name = self._editing and self._editing.name == name
+        if not editing_same_name and NamedPlaylistStore.exists(name):
             if not messagebox.askyesno(_("Overwrite"), _("A playlist named \"{0}\" already exists. Overwrite?").format(name)):
                 return
 
@@ -662,6 +760,11 @@ class NewPlaylistWindow:
         sort_type_str = self._sort_var.get()
         sort_type = PlaylistSortType.get(sort_type_str)
 
+        created_at = self._editing.created_at if self._editing else datetime.now().isoformat()
+
+        if self._editing and self._editing.name != name:
+            NamedPlaylistStore.delete(self._editing.name)
+
         np = NamedPlaylist(
             name=name,
             search_query=search_query,
@@ -669,7 +772,7 @@ class NewPlaylistWindow:
             track_filepaths=track_filepaths,
             sort_type=sort_type,
             loop=self._loop_var.get(),
-            created_at=datetime.now().isoformat(),
+            created_at=created_at,
             description=self._desc_var.get().strip() or None,
         )
         NamedPlaylistStore.save(np)

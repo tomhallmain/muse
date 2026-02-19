@@ -717,15 +717,17 @@ class SearchWindow(BaseWindow):
 
     def _update_playlist_sort_dropdown(self):
         """Update the playlist sort dropdown to reflect the largest scope in the search fields."""
-        largest_scope = PlaylistSortType.get_largest_scope_from_search_fields(
+        search = LibraryDataSearch(
             composer=self.composer.get(),
             artist=self.artist.get(),
             genre=self.genre.get(),
             instrument=self.instrument.get(),
             form=self.form.get(),
-            album=self.album.get()
+            album=self.album.get(),
         )
-        self.playlist_sort_type_var.set(largest_scope.get_translation())
+        self.playlist_sort_type_var.set(
+            search.get_inferred_sort_type().get_translation()
+        )
 
     def get_playlist_sort_type(self):
         # TODO: In the future, send all scopes from the search to the playlist for multi-level sorting

@@ -47,7 +47,7 @@ class SearchWindow(SmartWindow):
     top_level = None
     INITIAL_MAX_RESULTS = getattr(config, "max_search_results", 100)
     MAX_RECENT_SEARCHES = 200
-    recent_searches = []
+    recent_searches: list[LibraryDataSearch] = []
 
     @staticmethod
     def load_recent_searches():
@@ -759,7 +759,7 @@ class SearchWindow(SmartWindow):
 
     def _update_playlist_sort_dropdown(self):
         """Update the playlist sort dropdown to reflect the largest scope in the search fields."""
-        largest_scope = PlaylistSortType.get_largest_scope_from_search_fields(
+        search = LibraryDataSearch(
             composer=self.composer_entry.text(),
             artist=self.artist_entry.text(),
             genre=self.genre_entry.text(),
@@ -767,7 +767,9 @@ class SearchWindow(SmartWindow):
             form=self.form_entry.text(),
             album=self.album_entry.text(),
         )
-        self.playlist_sort_combo.setCurrentText(largest_scope.get_translation())
+        self.playlist_sort_combo.setCurrentText(
+            search.get_inferred_sort_type().get_translation()
+        )
 
     def get_playlist_sort_type(self):
         # TODO: In the future, send all scopes from the search to the playlist for multi-level sorting

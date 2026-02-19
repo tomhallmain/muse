@@ -207,6 +207,17 @@ class LibraryDataSearch:
                 out += _attr + ": \"" + getattr(self, _attr) + "\", "
         return out[:-2]
 
+    def get_inferred_sort_type(self) -> PlaylistSortType:
+        """Infer the best PlaylistSortType from the populated search fields."""
+        return PlaylistSortType.get_largest_scope_from_search_fields(
+            composer=self.composer,
+            artist=self.artist,
+            genre=self.genre,
+            instrument=self.instrument,
+            form=self.form,
+            album=self.album,
+        )
+
     def matches_no_selected_track_path(self, value: object) -> bool:
         if not isinstance(value, LibraryDataSearch):
             return False

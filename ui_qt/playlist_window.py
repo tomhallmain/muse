@@ -28,6 +28,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt
 
 from lib.multi_display_qt import SmartWindow
+from library_data.library_data import LibraryDataSearch
 from muse.named_playlist import NamedPlaylist, NamedPlaylistStore
 from muse.playback_config import PlaybackConfig
 from muse.playback_config_master import PlaybackConfigMaster
@@ -99,6 +100,9 @@ class MasterPlaylistWindow(SmartWindow):
         new_pl_btn = QPushButton(_("New Playlist"), self)
         new_pl_btn.clicked.connect(self._open_new_playlist)
         avail_btns.addWidget(new_pl_btn)
+        edit_pl_btn = QPushButton(_("Edit"), self)
+        edit_pl_btn.clicked.connect(self._edit_playlist)
+        avail_btns.addWidget(edit_pl_btn)
         freeze_btn = QPushButton(_("Freeze to Tracks"), self)
         freeze_btn.clicked.connect(self._freeze_to_tracks)
         avail_btns.addWidget(freeze_btn)
@@ -197,15 +201,29 @@ class MasterPlaylistWindow(SmartWindow):
     def _refresh_available_list(self):
         self._avail_list.clear()
         for name, np in self._named_playlists.items():
-            self._avail_list.addItem(f"{name}  ({np.get_source_description()})")
+            sort_label = np.sort_type.get_translation()
+            self._avail_list.addItem(
+                f"{name}  ({np.get_source_description()})  [{sort_label}]"
+            )
 
     def _refresh_master_list(self):
         self._master_list.blockSignals(True)
         self._master_list.clear()
         for entry in self._master_entries:
             loop_label = _("yes") if entry["loop"] else _("no")
+            pc = entry.get("playback_config")
+            sort_label = ""
+            count_label = ""
+            if pc:
+                sort_label = pc.type.get_translation()
+                try:
+                    count_label = str(pc.get_list().size())
+                except Exception:
+                    count_label = "?"
+            meta = f"{sort_label}, {count_label} tracks" if sort_label else ""
             self._master_list.addItem(
                 f"{entry['name']}  [w:{entry['weight']}  loop:{loop_label}]"
+                + (f"  ({meta})" if meta else "")
             )
         self._master_list.blockSignals(False)
         self._update_preview()
@@ -215,11 +233,20 @@ class MasterPlaylistWindow(SmartWindow):
     # ------------------------------------------------------------------
 
     def _open_new_playlist(self):
-        NewPlaylistWindow(self, self.app_actions, self.library_data,
-                          on_save=self._on_new_playlist_saved)
+        PlaylistModifyWindow(self, self.app_actions, self.library_data,
+                             on_save=self._on_playlist_saved)
 
-    def _on_new_playlist_saved(self):
-        """Callback from NewPlaylistWindow after a playlist is saved."""
+    def _edit_playlist(self):
+        row = self._avail_list.currentRow()
+        if row < 0:
+            return
+        name = list(self._named_playlists.keys())[row]
+        np = self._named_playlists[name]
+        PlaylistModifyWindow(self, self.app_actions, self.library_data,
+                             on_save=self._on_playlist_saved, editing=np)
+
+    def _on_playlist_saved(self):
+        """Callback from PlaylistModifyWindow after a playlist is saved."""
         self._load_available()
 
     def _freeze_to_tracks(self):
@@ -397,8 +424,9 @@ class MasterPlaylistWindow(SmartWindow):
         pc = entry.get("playback_config")
         if pc is None:
             return []
-        playlist = getattr(pc, 'list', None)
-        if playlist is None:
+        try:
+            playlist = pc.get_list()
+        except Exception:
             return []
         tracks = getattr(playlist, 'sorted_tracks', None)
         if not tracks:
@@ -477,21 +505,26 @@ class MasterPlaylistWindow(SmartWindow):
         super().keyPressEvent(event)
 
 
-class NewPlaylistWindow(SmartWindow):
-    """Window for creating / editing a NamedPlaylist.
+class PlaylistModifyWindow(SmartWindow):
+    """Window for creating or editing a NamedPlaylist.
 
     Supports three source modes:
-    - Directory: pick from configured library directories.
     - Search Query: enter search fields (re-resolved at play time).
+    - Directory: pick from configured library directories.
     - Explicit Tracks: add individual tracks via search, reorder manually.
+
+    Pass *editing* (a ``NamedPlaylist`` instance) to open in edit mode,
+    pre-populating all fields from the existing playlist.
     """
 
     def __init__(self, parent, app_actions, library_data=None, on_save=None,
-                 dimensions="600x560"):
+                 dimensions="600x560", editing=None):
+        self._editing = editing
+        title = _("Edit Playlist") if editing else _("New Playlist")
         super().__init__(
             persistent_parent=parent,
             position_parent=parent,
-            title=_("New Playlist"),
+            title=title,
             geometry=dimensions,
             offset_x=50,
             offset_y=50,
@@ -500,13 +533,15 @@ class NewPlaylistWindow(SmartWindow):
         self.library_data = library_data
         self._on_save = on_save
 
-        self._track_filepaths = []
+        self._track_filepaths = list(editing.track_filepaths) if editing and editing.track_filepaths else []
         self._search_entries = {}
         self._dir_combo = None
         self._dir_map = {}
 
         self.setStyleSheet(AppStyle.get_stylesheet())
         self._build_ui()
+        if editing:
+            self._populate_from(editing)
         self.show()
 
     # ------------------------------------------------------------------
@@ -534,15 +569,15 @@ class NewPlaylistWindow(SmartWindow):
         mode_layout = QHBoxLayout(mode_frame)
         mode_layout.setContentsMargins(0, 0, 0, 0)
         self._mode_group = QButtonGroup(self)
-        self._rb_directory = QRadioButton(_("Directory"), self)
         self._rb_search = QRadioButton(_("Search Query"), self)
+        self._rb_directory = QRadioButton(_("Directory"), self)
         self._rb_tracks = QRadioButton(_("Explicit Tracks"), self)
-        self._rb_directory.setChecked(True)
-        self._mode_group.addButton(self._rb_directory, 0)
-        self._mode_group.addButton(self._rb_search, 1)
+        self._rb_search.setChecked(True)
+        self._mode_group.addButton(self._rb_search, 0)
+        self._mode_group.addButton(self._rb_directory, 1)
         self._mode_group.addButton(self._rb_tracks, 2)
-        mode_layout.addWidget(self._rb_directory)
         mode_layout.addWidget(self._rb_search)
+        mode_layout.addWidget(self._rb_directory)
         mode_layout.addWidget(self._rb_tracks)
         mode_layout.addStretch()
         form.addWidget(mode_frame, row, 0, 1, 2)
@@ -559,8 +594,8 @@ class NewPlaylistWindow(SmartWindow):
         # Sort type
         form.addWidget(QLabel(_("Sort Type"), self), row, 0)
         self._sort_combo = QComboBox(self)
-        self._sort_combo.addItems([t.value for t in PlaylistSortType])
-        self._sort_combo.setCurrentText(PlaylistSortType.SEQUENCE.value)
+        self._sort_combo.addItems(PlaylistSortType.get_translated_names())
+        self._sort_combo.setCurrentText(PlaylistSortType.SEQUENCE.get_translation())
         form.addWidget(self._sort_combo, row, 1)
         row += 1
 
@@ -586,6 +621,32 @@ class NewPlaylistWindow(SmartWindow):
         self._mode_group.idClicked.connect(self._on_mode_change)
         self._on_mode_change(0)
 
+    def _populate_from(self, np: 'NamedPlaylist'):
+        """Pre-populate all fields from an existing NamedPlaylist for editing."""
+        self._name_edit.setText(np.name)
+        self._sort_combo.setCurrentText(np.sort_type.get_translation())
+        self._loop_check.setChecked(np.loop)
+        self._desc_edit.setText(np.description or "")
+
+        if np.is_search_based():
+            self._rb_search.setChecked(True)
+            self._on_mode_change(0)
+            for field, entry in self._search_entries.items():
+                val = np.search_query.get(field, "")
+                entry.setText(val if val else "")
+        elif np.is_directory_based():
+            self._rb_directory.setChecked(True)
+            self._on_mode_change(1)
+            if self._dir_combo and np.source_directories:
+                for label, path in self._dir_map.items():
+                    if path == np.source_directories[0]:
+                        self._dir_combo.setCurrentText(label)
+                        break
+        elif np.is_track_based():
+            self._rb_tracks.setChecked(True)
+            self._on_mode_change(2)
+            self._refresh_tracks_list()
+
     # ------------------------------------------------------------------
     # Source-mode panels
     # ------------------------------------------------------------------
@@ -610,9 +671,9 @@ class NewPlaylistWindow(SmartWindow):
     def _on_mode_change(self, mode_id):
         self._clear_source_frame()
         if mode_id == 0:
-            self._build_directory_panel()
-        elif mode_id == 1:
             self._build_search_panel()
+        elif mode_id == 1:
+            self._build_directory_panel()
         elif mode_id == 2:
             self._build_tracks_panel()
 
@@ -634,17 +695,58 @@ class NewPlaylistWindow(SmartWindow):
         container = QWidget(self)
         layout = QGridLayout(container)
         layout.setContentsMargins(0, 0, 0, 0)
+        row = 0
+
+        # Stored searches dropdown
+        layout.addWidget(QLabel(_("Load Stored Search"), self), row, 0)
+        self._stored_search_combo = QComboBox(self)
+        self._stored_search_combo.addItem("")
+        self._stored_searches = self._get_stored_searches()
+        for label, _search in self._stored_searches:
+            self._stored_search_combo.addItem(label)
+        self._stored_search_combo.currentIndexChanged.connect(
+            self._on_stored_search_selected
+        )
+        layout.addWidget(self._stored_search_combo, row, 1)
+        row += 1
+
         self._search_entries = {}
         fields = ["all", "title", "album", "artist", "composer",
                   "genre", "instrument", "form"]
-        for i, field in enumerate(fields):
-            layout.addWidget(QLabel(_(field.capitalize()), self), i, 0)
+        for field in fields:
+            layout.addWidget(QLabel(_(field.capitalize()), self), row, 0)
             entry = QLineEdit(self)
             entry.setMinimumWidth(200)
-            layout.addWidget(entry, i, 1)
+            layout.addWidget(entry, row, 1)
             self._search_entries[field] = entry
+            row += 1
         self._source_layout.addWidget(container)
         self._source_layout.addStretch()
+
+    def _get_stored_searches(self) -> list[tuple[str, LibraryDataSearch]]:
+        """Return list of (display_label, LibraryDataSearch) from recent searches."""
+        from ui_qt.search_window import SearchWindow
+        results = []
+        for search in SearchWindow.recent_searches:
+            label = str(search)
+            count = search.get_readable_stored_results_count()
+            if count:
+                label = f"{label}  ({count})"
+            results.append((label, search))
+        return results
+
+    def _on_stored_search_selected(self, index):
+        """Populate search fields and sort type from a selected stored search."""
+        if index <= 0:
+            return
+        _label, search = self._stored_searches[index - 1]
+        assert isinstance(search, LibraryDataSearch)
+        for field, entry in self._search_entries.items():
+            val = getattr(search, field, "")
+            entry.setText(val if val else "")
+        self._sort_combo.setCurrentText(
+            search.get_inferred_sort_type().get_translation()
+        )
 
     def _build_tracks_panel(self):
         self._tracks_list = QListWidget(self)
@@ -722,7 +824,8 @@ class NewPlaylistWindow(SmartWindow):
             QMessageBox.critical(self, _("Error"), _("Please enter a playlist name."))
             return
 
-        if NamedPlaylistStore.exists(name, cache=app_info_cache):
+        editing_same_name = self._editing and self._editing.name == name
+        if not editing_same_name and NamedPlaylistStore.exists(name, cache=app_info_cache):
             reply = QMessageBox.question(
                 self, _("Overwrite"),
                 _("A playlist named \"{0}\" already exists. Overwrite?").format(name),
@@ -736,16 +839,7 @@ class NewPlaylistWindow(SmartWindow):
         source_directories = None
         track_filepaths = None
 
-        if mode_id == 0:  # directory
-            if self._dir_combo is None:
-                return
-            label = self._dir_combo.currentText()
-            full_path = self._dir_map.get(label)
-            if not full_path:
-                QMessageBox.critical(self, _("Error"), _("Please select a directory."))
-                return
-            source_directories = [full_path]
-        elif mode_id == 1:  # search
+        if mode_id == 0:  # search
             query = {}
             for field, entry in self._search_entries.items():
                 val = entry.text().strip()
@@ -758,6 +852,15 @@ class NewPlaylistWindow(SmartWindow):
                 )
                 return
             search_query = query
+        elif mode_id == 1:  # directory
+            if self._dir_combo is None:
+                return
+            label = self._dir_combo.currentText()
+            full_path = self._dir_map.get(label)
+            if not full_path:
+                QMessageBox.critical(self, _("Error"), _("Please select a directory."))
+                return
+            source_directories = [full_path]
         elif mode_id == 2:  # explicit tracks
             if not self._track_filepaths:
                 QMessageBox.critical(
@@ -770,6 +873,11 @@ class NewPlaylistWindow(SmartWindow):
         sort_type_str = self._sort_combo.currentText()
         sort_type = PlaylistSortType.get(sort_type_str)
 
+        created_at = self._editing.created_at if self._editing else datetime.now().isoformat()
+
+        if self._editing and self._editing.name != name:
+            NamedPlaylistStore.delete(self._editing.name, cache=app_info_cache)
+
         np = NamedPlaylist(
             name=name,
             search_query=search_query,
@@ -777,7 +885,7 @@ class NewPlaylistWindow(SmartWindow):
             track_filepaths=track_filepaths,
             sort_type=sort_type,
             loop=self._loop_check.isChecked(),
-            created_at=datetime.now().isoformat(),
+            created_at=created_at,
             description=self._desc_edit.text().strip() or None,
         )
         NamedPlaylistStore.save(np, cache=app_info_cache)
@@ -786,7 +894,8 @@ class NewPlaylistWindow(SmartWindow):
         if self._on_save:
             self._on_save()
 
-        self.app_actions.toast(_("Playlist created successfully"))
+        toast_msg = _("Playlist updated successfully") if self._editing else _("Playlist created successfully")
+        self.app_actions.toast(toast_msg)
         self.close()
 
     # ------------------------------------------------------------------

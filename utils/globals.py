@@ -208,7 +208,7 @@ class PlaylistSortType(Enum):
 
         try:
             return PlaylistSortType[name]
-        except ValueError:
+        except (KeyError, ValueError):
             pass
 
         if not isinstance(name, str):
@@ -264,7 +264,7 @@ class PlaybackMasterStrategy(Enum):
         
         try:
             return PlaybackMasterStrategy[name]
-        except ValueError:
+        except (KeyError, ValueError):
             pass
         
         if not isinstance(name, str):
