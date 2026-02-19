@@ -171,6 +171,14 @@ class MasterPlaylistWindow(SmartWindow):
         self._stacked_check.stateChanged.connect(self._on_stacked_change)
         right.addWidget(self._stacked_check)
 
+        # Master-level memory reshuffle override
+        self._skip_memory_check = QCheckBox(_("Skip memory reshuffle (all)"), self)
+        self._skip_memory_check.setToolTip(
+            _("Override all playlists: disable recently-played memory reshuffling")
+        )
+        self._skip_memory_check.stateChanged.connect(self._on_skip_memory_change)
+        right.addWidget(self._skip_memory_check)
+
         panels.addLayout(right, 1)
 
         outer.addLayout(panels, 0)
@@ -216,6 +224,8 @@ class MasterPlaylistWindow(SmartWindow):
                 })
             if getattr(master, 'stacked', False):
                 self._stacked_check.setChecked(True)
+            if getattr(master, 'override_skip_memory_shuffle', None) is True:
+                self._skip_memory_check.setChecked(True)
 
     # ------------------------------------------------------------------
     # List refresh helpers
@@ -401,6 +411,9 @@ class MasterPlaylistWindow(SmartWindow):
         )
         self._apply_master_change()
 
+    def _on_skip_memory_change(self, _state):
+        self._apply_master_change()
+
     def _move_up(self):
         row = self._master_list.currentRow()
         if row <= 0:
@@ -449,8 +462,12 @@ class MasterPlaylistWindow(SmartWindow):
         if self._master_entries:
             configs = [e["playback_config"] for e in self._master_entries]
             weights = [e["weight"] for e in self._master_entries]
-            master = PlaybackConfigMaster(configs, weights,
-                                          stacked=self._stacked_check.isChecked())
+            skip_mem = self._skip_memory_check.isChecked()
+            master = PlaybackConfigMaster(
+                configs, weights,
+                stacked=self._stacked_check.isChecked(),
+                override_skip_memory_shuffle=skip_mem if skip_mem else None,
+            )
             PlaybackStateManager.set_master_config(master)
             try:
                 self.app_actions.set_playback_master_strategy(
@@ -876,6 +893,14 @@ class PlaylistModifyWindow(SmartWindow):
         form.addWidget(self._loop_check, row, 0)
         row += 1
 
+        # Skip memory shuffle
+        self._skip_memory_check = QCheckBox(_("Skip memory reshuffle"), self)
+        self._skip_memory_check.setToolTip(
+            _("Disable recently-played memory reshuffling for this playlist")
+        )
+        form.addWidget(self._skip_memory_check, row, 0)
+        row += 1
+
         # Description
         form.addWidget(QLabel(_("Description (optional)"), self), row, 0)
         self._desc_edit = QLineEdit(self)
@@ -898,6 +923,7 @@ class PlaylistModifyWindow(SmartWindow):
         self._name_edit.setText(pd.name)
         self._sort_combo.setCurrentText(pd.sort_type.get_translation())
         self._loop_check.setChecked(pd.loop)
+        self._skip_memory_check.setChecked(pd.skip_memory_shuffle)
         self._desc_edit.setText(pd.description or "")
 
         if pd.is_search_based():
@@ -1157,6 +1183,7 @@ class PlaylistModifyWindow(SmartWindow):
             track_filepaths=track_filepaths,
             sort_type=sort_type,
             loop=self._loop_check.isChecked(),
+            skip_memory_shuffle=self._skip_memory_check.isChecked(),
             created_at=created_at,
             description=self._desc_edit.text().strip() or None,
         )

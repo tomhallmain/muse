@@ -45,6 +45,7 @@ class PlaylistDescriptor:
 
     # Playback behaviour
     loop: bool = False
+    skip_memory_shuffle: bool = False
 
     # Metadata
     created_at: Optional[str] = None
@@ -250,6 +251,7 @@ class PlaylistDescriptor:
 
         data["sort_type"] = self.sort_type.value
         data["loop"] = self.loop
+        data["skip_memory_shuffle"] = self.skip_memory_shuffle
 
         if self.created_at is not None:
             data["created_at"] = self.created_at
@@ -274,6 +276,7 @@ class PlaylistDescriptor:
             track_filepaths=data.get("track_filepaths"),
             sort_type=sort_type,
             loop=data.get("loop", False),
+            skip_memory_shuffle=data.get("skip_memory_shuffle", False),
             created_at=data.get("created_at"),
             description=data.get("description"),
         )

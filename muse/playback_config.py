@@ -95,7 +95,10 @@ class PlaybackConfig:
         )
         pc.playlist_descriptor = playlist_descriptor
         pc.loop = playlist_descriptor.loop
-        pc.skip_memory_shuffle = playlist_descriptor.is_reshuffle_redundant()
+        pc.skip_memory_shuffle = (
+            playlist_descriptor.skip_memory_shuffle
+            or playlist_descriptor.sort_type == PlaylistSortType.SEQUENCE
+        )
         return pc
 
     def __init__(self, args: Optional[Any] = None, override_dir: Optional[str] = None,

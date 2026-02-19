@@ -124,6 +124,14 @@ class MasterPlaylistWindow:
                     variable=self._stacked_var,
                     command=self._on_stacked_change).pack(side="left")
 
+        # Master-level memory reshuffle override
+        skip_mem_frame = Frame(right)
+        skip_mem_frame.grid(row=4, column=0, sticky="ew", pady=(5, 0))
+        self._skip_memory_var = BooleanVar(value=False)
+        Checkbutton(skip_mem_frame, text=_("Skip memory reshuffle (all)"),
+                    variable=self._skip_memory_var,
+                    command=self._on_skip_memory_change).pack(side="left")
+
         # --- Bottom: preview ---
         preview_frame = Frame(outer)
         preview_frame.pack(fill=BOTH, expand=False, pady=(10, 0))
@@ -163,6 +171,8 @@ class MasterPlaylistWindow:
             if getattr(master, 'stacked', False):
                 self._stacked_var.set(True)
                 self._on_stacked_change()
+            if getattr(master, 'override_skip_memory_shuffle', None) is True:
+                self._skip_memory_var.set(True)
 
     # ------------------------------------------------------------------
     # List refresh helpers
@@ -343,6 +353,9 @@ class MasterPlaylistWindow:
         )
         self._apply_master_change()
 
+    def _on_skip_memory_change(self):
+        self._apply_master_change()
+
     def _move_up(self):
         sel = self._master_listbox.curselection()
         if not sel or sel[0] == 0:
@@ -374,8 +387,12 @@ class MasterPlaylistWindow:
         if self._master_entries:
             configs = [e["playback_config"] for e in self._master_entries]
             weights = [e["weight"] for e in self._master_entries]
-            master = PlaybackConfigMaster(configs, weights,
-                                          stacked=self._stacked_var.get())
+            skip_mem = self._skip_memory_var.get()
+            master = PlaybackConfigMaster(
+                configs, weights,
+                stacked=self._stacked_var.get(),
+                override_skip_memory_shuffle=skip_mem if skip_mem else None,
+            )
             PlaybackStateManager.set_master_config(master)
             try:
                 self.app_actions.set_playback_master_strategy(
@@ -575,6 +592,14 @@ class PlaylistModifyWindow:
             row=row, column=0, sticky=W, pady=(5, 0)
         )
 
+        # Skip memory shuffle
+        row += 1
+        self._skip_memory_var = BooleanVar(value=False)
+        Checkbutton(outer, text=_("Skip memory reshuffle"),
+                    variable=self._skip_memory_var).grid(
+            row=row, column=0, sticky=W, pady=(5, 0)
+        )
+
         # Description
         row += 1
         Label(outer, text=_("Description (optional)")).grid(row=row, column=0, sticky=W, pady=(10, 0))
@@ -597,6 +622,7 @@ class PlaylistModifyWindow:
         self._name_var.set(pd.name)
         self._sort_var.set(pd.sort_type.get_translation())
         self._loop_var.set(pd.loop)
+        self._skip_memory_var.set(pd.skip_memory_shuffle)
         self._desc_var.set(pd.description or "")
 
         if pd.is_search_based():
@@ -814,6 +840,7 @@ class PlaylistModifyWindow:
             track_filepaths=track_filepaths,
             sort_type=sort_type,
             loop=self._loop_var.get(),
+            skip_memory_shuffle=self._skip_memory_var.get(),
             created_at=created_at,
             description=self._desc_var.get().strip() or None,
         )

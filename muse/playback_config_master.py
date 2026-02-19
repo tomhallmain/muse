@@ -81,16 +81,22 @@ class PlaybackConfigMaster:
 
     def __init__(self, playback_configs: Optional[List[PlaybackConfig]] = None,
                  weights: Optional[List[int]] = None,
-                 stacked: bool = False) -> None:
+                 stacked: bool = False,
+                 override_skip_memory_shuffle: Optional[bool] = None) -> None:
         self.playback_configs: List[PlaybackConfig] = playback_configs or []
         self.weights: List[int] = weights or [1] * len(self.playback_configs)
         self.stacked: bool = stacked
+        self.override_skip_memory_shuffle: Optional[bool] = override_skip_memory_shuffle
 
         if len(self.weights) != len(self.playback_configs):
             raise ValueError(
                 f"weights length ({len(self.weights)}) != "
                 f"playback_configs length ({len(self.playback_configs)})"
             )
+
+        if self.override_skip_memory_shuffle is not None:
+            for pc in self.playback_configs:
+                pc.skip_memory_shuffle = self.override_skip_memory_shuffle
 
         # Cursor / interleaving state
         self._config_cursor: int = 0

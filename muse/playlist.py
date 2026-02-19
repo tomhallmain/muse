@@ -316,8 +316,8 @@ class Playlist:
             self.start_track = random.choice(self.sorted_tracks)
             self.set_start_track(grouping_attr_getter_name, do_print=False)
         if self.sort_type != PlaylistSortType.SEQUENCE:
+            attr_set = set()
             if self.sort_type != PlaylistSortType.RANDOM:
-                attr_set = set()
                 is_callable_attr = grouping_attr_getter_name.startswith("get_")
                 for track in self.sorted_tracks:
                     attr = getattr(track, grouping_attr_getter_name)
@@ -331,64 +331,82 @@ class Playlist:
                     self.sorted_tracks.sort(key=lambda t: (all_attrs_list.index(getattr(t, grouping_attr_getter_name)), t.filepath))
             if not self._skip_memory_shuffle:
                 history_type = self.sort_type.grouping_list_name_mapping()
-                self.shuffle_with_memory_for_attr(grouping_attr_getter_name, history_type, check_entire_playlist)
+                self.shuffle_with_memory_for_attr(
+                    grouping_attr_getter_name, history_type,
+                    check_entire_playlist, playlist_attr_set=attr_set,
+                )
         if do_set_start_track:
             # The user specified a start track, it's not random
             self.set_start_track(grouping_attr_getter_name)
 
-    def shuffle_with_memory_for_attr(self, track_attr: str, history_type: HistoryType, check_entire_playlist=False):
-        """Main entry point for reducing recently played tracks in the playlist.
-        
-        This method looks at the first config.playlist_recently_played_check_count tracks
-        and ensures they haven't been played recently. If they have, it decides if they need
-        to be reshuffled into a later position in the playlist. As earlier tracks are reshuffled
-        to the end of the playlist, later tracks may also have been played recently and thus
-        also need to be reshuffled.
-        
-        The method can use either a thorough approach (scour_playlist) that guarantees no recently
-        played tracks in the early portion while preserving grouping integrity, or a less thorough
-        approach (reshuffle_tracks) that may leave some recently played tracks but preserves more
-        of the original randomization.
-        
+    def shuffle_with_memory_for_attr(self, track_attr: str, history_type: HistoryType,
+                                     check_entire_playlist: bool = False,
+                                     playlist_attr_set: Optional[set] = None):
+        """Reduce recently-played groupings in the early portion of the playlist.
+
+        Uses an *adaptive* check count that scales relative to the overlap
+        between the playlist's own grouping values and the recently-played
+        history, rather than a fixed global constant.  For playlists of 500
+        tracks or fewer the thorough ``scour_playlist`` approach is used by
+        default; larger playlists use the faster ``reshuffle_tracks`` unless
+        ``check_entire_playlist`` is ``True``.
+
         Args:
-            track_attr (str): The attribute name to check on each track (e.g., 'album', 'artist')
-            history_type (HistoryType): The type of history to check against (e.g., albums, artists)
-            check_entire_playlist (bool): If True, uses the thorough scour_playlist method instead
-                                        of the default reshuffle_tracks method
-                                        
-        Returns:
-            int: Number of attempts made to reduce recently played tracks in the playlist
+            track_attr: Attribute name on each ``MediaTrack`` (e.g. ``'album'``).
+            history_type: Which recently-played list to consult.
+            check_entire_playlist: Force the thorough ``scour_playlist`` path.
+            playlist_attr_set: Set of unique grouping values already computed
+                by ``sort()``.  Avoids a redundant second pass when available.
         """
         recently_played_attr_list = list(getattr(Playlist, history_type.value))
-        recently_played_check_count = Playlist.get_recently_played_check_count(self.sort_type)
-        logger.info(f"Recently played check count for {history_type.value}: {recently_played_check_count}")
-        if len(recently_played_attr_list) == 0:
+        if not recently_played_attr_list:
             return 0
-        elif len(recently_played_attr_list) > recently_played_check_count:
-            recently_played_attr_list = recently_played_attr_list[:recently_played_check_count]
-        
-        # Minimum playlist size to attempt any shuffling
-        MIN_PLAYLIST_SIZE = 200
-        # Target playlist size for full check count
-        TARGET_PLAYLIST_SIZE = max(recently_played_check_count * 2, MIN_PLAYLIST_SIZE)
-        
-        if self.size() < MIN_PLAYLIST_SIZE:
-            # Playlist is too small to bother with memory-based shuffling
+
+        # Truncate the history to the global cap so it stays bounded.
+        global_check_count = Playlist.get_recently_played_check_count(self.sort_type)
+        if len(recently_played_attr_list) > global_check_count:
+            recently_played_attr_list = recently_played_attr_list[:global_check_count]
+
+        # --- Homogeneity guard ---
+        unique_count = len(playlist_attr_set) if playlist_attr_set else 0
+        if unique_count <= 1:
+            logger.info(
+                f"Skipping memory shuffle for {history_type.value}: "
+                f"playlist has {unique_count} unique value(s)"
+            )
             return 0
-            
-        # Scale the check count based on playlist size
-        if self.size() < TARGET_PLAYLIST_SIZE:
-            # Linearly scale the check count based on playlist size
-            # e.g., 1000 tracks would use 50% of the check count
-            scale_factor = self.size() / TARGET_PLAYLIST_SIZE
-            recently_played_check_count = int(recently_played_check_count * scale_factor)
-            # Ensure we check at least a minimum number of tracks
-            recently_played_check_count = max(recently_played_check_count, 50)
-            
-        if check_entire_playlist:
-            return self.scour_playlist(track_attr, recently_played_attr_list, recently_played_check_count)
+
+        # --- Overlap-based adaptive check count ---
+        recently_played_set = set(recently_played_attr_list)
+        overlap = recently_played_set & playlist_attr_set if playlist_attr_set else set()
+        overlap_count = len(overlap)
+        if overlap_count == 0:
+            logger.info(
+                f"No overlap between recently-played {history_type.value} "
+                f"and playlist ({unique_count} unique values) -- skipping"
+            )
+            return 0
+
+        playlist_size = self.size()
+        check_count = min(overlap_count * 2, playlist_size // 3)
+        check_count = max(check_count, 1)
+        check_count = min(check_count, playlist_size // 2)
+        # For large playlists, don't go below the old global count so
+        # existing behaviour is preserved.
+        if playlist_size > 500:
+            check_count = max(check_count, global_check_count)
+
+        logger.info(
+            f"Adaptive memory shuffle for {history_type.value}: "
+            f"playlist_size={playlist_size}, unique={unique_count}, "
+            f"overlap={overlap_count}, check_count={check_count}"
+        )
+
+        use_scour = check_entire_playlist or playlist_size <= 500
+        if use_scour:
+            return self.scour_playlist(track_attr, recently_played_attr_list, check_count)
         else:
-            return self.reshuffle_tracks(track_attr, recently_played_attr_list, recently_played_check_count)
+            return self.reshuffle_tracks(track_attr, recently_played_attr_list, check_count)
 
     def scour_playlist(self, track_attr, recently_played_attr_list, recently_played_check_count):
         """Scours the playlist to ensure the first N tracks don't contain recently played attributes.
