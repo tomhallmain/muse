@@ -6,6 +6,7 @@ persistence and PlaybackConfigMaster for interleaved playback.
 
 import os
 from datetime import datetime
+from typing import Optional
 
 from PySide6.QtWidgets import (
     QVBoxLayout,
@@ -34,7 +35,9 @@ from muse.playback_config import PlaybackConfig
 from muse.playback_config_master import PlaybackConfigMaster
 from muse.playlist_descriptor import PlaylistDescriptor, PlaylistDescriptorStore
 from muse.playback_state import PlaybackStateManager
+from muse.sort_config import SortConfig
 from ui_qt.app_style import AppStyle
+from ui_qt.sort_config_window import SortConfigWindow
 from utils.app_info_cache_qt import app_info_cache
 from utils.config import config
 from utils.globals import PlaylistSortType, PlaybackMasterStrategy
@@ -171,13 +174,18 @@ class MasterPlaylistWindow(SmartWindow):
         self._stacked_check.stateChanged.connect(self._on_stacked_change)
         right.addWidget(self._stacked_check)
 
-        # Master-level memory reshuffle override
-        self._skip_memory_check = QCheckBox(_("Skip memory reshuffle (all)"), self)
-        self._skip_memory_check.setToolTip(
-            _("Override all playlists: disable recently-played memory reshuffling")
+        # Master-level sort config override (reads/writes PlaybackStateManager)
+        self._override_sort_config: Optional[SortConfig] = PlaybackStateManager.get_override_sort_config()
+        sort_cfg_row = QHBoxLayout()
+        sort_cfg_btn = QPushButton(_("Sort Config Override..."), self)
+        sort_cfg_btn.clicked.connect(self._open_override_sort_config)
+        sort_cfg_row.addWidget(sort_cfg_btn)
+        self._sort_cfg_label = QLabel(
+            _("(custom)") if self._override_sort_config else _("(defaults)"), self
         )
-        self._skip_memory_check.stateChanged.connect(self._on_skip_memory_change)
-        right.addWidget(self._skip_memory_check)
+        sort_cfg_row.addWidget(self._sort_cfg_label)
+        sort_cfg_row.addStretch()
+        right.addLayout(sort_cfg_row)
 
         panels.addLayout(right, 1)
 
@@ -224,8 +232,12 @@ class MasterPlaylistWindow(SmartWindow):
                 })
             if getattr(master, 'stacked', False):
                 self._stacked_check.setChecked(True)
-            if getattr(master, 'override_skip_memory_shuffle', None) is True:
-                self._skip_memory_check.setChecked(True)
+            override_sc = getattr(master, 'override_sort_config', None)
+            if override_sc is not None:
+                self._override_sort_config = override_sc
+                PlaybackStateManager.set_override_sort_config(override_sc)
+                self._sort_cfg_label.setText(_("(custom)"))
+
 
     # ------------------------------------------------------------------
     # List refresh helpers
@@ -411,8 +423,22 @@ class MasterPlaylistWindow(SmartWindow):
         )
         self._apply_master_change()
 
-    def _on_skip_memory_change(self, _state):
-        self._apply_master_change()
+    def _open_override_sort_config(self):
+        dlg = SortConfigWindow(
+            self,
+            sort_config=self._override_sort_config,
+            is_override=True,
+        )
+        if dlg.exec() == SortConfigWindow.DialogCode.Accepted:
+            result = dlg.get_result()
+            if result is not None and result.is_default():
+                result = None
+            self._override_sort_config = result
+            PlaybackStateManager.set_override_sort_config(result)
+            self._sort_cfg_label.setText(
+                _("(custom)") if result else _("(defaults)")
+            )
+            self._apply_master_change()
 
     def _move_up(self):
         row = self._master_list.currentRow()
@@ -462,11 +488,10 @@ class MasterPlaylistWindow(SmartWindow):
         if self._master_entries:
             configs = [e["playback_config"] for e in self._master_entries]
             weights = [e["weight"] for e in self._master_entries]
-            skip_mem = self._skip_memory_check.isChecked()
             master = PlaybackConfigMaster(
                 configs, weights,
                 stacked=self._stacked_check.isChecked(),
-                override_skip_memory_shuffle=skip_mem if skip_mem else None,
+                override_sort_config=self._override_sort_config,
             )
             PlaybackStateManager.set_master_config(master)
             try:
@@ -893,12 +918,16 @@ class PlaylistModifyWindow(SmartWindow):
         form.addWidget(self._loop_check, row, 0)
         row += 1
 
-        # Skip memory shuffle
-        self._skip_memory_check = QCheckBox(_("Skip memory reshuffle"), self)
-        self._skip_memory_check.setToolTip(
-            _("Disable recently-played memory reshuffling for this playlist")
-        )
-        form.addWidget(self._skip_memory_check, row, 0)
+        # Sort config
+        self._sort_config: SortConfig = SortConfig()
+        sc_row = QHBoxLayout()
+        sort_opts_btn = QPushButton(_("Sort Options..."), self)
+        sort_opts_btn.clicked.connect(self._open_sort_config)
+        sc_row.addWidget(sort_opts_btn)
+        self._sort_cfg_summary = QLabel(_("(defaults)"), self)
+        sc_row.addWidget(self._sort_cfg_summary)
+        sc_row.addStretch()
+        form.addLayout(sc_row, row, 0, 1, 2)
         row += 1
 
         # Description
@@ -923,7 +952,14 @@ class PlaylistModifyWindow(SmartWindow):
         self._name_edit.setText(pd.name)
         self._sort_combo.setCurrentText(pd.sort_type.get_translation())
         self._loop_check.setChecked(pd.loop)
-        self._skip_memory_check.setChecked(pd.skip_memory_shuffle)
+        self._sort_config = SortConfig(
+            skip_memory_shuffle=pd.sort_config.skip_memory_shuffle,
+            skip_random_start=pd.sort_config.skip_random_start,
+            check_count_override=pd.sort_config.check_count_override,
+        )
+        self._sort_cfg_summary.setText(
+            _("(custom)") if not self._sort_config.is_default() else _("(defaults)")
+        )
         self._desc_edit.setText(pd.description or "")
 
         if pd.is_search_based():
@@ -1183,7 +1219,7 @@ class PlaylistModifyWindow(SmartWindow):
             track_filepaths=track_filepaths,
             sort_type=sort_type,
             loop=self._loop_check.isChecked(),
-            skip_memory_shuffle=self._skip_memory_check.isChecked(),
+            sort_config=self._sort_config,
             created_at=created_at,
             description=self._desc_edit.text().strip() or None,
         )
@@ -1196,6 +1232,20 @@ class PlaylistModifyWindow(SmartWindow):
         toast_msg = _("Playlist updated successfully") if self._editing else _("Playlist created successfully")
         self.app_actions.toast(toast_msg)
         self.close()
+
+    # ------------------------------------------------------------------
+    # Sort config
+    # ------------------------------------------------------------------
+
+    def _open_sort_config(self):
+        dlg = SortConfigWindow(self, sort_config=self._sort_config)
+        if dlg.exec() == SortConfigWindow.DialogCode.Accepted:
+            result = dlg.get_result()
+            if result is not None:
+                self._sort_config = result
+                self._sort_cfg_summary.setText(
+                    _("(custom)") if not result.is_default() else _("(defaults)")
+                )
 
     # ------------------------------------------------------------------
     # Lifecycle

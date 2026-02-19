@@ -1,3 +1,7 @@
+"""
+DEPRECATED: This Tkinter-based UI is deprecated and will be removed soon.
+Use app_qt.py (PySide6) instead. No further updates will be made to this file.
+"""
 from copy import deepcopy
 import os
 import signal

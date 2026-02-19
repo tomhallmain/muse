@@ -128,7 +128,8 @@ class Run:
                 playback_configs=[PlaybackConfig(
                     args=self.args,
                     data_callbacks=self.get_library_data().data_callbacks,
-                )]
+                )],
+                override_sort_config=PlaybackStateManager.get_override_sort_config(),
             )
 
         self._playback = Playback(playback_config, self.app_actions, self)

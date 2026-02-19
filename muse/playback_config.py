@@ -5,6 +5,7 @@ from typing import Dict, List, Optional, Any, TYPE_CHECKING
 from library_data.media_track import MediaTrack
 from muse.playlist import Playlist
 from muse.playlist_descriptor import PlaylistDescriptor
+from muse.sort_config import SortConfig
 from utils.globals import PlaylistSortType, TrackResult
 from utils.logging_setup import get_logger
 
@@ -84,7 +85,6 @@ class PlaybackConfig:
             long_track_splitting_time_cutoff_minutes=playback_overrides.get(
                 'long_track_splitting_time_cutoff_minutes', 20
             ),
-            check_entire_playlist=False,
             track=None,
         )
 
@@ -94,11 +94,19 @@ class PlaybackConfig:
             explicit_tracks=explicit,
         )
         pc.playlist_descriptor = playlist_descriptor
+
         pc.loop = playlist_descriptor.loop
-        pc.skip_memory_shuffle = (
-            playlist_descriptor.skip_memory_shuffle
-            or playlist_descriptor.sort_type == PlaylistSortType.SEQUENCE
-        )
+
+        # SEQUENCE always gets deterministic behaviour regardless of descriptor config
+        if playlist_descriptor.sort_type == PlaylistSortType.SEQUENCE:
+            seq_config = SortConfig(skip_memory_shuffle=True, skip_random_start=True)
+            pc.sort_config = playlist_descriptor.sort_config.merge(seq_config)
+        else:
+            pc.sort_config = SortConfig(
+                skip_memory_shuffle=playlist_descriptor.sort_config.skip_memory_shuffle,
+                skip_random_start=playlist_descriptor.sort_config.skip_random_start,
+                check_count_override=playlist_descriptor.sort_config.check_count_override,
+            )
         return pc
 
     def __init__(self, args: Optional[Any] = None, override_dir: Optional[str] = None,
@@ -113,13 +121,12 @@ class PlaybackConfig:
         self.long_track_splitting_time_cutoff_minutes: int = args.long_track_splitting_time_cutoff_minutes if args else 20
         self.long_track_splitting_play_all: bool = False
         self.data_callbacks: Optional['LibraryDataCallbacks'] = data_callbacks
-        self.check_entire_playlist: bool = args.check_entire_playlist if args else False
-        self.list: Playlist = Playlist(data_callbacks=self.data_callbacks, check_entire_playlist=self.check_entire_playlist)
+        self.list: Playlist = Playlist(data_callbacks=self.data_callbacks)
         self.start_track: Optional[str] = args.track if args else None
         self.playing: bool = False
         self._explicit_tracks: Optional[List[str]] = explicit_tracks
         self.loop: bool = False
-        self.skip_memory_shuffle: bool = False
+        self.sort_config: SortConfig = SortConfig()
         self.playlist_descriptor: Optional[PlaylistDescriptor] = None
         PlaybackConfig.open_configs.append(self)
 
@@ -144,9 +151,8 @@ class PlaybackConfig:
             track_list = self.data_callbacks.get_all_filepaths(self.directories, self.overwrite)
         self.list = Playlist(track_list, self.type, data_callbacks=self.data_callbacks,
                              start_track=self.start_track,
-                             check_entire_playlist=self.check_entire_playlist,
                              loop=self.loop,
-                             skip_memory_shuffle=self.skip_memory_shuffle)
+                             sort_config=self.sort_config)
         return self.list
 
     def set_playing(self, playing: bool = True) -> None:
@@ -199,12 +205,12 @@ class PlaybackConfig:
             and self.long_track_splitting_time_cutoff_minutes == other.long_track_splitting_time_cutoff_minutes \
             and self.long_track_splitting_play_all == other.long_track_splitting_play_all \
             and self.start_track == other.start_track \
-            and self.check_entire_playlist == other.check_entire_playlist
+            and self.sort_config == other.sort_config
 
     def __hash__(self) -> int:
         return hash((self.type, tuple(self.directories), self.overwrite, self.enable_dynamic_volume,
                      self.enable_long_track_splitting, self.long_track_splitting_time_cutoff_minutes,
-                     self.long_track_splitting_play_all, self.start_track, self.check_entire_playlist))
+                     self.long_track_splitting_play_all, self.start_track, self.sort_config))
 
     def __deepcopy__(self, memo: Dict[int, Any]) -> 'PlaybackConfig':
         cls = self.__class__

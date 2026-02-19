@@ -53,7 +53,7 @@ Muse is a media player with an integrated voice synthesizer attached to an LLM. 
 
 ## Usage
 
-- In your virtual environment, run `python app_qt.py` to start the application (Qt/PySide6 UI). On Windows you can use `start.bat`, which launches the Qt version. The legacy Tkinter UI is available via `python app.py` if needed.
+- In your virtual environment, run `python app_qt.py` to start the application (Qt/PySide6 UI). On Windows you can use `start.bat`, which launches the Qt version. The legacy Tkinter UI (`app.py`) is deprecated and will be removed in a future release -- use the PySide6 version.
 - Keyboard media keys (previous, play/pause, next) are supported when the optional `pynput` dependency is installed. Media keys work globally (even when the window doesn't have focus) in both UI versions when `pynput` is installed.
 
 

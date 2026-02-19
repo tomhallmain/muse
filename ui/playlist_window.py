@@ -12,6 +12,7 @@ from muse.playback_config import PlaybackConfig
 from muse.playback_config_master import PlaybackConfigMaster
 from muse.playlist_descriptor import PlaylistDescriptor, PlaylistDescriptorStore
 from muse.playback_state import PlaybackStateManager
+from muse.sort_config import SortConfig
 from utils.globals import PlaylistSortType, PlaybackMasterStrategy
 from utils.config import config
 from utils.translations import I18N
@@ -171,7 +172,8 @@ class MasterPlaylistWindow:
             if getattr(master, 'stacked', False):
                 self._stacked_var.set(True)
                 self._on_stacked_change()
-            if getattr(master, 'override_skip_memory_shuffle', None) is True:
+            override_sc = getattr(master, 'override_sort_config', None)
+            if override_sc is not None and override_sc.skip_memory_shuffle:
                 self._skip_memory_var.set(True)
 
     # ------------------------------------------------------------------
@@ -388,10 +390,11 @@ class MasterPlaylistWindow:
             configs = [e["playback_config"] for e in self._master_entries]
             weights = [e["weight"] for e in self._master_entries]
             skip_mem = self._skip_memory_var.get()
+            override_sc = SortConfig(skip_memory_shuffle=True) if skip_mem else None
             master = PlaybackConfigMaster(
                 configs, weights,
                 stacked=self._stacked_var.get(),
-                override_skip_memory_shuffle=skip_mem if skip_mem else None,
+                override_sort_config=override_sc,
             )
             PlaybackStateManager.set_master_config(master)
             try:
@@ -622,7 +625,7 @@ class PlaylistModifyWindow:
         self._name_var.set(pd.name)
         self._sort_var.set(pd.sort_type.get_translation())
         self._loop_var.set(pd.loop)
-        self._skip_memory_var.set(pd.skip_memory_shuffle)
+        self._skip_memory_var.set(pd.sort_config.skip_memory_shuffle)
         self._desc_var.set(pd.description or "")
 
         if pd.is_search_based():
@@ -840,7 +843,7 @@ class PlaylistModifyWindow:
             track_filepaths=track_filepaths,
             sort_type=sort_type,
             loop=self._loop_var.get(),
-            skip_memory_shuffle=self._skip_memory_var.get(),
+            sort_config=SortConfig(skip_memory_shuffle=self._skip_memory_var.get()),
             created_at=created_at,
             description=self._desc_var.get().strip() or None,
         )

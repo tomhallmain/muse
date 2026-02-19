@@ -364,7 +364,10 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         self.sort_type_combo.setCurrentText(PlaylistSortType.get(self.runner_app_config.workflow_type).get_translation())
         self.sort_type_combo.currentTextChanged.connect(self.set_playlist_sort_type)
         sidebar_layout.addWidget(self.sort_type_combo, row, 1, 1, 2)
+        self._sort_type_resolved_label = QLabel("", self)
+        sidebar_layout.addWidget(self._sort_type_resolved_label, row, 1, 1, 2)
         row += 1
+        self._update_sort_type_display()
 
         self.favorite_check = QCheckBox(_("Favorite"))
         self.favorite_check.stateChanged.connect(self.set_favorite)
@@ -403,10 +406,13 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         sidebar_layout.addWidget(self.use_system_language_check, row, 0, 1, 3)
         row += 1
 
-        self.check_entire_playlist_check = QCheckBox(_("Thorough playlist memory check"))
-        self.check_entire_playlist_check.setChecked(self.runner_app_config.check_entire_playlist)
-        self.check_entire_playlist_check.stateChanged.connect(self.set_check_entire_playlist)
-        sidebar_layout.addWidget(self.check_entire_playlist_check, row, 0, 1, 3)
+        self._sort_config_btn = QPushButton(_("Sorting Options"))
+        self._sort_config_btn.clicked.connect(self._open_sort_config_override)
+        sidebar_layout.addWidget(self._sort_config_btn, row, 0, 1, 2)
+        self._sort_config_label = QLabel(
+            _("(custom)") if PlaybackStateManager.get_override_sort_config() else _("(defaults)")
+        )
+        sidebar_layout.addWidget(self._sort_config_label, row, 2, 1, 1)
         row += 1
 
         sidebar_layout.setRowStretch(row, 1)
@@ -531,6 +537,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
             strategy_text = self.playlist_strategy_combo.currentText()
             strategy = PlaybackMasterStrategy.get_from_translation(strategy_text)
         self.runner_app_config.playback_master_strategy = strategy.value
+        self._update_sort_type_display()
         if strategy == PlaybackMasterStrategy.PLAYLIST_CONFIG:
             master = PlaybackStateManager.get_master_config()
             if not master or not master.playback_configs:
@@ -545,6 +552,24 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
     def set_playlist_sort_type(self, _value=None):
         sort_text = self.sort_type_combo.currentText()
         self.runner_app_config.workflow_type = PlaylistSortType.get_from_translation(sort_text).value
+
+    def _update_sort_type_display(self):
+        """Show the combo when ALL_MUSIC, or a resolved label when PLAYLIST_CONFIG."""
+        strategy = PlaybackMasterStrategy.get(self.runner_app_config.playback_master_strategy)
+        is_playlist_config = strategy == PlaybackMasterStrategy.PLAYLIST_CONFIG
+        self.sort_type_combo.setVisible(not is_playlist_config)
+        self._sort_type_resolved_label.setVisible(is_playlist_config)
+        if is_playlist_config:
+            self._sort_type_resolved_label.setText(self._resolve_master_sort_label())
+
+    def _resolve_master_sort_label(self) -> str:
+        master = PlaybackStateManager.get_master_config()
+        if not master or not master.playback_configs:
+            return _("(no playlist configured)")
+        sort_types = {pc.type for pc in master.playback_configs}
+        if len(sort_types) == 1:
+            return next(iter(sort_types)).get_translation()
+        return _("(see playlist window)")
 
     def set_favorite(self, _state=None):
         favorited = self.favorite_check.isChecked()
@@ -565,8 +590,22 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
     def set_use_system_language(self, _state=None):
         self.runner_app_config.use_system_lang_for_all_topics = self.use_system_language_check.isChecked()
 
-    def set_check_entire_playlist(self, _state=None):
-        self.runner_app_config.check_entire_playlist = self.check_entire_playlist_check.isChecked()
+    def _open_sort_config_override(self):
+        from ui_qt.sort_config_window import SortConfigWindow
+        dlg = SortConfigWindow(
+            self,
+            sort_config=PlaybackStateManager.get_override_sort_config(),
+            is_override=True,
+        )
+        if dlg.exec() == SortConfigWindow.DialogCode.Accepted:
+            result = dlg.get_result()
+            if result is not None and result.is_default():
+                result = None
+            PlaybackStateManager.set_override_sort_config(result)
+            self._sort_config_label.setText(
+                _("(custom)") if result else _("(defaults)")
+            )
+            self.store_info_cache()
 
     def set_widgets_from_config(self):
         if self.runner_app_config is None:
@@ -595,7 +634,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         args.track = track
         args.enable_long_track_splitting = self.track_splitting_check.isChecked()
         args.use_system_language_for_all_topics = self.use_system_language_check.isChecked()
-        args.check_entire_playlist = self.check_entire_playlist_check.isChecked()
+        # check_entire_playlist is now managed via SortConfig override on PlaybackStateManager
         args_copy = deepcopy(args)
         return args, args_copy
 
@@ -835,6 +874,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         search query, directory names, track count), falling back to a plain
         directory count for ALL_MUSIC mode.
         """
+        self._update_sort_type_display()
         active = PlaybackStateManager.get_active_config()
         if not active:
             active = PlaybackStateManager.get_master_config()

@@ -2,6 +2,7 @@ import random
 from typing import List, Optional, TYPE_CHECKING
 
 from library_data.media_track import MediaTrack
+from muse.sort_config import SortConfig
 from utils.app_info_cache import app_info_cache
 from utils.config import config
 from utils.globals import PlaylistSortType, HistoryType, TrackResult
@@ -73,9 +74,8 @@ class Playlist:
 
     def __init__(self, tracks: List[str] = [], _type: PlaylistSortType = PlaylistSortType.SEQUENCE, 
                  data_callbacks: Optional['LibraryDataCallbacks'] = None, start_track: Optional[MediaTrack] = None, 
-                 check_entire_playlist: bool = False,
                  loop: bool = False,
-                 skip_memory_shuffle: bool = False) -> None:
+                 sort_config: Optional[SortConfig] = None) -> None:
         self.in_sequence: List[str] = list(tracks)
         self.sort_type: PlaylistSortType = _type
         self.pending_tracks: List[str] = list(tracks)
@@ -85,18 +85,17 @@ class Playlist:
         self.start_track: Optional[MediaTrack] = start_track
         self.data_callbacks: Optional['LibraryDataCallbacks'] = data_callbacks
         self.loop: bool = loop
-        self._skip_memory_shuffle: bool = skip_memory_shuffle
+        self.sort_config: SortConfig = sort_config or SortConfig()
         assert self.data_callbacks is not None and \
                 self.data_callbacks.get_track is not None and \
                 self.data_callbacks.get_all_tracks is not None
-        # Build sorted tracks list using LibraryData callback to reduce load time
         self.sorted_tracks: List[MediaTrack] = []
         for track_filepath in list(tracks):
             track = self.data_callbacks.get_track(track_filepath)
             self.sorted_tracks.append(track)
         logger.info(f"Playlist length: {self.size()}")
         if self.size() > 0:
-            self.sort(check_entire_playlist=check_entire_playlist)
+            self.sort()
 
     def size(self) -> int:
         return len(self.in_sequence)
@@ -289,7 +288,7 @@ class Playlist:
         # No grouping change found - all remaining tracks are in the same group
         return None
 
-    def sort(self, check_entire_playlist=False):
+    def sort(self):
         """Sorts the playlist according to the specified sort type with optional memory-based shuffling.
         
         The method handles several sort types:
@@ -301,18 +300,15 @@ class Playlist:
         For non-RANDOM sorts, the method first seeds a random start track (unless user-specified)
         to add variety to the initial grouping, then applies memory-based shuffling to avoid
         recently played groups in the early portion of the playlist.
-        
-        Args:
-            check_entire_playlist (bool): If True, uses thorough memory-based shuffling that
-                                        guarantees no recently played groups in early portion
+
+        Behaviour is controlled by ``self.sort_config``.
         """
         grouping_attr_getter_name = None
         do_set_start_track = self.start_track is not None
         grouping_attr_getter_name = self.sort_type.getter_name_mapping()
         if self.sort_type == PlaylistSortType.RANDOM:
             random.shuffle(self.sorted_tracks)
-        elif not do_set_start_track:
-            # This will seed a random start track on the sequence so the sort below will have more randomness.
+        elif not do_set_start_track and not self.sort_config.skip_random_start:
             self.start_track = random.choice(self.sorted_tracks)
             self.set_start_track(grouping_attr_getter_name, do_print=False)
         if self.sort_type != PlaylistSortType.SEQUENCE:
@@ -329,18 +325,17 @@ class Playlist:
                     self.sorted_tracks.sort(key=lambda t: (all_attrs_list.index(getattr(t, grouping_attr_getter_name)()), t.filepath))
                 else:
                     self.sorted_tracks.sort(key=lambda t: (all_attrs_list.index(getattr(t, grouping_attr_getter_name)), t.filepath))
-            if not self._skip_memory_shuffle:
+            if not self.sort_config.skip_memory_shuffle:
                 history_type = self.sort_type.grouping_list_name_mapping()
                 self.shuffle_with_memory_for_attr(
                     grouping_attr_getter_name, history_type,
-                    check_entire_playlist, playlist_attr_set=attr_set,
+                    playlist_attr_set=attr_set,
                 )
         if do_set_start_track:
             # The user specified a start track, it's not random
             self.set_start_track(grouping_attr_getter_name)
 
     def shuffle_with_memory_for_attr(self, track_attr: str, history_type: HistoryType,
-                                     check_entire_playlist: bool = False,
                                      playlist_attr_set: Optional[set] = None):
         """Reduce recently-played groupings in the early portion of the playlist.
 
@@ -349,12 +344,11 @@ class Playlist:
         history, rather than a fixed global constant.  For playlists of 500
         tracks or fewer the thorough ``scour_playlist`` approach is used by
         default; larger playlists use the faster ``reshuffle_tracks`` unless
-        ``check_entire_playlist`` is ``True``.
+        ``sort_config.check_entire_playlist`` is ``True``.
 
         Args:
             track_attr: Attribute name on each ``MediaTrack`` (e.g. ``'album'``).
             history_type: Which recently-played list to consult.
-            check_entire_playlist: Force the thorough ``scour_playlist`` path.
             playlist_attr_set: Set of unique grouping values already computed
                 by ``sort()``.  Avoids a redundant second pass when available.
         """
@@ -388,13 +382,19 @@ class Playlist:
             return 0
 
         playlist_size = self.size()
-        check_count = min(overlap_count * 2, playlist_size // 3)
-        check_count = max(check_count, 1)
-        check_count = min(check_count, playlist_size // 2)
-        # For large playlists, don't go below the old global count so
-        # existing behaviour is preserved.
-        if playlist_size > 500:
-            check_count = max(check_count, global_check_count)
+
+        if self.sort_config.check_count_override is not None:
+            check_count = max(1, min(self.sort_config.check_count_override, playlist_size // 2))
+            logger.info(
+                f"Using check_count_override={self.sort_config.check_count_override} "
+                f"(clamped to {check_count}) for {history_type.value}"
+            )
+        else:
+            check_count = min(overlap_count * 2, playlist_size // 3)
+            check_count = max(check_count, 1)
+            check_count = min(check_count, playlist_size // 2)
+            if playlist_size > 500:
+                check_count = max(check_count, global_check_count)
 
         logger.info(
             f"Adaptive memory shuffle for {history_type.value}: "
@@ -402,7 +402,7 @@ class Playlist:
             f"overlap={overlap_count}, check_count={check_count}"
         )
 
-        use_scour = check_entire_playlist or playlist_size <= 500
+        use_scour = self.sort_config.check_entire_playlist or playlist_size <= 500
         if use_scour:
             return self.scour_playlist(track_attr, recently_played_attr_list, check_count)
         else:

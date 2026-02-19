@@ -1,7 +1,8 @@
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict, List, Optional, TYPE_CHECKING
 
+from muse.sort_config import SortConfig
 from utils.globals import PlaylistSortType
 from utils.logging_setup import get_logger
 
@@ -45,7 +46,7 @@ class PlaylistDescriptor:
 
     # Playback behaviour
     loop: bool = False
-    skip_memory_shuffle: bool = False
+    sort_config: SortConfig = field(default_factory=SortConfig)
 
     # Metadata
     created_at: Optional[str] = None
@@ -85,14 +86,14 @@ class PlaylistDescriptor:
     def is_reshuffle_redundant(self) -> bool:
         """Whether re-sorting this descriptor's tracks would be a no-op.
 
-        Currently only SEQUENCE playlists are truly redundant: their order is
-        hand-curated and ``skip_memory_shuffle`` prevents reordering.
-
-        Single-attribute searches whose sort type matches the attribute are
-        *not* redundant because memory-based reshuffling still re-evaluates
-        recently-played history on each call.
+        SEQUENCE playlists are always redundant.  Non-SEQUENCE playlists are
+        redundant only when *both* memory reshuffling and random-start seeding
+        are disabled, because in that case the sort is fully deterministic.
         """
-        return self.sort_type == PlaylistSortType.SEQUENCE
+        if self.sort_type == PlaylistSortType.SEQUENCE:
+            return True
+        return (self.sort_config.skip_memory_shuffle
+                and self.sort_config.skip_random_start)
 
     def can_freeze(self) -> bool:
         """Return True if this playlist can be frozen to an explicit track list."""
@@ -251,7 +252,7 @@ class PlaylistDescriptor:
 
         data["sort_type"] = self.sort_type.value
         data["loop"] = self.loop
-        data["skip_memory_shuffle"] = self.skip_memory_shuffle
+        data["sort_config"] = self.sort_config.to_dict()
 
         if self.created_at is not None:
             data["created_at"] = self.created_at
@@ -269,6 +270,14 @@ class PlaylistDescriptor:
         else:
             sort_type = PlaylistSortType.get(str(sort_type_raw))
 
+        # Backward compat: migrate legacy "skip_memory_shuffle" bool
+        if "sort_config" in data:
+            sort_config = SortConfig.from_dict(data["sort_config"])
+        elif "skip_memory_shuffle" in data:
+            sort_config = SortConfig(skip_memory_shuffle=bool(data["skip_memory_shuffle"]))
+        else:
+            sort_config = SortConfig()
+
         return PlaylistDescriptor(
             name=data["name"],
             search_query=data.get("search_query"),
@@ -276,7 +285,7 @@ class PlaylistDescriptor:
             track_filepaths=data.get("track_filepaths"),
             sort_type=sort_type,
             loop=data.get("loop", False),
-            skip_memory_shuffle=data.get("skip_memory_shuffle", False),
+            sort_config=sort_config,
             created_at=data.get("created_at"),
             description=data.get("description"),
         )

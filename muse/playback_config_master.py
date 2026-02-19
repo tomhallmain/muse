@@ -6,6 +6,7 @@ from typing import Dict, List, Optional, Any
 from library_data.media_track import MediaTrack
 from muse.playback_config import PlaybackConfig
 from muse.playlist import Playlist
+from muse.sort_config import SortConfig
 from utils.globals import TrackResult
 from utils.logging_setup import get_logger
 
@@ -82,11 +83,11 @@ class PlaybackConfigMaster:
     def __init__(self, playback_configs: Optional[List[PlaybackConfig]] = None,
                  weights: Optional[List[int]] = None,
                  stacked: bool = False,
-                 override_skip_memory_shuffle: Optional[bool] = None) -> None:
+                 override_sort_config: Optional[SortConfig] = None) -> None:
         self.playback_configs: List[PlaybackConfig] = playback_configs or []
         self.weights: List[int] = weights or [1] * len(self.playback_configs)
         self.stacked: bool = stacked
-        self.override_skip_memory_shuffle: Optional[bool] = override_skip_memory_shuffle
+        self.override_sort_config: Optional[SortConfig] = override_sort_config
 
         if len(self.weights) != len(self.playback_configs):
             raise ValueError(
@@ -94,9 +95,9 @@ class PlaybackConfigMaster:
                 f"playback_configs length ({len(self.playback_configs)})"
             )
 
-        if self.override_skip_memory_shuffle is not None:
+        if self.override_sort_config is not None:
             for pc in self.playback_configs:
-                pc.skip_memory_shuffle = self.override_skip_memory_shuffle
+                pc.sort_config = pc.sort_config.merge(self.override_sort_config)
 
         # Cursor / interleaving state
         self._config_cursor: int = 0

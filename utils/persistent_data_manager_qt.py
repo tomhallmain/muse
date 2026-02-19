@@ -9,6 +9,7 @@ instead of PersistentDataManager, which loads into the Tkinter (ui) window class
 from extensions.extension_manager import ExtensionManager
 from library_data.library_data import LibraryData
 from muse.muse_memory import muse_memory
+from muse.playback_state import PlaybackStateManager
 from muse.playlist import Playlist
 from muse.schedules_manager import SchedulesManager
 from ui_qt.composers_window import ComposersWindow
@@ -33,6 +34,7 @@ class PersistentDataManagerQt:
         ComposersWindow.store_recent_searches()
         FavoritesWindow.store_favorites()
         AudioDeviceManager.store_settings()
+        PlaybackStateManager.store_override_sort_config()
 
     @staticmethod
     def load():
@@ -49,5 +51,6 @@ class PersistentDataManagerQt:
         ComposersWindow.load_recent_searches()
         FavoritesWindow.load_favorites()
         AudioDeviceManager.load_settings()
+        PlaybackStateManager.load_override_sort_config()
 
         PersistentDataManagerQt._is_loaded = True
