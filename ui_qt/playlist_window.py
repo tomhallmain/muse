@@ -38,7 +38,7 @@ from muse.playback_state import PlaybackStateManager
 from muse.sort_config import SortConfig
 from ui_qt.app_style import AppStyle
 from ui_qt.sort_config_window import SortConfigWindow
-from utils.app_info_cache_qt import app_info_cache
+from utils.app_info_cache import app_info_cache
 from utils.config import config
 from utils.globals import PlaylistSortType, PlaybackMasterStrategy
 from utils.logging_setup import get_logger

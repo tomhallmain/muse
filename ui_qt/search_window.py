@@ -24,7 +24,7 @@ from lib.multi_display_qt import SmartWindow
 from library_data.library_data import LibraryDataSearch
 from ui_qt.app_style import AppStyle
 from ui_qt.auth.password_utils import require_password
-from utils.app_info_cache_qt import app_info_cache
+from utils.app_info_cache import app_info_cache
 from utils.config import config
 from utils.globals import PlaylistSortType, ProtectedActions
 from utils.translations import I18N
@@ -782,7 +782,7 @@ class SearchWindow(SmartWindow):
         """Save the current search fields as a search-based PlaylistDescriptor."""
         from datetime import datetime
         from muse.playlist_descriptor import PlaylistDescriptor, PlaylistDescriptorStore
-        from utils.app_info_cache_qt import app_info_cache
+        from utils.app_info_cache import app_info_cache
 
         query = {}
         for field, entry in [
@@ -823,7 +823,7 @@ class SearchWindow(SmartWindow):
     def _add_track_to_playlist(self, track):
         """Add a single track to an existing track-based PlaylistDescriptor."""
         from muse.playlist_descriptor import PlaylistDescriptor, PlaylistDescriptorStore
-        from utils.app_info_cache_qt import app_info_cache
+        from utils.app_info_cache import app_info_cache
 
         all_playlists = PlaylistDescriptorStore.load_all(cache=app_info_cache)
         candidates = {

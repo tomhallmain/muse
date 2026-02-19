@@ -4,7 +4,7 @@ import os
 import shutil
 import threading
 
-from lib.position_data import PositionData
+from lib.position_data_qt import PositionData
 from utils.encryptor import encrypt_data_to_file, decrypt_data_from_file
 from utils.globals import AppInfo
 from utils.logging_setup import get_logger

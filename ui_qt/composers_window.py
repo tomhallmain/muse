@@ -22,7 +22,7 @@ from lib.multi_display_qt import SmartWindow
 from library_data.composer import Composer, ComposersDataSearch, ComposersData
 from ui_qt.app_style import AppStyle
 from ui_qt.auth.password_utils import require_password
-from utils.app_info_cache_qt import app_info_cache
+from utils.app_info_cache import app_info_cache
 from utils.globals import ProtectedActions
 from utils.logging_setup import get_logger
 from utils.translations import I18N

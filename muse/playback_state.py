@@ -89,7 +89,7 @@ class PlaybackStateManager:
     @classmethod
     def load_override_sort_config(cls) -> None:
         """Restore the global override SortConfig from the app cache."""
-        from utils.app_info_cache_qt import app_info_cache
+        from utils.app_info_cache import app_info_cache
         raw = app_info_cache.get(cls._SORT_CONFIG_CACHE_KEY)
         if raw and isinstance(raw, dict):
             sc = SortConfig.from_dict(raw)
@@ -99,7 +99,7 @@ class PlaybackStateManager:
     @classmethod
     def store_override_sort_config(cls) -> None:
         """Persist the global override SortConfig to the app cache."""
-        from utils.app_info_cache_qt import app_info_cache
+        from utils.app_info_cache import app_info_cache
         osc = cls.get_override_sort_config()
         app_info_cache.set(cls._SORT_CONFIG_CACHE_KEY, osc.to_dict() if osc else None)
 

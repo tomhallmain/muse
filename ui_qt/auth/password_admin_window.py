@@ -548,7 +548,7 @@ class PasswordAdminWindow(SmartWindow):
     @require_password(ProtectedActions.ACCESS_ADMIN)
     def export_cache_as_json(self):
         """Export the app_info_cache as a JSON file (not encoded)."""
-        from utils.app_info_cache_qt import app_info_cache
+        from utils.app_info_cache import app_info_cache
 
         try:
             json_path = app_info_cache.export_as_json()

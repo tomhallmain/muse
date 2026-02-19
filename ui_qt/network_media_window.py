@@ -19,7 +19,7 @@ from PySide6.QtCore import Qt, QTimer
 from lib.multi_display_qt import SmartWindow
 from library_data.library_data import LibraryData, LibraryDataSearch
 from ui_qt.app_style import AppStyle
-from utils.app_info_cache_qt import app_info_cache
+from utils.app_info_cache import app_info_cache
 from utils.config import config
 from utils.globals import PlaylistSortType
 from utils.translations import I18N

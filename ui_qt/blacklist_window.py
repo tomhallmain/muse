@@ -30,7 +30,7 @@ from library_data.blacklist import BlacklistItem, Blacklist
 from ui_qt.app_style import AppStyle
 from ui_qt.auth.password_utils import require_password
 from utils.globals import ProtectedActions, BlacklistMode
-from utils.app_info_cache_qt import app_info_cache
+from utils.app_info_cache import app_info_cache
 from utils.translations import I18N
 
 _ = I18N._

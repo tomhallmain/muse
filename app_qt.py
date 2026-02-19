@@ -47,7 +47,7 @@ from utils.persistent_data_manager_qt import PersistentDataManagerQt
 from lib.debounce_qt import QtDebouncer
 from lib.qt_alert import qt_alert
 from lib.media_keys import MediaKeyHandler
-from utils.app_info_cache_qt import app_info_cache
+from utils.app_info_cache import app_info_cache
 from utils import (
     config,
     FFmpegHandler,
