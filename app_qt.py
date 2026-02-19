@@ -136,7 +136,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
             "open_track_details": self.open_track_details_window,
             "find_track": lambda search_query: self._find_track(search_query),
             "search_and_play": self.search_and_play,
-            "update_directory_count": self.update_directory_count,
+            "update_directory_count": self.update_playback_info,
             "open_password_admin_window": self.open_password_admin_window,
             "set_playback_master_strategy": self.set_playback_master_strategy,
         }, self)
@@ -284,7 +284,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
             row += 1
             return lbl
 
-        self.label_directory_count = add_label("")
+        self.label_playback_info = add_label("")
         self.label_dj_persona = add_label(_("DJ"))
         self.label_title_text = add_label(_("Title"))
         self.label_album_text = add_label(_("Album"))
@@ -623,7 +623,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
 
     def _run_impl(self, event=None, track=None, override_scheduled=False):
         args, args_copy = self.get_args(track=track)
-        self.update_directory_count(args.directories)
+        self.update_playback_info(args.directories)
         try:
             from utils.audio_device_manager import AudioDeviceManager
             AudioDeviceManager().check_and_apply_settings(app_actions=self.app_actions)
@@ -766,6 +766,10 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         self.label_artist_text.setText(artist_text)
         self.label_composer_text.setText(composer_text)
         self.label_year_text.setText(year_text)
+        self.update_playback_info()
+        from ui_qt.playlist_window import MasterPlaylistWindow
+        if MasterPlaylistWindow.top_level is not None:
+            MasterPlaylistWindow.top_level.on_track_change(audio_track)
         QApplication.processEvents()
 
     def update_next_up_text(self, next_up_text, no_title=False):
@@ -824,9 +828,29 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         self.label_extension_status.setText(str(extension)[:500])
         QApplication.processEvents()
 
-    def update_directory_count(self, directories):
-        count = len(directories) if isinstance(directories, list) else 0
-        self.label_directory_count.setText(_("Directories: {0}").format(count))
+    def update_playback_info(self, directories=None):
+        """Update the playback info label with context-aware status.
+
+        Shows the active config's source description when available (e.g.
+        search query, directory names, track count), falling back to a plain
+        directory count for ALL_MUSIC mode.
+        """
+        active = PlaybackStateManager.get_active_config()
+        if not active:
+            active = PlaybackStateManager.get_master_config()
+        if active and hasattr(active, 'playback_configs') and active.playback_configs:
+            descs = []
+            for pc in active.playback_configs:
+                np = getattr(pc, 'named_playlist', None)
+                if np:
+                    descs.append(f"{np.name}: {np.get_source_description()}")
+                else:
+                    count = len(pc.directories) if pc.directories else 0
+                    descs.append(_("Directories: {0}").format(count))
+            self.label_playback_info.setText(" | ".join(descs))
+        else:
+            count = len(directories) if isinstance(directories, list) else 0
+            self.label_playback_info.setText(_("Directories: {0}").format(count))
         QApplication.processEvents()
 
     def update_dj_persona_callback(self, persona_name):

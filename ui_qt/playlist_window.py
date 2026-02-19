@@ -26,6 +26,7 @@ from PySide6.QtWidgets import (
     QInputDialog,
 )
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QColor
 
 from lib.multi_display_qt import SmartWindow
 from library_data.library_data import LibraryDataSearch
@@ -71,6 +72,9 @@ class MasterPlaylistWindow(SmartWindow):
 
         self._named_playlists = {}
         self._master_entries = []  # list of dicts: {name, named_playlist, playback_config, weight, loop}
+        self._preview_track_keys = []  # parallel to preview list: "title - artist" for matching
+        self._preview_track_objects = []  # parallel to preview list: MediaTrack or None
+        self._current_highlight_row = -1
 
         self.setStyleSheet(AppStyle.get_stylesheet())
         self._build_ui()
@@ -94,8 +98,9 @@ class MasterPlaylistWindow(SmartWindow):
         left.addWidget(QLabel(_("Available Playlists"), self))
         self._avail_list = QListWidget(self)
         self._avail_list.setMinimumWidth(250)
-        self._avail_list.doubleClicked.connect(lambda _: self._add_to_master())
-        left.addWidget(self._avail_list, 1)
+        self._avail_list.setMaximumHeight(180)
+        self._avail_list.doubleClicked.connect(lambda __unused: self._add_to_master())
+        left.addWidget(self._avail_list, 0)
 
         avail_btns = QHBoxLayout()
         new_pl_btn = QPushButton(_("New Playlist"), self)
@@ -112,6 +117,7 @@ class MasterPlaylistWindow(SmartWindow):
         avail_btns.addWidget(del_btn)
         avail_btns.addStretch()
         left.addLayout(avail_btns)
+        left.addStretch()
         panels.addLayout(left, 1)
 
         # --- Centre: add/remove arrows ---
@@ -131,9 +137,10 @@ class MasterPlaylistWindow(SmartWindow):
         right.addWidget(QLabel(_("Master Playlist"), self))
         self._master_list = QListWidget(self)
         self._master_list.setMinimumWidth(280)
+        self._master_list.setMaximumHeight(180)
         self._master_list.doubleClicked.connect(self._remove_from_master)
         self._master_list.currentRowChanged.connect(self._on_master_select)
-        right.addWidget(self._master_list, 1)
+        right.addWidget(self._master_list, 0)
 
         # Per-entry controls
         ctrl = QHBoxLayout()
@@ -166,7 +173,7 @@ class MasterPlaylistWindow(SmartWindow):
 
         panels.addLayout(right, 1)
 
-        outer.addLayout(panels, 1)
+        outer.addLayout(panels, 0)
 
         # --- Bottom: preview ---
         preview_frame = QFrame(self)
@@ -175,9 +182,9 @@ class MasterPlaylistWindow(SmartWindow):
         self._preview_label = QLabel(_("Interspersed Preview"), self)
         preview_layout.addWidget(self._preview_label)
         self._preview_list = QListWidget(self)
-        self._preview_list.setMaximumHeight(220)
-        preview_layout.addWidget(self._preview_list)
-        outer.addWidget(preview_frame)
+        self._preview_list.itemClicked.connect(self._on_preview_click)
+        preview_layout.addWidget(self._preview_list, 1)
+        outer.addWidget(preview_frame, 1)
 
     # ------------------------------------------------------------------
     # Data loading
@@ -464,8 +471,18 @@ class MasterPlaylistWindow(SmartWindow):
     # Preview
     # ------------------------------------------------------------------
 
+    @staticmethod
+    def _format_track(t) -> str:
+        """Format a MediaTrack (or similar) into a display string."""
+        title = getattr(t, 'title', None)
+        artist = getattr(t, 'artist', None)
+        if not title:
+            fp = getattr(t, 'filepath', '')
+            title = os.path.basename(fp) if fp else '?'
+        return f"{title} - {artist}" if artist else title
+
     def _get_entry_tracks(self, entry):
-        """Return a list of track display strings from a master entry's playlist."""
+        """Return a list of (display_str, MediaTrack) from a master entry's playlist."""
         pc = entry.get("playback_config")
         if pc is None:
             return []
@@ -476,23 +493,25 @@ class MasterPlaylistWindow(SmartWindow):
         tracks = getattr(playlist, 'sorted_tracks', None)
         if not tracks:
             return []
-        result = []
-        for t in tracks:
-            title = getattr(t, 'title', None)
-            artist = getattr(t, 'artist', None)
-            if not title:
-                fp = getattr(t, 'filepath', '')
-                title = os.path.basename(fp) if fp else '?'
-            result.append(f"{title} - {artist}" if artist else title)
-        return result
+        return [(self._format_track(t), t) for t in tracks]
 
-    def _update_preview(self, max_tracks: int = 15):
-        """Show the first N tracks in order (stacked or interleaved).
+    def _update_preview(self, max_tracks: int = 30):
+        """Show a track preview (stacked or interleaved).
 
-        When the underlying playlists have resolved track lists, actual
-        track titles are shown.  Otherwise, falls back to playlist names.
+        When playback is active, delegates to ``_update_live_preview`` which
+        reads the real ``PlaybackConfigMaster`` state.  Otherwise, simulates
+        the ordering from the UI-configured entries.
         """
+        active = PlaybackStateManager.get_active_config()
+        if active and hasattr(active, 'played_tracks') and active.played_tracks:
+            self._update_live_preview(active, max_tracks=max_tracks)
+            return
+
+        self._preview_label.setText(_("Interspersed Preview"))
         self._preview_list.clear()
+        self._preview_track_keys = []
+        self._preview_track_objects = []
+        self._current_highlight_row = -1
         if not self._master_entries:
             return
 
@@ -503,19 +522,25 @@ class MasterPlaylistWindow(SmartWindow):
         stacked = self._stacked_check.isChecked()
 
         preview_items = []
+        track_keys = []
+        track_objects = []
 
         if stacked:
             for i, name in enumerate(names):
-                tracks = entry_tracks[i] if has_tracks else []
-                if tracks:
-                    for t in tracks:
+                pairs = entry_tracks[i] if has_tracks else []
+                if pairs:
+                    for display, track in pairs:
                         if len(preview_items) >= max_tracks:
                             break
                         prefix = f"[{name}] " if len(names) > 1 else ""
-                        preview_items.append(f"{prefix}{t}")
+                        preview_items.append(f"{prefix}{display}")
+                        track_keys.append(display)
+                        track_objects.append(track)
                 else:
                     if len(preview_items) < max_tracks:
                         preview_items.append(name)
+                        track_keys.append("")
+                        track_objects.append(None)
                 if len(preview_items) >= max_tracks:
                     break
         else:
@@ -523,7 +548,7 @@ class MasterPlaylistWindow(SmartWindow):
             rr_cursor = 0
             rr_counter = 0
 
-            for _ in range(max_tracks):
+            for _t in range(max_tracks):
                 for _attempt in range(len(names)):
                     if rr_counter >= weights[rr_cursor]:
                         rr_cursor = (rr_cursor + 1) % len(names)
@@ -531,25 +556,210 @@ class MasterPlaylistWindow(SmartWindow):
                     break
 
                 if has_tracks:
-                    tracks = entry_tracks[rr_cursor]
+                    pairs = entry_tracks[rr_cursor]
                     idx = track_cursors[rr_cursor]
-                    if tracks and idx < len(tracks):
+                    if pairs and idx < len(pairs):
+                        display, track = pairs[idx]
                         label = names[rr_cursor] if len(names) > 1 else ""
                         prefix = f"[{label}] " if label else ""
-                        preview_items.append(f"{prefix}{tracks[idx]}")
+                        preview_items.append(f"{prefix}{display}")
+                        track_keys.append(display)
+                        track_objects.append(track)
                         track_cursors[rr_cursor] += 1
                     else:
                         preview_items.append(f"[{names[rr_cursor]}] —")
+                        track_keys.append("")
+                        track_objects.append(None)
                 else:
                     preview_items.append(names[rr_cursor])
+                    track_keys.append("")
+                    track_objects.append(None)
 
                 rr_counter += 1
                 if rr_counter >= weights[rr_cursor]:
                     rr_cursor = (rr_cursor + 1) % len(names)
                     rr_counter = 0
 
+        self._preview_track_keys = track_keys
+        self._preview_track_objects = track_objects
         for i, item in enumerate(preview_items):
             self._preview_list.addItem(f"  {i + 1}. {item}")
+
+    # ------------------------------------------------------------------
+    # Live preview (synchronised with PlaybackConfigMaster)
+    # ------------------------------------------------------------------
+
+    def _update_live_preview(self, master, max_tracks: int = 30,
+                             history_count: int = 3):
+        """Rebuild the preview from the live PlaybackConfigMaster state.
+
+        Shows ``history_count`` recently-played tracks (dimmed), then the
+        remaining upcoming tracks from each playlist's current position,
+        interleaved/stacked according to the master's mode.
+        """
+        played_count = len(master.played_tracks) if master.played_tracks else 0
+        self._preview_label.setText(
+            _("Interspersed Preview") + f"  ({played_count} " + _("played") + ")"
+        )
+        self._preview_list.clear()
+        self._preview_track_keys = []
+        self._preview_track_objects = []
+        self._current_highlight_row = -1
+        multi = len(master.playback_configs) > 1
+
+        def _name_for(cfg_idx):
+            pc = master.playback_configs[cfg_idx]
+            np = getattr(pc, 'named_playlist', None)
+            return np.name if np else str(pc)
+
+        # --- Recently played (from master.played_tracks) ---
+        played = master.played_tracks or []
+        history_start = max(0, len(played) - history_count - 1)
+        history_slice = played[history_start:]
+
+        highlight_row = -1
+        row = 0
+
+        for idx, t in enumerate(history_slice):
+            key = self._format_track(t)
+            prefix = ""
+            if multi:
+                for ci, pc in enumerate(master.playback_configs):
+                    pl = getattr(pc, 'list', None)
+                    if pl and hasattr(pl, 'played_tracks'):
+                        fp = getattr(t, 'filepath', None) or getattr(t, 'get_parent_filepath', lambda: None)()
+                        if fp and fp in pl.played_tracks:
+                            prefix = f"[{_name_for(ci)}] "
+                            break
+            is_current = (idx == len(history_slice) - 1)
+            marker = "\u25b6 " if is_current else "  "
+            self._preview_list.addItem(f"{marker}{row + 1}. {prefix}{key}")
+            self._preview_track_keys.append(key)
+            self._preview_track_objects.append(t)
+            if is_current:
+                highlight_row = row
+                item = self._preview_list.item(row)
+                if item:
+                    item.setBackground(QColor(AppStyle.PROGRESS_CHUNK))
+            row += 1
+
+        # --- Upcoming tracks from each config's remaining sorted_tracks ---
+        remaining_tracks = []
+        for ci, pc in enumerate(master.playback_configs):
+            try:
+                playlist = pc.get_list()
+            except Exception:
+                remaining_tracks.append([])
+                continue
+            sorted_t = getattr(playlist, 'sorted_tracks', [])
+            cur_idx = getattr(playlist, 'current_track_index', -1)
+            start = max(cur_idx + 1, 0)
+            remaining_tracks.append([
+                (ci, t) for t in sorted_t[start:]
+            ])
+
+        upcoming_limit = max_tracks - row
+        if upcoming_limit <= 0:
+            self._current_highlight_row = highlight_row
+            if highlight_row >= 0:
+                self._preview_list.scrollToItem(self._preview_list.item(highlight_row))
+            return
+
+        if master.stacked:
+            for ci in range(len(master.playback_configs)):
+                if not master._active_mask[ci]:
+                    continue
+                for _ci, t in remaining_tracks[ci]:
+                    if upcoming_limit <= 0:
+                        break
+                    key = self._format_track(t)
+                    prefix = f"[{_name_for(ci)}] " if multi else ""
+                    self._preview_list.addItem(f"  {row + 1}. {prefix}{key}")
+                    self._preview_track_keys.append(key)
+                    self._preview_track_objects.append(t)
+                    row += 1
+                    upcoming_limit -= 1
+        else:
+            cursors = [0] * len(master.playback_configs)
+            rr_cursor = master._config_cursor
+            rr_counter = master._weight_counter
+            weights = master.weights
+
+            for _t in range(upcoming_limit):
+                if not any(master._active_mask):
+                    break
+                attempts = 0
+                while attempts < len(master.playback_configs):
+                    if master._active_mask[rr_cursor] and cursors[rr_cursor] < len(remaining_tracks[rr_cursor]):
+                        break
+                    rr_cursor = (rr_cursor + 1) % len(master.playback_configs)
+                    rr_counter = 0
+                    attempts += 1
+                else:
+                    break
+
+                ci_idx, t = remaining_tracks[rr_cursor][cursors[rr_cursor]]
+                cursors[rr_cursor] += 1
+                key = self._format_track(t)
+                prefix = f"[{_name_for(ci_idx)}] " if multi else ""
+                self._preview_list.addItem(f"  {row + 1}. {prefix}{key}")
+                self._preview_track_keys.append(key)
+                self._preview_track_objects.append(t)
+                row += 1
+
+                rr_counter += 1
+                if rr_counter >= weights[rr_cursor]:
+                    rr_cursor = (rr_cursor + 1) % len(master.playback_configs)
+                    rr_counter = 0
+
+        self._current_highlight_row = highlight_row
+        if highlight_row >= 0:
+            self._preview_list.scrollToItem(self._preview_list.item(highlight_row))
+
+    # ------------------------------------------------------------------
+    # Live track change notification
+    # ------------------------------------------------------------------
+
+    def on_track_change(self, audio_track):
+        """Rebuild the live preview and highlight the current track."""
+        active = PlaybackStateManager.get_active_config()
+        if active and hasattr(active, 'played_tracks') and active.played_tracks:
+            self._update_live_preview(active)
+            return
+
+        if not self._preview_track_keys:
+            return
+        title = getattr(audio_track, 'title', None) if not isinstance(audio_track, str) else audio_track
+        artist = getattr(audio_track, 'artist', None) if not isinstance(audio_track, str) else None
+        if not title:
+            return
+        key = f"{title} - {artist}" if artist else title
+
+        if self._current_highlight_row >= 0:
+            item = self._preview_list.item(self._current_highlight_row)
+            if item:
+                item.setBackground(QColor(0, 0, 0, 0))
+
+        for i, tk in enumerate(self._preview_track_keys):
+            if tk == key:
+                item = self._preview_list.item(i)
+                if item:
+                    item.setBackground(QColor(AppStyle.PROGRESS_CHUNK))
+                    self._preview_list.scrollToItem(item)
+                    self._current_highlight_row = i
+                return
+
+    # ------------------------------------------------------------------
+    # Preview interaction
+    # ------------------------------------------------------------------
+
+    def _on_preview_click(self, item):
+        """Open track details for the clicked preview item."""
+        row = self._preview_list.row(item)
+        if 0 <= row < len(self._preview_track_objects):
+            track = self._preview_track_objects[row]
+            if track is not None:
+                self.app_actions.open_track_details(track)
 
     # ------------------------------------------------------------------
     # Lifecycle
