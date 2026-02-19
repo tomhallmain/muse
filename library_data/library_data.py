@@ -138,25 +138,51 @@ class LibraryDataSearch:
         return self.results
 
     def sort_results_by(self, attr=None):
-        if len(self.results) == 0 or attr is None or (attr is not None and attr.strip() == ""):
+        if len(self.results) == 0 or (attr is not None and attr.strip() == ""):
             return
+        search_field = None
         if attr is None:
             for _attr in ["title", "album", "artist", "composer", "genre", "instrument", "form"]:
                 if len(getattr(self, _attr)) > 0:
+                    search_field = _attr
                     attr = self._get_searchable_track_attr(_attr)
                     break
             if attr is None:
                 logger.info("No sortable attribute in search query.")
                 return
         else:
+            search_field = attr
             attr = self._get_searchable_track_attr(attr)
-        attr_test = getattr(self.results[0], attr)
-        if callable(attr_test):
-            self.results.sort(key=lambda t: (getattr(t, attr)(), t.filepath))
-        else:
-            def convert_none_to_str(value):
-                return "" if value is None else str(value)
-            self.results.sort(key=lambda t: (convert_none_to_str(getattr(t, attr)), t.filepath))
+
+        search_value = getattr(self, search_field, "") if search_field else ""
+        is_callable = callable(getattr(self.results[0], attr))
+
+        def _sort_key(track):
+            val = getattr(track, attr)
+            if is_callable:
+                val = val()
+            val_str = val if val is not None else ""
+            relevance = self._match_relevance(val_str, search_value)
+            return (relevance, val_str, track.filepath)
+
+        self.results.sort(key=_sort_key)
+
+    @staticmethod
+    def _match_relevance(value: str, query: str) -> int:
+        """Score how well *query* matches inside *value*.
+
+        Returns 0 (starts with query), 1 (word-boundary match),
+        or 2 (substring / no match).
+        """
+        if not query or not value:
+            return 2
+        v = value.lower()
+        if v.startswith(query):
+            return 0
+        idx = v.find(query)
+        if idx > 0 and not v[idx - 1].isalnum():
+            return 1
+        return 2
 
     def _get_searchable_track_attr(self, search_attr) -> str:
         if search_attr == "title":

@@ -453,16 +453,14 @@ class SearchWindow(SmartWindow):
     def _do_search(self, overwrite=False):
         assert self.library_data_search is not None
         self.library_data_search.offset = self.current_offset
-        previous_total = getattr(self.library_data_search, "total_matches_count", 0)
+
         existing_results = []
         if self.current_offset > 0 and not overwrite:
             existing_results = self.library_data_search.results.copy()
-        if self.current_offset == 0 or overwrite:
-            self.library_data_search.total_matches_count = 0
-            self.library_data_search.results = []
-        else:
-            self.library_data_search.total_matches_count = self.current_offset
-            self.library_data_search.results = existing_results
+
+        self.library_data_search.total_matches_count = 0
+        self.library_data_search.results = []
+
         self._refresh_widgets(add_results=False)
         self.searching_label = QLabel(
             _("Please wait, overwriting cache and searching...")
@@ -487,6 +485,11 @@ class SearchWindow(SmartWindow):
                     completion_callback=search_complete,
                     search_status_callback=update_status,
                 )
+                if existing_results:
+                    self.library_data_search.results = (
+                        existing_results + self.library_data_search.results
+                    )
+                    self.library_data_search.set_stored_results_count()
             except Exception as e:
                 logger.error("Error in search thread: %s", e)
                 self._search_error.emit(str(e))
@@ -605,13 +608,11 @@ class SearchWindow(SmartWindow):
             self.results_layout.addWidget(self.searching_label, 1, 1)
             self.title_list.append(self.searching_label)
             return
-        # Check if there are more results available
-        # For the first search, check if we got more than INITIAL_MAX_RESULTS
-        # For loading more, check if stored_count indicates there are more results available
-        if self.current_offset == 0:
-            has_more_detected = total_results > SearchWindow.INITIAL_MAX_RESULTS
-        else:
-            has_more_detected = stored_count > total_results
+        # Check if there are more results available.
+        # The current page loaded (total_results - current_offset) new items;
+        # if that exceeds the page size it means more exist beyond this page.
+        page_result_count = total_results - self.current_offset
+        has_more_detected = page_result_count > SearchWindow.INITIAL_MAX_RESULTS
         # Calculate display range - results accumulate in LibraryDataSearch object
         total_displayed = total_results
         # Determine if we should show load more controls
@@ -883,20 +884,11 @@ class SearchWindow(SmartWindow):
         """Load more results by re-running the search with an increased offset."""
         if self.library_data_search is None:
             return
-        stored_count = self.library_data_search.stored_results_count
         page_size = SearchWindow.INITIAL_MAX_RESULTS
-        current_end = self.current_offset + page_size
         current_results = len(self.library_data_search.results)
-        # Check if there are more results to load
-        # We know there are more if we got max_results + 1 results (has_more_detected)
-        # OR if stored_count > current_end
-        has_more_detected = current_results > SearchWindow.INITIAL_MAX_RESULTS
-        has_more_known = stored_count > current_end
-        if has_more_detected or has_more_known:
+        page_result_count = current_results - self.current_offset
+        if page_result_count > page_size:
             self.current_offset += page_size
-            # Re-run the search with the new offset to load more results
-            # Either we just did a search and overwrote the cache, or we are loading more results
-            # so we don't need to overwrite it again
             self._do_search(overwrite=False)
         else:
             logger.info("Reached end of results")

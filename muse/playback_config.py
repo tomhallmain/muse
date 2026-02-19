@@ -76,15 +76,9 @@ class PlaybackConfig:
             directories=playlist_descriptor.source_directories or [],
             total=-1,
             overwrite=False,
-            enable_dynamic_volume=playback_overrides.get(
-                'enable_dynamic_volume', True
-            ),
-            enable_long_track_splitting=playback_overrides.get(
-                'enable_long_track_splitting', False
-            ),
-            long_track_splitting_time_cutoff_minutes=playback_overrides.get(
-                'long_track_splitting_time_cutoff_minutes', 20
-            ),
+            enable_dynamic_volume=playback_overrides.get('enable_dynamic_volume', True),
+            enable_long_track_splitting=playback_overrides.get('enable_long_track_splitting', False),
+            long_track_splitting_time_cutoff_minutes=playback_overrides.get('long_track_splitting_time_cutoff_minutes', 20),
             track=None,
         )
 

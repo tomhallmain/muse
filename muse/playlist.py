@@ -302,6 +302,13 @@ class Playlist:
         recently played groups in the early portion of the playlist.
 
         Behaviour is controlled by ``self.sort_config``.
+
+        .. note::
+            Grouping uses the raw track attribute (e.g. ``composer``) rather
+            than the normalised ``searchable_*`` variant used by
+            ``LibraryDataSearch.sort_results_by``.  This can produce minor
+            ordering differences for values with mixed casing or diacritics.
+            A future pass should unify both paths on the same attribute.
         """
         grouping_attr_getter_name = None
         do_set_start_track = self.start_track is not None
@@ -320,7 +327,7 @@ class Playlist:
                     if is_callable_attr:
                         attr = attr()
                     attr_set.add(attr)
-                all_attrs_list = list(attr_set)
+                all_attrs_list = sorted(attr_set, key=lambda v: (v or ""))
                 if is_callable_attr:
                     self.sorted_tracks.sort(key=lambda t: (all_attrs_list.index(getattr(t, grouping_attr_getter_name)()), t.filepath))
                 else:
