@@ -81,6 +81,18 @@ class NamedPlaylist:
             return f"Tracks: {count} track{'s' if count != 1 else ''}"
         return "(no source)"
 
+    def is_reshuffle_redundant(self) -> bool:
+        """Whether re-sorting this descriptor's tracks would be a no-op.
+
+        Currently only SEQUENCE playlists are truly redundant: their order is
+        hand-curated and ``skip_memory_shuffle`` prevents reordering.
+
+        Single-attribute searches whose sort type matches the attribute are
+        *not* redundant because memory-based reshuffling still re-evaluates
+        recently-played history on each call.
+        """
+        return self.sort_type == PlaylistSortType.SEQUENCE
+
     def can_freeze(self) -> bool:
         """Return True if this playlist can be frozen to an explicit track list."""
         return self.is_search_based() or self.is_directory_based()

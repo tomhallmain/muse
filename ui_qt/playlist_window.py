@@ -94,6 +94,7 @@ class MasterPlaylistWindow(SmartWindow):
         left.addWidget(QLabel(_("Available Playlists"), self))
         self._avail_list = QListWidget(self)
         self._avail_list.setMinimumWidth(250)
+        self._avail_list.doubleClicked.connect(lambda _: self._add_to_master())
         left.addWidget(self._avail_list, 1)
 
         avail_btns = QHBoxLayout()
@@ -130,6 +131,7 @@ class MasterPlaylistWindow(SmartWindow):
         right.addWidget(QLabel(_("Master Playlist"), self))
         self._master_list = QListWidget(self)
         self._master_list.setMinimumWidth(280)
+        self._master_list.doubleClicked.connect(self._remove_from_master)
         self._master_list.currentRowChanged.connect(self._on_master_select)
         right.addWidget(self._master_list, 1)
 
@@ -150,6 +152,9 @@ class MasterPlaylistWindow(SmartWindow):
         down_btn = QPushButton(_("Down"), self)
         down_btn.clicked.connect(self._move_down)
         ctrl.addWidget(down_btn)
+        shuffle_btn = QPushButton(_("Shuffle"), self)
+        shuffle_btn.clicked.connect(self._shuffle_playlist)
+        ctrl.addWidget(shuffle_btn)
         ctrl.addStretch()
         right.addLayout(ctrl)
         panels.addLayout(right, 1)
@@ -386,6 +391,25 @@ class MasterPlaylistWindow(SmartWindow):
             self._master_entries[row + 1], self._master_entries[row]
         self._apply_master_change()
         self._master_list.setCurrentRow(row + 1)
+
+    def _shuffle_playlist(self):
+        """Re-sort all master playlists where shuffling is non-redundant."""
+        shuffled = 0
+        for entry in self._master_entries:
+            pc = entry.get("playback_config")
+            if pc is None:
+                continue
+            np = entry.get("named_playlist")
+            if np and np.is_reshuffle_redundant():
+                continue
+            try:
+                pc.get_list().sort()
+                shuffled += 1
+            except Exception as e:
+                logger.error(f"Failed to shuffle playlist '{entry['name']}': {e}")
+
+        if shuffled:
+            self._refresh_master_list()
 
     # ------------------------------------------------------------------
     # Master config rebuild + strategy activation
