@@ -11,11 +11,11 @@ if TYPE_CHECKING:
     from library_data.library_data import LibraryData, LibraryDataSearch
 
 
-NAMED_PLAYLISTS_CACHE_KEY = "playlist_descriptors"
+PLAYLIST_DESCRIPTORS_CACHE_KEY = "playlist_descriptors"
 
 
 @dataclass
-class NamedPlaylist:
+class PlaylistDescriptor:
     """Persistent definition of a user-created playlist.
 
     A playlist is a set of instructions for producing a track list, not
@@ -102,7 +102,7 @@ class NamedPlaylist:
 
         Clears ``search_query`` and ``source_directories``, replacing them
         with the resolved ``track_filepaths``.  The caller is responsible
-        for persisting the updated object via ``NamedPlaylistStore.save()``.
+        for persisting the updated object via ``PlaylistDescriptorStore.save()``.
 
         Returns:
             The number of resolved tracks.
@@ -156,7 +156,7 @@ class NamedPlaylist:
         if self.is_track_based():
             return self._resolve_explicit_tracks()
         raise ValueError(
-            f"NamedPlaylist '{self.name}' has no source mode set "
+            f"PlaylistDescriptor '{self.name}' has no source mode set "
             "(search_query, source_directories, or track_filepaths)"
         )
 
@@ -176,7 +176,7 @@ class NamedPlaylist:
         library_data.do_search(search, overwrite=False)
         filepaths = [track.filepath for track in search.get_results()]
         logger.info(
-            f"NamedPlaylist '{self.name}': search resolved {len(filepaths)} tracks"
+            f"PlaylistDescriptor '{self.name}': search resolved {len(filepaths)} tracks"
         )
         return filepaths
 
@@ -193,19 +193,19 @@ class NamedPlaylist:
                 valid_dirs.append(d)
             else:
                 logger.warning(
-                    f"NamedPlaylist '{self.name}': directory not found "
+                    f"PlaylistDescriptor '{self.name}': directory not found "
                     f"(even after retries): {d}"
                 )
 
         if not valid_dirs:
             logger.warning(
-                f"NamedPlaylist '{self.name}': no valid directories found"
+                f"PlaylistDescriptor '{self.name}': no valid directories found"
             )
             return []
 
         filepaths = LD.get_all_filepaths(valid_dirs)
         logger.info(
-            f"NamedPlaylist '{self.name}': directory source resolved "
+            f"PlaylistDescriptor '{self.name}': directory source resolved "
             f"{len(filepaths)} tracks from {len(valid_dirs)} "
             f"director{'y' if len(valid_dirs) == 1 else 'ies'}"
         )
@@ -224,11 +224,11 @@ class NamedPlaylist:
             else:
                 stale_count += 1
                 logger.warning(
-                    f"NamedPlaylist '{self.name}': stale track removed: {fp}"
+                    f"PlaylistDescriptor '{self.name}': stale track removed: {fp}"
                 )
         if stale_count > 0:
             logger.warning(
-                f"NamedPlaylist '{self.name}': {stale_count} stale track(s) "
+                f"PlaylistDescriptor '{self.name}': {stale_count} stale track(s) "
                 f"removed, {len(valid)} remaining"
             )
         return valid
@@ -259,7 +259,7 @@ class NamedPlaylist:
         return data
 
     @staticmethod
-    def from_dict(data: dict) -> 'NamedPlaylist':
+    def from_dict(data: dict) -> 'PlaylistDescriptor':
         """Deserialise from a ``app_info_cache`` dict."""
         sort_type_raw = data.get("sort_type", PlaylistSortType.SEQUENCE.value)
         if isinstance(sort_type_raw, PlaylistSortType):
@@ -267,7 +267,7 @@ class NamedPlaylist:
         else:
             sort_type = PlaylistSortType.get(str(sort_type_raw))
 
-        return NamedPlaylist(
+        return PlaylistDescriptor(
             name=data["name"],
             search_query=data.get("search_query"),
             source_directories=data.get("source_directories"),
@@ -286,7 +286,7 @@ class NamedPlaylist:
         return f"{self.name} ({self.get_source_description()}, {self.sort_type.value})"
 
     def __eq__(self, other: object) -> bool:
-        if not isinstance(other, NamedPlaylist):
+        if not isinstance(other, PlaylistDescriptor):
             return False
         return self.name == other.name
 
@@ -298,8 +298,8 @@ class NamedPlaylist:
 # Store
 # ======================================================================
 
-class NamedPlaylistStore:
-    """CRUD operations for :class:`NamedPlaylist` objects.
+class PlaylistDescriptorStore:
+    """CRUD operations for :class:`PlaylistDescriptor` objects.
 
     Thin, stateless wrapper around ``app_info_cache``.  Every method accepts
     an optional *cache* parameter so callers from either the Tkinter or Qt
@@ -316,14 +316,14 @@ class NamedPlaylistStore:
 
     @staticmethod
     def _get_all_raw(cache=None) -> dict:
-        return NamedPlaylistStore._get_cache(cache).get(
-            NAMED_PLAYLISTS_CACHE_KEY, {}
+        return PlaylistDescriptorStore._get_cache(cache).get(
+            PLAYLIST_DESCRIPTORS_CACHE_KEY, {}
         )
 
     @staticmethod
     def _put_all_raw(data: dict, cache=None) -> None:
-        NamedPlaylistStore._get_cache(cache).set(
-            NAMED_PLAYLISTS_CACHE_KEY, data
+        PlaylistDescriptorStore._get_cache(cache).set(
+            PLAYLIST_DESCRIPTORS_CACHE_KEY, data
         )
 
     # ------------------------------------------------------------------
@@ -331,66 +331,66 @@ class NamedPlaylistStore:
     # ------------------------------------------------------------------
 
     @staticmethod
-    def load_all(cache=None) -> Dict[str, NamedPlaylist]:
-        """Return all named playlists keyed by name."""
-        raw = NamedPlaylistStore._get_all_raw(cache)
-        playlists: Dict[str, NamedPlaylist] = {}
+    def load_all(cache=None) -> Dict[str, PlaylistDescriptor]:
+        """Return all playlist descriptors keyed by name."""
+        raw = PlaylistDescriptorStore._get_all_raw(cache)
+        playlists: Dict[str, PlaylistDescriptor] = {}
         for name, data in raw.items():
             try:
-                playlists[name] = NamedPlaylist.from_dict(data)
+                playlists[name] = PlaylistDescriptor.from_dict(data)
             except Exception:
-                logger.exception(f"Failed to load named playlist '{name}'")
+                logger.exception(f"Failed to load playlist descriptor '{name}'")
         return playlists
 
     @staticmethod
-    def save(playlist: NamedPlaylist, cache=None) -> None:
-        """Save (insert or update) a named playlist."""
-        raw = NamedPlaylistStore._get_all_raw(cache)
+    def save(playlist: PlaylistDescriptor, cache=None) -> None:
+        """Save (insert or update) a playlist descriptor."""
+        raw = PlaylistDescriptorStore._get_all_raw(cache)
         raw[playlist.name] = playlist.to_dict()
-        NamedPlaylistStore._put_all_raw(raw, cache)
+        PlaylistDescriptorStore._put_all_raw(raw, cache)
 
     @staticmethod
     def delete(name: str, cache=None) -> bool:
-        """Delete a named playlist by name.  Returns True if it existed."""
-        raw = NamedPlaylistStore._get_all_raw(cache)
+        """Delete a playlist descriptor by name.  Returns True if it existed."""
+        raw = PlaylistDescriptorStore._get_all_raw(cache)
         if name in raw:
             del raw[name]
-            NamedPlaylistStore._put_all_raw(raw, cache)
+            PlaylistDescriptorStore._put_all_raw(raw, cache)
             return True
         return False
 
     @staticmethod
-    def get(name: str, cache=None) -> Optional[NamedPlaylist]:
-        """Retrieve a single named playlist, or None if not found."""
-        raw = NamedPlaylistStore._get_all_raw(cache)
+    def get(name: str, cache=None) -> Optional[PlaylistDescriptor]:
+        """Retrieve a single playlist descriptor, or None if not found."""
+        raw = PlaylistDescriptorStore._get_all_raw(cache)
         data = raw.get(name)
         if data is None:
             return None
         try:
-            return NamedPlaylist.from_dict(data)
+            return PlaylistDescriptor.from_dict(data)
         except Exception:
-            logger.exception(f"Failed to load named playlist '{name}'")
+            logger.exception(f"Failed to load playlist descriptor '{name}'")
             return None
 
     @staticmethod
     def rename(old_name: str, new_name: str, cache=None) -> bool:
-        """Rename a named playlist.  Returns True on success."""
-        raw = NamedPlaylistStore._get_all_raw(cache)
+        """Rename a playlist descriptor.  Returns True on success."""
+        raw = PlaylistDescriptorStore._get_all_raw(cache)
         if old_name not in raw:
-            logger.warning(f"Cannot rename: playlist '{old_name}' not found")
+            logger.warning(f"Cannot rename: playlist descriptor '{old_name}' not found")
             return False
         if new_name in raw:
             logger.warning(
-                f"Cannot rename: playlist '{new_name}' already exists"
+                f"Cannot rename: playlist descriptor '{new_name}' already exists"
             )
             return False
         data = raw.pop(old_name)
         data["name"] = new_name
         raw[new_name] = data
-        NamedPlaylistStore._put_all_raw(raw, cache)
+        PlaylistDescriptorStore._put_all_raw(raw, cache)
         return True
 
     @staticmethod
     def exists(name: str, cache=None) -> bool:
-        """Check whether a named playlist with the given name exists."""
-        return name in NamedPlaylistStore._get_all_raw(cache)
+        """Check whether a playlist descriptor with the given name exists."""
+        return name in PlaylistDescriptorStore._get_all_raw(cache)

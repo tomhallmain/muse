@@ -778,9 +778,9 @@ class SearchWindow(SmartWindow):
         return PlaylistSortType.get_from_translation(selected_translation)
 
     def _save_search_as_playlist(self):
-        """Save the current search fields as a search-based NamedPlaylist."""
+        """Save the current search fields as a search-based PlaylistDescriptor."""
         from datetime import datetime
-        from muse.named_playlist import NamedPlaylist, NamedPlaylistStore
+        from muse.playlist_descriptor import PlaylistDescriptor, PlaylistDescriptorStore
         from utils.app_info_cache_qt import app_info_cache
 
         query = {}
@@ -810,25 +810,25 @@ class SearchWindow(SmartWindow):
         name = name.strip()
 
         sort_type = self.get_playlist_sort_type()
-        np = NamedPlaylist(
+        pd = PlaylistDescriptor(
             name=name,
             search_query=query,
             sort_type=sort_type,
             created_at=datetime.now().isoformat(),
         )
-        NamedPlaylistStore.save(np, cache=app_info_cache)
+        PlaylistDescriptorStore.save(pd, cache=app_info_cache)
         self.app_actions.toast(_("Playlist \"{0}\" saved").format(name))
 
     def _add_track_to_playlist(self, track):
-        """Add a single track to an existing track-based NamedPlaylist."""
-        from muse.named_playlist import NamedPlaylist, NamedPlaylistStore
+        """Add a single track to an existing track-based PlaylistDescriptor."""
+        from muse.playlist_descriptor import PlaylistDescriptor, PlaylistDescriptorStore
         from utils.app_info_cache_qt import app_info_cache
 
-        all_playlists = NamedPlaylistStore.load_all(cache=app_info_cache)
+        all_playlists = PlaylistDescriptorStore.load_all(cache=app_info_cache)
         candidates = {
-            name: np for name, np in all_playlists.items()
-            if np.is_track_based() or (
-                not np.is_search_based() and not np.is_directory_based()
+            name: pd for name, pd in all_playlists.items()
+            if pd.is_track_based() or (
+                not pd.is_search_based() and not pd.is_directory_based()
             )
         }
 
@@ -840,12 +840,12 @@ class SearchWindow(SmartWindow):
             if not ok or not (name and name.strip()):
                 return
             name = name.strip()
-            np = NamedPlaylist(
+            pd = PlaylistDescriptor(
                 name=name,
                 track_filepaths=[track.filepath],
                 sort_type=PlaylistSortType.SEQUENCE,
             )
-            NamedPlaylistStore.save(np, cache=app_info_cache)
+            PlaylistDescriptorStore.save(pd, cache=app_info_cache)
             self.app_actions.toast(
                 _("Created playlist \"{0}\" with track").format(name)
             )
@@ -858,11 +858,11 @@ class SearchWindow(SmartWindow):
         )
         if not ok or name not in candidates:
             return
-        np = candidates[name]
-        if np.track_filepaths is None:
-            np.track_filepaths = []
-        np.track_filepaths.append(track.filepath)
-        NamedPlaylistStore.save(np, cache=app_info_cache)
+        pd = candidates[name]
+        if pd.track_filepaths is None:
+            pd.track_filepaths = []
+        pd.track_filepaths.append(track.filepath)
+        PlaylistDescriptorStore.save(pd, cache=app_info_cache)
         self.app_actions.toast(_("Added to \"{0}\"").format(name))
 
     def remove_search(self, search):

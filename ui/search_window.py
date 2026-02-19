@@ -310,7 +310,7 @@ class SearchWindow(BaseWindow):
         # Update dropdown based on initial search fields
         self._update_playlist_sort_dropdown()
 
-        # Save current search as a named playlist
+        # Save current search as a playlist descriptor
         self._save_as_playlist_btn = Button(
             self.inner_frame, text=_("Save as Playlist"),
             command=self._save_search_as_playlist,
@@ -736,10 +736,10 @@ class SearchWindow(BaseWindow):
         return PlaylistSortType.get_from_translation(selected_translation)
 
     def _save_search_as_playlist(self):
-        """Save the current search fields as a search-based NamedPlaylist."""
+        """Save the current search fields as a search-based PlaylistDescriptor."""
         from tkinter import simpledialog
         from datetime import datetime
-        from muse.named_playlist import NamedPlaylist, NamedPlaylistStore
+        from muse.playlist_descriptor import PlaylistDescriptor, PlaylistDescriptorStore
 
         query = {}
         for field, var in [
@@ -769,29 +769,29 @@ class SearchWindow(BaseWindow):
         name = name.strip()
 
         sort_type = self.get_playlist_sort_type()
-        np = NamedPlaylist(
+        pd = PlaylistDescriptor(
             name=name,
             search_query=query,
             sort_type=sort_type,
             created_at=datetime.now().isoformat(),
         )
-        NamedPlaylistStore.save(np)
+        PlaylistDescriptorStore.save(pd)
         self.app_actions.toast(
             _("Playlist \"{0}\" saved").format(name)
         )
 
     def _add_track_to_playlist(self, track):
-        """Add a single track to an existing track-based NamedPlaylist."""
+        """Add a single track to an existing track-based PlaylistDescriptor."""
         from tkinter import simpledialog
-        from muse.named_playlist import NamedPlaylist, NamedPlaylistStore
+        from muse.playlist_descriptor import PlaylistDescriptor, PlaylistDescriptorStore
 
-        all_playlists = NamedPlaylistStore.load_all()
+        all_playlists = PlaylistDescriptorStore.load_all()
         # Only show playlists that already have explicit tracks (or empty ones
         # that could accept tracks).
         candidates = {
-            name: np for name, np in all_playlists.items()
-            if np.is_track_based() or (
-                not np.is_search_based() and not np.is_directory_based()
+            name: pd for name, pd in all_playlists.items()
+            if pd.is_track_based() or (
+                not pd.is_search_based() and not pd.is_directory_based()
             )
         }
 
@@ -805,12 +805,12 @@ class SearchWindow(BaseWindow):
             if not name or not name.strip():
                 return
             name = name.strip()
-            np = NamedPlaylist(
+            pd = PlaylistDescriptor(
                 name=name,
                 track_filepaths=[track.filepath],
                 sort_type=PlaylistSortType.SEQUENCE,
             )
-            NamedPlaylistStore.save(np)
+            PlaylistDescriptorStore.save(pd)
             self.app_actions.toast(
                 _("Created playlist \"{0}\" with track").format(name)
             )
@@ -827,11 +827,11 @@ class SearchWindow(BaseWindow):
         if not name or name.strip() not in candidates:
             return
         name = name.strip()
-        np = candidates[name]
-        if np.track_filepaths is None:
-            np.track_filepaths = []
-        np.track_filepaths.append(track.filepath)
-        NamedPlaylistStore.save(np)
+        pd = candidates[name]
+        if pd.track_filepaths is None:
+            pd.track_filepaths = []
+        pd.track_filepaths.append(track.filepath)
+        PlaylistDescriptorStore.save(pd)
         self.app_actions.toast(
             _("Added to \"{0}\"").format(name)
         )

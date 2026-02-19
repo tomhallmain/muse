@@ -3,9 +3,8 @@ from types import SimpleNamespace
 from typing import Dict, List, Optional, Any, TYPE_CHECKING
 
 from library_data.media_track import MediaTrack
-from muse.named_playlist import NamedPlaylist
 from muse.playlist import Playlist
-from utils.config import config
+from muse.playlist_descriptor import PlaylistDescriptor
 from utils.globals import PlaylistSortType, TrackResult
 from utils.logging_setup import get_logger
 
@@ -39,18 +38,18 @@ class PlaybackConfig:
         return PlaybackConfig(override_dir=override_dir, data_callbacks=data_callbacks)
 
     @staticmethod
-    def from_named_playlist(named_playlist: 'NamedPlaylist',
+    def from_playlist_descriptor(playlist_descriptor: 'PlaylistDescriptor',
                             data_callbacks: 'LibraryDataCallbacks',
                             library_data: Optional['LibraryData'] = None,
                             **playback_overrides: Any) -> 'PlaybackConfig':
-        """Create a PlaybackConfig from a NamedPlaylist definition.
+        """Create a PlaybackConfig from a PlaylistDescriptor definition.
 
         For search-based and track-based playlists the track list is resolved
         eagerly and passed as ``explicit_tracks``.  Directory-based playlists
         fall through to the standard directory-loading path in ``get_list()``.
 
         Args:
-            named_playlist: The playlist definition to build from.
+            playlist_descriptor: The playlist definition to build from.
             data_callbacks: LibraryDataCallbacks for Playlist construction.
             library_data: Required for search-based playlists so the query can
                 be executed against the current library.
@@ -60,20 +59,20 @@ class PlaybackConfig:
         """
         explicit: Optional[List[str]] = None
 
-        if named_playlist.is_search_based():
+        if playlist_descriptor.is_search_based():
             if library_data is None:
                 raise ValueError(
                     f"library_data is required for search-based playlist "
-                    f"'{named_playlist.name}'"
+                    f"'{playlist_descriptor.name}'"
                 )
-            explicit = named_playlist.resolve_tracks(library_data)
-        elif named_playlist.is_track_based():
-            explicit = named_playlist.resolve_tracks(library_data)
+            explicit = playlist_descriptor.resolve_tracks(library_data)
+        elif playlist_descriptor.is_track_based():
+            explicit = playlist_descriptor.resolve_tracks(library_data)
         # Directory-based: explicit stays None, directories are set below.
 
         args = SimpleNamespace(
-            playlist_sort_type=named_playlist.sort_type,
-            directories=named_playlist.source_directories or [],
+            playlist_sort_type=playlist_descriptor.sort_type,
+            directories=playlist_descriptor.source_directories or [],
             total=-1,
             overwrite=False,
             enable_dynamic_volume=playback_overrides.get(
@@ -94,11 +93,9 @@ class PlaybackConfig:
             data_callbacks=data_callbacks,
             explicit_tracks=explicit,
         )
-        pc.named_playlist = named_playlist
-        pc.loop = named_playlist.loop
-        pc.skip_memory_shuffle = (
-            named_playlist.sort_type == PlaylistSortType.SEQUENCE
-        )
+        pc.playlist_descriptor = playlist_descriptor
+        pc.loop = playlist_descriptor.loop
+        pc.skip_memory_shuffle = playlist_descriptor.is_reshuffle_redundant()
         return pc
 
     def __init__(self, args: Optional[Any] = None, override_dir: Optional[str] = None,
@@ -120,7 +117,7 @@ class PlaybackConfig:
         self._explicit_tracks: Optional[List[str]] = explicit_tracks
         self.loop: bool = False
         self.skip_memory_shuffle: bool = False
-        self.named_playlist: Optional[NamedPlaylist] = None
+        self.playlist_descriptor: Optional[PlaylistDescriptor] = None
         PlaybackConfig.open_configs.append(self)
 
     def maximum_plays(self) -> int:
@@ -132,8 +129,8 @@ class PlaybackConfig:
     def remaining_count(self) -> int:
         return self.get_list().remaining_count()
 
-    def get_playlist_descriptor(self) -> NamedPlaylist:
-        return self.named_playlist
+    def get_playlist_descriptor(self) -> PlaylistDescriptor:
+        return self.playlist_descriptor
 
     def get_list(self) -> Playlist:
         if self.list.is_valid():
@@ -185,8 +182,8 @@ class PlaybackConfig:
 
     def __str__(self) -> str:
         base = "PlaybackConfig(type=" + str(self.type) + ", directories=" + str(len(self.directories))
-        if self.named_playlist is not None:
-            base += ", playlist_descriptor=" + self.named_playlist.name
+        if self.playlist_descriptor is not None:
+            base += ", playlist_descriptor=" + self.playlist_descriptor.name
         return base + ")"
 
     def __eq__(self, other: Any) -> bool:

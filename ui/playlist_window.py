@@ -8,9 +8,9 @@ from tkinter import (
 from tkinter.ttk import Button, Entry, OptionMenu
 
 from lib.multi_display import SmartToplevel
-from muse.named_playlist import NamedPlaylist, NamedPlaylistStore
 from muse.playback_config import PlaybackConfig
 from muse.playback_config_master import PlaybackConfigMaster
+from muse.playlist_descriptor import PlaylistDescriptor, PlaylistDescriptorStore
 from muse.playback_state import PlaybackStateManager
 from utils.globals import PlaylistSortType, PlaybackMasterStrategy
 from utils.config import config
@@ -22,9 +22,9 @@ _ = I18N._
 
 
 class MasterPlaylistWindow:
-    """Window for assembling a master playlist from named playlists.
+    """Window for assembling a master playlist from playlist descriptors.
 
-    Left panel shows available NamedPlaylists (from NamedPlaylistStore).
+    Left panel shows available PlaylistDescriptors (from PlaylistDescriptorStore).
     Right panel shows the current master playlist with per-entry weight /
     loop controls and reordering.
     Bottom shows an interspersed preview.
@@ -41,8 +41,8 @@ class MasterPlaylistWindow:
         )
         self.top.protocol("WM_DELETE_WINDOW", self._on_closing)
 
-        self._named_playlists = {}
-        self._master_entries = []  # list of dicts: {name, named_playlist, weight, loop}
+        self._playlist_descriptors = {}
+        self._master_entries = []  # list of dicts: {name, playlist_descriptor, weight, loop}
 
         self._build_ui()
         self._load_available()
@@ -137,7 +137,7 @@ class MasterPlaylistWindow:
     # ------------------------------------------------------------------
 
     def _load_available(self):
-        self._named_playlists = NamedPlaylistStore.load_all()
+        self._playlist_descriptors = PlaylistDescriptorStore.load_all()
         self._refresh_available_list()
 
     def _load_existing_master(self):
@@ -152,10 +152,10 @@ class MasterPlaylistWindow:
         if master and hasattr(master, 'playback_configs') and master.playback_configs:
             for i, pc in enumerate(master.playback_configs):
                 weight = master.weights[i] if i < len(master.weights) else 1
-                np = pc.get_playlist_descriptor()
+                pd = pc.get_playlist_descriptor()
                 self._master_entries.append({
-                    "name": np.name if np else str(pc),
-                    "named_playlist": np,
+                    "name": pd.name if pd else str(pc),
+                    "playlist_descriptor": pd,
                     "playback_config": pc,
                     "weight": weight,
                     "loop": getattr(pc, 'loop', False),
@@ -170,10 +170,10 @@ class MasterPlaylistWindow:
 
     def _refresh_available_list(self):
         self._avail_listbox.delete(0, END)
-        for name, np in self._named_playlists.items():
-            sort_label = np.sort_type.get_translation()
+        for name, pd in self._playlist_descriptors.items():
+            sort_label = pd.sort_type.get_translation()
             self._avail_listbox.insert(
-                END, f"{name}  ({np.get_source_description()})  [{sort_label}]"
+                END, f"{name}  ({pd.get_source_description()})  [{sort_label}]"
             )
 
     def _refresh_master_list(self):
@@ -209,10 +209,10 @@ class MasterPlaylistWindow:
         sel = self._avail_listbox.curselection()
         if not sel:
             return
-        name = list(self._named_playlists.keys())[sel[0]]
-        np = self._named_playlists[name]
+        name = list(self._playlist_descriptors.keys())[sel[0]]
+        pd = self._playlist_descriptors[name]
         PlaylistModifyWindow(self.top, self.app_actions, self.library_data,
-                             on_save=self._on_playlist_saved, editing=np)
+                             on_save=self._on_playlist_saved, editing=pd)
 
     def _on_playlist_saved(self):
         """Callback from PlaylistModifyWindow after a playlist is saved."""
@@ -223,9 +223,9 @@ class MasterPlaylistWindow:
         sel = self._avail_listbox.curselection()
         if not sel:
             return
-        name = list(self._named_playlists.keys())[sel[0]]
-        np = self._named_playlists[name]
-        if not np.can_freeze():
+        name = list(self._playlist_descriptors.keys())[sel[0]]
+        pd = self._playlist_descriptors[name]
+        if not pd.can_freeze():
             messagebox.showinfo(
                 _("Freeze to Tracks"),
                 _("This playlist is already track-based.")
@@ -239,13 +239,13 @@ class MasterPlaylistWindow:
             _("Convert \"{0}\" to an explicit track list?\n\n"
               "This will resolve the current {1} source and replace it "
               "with a fixed list of tracks. This cannot be undone.").format(
-                name, "search" if np.is_search_based() else "directory"
+                name, "search" if pd.is_search_based() else "directory"
             )
         ):
             return
         try:
-            count = np.freeze_to_tracks(self.library_data)
-            NamedPlaylistStore.save(np)
+            count = pd.freeze_to_tracks(self.library_data)
+            PlaylistDescriptorStore.save(pd)
             self._load_available()
             messagebox.showinfo(
                 _("Freeze to Tracks"),
@@ -259,9 +259,9 @@ class MasterPlaylistWindow:
         sel = self._avail_listbox.curselection()
         if not sel:
             return
-        name = list(self._named_playlists.keys())[sel[0]]
+        name = list(self._playlist_descriptors.keys())[sel[0]]
         if messagebox.askyesno(_("Delete"), _("Delete playlist \"{0}\"?").format(name)):
-            NamedPlaylistStore.delete(name)
+            PlaylistDescriptorStore.delete(name)
             self._load_available()
 
     # ------------------------------------------------------------------
@@ -272,12 +272,12 @@ class MasterPlaylistWindow:
         sel = self._avail_listbox.curselection()
         if not sel:
             return
-        name = list(self._named_playlists.keys())[sel[0]]
-        np = self._named_playlists[name]
+        name = list(self._playlist_descriptors.keys())[sel[0]]
+        pd = self._playlist_descriptors[name]
 
         try:
-            pc = PlaybackConfig.from_named_playlist(
-                np,
+            pc = PlaybackConfig.from_playlist_descriptor(
+                pd,
                 data_callbacks=self.library_data.data_callbacks if self.library_data else None,
                 library_data=self.library_data,
             )
@@ -288,10 +288,10 @@ class MasterPlaylistWindow:
 
         self._master_entries.append({
             "name": name,
-            "named_playlist": np,
+            "playlist_descriptor": pd,
             "playback_config": pc,
             "weight": 1,
-            "loop": np.loop,
+            "loop": pc.loop,
         })
         self._apply_master_change()
 
@@ -492,14 +492,14 @@ class MasterPlaylistWindow:
 
 
 class PlaylistModifyWindow:
-    """Window for creating or editing a NamedPlaylist.
+    """Window for creating or editing a PlaylistDescriptor.
 
     Supports three source modes:
     - Search Query: enter search fields (re-resolved at play time).
     - Directory: pick from configured library directories.
     - Explicit Tracks: add individual tracks via search, reorder manually.
 
-    Pass *editing* (a ``NamedPlaylist`` instance) to open in edit mode,
+    Pass *editing* (a ``PlaylistDescriptor`` instance) to open in edit mode,
     pre-populating all fields from the existing playlist.
     """
 
@@ -592,28 +592,28 @@ class PlaylistModifyWindow:
 
         self._on_mode_change()
 
-    def _populate_from(self, np: 'NamedPlaylist'):
-        """Pre-populate all fields from an existing NamedPlaylist for editing."""
-        self._name_var.set(np.name)
-        self._sort_var.set(np.sort_type.get_translation())
-        self._loop_var.set(np.loop)
-        self._desc_var.set(np.description or "")
+    def _populate_from(self, pd: 'PlaylistDescriptor'):
+        """Pre-populate all fields from an existing PlaylistDescriptor for editing."""
+        self._name_var.set(pd.name)
+        self._sort_var.set(pd.sort_type.get_translation())
+        self._loop_var.set(pd.loop)
+        self._desc_var.set(pd.description or "")
 
-        if np.is_search_based():
+        if pd.is_search_based():
             self._mode_var.set("search")
             self._on_mode_change()
             for field, var in self._search_vars.items():
-                val = np.search_query.get(field, "")
+                val = pd.search_query.get(field, "")
                 var.set(val if val else "")
-        elif np.is_directory_based():
+        elif pd.is_directory_based():
             self._mode_var.set("directory")
             self._on_mode_change()
-            if np.source_directories:
+            if pd.source_directories:
                 for label, path in self._dir_map.items():
-                    if path == np.source_directories[0]:
+                    if path == pd.source_directories[0]:
                         self._dir_var.set(label)
                         break
-        elif np.is_track_based():
+        elif pd.is_track_based():
             self._mode_var.set("tracks")
             self._on_mode_change()
             self._refresh_tracks_listbox()
@@ -767,7 +767,7 @@ class PlaylistModifyWindow:
             return
 
         editing_same_name = self._editing and self._editing.name == name
-        if not editing_same_name and NamedPlaylistStore.exists(name):
+        if not editing_same_name and PlaylistDescriptorStore.exists(name):
             if not messagebox.askyesno(_("Overwrite"), _("A playlist named \"{0}\" already exists. Overwrite?").format(name)):
                 return
 
@@ -805,9 +805,9 @@ class PlaylistModifyWindow:
         created_at = self._editing.created_at if self._editing else datetime.now().isoformat()
 
         if self._editing and self._editing.name != name:
-            NamedPlaylistStore.delete(self._editing.name)
+            PlaylistDescriptorStore.delete(self._editing.name)
 
-        np = NamedPlaylist(
+        pd = PlaylistDescriptor(
             name=name,
             search_query=search_query,
             source_directories=source_directories,
@@ -817,8 +817,8 @@ class PlaylistModifyWindow:
             created_at=created_at,
             description=self._desc_var.get().strip() or None,
         )
-        NamedPlaylistStore.save(np)
-        logger.info(f"Saved named playlist: {np}")
+        PlaylistDescriptorStore.save(pd)
+        logger.info(f"Saved playlist descriptor: {pd}")
 
         if self._on_save:
             self._on_save()

@@ -841,9 +841,9 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         if active and hasattr(active, 'playback_configs') and active.playback_configs:
             descs = []
             for pc in active.playback_configs:
-                np = getattr(pc, 'named_playlist', None)
-                if np:
-                    descs.append(f"{np.name}: {np.get_source_description()}")
+                pd = getattr(pc, 'playlist_descriptor', None)
+                if pd:
+                    descs.append(f"{pd.name}: {pd.get_source_description()}")
                 else:
                     count = len(pc.directories) if pc.directories else 0
                     descs.append(_("Directories: {0}").format(count))
