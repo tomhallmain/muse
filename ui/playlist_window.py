@@ -101,7 +101,8 @@ class MasterPlaylistWindow:
         ctrl = Frame(right)
         ctrl.grid(row=2, column=0, sticky="ew", pady=(5, 0))
 
-        Label(ctrl, text=_("Weight:")).pack(side="left")
+        self._weight_label = Label(ctrl, text=_("Weight:"))
+        self._weight_label.pack(side="left")
         self._weight_var = IntVar(value=1)
         self._weight_spin = Spinbox(ctrl, from_=1, to=99, width=4,
                                     textvariable=self._weight_var,
@@ -115,10 +116,19 @@ class MasterPlaylistWindow:
         Button(ctrl, text=_("Up"), command=self._move_up).pack(side="left", padx=(0, 2))
         Button(ctrl, text=_("Down"), command=self._move_down).pack(side="left")
 
+        # Stacked mode toggle
+        stacked_frame = Frame(right)
+        stacked_frame.grid(row=3, column=0, sticky="ew", pady=(5, 0))
+        self._stacked_var = BooleanVar(value=False)
+        Checkbutton(stacked_frame, text=_("Stack (play sequentially)"),
+                    variable=self._stacked_var,
+                    command=self._on_stacked_change).pack(side="left")
+
         # --- Bottom: preview ---
         preview_frame = Frame(outer)
         preview_frame.pack(fill=BOTH, expand=False, pady=(10, 0))
-        Label(preview_frame, text=_("Interspersed Preview")).pack(anchor=W)
+        self._preview_label = Label(preview_frame, text=_("Interspersed Preview"))
+        self._preview_label.pack(anchor=W)
         self._preview_listbox = Listbox(preview_frame, height=5)
         self._preview_listbox.pack(fill=BOTH, expand=False)
 
@@ -142,13 +152,17 @@ class MasterPlaylistWindow:
         if master and hasattr(master, 'playback_configs') and master.playback_configs:
             for i, pc in enumerate(master.playback_configs):
                 weight = master.weights[i] if i < len(master.weights) else 1
+                np = pc.get_playlist_descriptor()
                 self._master_entries.append({
-                    "name": str(pc),
-                    "named_playlist": None,
+                    "name": np.name if np else str(pc),
+                    "named_playlist": np,
                     "playback_config": pc,
                     "weight": weight,
                     "loop": getattr(pc, 'loop', False),
                 })
+            if getattr(master, 'stacked', False):
+                self._stacked_var.set(True)
+                self._on_stacked_change()
 
     # ------------------------------------------------------------------
     # List refresh helpers
@@ -319,6 +333,16 @@ class MasterPlaylistWindow:
             pc.loop = loop_val
         self._apply_master_change()
 
+    def _on_stacked_change(self):
+        stacked = self._stacked_var.get()
+        state = "disabled" if stacked else "normal"
+        self._weight_label.config(state=state)
+        self._weight_spin.config(state=state)
+        self._preview_label.config(
+            text=_("Sequential Preview") if stacked else _("Interspersed Preview")
+        )
+        self._apply_master_change()
+
     def _move_up(self):
         sel = self._master_listbox.curselection()
         if not sel or sel[0] == 0:
@@ -350,7 +374,8 @@ class MasterPlaylistWindow:
         if self._master_entries:
             configs = [e["playback_config"] for e in self._master_entries]
             weights = [e["weight"] for e in self._master_entries]
-            master = PlaybackConfigMaster(configs, weights)
+            master = PlaybackConfigMaster(configs, weights,
+                                          stacked=self._stacked_var.get())
             PlaybackStateManager.set_master_config(master)
             try:
                 self.app_actions.set_playback_master_strategy(
@@ -394,7 +419,7 @@ class MasterPlaylistWindow:
         return result
 
     def _update_preview(self, max_tracks: int = 15):
-        """Show the first N tracks in weighted round-robin order.
+        """Show the first N tracks in order (stacked or interleaved).
 
         When the underlying playlists have resolved track lists, actual
         track titles are shown.  Otherwise, falls back to playlist names.
@@ -407,36 +432,53 @@ class MasterPlaylistWindow:
         weights = [e["weight"] for e in self._master_entries]
         entry_tracks = [self._get_entry_tracks(e) for e in self._master_entries]
         has_tracks = any(len(t) > 0 for t in entry_tracks)
+        stacked = self._stacked_var.get()
 
         preview_items = []
-        track_cursors = [0] * len(names)
-        rr_cursor = 0
-        rr_counter = 0
 
-        for _ in range(max_tracks):
-            for _attempt in range(len(names)):
+        if stacked:
+            for i, name in enumerate(names):
+                tracks = entry_tracks[i] if has_tracks else []
+                if tracks:
+                    for t in tracks:
+                        if len(preview_items) >= max_tracks:
+                            break
+                        prefix = f"[{name}] " if len(names) > 1 else ""
+                        preview_items.append(f"{prefix}{t}")
+                else:
+                    if len(preview_items) < max_tracks:
+                        preview_items.append(name)
+                if len(preview_items) >= max_tracks:
+                    break
+        else:
+            track_cursors = [0] * len(names)
+            rr_cursor = 0
+            rr_counter = 0
+
+            for _ in range(max_tracks):
+                for _attempt in range(len(names)):
+                    if rr_counter >= weights[rr_cursor]:
+                        rr_cursor = (rr_cursor + 1) % len(names)
+                        rr_counter = 0
+                    break
+
+                if has_tracks:
+                    tracks = entry_tracks[rr_cursor]
+                    idx = track_cursors[rr_cursor]
+                    if tracks and idx < len(tracks):
+                        label = names[rr_cursor] if len(names) > 1 else ""
+                        prefix = f"[{label}] " if label else ""
+                        preview_items.append(f"{prefix}{tracks[idx]}")
+                        track_cursors[rr_cursor] += 1
+                    else:
+                        preview_items.append(f"[{names[rr_cursor]}] —")
+                else:
+                    preview_items.append(names[rr_cursor])
+
+                rr_counter += 1
                 if rr_counter >= weights[rr_cursor]:
                     rr_cursor = (rr_cursor + 1) % len(names)
                     rr_counter = 0
-                break
-
-            if has_tracks:
-                tracks = entry_tracks[rr_cursor]
-                idx = track_cursors[rr_cursor]
-                if tracks and idx < len(tracks):
-                    label = names[rr_cursor] if len(names) > 1 else ""
-                    prefix = f"[{label}] " if label else ""
-                    preview_items.append(f"{prefix}{tracks[idx]}")
-                    track_cursors[rr_cursor] += 1
-                else:
-                    preview_items.append(f"[{names[rr_cursor]}] —")
-            else:
-                preview_items.append(names[rr_cursor])
-
-            rr_counter += 1
-            if rr_counter >= weights[rr_cursor]:
-                rr_cursor = (rr_cursor + 1) % len(names)
-                rr_counter = 0
 
         for i, item in enumerate(preview_items):
             self._preview_listbox.insert(END, f"  {i + 1}. {item}")

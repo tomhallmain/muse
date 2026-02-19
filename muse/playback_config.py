@@ -3,6 +3,7 @@ from types import SimpleNamespace
 from typing import Dict, List, Optional, Any, TYPE_CHECKING
 
 from library_data.media_track import MediaTrack
+from muse.named_playlist import NamedPlaylist
 from muse.playlist import Playlist
 from utils.config import config
 from utils.globals import PlaylistSortType, TrackResult
@@ -13,7 +14,6 @@ logger = get_logger(__name__)
 if TYPE_CHECKING:
     from library_data.library_data import LibraryData
     from library_data.library_data_callbacks import LibraryDataCallbacks
-    from muse.named_playlist import NamedPlaylist
 
 
 class PlaybackConfig:
@@ -94,9 +94,8 @@ class PlaybackConfig:
             data_callbacks=data_callbacks,
             explicit_tracks=explicit,
         )
+        pc.named_playlist = named_playlist
         pc.loop = named_playlist.loop
-        # SEQUENCE playlists are hand-ordered and should not be reshuffled
-        # via the memory-based deduplication logic in Playlist.sort().
         pc.skip_memory_shuffle = (
             named_playlist.sort_type == PlaylistSortType.SEQUENCE
         )
@@ -121,6 +120,7 @@ class PlaybackConfig:
         self._explicit_tracks: Optional[List[str]] = explicit_tracks
         self.loop: bool = False
         self.skip_memory_shuffle: bool = False
+        self.named_playlist: Optional[NamedPlaylist] = None
         PlaybackConfig.open_configs.append(self)
 
     def maximum_plays(self) -> int:
@@ -131,6 +131,9 @@ class PlaybackConfig:
     
     def remaining_count(self) -> int:
         return self.get_list().remaining_count()
+
+    def get_playlist_descriptor(self) -> NamedPlaylist:
+        return self.named_playlist
 
     def get_list(self) -> Playlist:
         if self.list.is_valid():
@@ -181,7 +184,10 @@ class PlaybackConfig:
         return tracks[0]
 
     def __str__(self) -> str:
-        return "PlaybackConfig(type=" + str(self.type) + ", directories=" + str(len(self.directories)) + ")"
+        base = "PlaybackConfig(type=" + str(self.type) + ", directories=" + str(len(self.directories))
+        if self.named_playlist is not None:
+            base += ", playlist_descriptor=" + self.named_playlist.name
+        return base + ")"
 
     def __eq__(self, other: Any) -> bool:
         if not isinstance(other, PlaybackConfig):

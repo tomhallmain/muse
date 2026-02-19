@@ -13,14 +13,16 @@ logger = get_logger(__name__)
 
 
 class PlaybackConfigMaster:
-    """Manages multiple PlaybackConfig instances with weighted round-robin interleaving.
+    """Manages multiple PlaybackConfig instances with interleaving or stacking.
 
     Provides the same interface as PlaybackConfig so that Playback can use
     either one transparently. When constructed with a single config and
     default weights, it behaves identically to a bare PlaybackConfig (the
     ALL_MUSIC code-path).
 
-    Interleaving algorithm (weighted round-robin with exhaustion handling)::
+    Two modes are supported:
+
+    **Interleaved** (``stacked=False``, default) -- weighted round-robin::
 
         Given:  configs = [A, B, C]
                 weights = [2, 1, 3]
@@ -30,8 +32,13 @@ class PlaybackConfigMaster:
         When A is exhausted:
                 B, C, C, C, B, C, C, C, ...
 
-        When all are exhausted:
-                Playback stops (next_track returns TrackResult()).
+    **Stacked** (``stacked=True``) -- sequential playback::
+
+        Play all of A, then all of B, then all of C.
+        Weights are ignored.
+
+    When all configs are exhausted, playback stops
+    (``next_track`` returns ``TrackResult()``).
     """
 
     last_extension_played: datetime.datetime = datetime.datetime.now()
@@ -73,9 +80,11 @@ class PlaybackConfigMaster:
     # ------------------------------------------------------------------
 
     def __init__(self, playback_configs: Optional[List[PlaybackConfig]] = None,
-                 weights: Optional[List[int]] = None) -> None:
+                 weights: Optional[List[int]] = None,
+                 stacked: bool = False) -> None:
         self.playback_configs: List[PlaybackConfig] = playback_configs or []
         self.weights: List[int] = weights or [1] * len(self.playback_configs)
+        self.stacked: bool = stacked
 
         if len(self.weights) != len(self.playback_configs):
             raise ValueError(
@@ -83,7 +92,7 @@ class PlaybackConfigMaster:
                 f"playback_configs length ({len(self.playback_configs)})"
             )
 
-        # Interleaving state
+        # Cursor / interleaving state
         self._config_cursor: int = 0
         self._prev_config_cursor: int = 0
         self._weight_counter: int = 0
@@ -97,10 +106,10 @@ class PlaybackConfigMaster:
         PlaybackConfigMaster.open_configs.append(self)
 
     # ------------------------------------------------------------------
-    # Interleaving helpers
+    # Cursor helpers
     # ------------------------------------------------------------------
 
-    def _advance_cursor(self) -> bool:
+    def _advance_cursor_interleaved(self) -> bool:
         """Move to the next active config in the round-robin.
 
         Returns True if an active config was found, False if all are exhausted.
@@ -116,9 +125,27 @@ class PlaybackConfigMaster:
             if self._config_cursor == start:
                 return False
 
-    def _peek_next_config(self) -> Optional[PlaybackConfig]:
+    def _advance_cursor_stacked(self) -> bool:
+        """Move linearly to the next active config (no wrap-around).
+
+        Returns True if a subsequent active config was found, False if
+        all remaining configs are exhausted.
+        """
+        for i in range(self._config_cursor + 1, len(self.playback_configs)):
+            if self._active_mask[i]:
+                self._config_cursor = i
+                self._weight_counter = 0
+                return True
+        return False
+
+    def _advance_cursor(self) -> bool:
+        if self.stacked:
+            return self._advance_cursor_stacked()
+        return self._advance_cursor_interleaved()
+
+    def _peek_next_config_interleaved(self) -> Optional[PlaybackConfig]:
         """Return the config that *would* provide the next track without
-        mutating any interleaving state."""
+        mutating any interleaving state (round-robin)."""
         if not any(self._active_mask):
             return None
 
@@ -136,6 +163,20 @@ class PlaybackConfigMaster:
                     return None
         return self.playback_configs[cursor]
 
+    def _peek_next_config_stacked(self) -> Optional[PlaybackConfig]:
+        """Return the current stacked config, or the next active one."""
+        if self._active_mask[self._config_cursor]:
+            return self.playback_configs[self._config_cursor]
+        for i in range(self._config_cursor + 1, len(self.playback_configs)):
+            if self._active_mask[i]:
+                return self.playback_configs[i]
+        return None
+
+    def _peek_next_config(self) -> Optional[PlaybackConfig]:
+        if self.stacked:
+            return self._peek_next_config_stacked()
+        return self._peek_next_config_interleaved()
+
     # ------------------------------------------------------------------
     # Core playback interface
     # ------------------------------------------------------------------
@@ -147,9 +188,29 @@ class PlaybackConfigMaster:
             config_changed=(self._config_cursor != self._prev_config_cursor),
         )
 
+    def _handle_exhaustion(self, config: PlaybackConfig,
+                           skip_grouping: bool,
+                           places_from_current: int,
+                           result: TrackResult) -> TrackResult:
+        """Shared exhaustion logic for both stacked and interleaved modes."""
+        if config.loop:
+            config.get_list().reset()
+            result = config.next_track(
+                skip_grouping=skip_grouping,
+                places_from_current=places_from_current,
+            )
+
+        if result.track is None:
+            self._active_mask[self._config_cursor] = False
+            if self._advance_cursor():
+                return self.next_track(skip_grouping, places_from_current)
+            return TrackResult()
+
+        return result
+
     def next_track(self, skip_grouping: bool = False,
                    places_from_current: int = 0) -> TrackResult:
-        """Get the next track using weighted round-robin interleaving."""
+        """Get the next track (stacked or interleaved depending on mode)."""
         self.playing = True
 
         # Handle override (e.g. from library extender)
@@ -172,30 +233,22 @@ class PlaybackConfigMaster:
         )
 
         if result.track is None:
-            # Current config exhausted -- check loop flag.
-            if config.loop:
-                config.get_list().reset()
-                result = config.next_track(
-                    skip_grouping=skip_grouping,
-                    places_from_current=places_from_current,
-                )
-
+            result = self._handle_exhaustion(
+                config, skip_grouping, places_from_current, result
+            )
             if result.track is None:
-                self._active_mask[self._config_cursor] = False
-                if self._advance_cursor():
-                    return self.next_track(skip_grouping, places_from_current)
-                return TrackResult()
+                return result
 
         self._weight_counter += 1
         self.played_tracks.append(result.track)
 
-        if self._weight_counter >= self.weights[self._config_cursor]:
+        if not self.stacked and self._weight_counter >= self.weights[self._config_cursor]:
             self._advance_cursor()
 
         return self._stamp_result(result)
 
     def upcoming_track(self, places_from_current: int = 1) -> TrackResult:
-        """Peek at the next track without advancing interleaving state."""
+        """Peek at the next track without advancing state."""
         if self.next_track_override is not None:
             track = MediaTrack(self.next_track_override)
             track.set_is_extended()
@@ -279,9 +332,11 @@ class PlaybackConfigMaster:
         config_strs = [str(c) for c in self.playback_configs]
         weight_strs = [str(w) for w in self.weights]
         active = sum(self._active_mask)
+        mode = "stacked" if self.stacked else "interleaved"
         return (
             f"PlaybackConfigMaster(configs=[{', '.join(config_strs)}], "
-            f"weights=[{', '.join(weight_strs)}], active={active}/{len(self.playback_configs)})"
+            f"weights=[{', '.join(weight_strs)}], mode={mode}, "
+            f"active={active}/{len(self.playback_configs)})"
         )
 
     def __eq__(self, other: Any) -> bool:
