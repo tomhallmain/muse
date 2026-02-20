@@ -756,6 +756,7 @@ class SearchWindow(SmartWindow):
             track=track,
             playlist_sort_type=playlist_sort_type,
             overwrite=self.overwrite_cache_check.isChecked(),
+            use_all_music=True,
         )
 
     def _update_playlist_sort_dropdown(self):

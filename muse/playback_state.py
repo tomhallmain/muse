@@ -19,7 +19,10 @@ class PlaybackStateManager:
     """
 
     _instance = None
+    # Only written by the playlist window UI; Run never touches this slot,
+    # so it survives ALL_MUSIC runs (e.g. triggered by search playback).
     _master_config: Optional[PlaybackConfigMaster] = None
+    # Written by Run.execute() at playback start, cleared when playback ends.
     _active_config: Optional[PlaybackConfigMaster] = None
     _override_sort_config: Optional[SortConfig] = None
 

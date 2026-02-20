@@ -511,6 +511,13 @@ class MasterPlaylistWindow(SmartWindow):
 
     # ------------------------------------------------------------------
     # Preview
+    #
+    # TODO: When ALL_MUSIC is the active strategy but a PLAYLIST_CONFIG
+    # master_config also exists (e.g. after search_and_play), the user
+    # should be able to view either the live ALL_MUSIC queue or their
+    # stored playlist configuration preview.  Consider a toggle or tab
+    # so both views are accessible without switching the playback
+    # strategy.
     # ------------------------------------------------------------------
 
     @staticmethod

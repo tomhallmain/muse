@@ -703,7 +703,10 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
             self.cancel_btn.show()
             Utils.start_thread(run_async, use_asyncio=False, args=[args])
 
-    def start_playback(self, track=None, playlist_sort_type=None, overwrite=None):
+    def start_playback(self, track=None, playlist_sort_type=None, overwrite=None,
+                        use_all_music=False):
+        if use_all_music:
+            self.set_playback_master_strategy(PlaybackMasterStrategy.ALL_MUSIC)
         if playlist_sort_type is not None:
             self.sort_type_combo.setCurrentText(playlist_sort_type.get_translation())
         if overwrite is not None:
@@ -981,7 +984,8 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         track = self._find_track(search_query)
         if track:
             playlist_sort_type = getattr(search_query, "get_playlist_sort_type", lambda: None)()
-            self.start_playback(track=track, playlist_sort_type=playlist_sort_type)
+            self.start_playback(track=track, playlist_sort_type=playlist_sort_type,
+                                use_all_music=True)
         else:
             self.alert(_("Error"), _("Track not found in library for query: ") + "\n\n" + str(search_query), kind="error")
 
