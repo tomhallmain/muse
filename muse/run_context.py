@@ -34,6 +34,7 @@ class RunContext:
     is_paused: bool = False
     is_cancelled: bool = False
     shutdown_after_track: bool = False
+    seek_target_filepath: Optional[str] = None
     
     # Map of interaction times for each action type
     interaction_times: Dict[UserAction, float] = field(default_factory=dict)
@@ -82,6 +83,7 @@ class RunContext:
         self.skip_grouping = False
         self.is_paused = False
         self.shutdown_after_track = False
+        self.seek_target_filepath = None
         self.interaction_times.clear()
 
     def should_skip(self) -> bool:

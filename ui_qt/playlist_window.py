@@ -25,6 +25,7 @@ from PySide6.QtWidgets import (
     QButtonGroup,
     QMessageBox,
     QInputDialog,
+    QMenu,
 )
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
@@ -78,6 +79,7 @@ class MasterPlaylistWindow(SmartWindow):
         self._preview_track_keys = []  # parallel to preview list: "title - artist" for matching
         self._preview_track_objects = []  # parallel to preview list: MediaTrack or None
         self._current_highlight_row = -1
+        self._queue_start_row = 0  # first row that belongs to the queue (after history)
 
         self.setStyleSheet(AppStyle.get_stylesheet())
         self._build_ui()
@@ -198,7 +200,9 @@ class MasterPlaylistWindow(SmartWindow):
         self._preview_label = QLabel(_("Interspersed Preview"), self)
         preview_layout.addWidget(self._preview_label)
         self._preview_list = QListWidget(self)
-        self._preview_list.itemClicked.connect(self._on_preview_click)
+        self._preview_list.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self._preview_list.customContextMenuRequested.connect(self._on_preview_context_menu)
+        self._preview_list.itemDoubleClicked.connect(self._on_preview_double_click)
         preview_layout.addWidget(self._preview_list, 1)
         outer.addWidget(preview_frame, 1)
 
@@ -561,6 +565,7 @@ class MasterPlaylistWindow(SmartWindow):
         self._preview_track_keys = []
         self._preview_track_objects = []
         self._current_highlight_row = -1
+        self._queue_start_row = 0
         if not self._master_entries:
             return
 
@@ -642,9 +647,11 @@ class MasterPlaylistWindow(SmartWindow):
                              history_count: int = 3):
         """Rebuild the preview from the live PlaybackConfigMaster state.
 
-        Shows ``history_count`` recently-played tracks (dimmed), then the
-        remaining upcoming tracks from each playlist's current position,
-        interleaved/stacked according to the master's mode.
+        Layout:
+          - A few recently-played tracks (history, dimmed).
+          - All remaining tracks in their original sorted order, including
+            any that were skipped over by a forward seek.  The currently
+            playing track is highlighted at its natural sorted position.
         """
         played_count = len(master.played_tracks) if master.played_tracks else 0
         self._preview_label.setText(
@@ -661,15 +668,18 @@ class MasterPlaylistWindow(SmartWindow):
             pd = getattr(pc, 'playlist_descriptor', None)
             return pd.name if pd else str(pc)
 
-        # --- Recently played (from master.played_tracks) ---
+        # --- Recently played (from master.played_tracks, excluding current) ---
         played = master.played_tracks or []
-        history_start = max(0, len(played) - history_count - 1)
-        history_slice = played[history_start:]
+        # The last entry in played is the currently playing track; show
+        # only the ones before it as history.
+        history_played = played[:-1] if played else []
+        history_start = max(0, len(history_played) - history_count)
+        history_slice = history_played[history_start:]
 
         highlight_row = -1
         row = 0
 
-        for idx, t in enumerate(history_slice):
+        for t in history_slice:
             key = self._format_track(t)
             prefix = ""
             if multi:
@@ -680,7 +690,53 @@ class MasterPlaylistWindow(SmartWindow):
                         if fp and fp in pl.played_tracks:
                             prefix = f"[{_name_for(ci)}] "
                             break
-            is_current = (idx == len(history_slice) - 1)
+            self._preview_list.addItem(f"  {row + 1}. {prefix}{key}")
+            self._preview_track_keys.append(key)
+            self._preview_track_objects.append(t)
+            row += 1
+
+        self._queue_start_row = row
+
+        # --- Queue: current track + all pending, in original sorted order ---
+        # Build a unified list of (config_index, track, is_current) tuples
+        # that preserves each playlist's sorted order and includes tracks
+        # that were skipped over by a forward seek.
+        remaining_tracks = []
+        current_track = played[-1] if played else None
+        current_fp = (
+            getattr(current_track, 'filepath', None)
+            or getattr(current_track, 'get_parent_filepath', lambda: None)()
+        ) if current_track else None
+
+        for ci, pc in enumerate(master.playback_configs):
+            try:
+                playlist = pc.get_list()
+            except Exception:
+                remaining_tracks.append([])
+                continue
+            sorted_t = getattr(playlist, 'sorted_tracks', [])
+            cur_idx = getattr(playlist, 'current_track_index', -1)
+            pending_set = set(getattr(playlist, 'pending_tracks', []))
+            remaining = []
+            for ti, t in enumerate(sorted_t):
+                fp = t.get_parent_filepath()
+                if ti == cur_idx and current_fp and (fp == current_fp or t.filepath == current_fp):
+                    remaining.append((ci, t, True))
+                elif fp in pending_set:
+                    remaining.append((ci, t, False))
+            remaining_tracks.append(remaining)
+
+        upcoming_limit = max_tracks - row
+        if upcoming_limit <= 0:
+            self._current_highlight_row = highlight_row
+            if highlight_row >= 0:
+                self._preview_list.scrollToItem(self._preview_list.item(highlight_row))
+            return
+
+        def _add_queue_item(ci_idx, t, is_current):
+            nonlocal row, highlight_row
+            key = self._format_track(t)
+            prefix = f"[{_name_for(ci_idx)}] " if multi else ""
             marker = "\u25b6 " if is_current else "  "
             self._preview_list.addItem(f"{marker}{row + 1}. {prefix}{key}")
             self._preview_track_keys.append(key)
@@ -692,41 +748,14 @@ class MasterPlaylistWindow(SmartWindow):
                     item.setBackground(QColor(AppStyle.PROGRESS_CHUNK))
             row += 1
 
-        # --- Upcoming tracks from each config's remaining sorted_tracks ---
-        remaining_tracks = []
-        for ci, pc in enumerate(master.playback_configs):
-            try:
-                playlist = pc.get_list()
-            except Exception:
-                remaining_tracks.append([])
-                continue
-            sorted_t = getattr(playlist, 'sorted_tracks', [])
-            cur_idx = getattr(playlist, 'current_track_index', -1)
-            start = max(cur_idx + 1, 0)
-            remaining_tracks.append([
-                (ci, t) for t in sorted_t[start:]
-            ])
-
-        upcoming_limit = max_tracks - row
-        if upcoming_limit <= 0:
-            self._current_highlight_row = highlight_row
-            if highlight_row >= 0:
-                self._preview_list.scrollToItem(self._preview_list.item(highlight_row))
-            return
-
         if master.stacked:
             for ci in range(len(master.playback_configs)):
                 if not master._active_mask[ci]:
                     continue
-                for _ci, t in remaining_tracks[ci]:
+                for _ci, t, is_cur in remaining_tracks[ci]:
                     if upcoming_limit <= 0:
                         break
-                    key = self._format_track(t)
-                    prefix = f"[{_name_for(ci)}] " if multi else ""
-                    self._preview_list.addItem(f"  {row + 1}. {prefix}{key}")
-                    self._preview_track_keys.append(key)
-                    self._preview_track_objects.append(t)
-                    row += 1
+                    _add_queue_item(_ci, t, is_cur)
                     upcoming_limit -= 1
         else:
             cursors = [0] * len(master.playback_configs)
@@ -747,14 +776,9 @@ class MasterPlaylistWindow(SmartWindow):
                 else:
                     break
 
-                ci_idx, t = remaining_tracks[rr_cursor][cursors[rr_cursor]]
+                ci_idx, t, is_cur = remaining_tracks[rr_cursor][cursors[rr_cursor]]
                 cursors[rr_cursor] += 1
-                key = self._format_track(t)
-                prefix = f"[{_name_for(ci_idx)}] " if multi else ""
-                self._preview_list.addItem(f"  {row + 1}. {prefix}{key}")
-                self._preview_track_keys.append(key)
-                self._preview_track_objects.append(t)
-                row += 1
+                _add_queue_item(ci_idx, t, is_cur)
 
                 rr_counter += 1
                 if rr_counter >= weights[rr_cursor]:
@@ -802,13 +826,63 @@ class MasterPlaylistWindow(SmartWindow):
     # Preview interaction
     # ------------------------------------------------------------------
 
-    def _on_preview_click(self, item):
-        """Open track details for the clicked preview item."""
+    def _is_skippable_row(self, row: int) -> bool:
+        """True when *row* is a valid skip target (queue rows only, not the current track)."""
+        return (
+            self._current_highlight_row >= 0
+            and row != self._current_highlight_row
+            and row >= self._queue_start_row
+            and row < len(self._preview_track_objects)
+            and self._preview_track_objects[row] is not None
+        )
+
+    def _skip_to_row(self, row: int) -> None:
+        """Seek playback so the track at *row* becomes the next to play."""
+        if not self._is_skippable_row(row):
+            return
+        track = self._preview_track_objects[row]
+        filepath = getattr(track, "filepath", None) or getattr(
+            track, "get_parent_filepath", lambda: None
+        )()
+        if not filepath:
+            return
+        try:
+            self.app_actions.skip_to_track(filepath)
+        except (AttributeError, TypeError) as e:
+            logger.error(f"skip_to_track failed: {e}")
+
+    def _on_preview_double_click(self, item):
+        """Double-click on a track (other than the current one) skips to it."""
+        self._skip_to_row(self._preview_list.row(item))
+
+    def _on_preview_context_menu(self, pos):
+        """Right-click context menu with Track Details and Skip To."""
+        item = self._preview_list.itemAt(pos)
+        if item is None:
+            return
         row = self._preview_list.row(item)
-        if 0 <= row < len(self._preview_track_objects):
-            track = self._preview_track_objects[row]
-            if track is not None:
-                self.app_actions.open_track_details(track)
+        if row < 0 or row >= len(self._preview_track_objects):
+            return
+        track = self._preview_track_objects[row]
+
+        menu = QMenu(self)
+
+        if track is not None:
+            details_action = menu.addAction(_("Track Details"))
+            details_action.triggered.connect(
+                lambda: self.app_actions.open_track_details(track)
+            )
+
+        if self._is_skippable_row(row):
+            offset = row - self._current_highlight_row
+            sign = "+" if offset > 0 else ""
+            skip_action = menu.addAction(
+                _("Skip To") + f"  ({sign}{offset})"
+            )
+            skip_action.triggered.connect(lambda: self._skip_to_row(row))
+
+        if not menu.isEmpty():
+            menu.exec(self._preview_list.mapToGlobal(pos))
 
     # ------------------------------------------------------------------
     # Lifecycle

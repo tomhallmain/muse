@@ -174,7 +174,10 @@ class Playlist:
             self.current_track_index += 1
             next_track = self.sorted_tracks[self.current_track_index]
             filepath = next_track.get_parent_filepath()
-            self.pending_tracks.remove(filepath)
+            try:
+                self.pending_tracks.remove(filepath)
+            except ValueError:
+                pass
             self.played_tracks.append(filepath)
         if skip_grouping or self.sort_type.is_grouping_type():
             previous_track = None if self.current_track_index == 0 else self.sorted_tracks[original_index]
@@ -192,7 +195,10 @@ class Playlist:
                         self.current_track_index += 1
                         next_track = self.sorted_tracks[self.current_track_index]
                         filepath = next_track.get_parent_filepath()
-                        self.pending_tracks.remove(filepath)
+                        try:
+                            self.pending_tracks.remove(filepath)
+                        except ValueError:
+                            pass
                         self.played_tracks.append(filepath)
                         next_track_attr = getattr(next_track, attr_getter_name)
                         if callable(next_track_attr):

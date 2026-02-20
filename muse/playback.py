@@ -73,6 +73,10 @@ class Playback:
 
     def get_track(self) -> bool:
         self.previous_track = self.track
+        seek_fp = self._run_context.seek_target_filepath
+        if seek_fp is not None:
+            self._run_context.seek_target_filepath = None
+            self._playback_config.seek_to_track(seek_fp)
         if self.did_advance:
             result = self._playback_config.next_track(
                 skip_grouping=self._run_context.skip_grouping, places_from_current=self.places_from_current)

@@ -51,6 +51,17 @@ class Run:
         self._run_context.update_action(UserAction.SKIP_TRACK)
         self.get_playback().stop()
 
+    def skip_to_track(self, filepath: str) -> None:
+        """Seek to a specific track by filepath.
+
+        The playback config is repositioned so the target track becomes
+        the next to play, then the current track is stopped.  Works for
+        both forward and backward seeking.
+        """
+        self._run_context.seek_target_filepath = filepath
+        self._run_context.update_action(UserAction.SKIP_TRACK)
+        self.get_playback().stop()
+
     def next_grouping(self) -> None:
         """Skip to the next grouping."""
         self._run_context.update_action(UserAction.SKIP_GROUPING)

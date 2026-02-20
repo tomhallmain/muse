@@ -139,6 +139,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
             "update_directory_count": self.update_playback_info,
             "open_password_admin_window": self.open_password_admin_window,
             "set_playback_master_strategy": self.set_playback_master_strategy,
+            "skip_to_track": self.skip_to_track,
         }, self)
 
         self._build_menus()
@@ -546,8 +547,11 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
     def set_volume(self, _value=None):
         self.runner_app_config.volume = self.volume_slider.value()
         Globals.set_volume(int(self.runner_app_config.volume))
-        if self.current_run is not None and not self.current_run.is_complete and self.current_run.get_playback() is not None:
-            self.current_run.get_playback().set_volume()
+        try:
+            if self.current_run is not None and not self.current_run.is_complete and self.current_run.get_playback() is not None:
+                self.current_run.get_playback().set_volume()
+        except RuntimeError:
+            pass
 
     def set_playlist_sort_type(self, _value=None):
         sort_text = self.sort_type_combo.currentText()
@@ -753,6 +757,10 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
             self.run()
         else:
             self.current_run.next()
+
+    def skip_to_track(self, filepath):
+        if self.current_run.is_started:
+            self.current_run.skip_to_track(filepath)
 
     def next_grouping(self, event=None):
         if not self.current_run.is_started:

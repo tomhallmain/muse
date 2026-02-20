@@ -254,6 +254,40 @@ class PlaybackConfigMaster:
 
         return self._stamp_result(result)
 
+    def seek_to_track(self, target_filepath: str) -> bool:
+        """Reposition the playlist so the next ``next_track()`` call returns
+        the track identified by *target_filepath*.
+
+        Works for both forward and backward seeking.  Only the index
+        pointer of the playlist containing the target track is moved;
+        other playlists and the played/pending bookkeeping of skipped-over
+        tracks are left intact so the user can still seek back to them.
+
+        Returns ``True`` if the track was found and the position was set.
+        """
+        for ci, pc in enumerate(self.playback_configs):
+            playlist = pc.get_list()
+            for ti, track in enumerate(playlist.sorted_tracks):
+                fp = track.get_parent_filepath()
+                if fp == target_filepath or track.filepath == target_filepath:
+                    old_idx = playlist.current_track_index
+                    playlist.current_track_index = ti - 1
+                    direction = "forward" if ti - 1 > old_idx else "backward"
+                    logger.info(
+                        f"seek_to_track: config={ci}, {direction} "
+                        f"index {old_idx}->{ti - 1}, "
+                        f"pending={len(playlist.pending_tracks)}, "
+                        f"played={len(playlist.played_tracks)}, "
+                        f"total={len(playlist.sorted_tracks)}"
+                    )
+
+                    self._config_cursor = ci
+                    self._weight_counter = 0
+                    self._active_mask[ci] = True
+                    return True
+        logger.warning(f"seek_to_track: target not found: {target_filepath}")
+        return False
+
     def upcoming_track(self, places_from_current: int = 1) -> TrackResult:
         """Peek at the next track without advancing state."""
         if self.next_track_override is not None:
