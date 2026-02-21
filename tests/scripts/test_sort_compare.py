@@ -6,22 +6,22 @@ Usage:  python test_sort_compare.py
 
 import sys
 import os
-sys.path.insert(0, os.path.dirname(__file__))
 
-from library_data.library_data import LibraryData, LibraryDataSearch
+_project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+if _project_root not in sys.path:
+    sys.path.insert(0, _project_root)
+
+from tests.utils.project_setup import load_library_data
+
+from library_data.library_data import LibraryDataSearch
 from muse.playback_config import PlaybackConfig
-from muse.playlist import Playlist
 from muse.playlist_descriptor import PlaylistDescriptor
 from muse.sort_config import SortConfig
 from utils.globals import PlaylistSortType
 
 # ── 1. Load caches ──
 
-print("Loading caches...")
-LibraryData.load_directory_cache()
-LibraryData.load_media_track_cache()
-Playlist.load_recently_played_lists()
-library_data = LibraryData()
+library_data = load_library_data()
 
 SEARCH_QUERY = {"composer": "bach"}
 SORT_TYPE = PlaylistSortType.COMPOSER_SHUFFLE

@@ -16,12 +16,15 @@ import os
 import time
 
 _project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-sys.path.insert(0, _project_root)
+if _project_root not in sys.path:
+    sys.path.insert(0, _project_root)
 
-from library_data.library_data import LibraryData, LibraryDataSearch
+from tests.utils.project_setup import load_library_data
+from tests.utils.playlist_assertions import snapshot, build_expected_queue
+
+from library_data.library_data import LibraryDataSearch
 from muse.playback_config import PlaybackConfig
 from muse.playback_config_master import PlaybackConfigMaster
-from muse.playlist import Playlist
 from muse.playlist_descriptor import PlaylistDescriptor
 from muse.sort_config import SortConfig
 from utils.globals import PlaylistSortType
@@ -30,11 +33,7 @@ DELAY = 5  # seconds between playlist actions
 
 # ── 1. Load caches ──
 
-print("Loading caches...")
-LibraryData.load_directory_cache()
-LibraryData.load_media_track_cache()
-Playlist.load_recently_played_lists()
-library_data = LibraryData()
+library_data = load_library_data()
 
 # ── 2. Search for "cantata" in album ──
 
@@ -82,25 +81,7 @@ print(f"  Playlist has {len(original_order)} sorted tracks")
 
 # ── 4. Snapshot the initial state ──
 
-def snapshot(label, pl, master_obj, limit=TRACK_LIMIT):
-    """Print playlist state for debugging."""
-    print(f"\n{'─'*80}")
-    print(f"  {label}")
-    print(f"{'─'*80}")
-    print(f"  current_track_index: {pl.current_track_index}")
-    print(f"  pending_tracks:      {len(pl.pending_tracks)}")
-    print(f"  played_tracks:       {len(pl.played_tracks)}")
-    print(f"  master.played_tracks: {len(master_obj.played_tracks)}")
-    n = min(limit, len(pl.sorted_tracks))
-    for i in range(n):
-        t = pl.sorted_tracks[i]
-        in_pending = t.get_parent_filepath() in pl.pending_tracks
-        is_cursor = i == pl.current_track_index
-        marker = "▶ " if is_cursor else "  "
-        status = "pending" if in_pending else "PLAYED"
-        print(f"  {marker}{i:>3}. [{status:>7}] {t.title[:60]} - {t.artist[:30] if t.artist else '?'}")
-
-snapshot("Initial state (before any playback)", playlist, master)
+snapshot("Initial state (before any playback)", playlist, master, limit=TRACK_LIMIT)
 
 # ── 5. Play 3 tracks (with delays) ──
 
@@ -115,7 +96,7 @@ for i in range(3):
         print(f"  ERROR: next_track returned None at step {i}")
         sys.exit(1)
 
-snapshot("After playing 3 tracks", playlist, master)
+snapshot("After playing 3 tracks", playlist, master, limit=TRACK_LIMIT)
 
 # ── 6. Verify sorted order unchanged ──
 
@@ -148,7 +129,7 @@ assert result.track.filepath == seek_target.filepath, (
 )
 print(f"  Now playing: {result.track.title[:60]}")
 
-snapshot("After seek + next_track", playlist, master)
+snapshot("After seek + next_track", playlist, master, limit=TRACK_LIMIT)
 
 # ── 8. Verify order still unchanged ──
 
@@ -171,43 +152,40 @@ print(f"  ✓ All {len(skipped_fps)} skipped tracks still in pending_tracks")
 
 print(f"\n\n=== Preview simulation ===")
 
-# History: last few from master.played_tracks (excluding current)
-history_count = 3
 played = master.played_tracks or []
 history_played = played[:-1] if played else []
-history_start = max(0, len(history_played) - history_count)
+history_start = max(0, len(history_played) - 3)
 history_slice = history_played[history_start:]
 
 print(f"\n  History ({len(history_slice)} items, NOT including current):")
 for i, t in enumerate(history_slice):
     print(f"      {t.title[:60]}")
 
-# Queue: current track + all pending in sorted order
+queue_titles = build_expected_queue(playlist)
 cur_idx = playlist.current_track_index
-current_track = played[-1] if played else None
-current_fp = current_track.get_parent_filepath() if current_track else None
-queue_tracks = []
+
+print(f"\n  Queue ({len(queue_titles)} items = current + pending, in sorted order):")
+queue_idx = 0
 for ti, t in enumerate(playlist.sorted_tracks):
     fp = t.get_parent_filepath()
-    if ti == cur_idx and current_fp and fp == current_fp:
-        queue_tracks.append((ti, t, True))
-    elif fp in pending_set:
-        queue_tracks.append((ti, t, False))
+    is_cur = ti == cur_idx
+    in_pending = fp in pending_set
+    if is_cur or in_pending:
+        marker = "▶ " if is_cur else "  "
+        behind = ti < cur_idx and not is_cur
+        label = " ← SKIPPED (before cursor)" if behind else ""
+        print(f"    {marker}sorted[{ti:>3}] {t.title[:60]}{label}")
+        queue_idx += 1
+        if queue_idx >= 20:
+            break
 
-print(f"\n  Queue ({len(queue_tracks)} items = current + pending, in sorted order):")
-for ti, t, is_cur in queue_tracks[:20]:
-    marker = "▶ " if is_cur else "  "
-    behind = ti < cur_idx and not is_cur
-    label = " ← SKIPPED (before cursor)" if behind else ""
-    print(f"    {marker}sorted[{ti:>3}] {t.title[:60]}{label}")
-
-# Verify skipped tracks appear in the queue before the cursor
-skipped_in_queue = [(ti, t) for ti, t, is_cur in queue_tracks if ti < cur_idx and not is_cur]
-print(f"\n  Skipped tracks visible in queue: {len(skipped_in_queue)}")
+skipped_in_queue = sum(1 for ti, t in enumerate(playlist.sorted_tracks)
+                       if ti < cur_idx and t.get_parent_filepath() in pending_set)
+print(f"\n  Skipped tracks visible in queue: {skipped_in_queue}")
 print(f"  Expected skipped count:          {len(skipped_fps)}")
-assert len(skipped_in_queue) == len(skipped_fps), (
+assert skipped_in_queue == len(skipped_fps), (
     f"FAIL: expected {len(skipped_fps)} skipped tracks in queue, "
-    f"got {len(skipped_in_queue)}"
+    f"got {skipped_in_queue}"
 )
 print(f"  ✓ All skipped tracks visible in queue at their original sorted positions")
 
@@ -234,7 +212,7 @@ if skipped_indices:
     )
     print(f"  Now playing: {result.track.title[:60]}")
 
-    snapshot("After backward seek + next_track", playlist, master)
+    snapshot("After backward seek + next_track", playlist, master, limit=TRACK_LIMIT)
 
     current_order = [t.filepath for t in playlist.sorted_tracks]
     assert current_order == original_order, "FAIL: sorted_tracks order changed after backward seek!"
