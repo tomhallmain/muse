@@ -140,6 +140,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
             "open_password_admin_window": self.open_password_admin_window,
             "set_playback_master_strategy": self.set_playback_master_strategy,
             "skip_to_track": self.skip_to_track,
+            "seek_in_track": self.seek_in_track,
         }, self)
 
         self._build_menus()
@@ -161,6 +162,10 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         self._sig_favorite_status.connect(self._do_update_favorite_status)
         self._sig_run_finished.connect(self._on_run_finished)
         self._sig_shutdown.connect(self.on_closing)
+
+        # Connect media frame overlay signals
+        self.media_frame.seek_requested.connect(self.seek_in_track)
+        self.media_frame.play_pause_requested.connect(self.pause)
 
         # Cache media frame handle on main thread so worker threads can use it without touching Qt
         QTimer.singleShot(0, self._cache_media_frame_handle)
@@ -750,7 +755,8 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
     def _do_update_progress_bar(self, progress, elapsed_time, total_duration):
         if self.progress_bar is not None:
             self.progress_bar.setValue(progress)
-            QApplication.processEvents()
+        self.media_frame.update_playback_progress(int(elapsed_time), int(total_duration))
+        QApplication.processEvents()
 
     def next(self, event=None):
         if not self.current_run.is_started:
@@ -761,6 +767,13 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
     def skip_to_track(self, filepath):
         if self.current_run.is_started:
             self.current_run.skip_to_track(filepath)
+
+    def seek_in_track(self, position_ms):
+        try:
+            if self.current_run.is_started:
+                self.current_run.seek_in_track(position_ms)
+        except RuntimeError:
+            pass
 
     def next_grouping(self, event=None):
         if not self.current_run.is_started:

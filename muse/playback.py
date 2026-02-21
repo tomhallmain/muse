@@ -444,6 +444,11 @@ class Playback:
             self._timer_override_volume = volume
         logger.info(f"Timer volume override {'enabled' if override else 'disabled'} with volume {self._timer_override_volume if override else 'N/A'}")
 
+    def seek_to_time(self, time_ms: int) -> None:
+        """Seek to an absolute position within the current track."""
+        if self.vlc_media_player is not None:
+            self.vlc_media_player.set_time(time_ms)
+
     def pause(self) -> None:
         self.vlc_media_player.pause()
 

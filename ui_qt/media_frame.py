@@ -17,10 +17,11 @@ from PySide6.QtWidgets import (
     QLabel,
     QSizePolicy,
 )
-from PySide6.QtCore import Qt, QRectF, QSize
-from PySide6.QtGui import QImage, QPixmap, QImageReader, QPainter
+from PySide6.QtCore import Qt, QRectF, QSize, QPoint, QRect, QEvent, QTimer, Signal
+from PySide6.QtGui import QImage, QPixmap, QImageReader, QPainter, QCursor
 
 from ui_qt.app_style import AppStyle
+from ui_qt.media_controls_overlay import MediaControlsOverlay
 from utils.config import config
 from utils.translations import I18N
 
@@ -81,11 +82,15 @@ class MediaFrame(QFrame):
     Provides winId() for VLC embedding (used by muse/playback.py).
     """
 
+    seek_requested = Signal(int)
+    play_pause_requested = Signal()
+
     def __init__(self, parent=None, fill_canvas=False):
         super().__init__(parent)
         self.setMinimumSize(320, 320)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.setStyleSheet(f"background-color: {AppStyle.MEDIA_BG};")
+        self.setMouseTracking(True)
 
         self.fill_canvas = fill_canvas
         self.path = "."
@@ -125,11 +130,24 @@ class MediaFrame(QFrame):
         if _VLC_AVAILABLE:
             self.vlc_instance = vlc.Instance()
             self.vlc_media_player = self.vlc_instance.media_player_new()
+            self.vlc_media_player.video_set_mouse_input(False)
+            self.vlc_media_player.video_set_key_input(False)
             self.vlc_media = None
         else:
             self.vlc_instance = None
             self.vlc_media_player = None
             self.vlc_media = None
+
+        self._controls_overlay = MediaControlsOverlay(self)
+        self._controls_overlay.seek_requested.connect(self.seek_requested)
+        self._controls_overlay.play_pause_requested.connect(self.play_pause_requested)
+        self._window_filter_installed = False
+        self._mouse_inside = False
+
+        self._mouse_poll_timer = QTimer(self)
+        self._mouse_poll_timer.setInterval(100)
+        self._mouse_poll_timer.timeout.connect(self._poll_mouse_position)
+        self._mouse_poll_timer.start()
 
     def set_background_color(self, background_color):
         color = background_color or AppStyle.MEDIA_BG
@@ -201,8 +219,40 @@ class MediaFrame(QFrame):
         self._placeholder_label.hide()
         self.image_displayed = True
 
+    def _position_overlay(self):
+        """Place the controls overlay at the bottom of the frame using global coords."""
+        from ui_qt.media_controls_overlay import OVERLAY_HEIGHT
+        h = OVERLAY_HEIGHT
+        bottom_left = self.mapToGlobal(QPoint(0, self.height() - h))
+        self._controls_overlay.setGeometry(bottom_left.x(), bottom_left.y(), self.width(), h)
+
+    def _ensure_window_filter(self):
+        """Install an event filter on the top-level window to track moves."""
+        if self._window_filter_installed:
+            return
+        top = self.window()
+        if top and top is not self:
+            top.installEventFilter(self)
+            self._window_filter_installed = True
+
+    def eventFilter(self, watched, event):
+        etype = event.type()
+        if etype in (QEvent.Type.Move, QEvent.Type.Resize, QEvent.Type.WindowStateChange):
+            self._position_overlay()
+        return super().eventFilter(watched, event)
+
+    def moveEvent(self, event):
+        super().moveEvent(event)
+        self._position_overlay()
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        self._ensure_window_filter()
+        self._position_overlay()
+
     def resizeEvent(self, event):
         super().resizeEvent(event)
+        self._position_overlay()
         if self.image_displayed and self.path and self.path != "." and not isinstance(self._video_ui, VideoUI):
             self._show_image_in_view(self.path)
 
@@ -319,6 +369,50 @@ class MediaFrame(QFrame):
     def redraw_figures(self):
         """Dummy for compatibility with children that override."""
         pass
+
+    # ------------------------------------------------------------------
+    # Playback progress & overlay
+    # ------------------------------------------------------------------
+
+    def update_playback_progress(self, current_ms: int, duration_ms: int):
+        """Forward progress data from the backend to the controls overlay."""
+        self._controls_overlay.update_progress(current_ms, duration_ms)
+
+    def set_playback_paused(self, paused: bool):
+        self._controls_overlay.set_paused(paused)
+
+    def on_track_changed(self):
+        self._controls_overlay.on_track_changed()
+
+    def on_playback_stopped(self):
+        self._controls_overlay.on_playback_stopped()
+
+    def _poll_mouse_position(self):
+        """Check cursor position to drive overlay visibility.
+
+        VLC's native video output swallows mouse events, so Qt's
+        enterEvent/leaveEvent never fire over video.  Polling
+        QCursor.pos() against our screen rect is the reliable fallback.
+        """
+        if not self.isVisible():
+            return
+        cursor = QCursor.pos()
+        frame_rect = QRect(self.mapToGlobal(QPoint(0, 0)), self.size())
+        overlay_geo = self._controls_overlay.geometry()
+        inside = frame_rect.contains(cursor) or overlay_geo.contains(cursor)
+
+        if inside and not self._mouse_inside:
+            self._mouse_inside = True
+            self._position_overlay()
+            self._controls_overlay.show_overlay()
+        elif not inside and self._mouse_inside:
+            self._mouse_inside = False
+            self._controls_overlay.hide_overlay()
+
+    def hideEvent(self, event):
+        super().hideEvent(event)
+        self._mouse_inside = False
+        self._controls_overlay.dismiss()
 
     def get_media_frame_handle(self):
         """Return window id for VLC embedding (muse/playback.py)."""

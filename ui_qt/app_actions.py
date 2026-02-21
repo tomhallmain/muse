@@ -35,6 +35,7 @@ class AppActions:
         "open_password_admin_window",
         "set_playback_master_strategy",
         "skip_to_track",
+        "seek_in_track",
     ])
 
     def __init__(self, actions: Dict[str, Callable[..., Any]], master: Optional[object] = None):

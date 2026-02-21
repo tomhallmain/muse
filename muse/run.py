@@ -67,6 +67,10 @@ class Run:
         self._run_context.update_action(UserAction.SKIP_GROUPING)
         self.get_playback().stop()
 
+    def seek_in_track(self, time_ms: int) -> None:
+        """Seek to a position within the currently playing track."""
+        self.get_playback().seek_to_time(time_ms)
+
     def pause(self) -> None:
         """Pause playback."""
         self._run_context.update_action(UserAction.PAUSE)
