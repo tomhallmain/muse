@@ -360,6 +360,8 @@ class MediaFrame(QFrame):
         elif self._image is not None:
             self._image = None
         self._current_pixmap = None
+        self._pixmap_item.setPixmap(QPixmap())
+        self.image_displayed = False
 
     def focus(self, refresh_image=False):
         self.setFocus(Qt.FocusReason.OtherFocusReason)
