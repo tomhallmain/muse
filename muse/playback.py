@@ -435,7 +435,11 @@ class Playback:
             logger.info(f"Mean volume: {mean_volume} Max volume: {max_volume} Setting volume to: {volume}")
         
         self.vlc_media_player.audio_set_volume(volume)
-        # TODO callback for UI element, add a UI element for "effective volume"
+        if self.ui_callbacks is not None and hasattr(self.ui_callbacks, "update_effective_volume"):
+            try:
+                self.ui_callbacks.update_effective_volume(int(volume))
+            except Exception:
+                pass
     
     def set_timer_volume_override(self, override: bool, volume: Optional[int] = None) -> None:
         """Set timer volume override flag and volume level"""

@@ -19,13 +19,19 @@ from PySide6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, Signal
 from PySide6.QtGui import QPainter, QColor
 
 from ui_qt.app_style import AppStyle
+from utils.translations import I18N
+
+_ = I18N._
 
 
 SLIDER_MAX = 1000
+VOLUME_MAX = 100
 AUTOHIDE_MS = 3000
 FADE_IN_MS = 200
 FADE_OUT_MS = 500
 OVERLAY_HEIGHT = 44
+MUTE_ICON = "🔇"
+UNMUTE_ICON = "🔊"
 
 
 def _fmt_time(ms: int) -> str:
@@ -50,6 +56,8 @@ class MediaControlsOverlay(QWidget):
 
     seek_requested = Signal(int)
     play_pause_requested = Signal()
+    volume_changed = Signal(int)
+    mute_toggled = Signal()
 
     def __init__(self, parent: QWidget):
         super().__init__(
@@ -68,6 +76,9 @@ class MediaControlsOverlay(QWidget):
         self._duration_ms = 0
         self._current_ms = 0
         self._has_track = False
+        self._volume = 100
+        self._is_muted = False
+        self._effective_volume = None
 
         self._bg_color = QColor(10, 22, 40, 180)
         c = AppStyle.get_colors()
@@ -131,6 +142,29 @@ class MediaControlsOverlay(QWidget):
         self._total_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         layout.addWidget(self._total_label)
 
+        self._mute_btn = QPushButton(MUTE_ICON, self)
+        self._mute_btn.setFixedSize(32, 32)
+        self._mute_btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self._mute_btn.clicked.connect(self._on_mute_toggle)
+        self._mute_btn.setToolTip(_("Mute"))
+        layout.addWidget(self._mute_btn)
+
+        self._volume_slider = QSlider(Qt.Orientation.Horizontal, self)
+        self._volume_slider.setRange(0, VOLUME_MAX)
+        self._volume_slider.setValue(self._volume)
+        self._volume_slider.setFixedWidth(90)
+        self._volume_slider.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self._volume_slider.valueChanged.connect(self._on_volume_changed)
+        layout.addWidget(self._volume_slider)
+
+        self._effective_label = QLabel("", self)
+        self._effective_label.setFixedWidth(64)
+        self._effective_label.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
+        self._effective_label.setToolTip(
+            _("Effective output volume after track normalization. Sidebar/overlay slider sets base volume.")
+        )
+        layout.addWidget(self._effective_label)
+
     def _apply_child_styles(self):
         c = AppStyle.get_colors()
         btn_style = (
@@ -142,10 +176,12 @@ class MediaControlsOverlay(QWidget):
             f"QPushButton:hover {{ background: {c['hover']}; }}"
         )
         self._play_pause_btn.setStyleSheet(btn_style)
+        self._mute_btn.setStyleSheet(btn_style)
 
         label_style = f"color: {c['fg']}; font-size: 11px; background: transparent; border: none;"
         self._elapsed_label.setStyleSheet(label_style)
         self._total_label.setStyleSheet(label_style)
+        self._effective_label.setStyleSheet(label_style)
 
         slider_style = (
             f"QSlider::groove:horizontal {{"
@@ -164,6 +200,9 @@ class MediaControlsOverlay(QWidget):
             f"}}"
         )
         self._seek_slider.setStyleSheet(slider_style)
+        self._volume_slider.setStyleSheet(slider_style)
+        self._refresh_mute_button()
+        self._refresh_effective_label()
 
     # ------------------------------------------------------------------
     # Public API (called by MediaFrame / app_qt)
@@ -203,6 +242,18 @@ class MediaControlsOverlay(QWidget):
         self._seek_slider.setValue(0)
         self._elapsed_label.setText("0:00")
         self._total_label.setText("0:00")
+        self.dismiss()
+
+    def set_volume_state(self, volume: int, muted: bool, effective_volume: int | None = None):
+        bounded = max(0, min(int(volume), VOLUME_MAX))
+        self._volume = bounded
+        self._is_muted = bool(muted)
+        self._effective_volume =  None if effective_volume is None else max(0, min(int(effective_volume), VOLUME_MAX))
+        self._volume_slider.blockSignals(True)
+        self._volume_slider.setValue(bounded)
+        self._volume_slider.blockSignals(False)
+        self._refresh_mute_button()
+        self._refresh_effective_label()
 
     # ------------------------------------------------------------------
     # Visibility / auto-hide
@@ -277,6 +328,22 @@ class MediaControlsOverlay(QWidget):
             self._elapsed_label.setText(_fmt_time(preview_ms))
             if self._is_paused:
                 self.seek_requested.emit(preview_ms)
+
+    def _on_volume_changed(self, value: int):
+        self._restart_autohide()
+        self.volume_changed.emit(int(value))
+
+    def _on_mute_toggle(self):
+        self._restart_autohide()
+        self.mute_toggled.emit()
+
+    def _refresh_mute_button(self):
+        self._mute_btn.setText(UNMUTE_ICON if self._is_muted else MUTE_ICON)
+        self._mute_btn.setToolTip(_("Unmute") if self._is_muted else _("Mute"))
+
+    def _refresh_effective_label(self):
+        resolved = self._volume if self._effective_volume is None else self._effective_volume
+        self._effective_label.setText(str(resolved))
 
     # ------------------------------------------------------------------
     # Mouse events (keep overlay visible while interacting)

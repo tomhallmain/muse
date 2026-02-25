@@ -107,6 +107,9 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         self.config_history_index = 0
         self.fullscreen = False
         self.current_run = Run(RunConfig(placeholder=True))
+        self._media_muted = False
+        self._last_nonzero_volume = int(Globals.DEFAULT_VOLUME_THRESHOLD)
+        self._effective_volume = int(Globals.DEFAULT_VOLUME_THRESHOLD)
         self._library_data: Optional[LibraryData] = None
         self._closing = False  # Guard for multiple on_closing calls
         # So @require_password and dialogs (e.g. PasswordDialog) have a parent window
@@ -141,6 +144,11 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
             "set_playback_master_strategy": self.set_playback_master_strategy,
             "skip_to_track": self.skip_to_track,
             "seek_in_track": self.seek_in_track,
+            "set_media_volume": self.set_media_volume,
+            "get_media_volume": self.get_media_volume,
+            "toggle_media_mute": self.toggle_media_mute,
+            "is_media_muted": self.is_media_muted,
+            "update_effective_volume": self.update_effective_volume,
         }, self)
 
         self._build_menus()
@@ -166,6 +174,11 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         # Connect media frame overlay signals
         self.media_frame.seek_requested.connect(self.seek_in_track)
         self.media_frame.play_pause_requested.connect(self.pause)
+        self.media_frame.volume_requested.connect(self.set_media_volume)
+        self.media_frame.mute_requested.connect(self.toggle_media_mute)
+        self.media_frame.set_volume_state(
+            self.get_media_volume(), self.is_media_muted(), self._effective_volume
+        )
 
         # Cache media frame handle on main thread so worker threads can use it without touching Qt
         QTimer.singleShot(0, self._cache_media_frame_handle)
@@ -308,6 +321,12 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         self.volume_slider = QSlider(Qt.Orientation.Horizontal)
         self.volume_slider.setRange(0, 100)
         self.volume_slider.setValue(int(Globals.DEFAULT_VOLUME_THRESHOLD))
+        volume_tooltip = _(
+            "Base volume input. Actual output may vary per track due to normalization; "
+            "see the media overlay number for resolved output volume."
+        )
+        self.label_volume.setToolTip(volume_tooltip)
+        self.volume_slider.setToolTip(volume_tooltip)
         self.volume_slider.valueChanged.connect(self.set_volume)
         sidebar_layout.addWidget(self.volume_slider, row, 1, 1, 2)
         row += 1
@@ -550,13 +569,50 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
                 self.open_playlist_window()
 
     def set_volume(self, _value=None):
-        self.runner_app_config.volume = self.volume_slider.value()
+        current_volume = int(self.volume_slider.value())
+        self.runner_app_config.volume = current_volume
         Globals.set_volume(int(self.runner_app_config.volume))
+        if current_volume > 0:
+            self._last_nonzero_volume = current_volume
+            self._media_muted = False
+        else:
+            self._media_muted = True
         try:
             if self.current_run is not None and not self.current_run.is_complete and self.current_run.get_playback() is not None:
                 self.current_run.get_playback().set_volume()
         except RuntimeError:
             pass
+        self.media_frame.set_volume_state(self.get_media_volume(), self.is_media_muted(), self._effective_volume)
+
+    def set_media_volume(self, volume: int):
+        bounded = max(0, min(int(volume), 100))
+        self.volume_slider.blockSignals(True)
+        self.volume_slider.setValue(bounded)
+        self.volume_slider.blockSignals(False)
+        self.set_volume()
+
+    def get_media_volume(self) -> int:
+        return int(self.volume_slider.value())
+
+    def toggle_media_mute(self):
+        if self._media_muted or self.get_media_volume() == 0:
+            restore = self._last_nonzero_volume if self._last_nonzero_volume > 0 else 60
+            self.set_media_volume(restore)
+            self._media_muted = False
+        else:
+            current = self.get_media_volume()
+            if current > 0:
+                self._last_nonzero_volume = current
+            self.set_media_volume(0)
+            self._media_muted = True
+        self.media_frame.set_volume_state(self.get_media_volume(), self.is_media_muted(), self._effective_volume)
+
+    def is_media_muted(self) -> bool:
+        return self._media_muted or self.get_media_volume() == 0
+
+    def update_effective_volume(self, resolved_volume: int):
+        self._effective_volume = max(0, min(int(resolved_volume), 100))
+        self.media_frame.set_volume_state(self.get_media_volume(), self.is_media_muted(), self._effective_volume)
 
     def set_playlist_sort_type(self, _value=None):
         sort_text = self.sort_type_combo.currentText()
@@ -624,6 +680,12 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         self.overwrite_check.setChecked(self.runner_app_config.overwrite)
         self.muse_check.setChecked(self.runner_app_config.muse)
         self.volume_slider.setValue(int(self.runner_app_config.volume))
+        if int(self.runner_app_config.volume) > 0:
+            self._last_nonzero_volume = int(self.runner_app_config.volume)
+            self._media_muted = False
+        else:
+            self._media_muted = True
+        self.media_frame.set_volume_state(self.get_media_volume(), self.is_media_muted(), self._effective_volume)
 
     def get_args(self, track=None):
         self.store_info_cache()

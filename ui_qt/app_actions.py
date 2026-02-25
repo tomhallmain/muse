@@ -36,6 +36,10 @@ class AppActions:
         "set_playback_master_strategy",
         "skip_to_track",
         "seek_in_track",
+        "set_media_volume",
+        "get_media_volume",
+        "toggle_media_mute",
+        "is_media_muted",
     ])
 
     def __init__(self, actions: Dict[str, Callable[..., Any]], master: Optional[object] = None):

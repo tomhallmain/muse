@@ -1,0 +1,281 @@
+diff --git "a/muse\\ui_qt\\media_controls_overlay.py" "b/simple_image_compare\\ui\\app_window\\media_controls_overlay.py"
+index dcf0456..00722b6 100644
+--- "a/muse\\ui_qt\\media_controls_overlay.py"
++++ "b/simple_image_compare\\ui\\app_window\\media_controls_overlay.py"
+@@ -1,6 +1,6 @@
+ """
+ Media controls overlay (PySide6): translucent bar with seek slider,
+-play/pause button, and elapsed/total time labels.  Sits at the bottom
++play/pause button, and elapsed/total time labels. Sits at the bottom
+ of MediaFrame and auto-hides after a period of mouse inactivity.
+ 
+ Implemented as a top-level Tool window with WA_TranslucentBackground so it
+@@ -18,14 +18,17 @@ from PySide6.QtWidgets import (
+ from PySide6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, Signal
+ from PySide6.QtGui import QPainter, QColor
+ 
+-from ui_qt.app_style import AppStyle
++from ui.app_style import AppStyle
+ 
+ 
+ SLIDER_MAX = 1000
++VOLUME_MAX = 100
+ AUTOHIDE_MS = 3000
+ FADE_IN_MS = 200
+ FADE_OUT_MS = 500
+ OVERLAY_HEIGHT = 44
++MUTE_ICON = "\U0001F507"
++UNMUTE_ICON = "\U0001F50A"
+ 
+ 
+ def _fmt_time(ms: int) -> str:
+@@ -42,14 +45,12 @@ def _fmt_time(ms: int) -> str:
+ 
+ 
+ class MediaControlsOverlay(QWidget):
+-    """Translucent controls bar rendered over the bottom of the media frame.
+-
+-    A top-level Tool window so it floats above VLC's native video surface
+-    and disappears with the parent window on alt-tab / minimize.
+-    """
++    """Translucent controls bar rendered over the bottom of the media frame."""
+ 
+     seek_requested = Signal(int)
+     play_pause_requested = Signal()
++    volume_changed = Signal(int)
++    mute_toggled = Signal()
+ 
+     def __init__(self, parent: QWidget):
+         super().__init__(
+@@ -68,10 +69,11 @@ class MediaControlsOverlay(QWidget):
+         self._duration_ms = 0
+         self._current_ms = 0
+         self._has_track = False
++        self._volume = 100
++        self._is_muted = False
+ 
+         self._bg_color = QColor(10, 22, 40, 180)
+-        c = AppStyle.get_colors()
+-        self._border_color = QColor(c["border"])
++        self._border_color = QColor(AppStyle.BORDER_COLOR)
+ 
+         self._fade_anim = QPropertyAnimation(self, b"windowOpacity", self)
+         self._fade_anim.setEasingCurve(QEasingCurve.Type.InOutQuad)
+@@ -84,11 +86,7 @@ class MediaControlsOverlay(QWidget):
+         self._build_ui()
+         self._apply_child_styles()
+ 
+-    # ------------------------------------------------------------------
+-    # Paint the semi-transparent background ourselves
+-    # ------------------------------------------------------------------
+-
+-    def paintEvent(self, event):
++    def paintEvent(self, event):  # noqa: N802
+         p = QPainter(self)
+         p.setRenderHint(QPainter.RenderHint.Antialiasing)
+         p.fillRect(self.rect(), self._bg_color)
+@@ -96,10 +94,6 @@ class MediaControlsOverlay(QWidget):
+         p.drawLine(0, 0, self.width(), 0)
+         p.end()
+ 
+-    # ------------------------------------------------------------------
+-    # Build child widgets
+-    # ------------------------------------------------------------------
+-
+     def _build_ui(self):
+         layout = QHBoxLayout(self)
+         layout.setContentsMargins(12, 6, 12, 6)
+@@ -113,13 +107,17 @@ class MediaControlsOverlay(QWidget):
+ 
+         self._elapsed_label = QLabel("0:00", self)
+         self._elapsed_label.setFixedWidth(52)
+-        self._elapsed_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
++        self._elapsed_label.setAlignment(
++            Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
++        )
+         layout.addWidget(self._elapsed_label)
+ 
+         self._seek_slider = QSlider(Qt.Orientation.Horizontal, self)
+         self._seek_slider.setRange(0, SLIDER_MAX)
+         self._seek_slider.setValue(0)
+-        self._seek_slider.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
++        self._seek_slider.setSizePolicy(
++            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
++        )
+         self._seek_slider.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+         self._seek_slider.sliderPressed.connect(self._on_slider_pressed)
+         self._seek_slider.sliderReleased.connect(self._on_slider_released)
+@@ -128,49 +126,65 @@ class MediaControlsOverlay(QWidget):
+ 
+         self._total_label = QLabel("0:00", self)
+         self._total_label.setFixedWidth(52)
+-        self._total_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
++        self._total_label.setAlignment(
++            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter
++        )
+         layout.addWidget(self._total_label)
+ 
++        self._mute_btn = QPushButton("Mute", self)
++        self._mute_btn.setFixedSize(44, 28)
++        self._mute_btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
++        self._mute_btn.clicked.connect(self._on_mute_toggle)
++        self._mute_btn.setToolTip("Toggle mute")
++        layout.addWidget(self._mute_btn)
++
++        self._volume_slider = QSlider(Qt.Orientation.Horizontal, self)
++        self._volume_slider.setRange(0, VOLUME_MAX)
++        self._volume_slider.setValue(self._volume)
++        self._volume_slider.setFixedWidth(90)
++        self._volume_slider.setFocusPolicy(Qt.FocusPolicy.NoFocus)
++        self._volume_slider.valueChanged.connect(self._on_volume_changed)
++        layout.addWidget(self._volume_slider)
++
+     def _apply_child_styles(self):
+-        c = AppStyle.get_colors()
+         btn_style = (
+             f"QPushButton {{"
+-            f"  background: transparent; color: {c['fg']};"
+-            f"  border: 1px solid {c['border']}; border-radius: 4px;"
++            f"  background: transparent; color: {AppStyle.FG_COLOR};"
++            f"  border: 1px solid {AppStyle.BORDER_COLOR}; border-radius: 4px;"
+             f"  font-size: 14px;"
+             f"}}"
+-            f"QPushButton:hover {{ background: {c['hover']}; }}"
++            f"QPushButton:hover {{ background: {AppStyle.BG_COLOR}; }}"
+         )
+         self._play_pause_btn.setStyleSheet(btn_style)
++        self._mute_btn.setStyleSheet(btn_style)
+ 
+-        label_style = f"color: {c['fg']}; font-size: 11px; background: transparent; border: none;"
++        label_style = (
++            f"color: {AppStyle.FG_COLOR};"
++            f"font-size: 11px;"
++            f"background: transparent;"
++            f"border: none;"
++        )
+         self._elapsed_label.setStyleSheet(label_style)
+         self._total_label.setStyleSheet(label_style)
+ 
+         slider_style = (
+             f"QSlider::groove:horizontal {{"
+-            f"  border: 1px solid {c['border']}; height: 4px;"
+-            f"  background: {c['input']}; border-radius: 2px;"
++            f"  border: 1px solid {AppStyle.BORDER_COLOR}; height: 4px;"
++            f"  background: {AppStyle.BG_COLOR}; border-radius: 2px;"
+             f"}}"
+             f"QSlider::handle:horizontal {{"
+-            f"  background: {c['progress']}; border: 1px solid {c['border']};"
++            f"  background: {AppStyle.PROGRESS_CHUNK}; border: 1px solid {AppStyle.BORDER_COLOR};"
+             f"  width: 12px; margin: -4px 0; border-radius: 6px;"
+             f"}}"
+-            f"QSlider::handle:horizontal:hover {{"
+-            f"  background: {c['hover']};"
+-            f"}}"
+             f"QSlider::sub-page:horizontal {{"
+-            f"  background: {c['progress']}; border-radius: 2px;"
++            f"  background: {AppStyle.PROGRESS_CHUNK}; border-radius: 2px;"
+             f"}}"
+         )
+         self._seek_slider.setStyleSheet(slider_style)
+-
+-    # ------------------------------------------------------------------
+-    # Public API (called by MediaFrame / app_qt)
+-    # ------------------------------------------------------------------
++        self._volume_slider.setStyleSheet(slider_style)
++        self._refresh_mute_button()
+ 
+     def update_progress(self, current_ms: int, duration_ms: int):
+-        """Called on every progress tick from the backend."""
+         self._current_ms = current_ms
+         self._duration_ms = duration_ms
+         self._has_track = duration_ms > 0
+@@ -187,7 +201,6 @@ class MediaControlsOverlay(QWidget):
+         self._play_pause_btn.setText("\u25B6" if paused else "\u275A\u275A")
+ 
+     def on_track_changed(self):
+-        """Reset state when a new track starts."""
+         self._seek_slider.setValue(0)
+         self._elapsed_label.setText("0:00")
+         self._total_label.setText("0:00")
+@@ -196,17 +209,22 @@ class MediaControlsOverlay(QWidget):
+         self._has_track = True
+ 
+     def on_playback_stopped(self):
+-        """Reset state when nothing is playing."""
+         self._has_track = False
+         self._is_paused = False
+         self._play_pause_btn.setText("\u25B6")
+         self._seek_slider.setValue(0)
+         self._elapsed_label.setText("0:00")
+         self._total_label.setText("0:00")
++        self.dismiss()
+ 
+-    # ------------------------------------------------------------------
+-    # Visibility / auto-hide
+-    # ------------------------------------------------------------------
++    def set_volume_state(self, volume: int, muted: bool):
++        bounded = max(0, min(int(volume), VOLUME_MAX))
++        self._volume = bounded
++        self._is_muted = bool(muted)
++        self._volume_slider.blockSignals(True)
++        self._volume_slider.setValue(bounded)
++        self._volume_slider.blockSignals(False)
++        self._refresh_mute_button()
+ 
+     def show_overlay(self):
+         if not self._has_track:
+@@ -220,7 +238,6 @@ class MediaControlsOverlay(QWidget):
+         self._fade_out()
+ 
+     def dismiss(self):
+-        """Immediately hide without animation (e.g. parent hidden)."""
+         self._autohide_timer.stop()
+         self._fade_anim.stop()
+         self.setWindowOpacity(0.0)
+@@ -250,10 +267,6 @@ class MediaControlsOverlay(QWidget):
+         self._autohide_timer.stop()
+         self._autohide_timer.start(AUTOHIDE_MS)
+ 
+-    # ------------------------------------------------------------------
+-    # Internal slots
+-    # ------------------------------------------------------------------
+-
+     def _on_play_pause(self):
+         self._restart_autohide()
+         self.play_pause_requested.emit()
+@@ -271,22 +284,26 @@ class MediaControlsOverlay(QWidget):
+             self.seek_requested.emit(target_ms)
+ 
+     def _on_slider_moved(self, value: int):
+-        """Live preview of elapsed time while dragging; also seek-while-paused."""
+         if self._duration_ms > 0:
+             preview_ms = int((value / SLIDER_MAX) * self._duration_ms)
+             self._elapsed_label.setText(_fmt_time(preview_ms))
+             if self._is_paused:
+                 self.seek_requested.emit(preview_ms)
+ 
+-    # ------------------------------------------------------------------
+-    # Mouse events (keep overlay visible while interacting)
+-    # ------------------------------------------------------------------
++    def _on_volume_changed(self, value: int):
++        self._restart_autohide()
++        self.volume_changed.emit(int(value))
++
++    def _on_mute_toggle(self):
++        self._restart_autohide()
++        self.mute_toggled.emit()
++
++    def _refresh_mute_button(self):
++        self._mute_btn.setText(UNMUTE_ICON if self._is_muted else MUTE_ICON)
++        self._mute_btn.setToolTip("Unmute" if self._is_muted else "Mute")
+ 
+-    def enterEvent(self, event):
++    def enterEvent(self, event):  # noqa: N802
+         super().enterEvent(event)
+-        self._autohide_timer.stop()
+ 
+-    def leaveEvent(self, event):
++    def leaveEvent(self, event):  # noqa: N802
+         super().leaveEvent(event)
+-        if not self._user_is_seeking:
+-            self._restart_autohide()

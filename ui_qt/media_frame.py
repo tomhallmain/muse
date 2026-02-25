@@ -16,6 +16,8 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QLabel,
     QSizePolicy,
+    QApplication,
+    QDialog,
 )
 from PySide6.QtCore import Qt, QRectF, QSize, QPoint, QRect, QEvent, QTimer, Signal
 from PySide6.QtGui import QImage, QPixmap, QImageReader, QPainter, QCursor
@@ -84,6 +86,8 @@ class MediaFrame(QFrame):
 
     seek_requested = Signal(int)
     play_pause_requested = Signal()
+    volume_requested = Signal(int)
+    mute_requested = Signal()
 
     def __init__(self, parent=None, fill_canvas=False):
         super().__init__(parent)
@@ -139,8 +143,10 @@ class MediaFrame(QFrame):
             self.vlc_media = None
 
         self._controls_overlay = MediaControlsOverlay(self)
-        self._controls_overlay.seek_requested.connect(self.seek_requested)
-        self._controls_overlay.play_pause_requested.connect(self.play_pause_requested)
+        self._controls_overlay.seek_requested.connect(self.seek_requested.emit)
+        self._controls_overlay.play_pause_requested.connect(self.play_pause_requested.emit)
+        self._controls_overlay.volume_changed.connect(self.volume_requested.emit)
+        self._controls_overlay.mute_toggled.connect(self.mute_requested.emit)
         self._window_filter_installed = False
         self._mouse_inside = False
 
@@ -383,6 +389,9 @@ class MediaFrame(QFrame):
     def set_playback_paused(self, paused: bool):
         self._controls_overlay.set_paused(paused)
 
+    def set_volume_state(self, volume: int, muted: bool, effective_volume: int | None = None):
+        self._controls_overlay.set_volume_state(volume, muted, effective_volume)
+
     def on_track_changed(self):
         self._controls_overlay.on_track_changed()
 
@@ -398,6 +407,17 @@ class MediaFrame(QFrame):
         """
         if not self.isVisible():
             return
+        app = QApplication.instance()
+        top_window = self.window()
+        active_window = app.activeWindow() if app is not None else None
+        if self._has_visible_child_dialog(top_window):
+            self._mouse_inside = False
+            self._controls_overlay.dismiss()
+            return
+        if active_window is None or active_window is not top_window:
+            self._mouse_inside = False
+            self._controls_overlay.dismiss()
+            return
         cursor = QCursor.pos()
         frame_rect = QRect(self.mapToGlobal(QPoint(0, 0)), self.size())
         overlay_geo = self._controls_overlay.geometry()
@@ -410,6 +430,23 @@ class MediaFrame(QFrame):
         elif not inside and self._mouse_inside:
             self._mouse_inside = False
             self._controls_overlay.hide_overlay()
+
+    def _has_visible_child_dialog(self, top_window) -> bool:
+        """Return True if a visible dialog belongs to this main window."""
+        app = QApplication.instance()
+        if app is None or top_window is None:
+            return False
+        for widget in app.topLevelWidgets():
+            if widget is top_window or widget is self._controls_overlay:
+                continue
+            if not widget.isVisible() or not isinstance(widget, QDialog):
+                continue
+            parent = widget.parentWidget()
+            while parent is not None:
+                if parent is top_window:
+                    return True
+                parent = parent.parentWidget()
+        return False
 
     def hideEvent(self, event):
         super().hideEvent(event)
