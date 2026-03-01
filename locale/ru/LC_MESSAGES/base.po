@@ -2,9 +2,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
-"POT-Creation-Date: 2026-01-13 19:52-0500\n"
-"PO-Revision-Date: 2026-01-13 19:52-0500\n"
-"Last-Translator: Translator Name <translator@example.com>\n"
+"POT-Creation-Date: 2026-03-01 13:10-0500\n"
+"PO-Revision-Date: 2026-03-01 13:10-0500\n"
+"Last-Translator: Thomas Hall <tomhall.main@gmail.com>\n"
 "Language-Team: ru Team <<EMAIL>>\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
@@ -12,311 +12,417 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: app.py:141
+#: app.py:116 app_qt.py:216
 msgid "File"
 msgstr "Файл"
 
-#: app.py:142
+#: app.py:117 app_qt.py:217
 msgid "Open Library"
 msgstr "Открытая библиотека"
 
-#: app.py:143
+#: app.py:118 app_qt.py:218
 msgid "Current Track Text"
 msgstr "Текущий текст трека"
 
-#: app.py:145
+#: app.py:120 app_qt.py:220
 msgid "Exit"
 msgstr "выход"
 
-#: app.py:149
+#: app.py:124 app_qt.py:222
 msgid "View"
 msgstr "Посмотреть"
 
-#: app.py:150
+#: app.py:125 app_qt.py:223
 msgid "Toggle Fullscreen"
 msgstr "Переключить полноэкранный режим"
 
-#: app.py:151
+#: app.py:126 app_qt.py:224
 msgid "Toggle Theme"
 msgstr "переключаться Тема"
 
-#: app.py:153 app.py:265
+#: app.py:128 app.py:243 app_qt.py:226 app_qt.py:339 ui/playlist_window.py:40
+#: ui_qt/playlist_window.py:67
 msgid "Playlists"
 msgstr "Плейлисты"
 
-#: app.py:154 app.py:310 ui/favorites_window.py:232 ui/favorites_window.py:565
+#: app.py:129 app.py:292 app_qt.py:227 app_qt.py:400
+#: ui/favorites_window.py:232 ui/favorites_window.py:565
+#: ui_qt/favorites_window.py:234 ui_qt/favorites_window.py:540
 msgid "Favorites"
 msgstr "Любимые"
 
-#: app.py:155 ui/history_window.py:89 ui/history_window.py:301
+#: app.py:130 app_qt.py:228 ui/history_window.py:89 ui/history_window.py:301
+#: ui_qt/history_window.py:87 ui_qt/history_window.py:314
 msgid "History"
 msgstr "История"
 
-#: app.py:156 utils/globals.py:507
+#: app.py:131 app_qt.py:229 utils/globals.py:553
 msgid "Composers"
 msgstr "композиторы"
 
-#: app.py:157
+#: app.py:132 app_qt.py:230
 msgid "Personas"
 msgstr "Персонажи"
 
-#: app.py:161
+#: app.py:136 app_qt.py:232
 msgid "Tools"
 msgstr "Инструменты"
 
-#: app.py:162 ui/composers_window.py:428 ui/composers_window.py:461
-#: ui/composers_window.py:583 ui/favorites_window.py:282
-#: ui/history_window.py:130 ui/network_media_window.py:108
-#: ui/network_media_window.py:160 ui/network_media_window.py:338
-#: ui/search_window.py:219 ui/search_window.py:361 ui/search_window.py:765
+#: app.py:137 app_qt.py:233 ui/composers_window.py:428
+#: ui/composers_window.py:461 ui/composers_window.py:583
+#: ui/favorites_window.py:282 ui/history_window.py:130
+#: ui/network_media_window.py:108 ui/network_media_window.py:160
+#: ui/network_media_window.py:338 ui/search_window.py:220
+#: ui/search_window.py:369 ui/search_window.py:888
+#: ui_qt/composers_window.py:442 ui_qt/composers_window.py:497
+#: ui_qt/favorites_window.py:274 ui_qt/history_window.py:121
+#: ui_qt/network_media_window.py:115 ui_qt/network_media_window.py:156
+#: ui_qt/network_media_window.py:223 ui_qt/network_media_window.py:492
+#: ui_qt/search_window.py:200 ui_qt/search_window.py:362
+#: ui_qt/search_window.py:882
 msgid "Search"
 msgstr "Поиск"
 
-#: app.py:163
+#: app.py:138 app_qt.py:234
 msgid "Schedules"
 msgstr "Расписания"
 
-#: app.py:164 ui/extensions_window.py:27 ui/extensions_window.py:36
-#: ui/extensions_window.py:347
+#: app.py:139 app_qt.py:235 ui/extensions_window.py:27
+#: ui/extensions_window.py:36 ui/extensions_window.py:347
+#: ui_qt/extensions_window.py:39 ui_qt/extensions_window.py:48
+#: ui_qt/extensions_window.py:329
 msgid "Extensions"
 msgstr "Расширения"
 
-#: app.py:165
+#: app.py:140 app_qt.py:236 ui/blacklist_window.py:344
+#: ui_qt/blacklist_window.py:335
 msgid "Blacklist"
 msgstr "Черный список"
 
-#: app.py:166 ui/weather_window.py:27 ui/weather_window.py:37
-#: ui/weather_window.py:67
+#: app.py:141 app_qt.py:237 ui/weather_window.py:27 ui/weather_window.py:37
+#: ui/weather_window.py:67 ui_qt/weather_window.py:42
+#: ui_qt/weather_window.py:59 ui_qt/weather_window.py:97
 msgid "Weather"
 msgstr "Погода"
 
-#: app.py:167 ui/tts_window.py:29 ui/tts_window.py:34 ui/tts_window.py:203
+#: app.py:142 app_qt.py:238 ui/tts_window.py:29 ui/tts_window.py:34
+#: ui/tts_window.py:203 ui_qt/tts_window.py:37 ui_qt/tts_window.py:45
 msgid "Text to Speech"
 msgstr "Текст в речь"
 
-#: app.py:168
+#: app.py:143 app_qt.py:239 ui_qt/timer_window.py:37
 msgid "Timer"
 msgstr "Таймер"
 
-#: app.py:169
+#: app.py:144 app_qt.py:240
 msgid "Audio Devices"
 msgstr "Аудиоустройства"
 
-#: app.py:171
+#: app.py:146 app_qt.py:242
 msgid "Configuration"
 msgstr "конфигурация"
 
-#: app.py:172
+#: app.py:147 app_qt.py:243
 msgid "Security Configuration"
 msgstr "Конфигурация безопасности"
 
-#: app.py:218
+#: app.py:196 app_qt.py:307
 msgid "DJ"
 msgstr "Диджей"
 
-#: app.py:221 ui/extensions_window.py:183 ui/track_details_window.py:64
-#: utils/globals.py:285
+#: app.py:199 app_qt.py:308 ui/extensions_window.py:183
+#: ui/track_details_window.py:64 ui_qt/extensions_window.py:159
+#: ui_qt/track_details_window.py:69 utils/globals.py:331
 msgid "Title"
 msgstr "Название"
 
-#: app.py:224 ui/track_details_window.py:67 utils/globals.py:138
-#: utils/globals.py:286
+#: app.py:202 app_qt.py:309 ui/track_details_window.py:67
+#: ui_qt/track_details_window.py:71 utils/globals.py:142 utils/globals.py:332
 msgid "Album"
 msgstr "Альбом"
 
-#: app.py:227 ui/track_details_window.py:70 utils/globals.py:140
-#: utils/globals.py:287 utils/globals.py:356
+#: app.py:205 app_qt.py:310 ui/track_details_window.py:70
+#: ui_qt/track_details_window.py:73 utils/globals.py:144 utils/globals.py:333
+#: utils/globals.py:402
 msgid "Artist"
 msgstr "Художник"
 
-#: app.py:230 ui/track_details_window.py:76 utils/globals.py:142
-#: utils/globals.py:288 utils/globals.py:355
+#: app.py:208 app_qt.py:311 ui/track_details_window.py:76
+#: ui_qt/track_details_window.py:77 utils/globals.py:146 utils/globals.py:334
+#: utils/globals.py:401
 msgid "Composer"
 msgstr "композитор"
 
-#: app.py:233 ui/track_details_window.py:82
+#: app.py:211 app_qt.py:312 ui/track_details_window.py:82
+#: ui_qt/track_details_window.py:82
 msgid "Year"
 msgstr "Год"
 
-#: app.py:236
+#: app.py:214 app_qt.py:313
 msgid "Next Up"
 msgstr "Следующий"
 
-#: app.py:239
+#: app.py:217 app_qt.py:314
 msgid "Prior Track"
 msgstr "Предыдущий трек"
 
-#: app.py:242
+#: app.py:220 app_qt.py:315
 msgid "Upcoming Group"
 msgstr "Предстоящие группы"
 
-#: app.py:245
+#: app.py:223 app_qt.py:316
 msgid "Spot Details"
 msgstr "Детали места"
 
-#: app.py:248
+#: app.py:226 app_qt.py:317
 msgid "Extension Status"
 msgstr "Статус продления"
 
-#: app.py:251
+#: app.py:229 app_qt.py:319
 msgid "Volume"
 msgstr "Объем"
 
-#: app.py:262 ui/extensions_window.py:280 ui/favorites_window.py:374
-#: ui/favorites_window.py:509 ui/network_media_window.py:168
-#: ui/network_media_window.py:268 ui/search_window.py:369
-#: ui/search_window.py:674
+#: app.py:240 app_qt.py:337 ui/extensions_window.py:280
+#: ui/favorites_window.py:374 ui/favorites_window.py:509
+#: ui/network_media_window.py:168 ui/network_media_window.py:268
+#: ui/search_window.py:377 ui/search_window.py:686
+#: ui_qt/extensions_window.py:259 ui_qt/favorites_window.py:379
+#: ui_qt/favorites_window.py:491 ui_qt/network_media_window.py:236
+#: ui_qt/network_media_window.py:398 ui_qt/search_window.py:375
+#: ui_qt/search_window.py:714
 msgid "Play"
 msgstr "Играть"
 
-#: app.py:268
+#: app.py:246 app_qt.py:345
 msgid "Next"
 msgstr "Следующий"
 
-#: app.py:271
+#: app.py:249 app_qt.py:348
 msgid "Next Grouping"
 msgstr "Следующая группировка"
 
-#: app.py:274
+#: app.py:252 app_qt.py:353 ui_qt/timer_window.py:126
+#: ui_qt/timer_window.py:195
 msgid "Pause"
 msgstr "Пауза"
 
-#: app.py:276
+#: app.py:254 app_qt.py:356 ui_qt/timer_window.py:130
 msgid "Stop"
 msgstr "Остановись"
 
-#: app.py:283
+#: app.py:260 app.py:681 app_qt.py:362 app_qt.py:864
+msgid "Shutdown After Current Track"
+msgstr "Отключение после текущего трека"
+
+#: app.py:264 app_qt.py:367
 msgid "Delay Seconds"
 msgstr "Отложить секунды"
 
-#: app.py:290
+#: app.py:271 app_qt.py:376
 msgid "Playlist"
 msgstr "Плейлист"
 
-#: app.py:298 ui/search_window.py:297
+#: app.py:280 app_qt.py:385 ui/search_window.py:298 ui_qt/search_window.py:285
 msgid "Playlist Sort"
 msgstr "Сортировка плейлиста"
 
-#: app.py:306
+#: app.py:288 app_qt.py:397
 msgid "Favorite"
 msgstr "Любимый"
 
-#: app.py:313
+#: app.py:295 app_qt.py:405 ui/playlist_window.py:800
+#: ui_qt/playlist_window.py:1245
 msgid "Overwrite"
 msgstr "Переписать"
 
-#: app.py:317
+#: app.py:299 app_qt.py:410
 msgid "Muse"
 msgstr "Муза"
 
-#: app.py:321
+#: app.py:303 app_qt.py:416
 msgid "Extension"
 msgstr "Продление"
 
-#: app.py:325
+#: app.py:307 app_qt.py:422
 msgid "Enable track splitting"
 msgstr "Включить разделение дорожек"
 
-#: app.py:329
+#: app.py:311 app_qt.py:428
 msgid "Use system language for all topics"
 msgstr "Используйте язык системы для всех тем"
 
-#: app.py:333
+#: app.py:315 ui_qt/sort_config_window.py:74
 msgid "Thorough playlist memory check"
 msgstr "Полная проверка памяти плейлиста"
 
-#: app.py:414
+#: app.py:419 app_qt.py:535
 msgid "Confirm Quit"
 msgstr "Подтвердить отказ"
 
-#: app.py:414
+#: app.py:419 app_qt.py:535
 msgid "Would you like to quit the application?"
 msgstr "Вы хотите закрыть приложение?"
 
-#: app.py:595
+#: app.py:613 app_qt.py:748
 msgid "Confirm Run"
 msgstr "Подтвердить бег"
 
-#: app.py:596
+#: app.py:614 app_qt.py:748
 msgid "Are you sure you want to proceed?"
 msgstr "Вы уверены, что хотите продолжить?"
 
-#: app.py:659
+#: app.py:685 app_qt.py:868
+msgid "Confirm Shutdown"
+msgstr "Подтверждение выключения"
+
+#: app.py:686 app_qt.py:869
+msgid "Are you sure you want to shutdown after the current track finishes?"
+msgstr "Вы уверены, что хотите выключить после завершения текущего трека?"
+
+#: app.py:692 app_qt.py:875
+msgid "Cancel Scheduled Shutdown"
+msgstr "Отменить запланированное отключение"
+
+#: app.py:702
 msgid "Copied album art to clipboard."
 msgstr "Копирование обложки альбома в буфер обмена."
 
-#: app.py:783 app.py:836 app.py:1020 app.py:1031 app.py:1061
-#: ui/audio_device_window.py:336 ui/audio_device_window.py:348
-#: ui/audio_device_window.py:356 ui/audio_device_window.py:361
-#: ui/audio_device_window.py:370 ui/audio_device_window.py:397
-#: ui/audio_device_window.py:400 ui/audio_device_window.py:405
-#: ui/audio_device_window.py:415 ui/audio_device_window.py:441
-#: ui/audio_device_window.py:444 ui/auth/password_dialog.py:261
-#: ui/blacklist_window.py:143 ui/composers_window.py:251
+#: app.py:830 app.py:877 app.py:1062 app.py:1073 app.py:1107 app_qt.py:548
+#: app_qt.py:1073 app_qt.py:1080 app_qt.py:1168 app_qt.py:1213
+#: ui/audio_device_window.py:353 ui/audio_device_window.py:365
+#: ui/audio_device_window.py:373 ui/audio_device_window.py:378
+#: ui/audio_device_window.py:387 ui/audio_device_window.py:414
+#: ui/audio_device_window.py:417 ui/audio_device_window.py:422
+#: ui/audio_device_window.py:432 ui/audio_device_window.py:458
+#: ui/audio_device_window.py:461 ui/auth/password_dialog.py:261
+#: ui/blacklist_window.py:144 ui/composers_window.py:251
 #: ui/composers_window.py:266 ui/configuration_window.py:153
 #: ui/configuration_window.py:156 ui/extensions_window.py:392
 #: ui/favorites_window.py:605 ui/personas_window.py:371
 #: ui/personas_window.py:449 ui/personas_window.py:460
 #: ui/personas_window.py:463 ui/personas_window.py:493
-#: ui/playlist_window.py:327 ui/track_details_window.py:217
+#: ui/playlist_window.py:247 ui/playlist_window.py:268
+#: ui/playlist_window.py:298 ui/playlist_window.py:752
+#: ui/playlist_window.py:795 ui/playlist_window.py:812
+#: ui/playlist_window.py:822 ui/playlist_window.py:827
+#: ui/track_details_window.py:217 ui_qt/audio_device_window.py:320
+#: ui_qt/audio_device_window.py:331 ui_qt/audio_device_window.py:338
+#: ui_qt/audio_device_window.py:343 ui_qt/audio_device_window.py:351
+#: ui_qt/audio_device_window.py:374 ui_qt/audio_device_window.py:377
+#: ui_qt/audio_device_window.py:382 ui_qt/audio_device_window.py:391
+#: ui_qt/audio_device_window.py:414 ui_qt/audio_device_window.py:417
+#: ui_qt/auth/password_admin_window.py:131
+#: ui_qt/auth/password_admin_window.py:544 ui_qt/auth/password_dialog.py:284
+#: ui_qt/blacklist_window.py:173 ui_qt/composers_window.py:291
+#: ui_qt/composers_window.py:316 ui_qt/configuration_window.py:207
+#: ui_qt/configuration_window.py:210 ui_qt/extensions_window.py:375
+#: ui_qt/favorites_window.py:575 ui_qt/personas_window.py:323
+#: ui_qt/personas_window.py:414 ui_qt/personas_window.py:428
+#: ui_qt/personas_window.py:436 ui_qt/personas_window.py:466
+#: ui_qt/playlist_window.py:315 ui_qt/playlist_window.py:338
+#: ui_qt/playlist_window.py:373 ui_qt/playlist_window.py:1197
+#: ui_qt/playlist_window.py:1239 ui_qt/playlist_window.py:1265
+#: ui_qt/playlist_window.py:1276 ui_qt/playlist_window.py:1282
+#: ui_qt/schedules_window.py:169 ui_qt/track_details_window.py:214
 msgid "Error"
 msgstr "ошибка"
 
-#: app.py:890 muse/muse_spot_profile.py:213
+#: app.py:932 app_qt.py:884 muse/muse_spot_profile.py:216
 msgid "Track: "
 msgstr "Трек: "
 
-#: app.py:891
+#: app.py:933 app_qt.py:885
 msgid "Album: "
 msgstr "Альбом: "
 
-#: app.py:892
+#: app.py:934 app_qt.py:886
 msgid "Artist: "
 msgstr "Художник: "
 
-#: app.py:893
+#: app.py:935 app_qt.py:887
 msgid "Composer: "
 msgstr "Композитор: "
 
-#: app.py:894
+#: app.py:936 app_qt.py:888
 msgid "Year: "
 msgstr "Год: "
 
-#: app.py:906
+#: app.py:948 app_qt.py:910
 msgid "Next Up: "
 msgstr "Следующий: "
 
-#: app.py:915 muse/muse_spot_profile.py:214
+#: app.py:957 app_qt.py:923 muse/muse_spot_profile.py:217
 msgid "Previous Track: "
 msgstr "Предыдущий трек: "
 
-#: app.py:933
+#: app.py:975 app_qt.py:936
 msgid "Upcoming {0}: {1}"
 msgstr "Предстоящие {0}: {1}"
 
-#: app.py:935 app.py:937
+#: app.py:977 app.py:979 app_qt.py:938
 msgid "Upcoming Group: {0}"
 msgstr "Предстоящие группы: {0}"
 
-#: app.py:961
+#: app.py:1003 app_qt.py:975 app_qt.py:979
 msgid "Directories: {0}"
 msgstr "Каталоги: {0}"
 
-#: app.py:970
+#: app.py:1012 app_qt.py:989
 msgid "DJ: "
 msgstr "Диджей: "
 
-#: app.py:994
+#: app.py:1036 app_qt.py:1044
 msgid "Staged Playlist: "
 msgstr "Сценический плейлист: "
 
-#: app.py:1020
+#: app.py:1062 app_qt.py:1073
 msgid "Track not found in library for query: "
 msgstr "Треки для запроса не найдены в библиотеке: "
 
-#: app.py:1153
+#: app.py:1199 app_qt.py:93 app_qt.py:94
 msgid " Muse "
 msgstr " Муза "
+
+#: app_qt.py:325
+msgid ""
+"Base volume input. Actual output may vary per track due to normalization; "
+"see the media overlay number for resolved output volume."
+msgstr ""
+"Базовый уровень ввода. Реальный выходной может варьироваться на каждую "
+"дорожку в результате настройки по нормализации; см. номер медиакарточки для "
+"утвержденного уровня выхода."
+
+#: app_qt.py:434
+msgid "Sorting Options"
+msgstr "Параметры сортировки"
+
+#: app_qt.py:438 app_qt.py:671 ui_qt/playlist_window.py:186
+#: ui_qt/playlist_window.py:243 ui_qt/playlist_window.py:443
+#: ui_qt/playlist_window.py:1042 ui_qt/playlist_window.py:1328
+msgid "(custom)"
+msgstr "(custom)"
+
+#: app_qt.py:438 app_qt.py:671 ui_qt/playlist_window.py:186
+#: ui_qt/playlist_window.py:443 ui_qt/playlist_window.py:1008
+#: ui_qt/playlist_window.py:1042 ui_qt/playlist_window.py:1328
+msgid "(defaults)"
+msgstr "(умолчания)"
+
+#: app_qt.py:633
+msgid "(no playlist configured)"
+msgstr "(нет playlists настроек)"
+
+#: app_qt.py:637
+msgid "(see playlist window)"
+msgstr "(См. окно списка воспроизведений)"
+
+#: app_qt.py:1110
+msgid "Theme switched to {0}."
+msgstr "Тема переключена на {0}."
+
+#: app_qt.py:1226
+msgid "Password Admin Window Error"
+msgstr "Пароль Администратор Окно Ошибка"
 
 #: extensions/extension_manager.py:135 extensions/extension_manager.py:148
 msgid "Extension thread waiting for {0} minutes"
@@ -330,21 +436,34 @@ msgstr "Скоро мы услышим новый трек от {0} {1}."
 msgid "Extension failed for {0} with value '{1}': {2}"
 msgstr "Расширение не удалось для {0} со значением '{1}': {2}"
 
-#: extensions/extension_manager.py:408
+#: extensions/extension_manager.py:413
 msgid "Extension \"{0}\" waiting for {1} minutes"
 msgstr "Расширение «{0}» ожидает {1} минут"
 
-#: extensions/extension_manager.py:416
+#: extensions/extension_manager.py:421
 msgid "Extension \"{0}\" ready"
 msgstr "Расширение «{0}» готово"
 
-#: lib/caps_lock_mixin.py:64
+#: lib/caps_lock_mixin.py:64 ui_qt/auth/password_dialog.py:40
+#: ui_qt/auth/password_dialog.py:47
 msgid "⚠ Caps Lock is ON"
 msgstr "⚠ Caps Lock включен"
 
-#: library_data/blacklist.py:259
-msgid "Filtering concepts for blacklist: "
-msgstr "Концепции фильтрации для черного списка: "
+#: library_data/blacklist.py:199
+msgid "[regex]"
+msgstr "[regex]"
+
+#: library_data/blacklist.py:201
+msgid "[no boundary]"
+msgstr "[без словесной границы]"
+
+#: library_data/blacklist.py:203
+msgid "[no space conversion]"
+msgstr "[без преобразования пространства]"
+
+#: library_data/blacklist.py:205
+msgid "[exception: {0}]"
+msgstr "[исключение: {0}]"
 
 #: library_data/composer.py:44
 msgid "Composer name cannot be empty"
@@ -368,6 +487,7 @@ msgstr "Дата начала не может быть позднее даты �
 
 #: library_data/composer.py:192 library_data/library_data.py:71
 #: ui/favorites_window.py:39 ui/history_window.py:32
+#: ui_qt/favorites_window.py:51 ui_qt/history_window.py:47
 msgid "({0} results)"
 msgstr "({0} результаты)"
 
@@ -411,15 +531,15 @@ msgstr "Недопустимые данные о композиторе"
 msgid "Composer not found"
 msgstr "Композитор не найден"
 
-#: library_data/library_data.py:413
+#: library_data/library_data.py:450
 msgid "Updating tracks"
 msgstr "Обновление треков"
 
-#: library_data/library_data.py:429
+#: library_data/library_data.py:466
 msgid "Refreshing cache... ({0}/{1} files)"
 msgstr "Обновление кэша... ({0}/{1} файлов)"
 
-#: library_data/library_data.py:498
+#: library_data/library_data.py:535
 msgid ""
 "Searching for tracks... ({0} files searched, {1} files may be remaining)"
 msgstr "Поиск дорожек... ({0} файлов найдено, {1} файлов может остаться)"
@@ -594,7 +714,7 @@ msgstr "Но сначала давайте послушаем о {0}."
 msgid " [already mentioned]"
 msgstr " [уже упоминалось]"
 
-#: muse/muse.py:737
+#: muse/muse.py:740
 msgid ""
 "We're having some technical difficulties in accessing our source for {0}. "
 "We'll try again later"
@@ -602,7 +722,7 @@ msgstr ""
 "У нас возникли технические проблемы с доступом к источнику {0}. Попробуем "
 "позже."
 
-#: muse/muse.py:741
+#: muse/muse.py:744
 msgid ""
 "It seems our writer for {0} is unexpectedly away at the moment. Did we "
 "forget to pay his salary again?"
@@ -610,49 +730,49 @@ msgstr ""
 "Похоже, наш автор для {0} неожиданно отсутствует в данный момент. Мы снова "
 "забыли выплатить ему зарплату?"
 
-#: muse/muse.py:745
+#: muse/muse.py:748
 msgid ""
 "We've found problems with all of our {0} ideas. Please try again later."
 msgstr ""
 "Мы обнаружили проблемы со всеми нашими {0} идеями. Повторите попытку позже."
 
-#: muse/muse.py:750
+#: muse/muse.py:753
 msgid "Something went wrong. We'll try to fix it soon."
 msgstr "Что-то пошло не так. Мы постараемся исправить это в ближайшее время."
 
-#: muse/muse.py:816
+#: muse/muse.py:819
 msgid "Starting tracks:"
 msgstr "Начальные треки:"
 
-#: muse/muse_spot_profile.py:204
+#: muse/muse_spot_profile.py:207
 msgid "Talking about: "
 msgstr "Поговорим о: "
 
-#: muse/muse_spot_profile.py:213
+#: muse/muse_spot_profile.py:216
 msgid "No track"
 msgstr "Нет следов"
 
-#: muse/muse_spot_profile.py:214
+#: muse/muse_spot_profile.py:217
 msgid "No previous track"
 msgstr "Никаких предыдущих треков"
 
-#: muse/muse_spot_profile.py:216
+#: muse/muse_spot_profile.py:219
 msgid "Speaking about prior track"
 msgstr "Говоря о предыдущем треке"
 
-#: muse/muse_spot_profile.py:218
+#: muse/muse_spot_profile.py:221
 msgid "Speaking about upcoming track"
 msgstr "Говоря о предстоящем треке"
 
-#: muse/muse_spot_profile.py:220
+#: muse/muse_spot_profile.py:223
 msgid "Talking about something"
 msgstr "Говорить о чем-то"
 
-#: muse/playback.py:407
+#: muse/playback.py:419
 msgid "Sleeping for seconds"
 msgstr "Спать в течение нескольких секунд"
 
-#: muse/schedule.py:8 ui/schedules_window.py:42
+#: muse/schedule.py:8 ui/schedules_window.py:42 ui_qt/schedules_window.py:64
 msgid "New Schedule"
 msgstr "Новое расписание"
 
@@ -660,7 +780,7 @@ msgstr "Новое расписание"
 msgid "Tomorrow"
 msgstr "Завтра"
 
-#: muse/schedule.py:76 ui/schedules_window.py:59
+#: muse/schedule.py:76 ui/schedules_window.py:59 ui_qt/schedules_window.py:83
 msgid "Every day"
 msgstr "Каждый день"
 
@@ -693,155 +813,198 @@ msgid "*This text contains {0}, I can't read it but it looks interesting*"
 msgstr ""
 "*Этот текст содержит {0}, я не могу его прочитать, но он выглядит интересно*"
 
-#: ui/audio_device_window.py:27
+#: ui/audio_device_window.py:31 ui_qt/audio_device_window.py:42
 msgid "Audio Device Management"
 msgstr "Управление аудиоустройствами"
 
-#: ui/audio_device_window.py:104
+#: ui/audio_device_window.py:109 ui_qt/audio_device_window.py:85
 msgid "Available Audio Devices"
 msgstr "Доступные аудиоустройства"
 
-#: ui/audio_device_window.py:124
+#: ui/audio_device_window.py:129 ui_qt/audio_device_window.py:95
 msgid "Refresh Devices"
 msgstr "Обновление устройств"
 
-#: ui/audio_device_window.py:129
+#: ui/audio_device_window.py:134 ui_qt/audio_device_window.py:99
 msgid "Show all devices (including virtual)"
 msgstr "Показать все устройства (включая виртуальные)"
 
-#: ui/audio_device_window.py:143
+#: ui/audio_device_window.py:143 ui_qt/audio_device_window.py:103
+msgid "Verbose device logging (for troubleshooting)"
+msgstr "Подробная журналізація усілізації (для виправлення виквасу)"
+
+#: ui/audio_device_window.py:160 ui_qt/audio_device_window.py:119
 msgid "Day/Night Device Switching"
 msgstr "Переключение устройства между дневным и ночным режимами"
 
-#: ui/audio_device_window.py:155
+#: ui/audio_device_window.py:172 ui_qt/audio_device_window.py:124
 msgid "Day Device:"
 msgstr "Дневное устройство:"
 
-#: ui/audio_device_window.py:163
+#: ui/audio_device_window.py:180 ui_qt/audio_device_window.py:131
 msgid "Night Device:"
 msgstr "Ночное устройство:"
 
-#: ui/audio_device_window.py:175
+#: ui/audio_device_window.py:192 ui_qt/audio_device_window.py:138
 msgid "Day Start:"
 msgstr "Начало дня:"
 
-#: ui/audio_device_window.py:191
+#: ui/audio_device_window.py:208 ui_qt/audio_device_window.py:148
 msgid "Night Start:"
 msgstr "Начало ночи:"
 
-#: ui/audio_device_window.py:208
+#: ui/audio_device_window.py:225 ui_qt/audio_device_window.py:159
 msgid "Enable automatic day/night switching"
 msgstr "Включить автоматическое переключение между дневным и ночным режимами"
 
-#: ui/audio_device_window.py:230
+#: ui/audio_device_window.py:247 ui_qt/audio_device_window.py:170
 msgid "Apply Settings"
 msgstr "Применить настройки"
 
-#: ui/audio_device_window.py:234
+#: ui/audio_device_window.py:251 ui_qt/audio_device_window.py:174
 msgid "Test Day/Night Switch"
 msgstr "Проверьте переключатель «День/Ночь»"
 
-#: ui/audio_device_window.py:238 ui/auth/password_admin_window.py:264
+#: ui/audio_device_window.py:255 ui/auth/password_admin_window.py:264
 #: ui/extensions_window.py:530 ui/favorites_window.py:697
+#: ui_qt/audio_device_window.py:179 ui_qt/auth/password_admin_window.py:355
+#: ui_qt/extensions_window.py:485 ui_qt/favorites_window.py:665
 msgid "Close"
 msgstr "Закрыть"
 
-#: ui/audio_device_window.py:245 ui/audio_device_window.py:336
-#: ui/audio_device_window.py:361 ui/audio_device_window.py:405
+#: ui/audio_device_window.py:262 ui/audio_device_window.py:353
+#: ui/audio_device_window.py:378 ui/audio_device_window.py:422
+#: ui_qt/audio_device_window.py:227 ui_qt/audio_device_window.py:320
+#: ui_qt/audio_device_window.py:343 ui_qt/audio_device_window.py:382
 msgid "Audio device management not available"
 msgstr "Управление аудиоустройствами недоступно"
 
-#: ui/audio_device_window.py:246
+#: ui/audio_device_window.py:263 ui_qt/audio_device_window.py:228
 msgid "Install pycaw and comtypes to enable this feature"
 msgstr "Установите pycaw и comtypes, чтобы включить эту функцию."
 
-#: ui/audio_device_window.py:262
+#: ui/audio_device_window.py:279 ui_qt/audio_device_window.py:240
 msgid "No audio devices found"
 msgstr "Аудиоустройства не найдены"
 
-#: ui/audio_device_window.py:344
+#: ui/audio_device_window.py:361 ui_qt/audio_device_window.py:327
 msgid "Audio device monitoring started"
 msgstr "Начался мониторинг аудиоустройств"
 
-#: ui/audio_device_window.py:348
+#: ui/audio_device_window.py:365 ui_qt/audio_device_window.py:331
 msgid "Failed to start monitoring"
 msgstr "Не удалось запустить мониторинг"
 
-#: ui/audio_device_window.py:352
+#: ui/audio_device_window.py:369 ui_qt/audio_device_window.py:334
 msgid "Audio device monitoring stopped"
 msgstr "Мониторинг аудиоустройства остановлен"
 
-#: ui/audio_device_window.py:370 ui/audio_device_window.py:415
+#: ui/audio_device_window.py:387 ui/audio_device_window.py:432
+#: ui_qt/audio_device_window.py:351 ui_qt/audio_device_window.py:391
 msgid "Please select both day and night devices"
 msgstr "Выберите устройства для дневного и ночного использования"
 
-#: ui/audio_device_window.py:391
+#: ui/audio_device_window.py:408 ui_qt/audio_device_window.py:370
 msgid "Audio device settings applied successfully"
 msgstr "Настройки аудиоустройства успешно применены"
 
-#: ui/audio_device_window.py:397
+#: ui/audio_device_window.py:414 ui_qt/audio_device_window.py:374
 msgid "Failed to apply audio device settings"
 msgstr "Не удалось применить настройки аудиоустройства"
 
-#: ui/audio_device_window.py:439
+#: ui/audio_device_window.py:456 ui_qt/audio_device_window.py:412
 msgid "Switched to {} device for {} time"
 msgstr "Переключился на устройство {} на время {}"
 
-#: ui/audio_device_window.py:441
+#: ui/audio_device_window.py:458 ui_qt/audio_device_window.py:414
 msgid "Failed to switch audio device"
 msgstr "Не удалось переключить аудиоустройство"
 
-#: ui/blacklist_window.py:33
+#: ui/blacklist_preview_window.py:29 ui_qt/blacklist_preview_window.py:39
+msgid "Blacklist Preview"
+msgstr "Чёрный список: Предварительный просмотр"
+
+#: ui/blacklist_preview_window.py:42 ui_qt/blacklist_preview_window.py:56
+msgid "Enter text to test (tags can be comma- or dot-separated):"
+msgstr ""
+"Введите текст для проверки (теги pueden estar separados por comas o puntos):"
+
+#: ui/blacklist_preview_window.py:60 ui_qt/blacklist_preview_window.py:67
+msgid "Test against blacklist"
+msgstr "Тестирование на blacklist"
+
+#: ui/blacklist_preview_window.py:66 ui_qt/blacklist_preview_window.py:71
+msgid "Result:"
+msgstr "Результат:"
+
+#: ui/blacklist_preview_window.py:89 ui_qt/blacklist_preview_window.py:85
+msgid "Enter some text above, then click Test."
+msgstr "Введите текст выше, затем нажмите Test."
+
+#: ui/blacklist_preview_window.py:94 ui_qt/blacklist_preview_window.py:90
+msgid "No blacklist items matched."
+msgstr "Нет совпадений с элементами черного списка."
+
+#: ui/blacklist_preview_window.py:97 ui_qt/blacklist_preview_window.py:93
+msgid "Matched {0} item(s):"
+msgstr "Совпадено {0} предмета(ов):"
+
+#: ui/blacklist_preview_window.py:99 ui_qt/blacklist_preview_window.py:95
+msgid "  \"{0}\" → rule \"{1}\""
+msgstr "  {0} → правило {1}"
+
+#: ui/blacklist_window.py:34 ui_qt/blacklist_window.py:63
 msgid "Modify Blacklist Item: {0}"
 msgstr "Изменить черный список Предмет: {0}"
 
-#: ui/blacklist_window.py:52
+#: ui/blacklist_window.py:53 ui_qt/blacklist_window.py:98
 msgid "Blacklist String"
 msgstr "Строка черного списка"
 
-#: ui/blacklist_window.py:62
+#: ui/blacklist_window.py:63 ui/blacklist_window.py:487
+#: ui_qt/blacklist_window.py:108 ui_qt/blacklist_window.py:461
 msgid "Enabled"
 msgstr "Включено"
 
-#: ui/blacklist_window.py:74
+#: ui/blacklist_window.py:75 ui_qt/blacklist_window.py:113
 msgid "Use glob-based regex"
 msgstr "Используйте регекс на основе глоб"
 
-#: ui/blacklist_window.py:86
+#: ui/blacklist_window.py:87 ui_qt/blacklist_window.py:118
 msgid "Use word boundary matching"
 msgstr "Используйте согласование границ слов"
 
-#: ui/blacklist_window.py:98
+#: ui/blacklist_window.py:99 ui_qt/blacklist_window.py:124
 msgid "Convert spaces to optional non-word characters"
 msgstr "Преобразование пробелов в необязательные несловесные символы"
 
-#: ui/blacklist_window.py:108
+#: ui/blacklist_window.py:109 ui_qt/blacklist_window.py:134
 msgid "Exception Pattern (optional regex to unfilter tags)"
 msgstr ""
 "Шаблон исключений (дополнительное регулярное выражение для отфильтровывания "
 "тегов)"
 
-#: ui/blacklist_window.py:116
+#: ui/blacklist_window.py:117 ui_qt/blacklist_window.py:151
 msgid "Done"
 msgstr "Готово"
 
-#: ui/blacklist_window.py:143
+#: ui/blacklist_window.py:144 ui_qt/blacklist_window.py:174
 msgid "Blacklist string cannot be empty."
 msgstr "Текст черного списка не может быть пустым."
 
-#: ui/blacklist_window.py:169
+#: ui/blacklist_window.py:170 ui_qt/blacklist_window.py:197
 msgid "No changes were made"
 msgstr "Изменения не вносились"
 
-#: ui/blacklist_window.py:181
+#: ui/blacklist_window.py:182 ui_qt/blacklist_window.py:214
 msgid "Unsaved Changes"
 msgstr "Несохраненные изменения"
 
-#: ui/blacklist_window.py:181
+#: ui/blacklist_window.py:182 ui_qt/blacklist_window.py:215
 msgid "Do you want to save changes before closing?"
 msgstr "Хотите ли вы сохранить изменения перед закрытием?"
 
-#: ui/blacklist_window.py:223
+#: ui/blacklist_window.py:224 ui_qt/blacklist_window.py:248
 msgid ""
 "WARNING: Are you sure you want to reveal the blacklist concepts? These concepts are damaging or offensive and WILL cause you severe psychological harm. Do not, under any circumstances, reveal these concepts to minors.\n"
 "\n"
@@ -851,11 +1014,11 @@ msgstr ""
 "\n"
 "Если вы молоды, не уверены или даже взрослы, нажмите кнопку закрытия этого окна и займитесь чем-нибудь интересным."
 
-#: ui/blacklist_window.py:284
+#: ui/blacklist_window.py:285 ui_qt/blacklist_window.py:770
 msgid "Confirm Load Default Blacklist"
 msgstr "Подтверждение загрузки черного списка по умолчанию"
 
-#: ui/blacklist_window.py:285
+#: ui/blacklist_window.py:286 ui_qt/blacklist_window.py:772
 msgid ""
 "Are you sure you want to load the default blacklist?\n"
 "\n"
@@ -873,64 +1036,64 @@ msgstr ""
 "\n"
 "Вы хотите продолжить?"
 
-#: ui/blacklist_window.py:298
+#: ui/blacklist_window.py:300 ui_qt/blacklist_window.py:786
 msgid "Loaded default blacklist"
 msgstr "Загруженный черный список по умолчанию"
 
-#: ui/blacklist_window.py:302
+#: ui/blacklist_window.py:304 ui_qt/blacklist_window.py:790
 msgid "Error loading default blacklist"
 msgstr "Ошибка при загрузке черного списка по умолчанию"
 
-#: ui/blacklist_window.py:331
-msgid "Tags/Models Blacklist"
-msgstr "Черный список тегов и моделей"
-
-#: ui/blacklist_window.py:366
+#: ui/blacklist_window.py:383 ui_qt/blacklist_window.py:357
 msgid "Global Settings:"
 msgstr "Глобальные настройки"
 
-#: ui/blacklist_window.py:368
+#: ui/blacklist_window.py:385 ui_qt/blacklist_window.py:361
 msgid "These settings affect how the blacklist is applied globally."
 msgstr "Эти параметры влияют на глобальное применение черного списка."
 
-#: ui/blacklist_window.py:377
+#: ui/blacklist_window.py:394 ui_qt/blacklist_window.py:370
 msgid "Choose how the blacklist is enforced: block, warn, or allow."
 msgstr ""
 "Выберите способ применения черного списка: блокировать, предупреждать или "
 "разрешать."
 
-#: ui/blacklist_window.py:383
+#: ui/blacklist_window.py:400 ui_qt/blacklist_window.py:375
 msgid "Silent Removal"
 msgstr "Бесшумное удаление"
 
-#: ui/blacklist_window.py:391
+#: ui/blacklist_window.py:408 ui_qt/blacklist_window.py:378
 msgid ""
 "If enabled, blacklisted words are removed silently without notification."
 msgstr ""
 "Если эта функция включена, слова из черного списка будут удаляться без "
 "уведомления."
 
-#: ui/blacklist_window.py:397
+#: ui/blacklist_window.py:415 ui_qt/blacklist_window.py:387
 msgid "Import"
 msgstr "Импорт"
 
-#: ui/blacklist_window.py:398
+#: ui/blacklist_window.py:416 ui_qt/blacklist_window.py:390
 msgid "Export"
 msgstr "Экспорт"
 
-#: ui/blacklist_window.py:399
+#: ui/blacklist_window.py:417 ui_qt/blacklist_window.py:393
 msgid "Load Default"
 msgstr "Загрузка по умолчанию"
 
-#: ui/blacklist_window.py:403
+#: ui/blacklist_window.py:418 ui_qt/blacklist_window.py:396
+msgid "Preview"
+msgstr "Предварительный просмотр"
+
+#: ui/blacklist_window.py:422 ui_qt/blacklist_window.py:403
 msgid "Add to blacklist"
 msgstr "Добавить в черный список"
 
-#: ui/blacklist_window.py:405
+#: ui/blacklist_window.py:424 ui_qt/blacklist_window.py:406
 msgid "Clear items"
 msgstr "Очистить элементы"
 
-#: ui/blacklist_window.py:426
+#: ui/blacklist_window.py:462 ui_qt/blacklist_window.py:439
 msgid ""
 "No blacklist items found. You can add items by clicking the 'Add to "
 "blacklist' button below, or load the default blacklist."
@@ -939,11 +1102,11 @@ msgstr ""
 "кнопку «Добавить в черный список» ниже, или загрузить черный список по "
 "умолчанию."
 
-#: ui/blacklist_window.py:428
+#: ui/blacklist_window.py:464 ui_qt/blacklist_window.py:442
 msgid "Click below to reveal blacklist concepts."
 msgstr "Нажмите ниже, чтобы раскрыть концепцию черного списка."
 
-#: ui/blacklist_window.py:430
+#: ui/blacklist_window.py:466 ui_qt/blacklist_window.py:445
 msgid ""
 "Default blacklist is loaded. You can load your own blacklist by editing the "
 "existing concepts, clearing the blacklist and adding your own, or importing "
@@ -953,64 +1116,82 @@ msgstr ""
 "черный список, отредактировав существующие концепции, очистив черный список "
 "и добавив свои собственные, или импортировать концепции из файла."
 
-#: ui/blacklist_window.py:436
+#: ui/blacklist_window.py:472 ui_qt/blacklist_window.py:453
 msgid "Reveal Concepts"
 msgstr "Раскрытие концепций"
 
-#: ui/blacklist_window.py:455
-msgid "[regex]"
-msgstr "[regex]"
+#: ui/blacklist_window.py:486 ui_qt/blacklist_window.py:461
+msgid "Item"
+msgstr "Элемент"
 
-#: ui/blacklist_window.py:457
-msgid "[no boundary]"
-msgstr "[без словесной границы]"
-
-#: ui/blacklist_window.py:459
-msgid "[no space conversion]"
-msgstr "[без преобразования пространства]"
-
-#: ui/blacklist_window.py:461
-msgid "[exception: {0}]"
-msgstr "[исключение: {0}]"
-
-#: ui/blacklist_window.py:465 ui/blacklist_window.py:730
+#: ui/blacklist_window.py:499 ui/blacklist_window.py:796
+#: ui_qt/blacklist_window.py:472 ui_qt/blacklist_window.py:743
 msgid "Disabled"
 msgstr "Не включено"
 
-#: ui/blacklist_window.py:473 ui/schedules_window.py:208
+#: ui/blacklist_window.py:516 ui/blacklist_window.py:523
+#: ui/blacklist_window.py:530 ui_qt/blacklist_window.py:497
+#: ui_qt/blacklist_window.py:504 ui_qt/blacklist_window.py:511
+msgid "Select an item first"
+msgstr "Выберите элемент сначала"
+
+#: ui/blacklist_window.py:534 ui/schedules_window.py:208
+#: ui_qt/blacklist_window.py:479 ui_qt/schedules_window.py:264
 msgid "Modify"
 msgstr "изменять"
 
-#: ui/blacklist_window.py:481 ui/favorites_window.py:388
-#: ui/favorites_window.py:523 ui/search_window.py:385
+#: ui/blacklist_window.py:536 ui/favorites_window.py:388
+#: ui/favorites_window.py:523 ui/playlist_window.py:738
+#: ui/search_window.py:393 ui_qt/blacklist_window.py:482
+#: ui_qt/favorites_window.py:391 ui_qt/favorites_window.py:503
+#: ui_qt/playlist_window.py:1176 ui_qt/search_window.py:399
 msgid "Remove"
 msgstr "Удалить"
 
-#: ui/blacklist_window.py:544 ui/blacklist_window.py:579
+#: ui/blacklist_window.py:538 ui_qt/blacklist_window.py:485
+msgid "Toggle"
+msgstr "Переключатель"
+
+#: ui/blacklist_window.py:602 ui/blacklist_window.py:645
+#: ui_qt/blacklist_window.py:576 ui_qt/blacklist_window.py:618
 msgid "Added item to blacklist: {0}"
 msgstr "Добавлен элемент в черный список: {0}"
 
-#: ui/blacklist_window.py:546
+#: ui/blacklist_window.py:604 ui_qt/blacklist_window.py:580
 msgid "Modified blacklist item: {0}"
 msgstr "Измененный элемент черного списка: {0}"
 
-#: ui/blacklist_window.py:559
+#: ui/blacklist_window.py:612 ui_qt/blacklist_window.py:586
+msgid "Remove blacklist item"
+msgstr "Удалить элемент из чёрного списка"
+
+#: ui/blacklist_window.py:613 ui_qt/blacklist_window.py:587
+msgid ""
+"Are you sure you want to remove this blacklist concept?\n"
+"\n"
+"{0}"
+msgstr ""
+"Вы уверены, что хотите удалить эту концепцию черного списка?\n"
+"\n"
+"{0}"
+
+#: ui/blacklist_window.py:625 ui_qt/blacklist_window.py:598
 msgid "Removed item: {0}"
 msgstr "Удаленный элемент: {0}"
 
-#: ui/blacklist_window.py:569
+#: ui/blacklist_window.py:635 ui_qt/blacklist_window.py:608
 msgid "Warning"
 msgstr "Внимание"
 
-#: ui/blacklist_window.py:569
+#: ui/blacklist_window.py:635 ui_qt/blacklist_window.py:609
 msgid "Please enter a string to add to the blacklist."
 msgstr "Введите строку для добавления в черный список."
 
-#: ui/blacklist_window.py:659
+#: ui/blacklist_window.py:725 ui_qt/blacklist_window.py:704
 msgid "Confirm Clear Blacklist"
 msgstr "Подтвердите очистку черного списка"
 
-#: ui/blacklist_window.py:660
+#: ui/blacklist_window.py:726 ui_qt/blacklist_window.py:706
 msgid ""
 "Are you sure you want to clear all blacklist items?\n"
 "\n"
@@ -1030,296 +1211,319 @@ msgstr ""
 "\n"
 "Вы хотите продолжить?"
 
-#: ui/blacklist_window.py:679
+#: ui/blacklist_window.py:746 ui_qt/blacklist_window.py:722
 msgid "Cleared item blacklist"
 msgstr "Очищенный черный список элементов"
 
-#: ui/blacklist_window.py:733
+#: ui/blacklist_window.py:806 ui_qt/blacklist_window.py:749
 msgid "Item \"{0}\" is now {1}"
 msgstr "Элемент «{0}» теперь {1}"
 
-#: ui/blacklist_window.py:735
+#: ui/blacklist_window.py:808 ui_qt/blacklist_window.py:751
 msgid "enabled"
 msgstr "включено"
 
-#: ui/blacklist_window.py:735
+#: ui/blacklist_window.py:808 ui_qt/blacklist_window.py:751
 msgid "disabled"
 msgstr "отключено"
 
-#: ui/blacklist_window.py:745
+#: ui/blacklist_window.py:818 ui_qt/blacklist_window.py:764
 msgid "Concepts revealed"
 msgstr "Концепции раскрыты"
 
-#: ui/blacklist_window.py:757
+#: ui/blacklist_window.py:830 ui_qt/blacklist_window.py:797
 msgid "Import Blacklist"
 msgstr "Импорт черного списка"
 
-#: ui/blacklist_window.py:776
+#: ui/blacklist_window.py:849 ui_qt/blacklist_window.py:812
 msgid "Successfully imported blacklist"
 msgstr "Успешный импорт черного списка"
 
-#: ui/blacklist_window.py:778
+#: ui/blacklist_window.py:851 ui_qt/blacklist_window.py:815
 msgid "Import Error"
 msgstr "Ошибка импорта"
 
-#: ui/blacklist_window.py:789
+#: ui/blacklist_window.py:862 ui_qt/blacklist_window.py:822
 msgid "Export Blacklist"
 msgstr "Экспорт черного списка"
 
-#: ui/blacklist_window.py:804
+#: ui/blacklist_window.py:877 ui_qt/blacklist_window.py:835
 msgid "Successfully exported blacklist"
 msgstr "Успешно экспортирован черный список"
 
-#: ui/blacklist_window.py:806
+#: ui/blacklist_window.py:879 ui_qt/blacklist_window.py:838
 msgid "Export Error"
 msgstr "Ошибка экспорта"
 
-#: ui/blacklist_window.py:816
+#: ui/blacklist_window.py:889 ui_qt/blacklist_window.py:849
 msgid "Blacklist mode set to: {0}"
 msgstr "Режим черного списка установлен на: {0}"
 
-#: ui/blacklist_window.py:822
+#: ui/blacklist_window.py:895 ui_qt/blacklist_window.py:856
 msgid "Silent removal set to: {0}"
 msgstr "Бесшумное удаление установлено на: {0}"
 
 #: ui/composers_window.py:40 ui/composers_window.py:55
-#: ui/composers_window.py:371
+#: ui/composers_window.py:371 ui_qt/composers_window.py:51
+#: ui_qt/composers_window.py:91 ui_qt/composers_window.py:397
 msgid "New Composer"
 msgstr "Новый композитор"
 
-#: ui/composers_window.py:40
+#: ui/composers_window.py:40 ui_qt/composers_window.py:53
 msgid "Modify Composer: {0}"
 msgstr "Модифицировать композитора: {0}"
 
-#: ui/composers_window.py:51
+#: ui/composers_window.py:51 ui_qt/composers_window.py:83
 msgid "Modify Composer"
 msgstr "Модифицировать композитора"
 
 #: ui/composers_window.py:54 ui/library_window.py:140 ui/personas_window.py:98
+#: ui_qt/composers_window.py:87 ui_qt/library_window.py:101
+#: ui_qt/personas_window.py:86
 msgid "Name"
 msgstr "Имя"
 
-#: ui/composers_window.py:60
+#: ui/composers_window.py:60 ui_qt/composers_window.py:97
 msgid "Indicators"
 msgstr "Показатели"
 
-#: ui/composers_window.py:66
+#: ui/composers_window.py:66 ui_qt/composers_window.py:106
 msgid "Start Date"
 msgstr "Дата начала"
 
-#: ui/composers_window.py:72
+#: ui/composers_window.py:72 ui_qt/composers_window.py:114
 msgid "End Date"
 msgstr "Дата окончания"
 
 #: ui/composers_window.py:78 ui/composers_window.py:80
+#: ui_qt/composers_window.py:123 ui_qt/composers_window.py:125
 msgid "Dates are lifespan"
 msgstr "Даты — это срок службы"
 
-#: ui/composers_window.py:84
+#: ui/composers_window.py:84 ui_qt/composers_window.py:133
 msgid "Dates uncertain"
 msgstr "Неопределенные даты"
 
-#: ui/composers_window.py:86
+#: ui/composers_window.py:86 ui_qt/composers_window.py:135
 msgid "Dates are uncertain"
 msgstr "Даты неопределенные"
 
-#: ui/composers_window.py:90 utils/globals.py:508
+#: ui/composers_window.py:90 ui_qt/composers_window.py:142
+#: utils/globals.py:554
 msgid "Genres"
 msgstr "Жанры"
 
-#: ui/composers_window.py:101
+#: ui/composers_window.py:101 ui_qt/composers_window.py:151
 msgid "Notes"
 msgstr "Заметки"
 
-#: ui/composers_window.py:102
+#: ui/composers_window.py:102 ui_qt/composers_window.py:152
 msgid "Add Note"
 msgstr "Добавить комментарий"
 
-#: ui/composers_window.py:115
+#: ui/composers_window.py:115 ui/playlist_window.py:617
+#: ui_qt/composers_window.py:167 ui_qt/playlist_window.py:1021
 msgid "Save"
 msgstr "Спасти"
 
 #: ui/composers_window.py:120 ui/composers_window.py:141
 #: ui/extensions_window.py:288 ui/personas_window.py:124
-#: ui/presets_window.py:146 ui/schedules_window.py:215
+#: ui/playlist_window.py:82 ui/playlist_window.py:275
+#: ui/schedules_window.py:215 ui_qt/composers_window.py:171
+#: ui_qt/composers_window.py:200 ui_qt/extensions_window.py:267
+#: ui_qt/personas_window.py:109 ui_qt/playlist_window.py:120
+#: ui_qt/playlist_window.py:346 ui_qt/schedules_window.py:270
 msgid "Delete"
 msgstr "Исключить"
 
-#: ui/composers_window.py:158
+#: ui/composers_window.py:158 ui_qt/composers_window.py:212
 msgid "New note"
 msgstr "Новая нота"
 
 #: ui/composers_window.py:223 ui/personas_window.py:385
 #: ui/personas_window.py:389 ui/personas_window.py:393
 #: ui/personas_window.py:397 ui/personas_window.py:427
-#: ui/track_details_window.py:209
+#: ui/track_details_window.py:209 ui_qt/composers_window.py:261
+#: ui_qt/personas_window.py:335 ui_qt/personas_window.py:344
+#: ui_qt/personas_window.py:353 ui_qt/personas_window.py:362
+#: ui_qt/personas_window.py:394 ui_qt/track_details_window.py:203
 msgid "Validation Error"
 msgstr "Ошибка проверки"
 
-#: ui/composers_window.py:238
+#: ui/composers_window.py:238 ui_qt/composers_window.py:276
 msgid "Fixes applied"
 msgstr "Примененные исправления"
 
-#: ui/composers_window.py:251
+#: ui/composers_window.py:251 ui_qt/composers_window.py:292
 msgid "Failed to save composer:"
 msgstr "Не удалось сохранить композитора:"
 
-#: ui/composers_window.py:256
+#: ui/composers_window.py:256 ui_qt/composers_window.py:300
 msgid "Delete composer"
 msgstr "Удалить композитора"
 
-#: ui/composers_window.py:257
+#: ui/composers_window.py:257 ui_qt/composers_window.py:302
 msgid "Are you sure you want to delete {0}? This action cannot be undone."
 msgstr "Вы уверены, что хотите удалить {0}? Это действие нельзя отменить."
 
-#: ui/composers_window.py:266
+#: ui/composers_window.py:266 ui_qt/composers_window.py:317
 msgid "Failed to delete composer:"
 msgstr "Не удалось удалить композитора:"
 
-#: ui/composers_window.py:349
+#: ui/composers_window.py:349 ui_qt/composers_window.py:374
 msgid "Search Composers"
 msgstr "Поиск композиторов"
 
-#: ui/composers_window.py:377
+#: ui/composers_window.py:377 ui_qt/composers_window.py:400
+#: ui_qt/search_window.py:242
 msgid "Search Composer"
 msgstr "Композитор поиска"
 
-#: ui/composers_window.py:385
+#: ui/composers_window.py:385 ui_qt/composers_window.py:408
+#: ui_qt/search_window.py:252
 msgid "Search Genre"
 msgstr "Поисковый жанр"
 
-#: ui/composers_window.py:393
+#: ui/composers_window.py:393 ui_qt/composers_window.py:415
 msgid "Start Date After"
 msgstr "Дата начала после"
 
-#: ui/composers_window.py:400
+#: ui/composers_window.py:400 ui_qt/composers_window.py:422
 msgid "Start Date Before"
 msgstr "Начните дату раньше"
 
-#: ui/composers_window.py:408
+#: ui/composers_window.py:408 ui_qt/composers_window.py:429
 msgid "End Date After"
 msgstr "Дата окончания после"
 
-#: ui/composers_window.py:415
+#: ui/composers_window.py:415 ui_qt/composers_window.py:436
 msgid "End Date Before"
 msgstr "Дата окончания до"
 
-#: ui/composers_window.py:439 ui/search_window.py:330
+#: ui/composers_window.py:439 ui/search_window.py:338
+#: ui_qt/composers_window.py:473 ui_qt/search_window.py:318
 msgid "No recent searches found."
 msgstr "Не найдено недавних поисковых запросов."
 
 #: ui/composers_window.py:575 ui/extensions_window.py:272
 #: ui/favorites_window.py:381 ui/favorites_window.py:516
 #: ui/history_window.py:220 ui/history_window.py:292
-#: ui/network_media_window.py:261 ui/search_window.py:667
+#: ui/network_media_window.py:261 ui/search_window.py:679
+#: ui_qt/composers_window.py:618 ui_qt/extensions_window.py:251
+#: ui_qt/favorites_window.py:385 ui_qt/favorites_window.py:497
+#: ui_qt/history_window.py:211 ui_qt/history_window.py:283
+#: ui_qt/network_media_window.py:386 ui_qt/search_window.py:703
 msgid "Details"
 msgstr "Подробности"
 
-#: ui/composers_window.py:626
+#: ui/composers_window.py:626 ui_qt/composers_window.py:374
+#: ui_qt/composers_window.py:653
 msgid "Composer Search"
 msgstr "Композитор Поиск"
 
-#: ui/configuration_window.py:22
+#: ui/configuration_window.py:22 ui_qt/configuration_window.py:39
 msgid "Configuration Settings"
 msgstr "Настройки конфигурации"
 
-#: ui/configuration_window.py:42
+#: ui/configuration_window.py:42 ui_qt/configuration_window.py:61
 msgid "General"
 msgstr "Генерал"
 
-#: ui/configuration_window.py:43
+#: ui/configuration_window.py:43 ui_qt/configuration_window.py:62
 msgid "Audio"
 msgstr "Аудио"
 
-#: ui/configuration_window.py:44
+#: ui/configuration_window.py:44 ui_qt/configuration_window.py:63
 msgid "API Keys"
 msgstr "API ключи"
 
-#: ui/configuration_window.py:45
+#: ui/configuration_window.py:45 ui_qt/configuration_window.py:64
 msgid "TTS Settings"
 msgstr "Настройки преобразования текста в речь"
 
-#: ui/configuration_window.py:57
+#: ui/configuration_window.py:57 ui_qt/configuration_window.py:73
 msgid "Save Configuration"
 msgstr "Сохранить конфигурацию"
 
-#: ui/configuration_window.py:66
+#: ui/configuration_window.py:66 ui_qt/configuration_window.py:84
 msgid "Foreground Color"
 msgstr "Цвет переднего плана"
 
-#: ui/configuration_window.py:67
+#: ui/configuration_window.py:67 ui_qt/configuration_window.py:85
 msgid "Background Color"
 msgstr "Цвет фона"
 
-#: ui/configuration_window.py:68
+#: ui/configuration_window.py:68 ui_qt/configuration_window.py:87
 msgid "Language Learning Language"
 msgstr "Язык для изучения языков"
 
-#: ui/configuration_window.py:69
+#: ui/configuration_window.py:69 ui_qt/configuration_window.py:90
 msgid "Language Learning Level"
 msgstr "Уровень изучения языка"
 
-#: ui/configuration_window.py:70 ui/playlist_window.py:286
+#: ui/configuration_window.py:70 ui_qt/configuration_window.py:92
 msgid "Enable Dynamic Volume"
 msgstr "Включить динамический объем"
 
-#: ui/configuration_window.py:71
+#: ui/configuration_window.py:71 ui_qt/configuration_window.py:93
 msgid "Enable Library Extender"
 msgstr "Позволяет расширить библиотеку"
 
-#: ui/configuration_window.py:72 ui/playlist_window.py:292
+#: ui/configuration_window.py:72 ui_qt/configuration_window.py:94
 msgid "Enable Long Track Splitting"
 msgstr "Включить длинное разделение дорожки"
 
-#: ui/configuration_window.py:73
+#: ui/configuration_window.py:73 ui_qt/configuration_window.py:96
 msgid "Long Track Cutoff (minutes)"
 msgstr "Длительный отсечение (минуты)"
 
-#: ui/configuration_window.py:81
+#: ui/configuration_window.py:81 ui_qt/configuration_window.py:109
 msgid "Play Videos in Separate Window"
 msgstr "Воспроизведение видео в отдельном окне"
 
-#: ui/configuration_window.py:82
+#: ui/configuration_window.py:82 ui_qt/configuration_window.py:112
 msgid "Recently Played Check Count"
 msgstr "Недавно сыгранные игры Проверить количество"
 
-#: ui/configuration_window.py:83
+#: ui/configuration_window.py:83 ui_qt/configuration_window.py:114
 msgid "Max Search Results"
 msgstr "Результаты поиска Max"
 
-#: ui/configuration_window.py:84
+#: ui/configuration_window.py:84 ui_qt/configuration_window.py:115
 msgid "Max Recent Searches"
 msgstr "Максимум последних запросов"
 
-#: ui/configuration_window.py:92
+#: ui/configuration_window.py:92 ui_qt/configuration_window.py:126
 msgid "OpenWeather API Key"
 msgstr "OpenWeather API Ключ"
 
-#: ui/configuration_window.py:93
+#: ui/configuration_window.py:93 ui_qt/configuration_window.py:127
 msgid "OpenWeather City"
 msgstr "Город OpenWeather"
 
-#: ui/configuration_window.py:94
+#: ui/configuration_window.py:94 ui_qt/configuration_window.py:128
 msgid "News API Key"
 msgstr "News API Ключ"
 
-#: ui/configuration_window.py:102
+#: ui/configuration_window.py:102 ui_qt/configuration_window.py:139
 msgid "Coqui TTS Location"
 msgstr "Coqui TTS Расположение"
 
-#: ui/configuration_window.py:103
+#: ui/configuration_window.py:103 ui_qt/configuration_window.py:140
 msgid "LLM Model Name"
 msgstr "Название модели LLM"
 
-#: ui/configuration_window.py:104
+#: ui/configuration_window.py:104 ui_qt/configuration_window.py:141
 msgid "Max Chunk Tokens"
 msgstr "Максимальное количество токенов"
 
-#: ui/configuration_window.py:130
+#: ui/configuration_window.py:130 ui_qt/configuration_window.py:168
+#: ui_qt/configuration_window.py:181
 msgid "Close Configuration"
 msgstr "Закрыть конфигурацию"
 
-#: ui/configuration_window.py:131
+#: ui/configuration_window.py:131 ui_qt/configuration_window.py:169
+#: ui_qt/configuration_window.py:182
 msgid ""
 "Do you want to close the configuration window?\n"
 "Any unsaved changes will be lost."
@@ -1327,108 +1531,114 @@ msgstr ""
 "Вы хотите закрыть окно настроек?\n"
 "Все несохраненные изменения будут утеряны."
 
-#: ui/configuration_window.py:151
+#: ui/configuration_window.py:151 ui_qt/configuration_window.py:204
 msgid "Configuration saved successfully"
 msgstr "Конфигурация успешно сохранена"
 
-#: ui/configuration_window.py:153
+#: ui/configuration_window.py:153 ui_qt/configuration_window.py:207
 msgid "Failed to save configuration"
 msgstr "Не удалось сохранить конфигурацию"
 
-#: ui/extensions_window.py:71
+#: ui/extensions_window.py:71 ui_qt/extensions_window.py:73
 msgid "Extension Settings"
 msgstr "Настройки расширения"
 
-#: ui/extensions_window.py:77
+#: ui/extensions_window.py:77 ui_qt/extensions_window.py:74
 msgid "Thread Status"
 msgstr "Статус нити"
 
-#: ui/extensions_window.py:82
+#: ui/extensions_window.py:82 ui_qt/extensions_window.py:76
 msgid "Click Check Status to see thread state"
 msgstr "Нажмите Check Status, чтобы увидеть состояние потока"
 
-#: ui/extensions_window.py:88
+#: ui/extensions_window.py:88 ui_qt/extensions_window.py:81
 msgid "Check Status"
 msgstr "Проверьте статус"
 
 #: ui/extensions_window.py:94 ui/extensions_window.py:187
+#: ui_qt/extensions_window.py:85 ui_qt/extensions_window.py:165
 msgid "Strategy"
 msgstr "Стратегия"
 
-#: ui/extensions_window.py:105
+#: ui/extensions_window.py:105 ui_qt/extensions_window.py:96
 msgid "Clear History"
 msgstr "Ясная история"
 
-#: ui/extensions_window.py:111
+#: ui/extensions_window.py:111 ui_qt/extensions_window.py:100
 msgid "Statistics"
 msgstr "Статистика"
 
-#: ui/extensions_window.py:179
+#: ui/extensions_window.py:179 ui_qt/extensions_window.py:153
 msgid "Date"
 msgstr "Дата"
 
-#: ui/extensions_window.py:181
+#: ui/extensions_window.py:181 ui_qt/extensions_window.py:156
 msgid "Published"
 msgstr "Опубликовано"
 
-#: ui/extensions_window.py:185
+#: ui/extensions_window.py:185 ui_qt/extensions_window.py:162
 msgid "Duration"
 msgstr "Продолжительность"
 
-#: ui/extensions_window.py:189
+#: ui/extensions_window.py:189 ui_qt/extensions_window.py:168
 msgid "Attribute"
 msgstr "атрибут"
 
-#: ui/extensions_window.py:191
+#: ui/extensions_window.py:191 ui/playlist_window.py:569
+#: ui_qt/extensions_window.py:171 ui_qt/playlist_window.py:967
 msgid "Search Query"
 msgstr "Поисковый запрос"
 
 #: ui/extensions_window.py:193 ui/tts_window.py:91
+#: ui_qt/extensions_window.py:174 ui_qt/tts_window.py:108
 msgid "Status"
 msgstr "статус"
 
-#: ui/extensions_window.py:195
+#: ui/extensions_window.py:195 ui_qt/extensions_window.py:177
 msgid "Actions"
 msgstr "Действия"
 
 #: ui/extensions_window.py:209 ui/extensions_window.py:458
-#: ui/extensions_window.py:468
+#: ui/extensions_window.py:468 ui_qt/extensions_window.py:191
+#: ui_qt/extensions_window.py:429 ui_qt/extensions_window.py:436
 msgid "N/A"
 msgstr "N/A"
 
-#: ui/extensions_window.py:301
+#: ui/extensions_window.py:301 ui_qt/extensions_window.py:279
 msgid "Total Extensions: {}"
 msgstr "Общее количество расширений: {}"
 
-#: ui/extensions_window.py:307
+#: ui/extensions_window.py:307 ui_qt/extensions_window.py:287
 msgid "Average Duration: {}"
 msgstr "Средняя продолжительность: {}"
 
-#: ui/extensions_window.py:309
+#: ui/extensions_window.py:309 ui_qt/extensions_window.py:290
 msgid "Average Duration: N/A"
 msgstr "Средняя продолжительность: Н/Д"
 
-#: ui/extensions_window.py:327
+#: ui/extensions_window.py:327 ui_qt/extensions_window.py:306
 msgid "Confirm Clear"
 msgstr "Подтвердить Очистить"
 
-#: ui/extensions_window.py:328
+#: ui/extensions_window.py:328 ui_qt/extensions_window.py:307
 msgid "Are you sure you want to clear all extension history?"
 msgstr "Вы уверены, что хотите очистить всю историю расширений?"
 
 #: ui/extensions_window.py:358 ui/personas_window.py:362
+#: ui_qt/extensions_window.py:340 ui_qt/personas_window.py:306
 msgid "Confirm Delete"
 msgstr "Подтвердить удаление"
 
-#: ui/extensions_window.py:359
+#: ui/extensions_window.py:359 ui_qt/extensions_window.py:341
 msgid "Are you sure you want to delete this extension?"
 msgstr "Вы уверены, что хотите удалить это расширение?"
 
-#: ui/extensions_window.py:375
+#: ui/extensions_window.py:375 ui_qt/extensions_window.py:359
 msgid "No original filename or id found in extension data"
 msgstr "В данных расширения не найдено исходное имя файла или идентификатор"
 
 #: ui/extensions_window.py:390 ui/favorites_window.py:603
+#: ui_qt/extensions_window.py:371 ui_qt/favorites_window.py:571
 msgid ""
 "Tip: If you've recently added or moved files, try checking 'Overwrite Cache'"
 " in the search options."
@@ -1436,231 +1646,246 @@ msgstr ""
 "Совет: если вы недавно добавили или переместили файлы, попробуйте установить"
 " флажок «Перезаписать кэш» в параметрах поиска."
 
-#: ui/extensions_window.py:397
+#: ui/extensions_window.py:397 ui_qt/extensions_window.py:380
 msgid "No extension thread running"
 msgstr "Нет расширения потока"
 
-#: ui/extensions_window.py:399
+#: ui/extensions_window.py:399 ui_qt/extensions_window.py:382
 msgid "Extension thread terminated"
 msgstr "Расширение потока прекращено"
 
-#: ui/extensions_window.py:401
+#: ui/extensions_window.py:401 ui_qt/extensions_window.py:384
 msgid "Extension thread running"
 msgstr "Расширяющий поток"
 
-#: ui/extensions_window.py:403
+#: ui/extensions_window.py:403 ui_qt/extensions_window.py:386
 msgid " (with pending jobs)"
 msgstr " (с отложенной работой)"
 
-#: ui/extensions_window.py:405
+#: ui/extensions_window.py:405 ui_qt/extensions_window.py:388
 msgid " (processing delayed operation)"
 msgstr " (задержка обработки)"
 
-#: ui/extensions_window.py:417
+#: ui/extensions_window.py:417 ui_qt/extensions_window.py:399
 msgid "Extension Details"
 msgstr "Детали расширения"
 
-#: ui/extensions_window.py:451
+#: ui/extensions_window.py:451 ui_qt/extensions_window.py:422
 msgid "Published:"
 msgstr "Опубликовано:"
 
-#: ui/extensions_window.py:464
+#: ui/extensions_window.py:464 ui_qt/extensions_window.py:433
 msgid "Duration:"
 msgstr "Продолжительность:"
 
-#: ui/extensions_window.py:474
+#: ui/extensions_window.py:474 ui_qt/extensions_window.py:441
 msgid "Strategy:"
 msgstr "Стратегия:"
 
-#: ui/extensions_window.py:482
+#: ui/extensions_window.py:482 ui_qt/extensions_window.py:447
 msgid "Attribute:"
 msgstr "Атрибут:"
 
-#: ui/extensions_window.py:490
+#: ui/extensions_window.py:490 ui_qt/extensions_window.py:453
 msgid "Search Query:"
 msgstr "Поисковый запрос:"
 
-#: ui/extensions_window.py:499
+#: ui/extensions_window.py:499 ui_qt/extensions_window.py:459
 msgid "Status:"
 msgstr "Статус:"
 
-#: ui/extensions_window.py:502
+#: ui/extensions_window.py:502 ui_qt/extensions_window.py:461
 msgid "Failed"
 msgstr "Неудача"
 
 #: ui/extensions_window.py:502 ui/personas_window.py:377
 #: ui/personas_window.py:445 ui/personas_window.py:490
-#: ui/playlist_window.py:224 ui/playlist_window.py:376
+#: ui_qt/extensions_window.py:461
 msgid "Success"
 msgstr "Успех"
 
-#: ui/extensions_window.py:508
+#: ui/extensions_window.py:508 ui_qt/extensions_window.py:466
 msgid "Description:"
 msgstr "Описание:"
 
-#: ui/extensions_window.py:516
+#: ui/extensions_window.py:516 ui_qt/extensions_window.py:474
 msgid "File:"
 msgstr "Файл:"
 
 #: ui/favorites_window.py:203 ui/favorites_window.py:212
-#: ui/favorites_window.py:216
+#: ui/favorites_window.py:216 ui_qt/favorites_window.py:202
+#: ui_qt/favorites_window.py:213 ui_qt/favorites_window.py:218
 msgid "Favorite Exists"
 msgstr "Избранное существует"
 
 #: ui/favorites_window.py:204 ui/favorites_window.py:213
-#: ui/favorites_window.py:217
+#: ui/favorites_window.py:217 ui_qt/favorites_window.py:202
+#: ui_qt/favorites_window.py:213 ui_qt/favorites_window.py:218
 msgid "This favorite already exists."
 msgstr "Этот избранный элемент уже существует."
 
-#: ui/favorites_window.py:227
+#: ui/favorites_window.py:227 ui_qt/favorites_window.py:227
 msgid "Favorite updated successfully."
 msgstr "Избранное успешно обновлено."
 
-#: ui/favorites_window.py:255
+#: ui/favorites_window.py:255 ui_qt/favorites_window.py:253
 msgid "Create Favorite From Current Track"
 msgstr "Создать избранное из текущего трека"
 
 #: ui/favorites_window.py:263 ui/favorites_window.py:686
+#: ui_qt/favorites_window.py:262 ui_qt/favorites_window.py:655
 msgid "Create Favorite"
 msgstr "Создать избранное"
 
-#: ui/favorites_window.py:268
+#: ui/favorites_window.py:268 ui_qt/favorites_window.py:268
 msgid "Search Favorites"
 msgstr "Поиск избранного"
 
-#: ui/favorites_window.py:285
+#: ui/favorites_window.py:285 ui_qt/favorites_window.py:277
 msgid "Play Random Favorite"
 msgstr "Играть Случайный Любимый"
 
-#: ui/favorites_window.py:340
+#: ui/favorites_window.py:340 ui_qt/favorites_window.py:354
 msgid "No favorites found."
 msgstr "Любимые не найдены."
 
 #: ui/favorites_window.py:365 ui/favorites_window.py:500
+#: ui_qt/favorites_window.py:369 ui_qt/favorites_window.py:481
 msgid "No title or filepath available"
 msgstr "Нет названия или пути к файлу"
 
-#: ui/favorites_window.py:588
+#: ui/favorites_window.py:588 ui_qt/favorites_window.py:560
 msgid "No valid play query could be generated for this favorite"
 msgstr ""
 "Ни один действительный игровой запрос не может быть создан для этой любимой "
 "игры."
 
-#: ui/favorites_window.py:610
+#: ui/favorites_window.py:610 ui_qt/favorites_window.py:581
 msgid "No Favorites"
 msgstr "Никаких фаворитов"
 
-#: ui/favorites_window.py:610
+#: ui/favorites_window.py:610 ui_qt/favorites_window.py:581
 msgid "No favorites available to play."
 msgstr "Любимые игры не доступны."
 
-#: ui/favorites_window.py:625
+#: ui/favorites_window.py:625 ui_qt/favorites_window.py:595
 msgid "Favorite Details"
 msgstr "Любимые детали"
 
-#: ui/favorites_window.py:662
+#: ui/favorites_window.py:662 ui_qt/favorites_window.py:630
 msgid "Type: Track"
 msgstr "Тип: Трек"
 
-#: ui/favorites_window.py:686
+#: ui/favorites_window.py:686 ui_qt/favorites_window.py:655
 msgid "Update Favorite"
 msgstr "Обновление избранного"
 
-#: ui/favorites_window.py:692
+#: ui/favorites_window.py:692 ui_qt/favorites_window.py:661
 msgid "Remove Favorite"
 msgstr "Удалить из избранного"
 
-#: ui/history_window.py:111
+#: ui/history_window.py:111 ui_qt/history_window.py:105
 msgid "History Type"
 msgstr "Тип истории"
 
-#: ui/history_window.py:123
+#: ui/history_window.py:123 ui_qt/history_window.py:116
 msgid "Search History"
 msgstr "Поиск по истории"
 
-#: ui/history_window.py:188
+#: ui/history_window.py:188 ui_qt/history_window.py:174
 msgid "No history found."
 msgstr "История не найдена."
 
-#: ui/library_window.py:19 ui/library_window.py:26
+#: ui/library_window.py:19 ui/library_window.py:26 ui_qt/library_window.py:33
+#: ui_qt/library_window.py:40
 msgid "Library"
 msgstr "Библиотека"
 
-#: ui/library_window.py:67
+#: ui/library_window.py:67 ui_qt/library_window.py:64
 msgid "Library Statistics"
 msgstr "Библиотечная статистика"
 
-#: ui/library_window.py:110
+#: ui/library_window.py:110 ui_qt/library_window.py:80
 msgid "Browse By"
 msgstr "Просмотреть By"
 
-#: ui/library_window.py:125
+#: ui/library_window.py:125 ui_qt/library_window.py:90
 msgid "Search:"
 msgstr "Поиск:"
 
-#: ui/library_window.py:141
+#: ui/library_window.py:141 ui_qt/library_window.py:101
 msgid "Count"
 msgstr "граф"
 
-#: ui/library_window.py:162
+#: ui/library_window.py:162 ui_qt/library_window.py:111
 msgid "Total Tracks: {}"
 msgstr "Всего треков: {}"
 
-#: ui/library_window.py:170
+#: ui/library_window.py:170 ui_qt/library_window.py:117
 msgid "Total Albums: {}"
 msgstr "Всего альбомов: {}"
 
-#: ui/library_window.py:178
+#: ui/library_window.py:178 ui_qt/library_window.py:123
 msgid "Total Artists: {}"
 msgstr "Всего художников: {}"
 
-#: ui/library_window.py:186
+#: ui/library_window.py:186 ui_qt/library_window.py:129
 msgid "Total Composers: {}"
 msgstr "Всего композиторов: {}"
 
-#: ui/library_window.py:195
+#: ui/library_window.py:195 ui_qt/library_window.py:137
 msgid "Total Instruments: {}"
 msgstr "Общие инструменты: {}"
 
-#: ui/library_window.py:204
+#: ui/library_window.py:204 ui_qt/library_window.py:145
 msgid "Total Forms: {}"
 msgstr "Общие формы: {}"
 
-#: ui/library_window.py:209
+#: ui/library_window.py:209 ui_qt/library_window.py:149
 msgid "Cache Updated: {}"
 msgstr "Кэш обновлен: {}"
 
-#: ui/library_window.py:211
+#: ui/library_window.py:211 ui_qt/library_window.py:153
 msgid "No Cache Available"
 msgstr "Кэш недоступен"
 
 #: ui/network_media_window.py:78 ui/search_window.py:172
+#: ui_qt/network_media_window.py:115 ui_qt/search_window.py:153
 msgid "Search Library"
 msgstr "Поисковая библиотека"
 
-#: ui/network_media_window.py:116 ui/search_window.py:234
-#: ui/search_window.py:243 ui/search_window.py:252 ui/search_window.py:261
-#: ui/search_window.py:270 ui/search_window.py:279 ui/search_window.py:288
+#: ui/network_media_window.py:116 ui/search_window.py:235
+#: ui/search_window.py:244 ui/search_window.py:253 ui/search_window.py:262
+#: ui/search_window.py:271 ui/search_window.py:280 ui/search_window.py:289
+#: ui_qt/network_media_window.py:166 ui_qt/search_window.py:217
+#: ui_qt/search_window.py:227 ui_qt/search_window.py:237
+#: ui_qt/search_window.py:247 ui_qt/search_window.py:257
+#: ui_qt/search_window.py:267 ui_qt/search_window.py:277
 msgid "Sort by"
 msgstr "Сортировать по"
 
 #: ui/network_media_window.py:129 ui/network_media_window.py:235
+#: ui_qt/network_media_window.py:180 ui_qt/network_media_window.py:350
 msgid "No recent urls found."
 msgstr "Не найдено последних URL-адресов."
 
-#: ui/network_media_window.py:141 ui/search_window.py:342
+#: ui/network_media_window.py:141 ui/search_window.py:350
+#: ui_qt/network_media_window.py:195 ui_qt/search_window.py:332
 msgid "(No track selected)"
 msgstr "(Трек не выбран)"
 
-#: ui/network_media_window.py:202 ui/search_window.py:454
+#: ui/network_media_window.py:202 ui/search_window.py:462
+#: ui_qt/network_media_window.py:289 ui_qt/search_window.py:466
 msgid "Please wait, overwriting cache and searching..."
 msgstr "Пожалуйста, подождите, перезаписывается кэш и выполняется поиск..."
 
-#: ui/network_media_window.py:202 ui/search_window.py:454
+#: ui/network_media_window.py:202 ui/search_window.py:462
+#: ui_qt/network_media_window.py:291 ui_qt/search_window.py:468
 msgid "Searching..."
 msgstr "В поисках..."
 
 #: ui/personas_window.py:34 ui/personas_window.py:86
+#: ui_qt/personas_window.py:48 ui_qt/personas_window.py:80
 msgid "DJ Personas"
 msgstr "DJ Персоны"
 
@@ -1668,73 +1893,77 @@ msgstr "DJ Персоны"
 msgid "Display Name"
 msgstr "Отображаемое имя"
 
-#: ui/personas_window.py:100
+#: ui/personas_window.py:100 ui_qt/personas_window.py:86
+#: ui_qt/schedules_window.py:72
 msgid "Voice"
 msgstr "Голос"
 
-#: ui/personas_window.py:118
+#: ui/personas_window.py:118 ui_qt/personas_window.py:103
 msgid "Add New"
 msgstr "Добавить новый"
 
-#: ui/personas_window.py:121
+#: ui/personas_window.py:121 ui/playlist_window.py:80
+#: ui_qt/personas_window.py:106 ui_qt/playlist_window.py:114
 msgid "Edit"
 msgstr "Редактировать"
 
-#: ui/personas_window.py:140
+#: ui/personas_window.py:140 ui_qt/personas_window.py:124
 msgid "Basic Info"
 msgstr "Основная информация"
 
-#: ui/personas_window.py:144
+#: ui/personas_window.py:144 ui_qt/personas_window.py:125
 msgid "Characteristics"
 msgstr "Характеристики"
 
-#: ui/personas_window.py:148
+#: ui/personas_window.py:148 ui_qt/personas_window.py:126
 msgid "System Prompt"
 msgstr "Системный запрос"
 
-#: ui/personas_window.py:159
+#: ui/personas_window.py:159 ui_qt/personas_window.py:134
 msgid "Save Changes"
 msgstr "Сохранить изменения"
 
 #: ui/auth/password_admin_window.py:463 ui/auth/password_dialog.py:164
 #: ui/auth/password_dialog.py:233 ui/auth/password_dialog.py:250
-#: ui/personas_window.py:162 ui/playlist_window.py:319
+#: ui/personas_window.py:162 ui_qt/auth/password_admin_window.py:84
+#: ui_qt/auth/password_dialog.py:176 ui_qt/auth/password_dialog.py:246
+#: ui_qt/auth/password_dialog.py:267 ui_qt/personas_window.py:137
 msgid "Cancel"
 msgstr "отменить"
 
-#: ui/personas_window.py:165
+#: ui/personas_window.py:165 ui_qt/personas_window.py:140
 msgid "Reload from Config"
 msgstr "Перезагрузить из конфигурации"
 
-#: ui/personas_window.py:176
+#: ui/personas_window.py:176 ui_qt/personas_window.py:150
 msgid "Display Name:"
 msgstr "Отображаемое имя:"
 
-#: ui/personas_window.py:181
+#: ui/personas_window.py:181 ui_qt/personas_window.py:156
 msgid "Voice Name:"
 msgstr "Голос Имя:"
 
-#: ui/personas_window.py:190
+#: ui/personas_window.py:190 ui_qt/personas_window.py:163
 msgid "Sex:"
 msgstr "Пол:"
 
-#: ui/personas_window.py:198
+#: ui/personas_window.py:198 ui_qt/personas_window.py:169
 msgid "Tone:"
 msgstr "Тон:"
 
-#: ui/personas_window.py:203
+#: ui/personas_window.py:203 ui_qt/personas_window.py:175
 msgid "Language:"
 msgstr "Язык:"
 
-#: ui/personas_window.py:208
+#: ui/personas_window.py:208 ui_qt/personas_window.py:181
 msgid "Language Code:"
 msgstr "Код языка:"
 
-#: ui/personas_window.py:219
+#: ui/personas_window.py:219 ui_qt/personas_window.py:189
 msgid "Characteristics:"
 msgstr "Характеристики:"
 
-#: ui/personas_window.py:232
+#: ui/personas_window.py:232 ui_qt/personas_window.py:194
 msgid ""
 "Enter one characteristic per line. These describe the persona's personality "
 "and expertise."
@@ -1742,11 +1971,11 @@ msgstr ""
 "Введите по одной характеристике в строку. Они описывают личность и опыт "
 "персонажа."
 
-#: ui/personas_window.py:243
+#: ui/personas_window.py:243 ui_qt/personas_window.py:202
 msgid "System Prompt:"
 msgstr "Системный запрос:"
 
-#: ui/personas_window.py:256
+#: ui/personas_window.py:256 ui_qt/personas_window.py:207
 msgid ""
 "Enter the system prompt that defines how this persona should behave and "
 "speak."
@@ -1754,35 +1983,35 @@ msgstr ""
 "Введите системную подсказку, которая определяет, как этот персонаж должен "
 "вести себя и говорить."
 
-#: ui/personas_window.py:297
+#: ui/personas_window.py:297 ui_qt/personas_window.py:237
 msgid "New Persona"
 msgstr "Новая персона"
 
-#: ui/personas_window.py:298
+#: ui/personas_window.py:298 ui_qt/personas_window.py:238
 msgid "friendly and engaging"
 msgstr "дружелюбный и привлекательный"
 
-#: ui/personas_window.py:299
+#: ui/personas_window.py:299 ui_qt/personas_window.py:239
 msgid "English"
 msgstr "русский"
 
-#: ui/personas_window.py:305
+#: ui/personas_window.py:305 ui_qt/personas_window.py:247
 msgid "music enthusiast"
 msgstr "меломан"
 
-#: ui/personas_window.py:306
+#: ui/personas_window.py:306 ui_qt/personas_window.py:248
 msgid "knowledgeable about various genres"
 msgstr "знающий в различных жанрах"
 
-#: ui/personas_window.py:307
+#: ui/personas_window.py:307 ui_qt/personas_window.py:249
 msgid "engaging storyteller"
 msgstr "увлекательный рассказчик"
 
-#: ui/personas_window.py:308
+#: ui/personas_window.py:308 ui_qt/personas_window.py:250
 msgid "passionate about sharing music"
 msgstr "страстно увлеченный распространением музыки"
 
-#: ui/personas_window.py:314
+#: ui/personas_window.py:314 ui_qt/personas_window.py:254
 msgid ""
 "You are a knowledgeable and engaging DJ with a passion for music. Your "
 "speaking style is friendly and engaging, with a talent for connecting with "
@@ -1803,234 +2032,294 @@ msgstr ""
 "для себя что-то замечательное."
 
 #: ui/personas_window.py:352 ui/personas_window.py:359
+#: ui_qt/personas_window.py:288 ui_qt/personas_window.py:299
 msgid "No Selection"
 msgstr "Без выбора"
 
-#: ui/personas_window.py:352
+#: ui/personas_window.py:352 ui_qt/personas_window.py:289
 msgid "Please select a persona to edit."
 msgstr "Выберите персонажа для редактирования."
 
-#: ui/personas_window.py:359
+#: ui/personas_window.py:359 ui_qt/personas_window.py:300
 msgid "Please select a persona to delete."
 msgstr "Выберите персонажа для удаления."
 
-#: ui/personas_window.py:363
+#: ui/personas_window.py:363 ui_qt/personas_window.py:307
 msgid "Are you sure you want to delete the persona '{}'?"
 msgstr "Вы уверены, что хотите удалить персонажа «{}»?"
 
-#: ui/personas_window.py:371
+#: ui/personas_window.py:371 ui_qt/personas_window.py:324
 msgid "Failed to remove persona from manager."
 msgstr "Не удалось удалить персонажа из менеджера."
 
-#: ui/personas_window.py:377
+#: ui/personas_window.py:377 ui_qt/personas_window.py:320
 msgid "Persona deleted successfully."
 msgstr "Персона удалена успешно."
 
-#: ui/personas_window.py:385
+#: ui/personas_window.py:385 ui_qt/personas_window.py:336
 msgid "Display name is required."
 msgstr "Имя для отображения является обязательным."
 
-#: ui/personas_window.py:389
+#: ui/personas_window.py:389 ui_qt/personas_window.py:345
 msgid "Voice name is required."
 msgstr "Имя голоса обязательно для заполнения."
 
-#: ui/personas_window.py:393
+#: ui/personas_window.py:393 ui_qt/personas_window.py:354
 msgid "Tone is required."
 msgstr "Требуется тон."
 
-#: ui/personas_window.py:397
+#: ui/personas_window.py:397 ui_qt/personas_window.py:363
 msgid "System prompt is required."
 msgstr "Требуется системный запрос."
 
-#: ui/personas_window.py:427
+#: ui/personas_window.py:427 ui_qt/personas_window.py:395
 msgid "Invalid persona data: {}"
 msgstr "Недопустимые данные личности: {}"
 
-#: ui/personas_window.py:445
+#: ui/personas_window.py:445 ui_qt/personas_window.py:410
 msgid "Persona saved successfully."
 msgstr "Персона успешно сохранена."
 
-#: ui/personas_window.py:449
+#: ui/personas_window.py:449 ui_qt/personas_window.py:415
 msgid "Failed to save persona: {}"
 msgstr "Не удалось сохранить персонажа: {}"
 
-#: ui/personas_window.py:460
+#: ui/personas_window.py:460 ui_qt/personas_window.py:429
 msgid "Failed to save personas to configuration."
 msgstr "Не удалось сохранить персонажей в конфигурации."
 
-#: ui/personas_window.py:463
+#: ui/personas_window.py:463 ui_qt/personas_window.py:437
 msgid "Failed to save personas to configuration: {}"
 msgstr "Не удалось сохранить персонажей в конфигурации: {}"
 
-#: ui/personas_window.py:490
+#: ui/personas_window.py:490 ui_qt/personas_window.py:462
 msgid "Personas reloaded from configuration."
 msgstr "Персонажи перезагружены из конфигурации."
 
-#: ui/personas_window.py:493
+#: ui/personas_window.py:493 ui_qt/personas_window.py:467
 msgid "Failed to reload personas: {}"
 msgstr "Не удалось перезагрузить персоны: {}"
 
-#: ui/playlist_window.py:90
+#: ui/playlist_window.py:73 ui_qt/playlist_window.py:103
 msgid "Available Playlists"
 msgstr "Доступные плейлисты"
 
-#: ui/playlist_window.py:101
-msgid "Current Playlist"
-msgstr "Текущий Playlist"
-
-#: ui/playlist_window.py:112
-msgid "Tracks per Config"
-msgstr "Треки на конфигурацию"
-
-#: ui/playlist_window.py:122
-msgid "Add to Master"
-msgstr "Добавить в Мастер"
-
-#: ui/playlist_window.py:126
-msgid "Remove from Master"
-msgstr "Удалить от мастера"
-
-#: ui/playlist_window.py:130
+#: ui/playlist_window.py:79 ui/playlist_window.py:532 ui/search_window.py:801
+#: ui_qt/playlist_window.py:111 ui_qt/playlist_window.py:918
+#: ui_qt/search_window.py:839
 msgid "New Playlist"
 msgstr "Новый плейлист"
 
-#: ui/playlist_window.py:134 ui/playlist_window.py:210
-msgid "Save Master Playlist"
-msgstr "Сохранить Основной Плейлист"
+#: ui/playlist_window.py:81 ui/playlist_window.py:242
+#: ui/playlist_window.py:250 ui/playlist_window.py:263
+#: ui_qt/playlist_window.py:117 ui_qt/playlist_window.py:310
+#: ui_qt/playlist_window.py:318 ui_qt/playlist_window.py:333
+msgid "Freeze to Tracks"
+msgstr "Заморозить на дорожках"
 
-#: ui/playlist_window.py:211
-msgid "Enter a name for this master playlist:"
-msgstr "Введите имя для этого основного плейлиста:"
+#: ui/playlist_window.py:96 ui_qt/playlist_window.py:142
+msgid "Master Playlist"
+msgstr "Главный плейлист"
 
-#: ui/playlist_window.py:224
-msgid "Master playlist created successfully"
-msgstr "Основной плейлист успешно создан"
+#: ui/playlist_window.py:105 ui_qt/playlist_window.py:152
+msgid "Weight:"
+msgstr "Вес:"
 
-#: ui/playlist_window.py:255
+#: ui/playlist_window.py:114 ui/playlist_window.py:594
+#: ui_qt/playlist_window.py:159 ui_qt/playlist_window.py:998
+msgid "Loop"
+msgstr "Зациклить"
+
+#: ui/playlist_window.py:117 ui/playlist_window.py:739
+#: ui_qt/playlist_window.py:162 ui_qt/playlist_window.py:1179
+msgid "Up"
+msgstr "вверх"
+
+#: ui/playlist_window.py:118 ui/playlist_window.py:740
+#: ui_qt/playlist_window.py:165 ui_qt/playlist_window.py:1182
+msgid "Down"
+msgstr "вниз"
+
+#: ui/playlist_window.py:124 ui_qt/playlist_window.py:175
+msgid "Stack (play sequentially)"
+msgstr "Стэк (выполнять последовательно)"
+
+#: ui/playlist_window.py:132
+msgid "Skip memory reshuffle (all)"
+msgstr "Пропустить переупаковку памяти (все)"
+
+#: ui/playlist_window.py:139 ui/playlist_window.py:354
+#: ui_qt/playlist_window.py:200 ui_qt/playlist_window.py:426
+#: ui_qt/playlist_window.py:563 ui_qt/playlist_window.py:658
+msgid "Interspersed Preview"
+msgstr "Разбросанный Предварительный просмотр"
+
+#: ui/playlist_window.py:194 ui_qt/playlist_window.py:262
+msgid "yes"
+msgstr "да"
+
+#: ui/playlist_window.py:194 ui_qt/playlist_window.py:262
+msgid "no"
+msgstr "нет"
+
+#: ui/playlist_window.py:243 ui_qt/playlist_window.py:311
+msgid "This playlist is already track-based."
+msgstr "Этот плейлист уже загружен по трекам."
+
+#: ui/playlist_window.py:247 ui_qt/playlist_window.py:315
+msgid "Library data not available."
+msgstr "Библиотека данных недоступна."
+
+#: ui/playlist_window.py:251 ui_qt/playlist_window.py:319
+msgid ""
+"Convert \"{0}\" to an explicit track list?\n"
+"\n"
+"This will resolve the current {1} source and replace it with a fixed list of tracks. This cannot be undone."
+msgstr ""
+"Конвертировать \"{0}\" в явный список треков?\n"
+"\n"
+"Это разрешилo текущий {1} источник и заменит его на фиксированный список треков. Это нельзя отменить."
+
+#: ui/playlist_window.py:264 ui_qt/playlist_window.py:334
+msgid "Playlist \"{0}\" frozen to {1} tracks."
+msgstr "Плейлист \"{0}\" заморожен на {1} треков."
+
+#: ui/playlist_window.py:275 ui_qt/playlist_window.py:347
+msgid "Delete playlist \"{0}\"?"
+msgstr "Удалить плейлист \"{0}\"?"
+
+#: ui/playlist_window.py:354 ui_qt/playlist_window.py:426
+msgid "Sequential Preview"
+msgstr "Последовательное Превью"
+
+#: ui/playlist_window.py:532 ui_qt/playlist_window.py:918
+msgid "Edit Playlist"
+msgstr "Редактировать плейлист"
+
+#: ui/playlist_window.py:555 ui_qt/playlist_window.py:954
 msgid "Playlist Name"
 msgstr "Список воспроизведения Имя"
 
-#: ui/playlist_window.py:262
-msgid "Sort Type"
-msgstr "Тип сортировки"
+#: ui/playlist_window.py:564 ui_qt/playlist_window.py:961
+msgid "Source Mode"
+msgstr "Источник Режим"
 
-#: ui/playlist_window.py:271
+#: ui/playlist_window.py:570 ui/playlist_window.py:668
+#: ui_qt/playlist_window.py:968 ui_qt/playlist_window.py:1099
 msgid "Directory"
 msgstr "Директория"
 
-#: ui/playlist_window.py:281
-msgid "Playback Config Settings"
-msgstr "Настройки конфигурации воспроизведения"
+#: ui/playlist_window.py:571 ui_qt/playlist_window.py:969
+msgid "Explicit Tracks"
+msgstr "Особенные композиции"
 
-#: ui/playlist_window.py:297
-msgid "Track Splitting Cutoff (minutes)"
-msgstr "Режим разбивки треков (минуты)"
+#: ui/playlist_window.py:584 ui_qt/playlist_window.py:990
+msgid "Sort Type"
+msgstr "Тип сортировки"
 
-#: ui/playlist_window.py:307
-msgid "Start Playlist"
-msgstr "Начать играть"
+#: ui/playlist_window.py:601 ui_qt/sort_config_window.py:60
+msgid "Skip memory reshuffle"
+msgstr "Пропустить переарганизацию памяти"
 
-#: ui/playlist_window.py:311
-msgid "Add to Current Playlist"
-msgstr "Добавить в текущий плейлист"
+#: ui/playlist_window.py:608 ui_qt/playlist_window.py:1015
+msgid "Description (optional)"
+msgstr "Описание (необязательно)"
 
-#: ui/playlist_window.py:315
-msgid "Add to New Master Playlist"
-msgstr "Добавить в новый основной плейлист"
+#: ui/playlist_window.py:671 ui_qt/playlist_window.py:1103
+msgid "(no directories)"
+msgstr "(нет директорий)"
 
-#: ui/playlist_window.py:327
-msgid "Please enter a playlist name"
-msgstr "Пожалуйста, введите имя плейлиста"
+#: ui/playlist_window.py:682 ui_qt/playlist_window.py:1116
+msgid "Load Stored Search"
+msgstr "Загрузить Сохранённый Поиск"
 
-#: ui/playlist_window.py:376
-msgid "Playlist created successfully"
-msgstr "Плейлист успешно создан"
+#: ui/playlist_window.py:737 ui_qt/playlist_window.py:1173
+msgid "Add Track via Search"
+msgstr "Добавить трек через поиск"
 
-#: ui/presets_window.py:53
-msgid "New Preset (ERROR no presets found)"
-msgstr "Новый предустановленный (ОШИБКА: не найдено предустановок)"
+#: ui/playlist_window.py:752 ui_qt/playlist_window.py:1197
+msgid "Library data not available"
+msgstr "База данных библиотек не доступна."
 
-#: ui/presets_window.py:84
-msgid "Not enough presets found."
-msgstr "Не найдено достаточного количества предустановок."
+#: ui/playlist_window.py:795 ui_qt/playlist_window.py:1239
+msgid "Please enter a playlist name."
+msgstr "Пожалуйста введите название плейлиста."
 
-#: ui/presets_window.py:93
-msgid "Presets Window"
-msgstr "Предустановленное окно"
+#: ui/playlist_window.py:800 ui_qt/playlist_window.py:1246
+msgid "A playlist named \"{0}\" already exists. Overwrite?"
+msgstr "Плейлист с именем '{0}' уже существует. Перезаписать?"
 
-#: ui/presets_window.py:114
-msgid "Set a new preset"
-msgstr "Установить новую предустановку"
+#: ui/playlist_window.py:812 ui_qt/playlist_window.py:1276
+msgid "Please select a directory."
+msgstr "Выберите пожалуйста директорию."
 
-#: ui/presets_window.py:115
-msgid "New Preset"
-msgstr "Новая предустановка"
+#: ui/playlist_window.py:822 ui_qt/playlist_window.py:1266
+msgid "Please fill in at least one search field."
+msgstr "Пожалуйста, заполните хотя бы одно из поисковых полей."
 
-#: ui/presets_window.py:119
-msgid "Add preset"
-msgstr "Добавить предустановку"
+#: ui/playlist_window.py:827 ui_qt/playlist_window.py:1283
+msgid "Please add at least one track."
+msgstr "Пожалуйста, добавьте хотя бы одну дорожку."
 
-#: ui/presets_window.py:121
-msgid "Clear presets"
-msgstr "Ясные предустановки"
-
-#: ui/presets_window.py:139
-msgid "Set"
-msgstr "Настройка"
-
-#: ui/presets_window.py:163
-msgid "Invalid preset: {0}"
-msgstr "Недействительный предустановленный: {0}"
-
-#: ui/schedules_window.py:32
+#: ui/schedules_window.py:32 ui_qt/schedules_window.py:41
 msgid "Modify Preset Schedule: {0}"
 msgstr "Изменить расписание: {0}"
 
-#: ui/schedules_window.py:41
+#: ui/schedules_window.py:41 ui_qt/schedules_window.py:59
 msgid "Schedule Name"
 msgstr "Название расписания"
 
 #: ui/schedules_window.py:47 ui/schedules_window.py:185
+#: ui_qt/schedules_window.py:67 ui_qt/schedules_window.py:233
 msgid "Add schedule"
 msgstr "Добавить расписание"
 
-#: ui/schedules_window.py:73
+#: ui/schedules_window.py:73 ui_qt/schedules_window.py:98
 msgid "Start Time"
 msgstr "Время старта"
 
-#: ui/schedules_window.py:83
+#: ui/schedules_window.py:83 ui_qt/schedules_window.py:114
 msgid "End Time"
 msgstr "Время конца"
 
-#: ui/schedules_window.py:93
+#: ui/schedules_window.py:93 ui_qt/schedules_window.py:130
 msgid "Shutdown Time"
 msgstr "Время отключения"
 
-#: ui/schedules_window.py:164
+#: ui/schedules_window.py:164 ui_qt/schedules_window.py:216
 msgid "Preset Schedules"
 msgstr "Предварительные расписания"
 
-#: ui/schedules_window.py:183
+#: ui/schedules_window.py:183 ui_qt/schedules_window.py:232
 msgid "Create and modify schedules"
 msgstr "Создание и изменение расписаний"
 
-#: ui/schedules_window.py:187
+#: ui/schedules_window.py:187 ui_qt/schedules_window.py:236
 msgid "Clear schedules"
 msgstr "ясный график"
 
-#: ui/search_window.py:129
+#: ui/search_window.py:129 ui_qt/search_window.py:124
 msgid "No matching tracks found"
 msgstr "Никаких следов совпадения не найдено"
 
-#: ui/search_window.py:292
+#: ui/search_window.py:293 ui_qt/search_window.py:282
 msgid "Overwrite Cache"
 msgstr "Перезаписать кэш"
 
-#: ui/search_window.py:535
+#: ui/search_window.py:315 ui/search_window.py:763 ui_qt/search_window.py:292
+#: ui_qt/search_window.py:808
+msgid "Save as Playlist"
+msgstr "Сохранить как плейлист"
+
+#: ui/search_window.py:322 ui_qt/search_window.py:297
+msgid "Filter Results"
+msgstr "Фильтровать результаты"
+
+#: ui/search_window.py:547 ui_qt/search_window.py:565
 msgid "No results found."
 msgstr "Результаты не найдены."
 
-#: ui/search_window.py:540
+#: ui/search_window.py:552 ui_qt/search_window.py:572
 msgid ""
 "Tip: If you've recently added or moved files, try checking 'Overwrite Cache'"
 " in the search options below."
@@ -2038,239 +2327,346 @@ msgstr ""
 "Совет: если вы недавно добавили или переместили файлы, попробуйте установить"
 " флажок «Перезаписать кэш» в параметрах поиска."
 
+#: ui/search_window.py:585 ui_qt/search_window.py:604
+msgid "No results match the filter '{0}'."
+msgstr "Результаты, соответствующие фильтру «{0}», не найдены."
+
+#: ui/search_window.py:626 ui_qt/search_window.py:643
+msgid "Found {0} total results. Showing {1} filtered results."
+msgstr "Найдено {0} результатов. Показано {1} отфильтрованных результатов."
+
+#: ui/search_window.py:630 ui_qt/search_window.py:646
+msgid "Showing {0} filtered results."
+msgstr "Показано {0} отфильтрованных результатов."
+
+#: ui/search_window.py:632 ui_qt/search_window.py:651
+msgid "Found {0} total results. Showing all results up to {1}."
+msgstr "Найдено {0} результатов. Показаны все результаты до {1}."
+
+#: ui/search_window.py:636 ui_qt/search_window.py:654
+msgid "Showing all results up to {0}."
+msgstr "Показаны все результаты до {0}."
+
+#: ui/search_window.py:646 ui_qt/search_window.py:662
+msgid "Find More"
+msgstr "Найти больше"
+
+#: ui/search_window.py:694 ui_qt/search_window.py:727
+msgid "+ Playlist"
+msgstr "+ Плейлист"
+
+#: ui/search_window.py:757 ui_qt/search_window.py:801
+msgid "No Search"
+msgstr "Нет Поиска"
+
+#: ui/search_window.py:757 ui_qt/search_window.py:802
+msgid "Please fill in at least one search field first."
+msgstr "Пожалуйста, заполните по крайней мере одно поисковое поле сначала."
+
+#: ui/search_window.py:764 ui_qt/search_window.py:808
+msgid "Enter a name for this playlist:"
+msgstr "Введите название для этого плейлиста."
+
+#: ui/search_window.py:780 ui_qt/search_window.py:822
+msgid "Playlist \"{0}\" saved"
+msgstr "Плейлист '{0}' сохранён"
+
+#: ui/search_window.py:802 ui_qt/search_window.py:840
+msgid "No track-based playlists exist. Enter a name for a new one:"
+msgstr ""
+"Списков плейлистов на основе треков не существует. Введите название нового "
+"списка."
+
+#: ui/search_window.py:815 ui_qt/search_window.py:852
+msgid "Created playlist \"{0}\" with track"
+msgstr "Создан playlist \"{0}\" с треком"
+
+#: ui/search_window.py:821 ui_qt/search_window.py:858
+msgid "Add to Playlist"
+msgstr "Добавить в плейлист"
+
+#: ui/search_window.py:822
+msgid ""
+"Available playlists: {0}\n"
+"\n"
+"Enter playlist name:"
+msgstr ""
+"Доступные плейлисты: {0}\n"
+"\n"
+"Введите имя плейлиста:"
+
+#: ui/search_window.py:836 ui_qt/search_window.py:868
+msgid "Added to \"{0}\""
+msgstr "Добавлено в \"{0}\""
+
 #: ui/track_details_window.py:45 ui/track_details_window.py:231
+#: ui_qt/playlist_window.py:871 ui_qt/track_details_window.py:37
+#: ui_qt/track_details_window.py:211
 msgid "Track Details"
 msgstr "Подробности трека"
 
 #: ui/track_details_window.py:60 ui/weather_window.py:40
+#: ui_qt/track_details_window.py:64 ui_qt/weather_window.py:60
 msgid "Update"
 msgstr "обновление"
 
-#: ui/track_details_window.py:73
+#: ui/track_details_window.py:73 ui_qt/track_details_window.py:75
 msgid "Album Artist"
 msgstr "Альбом исполнителя"
 
-#: ui/track_details_window.py:79 utils/globals.py:144 utils/globals.py:289
-#: utils/globals.py:357
+#: ui/track_details_window.py:79 ui_qt/track_details_window.py:79
+#: utils/globals.py:148 utils/globals.py:335 utils/globals.py:403
 msgid "Genre"
 msgstr "Жанр"
 
-#: ui/track_details_window.py:89
+#: ui/track_details_window.py:89 ui_qt/track_details_window.py:89
 msgid "Track Number"
 msgstr "Номер трека"
 
 #: ui/track_details_window.py:93 ui/track_details_window.py:106
+#: ui_qt/track_details_window.py:94 ui_qt/track_details_window.py:109
 msgid "of"
 msgstr "из"
 
-#: ui/track_details_window.py:102
+#: ui/track_details_window.py:102 ui_qt/track_details_window.py:104
 msgid "Disc Number"
 msgstr "Номер диска"
 
-#: ui/track_details_window.py:112
+#: ui/track_details_window.py:112 ui_qt/track_details_window.py:118
 msgid "Musical Form"
 msgstr "Музыкальная форма"
 
-#: ui/track_details_window.py:115
+#: ui/track_details_window.py:115 ui_qt/track_details_window.py:120
 msgid "Main Instrument"
 msgstr "Основной инструмент"
 
-#: ui/track_details_window.py:119
+#: ui/track_details_window.py:119 ui_qt/track_details_window.py:123
 msgid "Lyrics"
 msgstr "слова"
 
-#: ui/track_details_window.py:126
+#: ui/track_details_window.py:126 ui_qt/track_details_window.py:131
 msgid "Comments"
 msgstr "Комментарий"
 
-#: ui/track_details_window.py:140
+#: ui/track_details_window.py:140 ui_qt/track_details_window.py:143
 msgid "Duration: "
 msgstr "Продолжительность: "
 
-#: ui/track_details_window.py:143
+#: ui/track_details_window.py:143 ui_qt/track_details_window.py:144
 msgid "File: "
 msgstr "Файл: "
 
-#: ui/track_details_window.py:214
+#: ui/track_details_window.py:214 ui_qt/track_details_window.py:210
 msgid "Track details updated successfully"
 msgstr "Детали трека успешно обновлены"
 
-#: ui/track_details_window.py:217
+#: ui/track_details_window.py:217 ui_qt/track_details_window.py:215
 msgid "Failed to update track details. Check the logs for more information."
 msgstr ""
 "Не удалось обновить данные о треке. Дополнительную информацию см. в "
 "журналах."
 
-#: ui/tts_window.py:55
+#: ui/tts_window.py:55 ui_qt/tts_window.py:64
 msgid "Text Input"
 msgstr "Ввод текста"
 
-#: ui/tts_window.py:66
+#: ui/tts_window.py:66 ui_qt/tts_window.py:71
 msgid "File Input"
 msgstr "Ввод файлов"
 
-#: ui/tts_window.py:69
+#: ui/tts_window.py:69 ui_qt/tts_window.py:77
 msgid "Browse"
 msgstr "Просмотр"
 
-#: ui/tts_window.py:72
+#: ui/tts_window.py:72 ui_qt/tts_window.py:82
 msgid "Options"
 msgstr "Варианты"
 
-#: ui/tts_window.py:76
+#: ui/tts_window.py:76 ui_qt/tts_window.py:84
 msgid "Speaker:"
 msgstr "Докладчик::"
 
-#: ui/tts_window.py:83
+#: ui/tts_window.py:83 ui_qt/tts_window.py:92
 msgid "Split on lines"
 msgstr "Разделить по строкам"
 
-#: ui/tts_window.py:87
+#: ui/tts_window.py:87 ui_qt/tts_window.py:99
 msgid "Speak Text"
 msgstr "Прочитать текст"
 
-#: ui/tts_window.py:88
+#: ui/tts_window.py:88 ui_qt/tts_window.py:102
 msgid "Speak File"
 msgstr "Файл речи"
 
-#: ui/tts_window.py:128
+#: ui/tts_window.py:128 ui_qt/tts_window.py:122
 msgid "Select Text File"
 msgstr "Выберите текстовый файл"
 
-#: ui/tts_window.py:129
+#: ui/tts_window.py:129 ui_qt/tts_window.py:124
 msgid "Text files"
 msgstr "Текстовые файлы"
 
-#: ui/tts_window.py:129
+#: ui/tts_window.py:129 ui_qt/tts_window.py:124
 msgid "All files"
 msgstr "Все файлы"
 
-#: ui/tts_window.py:147
+#: ui/tts_window.py:147 ui_qt/tts_window.py:142
 msgid "Error: No text provided"
 msgstr "Ошибка: нет текста"
 
-#: ui/tts_window.py:154 ui/tts_window.py:193
+#: ui/tts_window.py:154 ui/tts_window.py:193 ui_qt/tts_window.py:152
+#: ui_qt/tts_window.py:191
 msgid "Successfully generated speech file: {}"
 msgstr "Успешно созданный файл речи: {}"
 
-#: ui/tts_window.py:156 ui/tts_window.py:195
+#: ui/tts_window.py:156 ui/tts_window.py:195 ui_qt/tts_window.py:155
+#: ui_qt/tts_window.py:194
 msgid "No output file was generated"
 msgstr "Выходной файл не был сгенерирован"
 
-#: ui/tts_window.py:158 ui/tts_window.py:197
+#: ui/tts_window.py:158 ui/tts_window.py:197 ui_qt/tts_window.py:158
+#: ui_qt/tts_window.py:197
 msgid "Error generating speech: {}"
 msgstr "Ошибка при генерации речи: {}"
 
-#: ui/tts_window.py:165
+#: ui/tts_window.py:165 ui_qt/tts_window.py:166
 msgid "Error: No file selected"
 msgstr "Ошибка: файл не выбран"
 
-#: ui/tts_window.py:170
+#: ui/tts_window.py:170 ui_qt/tts_window.py:169
 msgid "Error: File does not exist"
 msgstr "Ошибка: файл не существует"
 
-#: ui/tts_window.py:173
+#: ui/tts_window.py:173 ui_qt/tts_window.py:172
 msgid "Error: Path is not a file"
 msgstr "Ошибка: Path не является файлом"
 
-#: ui/tts_window.py:176
+#: ui/tts_window.py:176 ui_qt/tts_window.py:175
 msgid "Error: File is empty"
 msgstr "Ошибка: файл пуст"
 
-#: ui/auth/password_admin_window.py:34
+#: ui/auth/password_admin_window.py:34 ui_qt/auth/password_admin_window.py:145
 msgid "Password Administration"
 msgstr "Администрирование паролей"
 
-#: ui/auth/password_admin_window.py:87
+#: ui/auth/password_admin_window.py:87 ui_qt/auth/password_admin_window.py:190
 msgid "Password Protection Settings"
 msgstr "Настройки защиты паролем"
 
-#: ui/auth/password_admin_window.py:99
+#: ui/auth/password_admin_window.py:99 ui_qt/auth/password_admin_window.py:202
 msgid "Protected Actions"
 msgstr "Защищенные действия"
 
 #: ui/auth/password_admin_window.py:105
+#: ui_qt/auth/password_admin_window.py:210
 msgid "Select which actions require password authentication:"
 msgstr "Выберите, какие действия требуют проверки подлинности пароля:"
 
 #: ui/auth/password_admin_window.py:121
+#: ui_qt/auth/password_admin_window.py:226
 msgid "(Always protected if a password is set)"
 msgstr "(Всегда защищена, если установлен пароль)"
 
 #: ui/auth/password_admin_window.py:139
+#: ui_qt/auth/password_admin_window.py:242
 msgid "Session Timeout Settings"
 msgstr "Настройки таймаута сеанса"
 
 #: ui/auth/password_admin_window.py:145
+#: ui_qt/auth/password_admin_window.py:250
 msgid "Enable session timeout (remember password for a period)"
 msgstr "Включите тайм-аут сессии (запоминание пароля на определенное время)"
 
 #: ui/auth/password_admin_window.py:157
+#: ui_qt/auth/password_admin_window.py:259
 msgid "Session timeout duration (minutes):"
 msgstr "Длительность тайм-аута сеанса (минуты):"
 
 #: ui/auth/password_admin_window.py:166
+#: ui_qt/auth/password_admin_window.py:269
 msgid "Security Advice Settings"
 msgstr "Настройки рекомендаций по безопасности"
 
 #: ui/auth/password_admin_window.py:172
+#: ui_qt/auth/password_admin_window.py:274
 msgid "Show security advice when no password is configured"
 msgstr "Показывать советы по безопасности, если пароль не настроен"
 
 #: ui/auth/password_admin_window.py:180
+#: ui_qt/auth/password_admin_window.py:280
 msgid "Password Setup"
 msgstr "Настройка пароля"
 
 #: ui/auth/password_admin_window.py:190
+#: ui_qt/auth/password_admin_window.py:287
 msgid "Password is configured"
 msgstr "Пароль настроен"
 
 #: ui/auth/password_admin_window.py:196 ui/auth/password_admin_window.py:385
 #: ui/auth/password_admin_window.py:400 ui/auth/password_admin_window.py:460
+#: ui_qt/auth/password_admin_window.py:39
+#: ui_qt/auth/password_admin_window.py:54
+#: ui_qt/auth/password_admin_window.py:87
+#: ui_qt/auth/password_admin_window.py:291
 msgid "Change Password"
 msgstr "Изменить пароль"
 
 #: ui/auth/password_admin_window.py:201 ui/auth/password_admin_window.py:473
+#: ui_qt/auth/password_admin_window.py:295
+#: ui_qt/auth/password_admin_window.py:501
 msgid "Remove Password"
 msgstr "Удалить пароль"
 
 #: ui/auth/password_admin_window.py:206
+#: ui_qt/auth/password_admin_window.py:299
 msgid "Set up a password to enable protection:"
 msgstr "Установите пароль для включения защиты:"
 
 #: ui/auth/password_admin_window.py:216 ui/auth/password_admin_window.py:416
+#: ui_qt/auth/password_admin_window.py:68
+#: ui_qt/auth/password_admin_window.py:307
 msgid "New Password:"
 msgstr "Новый пароль:"
 
 #: ui/auth/password_admin_window.py:229
+#: ui_qt/auth/password_admin_window.py:318
 msgid "Confirm Password:"
 msgstr "Подтвердите пароль:"
 
 #: ui/auth/password_admin_window.py:238
+#: ui_qt/auth/password_admin_window.py:326
 msgid "Set Password"
 msgstr "Установить пароль"
 
 #: ui/auth/password_admin_window.py:248 ui/auth/password_admin_window.py:307
+#: ui_qt/auth/password_admin_window.py:339
+#: ui_qt/auth/password_admin_window.py:404
 msgid "Reset to Defaults"
 msgstr "Сброс настроек по умолчанию"
 
 #: ui/auth/password_admin_window.py:252 ui/auth/password_admin_window.py:332
+#: ui_qt/auth/password_admin_window.py:343
+#: ui_qt/auth/password_admin_window.py:432
 msgid "Set to Current"
 msgstr "Установить на текущий"
 
 #: ui/auth/password_admin_window.py:256
+#: ui_qt/auth/password_admin_window.py:347
 msgid "Export Cache as JSON"
 msgstr "Экспорт кэша в формате JSON"
 
 #: ui/auth/password_admin_window.py:260
+#: ui_qt/auth/password_admin_window.py:351
 msgid "Save Settings"
 msgstr "Сохранить настройки"
 
 #: ui/auth/password_admin_window.py:301
+#: ui_qt/auth/password_admin_window.py:397
 msgid "Password protection settings saved."
 msgstr "Сохранение настроек защиты паролем."
 
 #: ui/auth/password_admin_window.py:308
+#: ui_qt/auth/password_admin_window.py:406
 msgid ""
 "Are you sure you want to reset all password protection settings to their "
 "default values?"
@@ -2279,10 +2675,12 @@ msgstr ""
 "умолчанию?"
 
 #: ui/auth/password_admin_window.py:327
+#: ui_qt/auth/password_admin_window.py:426
 msgid "Settings reset to defaults."
 msgstr "Настройки сбрасываются до значений по умолчанию."
 
 #: ui/auth/password_admin_window.py:333
+#: ui_qt/auth/password_admin_window.py:434
 msgid ""
 "Are you sure you want to restore all settings to their current saved state? "
 "This will discard any unsaved changes."
@@ -2291,54 +2689,67 @@ msgstr ""
 "состоянии? Это приведет к удалению всех несохраненных изменений."
 
 #: ui/auth/password_admin_window.py:351
+#: ui_qt/auth/password_admin_window.py:453
 msgid "Settings restored to current saved state."
 msgstr "Настройки восстанавливаются в текущее сохраненное состояние."
 
 #: ui/auth/password_admin_window.py:360
+#: ui_qt/auth/password_admin_window.py:464
 msgid "Please enter a password."
 msgstr "Пожалуйста, введите пароль."
 
 #: ui/auth/password_admin_window.py:364
+#: ui_qt/auth/password_admin_window.py:470
 msgid "Passwords do not match."
 msgstr "Пароли не совпадают."
 
 #: ui/auth/password_admin_window.py:368 ui/auth/password_admin_window.py:450
+#: ui_qt/auth/password_admin_window.py:108
+#: ui_qt/auth/password_admin_window.py:476
 msgid "Password must be at least 6 characters long."
 msgstr "Пароль должен состоять не менее чем из 6 символов."
 
 #: ui/auth/password_admin_window.py:373
+#: ui_qt/auth/password_admin_window.py:482
 msgid "Password set successfully."
 msgstr "Пароль установлен успешно."
 
 #: ui/auth/password_admin_window.py:380
+#: ui_qt/auth/password_admin_window.py:488
 msgid "Failed to set password."
 msgstr "Не удалось установить пароль."
 
-#: ui/auth/password_admin_window.py:407
+#: ui/auth/password_admin_window.py:407 ui_qt/auth/password_admin_window.py:61
 msgid "Current Password:"
 msgstr "Текущий пароль:"
 
-#: ui/auth/password_admin_window.py:425
+#: ui/auth/password_admin_window.py:425 ui_qt/auth/password_admin_window.py:75
 msgid "Confirm New Password:"
 msgstr "Подтвердите новый пароль:"
 
 #: ui/auth/password_admin_window.py:442
+#: ui_qt/auth/password_admin_window.py:100
 msgid "Current password is incorrect."
 msgstr "Текущий пароль неверен."
 
 #: ui/auth/password_admin_window.py:446
+#: ui_qt/auth/password_admin_window.py:104
 msgid "New passwords do not match."
 msgstr "Новые пароли не совпадают."
 
 #: ui/auth/password_admin_window.py:455
+#: ui_qt/auth/password_admin_window.py:116
+#: ui_qt/auth/password_admin_window.py:119
 msgid "Password changed successfully."
 msgstr "Пароль успешно изменен."
 
 #: ui/auth/password_admin_window.py:458
+#: ui_qt/auth/password_admin_window.py:123
 msgid "Failed to change password."
 msgstr "Не удалось изменить пароль."
 
 #: ui/auth/password_admin_window.py:474
+#: ui_qt/auth/password_admin_window.py:503
 msgid ""
 "Are you sure you want to remove password protection? This will disable all "
 "password requirements."
@@ -2347,74 +2758,80 @@ msgstr ""
 "паролю."
 
 #: ui/auth/password_admin_window.py:480
+#: ui_qt/auth/password_admin_window.py:512
 msgid "Password removed successfully."
 msgstr "Пароль успешно удален."
 
 #: ui/auth/password_admin_window.py:484
+#: ui_qt/auth/password_admin_window.py:516
 msgid "Failed to remove password."
 msgstr "Не удалось удалить пароль."
 
 #: ui/auth/password_admin_window.py:519
+#: ui_qt/auth/password_admin_window.py:556
 msgid "Cache exported as JSON to:"
 msgstr "Кэш экспортируется в формате JSON в:"
 
 #: ui/auth/password_admin_window.py:521
+#: ui_qt/auth/password_admin_window.py:560
 msgid "Failed to export cache as JSON:"
 msgstr "Не удалось экспортировать кэш в формате JSON:"
 
 #: ui/auth/password_dialog.py:45 ui/auth/password_dialog.py:115
+#: ui_qt/auth/password_dialog.py:76 ui_qt/auth/password_dialog.py:131
 msgid "Password Required"
 msgstr "Требуется пароль"
 
-#: ui/auth/password_dialog.py:45
+#: ui/auth/password_dialog.py:45 ui_qt/auth/password_dialog.py:78
 msgid "Password Protection"
 msgstr "Защита паролем"
 
-#: ui/auth/password_dialog.py:122
+#: ui/auth/password_dialog.py:122 ui_qt/auth/password_dialog.py:139
 msgid "Password required for: {0}"
 msgstr "Требуется пароль для: {0}"
 
-#: ui/auth/password_dialog.py:145
+#: ui/auth/password_dialog.py:145 ui_qt/auth/password_dialog.py:157
 msgid "Password:"
 msgstr "Пароль:"
 
-#: ui/auth/password_dialog.py:161
+#: ui/auth/password_dialog.py:161 ui_qt/auth/password_dialog.py:179
 msgid "OK"
 msgstr "OK"
 
-#: ui/auth/password_dialog.py:170
+#: ui/auth/password_dialog.py:170 ui_qt/auth/password_dialog.py:186
 msgid "Password Protection Available"
 msgstr "Доступна защита паролем"
 
-#: ui/auth/password_dialog.py:177
+#: ui/auth/password_dialog.py:177 ui_qt/auth/password_dialog.py:194
 msgid "This action requires password protection: {0}"
 msgstr "Это действие требует защиты паролем: {0}"
 
-#: ui/auth/password_dialog.py:193
+#: ui/auth/password_dialog.py:193 ui_qt/auth/password_dialog.py:213
 msgid "Password protection is not currently configured. You can:"
 msgstr "В настоящее время защита паролем не настроена. Вы можете:"
 
-#: ui/auth/password_dialog.py:203
+#: ui/auth/password_dialog.py:203 ui_qt/auth/password_dialog.py:222
 msgid "• Configure password protection for sensitive actions"
 msgstr "• Настройте защиту паролем для важных действий"
 
-#: ui/auth/password_dialog.py:208
+#: ui/auth/password_dialog.py:208 ui_qt/auth/password_dialog.py:230
 msgid "• Continue without password protection (less secure)"
 msgstr "• Продолжить без защиты паролем (менее безопасно)"
 
-#: ui/auth/password_dialog.py:215
+#: ui/auth/password_dialog.py:215 ui_qt/auth/password_dialog.py:237
 msgid "Don't show this security advice again"
 msgstr "Не показывать больше это предупреждение о безопасности"
 
 #: ui/auth/password_dialog.py:225 ui/auth/password_dialog.py:246
+#: ui_qt/auth/password_dialog.py:252 ui_qt/auth/password_dialog.py:270
 msgid "Configure Protection"
 msgstr "Настройка защиты"
 
-#: ui/auth/password_dialog.py:229
+#: ui/auth/password_dialog.py:229 ui_qt/auth/password_dialog.py:249
 msgid "Continue Without Protection"
 msgstr "Продолжайте работать без защиты"
 
-#: ui/auth/password_dialog.py:237
+#: ui/auth/password_dialog.py:237 ui_qt/auth/password_dialog.py:258
 msgid ""
 "Password protection is required for this action but is not currently "
 "configured."
@@ -2422,23 +2839,261 @@ msgstr ""
 "Для этого действия требуется защита паролем, но в настоящее время она не "
 "настроена."
 
-#: ui/auth/password_dialog.py:261
+#: ui/auth/password_dialog.py:261 ui_qt/auth/password_dialog.py:285
 msgid "Incorrect password"
 msgstr "Неверный пароль"
 
-#: utils/audio_device_manager.py:1527
+#: ui_qt/blacklist_window.py:61
+msgid "New Blacklist Item"
+msgstr "Новый элемент чёрного списка"
+
+#: ui_qt/blacklist_window.py:535
+msgid "Preview window not yet available."
+msgstr "Окно предварительного просмотра пока недоступно."
+
+#: ui_qt/media_controls_overlay.py:149 ui_qt/media_controls_overlay.py:342
+msgid "Mute"
+msgstr "немой"
+
+#: ui_qt/media_controls_overlay.py:164
+msgid ""
+"Effective output volume after track normalization. Sidebar/overlay slider "
+"sets base volume."
+msgstr ""
+"Эффективный выходной уровень громкости после нормализации дорожки. Слайдер в"
+" sidebar/overlay задает базовый уровень громкости."
+
+#: ui_qt/media_controls_overlay.py:342
+msgid "Unmute"
+msgstr "Размутить"
+
+#: ui_qt/media_frame.py:128 ui_qt/media_frame.py:360
+msgid "Album art"
+msgstr "Обложка альбома"
+
+#: ui_qt/network_media_window.py:161
+msgid "URL"
+msgstr "URL"
+
+#: ui_qt/playlist_window.py:168
+msgid "Shuffle"
+msgstr "Перемешать"
+
+#: ui_qt/playlist_window.py:182
+msgid "Sort Config Override..."
+msgstr "Сортировать Конфиг Переопределение..."
+
+#: ui_qt/playlist_window.py:658
+msgid "played"
+msgstr "играл"
+
+#: ui_qt/playlist_window.py:880
+msgid "Skip To"
+msgstr "Пропустить до"
+
+#: ui_qt/playlist_window.py:1005
+msgid "Sort Options..."
+msgstr "Параметры сортировки..."
+
+#: ui_qt/playlist_window.py:1313
+msgid "Playlist updated successfully"
+msgstr "Плейлист успешно обновлен"
+
+#: ui_qt/playlist_window.py:1313
+msgid "Playlist created successfully"
+msgstr "Плейлист успешно создан"
+
+#: ui_qt/schedules_window.py:170
+msgid "No days selected"
+msgstr "Нет выбранных дней"
+
+#: ui_qt/search_window.py:205
+msgid "Search all fields"
+msgstr "Искать во всех полях"
+
+#: ui_qt/search_window.py:212
+msgid "Search Title"
+msgstr "Название поиска"
+
+#: ui_qt/search_window.py:222
+msgid "Search Album"
+msgstr "Поиск альбома"
+
+#: ui_qt/search_window.py:232
+msgid "Search Artist"
+msgstr "Искать ARTIST"
+
+#: ui_qt/search_window.py:262
+msgid "Search Instrument"
+msgstr "Инструмент Поиска"
+
+#: ui_qt/search_window.py:272
+msgid "Search Form"
+msgstr "Поисковая форма"
+
+#: ui_qt/search_window.py:859
+msgid "Select a playlist:"
+msgstr "Выберите плейлист"
+
+#: ui_qt/sort_config_window.py:34
+msgid "Sort Config Override"
+msgstr "Сортировка конфигурации: Перезапись"
+
+#: ui_qt/sort_config_window.py:34
+msgid "Sort Options"
+msgstr "Сортировка Опций"
+
+#: ui_qt/sort_config_window.py:54
+msgid "Non-default values here override every playlist in the master config."
+msgstr ""
+"Неявные значения здесь перезатирают каждый playlist в главном "
+"конфигурационном файле."
+
+#: ui_qt/sort_config_window.py:62
+msgid "Disable recently-played memory reshuffling"
+msgstr "Отключить переупорядочивание недавно воспроизведённой памяти"
+
+#: ui_qt/sort_config_window.py:67
+msgid "Skip random start"
+msgstr "Пропустить случайное начало"
+
+#: ui_qt/sort_config_window.py:69
+msgid "Use deterministic grouping order instead of random start-track seeding"
+msgstr ""
+"Используйте детерминированную группировку по порядку вместо случайной "
+"инициализации траектории."
+
+#: ui_qt/sort_config_window.py:76
+msgid "Force the thorough scour-based memory check for all playlist sizes"
+msgstr ""
+"Обязать тщательную очистительную проверку памяти для всех размеров playlist"
+
+#: ui_qt/sort_config_window.py:83
+msgid "Check count override:"
+msgstr "Переопределение счетчика проверки:"
+
+#: ui_qt/sort_config_window.py:86
+msgid "Override the adaptive recently-played check count with a fixed value"
+msgstr ""
+"Переопределить адаптивное количество проверок недавно воспроизведённых "
+"элементов на фиксированную величину."
+
+#: ui_qt/timer_window.py:71
+msgid "Set Timer"
+msgstr "Установить таймер"
+
+#: ui_qt/timer_window.py:74
+msgid "Hours:"
+msgstr "Часы:"
+
+#: ui_qt/timer_window.py:79
+msgid "Minutes:"
+msgstr "Минуты:"
+
+#: ui_qt/timer_window.py:84
+msgid "Seconds:"
+msgstr "Секунды:"
+
+#: ui_qt/timer_window.py:101
+msgid "Timer Display"
+msgstr "Таймер Дисплей"
+
+#: ui_qt/timer_window.py:115 ui_qt/timer_window.py:210
+#: ui_qt/timer_window.py:246
+msgid "Ready"
+msgstr "Готов"
+
+#: ui_qt/timer_window.py:123
+msgid "Start"
+msgstr "Начать"
+
+#: ui_qt/timer_window.py:134
+msgid "Reset"
+msgstr "Сбросить"
+
+#: ui_qt/timer_window.py:153 ui_qt/timer_window.py:244
+msgid "Running..."
+msgstr "Бегущий..."
+
+#: ui_qt/timer_window.py:155 ui_qt/timer_window.py:239
+msgid "Timer Complete!"
+msgstr "Таймер завершён!"
+
+#: ui_qt/timer_window.py:157 ui_qt/timer_window.py:242
+msgid "Paused"
+msgstr "Приостановлено"
+
+#: ui_qt/timer_window.py:175
+msgid "Invalid Time"
+msgstr "Неверное время"
+
+#: ui_qt/timer_window.py:176
+msgid "Please enter a valid time greater than 0."
+msgstr "Введите действительное время, большее чем 0."
+
+#: ui_qt/timer_window.py:185
+msgid "Invalid Input"
+msgstr "Неверный ввод"
+
+#: ui_qt/timer_window.py:186
+msgid "Please enter valid numbers for hours, minutes, and seconds."
+msgstr "Пожалуйста введите действительные числа для часов, минут и секунд."
+
+#: ui_qt/timer_window.py:198
+msgid "Resume"
+msgstr "Возобновить"
+
+#: ui_qt/track_details_window.py:165
+msgid "Year must be between 0 and 9999"
+msgstr "Год должен быть в диапазоне от 0 до 9999"
+
+#: ui_qt/track_details_window.py:168
+msgid "{0} cannot be negative"
+msgstr "{0} не может быть отрицательным"
+
+#: ui_qt/track_details_window.py:171
+msgid "{0} must be a valid number"
+msgstr "{0} дійсне чи сіть"
+
+#: ui_qt/tts_window.py:75
+msgid "No file selected"
+msgstr "Нет выбранного файла"
+
+#: ui_qt/weather_window.py:66
+msgid "City"
+msgstr "Город"
+
+#: ui_qt/weather_window.py:72
+msgid "Gathering weather data..."
+msgstr "Сбор данных погоды..."
+
+#: ui_qt/weather_window.py:92
+msgid "Error: {}"
+msgstr "Ошибка: {}"
+
+#: ui_qt/auth/password_admin_window.py:119
+#: ui_qt/auth/password_admin_window.py:546
+msgid "Info"
+msgstr "Информация"
+
+#: ui_qt/auth/password_admin_window.py:128
+#: ui_qt/auth/password_admin_window.py:538
+msgid "Administration Error"
+msgstr "Ошибка администратора"
+
+#: utils/audio_device_manager.py:1556
 msgid "Audio Device Detection Failed"
 msgstr "Не удалось обнаружить аудиоустройство"
 
-#: utils/audio_device_manager.py:1528
+#: utils/audio_device_manager.py:1557
 msgid "Could not detect the current audio output device."
 msgstr "Не удалось определить текущее устройство вывода звука."
 
-#: utils/audio_device_manager.py:1529 utils/audio_device_manager.py:1546
+#: utils/audio_device_manager.py:1558 utils/audio_device_manager.py:1575
 msgid "Expected device for {0} time: {1}"
 msgstr "Ожидаемое устройство для {0} времени: {1}"
 
-#: utils/audio_device_manager.py:1530
+#: utils/audio_device_manager.py:1559
 msgid ""
 "Please verify that your audio device is connected and turned on, and switch "
 "to the expected device manually if needed."
@@ -2446,255 +3101,255 @@ msgstr ""
 "Убедитесь, что ваше аудиоустройство подключено и включено, и при "
 "необходимости вручную переключитесь на нужное устройство."
 
-#: utils/audio_device_manager.py:1533 utils/audio_device_manager.py:1550
+#: utils/audio_device_manager.py:1562 utils/audio_device_manager.py:1579
 msgid "Audio Device Warning"
 msgstr "Предупреждение об аудиоустройстве"
 
-#: utils/audio_device_manager.py:1544
+#: utils/audio_device_manager.py:1573
 msgid "Audio Device Mismatch"
 msgstr "Несоответствие аудиоустройств"
 
-#: utils/audio_device_manager.py:1545
+#: utils/audio_device_manager.py:1574
 msgid "Current device: {0}"
 msgstr "Текущее устройство: {0}"
 
-#: utils/audio_device_manager.py:1547
+#: utils/audio_device_manager.py:1576
 msgid "Please switch to the expected device manually if needed."
 msgstr "При необходимости переключитесь на нужное устройство вручную."
 
-#: utils/globals.py:146 utils/globals.py:290 utils/globals.py:358
+#: utils/globals.py:150 utils/globals.py:336 utils/globals.py:404
 msgid "Form"
 msgstr "форма"
 
-#: utils/globals.py:148 utils/globals.py:291 utils/globals.py:359
+#: utils/globals.py:152 utils/globals.py:337 utils/globals.py:405
 msgid "Instrument"
 msgstr "инструмент"
 
-#: utils/globals.py:203 utils/globals.py:360
+#: utils/globals.py:228 utils/globals.py:406
 msgid "Random"
 msgstr "Случайный"
 
-#: utils/globals.py:204
+#: utils/globals.py:229
 msgid "Sequence"
 msgstr "Последовательность"
 
-#: utils/globals.py:205
+#: utils/globals.py:230
 msgid "Album Shuffle"
 msgstr "Перемешать альбом"
 
-#: utils/globals.py:206
+#: utils/globals.py:231
 msgid "Artist Shuffle"
 msgstr "Смешать исполнителей"
 
-#: utils/globals.py:207
+#: utils/globals.py:232
 msgid "Composer Shuffle"
 msgstr "Перемешать композиторов"
 
-#: utils/globals.py:208
+#: utils/globals.py:233
 msgid "Genre Shuffle"
 msgstr "Смешение жанров"
 
-#: utils/globals.py:209
+#: utils/globals.py:234
 msgid "Form Shuffle"
 msgstr "Форма перемешивания"
 
-#: utils/globals.py:210
+#: utils/globals.py:235
 msgid "Instrument Shuffle"
 msgstr "Перемешивание инструментов"
 
-#: utils/globals.py:245
+#: utils/globals.py:291
 msgid "All Music"
 msgstr "Вся музыка"
 
-#: utils/globals.py:246
+#: utils/globals.py:292
 msgid "Playlist Config"
 msgstr "Плейлист Конфигурация"
 
-#: utils/globals.py:408
+#: utils/globals.py:454
 msgid "weather"
 msgstr "погода"
 
-#: utils/globals.py:410
+#: utils/globals.py:456
 msgid "news"
 msgstr "новости"
 
-#: utils/globals.py:414
+#: utils/globals.py:460
 msgid "joke"
 msgstr "шутить"
 
-#: utils/globals.py:416
+#: utils/globals.py:462
 msgid "fact"
 msgstr "факт"
 
-#: utils/globals.py:418
+#: utils/globals.py:464
 msgid "fable"
 msgstr "басня"
 
-#: utils/globals.py:420
+#: utils/globals.py:466
 msgid "truth and lie"
 msgstr "Правда и ложь"
 
-#: utils/globals.py:422
+#: utils/globals.py:468
 msgid "aphorism"
 msgstr "афоризм"
 
-#: utils/globals.py:424
+#: utils/globals.py:470
 msgid "poem"
 msgstr "стих"
 
-#: utils/globals.py:426
+#: utils/globals.py:472
 msgid "quote"
 msgstr "цитата"
 
-#: utils/globals.py:428
+#: utils/globals.py:474
 msgid "tongue twister"
 msgstr "скручивание языка"
 
-#: utils/globals.py:430
+#: utils/globals.py:476
 msgid "motivation"
 msgstr "мотивация"
 
-#: utils/globals.py:432
+#: utils/globals.py:478
 msgid "calendar"
 msgstr "календарь"
 
-#: utils/globals.py:434
+#: utils/globals.py:480
 msgid "more about the next track"
 msgstr "подробнее о следующем треке"
 
-#: utils/globals.py:436
+#: utils/globals.py:482
 msgid "more about the last track"
 msgstr "подробнее о последнем треке"
 
-#: utils/globals.py:438
+#: utils/globals.py:484
 msgid "more about our playlist"
 msgstr "подробнее о нашем плейлисте"
 
-#: utils/globals.py:440
+#: utils/globals.py:486
 msgid "random wiki article"
 msgstr "случайная статья из вики"
 
-#: utils/globals.py:442
+#: utils/globals.py:488
 msgid "funny story"
 msgstr "забавная история"
 
-#: utils/globals.py:444
+#: utils/globals.py:490
 msgid "language learning"
 msgstr "Изучение языка"
 
-#: utils/globals.py:504
+#: utils/globals.py:550
 msgid "Tracks"
 msgstr "Следы"
 
-#: utils/globals.py:505
+#: utils/globals.py:551
 msgid "Albums"
 msgstr "Альбомы"
 
-#: utils/globals.py:506
+#: utils/globals.py:552
 msgid "Artists"
 msgstr "художники"
 
-#: utils/globals.py:509
+#: utils/globals.py:555
 msgid "Forms"
 msgstr "формы"
 
-#: utils/globals.py:510
+#: utils/globals.py:556
 msgid "Instruments"
 msgstr "Инструменты"
 
-#: utils/globals.py:555
+#: utils/globals.py:601
 msgid "Remove word/phrase (only the blacklisted part)"
 msgstr "Удалить слово/фразу (только часть, занесенную в черный список)"
 
-#: utils/globals.py:556
+#: utils/globals.py:602
 msgid "Remove entire tag (if any part matches)"
 msgstr "Удалить весь тег (если какая-либо часть совпадает)"
 
-#: utils/globals.py:557
+#: utils/globals.py:603
 msgid "Fail prompt (block generation)"
 msgstr "Отказ (блокировка всех поколений)"
 
-#: utils/globals.py:558
+#: utils/globals.py:604
 msgid "Log only (do not remove, just log)"
 msgstr "Только журнал (не удалять, только регистрировать)"
 
-#: utils/globals.py:588
+#: utils/globals.py:634
 msgid "Male"
 msgstr "Мужчина"
 
-#: utils/globals.py:589
+#: utils/globals.py:635
 msgid "Female"
 msgstr "Женский"
 
-#: utils/globals.py:635 utils/globals.py:657
+#: utils/globals.py:681 utils/globals.py:703
 msgid "Introduction"
 msgstr "Введение"
 
-#: utils/globals.py:637 utils/globals.py:658
+#: utils/globals.py:683 utils/globals.py:704
 msgid "Re-introduction"
 msgstr "Повторное введение"
 
-#: utils/globals.py:639 utils/globals.py:659
+#: utils/globals.py:685 utils/globals.py:705
 msgid "No introduction"
 msgstr "Без введения"
 
-#: utils/globals.py:704
+#: utils/globals.py:750
 msgid "Run Search"
 msgstr "Выполнить поиск"
 
-#: utils/globals.py:705
+#: utils/globals.py:751
 msgid "View Library"
 msgstr "Посмотреть библиотеку"
 
-#: utils/globals.py:706
+#: utils/globals.py:752
 msgid "View History"
 msgstr "Посмотреть историю"
 
-#: utils/globals.py:707
+#: utils/globals.py:753
 msgid "Edit Composers"
 msgstr "Редактирование композиторов"
 
-#: utils/globals.py:708
+#: utils/globals.py:754
 msgid "Edit Personas"
 msgstr "Редактировать персонажей"
 
-#: utils/globals.py:709
+#: utils/globals.py:755
 msgid "Edit Schedules"
 msgstr "Редактирование расписаний"
 
-#: utils/globals.py:710
+#: utils/globals.py:756
 msgid "Edit Extensions"
 msgstr "Редактирование расширений"
 
-#: utils/globals.py:711
+#: utils/globals.py:757
 msgid "Edit Playlists"
 msgstr "Редактирование списков воспроизведения"
 
-#: utils/globals.py:712
+#: utils/globals.py:758
 msgid "Edit Favorites"
 msgstr "Редактировать избранное"
 
-#: utils/globals.py:713
+#: utils/globals.py:759
 msgid "Edit Blacklist"
 msgstr "Редактировать черный список"
 
-#: utils/globals.py:714
+#: utils/globals.py:760
 msgid "Reveal Blacklist Concepts"
 msgstr "Раскрыть концепции черного списка"
 
-#: utils/globals.py:715
+#: utils/globals.py:761
 msgid "Delete Media"
 msgstr "Удалить медиа"
 
-#: utils/globals.py:716
+#: utils/globals.py:762
 msgid "Edit Configuration"
 msgstr "Редактирование конфигурации"
 
-#: utils/globals.py:717
+#: utils/globals.py:763
 msgid "Start Application"
 msgstr "Запуск приложения"
 
-#: utils/globals.py:718
+#: utils/globals.py:764
 msgid "Access Password Administration"
 msgstr "Доступ Пароль Администрирование"
 
@@ -2757,31 +3412,3 @@ msgstr "месяцы"
 #: utils/translations.py:73
 msgid "years"
 msgstr "годы"
-
-#: ui/search_window.py:314
-msgid "Filter Results"
-msgstr "Фильтровать результаты"
-
-#: ui/search_window.py:573
-msgid "No results match the filter '{0}'."
-msgstr "Результаты, соответствующие фильтру «{0}», не найдены."
-
-#: ui/search_window.py:614
-msgid "Found {0} total results. Showing {1} filtered results."
-msgstr "Найдено {0} результатов. Показано {1} отфильтрованных результатов."
-
-#: ui/search_window.py:618
-msgid "Showing {0} filtered results."
-msgstr "Показано {0} отфильтрованных результатов."
-
-#: ui/search_window.py:620
-msgid "Found {0} total results. Showing all results up to {1}."
-msgstr "Найдено {0} результатов. Показаны все результаты до {1}."
-
-#: ui/search_window.py:624
-msgid "Showing all results up to {0}."
-msgstr "Показаны все результаты до {0}."
-
-#: ui/search_window.py:634
-msgid "Find More"
-msgstr "Найти больше"
