@@ -75,7 +75,8 @@ class Playlist:
     def __init__(self, tracks: List[str] = [], _type: PlaylistSortType = PlaylistSortType.SEQUENCE, 
                  data_callbacks: Optional['LibraryDataCallbacks'] = None, start_track: Optional[MediaTrack] = None, 
                  loop: bool = False,
-                 sort_config: Optional[SortConfig] = None) -> None:
+                 sort_config: Optional[SortConfig] = None,
+                 deterministic_group_order: bool = False) -> None:
         self.in_sequence: List[str] = list(tracks)
         self.sort_type: PlaylistSortType = _type
         self.pending_tracks: List[str] = list(tracks)
@@ -86,6 +87,7 @@ class Playlist:
         self.data_callbacks: Optional['LibraryDataCallbacks'] = data_callbacks
         self.loop: bool = loop
         self.sort_config: SortConfig = sort_config or SortConfig()
+        self.deterministic_group_order: bool = deterministic_group_order
         assert self.data_callbacks is not None and \
                 self.data_callbacks.get_track is not None and \
                 self.data_callbacks.get_all_tracks is not None
@@ -333,7 +335,13 @@ class Playlist:
                     if is_callable_attr:
                         attr = attr()
                     attr_set.add(attr)
-                all_attrs_list = sorted(attr_set, key=lambda v: (v or ""))
+                if self.deterministic_group_order or self.sort_config.skip_random_start:
+                    all_attrs_list = sorted(attr_set, key=lambda v: (v or ""))
+                else:
+                    # ALL_MUSIC should retain shuffle behavior similar to the
+                    # pre-refactor path where grouping order was non-deterministic.
+                    all_attrs_list = list(attr_set)
+                    random.shuffle(all_attrs_list)
                 if is_callable_attr:
                     self.sorted_tracks.sort(key=lambda t: (all_attrs_list.index(getattr(t, grouping_attr_getter_name)()), t.filepath))
                 else:

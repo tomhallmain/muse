@@ -100,6 +100,7 @@ class PlaybackConfig:
                 skip_memory_shuffle=playlist_descriptor.sort_config.skip_memory_shuffle,
                 skip_random_start=playlist_descriptor.sort_config.skip_random_start,
                 check_count_override=playlist_descriptor.sort_config.check_count_override,
+                check_entire_playlist=playlist_descriptor.sort_config.check_entire_playlist,
             )
         return pc
 
@@ -146,7 +147,8 @@ class PlaybackConfig:
         self.list = Playlist(track_list, self.type, data_callbacks=self.data_callbacks,
                              start_track=self.start_track,
                              loop=self.loop,
-                             sort_config=self.sort_config)
+                             sort_config=self.sort_config,
+                             deterministic_group_order=self.playlist_descriptor is not None)
         return self.list
 
     def set_playing(self, playing: bool = True) -> None:
