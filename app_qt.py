@@ -43,7 +43,7 @@ from ui_qt.app_style import AppStyle
 from ui_qt.media_frame import MediaFrame
 from muse.run import Run
 from muse.run_config import RunConfig
-from utils.persistent_data_manager_qt import PersistentDataManagerQt
+from utils.persistent_data_manager import PersistentDataManager
 from lib.debounce_qt import QtDebouncer
 from lib.qt_alert import qt_alert
 from lib.media_keys import MediaKeyHandler
@@ -470,7 +470,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
 
     def _load_info_cache(self):
         try:
-            PersistentDataManagerQt.load()
+            PersistentDataManager.load()
             self.config_history_index = app_info_cache.get("config_history_index", default_val=0)
             return app_info_cache.get_history_latest()
         except Exception as e:
@@ -529,7 +529,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
                     self.config_history_index -= 1
         app_info_cache.set("config_history_index", self.config_history_index)
         # Note: Window geometry is saved by SmartMainWindow.closeEvent()
-        PersistentDataManagerQt.store()
+        PersistentDataManager.store()
 
     def quit(self):
         if qt_alert(self, _("Confirm Quit"), _("Would you like to quit the application?"), "askokcancel"):

@@ -1,17 +1,27 @@
+"""
+Persistent data manager for the PySide6 (Qt) UI context.
+
+Load/store populates ui_qt window class-level data (e.g. SearchWindow.recent_searches)
+so that the Qt app sees recent searches, favorites, etc.
+"""
+
 from extensions.extension_manager import ExtensionManager
 from library_data.library_data import LibraryData
 from muse.muse_memory import muse_memory
+from muse.playback_state import PlaybackStateManager
 from muse.playlist import Playlist
 from muse.schedules_manager import SchedulesManager
-from ui.composers_window import ComposersWindow
-from ui.favorites_window import FavoritesWindow
-from ui.search_window import SearchWindow
+from ui_qt.composers_window import ComposersWindow
+from ui_qt.favorites_window import FavoritesWindow
+from ui_qt.search_window import SearchWindow
 from utils.audio_device_manager import AudioDeviceManager
 
 
 class PersistentDataManager:
+    """Load/store persistent data into UI window classes."""
+
     _is_loaded = False
-    
+
     @staticmethod
     def store():
         muse_memory.save()
@@ -23,13 +33,13 @@ class PersistentDataManager:
         ComposersWindow.store_recent_searches()
         FavoritesWindow.store_favorites()
         AudioDeviceManager.store_settings()
+        PlaybackStateManager.store_override_sort_config()
 
     @staticmethod
     def load():
-        # Prevent double loading
         if PersistentDataManager._is_loaded:
             return
-        
+
         muse_memory.load()
         LibraryData.load_directory_cache()
         LibraryData.load_media_track_cache()
@@ -40,6 +50,6 @@ class PersistentDataManager:
         ComposersWindow.load_recent_searches()
         FavoritesWindow.load_favorites()
         AudioDeviceManager.load_settings()
-        
-        PersistentDataManager._is_loaded = True
+        PlaybackStateManager.load_override_sort_config()
 
+        PersistentDataManager._is_loaded = True

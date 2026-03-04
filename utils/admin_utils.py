@@ -111,24 +111,24 @@ def show_admin_required_message(message: str) -> None:
         message: The message to display
     """
     try:
-        import tkinter as tk
-        from tkinter import messagebox
-        
-        # Create a temporary root window for the message box
-        root = tk.Tk()
-        root.withdraw()  # Hide the main window
-        
-        messagebox.showwarning(
-            "Administrator Privileges Required",
-            f"{message}\n\nTo enable audio device switching:\n"
-            "1. Close this application\n"
-            "2. Right-click on the application icon\n"
-            "3. Select 'Run as administrator'\n"
-            "4. Restart the application"
-        )
-        
-        root.destroy()
-        
+        import platform
+        if platform.system() == "Windows":
+            full_message = (
+                f"{message}\n\nTo enable audio device switching:\n"
+                "1. Close this application\n"
+                "2. Right-click on the application icon\n"
+                "3. Select 'Run as administrator'\n"
+                "4. Restart the application"
+            )
+            ctypes.windll.user32.MessageBoxW(
+                None,
+                full_message,
+                "Administrator Privileges Required",
+                0x00000030,  # MB_ICONWARNING
+            )
+        else:
+            print(f"\n{message}")
+            print("To enable audio device switching, please run the application with elevated privileges.")
     except Exception as e:
         logger.error(f"Error showing admin message: {e}")
         # Fallback to console output

@@ -263,8 +263,8 @@ def debug_pickle_issues(obj: Any) -> List[str]:
     """
     inspector = ObjectInspector()
     
-    # Look for problematic classes
-    problematic_classes = ['Tk', 'Tkapp', 'tkapp', 'Tcl', 'Tkinter', 'tkinter']
+    # Look for classes commonly associated with non-serializable UI/runtime objects.
+    problematic_classes = ['QObject', 'QWidget', 'SignalInstance']
     
     all_issues = []
     for class_name in problematic_classes:

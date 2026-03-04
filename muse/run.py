@@ -15,7 +15,7 @@ from muse.playback_state import PlaybackStateManager
 from muse.run_config import RunConfig
 from muse.run_context import RunContext, UserAction
 from muse.schedules_manager import ScheduledShutdownException
-from ui.app_actions import AppActions
+from ui_qt.app_actions import AppActions
 from utils.config import config
 from utils.ffmpeg_handler import FFmpegHandler
 from utils.logging_setup import get_logger

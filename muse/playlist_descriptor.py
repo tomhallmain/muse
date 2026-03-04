@@ -313,10 +313,10 @@ class PlaylistDescriptor:
 class PlaylistDescriptorStore:
     """CRUD operations for :class:`PlaylistDescriptor` objects.
 
-    Thin, stateless wrapper around ``app_info_cache``.  Every method accepts
-    an optional *cache* parameter so callers from either the Tkinter or Qt
-    code-path can pass the appropriate ``app_info_cache`` instance.  When
-    *cache* is ``None`` the Tkinter-side singleton is imported as the default.
+    Thin, stateless wrapper around ``app_info_cache``. Every method accepts
+    an optional *cache* parameter so callers can pass a specific
+    ``app_info_cache`` instance. When *cache* is ``None``, the module-level
+    singleton from ``utils.app_info_cache`` is used by default.
     """
 
     @staticmethod
