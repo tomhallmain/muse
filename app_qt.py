@@ -83,7 +83,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
     _sig_album_artwork = Signal(str)
     _sig_dj_persona = Signal(str)
     _sig_favorite_status = Signal(object)
-    _sig_run_finished = Signal(object)
+    _sig_run_finished = Signal(object, object)
     _sig_shutdown = Signal()
 
     def __init__(self):
@@ -108,11 +108,13 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         self.fullscreen = False
         self.current_run = Run(RunConfig(placeholder=True))
         self._is_playback_paused = False
+        self._run_controls_active = False
         self._media_muted = False
         self._last_nonzero_volume = int(Globals.DEFAULT_VOLUME_THRESHOLD)
         self._effective_volume = int(Globals.DEFAULT_VOLUME_THRESHOLD)
         self._library_data: Optional[LibraryData] = None
         self._closing = False  # Guard for multiple on_closing calls
+        self._active_run_token = None
         # So @require_password and dialogs (e.g. PasswordDialog) have a parent window
         self.master = self
         # Initialize media key handler
@@ -292,6 +294,13 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         sidebar_layout = QGridLayout(sidebar)
         row = 0
 
+        def add_spacer(height=15):
+            nonlocal row
+            spacer = QWidget(self)
+            spacer.setFixedHeight(height)
+            sidebar_layout.addWidget(spacer, row, 0, 1, 3)
+            row += 1
+
         def add_label(text, colspan=3):
             nonlocal row
             lbl = QLabel(text)
@@ -305,6 +314,9 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
             row += 1
             return lbl
 
+        # Top breathing room above sidebar content.
+        add_spacer()
+
         self.label_playback_info = add_label("")
         self.label_dj_persona = add_label(_("DJ"))
         self.label_title_text = add_label(_("Title"))
@@ -317,6 +329,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         self.label_upcoming_group = add_label(_("Upcoming Group"))
         self.label_muse = add_label(_("Spot Details"))
         self.label_extension_status = add_label(_("Extension Status"))
+        add_spacer()
 
         self.label_volume = QLabel(_("Volume"))
         sidebar_layout.addWidget(self.label_volume, row, 0)
@@ -335,36 +348,56 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
 
         self._progress_bar_row = row
         row += 1
+        add_spacer()
+
+        self._controls_frame = QFrame(self)
+        self._controls_frame.setObjectName("transportControlsFrame")
+        controls_layout = QGridLayout(self._controls_frame)
+        self._controls_layout = controls_layout
+        controls_layout.setContentsMargins(0, 0, 0, 0)
+        controls_layout.setHorizontalSpacing(8)
+        controls_layout.setVerticalSpacing(6)
+        controls_layout.setColumnStretch(0, 1)
+        controls_layout.setColumnStretch(1, 1)
 
         self.run_btn = QPushButton(_("Play"))
-        self.run_btn.clicked.connect(lambda: self.run())
-        self.playlists_btn = QPushButton(_("Playlists"))
-        self.playlists_btn.clicked.connect(self.open_playlist_window)
-        sidebar_layout.addWidget(self.run_btn, row, 0)
-        sidebar_layout.addWidget(self.playlists_btn, row, 1, 1, 2)
-        row += 1
+        self.run_btn.clicked.connect(self._toggle_play_pause)
+        self.run_btn.setObjectName("primaryTransportButton")
+        controls_layout.addWidget(self.run_btn, 0, 0)
+
+        self.cancel_btn = QPushButton(_("Stop"))
+        self.cancel_btn.clicked.connect(lambda: self.cancel())
+        controls_layout.addWidget(self.cancel_btn, 0, 1)
 
         self.next_btn = QPushButton(_("Next"))
         self.next_btn.clicked.connect(lambda: self.next())
-        sidebar_layout.addWidget(self.next_btn, row, 0)
+        controls_layout.addWidget(self.next_btn, 1, 0)
+
         self.next_grouping_btn = QPushButton(_("Next Grouping"))
         self.next_grouping_btn.clicked.connect(lambda: self.next_grouping())
-        sidebar_layout.addWidget(self.next_grouping_btn, row, 1, 1, 2)
-        row += 1
+        controls_layout.addWidget(self.next_grouping_btn, 1, 1)
 
-        self.pause_btn = QPushButton(_("Pause"))
-        self.pause_btn.clicked.connect(lambda: self.pause())
-        sidebar_layout.addWidget(self.pause_btn, row, 0)
-        self.cancel_btn = QPushButton(_("Stop"))
-        self.cancel_btn.clicked.connect(lambda: self.cancel())
-        sidebar_layout.addWidget(self.cancel_btn, row, 1, 1, 2)
-        self.cancel_btn.hide()
+        self.playlists_btn = QPushButton(_("Playlists"))
+        self.playlists_btn.clicked.connect(self.open_playlist_window)
+        controls_layout.addWidget(self.playlists_btn, 2, 0, 1, 2)
+
+        self._sort_config_btn = QPushButton(_("Sorting Options"))
+        self._sort_config_btn.clicked.connect(self._open_sort_config_override)
+        controls_layout.addWidget(self._sort_config_btn, 3, 0)
+        self._sort_config_label = QLabel(
+            _("(custom)") if PlaybackStateManager.get_override_sort_config() else _("(defaults)")
+        )
+        self._sort_config_label.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
+        controls_layout.addWidget(self._sort_config_label, 3, 1)
+
+        sidebar_layout.addWidget(self._controls_frame, row, 0, 1, 3)
         row += 1
 
         self.shutdown_after_track_btn = QPushButton(_("Shutdown After Current Track"))
         self.shutdown_after_track_btn.clicked.connect(self.toggle_shutdown_after_track)
         sidebar_layout.addWidget(self.shutdown_after_track_btn, row, 0, 1, 3)
         row += 1
+        add_spacer()
 
         self.label_delay = QLabel(_("Delay Seconds"))
         sidebar_layout.addWidget(self.label_delay, row, 0)
@@ -396,6 +429,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         row += 1
         self._update_sort_type_display()
 
+        add_spacer()
         self.favorite_check = QCheckBox(_("Favorite"))
         self.favorite_check.stateChanged.connect(self.set_favorite)
         sidebar_layout.addWidget(self.favorite_check, row, 0)
@@ -433,15 +467,6 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         sidebar_layout.addWidget(self.use_system_language_check, row, 0, 1, 3)
         row += 1
 
-        self._sort_config_btn = QPushButton(_("Sorting Options"))
-        self._sort_config_btn.clicked.connect(self._open_sort_config_override)
-        sidebar_layout.addWidget(self._sort_config_btn, row, 0, 1, 2)
-        self._sort_config_label = QLabel(
-            _("(custom)") if PlaybackStateManager.get_override_sort_config() else _("(defaults)")
-        )
-        sidebar_layout.addWidget(self._sort_config_label, row, 2, 1, 1)
-        row += 1
-
         sidebar_layout.setRowStretch(row, 1)
 
         # Prevent sidebar widgets from capturing keyboard focus so that
@@ -454,6 +479,8 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
             widget.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         for widget in sidebar.findChildren(QSlider):
             widget.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
+        self._refresh_transport_controls_ui()
 
         main_layout.addWidget(sidebar)
         self._sidebar_layout = sidebar_layout
@@ -726,8 +753,28 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
 
     def destroy_progress_bar(self):
         if self.progress_bar is not None:
+            self._sidebar_layout.removeWidget(self.progress_bar)
             self.progress_bar.deleteLater()
             self.progress_bar = None
+
+    def _show_progress_widgets(self):
+        """Ensure the sidebar progress/cancel widgets are visible for an active run."""
+        self._run_controls_active = True
+        self.destroy_progress_bar()
+        self.progress_bar = QProgressBar()
+        self.progress_bar.setMaximum(100)
+        self.progress_bar.setValue(0)
+        self.progress_bar.setTextVisible(False)
+        if hasattr(self, "_sidebar_layout") and hasattr(self, "_progress_bar_row"):
+            self._sidebar_layout.addWidget(self.progress_bar, self._progress_bar_row, 0, 1, 3)
+        self.progress_bar.show()
+        self._refresh_transport_controls_ui()
+
+    def _hide_progress_widgets(self):
+        """Hide sidebar progress/cancel widgets when no active run is shown."""
+        self._run_controls_active = False
+        self.destroy_progress_bar()
+        self._refresh_transport_controls_ui()
 
     def run(self, event=None, track=None, override_scheduled=False):
         """Debounced entry point: schedules a single run after a short quiet period."""
@@ -753,28 +800,24 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
             self.cancel()
             time.sleep(2)
 
+        run_token = time.time_ns()
+        self._active_run_token = run_token
+
         def run_async(a):
             self.job_queue.job_running = True
             self.current_run = Run(a, app_actions=self.app_actions)
             self.current_run.execute()
             self.job_queue.job_running = False
             next_args = self.job_queue.take()
-            self._sig_run_finished.emit(next_args)
+            self._sig_run_finished.emit(next_args, run_token)
 
         if not override_scheduled and self.job_queue.has_pending():
             self.job_queue.add(args)
         else:
             self.runner_app_config.set_from_run_config(args_copy)
             self._set_playback_paused_ui(False)
-            # Create progress bar on main thread before starting worker (Qt thread affinity)
-            self.destroy_progress_bar()
-            self.progress_bar = QProgressBar()
-            self.progress_bar.setMaximum(100)
-            self.progress_bar.setValue(0)
-            self.progress_bar.setTextVisible(False)
-            if hasattr(self, "_sidebar_layout") and hasattr(self, "_progress_bar_row"):
-                self._sidebar_layout.addWidget(self.progress_bar, self._progress_bar_row, 0, 1, 3)
-            self.cancel_btn.show()
+            # Create progress/cancel widgets on main thread before starting worker.
+            self._show_progress_widgets()
             Utils.start_thread(run_async, use_asyncio=False, args=[args])
 
     def start_playback(self, track=None, playlist_sort_type=None, overwrite=None,
@@ -788,35 +831,31 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         override_scheduled = self.current_run is not None and not self.current_run.is_placeholder()
         self.run(track=track, override_scheduled=override_scheduled)
 
-    def _on_run_finished(self, next_args):
+    def _on_run_finished(self, next_args, run_token):
         """Slot: run finished (called on main thread). Hide cancel, destroy progress bar, optionally start next."""
-        self.cancel_btn.hide()
-        self.destroy_progress_bar()
+        if run_token != self._active_run_token:
+            # Ignore stale finish events from a previously cancelled/replaced run.
+            return
+        self._hide_progress_widgets()
         if next_args:
             self._set_playback_paused_ui(False)
-            self.progress_bar = QProgressBar()
-            self.progress_bar.setMaximum(100)
-            self.progress_bar.setValue(0)
-            self.progress_bar.setTextVisible(False)
-            if hasattr(self, "_sidebar_layout") and hasattr(self, "_progress_bar_row"):
-                self._sidebar_layout.addWidget(self.progress_bar, self._progress_bar_row, 0, 1, 3)
-            self.cancel_btn.show()
+            self._show_progress_widgets()
             Utils.start_thread(
-                lambda: self._run_async_next(next_args),
+                lambda: self._run_async_next(next_args, run_token),
                 use_asyncio=False,
             )
         else:
             self.media_frame.on_playback_stopped()
             self._set_playback_paused_ui(False)
 
-    def _run_async_next(self, next_args):
+    def _run_async_next(self, next_args, run_token):
         """Worker for chained run (same as run_async body, no progress bar creation)."""
         self.job_queue.job_running = True
         self.current_run = Run(next_args, app_actions=self.app_actions)
         self.current_run.execute()
         self.job_queue.job_running = False
         next_args = self.job_queue.take()
-        self._sig_run_finished.emit(next_args)
+        self._sig_run_finished.emit(next_args, run_token)
 
     def update_progress_bar(self, progress, elapsed_time, total_duration):
         self._sig_progress.emit(int(progress), float(elapsed_time), float(total_duration))
@@ -862,6 +901,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
 
     def cancel(self, event=None):
         self.current_run.cancel()
+        self._hide_progress_widgets()
         self.media_frame.on_playback_stopped()
         self._set_playback_paused_ui(False)
 
@@ -1044,6 +1084,38 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
     def _set_playback_paused_ui(self, paused: bool):
         self._is_playback_paused = bool(paused)
         self.media_frame.set_playback_paused(self._is_playback_paused)
+        self._refresh_transport_controls_ui()
+
+    def _refresh_transport_controls_ui(self):
+        """Sync transport button labels/visibility with active run state."""
+        if hasattr(self, "_controls_layout"):
+            if self._run_controls_active:
+                self._controls_layout.addWidget(self.run_btn, 0, 0, 1, 1)
+            else:
+                self._controls_layout.addWidget(self.run_btn, 0, 0, 1, 2)
+        if self._run_controls_active:
+            self.next_btn.show()
+            self.next_grouping_btn.show()
+            self.cancel_btn.show()
+            self.shutdown_after_track_btn.show()
+            if self._is_playback_paused:
+                self.run_btn.setText(_("Continue"))
+            else:
+                self.run_btn.setText(_("Pause"))
+            self.run_btn.setStyleSheet(
+                "QPushButton { background-color: #315d8f; font-weight: 600; }"
+                "QPushButton:hover { background-color: #3a6da7; }"
+            )
+        else:
+            self.next_btn.hide()
+            self.next_grouping_btn.hide()
+            self.cancel_btn.hide()
+            self.shutdown_after_track_btn.hide()
+            self.run_btn.setText(_("Play"))
+            self.run_btn.setStyleSheet(
+                "QPushButton { background-color: #2b4f7a; font-weight: 600; }"
+                "QPushButton:hover { background-color: #34608f; }"
+            )
 
     def keyPressEvent(self, event: QKeyEvent):
         """Handle key press events, including media keys."""
