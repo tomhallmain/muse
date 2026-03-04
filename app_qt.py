@@ -107,6 +107,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         self.config_history_index = 0
         self.fullscreen = False
         self.current_run = Run(RunConfig(placeholder=True))
+        self._is_playback_paused = False
         self._media_muted = False
         self._last_nonzero_volume = int(Globals.DEFAULT_VOLUME_THRESHOLD)
         self._effective_volume = int(Globals.DEFAULT_VOLUME_THRESHOLD)
@@ -185,6 +186,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         
         # Enable media key handling
         self._setup_media_keys()
+        self._setup_shortcuts()
 
         from ui_qt.blacklist_window import BlacklistWindow
         BlacklistWindow.set_blacklist()
@@ -763,6 +765,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
             self.job_queue.add(args)
         else:
             self.runner_app_config.set_from_run_config(args_copy)
+            self._set_playback_paused_ui(False)
             # Create progress bar on main thread before starting worker (Qt thread affinity)
             self.destroy_progress_bar()
             self.progress_bar = QProgressBar()
@@ -790,6 +793,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         self.cancel_btn.hide()
         self.destroy_progress_bar()
         if next_args:
+            self._set_playback_paused_ui(False)
             self.progress_bar = QProgressBar()
             self.progress_bar.setMaximum(100)
             self.progress_bar.setValue(0)
@@ -801,6 +805,9 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
                 lambda: self._run_async_next(next_args),
                 use_asyncio=False,
             )
+        else:
+            self.media_frame.on_playback_stopped()
+            self._set_playback_paused_ui(False)
 
     def _run_async_next(self, next_args):
         """Worker for chained run (same as run_async body, no progress bar creation)."""
@@ -845,6 +852,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
 
     def pause(self, event=None):
         self.current_run.pause()
+        self._set_playback_paused_ui(not self._is_playback_paused)
 
     def previous(self, event=None):
         """Handle previous track media key. Currently not implemented in the playback system."""
@@ -854,6 +862,8 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
 
     def cancel(self, event=None):
         self.current_run.cancel()
+        self.media_frame.on_playback_stopped()
+        self._set_playback_paused_ui(False)
 
     def toggle_shutdown_after_track(self):
         """Toggle the 'shutdown after current track' mode."""
@@ -1004,19 +1014,36 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
 
     def _setup_media_keys(self):
         """Set up media key bindings for keyboard media control buttons."""
-        def play_pause_handler():
-            """Handle play/pause toggle based on current playback state."""
-            if self.current_run and self.current_run.is_started and not self.current_run.is_complete:
-                self.pause()
-            else:
-                self.run()
-        
         self._media_key_handler = MediaKeyHandler(
             previous_callback=self.previous,
             next_callback=self.next,
-            play_pause_callback=play_pause_handler,
+            play_pause_callback=self._toggle_play_pause,
         )
         self._media_key_handler.setup_qt(self)
+
+    def _setup_shortcuts(self):
+        """Set up local keyboard shortcuts for the main window."""
+        self._space_pause_shortcut = QShortcut(QKeySequence(Qt.Key.Key_Space), self)
+        # Window-scoped so focused dialogs do not trigger this shortcut.
+        self._space_pause_shortcut.setContext(Qt.ShortcutContext.WindowShortcut)
+        self._space_pause_shortcut.activated.connect(self._on_spacebar_pressed)
+
+    def _toggle_play_pause(self):
+        """Toggle playback state between running and paused."""
+        if self.current_run and self.current_run.is_started and not self.current_run.is_complete:
+            self.pause()
+        else:
+            self.run()
+
+    def _on_spacebar_pressed(self):
+        """Handle spacebar play/pause only when the main window is active."""
+        if not self.isActiveWindow():
+            return
+        self._toggle_play_pause()
+
+    def _set_playback_paused_ui(self, paused: bool):
+        self._is_playback_paused = bool(paused)
+        self.media_frame.set_playback_paused(self._is_playback_paused)
 
     def keyPressEvent(self, event: QKeyEvent):
         """Handle key press events, including media keys."""

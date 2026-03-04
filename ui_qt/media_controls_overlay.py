@@ -32,6 +32,8 @@ FADE_OUT_MS = 500
 OVERLAY_HEIGHT = 44
 MUTE_ICON = "🔇"
 UNMUTE_ICON = "🔊"
+PLAY_ICON = "\u25B6"
+PAUSE_ICON = "\u275A\u275A"
 
 
 def _fmt_time(ms: int) -> str:
@@ -116,7 +118,7 @@ class MediaControlsOverlay(QWidget):
         layout.setContentsMargins(12, 6, 12, 6)
         layout.setSpacing(8)
 
-        self._play_pause_btn = QPushButton("\u25B6", self)
+        self._play_pause_btn = QPushButton(PLAY_ICON, self)
         self._play_pause_btn.setFixedSize(32, 32)
         self._play_pause_btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self._play_pause_btn.clicked.connect(self._on_play_pause)
@@ -201,6 +203,7 @@ class MediaControlsOverlay(QWidget):
         )
         self._seek_slider.setStyleSheet(slider_style)
         self._volume_slider.setStyleSheet(slider_style)
+        self._refresh_play_pause_button()
         self._refresh_mute_button()
         self._refresh_effective_label()
 
@@ -213,6 +216,7 @@ class MediaControlsOverlay(QWidget):
         self._current_ms = current_ms
         self._duration_ms = duration_ms
         self._has_track = duration_ms > 0
+        self._refresh_play_pause_button()
 
         if not self._user_is_seeking:
             pos = int((current_ms / duration_ms) * SLIDER_MAX) if duration_ms > 0 else 0
@@ -223,7 +227,7 @@ class MediaControlsOverlay(QWidget):
 
     def set_paused(self, paused: bool):
         self._is_paused = paused
-        self._play_pause_btn.setText("\u25B6" if paused else "\u275A\u275A")
+        self._refresh_play_pause_button()
 
     def on_track_changed(self):
         """Reset state when a new track starts."""
@@ -231,14 +235,14 @@ class MediaControlsOverlay(QWidget):
         self._elapsed_label.setText("0:00")
         self._total_label.setText("0:00")
         self._is_paused = False
-        self._play_pause_btn.setText("\u275A\u275A")
         self._has_track = True
+        self._refresh_play_pause_button()
 
     def on_playback_stopped(self):
         """Reset state when nothing is playing."""
         self._has_track = False
         self._is_paused = False
-        self._play_pause_btn.setText("\u25B6")
+        self._refresh_play_pause_button()
         self._seek_slider.setValue(0)
         self._elapsed_label.setText("0:00")
         self._total_label.setText("0:00")
@@ -340,6 +344,11 @@ class MediaControlsOverlay(QWidget):
     def _refresh_mute_button(self):
         self._mute_btn.setText(UNMUTE_ICON if self._is_muted else MUTE_ICON)
         self._mute_btn.setToolTip(_("Unmute") if self._is_muted else _("Mute"))
+
+    def _refresh_play_pause_button(self):
+        is_playing = self._has_track and not self._is_paused
+        self._play_pause_btn.setText(PAUSE_ICON if is_playing else PLAY_ICON)
+        self._play_pause_btn.setToolTip(_("Pause") if is_playing else _("Play"))
 
     def _refresh_effective_label(self):
         resolved = self._volume if self._effective_volume is None else self._effective_volume
