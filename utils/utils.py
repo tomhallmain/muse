@@ -589,15 +589,12 @@ class Utils:
             bool: True if the path is a valid directory, False otherwise
         """
         import time
-        
-        # Extract drive root (e.g., "F:\\" from "F:\\img\\subdir")
-        drive_root = os.path.splitdrive(path)[0]
-        if drive_root:
-            drive_root = drive_root + os.sep
-        
-        for attempt in range(max_retries + 1):
-            # On first attempt or if wake_drive is enabled, try to access the drive root
-            # This can help wake up sleeping external drives on Windows
+        external_drive_root = Utils._get_external_drive_root(path)
+        drive_root = external_drive_root if wake_drive else None
+        retries = max_retries if external_drive_root else 0
+
+        for attempt in range(retries + 1):
+            # On first attempt, probe external drive root to help wake sleeping drives.
             if wake_drive and drive_root and attempt == 0:
                 try:
                     os.path.exists(drive_root)
@@ -607,8 +604,8 @@ class Utils:
             if os.path.isdir(path):
                 return True
             
-            if attempt < max_retries:
-                logger.debug(f"Directory check failed for '{path}', retrying in {retry_delay}s (attempt {attempt + 1}/{max_retries})")
+            if attempt < retries:
+                logger.debug(f"Directory check failed for '{path}', retrying in {retry_delay}s (attempt {attempt + 1}/{retries})")
                 time.sleep(retry_delay)
         
         return False
@@ -632,12 +629,11 @@ class Utils:
             bool: True if the path is a valid file, False otherwise
         """
         import time
-        
-        drive_root = os.path.splitdrive(path)[0]
-        if drive_root:
-            drive_root = drive_root + os.sep
-        
-        for attempt in range(max_retries + 1):
+        external_drive_root = Utils._get_external_drive_root(path)
+        drive_root = external_drive_root if wake_drive else None
+        retries = max_retries if external_drive_root else 0
+
+        for attempt in range(retries + 1):
             if wake_drive and drive_root and attempt == 0:
                 try:
                     os.path.exists(drive_root)
@@ -647,11 +643,47 @@ class Utils:
             if os.path.isfile(path):
                 return True
             
-            if attempt < max_retries:
-                logger.debug(f"File check failed for '{path}', retrying in {retry_delay}s (attempt {attempt + 1}/{max_retries})")
+            if attempt < retries:
+                logger.debug(f"File check failed for '{path}', retrying in {retry_delay}s (attempt {attempt + 1}/{retries})")
                 time.sleep(retry_delay)
         
         return False
+
+    @staticmethod
+    def _get_external_drive_root(path):
+        """
+        Return an external/removable drive root for path, or None if not external.
+
+        Windows:
+            Treat drive letters E: and above as external/removable.
+        Non-Windows:
+            Best-effort check for common removable-media mount roots.
+        """
+        if not path:
+            return None
+
+        normalized = os.path.normpath(os.path.abspath(path))
+
+        if sys.platform == "win32":
+            drive = os.path.splitdrive(normalized)[0]  # e.g. "E:"
+            if len(drive) == 2 and drive[1] == ":" and drive[0].isalpha():
+                if drive[0].upper() >= "E":
+                    return drive + os.sep
+            return None
+
+        # Common removable mount roots on macOS/Linux
+        removable_roots = (
+            "/Volumes",
+            "/media",
+            "/run/media",
+            "/mnt",
+        )
+        for root in removable_roots:
+            root_norm = os.path.normpath(root)
+            if normalized == root_norm or normalized.startswith(root_norm + os.sep):
+                return root_norm + os.sep
+
+        return None
 
     @staticmethod
     def preprocess_data_for_encryption(data: str) -> bytes:
