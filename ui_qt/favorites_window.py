@@ -368,7 +368,9 @@ class FavoritesWindow(SmartWindow):
                     filepath = track.filepath.strip() if track.filepath else ""
                     display_text = title or filepath or _("No title or filepath available")
             else:
-                display_text = f"{favorite.attribute.value}: {favorite.value}"
+                display_text = (
+                    f"{favorite.attribute.get_translation()}: {favorite.value}"
+                )
 
             title_label = QLabel(display_text, self.results_widget)
             title_label.setWordWrap(True)
@@ -480,7 +482,9 @@ class FavoritesWindow(SmartWindow):
                     filepath = track.filepath.strip() if track.filepath else ""
                     display_text = title or filepath or _("No title or filepath available")
             else:
-                display_text = f"{favorite.attribute.value}: {favorite.value}"
+                display_text = (
+                    f"{favorite.attribute.get_translation()}: {favorite.value}"
+                )
 
             title_label = QLabel(display_text, self.results_widget)
             title_label.setWordWrap(True)
@@ -634,7 +638,10 @@ class FavoriteWindow(SmartWindow):
             details_layout.addWidget(QLabel(f"{_('File')}: {track.filepath}", self))
         else:
             details_layout.addWidget(
-                QLabel(f"{_('Type')}: {self.favorite.attribute.value}", self)
+                QLabel(
+                    f"{_('Type')}: {self.favorite.attribute.get_translation()}",
+                    self,
+                )
             )
             details_layout.addWidget(
                 QLabel(f"{_('Value')}: {self.favorite.value}", self)
