@@ -49,7 +49,7 @@ class Muse:
         if self._schedule is None:
             raise Exception("Failed to establish active schedule")
         self.memory = muse_memory
-        self.llm = LLM(model_name=config.llm_model_name)
+        self.llm = LLM(model_name=config.llm_model_name, state_key="muse")
         
         initial_voice = self._schedule.voice
         persona = self.memory.get_persona_manager().get_persona(initial_voice)
@@ -330,10 +330,14 @@ class Muse:
             penalty = self.llm.get_llm_penalty()
             import random
             if random.random() < penalty:
-                self.talk_about_something(spot_profile)
-                spot_profile.was_spoken = True
+                topic_spoken = self.talk_about_something(spot_profile)
+                if topic_spoken:
+                    spot_profile.was_spoken = True
+                else:
+                    self.memory.tracks_since_last_topic += 1
             else:
                 logger.info(f"Skipping talk_about_something due to LLM failure penalty (failures={self.llm.get_failure_count()}, penalty={penalty:.3f})")
+                self.memory.tracks_since_last_topic += 1
         else:
             self.memory.tracks_since_last_topic += 1
 
@@ -437,8 +441,6 @@ class Muse:
         spot_profile.topic_translated = spot_profile.topic.translate()
 
     def talk_about_something(self, spot_profile):
-        self.memory.tracks_since_last_topic = 0
-
         if (spot_profile.has_already_spoken and random.random() < 0.75) \
                 or (not spot_profile.has_already_spoken and random.random() < 0.6):
             if not spot_profile.has_already_spoken:
@@ -496,12 +498,14 @@ class Muse:
             func = self.teach_language
         else:
             logger.warning(f"Unhandled topic: {topic}")
-            return
+            return False
 
-        self._wrap_function(spot_profile, topic, func, args, kwargs)
-        
-        # Update the last topic that was discussed
-        self.memory.update_last_topic(topic)
+        topic_succeeded = self._wrap_function(spot_profile, topic, func, args, kwargs)
+        if topic_succeeded:
+            self.memory.tracks_since_last_topic = 0
+            # Update the last topic that was discussed
+            self.memory.update_last_topic(topic)
+        return topic_succeeded
 
     def talk_about_weather(self, city="Washington", spot_profile=None):
         weather = self.open_weather_api.get_weather_for_city(city)
@@ -734,23 +738,34 @@ class Muse:
     def _wrap_function(self, spot_profile, topic, func, _args=[], _kwargs={}):
         try:
             result = func(*_args, **_kwargs)
-            return result
+            return True
         except WebConnectionException as e:
             logger.error(e)
             self.say_at_some_point(_("We're having some technical difficulties in accessing our source for {0}. We'll try again later").format(topic),
                                    spot_profile, None)
+            return False
         except LLMResponseException as e:
             logger.error(e)
-            self.say_at_some_point(_("It seems our writer for {0} is unexpectedly away at the moment. Did we forget to pay his salary again?").format(topic),
-                                   spot_profile, None)
+            if self.llm.is_failing():
+                logger.info(
+                    "Suppressing LLM failure fallback chatter for topic %s (failures=%s)",
+                    topic,
+                    self.llm.get_failure_count(),
+                )
+            else:
+                self.say_at_some_point(_("It seems our writer for {0} is unexpectedly away at the moment. Did we forget to pay his salary again?").format(topic),
+                                       spot_profile, None)
+            return False
         except BlacklistException as e:
             logger.error(e)
             self.say_at_some_point(_("We've found problems with all of our {0} ideas. Please try again later.").format(topic),
                                    spot_profile, None)
+            return False
         except Exception as e:
             logger.error(e)
             traceback.print_exc()
             self.say_at_some_point(_("Something went wrong. We'll try to fix it soon."), spot_profile, None)
+            return False
 
     def _get_introduction_prompt(self, persona: Optional[DJPersona],
                                  get_upcoming_tracks_callback: Optional[Callable[[int], List[MediaTrack]]] = None
