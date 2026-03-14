@@ -25,6 +25,14 @@ class JobQueue:
         self.pending_jobs.append(job_args)
         logger.info(f"JobQueue {self.name} - Added pending job: {job_args}")
 
+    def clear_pending(self):
+        """Clear pending jobs only; keep running-state unchanged."""
+        if self.pending_jobs:
+            logger.info(
+                f"JobQueue {self.name} - Clearing {len(self.pending_jobs)} pending jobs"
+            )
+            self.pending_jobs = []
+
     def cancel(self):
         """Clear all pending jobs from the queue and reset the job_running flag."""
         if self.pending_jobs:

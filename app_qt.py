@@ -798,27 +798,30 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
                 return
         if override_scheduled:
             self.cancel()
+            # Override mode means "replace queued requests with this one".
+            self.job_queue.clear_pending()
             time.sleep(2)
 
-        run_token = time.time_ns()
-        self._active_run_token = run_token
+        def run_async(a, run_token):
+            try:
+                self.current_run = Run(a, app_actions=self.app_actions)
+                self.current_run.execute()
+            finally:
+                self.job_queue.job_running = False
+                next_args = self.job_queue.take()
+                self._sig_run_finished.emit(next_args, run_token)
 
-        def run_async(a):
-            self.job_queue.job_running = True
-            self.current_run = Run(a, app_actions=self.app_actions)
-            self.current_run.execute()
-            self.job_queue.job_running = False
-            next_args = self.job_queue.take()
-            self._sig_run_finished.emit(next_args, run_token)
-
-        if not override_scheduled and self.job_queue.has_pending():
+        if self.job_queue.has_pending():
             self.job_queue.add(args)
         else:
+            run_token = time.time_ns()
+            self._active_run_token = run_token
             self.runner_app_config.set_from_run_config(args_copy)
             self._set_playback_paused_ui(False)
             # Create progress/cancel widgets on main thread before starting worker.
             self._show_progress_widgets()
-            Utils.start_thread(run_async, use_asyncio=False, args=[args])
+            self.job_queue.job_running = True
+            Utils.start_thread(run_async, use_asyncio=False, args=[args, run_token])
 
     def start_playback(self, track=None, playlist_sort_type=None, overwrite=None,
                         use_all_music=False):
@@ -840,6 +843,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         if next_args:
             self._set_playback_paused_ui(False)
             self._show_progress_widgets()
+            self.job_queue.job_running = True
             Utils.start_thread(
                 lambda: self._run_async_next(next_args, run_token),
                 use_asyncio=False,
@@ -850,12 +854,13 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
 
     def _run_async_next(self, next_args, run_token):
         """Worker for chained run (same as run_async body, no progress bar creation)."""
-        self.job_queue.job_running = True
-        self.current_run = Run(next_args, app_actions=self.app_actions)
-        self.current_run.execute()
-        self.job_queue.job_running = False
-        next_args = self.job_queue.take()
-        self._sig_run_finished.emit(next_args, run_token)
+        try:
+            self.current_run = Run(next_args, app_actions=self.app_actions)
+            self.current_run.execute()
+        finally:
+            self.job_queue.job_running = False
+            next_args = self.job_queue.take()
+            self._sig_run_finished.emit(next_args, run_token)
 
     def update_progress_bar(self, progress, elapsed_time, total_duration):
         self._sig_progress.emit(int(progress), float(elapsed_time), float(total_duration))
