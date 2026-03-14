@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 import json
 import math
+import os
 import random
 import threading
 import time
@@ -99,19 +100,40 @@ class LLM:
     CHECK_INTERVAL = 0.1  # How often to check for cancellation
     FAILURE_THRESHOLD = 3  # Number of consecutive failures before considering LLM unavailable
     DEFAULT_STATE = "local"  # Default state key for instances without a specific state
+    PROMPT_RESPONSE_HISTORY_MAX_ITEMS = 200
     
     # Class-level failure tracking: maps state keys to failure counts
     _failure_counts = {}
 
-    def __init__(self, model_name="deepseek-r1:14b", run_context=None, state_key=None):
+    def __init__(
+        self,
+        model_name="deepseek-r1:14b",
+        run_context=None,
+        state_key=None,
+        track_prompts_and_responses=False,
+    ):
         self.model_name = model_name
         self.run_context = run_context
         self.state_key = state_key if state_key is not None else LLM.DEFAULT_STATE
+        self.track_prompts_and_responses = bool(track_prompts_and_responses)
+        self.prompt_response_history = []
+        self._prompt_response_lock = threading.Lock()
+        state_suffix = "".join(
+            c if (c.isalnum() or c in ("-", "_")) else "_" for c in str(self.state_key)
+        )
+        self.prompt_response_history_file = os.path.join(
+            os.getcwd(), f"temp_llm_prompt_response_history_{state_suffix}.json"
+        )
         self._cancelled = False
         self._result = None
         self._exception = None
         self._thread = None
         logger.info(f"Using LLM model: {self.model_name} (state: {self.state_key})")
+        if self.track_prompts_and_responses:
+            logger.info(
+                "LLM prompt/response tracking is enabled (file: %s)",
+                self.prompt_response_history_file,
+            )
 
     @classmethod
     def _get_failure_count_for_state(cls, state_key):
@@ -214,6 +236,12 @@ class LLM:
             resp_json = json.loads(response)
             result = LLMResult.from_json(resp_json, context_provided=context is not None)
             result.response = self._clean_response_for_models(result.response)
+            self._track_prompt_response(
+                prompt=query,
+                response=result.response,
+                context_provided=context is not None,
+                system_prompt_included=("system" in data),
+            )
             logger.debug(f"LLM response received, length: {len(result.response)}")
             if result.validate():
                 # Reset LLM failure count on success
@@ -225,6 +253,45 @@ class LLM:
             logger.error(f"Failed to generate LLM response: {e}")
             self.increment_failure_count()  # Increment on LLM failure
             raise LLMResponseException(f"Failed to generate LLM response: {e}")
+
+    def _track_prompt_response(self, prompt, response, context_provided=False, system_prompt_included=False):
+        """Record prompt/response pairs for debugging when enabled."""
+        if not self.track_prompts_and_responses:
+            return
+        entry = {
+            "timestamp": time.time(),
+            "model": self.model_name,
+            "prompt": prompt,
+            "response": response,
+            "context_provided": bool(context_provided),
+            "system_prompt_included": bool(system_prompt_included),
+        }
+        with self._prompt_response_lock:
+            self.prompt_response_history.append(entry)
+            if len(self.prompt_response_history) > self.PROMPT_RESPONSE_HISTORY_MAX_ITEMS:
+                self.prompt_response_history = self.prompt_response_history[
+                    -self.PROMPT_RESPONSE_HISTORY_MAX_ITEMS:
+                ]
+            self._persist_prompt_response_history()
+            logger.debug(
+                "Tracked LLM prompt/response pair (history size: %s)",
+                len(self.prompt_response_history),
+            )
+
+    def _persist_prompt_response_history(self):
+        """Persist tracked prompt/response history to a readable temp JSON file."""
+        payload = {
+            "model": self.model_name,
+            "state_key": self.state_key,
+            "updated_at": time.time(),
+            "max_items": self.PROMPT_RESPONSE_HISTORY_MAX_ITEMS,
+            "items": self.prompt_response_history,
+        }
+        try:
+            with open(self.prompt_response_history_file, "w", encoding="utf-8") as out_file:
+                json.dump(payload, out_file, indent=2, ensure_ascii=False)
+        except Exception as e:
+            logger.warning("Failed to persist LLM prompt/response history: %s", e)
 
     def generate_response_async(self, query, timeout=DEFAULT_TIMEOUT, context=None, system_prompt=None, system_prompt_drop_rate=DEFAULT_SYSTEM_PROMPT_DROP_RATE):
         """Generate a response from the LLM in a separate thread with cancellation support."""
