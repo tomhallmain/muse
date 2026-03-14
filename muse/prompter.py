@@ -135,6 +135,41 @@ class Prompter:
         return history
 
     @staticmethod
+    def get_unresolved_topic_failures() -> List[dict]:
+        """Return topics whose latest event is a failure (no newer success yet)."""
+        unresolved = []
+        for topic in Topic.__members__.values():
+            entries = Prompter.get_topic_history(topic=topic)
+            if not entries:
+                continue
+            latest = entries[0]
+            if not bool(latest.get("error_state")):
+                continue
+
+            consecutive_failures = 0
+            last_success_timestamp = None
+            for entry in entries:
+                if bool(entry.get("error_state")):
+                    consecutive_failures += 1
+                else:
+                    last_success_timestamp = entry.get("timestamp")
+                    break
+
+            unresolved.append(
+                {
+                    "topic": topic,
+                    "topic_value": topic.value,
+                    "topic_translation": topic.translate(),
+                    "last_failure_timestamp": latest.get("timestamp", ""),
+                    "last_failure_type": latest.get("error_type", ""),
+                    "last_failure_note": latest.get("note", ""),
+                    "consecutive_failures": consecutive_failures,
+                    "last_success_timestamp": last_success_timestamp,
+                }
+            )
+        return unresolved
+
+    @staticmethod
     def _get_last_topic_timestamp(topic: Topic) -> Optional[str]:
         """Get latest timestamp for a topic from history, falling back to legacy key."""
         topic_history = Prompter.get_topic_history(topic=topic, limit=1)

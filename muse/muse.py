@@ -35,6 +35,7 @@ class Muse:
     enable_preparation = config.muse_config[Globals.ConfigKeys.ENABLE_PREPARATION]
     preparation_starts_minutes_from_end = float(config.muse_config[Globals.ConfigKeys.PREPARATION_STARTS_MINUTES_FROM_END])
     preparation_starts_after_seconds_sleep = int(config.muse_config[Globals.ConfigKeys.PREPARATION_STARTS_AFTER_SECONDS_SLEEP])
+    _startup_topic_failures_logged = False
 
     def __init__(self, args, library_data, run_context, ui_callbacks=None):
         self.args = args
@@ -77,6 +78,29 @@ class Muse:
         self.prior_id = "prior"
         self.get_playlist_callback = None
         self._last_checked_schedules = None
+        self._log_unresolved_topic_failures_on_startup()
+
+    def _log_unresolved_topic_failures_on_startup(self):
+        """Log unresolved topic failures once per process start."""
+        if Muse._startup_topic_failures_logged:
+            return
+        Muse._startup_topic_failures_logged = True
+        unresolved = Prompter.get_unresolved_topic_failures()
+        if not unresolved:
+            return
+        logger.warning(
+            "Detected %s unresolved topic failure(s) from history:",
+            len(unresolved),
+        )
+        for item in unresolved:
+            logger.warning(
+                " - Topic '%s' last failed at %s (type=%s, consecutive_failures=%s, last_success=%s)",
+                item.get("topic_translation") or item.get("topic_value"),
+                item.get("last_failure_timestamp") or "unknown",
+                item.get("last_failure_type") or "unknown",
+                item.get("consecutive_failures", 0),
+                item.get("last_success_timestamp") or "never",
+            )
 
     def get_library_data(self):
         if self.library_data is None:
