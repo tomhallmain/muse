@@ -52,6 +52,8 @@ class Prompter:
 
     TIMESTAMP_FORMAT: str = "%Y-%m-%d %H:%M"
     PERSONA_INIT_PROMPT_NAME = "persona_init"
+    TOPIC_HISTORY_KEY: str = "topic_history"
+    TOPIC_HISTORY_MAX_ITEMS: int = 500
 
     @staticmethod
     def minutes_since(measure_time: datetime.datetime, from_time: Optional[datetime.datetime] = None) -> int:
@@ -62,17 +64,88 @@ class Prompter:
         return int(td.days * (60 * 24) + td.seconds / 60)
 
     @staticmethod
-    def update_history(topic: Topic, text: str = "") -> None:
-        """Update the timestamp for when a topic was last discussed.
+    def _read_topic_history() -> List[dict]:
+        history = app_info_cache.get(Prompter.TOPIC_HISTORY_KEY, default_val=[])
+        if not isinstance(history, list):
+            history = []
+        # Lightweight migration: seed history from legacy last-topic keys.
+        if len(history) == 0:
+            migrated = []
+            for topic in Topic.__members__.values():
+                ts = app_info_cache.get(topic.value)
+                if isinstance(ts, str) and ts.strip():
+                    migrated.append(
+                        {
+                            "topic": topic.value,
+                            "timestamp": ts,
+                            "error_state": False,
+                            "error_type": "",
+                            "note": "",
+                        }
+                    )
+            if migrated:
+                app_info_cache.set(Prompter.TOPIC_HISTORY_KEY, migrated)
+                history = migrated
+        return history
+
+    @staticmethod
+    def update_history(
+        topic: Topic,
+        text: str = "",
+        error_state: bool = False,
+        error_type: str = "",
+    ) -> None:
+        """Append a topic history event and update topic's last timestamp.
         
         Args:
             topic (Topic): The topic being discussed
-            text (str, optional): Reserved for future use
+            text (str, optional): Additional note/debug detail
+            error_state (bool): Whether this history entry represents a failure
+            error_type (str): Optional failure category identifier
         
         Raises:
             Exception: If topic is not a valid Topic enum
         """
-        app_info_cache.set(topic.value, datetime.datetime.now().strftime(Prompter.TIMESTAMP_FORMAT))
+        timestamp = datetime.datetime.now().strftime(Prompter.TIMESTAMP_FORMAT)
+        # Keep legacy per-topic timestamp key for compatibility.
+        app_info_cache.set(topic.value, timestamp)
+        history = Prompter._read_topic_history()
+        history.append(
+            {
+                "topic": topic.value,
+                "timestamp": timestamp,
+                "error_state": bool(error_state),
+                "error_type": str(error_type or ""),
+                "note": str(text or ""),
+            }
+        )
+        if len(history) > Prompter.TOPIC_HISTORY_MAX_ITEMS:
+            history = history[-Prompter.TOPIC_HISTORY_MAX_ITEMS:]
+        app_info_cache.set(Prompter.TOPIC_HISTORY_KEY, history)
+
+    @staticmethod
+    def get_topic_history(topic: Optional[Topic] = None, limit: Optional[int] = None) -> List[dict]:
+        """Get topic history entries (newest first), optionally filtered by topic."""
+        history = Prompter._read_topic_history()
+        if topic is not None:
+            history = [entry for entry in history if entry.get("topic") == topic.value]
+        history = list(reversed(history))
+        if limit is not None and limit >= 0:
+            history = history[:limit]
+        return history
+
+    @staticmethod
+    def _get_last_topic_timestamp(topic: Topic) -> Optional[str]:
+        """Get latest timestamp for a topic from history, falling back to legacy key."""
+        topic_history = Prompter.get_topic_history(topic=topic, limit=1)
+        if topic_history:
+            ts = topic_history[0].get("timestamp")
+            if isinstance(ts, str) and ts.strip():
+                return ts
+        legacy_ts = app_info_cache.get(topic.value)
+        if isinstance(legacy_ts, str) and legacy_ts.strip():
+            return legacy_ts
+        return None
 
     @staticmethod
     def time_from_last_topic(topic: Topic) -> int:
@@ -81,7 +154,7 @@ class Prompter:
         Returns:
             int: Minutes since topic was last discussed, or very large number if never discussed
         """
-        item_timestamp = app_info_cache.get(topic.value)
+        item_timestamp = Prompter._get_last_topic_timestamp(topic)
         if item_timestamp is None:
             return 9999999999
         else:
@@ -111,12 +184,7 @@ class Prompter:
         oldest_topic: Optional[Topic] = None
         for topic in Topic.__members__.values():
             if topic in excluded_topics: continue
-            topic_time_str = app_info_cache.get(topic.value)
-            if topic_time_str is not None:
-                topic_time = datetime.datetime.strptime(topic_time_str, Prompter.TIMESTAMP_FORMAT)
-                topic_time_since = Prompter.minutes_since(topic_time)
-            else:
-                topic_time_since = 9999999999
+            topic_time_since = Prompter.time_from_last_topic(topic)
             if oldest_time is None or topic_time_since > oldest_time:
                 oldest_time = topic_time_since
                 oldest_topic = topic

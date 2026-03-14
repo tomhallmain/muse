@@ -505,6 +505,15 @@ class Muse:
             self.memory.tracks_since_last_topic = 0
             # Update the last topic that was discussed
             self.memory.update_last_topic(topic)
+        else:
+            # Some topic handlers can fail before prompt generation
+            # (e.g. upstream API fetch errors). Mark as recently attempted
+            # so selection doesn't keep retrying the same failing oldest topic.
+            Prompter.update_history(
+                topic,
+                error_state=True,
+                error_type="topic_generation_failed",
+            )
         return topic_succeeded
 
     def talk_about_weather(self, city="Washington", spot_profile=None):
@@ -746,7 +755,7 @@ class Muse:
             return False
         except LLMResponseException as e:
             logger.error(e)
-            if self.llm.is_failing():
+            if self.llm.get_failure_count() > 1:
                 logger.info(
                     "Suppressing LLM failure fallback chatter for topic %s (failures=%s)",
                     topic,
