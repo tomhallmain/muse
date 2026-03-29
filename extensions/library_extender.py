@@ -46,7 +46,7 @@ class EogfiaqREkb:
         self.m = {
             "substring_match": 0.0,
             "word_overlap": 0.0,
-            "levenshtein_similarity": 0.0,
+            "string_similarity": 0.0,
             "overall_quality": 0.0
         }
         self._43a2_ = -1.0

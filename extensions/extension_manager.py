@@ -490,16 +490,16 @@ class ExtensionManager:
         common_words = q_words.intersection(t_words)
         metrics['word_overlap'] = len(common_words) / len(q_words) if q_words else 0.0
         
-        # 3. Levenshtein distance (normalized)
-        levenshtein_dist = Utils.string_distance(q, t)
+        # 3. String distance (normalized)
+        l_dist = Utils.string_distance(q, t)
         max_len = max(len(q), len(t))
-        metrics['levenshtein_similarity'] = 1.0 - (levenshtein_dist / max_len) if max_len > 0 else 0.0
+        metrics['string_similarity'] = 1.0 - (l_dist / max_len) if max_len > 0 else 0.0
         
         # 4. Overall quality score (weighted combination)
         metrics['overall_quality'] = (
             metrics['substring_match'] * 0.5 +      # Most important
-            metrics['word_overlap'] * 0.3 +          # Important
-            metrics['levenshtein_similarity'] * 0.2  # Less important
+            metrics['word_overlap'] * 0.3 +         # Important
+            metrics['string_similarity'] * 0.2      # Less important
         )
         
         return metrics
@@ -521,7 +521,7 @@ class ExtensionManager:
             obj.update({
                 'substring_match': 0.0,
                 'word_overlap': 0.0,
-                'levenshtein_similarity': 0.0,
+                'string_similarity': 0.0,
                 'overall_quality': 0.0
             })
         
