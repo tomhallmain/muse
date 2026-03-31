@@ -2,8 +2,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
-"POT-Creation-Date: 2026-03-29 01:24-0400\n"
-"PO-Revision-Date: 2026-03-29 01:24-0400\n"
+"POT-Creation-Date: 2026-03-31 17:30-0400\n"
+"PO-Revision-Date: 2026-03-31 17:30-0400\n"
 "Last-Translator: Translator Name <translator@example.com>\n"
 "Language-Team: fr Team <<EMAIL>>\n"
 "Language: fr\n"
@@ -11,6 +11,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: app_qt.py:93 app_qt.py:94
+msgid " Muse "
+msgstr " Muse "
 
 #: app_qt.py:220
 msgid "File"
@@ -164,6 +168,15 @@ msgstr "Statut de l'extension"
 msgid "Volume"
 msgstr "Volume"
 
+#: app_qt.py:340
+msgid ""
+"Base volume input. Actual output may vary per track due to normalization; "
+"see the media overlay number for resolved output volume."
+msgstr ""
+"Volume de base en entrée. Le rendu réel peut varier d'une piste à l'autre en"
+" raison de la normalisation ; consultez le numéro de surimpression "
+"médiathèque pour obtenir le rendu du volume résolu."
+
 #: app_qt.py:363 app_qt.py:1119 ui_qt/extensions_window.py:259
 #: ui_qt/favorites_window.py:381 ui_qt/favorites_window.py:495
 #: ui_qt/media_controls_overlay.py:351 ui_qt/network_media_window.py:236
@@ -171,6 +184,10 @@ msgstr "Volume"
 #: ui_qt/search_window.py:714
 msgid "Play"
 msgstr "Jouer"
+
+#: app_qt.py:368 ui_qt/timer_window.py:130
+msgid "Stop"
+msgstr "Stop"
 
 #: app_qt.py:372
 msgid "Next"
@@ -180,14 +197,21 @@ msgstr "Suivant"
 msgid "Next Grouping"
 msgstr "Groupe suivant"
 
-#: app_qt.py:1109 ui_qt/media_controls_overlay.py:351
-#: ui_qt/timer_window.py:126 ui_qt/timer_window.py:195
-msgid "Pause"
-msgstr "Pause"
+#: app_qt.py:384
+msgid "Sorting Options"
+msgstr "Options de tri"
 
-#: app_qt.py:368 ui_qt/timer_window.py:130
-msgid "Stop"
-msgstr "Stop"
+#: app_qt.py:388 app_qt.py:700 ui_qt/playlist_window.py:186
+#: ui_qt/playlist_window.py:243 ui_qt/playlist_window.py:443
+#: ui_qt/playlist_window.py:1042 ui_qt/playlist_window.py:1328
+msgid "(custom)"
+msgstr "(personnalisé)"
+
+#: app_qt.py:388 app_qt.py:700 ui_qt/playlist_window.py:186
+#: ui_qt/playlist_window.py:443 ui_qt/playlist_window.py:1008
+#: ui_qt/playlist_window.py:1042 ui_qt/playlist_window.py:1328
+msgid "(defaults)"
+msgstr "(défauts)"
 
 #: app_qt.py:396 app_qt.py:919
 msgid "Shutdown After Current Track"
@@ -229,10 +253,6 @@ msgstr "Activer le fractionnement des pistes"
 msgid "Use system language for all topics"
 msgstr "Utiliser la langue du système"
 
-#: ui_qt/sort_config_window.py:74
-msgid "Thorough playlist memory check"
-msgstr "Vérification approfondie de la mémoire de la liste de lecture"
-
 #: app_qt.py:564
 msgid "Confirm Quit"
 msgstr "Confirmer Quitter"
@@ -240,31 +260,6 @@ msgstr "Confirmer Quitter"
 #: app_qt.py:564
 msgid "Would you like to quit the application?"
 msgstr "Souhaitez-vous quitter l'application ?"
-
-#: app_qt.py:797
-msgid "Confirm Run"
-msgstr "Confirmer l'exécution"
-
-#: app_qt.py:797
-msgid "Are you sure you want to proceed?"
-msgstr "Êtes-vous sûr de vouloir continuer ?"
-
-#: app_qt.py:923
-msgid "Confirm Shutdown"
-msgstr "Confirmez l'arrêt"
-
-#: app_qt.py:924
-msgid "Are you sure you want to shutdown after the current track finishes?"
-msgstr ""
-"Êtes-vous sûr que vous voulez éteindre après la fin de la piste actuelle ?"
-
-#: app_qt.py:930
-msgid "Cancel Scheduled Shutdown"
-msgstr "Annuler l'arrêt planifié"
-
-#: app.py:702
-msgid "Copied album art to clipboard."
-msgstr "Copie de la pochette d'album dans le presse-papiers."
 
 #: app_qt.py:577 app_qt.py:1177 app_qt.py:1184 app_qt.py:1272 app_qt.py:1317
 #: ui_qt/audio_device_window.py:320 ui_qt/audio_device_window.py:331
@@ -287,6 +282,35 @@ msgstr "Copie de la pochette d'album dans le presse-papiers."
 #: ui_qt/schedules_window.py:169 ui_qt/track_details_window.py:214
 msgid "Error"
 msgstr "Erreur"
+
+#: app_qt.py:662
+msgid "(no playlist configured)"
+msgstr "(Aucune liste de lecture configurée)"
+
+#: app_qt.py:666
+msgid "(see playlist window)"
+msgstr "(Consulter la fenêtre de la playlist)"
+
+#: app_qt.py:797
+msgid "Confirm Run"
+msgstr "Confirmer l'exécution"
+
+#: app_qt.py:797
+msgid "Are you sure you want to proceed?"
+msgstr "Êtes-vous sûr de vouloir continuer ?"
+
+#: app_qt.py:923
+msgid "Confirm Shutdown"
+msgstr "Confirmez l'arrêt"
+
+#: app_qt.py:924
+msgid "Are you sure you want to shutdown after the current track finishes?"
+msgstr ""
+"Êtes-vous sûr que vous voulez éteindre après la fin de la piste actuelle ?"
+
+#: app_qt.py:930
+msgid "Cancel Scheduled Shutdown"
+msgstr "Annuler l'arrêt planifié"
 
 #: app_qt.py:939 muse/muse_spot_profile.py:216
 msgid "Track: "
@@ -332,6 +356,15 @@ msgstr "Répertoires: {0}"
 msgid "DJ: "
 msgstr "DJ : "
 
+#: app_qt.py:1107
+msgid "Continue"
+msgstr "Poursuivez"
+
+#: app_qt.py:1109 ui_qt/media_controls_overlay.py:351
+#: ui_qt/timer_window.py:126 ui_qt/timer_window.py:195
+msgid "Pause"
+msgstr "Pause"
+
 #: app_qt.py:1148
 msgid "Staged Playlist: "
 msgstr "Liste de lecture mise en scène : "
@@ -339,43 +372,6 @@ msgstr "Liste de lecture mise en scène : "
 #: app_qt.py:1177
 msgid "Track not found in library for query: "
 msgstr "Piste non trouvée dans la bibliothèque pour la requête : "
-
-#: app_qt.py:93 app_qt.py:94
-msgid " Muse "
-msgstr " Muse "
-
-#: app_qt.py:340
-msgid ""
-"Base volume input. Actual output may vary per track due to normalization; "
-"see the media overlay number for resolved output volume."
-msgstr ""
-"Volume de base en entrée. Le rendu réel peut varier d'une piste à l'autre en"
-" raison de la normalisation ; consultez le numéro de surimpression "
-"médiathèque pour obtenir le rendu du volume résolu."
-
-#: app_qt.py:384
-msgid "Sorting Options"
-msgstr "Options de tri"
-
-#: app_qt.py:388 app_qt.py:700 ui_qt/playlist_window.py:186
-#: ui_qt/playlist_window.py:243 ui_qt/playlist_window.py:443
-#: ui_qt/playlist_window.py:1042 ui_qt/playlist_window.py:1328
-msgid "(custom)"
-msgstr "(personnalisé)"
-
-#: app_qt.py:388 app_qt.py:700 ui_qt/playlist_window.py:186
-#: ui_qt/playlist_window.py:443 ui_qt/playlist_window.py:1008
-#: ui_qt/playlist_window.py:1042 ui_qt/playlist_window.py:1328
-msgid "(defaults)"
-msgstr "(défauts)"
-
-#: app_qt.py:662
-msgid "(no playlist configured)"
-msgstr "(Aucune liste de lecture configurée)"
-
-#: app_qt.py:666
-msgid "(see playlist window)"
-msgstr "(Consulter la fenêtre de la playlist)"
 
 #: app_qt.py:1214
 msgid "Theme switched to {0}."
@@ -404,10 +400,6 @@ msgstr "Extension « {0} » en attente depuis {1} minutes"
 #: extensions/extension_manager.py:421
 msgid "Extension \"{0}\" ready"
 msgstr "Extension « {0} » prête"
-
-#: ui_qt/auth/password_dialog.py:40 ui_qt/auth/password_dialog.py:47
-msgid "⚠ Caps Lock is ON"
-msgstr "⚠ Le mode Majuscule est activé"
 
 #: library_data/blacklist.py:199
 msgid "[regex]"
@@ -913,6 +905,10 @@ msgstr "Correspondants {0} élément(s) :"
 msgid "  \"{0}\" → rule \"{1}\""
 msgstr "  {0} → règle {1}"
 
+#: ui_qt/blacklist_window.py:61
+msgid "New Blacklist Item"
+msgstr "Nouveau dans la liste noire"
+
 #: ui_qt/blacklist_window.py:63
 msgid "Modify Blacklist Item: {0}"
 msgstr "Modifier l'élément de la liste noire : {0}"
@@ -972,36 +968,6 @@ msgstr ""
 "AVERTISSEMENT : Êtes-vous sûr de vouloir révéler les concepts de la liste noire ? Ces concepts sont préjudiciables ou offensants et vous causeront de graves dommages psychologiques. Ne révélez en aucun cas ces concepts à des mineurs.\n"
 "\n"
 "Si vous êtes jeune, incertain ou même adulte, cliquez sur le bouton de fermeture de cette fenêtre et faites quelque chose d'amusant à la place."
-
-#: ui_qt/blacklist_window.py:770
-msgid "Confirm Load Default Blacklist"
-msgstr "Confirmer le chargement de la liste noire par défaut"
-
-#: ui_qt/blacklist_window.py:772
-msgid ""
-"Are you sure you want to load the default blacklist?\n"
-"\n"
-"⚠️ WARNING: This will erase your current blacklist and replace it with the default items.\n"
-"• All your current blacklist items will be permanently deleted\n"
-"• You will need to rebuild your blacklist from scratch if you want to restore it later\n"
-"\n"
-"Do you want to continue?"
-msgstr ""
-"Êtes-vous sûr de vouloir charger la liste noire par défaut ?\n"
-"\n"
-"⚠️ AVERTISSEMENT : Cette opération effacera votre liste noire actuelle et la remplacera par les éléments par défaut.\n"
-"- Tous les éléments de votre liste noire actuelle seront définitivement supprimés\n"
-"- Vous devrez reconstruire votre liste noire à partir de zéro si vous souhaitez la restaurer ultérieurement.\n"
-"\n"
-"Voulez-vous continuer ?"
-
-#: ui_qt/blacklist_window.py:786
-msgid "Loaded default blacklist"
-msgstr "Liste noire par défaut chargée"
-
-#: ui_qt/blacklist_window.py:790
-msgid "Error loading default blacklist"
-msgstr "Erreur de chargement de la liste noire par défaut"
 
 #: ui_qt/blacklist_window.py:357
 msgid "Global Settings:"
@@ -1090,11 +1056,6 @@ msgstr "Élément"
 msgid "Disabled"
 msgstr "Non activé"
 
-#: ui_qt/blacklist_window.py:497 ui_qt/blacklist_window.py:504
-#: ui_qt/blacklist_window.py:511
-msgid "Select an item first"
-msgstr "sélectionnez un élément d'abord"
-
 #: ui_qt/blacklist_window.py:479 ui_qt/schedules_window.py:264
 msgid "Modify"
 msgstr "Modifier"
@@ -1108,6 +1069,15 @@ msgstr "Supprimer"
 #: ui_qt/blacklist_window.py:485
 msgid "Toggle"
 msgstr "Toggler"
+
+#: ui_qt/blacklist_window.py:497 ui_qt/blacklist_window.py:504
+#: ui_qt/blacklist_window.py:511
+msgid "Select an item first"
+msgstr "sélectionnez un élément d'abord"
+
+#: ui_qt/blacklist_window.py:535
+msgid "Preview window not yet available."
+msgstr "La fenêtre de prévisualisation n'est pas encore disponible."
 
 #: ui_qt/blacklist_window.py:576 ui_qt/blacklist_window.py:618
 msgid "Added item to blacklist: {0}"
@@ -1186,6 +1156,36 @@ msgstr "désactivé"
 #: ui_qt/blacklist_window.py:764
 msgid "Concepts revealed"
 msgstr "Les concepts sont révélés"
+
+#: ui_qt/blacklist_window.py:770
+msgid "Confirm Load Default Blacklist"
+msgstr "Confirmer le chargement de la liste noire par défaut"
+
+#: ui_qt/blacklist_window.py:772
+msgid ""
+"Are you sure you want to load the default blacklist?\n"
+"\n"
+"⚠️ WARNING: This will erase your current blacklist and replace it with the default items.\n"
+"• All your current blacklist items will be permanently deleted\n"
+"• You will need to rebuild your blacklist from scratch if you want to restore it later\n"
+"\n"
+"Do you want to continue?"
+msgstr ""
+"Êtes-vous sûr de vouloir charger la liste noire par défaut ?\n"
+"\n"
+"⚠️ AVERTISSEMENT : Cette opération effacera votre liste noire actuelle et la remplacera par les éléments par défaut.\n"
+"- Tous les éléments de votre liste noire actuelle seront définitivement supprimés\n"
+"- Vous devrez reconstruire votre liste noire à partir de zéro si vous souhaitez la restaurer ultérieurement.\n"
+"\n"
+"Voulez-vous continuer ?"
+
+#: ui_qt/blacklist_window.py:786
+msgid "Loaded default blacklist"
+msgstr "Liste noire par défaut chargée"
+
+#: ui_qt/blacklist_window.py:790
+msgid "Error loading default blacklist"
+msgstr "Erreur de chargement de la liste noire par défaut"
 
 #: ui_qt/blacklist_window.py:797
 msgid "Import Blacklist"
@@ -1316,6 +1316,10 @@ msgstr ""
 msgid "Failed to delete composer:"
 msgstr "Impossible de supprimer le compositeur :"
 
+#: ui_qt/composers_window.py:374 ui_qt/composers_window.py:653
+msgid "Composer Search"
+msgstr "Recherche de compositeurs"
+
 #: ui_qt/composers_window.py:374
 msgid "Search Composers"
 msgstr "Recherche de compositeurs"
@@ -1354,10 +1358,6 @@ msgstr "Aucune recherche récente n'a été effectuée."
 #: ui_qt/network_media_window.py:386 ui_qt/search_window.py:703
 msgid "Details"
 msgstr "Détails"
-
-#: ui_qt/composers_window.py:374 ui_qt/composers_window.py:653
-msgid "Composer Search"
-msgstr "Recherche de compositeurs"
 
 #: ui_qt/configuration_window.py:39
 msgid "Configuration Settings"
@@ -1772,9 +1772,29 @@ msgstr "Cache mis à jour : {}"
 msgid "No Cache Available"
 msgstr "Aucun cache disponible"
 
+#: ui_qt/media_controls_overlay.py:151 ui_qt/media_controls_overlay.py:346
+msgid "Mute"
+msgstr "Muet"
+
+#: ui_qt/media_controls_overlay.py:166
+msgid ""
+"Effective output volume after track normalization. Sidebar/overlay slider "
+"sets base volume."
+msgstr ""
+"Volume de sortie effective après la normalisation de piste. Barre "
+"latérale/surimpression glissière qui fixe le volume de base."
+
+#: ui_qt/media_controls_overlay.py:346
+msgid "Unmute"
+msgstr "Démuter"
+
 #: ui_qt/network_media_window.py:115 ui_qt/search_window.py:153
 msgid "Search Library"
 msgstr "Recherche dans la bibliothèque"
+
+#: ui_qt/network_media_window.py:161
+msgid "URL"
+msgstr "URL"
 
 #: ui_qt/network_media_window.py:166 ui_qt/search_window.py:217
 #: ui_qt/search_window.py:227 ui_qt/search_window.py:237
@@ -1803,10 +1823,6 @@ msgstr "Recherche..."
 #: ui_qt/personas_window.py:48 ui_qt/personas_window.py:80
 msgid "DJ Personas"
 msgstr "Personnages DJ"
-
-#: ui/personas_window.py:99
-msgid "Display Name"
-msgstr "Nom d'affichage"
 
 #: ui_qt/personas_window.py:86 ui_qt/schedules_window.py:72
 msgid "Voice"
@@ -1959,13 +1975,13 @@ msgstr "Veuillez sélectionner un personnage à supprimer."
 msgid "Are you sure you want to delete the persona '{}'?"
 msgstr "Êtes-vous sûr de vouloir supprimer le personnage « {} » ?"
 
-#: ui_qt/personas_window.py:324
-msgid "Failed to remove persona from manager."
-msgstr "Impossible de supprimer le persona du gestionnaire."
-
 #: ui_qt/personas_window.py:320
 msgid "Persona deleted successfully."
 msgstr "Personnage supprimé avec succès."
+
+#: ui_qt/personas_window.py:324
+msgid "Failed to remove persona from manager."
+msgstr "Impossible de supprimer le persona du gestionnaire."
 
 #: ui_qt/personas_window.py:336
 msgid "Display name is required."
@@ -2045,13 +2061,17 @@ msgstr "Haut"
 msgid "Down"
 msgstr "En bas"
 
+#: ui_qt/playlist_window.py:168
+msgid "Shuffle"
+msgstr "Mélange"
+
 #: ui_qt/playlist_window.py:175
 msgid "Stack (play sequentially)"
 msgstr "Pile (jouer en séquence)"
 
-#: ui/playlist_window.py:132
-msgid "Skip memory reshuffle (all)"
-msgstr "Passer la réinitialisation de la mémoire (tous)"
+#: ui_qt/playlist_window.py:182
+msgid "Sort Config Override..."
+msgstr "Override du tri de configuration..."
 
 #: ui_qt/playlist_window.py:200 ui_qt/playlist_window.py:426
 #: ui_qt/playlist_window.py:563 ui_qt/playlist_window.py:658
@@ -2096,6 +2116,19 @@ msgstr "Voulez-vous supprimer la playlist \"{0}\" ?"
 msgid "Sequential Preview"
 msgstr "Aperçu séquentiel"
 
+#: ui_qt/playlist_window.py:658
+msgid "played"
+msgstr "joué"
+
+#: ui_qt/playlist_window.py:871 ui_qt/track_details_window.py:37
+#: ui_qt/track_details_window.py:211
+msgid "Track Details"
+msgstr "Détails de la piste"
+
+#: ui_qt/playlist_window.py:880
+msgid "Skip To"
+msgstr "Passer à"
+
 #: ui_qt/playlist_window.py:918
 msgid "Edit Playlist"
 msgstr "Éditer la playlist"
@@ -2120,9 +2153,9 @@ msgstr "Titres explicites"
 msgid "Sort Type"
 msgstr "Tri Type"
 
-#: ui_qt/sort_config_window.py:60
-msgid "Skip memory reshuffle"
-msgstr "Passer la réinitialisation de la mémoire"
+#: ui_qt/playlist_window.py:1005
+msgid "Sort Options..."
+msgstr "Options de tri..."
 
 #: ui_qt/playlist_window.py:1015
 msgid "Description (optional)"
@@ -2152,17 +2185,25 @@ msgstr "Veuillez saisir le nom de la playlist."
 msgid "A playlist named \"{0}\" already exists. Overwrite?"
 msgstr "Une playlist nommée {0} existe déjà. Écraser ?"
 
-#: ui_qt/playlist_window.py:1276
-msgid "Please select a directory."
-msgstr "Veuillez sélectionner un dossier."
-
 #: ui_qt/playlist_window.py:1266
 msgid "Please fill in at least one search field."
 msgstr "Veuillez remplir au moins un champ de recherche."
 
+#: ui_qt/playlist_window.py:1276
+msgid "Please select a directory."
+msgstr "Veuillez sélectionner un dossier."
+
 #: ui_qt/playlist_window.py:1283
 msgid "Please add at least one track."
 msgstr "Veuillez ajouter au moins une piste."
+
+#: ui_qt/playlist_window.py:1313
+msgid "Playlist updated successfully"
+msgstr "La playlist a été mise à jour avec succès."
+
+#: ui_qt/playlist_window.py:1313
+msgid "Playlist created successfully"
+msgstr "La playlist a été créée avec succès"
 
 #: ui_qt/schedules_window.py:41
 msgid "Modify Preset Schedule: {0}"
@@ -2188,6 +2229,10 @@ msgstr "L'heure de la fin"
 msgid "Shutdown Time"
 msgstr "Temps d'arrêt"
 
+#: ui_qt/schedules_window.py:170
+msgid "No days selected"
+msgstr "Aucun jour sélectionné"
+
 #: ui_qt/schedules_window.py:216
 msgid "Preset Schedules"
 msgstr "Horaires prédéfinis"
@@ -2203,6 +2248,30 @@ msgstr "Des horaires clairs"
 #: ui_qt/search_window.py:124
 msgid "No matching tracks found"
 msgstr "Aucune trace correspondante trouvée"
+
+#: ui_qt/search_window.py:205
+msgid "Search all fields"
+msgstr "Rechercher dans tous les champs"
+
+#: ui_qt/search_window.py:212
+msgid "Search Title"
+msgstr "Titre de recherche"
+
+#: ui_qt/search_window.py:222
+msgid "Search Album"
+msgstr "Rechercher l'album"
+
+#: ui_qt/search_window.py:232
+msgid "Search Artist"
+msgstr "Rechercher l'artiste"
+
+#: ui_qt/search_window.py:262
+msgid "Search Instrument"
+msgstr "Instrument de recherche"
+
+#: ui_qt/search_window.py:272
+msgid "Search Form"
+msgstr "Formulaire de recherche"
 
 #: ui_qt/search_window.py:282
 msgid "Overwrite Cache"
@@ -2287,515 +2356,13 @@ msgstr "Créé la playlist \"{0}\" avec le morceau"
 msgid "Add to Playlist"
 msgstr "Ajouter à la playlist"
 
-#: ui/search_window.py:822
-msgid ""
-"Available playlists: {0}\n"
-"\n"
-"Enter playlist name:"
-msgstr ""
-"Playlists disponibles : {0}\n"
-"\n"
-"Nom de la playlist :"
+#: ui_qt/search_window.py:859
+msgid "Select a playlist:"
+msgstr "Sélectionnez une playlist"
 
 #: ui_qt/search_window.py:868
 msgid "Added to \"{0}\""
 msgstr "Ajouté à \"{0}\""
-
-#: ui_qt/playlist_window.py:871 ui_qt/track_details_window.py:37
-#: ui_qt/track_details_window.py:211
-msgid "Track Details"
-msgstr "Détails de la piste"
-
-#: ui_qt/track_details_window.py:64 ui_qt/weather_window.py:60
-msgid "Update"
-msgstr "Mise à jour"
-
-#: ui_qt/track_details_window.py:75
-msgid "Album Artist"
-msgstr "Artiste de l'album"
-
-#: ui_qt/track_details_window.py:79 utils/globals.py:148 utils/globals.py:335
-#: utils/globals.py:403
-msgid "Genre"
-msgstr "Genre"
-
-#: ui_qt/track_details_window.py:89
-msgid "Track Number"
-msgstr "Numéro de piste"
-
-#: ui_qt/track_details_window.py:94 ui_qt/track_details_window.py:109
-msgid "of"
-msgstr "des"
-
-#: ui_qt/track_details_window.py:104
-msgid "Disc Number"
-msgstr "Numéro du disque"
-
-#: ui_qt/track_details_window.py:118
-msgid "Musical Form"
-msgstr "Forme musicale"
-
-#: ui_qt/track_details_window.py:120
-msgid "Main Instrument"
-msgstr "Instrument principal"
-
-#: ui_qt/track_details_window.py:123
-msgid "Lyrics"
-msgstr "Lyriques"
-
-#: ui_qt/track_details_window.py:131
-msgid "Comments"
-msgstr "Commentaires"
-
-#: ui_qt/track_details_window.py:143
-msgid "Duration: "
-msgstr "Durée: "
-
-#: ui_qt/track_details_window.py:144
-msgid "File: "
-msgstr "Fichier: "
-
-#: ui_qt/track_details_window.py:210
-msgid "Track details updated successfully"
-msgstr "Les détails de la piste ont été mis à jour avec succès"
-
-#: ui_qt/track_details_window.py:215
-msgid "Failed to update track details. Check the logs for more information."
-msgstr ""
-"Échec à mettre à jour les détails de la piste. Vérifiez les journaux pour "
-"plus d'informations."
-
-#: ui_qt/tts_window.py:64
-msgid "Text Input"
-msgstr "Entrée du texte"
-
-#: ui_qt/tts_window.py:71
-msgid "File Input"
-msgstr "Entrée du fichier"
-
-#: ui_qt/tts_window.py:77
-msgid "Browse"
-msgstr "Parcourir"
-
-#: ui_qt/tts_window.py:82
-msgid "Options"
-msgstr "Options"
-
-#: ui_qt/tts_window.py:84
-msgid "Speaker:"
-msgstr "Intervenant :"
-
-#: ui_qt/tts_window.py:92
-msgid "Split on lines"
-msgstr "Séparer sur les lignes"
-
-#: ui_qt/tts_window.py:99
-msgid "Speak Text"
-msgstr "Parlez texte"
-
-#: ui_qt/tts_window.py:102
-msgid "Speak File"
-msgstr "Parlez un fichier"
-
-#: ui_qt/tts_window.py:122
-msgid "Select Text File"
-msgstr "Sélectionner un fichier texte"
-
-#: ui_qt/tts_window.py:124
-msgid "Text files"
-msgstr "Fichiers texte"
-
-#: ui_qt/tts_window.py:124
-msgid "All files"
-msgstr "Tous les fichiers"
-
-#: ui_qt/tts_window.py:142
-msgid "Error: No text provided"
-msgstr "Erreur : Aucun texte fourni"
-
-#: ui_qt/tts_window.py:152 ui_qt/tts_window.py:191
-msgid "Successfully generated speech file: {}"
-msgstr "Fichier vocale généré avec succès : {}"
-
-#: ui_qt/tts_window.py:155 ui_qt/tts_window.py:194
-msgid "No output file was generated"
-msgstr "Aucun fichier de sortie n'a été généré"
-
-#: ui_qt/tts_window.py:158 ui_qt/tts_window.py:197
-msgid "Error generating speech: {}"
-msgstr "Erreur lors de la génération de la synthèse vocale : {}"
-
-#: ui_qt/tts_window.py:166
-msgid "Error: No file selected"
-msgstr "Erreur : Aucun fichier sélectionné"
-
-#: ui_qt/tts_window.py:169
-msgid "Error: File does not exist"
-msgstr "Erreur : le fichier n'existe pas"
-
-#: ui_qt/tts_window.py:172
-msgid "Error: Path is not a file"
-msgstr "Erreur : le chemin n'est pas un fichier"
-
-#: ui_qt/tts_window.py:175
-msgid "Error: File is empty"
-msgstr "Erreur : le fichier est vide"
-
-#: ui_qt/auth/password_admin_window.py:145
-msgid "Password Administration"
-msgstr "Administration des mots de passe"
-
-#: ui_qt/auth/password_admin_window.py:190
-msgid "Password Protection Settings"
-msgstr "Paramètres de protection par mot de passe"
-
-#: ui_qt/auth/password_admin_window.py:202
-msgid "Protected Actions"
-msgstr "Actions protégées"
-
-#: ui_qt/auth/password_admin_window.py:210
-msgid "Select which actions require password authentication:"
-msgstr ""
-"Sélectionnez les actions qui requièrent une authentification par mot de "
-"passe :"
-
-#: ui_qt/auth/password_admin_window.py:226
-msgid "(Always protected if a password is set)"
-msgstr "(Toujours protégé si un mot de passe est défini)"
-
-#: ui_qt/auth/password_admin_window.py:242
-msgid "Session Timeout Settings"
-msgstr "Paramètres du délai d'attente de la session"
-
-#: ui_qt/auth/password_admin_window.py:250
-msgid "Enable session timeout (remember password for a period)"
-msgstr ""
-"Activer le délai d'attente de la session (se souvenir du mot de passe "
-"pendant un certain temps)"
-
-#: ui_qt/auth/password_admin_window.py:259
-msgid "Session timeout duration (minutes):"
-msgstr "Durée du délai d'attente de la session (minutes) :"
-
-#: ui_qt/auth/password_admin_window.py:269
-msgid "Security Advice Settings"
-msgstr "Paramètres des avis de sécurité"
-
-#: ui_qt/auth/password_admin_window.py:274
-msgid "Show security advice when no password is configured"
-msgstr ""
-"Afficher les avis de sécurité lorsqu'aucun mot de passe n'est configuré"
-
-#: ui_qt/auth/password_admin_window.py:280
-msgid "Password Setup"
-msgstr "Configuration du mot de passe"
-
-#: ui_qt/auth/password_admin_window.py:287
-msgid "Password is configured"
-msgstr "Le mot de passe est configuré"
-
-#: ui_qt/auth/password_admin_window.py:39
-#: ui_qt/auth/password_admin_window.py:54
-#: ui_qt/auth/password_admin_window.py:87
-#: ui_qt/auth/password_admin_window.py:291
-msgid "Change Password"
-msgstr "Modifier le mot de passe"
-
-#: ui_qt/auth/password_admin_window.py:295
-#: ui_qt/auth/password_admin_window.py:501
-msgid "Remove Password"
-msgstr "Supprimer le mot de passe"
-
-#: ui_qt/auth/password_admin_window.py:299
-msgid "Set up a password to enable protection:"
-msgstr "Définissez un mot de passe pour activer la protection :"
-
-#: ui_qt/auth/password_admin_window.py:68
-#: ui_qt/auth/password_admin_window.py:307
-msgid "New Password:"
-msgstr "Nouveau mot de passe :"
-
-#: ui_qt/auth/password_admin_window.py:318
-msgid "Confirm Password:"
-msgstr "Confirmer le mot de passe :"
-
-#: ui_qt/auth/password_admin_window.py:326
-msgid "Set Password"
-msgstr "Définir le mot de passe"
-
-#: ui_qt/auth/password_admin_window.py:339
-#: ui_qt/auth/password_admin_window.py:404
-msgid "Reset to Defaults"
-msgstr "Réinitialisation aux valeurs par défaut"
-
-#: ui_qt/auth/password_admin_window.py:343
-#: ui_qt/auth/password_admin_window.py:432
-msgid "Set to Current"
-msgstr "Régler sur le courant"
-
-#: ui_qt/auth/password_admin_window.py:347
-msgid "Export Cache as JSON"
-msgstr "Exporter le cache au format JSON"
-
-#: ui_qt/auth/password_admin_window.py:351
-msgid "Save Settings"
-msgstr "Sauvegarder les paramètres"
-
-#: ui_qt/auth/password_admin_window.py:397
-msgid "Password protection settings saved."
-msgstr "Sauvegarde des paramètres de protection par mot de passe."
-
-#: ui_qt/auth/password_admin_window.py:406
-msgid ""
-"Are you sure you want to reset all password protection settings to their "
-"default values?"
-msgstr ""
-"Êtes-vous sûr de vouloir rétablir les valeurs par défaut de tous les "
-"paramètres de protection par mot de passe ?"
-
-#: ui_qt/auth/password_admin_window.py:426
-msgid "Settings reset to defaults."
-msgstr "Les paramètres sont réinitialisés aux valeurs par défaut."
-
-#: ui_qt/auth/password_admin_window.py:434
-msgid ""
-"Are you sure you want to restore all settings to their current saved state? "
-"This will discard any unsaved changes."
-msgstr ""
-"Êtes-vous sûr de vouloir rétablir tous les paramètres dans leur état actuel "
-"? Cette opération annulera toutes les modifications non enregistrées."
-
-#: ui_qt/auth/password_admin_window.py:453
-msgid "Settings restored to current saved state."
-msgstr "Les paramètres sont rétablis dans leur état actuel."
-
-#: ui_qt/auth/password_admin_window.py:464
-msgid "Please enter a password."
-msgstr "Veuillez saisir un mot de passe."
-
-#: ui_qt/auth/password_admin_window.py:470
-msgid "Passwords do not match."
-msgstr "Les mots de passe ne correspondent pas."
-
-#: ui_qt/auth/password_admin_window.py:108
-#: ui_qt/auth/password_admin_window.py:476
-msgid "Password must be at least 6 characters long."
-msgstr "Le mot de passe doit comporter au moins 6 caractères."
-
-#: ui_qt/auth/password_admin_window.py:482
-msgid "Password set successfully."
-msgstr "Le mot de passe a été défini avec succès."
-
-#: ui_qt/auth/password_admin_window.py:488
-msgid "Failed to set password."
-msgstr "Échec de la définition du mot de passe."
-
-#: ui_qt/auth/password_admin_window.py:61
-msgid "Current Password:"
-msgstr "Mot de passe actuel :"
-
-#: ui_qt/auth/password_admin_window.py:75
-msgid "Confirm New Password:"
-msgstr "Confirmez le nouveau mot de passe :"
-
-#: ui_qt/auth/password_admin_window.py:100
-msgid "Current password is incorrect."
-msgstr "Le mot de passe actuel est incorrect."
-
-#: ui_qt/auth/password_admin_window.py:104
-msgid "New passwords do not match."
-msgstr "Les nouveaux mots de passe ne correspondent pas."
-
-#: ui_qt/auth/password_admin_window.py:116
-#: ui_qt/auth/password_admin_window.py:119
-msgid "Password changed successfully."
-msgstr "Le mot de passe a été modifié avec succès."
-
-#: ui_qt/auth/password_admin_window.py:123
-msgid "Failed to change password."
-msgstr "Échec de la modification du mot de passe."
-
-#: ui_qt/auth/password_admin_window.py:503
-msgid ""
-"Are you sure you want to remove password protection? This will disable all "
-"password requirements."
-msgstr ""
-"Êtes-vous sûr de vouloir supprimer la protection par mot de passe ? Cela "
-"désactivera toutes les exigences en matière de mot de passe."
-
-#: ui_qt/auth/password_admin_window.py:512
-msgid "Password removed successfully."
-msgstr "Le mot de passe a été supprimé avec succès."
-
-#: ui_qt/auth/password_admin_window.py:516
-msgid "Failed to remove password."
-msgstr "Échec de la suppression du mot de passe."
-
-#: ui_qt/auth/password_admin_window.py:556
-msgid "Cache exported as JSON to:"
-msgstr "Cache exporté en JSON vers :"
-
-#: ui_qt/auth/password_admin_window.py:560
-msgid "Failed to export cache as JSON:"
-msgstr "Échec de l'exportation du cache au format JSON :"
-
-#: ui_qt/auth/password_dialog.py:76 ui_qt/auth/password_dialog.py:131
-msgid "Password Required"
-msgstr "Mot de passe requis"
-
-#: ui_qt/auth/password_dialog.py:78
-msgid "Password Protection"
-msgstr "Protection par mot de passe"
-
-#: ui_qt/auth/password_dialog.py:139
-msgid "Password required for: {0}"
-msgstr "Mot de passe requis pour : {0}"
-
-#: ui_qt/auth/password_dialog.py:157
-msgid "Password:"
-msgstr "Mot de passe :"
-
-#: ui_qt/auth/password_dialog.py:179
-msgid "OK"
-msgstr "OK"
-
-#: ui_qt/auth/password_dialog.py:186
-msgid "Password Protection Available"
-msgstr "Protection par mot de passe disponible"
-
-#: ui_qt/auth/password_dialog.py:194
-msgid "This action requires password protection: {0}"
-msgstr "Cette action nécessite une protection par mot de passe : {0}"
-
-#: ui_qt/auth/password_dialog.py:213
-msgid "Password protection is not currently configured. You can:"
-msgstr ""
-"La protection par mot de passe n'est pas configurée actuellement. Vous "
-"pouvez :"
-
-#: ui_qt/auth/password_dialog.py:222
-msgid "• Configure password protection for sensitive actions"
-msgstr "• Configurer la protection par mot de passe des actions sensibles"
-
-#: ui_qt/auth/password_dialog.py:230
-msgid "• Continue without password protection (less secure)"
-msgstr "• Continuer sans protection par mot de passe (moins sûr)"
-
-#: ui_qt/auth/password_dialog.py:237
-msgid "Don't show this security advice again"
-msgstr "Ne plus afficher cet avis de sécurité"
-
-#: ui_qt/auth/password_dialog.py:252 ui_qt/auth/password_dialog.py:270
-msgid "Configure Protection"
-msgstr "Configurer la protection"
-
-#: ui_qt/auth/password_dialog.py:249
-msgid "Continue Without Protection"
-msgstr "Continuer sans protection"
-
-#: ui_qt/auth/password_dialog.py:258
-msgid ""
-"Password protection is required for this action but is not currently "
-"configured."
-msgstr ""
-"La protection par mot de passe est requise pour cette action mais n'est pas "
-"configurée actuellement."
-
-#: ui_qt/auth/password_dialog.py:285
-msgid "Incorrect password"
-msgstr "Mot de passe incorrect"
-
-#: ui_qt/blacklist_window.py:61
-msgid "New Blacklist Item"
-msgstr "Nouveau dans la liste noire"
-
-#: ui_qt/blacklist_window.py:535
-msgid "Preview window not yet available."
-msgstr "La fenêtre de prévisualisation n'est pas encore disponible."
-
-#: ui_qt/media_controls_overlay.py:151 ui_qt/media_controls_overlay.py:346
-msgid "Mute"
-msgstr "Muet"
-
-#: ui_qt/media_controls_overlay.py:166
-msgid ""
-"Effective output volume after track normalization. Sidebar/overlay slider "
-"sets base volume."
-msgstr ""
-"Volume de sortie effective après la normalisation de piste. Barre "
-"latérale/surimpression glissière qui fixe le volume de base."
-
-#: ui_qt/media_controls_overlay.py:346
-msgid "Unmute"
-msgstr "Démuter"
-
-#: ui_qt/media_frame.py:128 ui_qt/media_frame.py:360
-msgid "Album art"
-msgstr "Art de l'album"
-
-#: ui_qt/network_media_window.py:161
-msgid "URL"
-msgstr "URL"
-
-#: ui_qt/playlist_window.py:168
-msgid "Shuffle"
-msgstr "Mélange"
-
-#: ui_qt/playlist_window.py:182
-msgid "Sort Config Override..."
-msgstr "Override du tri de configuration..."
-
-#: ui_qt/playlist_window.py:658
-msgid "played"
-msgstr "joué"
-
-#: ui_qt/playlist_window.py:880
-msgid "Skip To"
-msgstr "Passer à"
-
-#: ui_qt/playlist_window.py:1005
-msgid "Sort Options..."
-msgstr "Options de tri..."
-
-#: ui_qt/playlist_window.py:1313
-msgid "Playlist updated successfully"
-msgstr "La playlist a été mise à jour avec succès."
-
-#: ui_qt/playlist_window.py:1313
-msgid "Playlist created successfully"
-msgstr "La playlist a été créée avec succès"
-
-#: ui_qt/schedules_window.py:170
-msgid "No days selected"
-msgstr "Aucun jour sélectionné"
-
-#: ui_qt/search_window.py:205
-msgid "Search all fields"
-msgstr "Rechercher dans tous les champs"
-
-#: ui_qt/search_window.py:212
-msgid "Search Title"
-msgstr "Titre de recherche"
-
-#: ui_qt/search_window.py:222
-msgid "Search Album"
-msgstr "Rechercher l'album"
-
-#: ui_qt/search_window.py:232
-msgid "Search Artist"
-msgstr "Rechercher l'artiste"
-
-#: ui_qt/search_window.py:262
-msgid "Search Instrument"
-msgstr "Instrument de recherche"
-
-#: ui_qt/search_window.py:272
-msgid "Search Form"
-msgstr "Formulaire de recherche"
-
-#: ui_qt/search_window.py:859
-msgid "Select a playlist:"
-msgstr "Sélectionnez une playlist"
 
 #: ui_qt/sort_config_window.py:34
 msgid "Sort Config Override"
@@ -2811,6 +2378,10 @@ msgstr ""
 "Les valeurs non par défaut ici annulent chaque playlist dans la "
 "configuration maîtresse."
 
+#: ui_qt/sort_config_window.py:60
+msgid "Skip memory reshuffle"
+msgstr "Passer la réinitialisation de la mémoire"
+
 #: ui_qt/sort_config_window.py:62
 msgid "Disable recently-played memory reshuffling"
 msgstr "Désactivez la relecture aléatoire des morceaux récemment joués."
@@ -2824,6 +2395,10 @@ msgid "Use deterministic grouping order instead of random start-track seeding"
 msgstr ""
 "Utiliser un ordre de regroupement déterministe plutôt qu'un semis de piste "
 "aléatoire."
+
+#: ui_qt/sort_config_window.py:74
+msgid "Thorough playlist memory check"
+msgstr "Vérification approfondie de la mémoire de la liste de lecture"
 
 #: ui_qt/sort_config_window.py:76
 msgid "Force the thorough scour-based memory check for all playlist sizes"
@@ -2908,6 +2483,55 @@ msgstr ""
 msgid "Resume"
 msgstr "Reprendre"
 
+#: ui_qt/track_details_window.py:64 ui_qt/weather_window.py:60
+msgid "Update"
+msgstr "Mise à jour"
+
+#: ui_qt/track_details_window.py:75
+msgid "Album Artist"
+msgstr "Artiste de l'album"
+
+#: ui_qt/track_details_window.py:79 utils/globals.py:148 utils/globals.py:335
+#: utils/globals.py:403
+msgid "Genre"
+msgstr "Genre"
+
+#: ui_qt/track_details_window.py:89
+msgid "Track Number"
+msgstr "Numéro de piste"
+
+#: ui_qt/track_details_window.py:94 ui_qt/track_details_window.py:109
+msgid "of"
+msgstr "des"
+
+#: ui_qt/track_details_window.py:104
+msgid "Disc Number"
+msgstr "Numéro du disque"
+
+#: ui_qt/track_details_window.py:118
+msgid "Musical Form"
+msgstr "Forme musicale"
+
+#: ui_qt/track_details_window.py:120
+msgid "Main Instrument"
+msgstr "Instrument principal"
+
+#: ui_qt/track_details_window.py:123
+msgid "Lyrics"
+msgstr "Lyriques"
+
+#: ui_qt/track_details_window.py:131
+msgid "Comments"
+msgstr "Commentaires"
+
+#: ui_qt/track_details_window.py:143
+msgid "Duration: "
+msgstr "Durée: "
+
+#: ui_qt/track_details_window.py:144
+msgid "File: "
+msgstr "Fichier: "
+
 #: ui_qt/track_details_window.py:165
 msgid "Year must be between 0 and 9999"
 msgstr "L'année doit être comprise entre 0 et 9999"
@@ -2920,9 +2544,95 @@ msgstr "{0} ne peut pas être négatif"
 msgid "{0} must be a valid number"
 msgstr "{0} doit être un nombre valable"
 
+#: ui_qt/track_details_window.py:210
+msgid "Track details updated successfully"
+msgstr "Les détails de la piste ont été mis à jour avec succès"
+
+#: ui_qt/track_details_window.py:215
+msgid "Failed to update track details. Check the logs for more information."
+msgstr ""
+"Échec à mettre à jour les détails de la piste. Vérifiez les journaux pour "
+"plus d'informations."
+
+#: ui_qt/tts_window.py:64
+msgid "Text Input"
+msgstr "Entrée du texte"
+
+#: ui_qt/tts_window.py:71
+msgid "File Input"
+msgstr "Entrée du fichier"
+
 #: ui_qt/tts_window.py:75
 msgid "No file selected"
 msgstr "Aucun fichier sélectionné"
+
+#: ui_qt/tts_window.py:77
+msgid "Browse"
+msgstr "Parcourir"
+
+#: ui_qt/tts_window.py:82
+msgid "Options"
+msgstr "Options"
+
+#: ui_qt/tts_window.py:84
+msgid "Speaker:"
+msgstr "Intervenant :"
+
+#: ui_qt/tts_window.py:92
+msgid "Split on lines"
+msgstr "Séparer sur les lignes"
+
+#: ui_qt/tts_window.py:99
+msgid "Speak Text"
+msgstr "Parlez texte"
+
+#: ui_qt/tts_window.py:102
+msgid "Speak File"
+msgstr "Parlez un fichier"
+
+#: ui_qt/tts_window.py:122
+msgid "Select Text File"
+msgstr "Sélectionner un fichier texte"
+
+#: ui_qt/tts_window.py:124
+msgid "Text files"
+msgstr "Fichiers texte"
+
+#: ui_qt/tts_window.py:124
+msgid "All files"
+msgstr "Tous les fichiers"
+
+#: ui_qt/tts_window.py:142
+msgid "Error: No text provided"
+msgstr "Erreur : Aucun texte fourni"
+
+#: ui_qt/tts_window.py:152 ui_qt/tts_window.py:191
+msgid "Successfully generated speech file: {}"
+msgstr "Fichier vocale généré avec succès : {}"
+
+#: ui_qt/tts_window.py:155 ui_qt/tts_window.py:194
+msgid "No output file was generated"
+msgstr "Aucun fichier de sortie n'a été généré"
+
+#: ui_qt/tts_window.py:158 ui_qt/tts_window.py:197
+msgid "Error generating speech: {}"
+msgstr "Erreur lors de la génération de la synthèse vocale : {}"
+
+#: ui_qt/tts_window.py:166
+msgid "Error: No file selected"
+msgstr "Erreur : Aucun fichier sélectionné"
+
+#: ui_qt/tts_window.py:169
+msgid "Error: File does not exist"
+msgstr "Erreur : le fichier n'existe pas"
+
+#: ui_qt/tts_window.py:172
+msgid "Error: Path is not a file"
+msgstr "Erreur : le chemin n'est pas un fichier"
+
+#: ui_qt/tts_window.py:175
+msgid "Error: File is empty"
+msgstr "Erreur : le fichier est vide"
 
 #: ui_qt/weather_window.py:66
 msgid "City"
@@ -2936,15 +2646,283 @@ msgstr "Collecte des données météorologiques..."
 msgid "Error: {}"
 msgstr "Erreur : {}"
 
+#: ui_qt/auth/password_admin_window.py:39
+#: ui_qt/auth/password_admin_window.py:54
+#: ui_qt/auth/password_admin_window.py:87
+#: ui_qt/auth/password_admin_window.py:291
+msgid "Change Password"
+msgstr "Modifier le mot de passe"
+
+#: ui_qt/auth/password_admin_window.py:61
+msgid "Current Password:"
+msgstr "Mot de passe actuel :"
+
+#: ui_qt/auth/password_admin_window.py:68
+#: ui_qt/auth/password_admin_window.py:307
+msgid "New Password:"
+msgstr "Nouveau mot de passe :"
+
+#: ui_qt/auth/password_admin_window.py:75
+msgid "Confirm New Password:"
+msgstr "Confirmez le nouveau mot de passe :"
+
+#: ui_qt/auth/password_admin_window.py:100
+msgid "Current password is incorrect."
+msgstr "Le mot de passe actuel est incorrect."
+
+#: ui_qt/auth/password_admin_window.py:104
+msgid "New passwords do not match."
+msgstr "Les nouveaux mots de passe ne correspondent pas."
+
+#: ui_qt/auth/password_admin_window.py:108
+#: ui_qt/auth/password_admin_window.py:476
+msgid "Password must be at least 6 characters long."
+msgstr "Le mot de passe doit comporter au moins 6 caractères."
+
+#: ui_qt/auth/password_admin_window.py:116
+#: ui_qt/auth/password_admin_window.py:119
+msgid "Password changed successfully."
+msgstr "Le mot de passe a été modifié avec succès."
+
 #: ui_qt/auth/password_admin_window.py:119
 #: ui_qt/auth/password_admin_window.py:546
 msgid "Info"
 msgstr "info"
 
+#: ui_qt/auth/password_admin_window.py:123
+msgid "Failed to change password."
+msgstr "Échec de la modification du mot de passe."
+
 #: ui_qt/auth/password_admin_window.py:128
 #: ui_qt/auth/password_admin_window.py:538
 msgid "Administration Error"
 msgstr "Erreur d'administration"
+
+#: ui_qt/auth/password_admin_window.py:145
+msgid "Password Administration"
+msgstr "Administration des mots de passe"
+
+#: ui_qt/auth/password_admin_window.py:190
+msgid "Password Protection Settings"
+msgstr "Paramètres de protection par mot de passe"
+
+#: ui_qt/auth/password_admin_window.py:202
+msgid "Protected Actions"
+msgstr "Actions protégées"
+
+#: ui_qt/auth/password_admin_window.py:210
+msgid "Select which actions require password authentication:"
+msgstr ""
+"Sélectionnez les actions qui requièrent une authentification par mot de "
+"passe :"
+
+#: ui_qt/auth/password_admin_window.py:226
+msgid "(Always protected if a password is set)"
+msgstr "(Toujours protégé si un mot de passe est défini)"
+
+#: ui_qt/auth/password_admin_window.py:242
+msgid "Session Timeout Settings"
+msgstr "Paramètres du délai d'attente de la session"
+
+#: ui_qt/auth/password_admin_window.py:250
+msgid "Enable session timeout (remember password for a period)"
+msgstr ""
+"Activer le délai d'attente de la session (se souvenir du mot de passe "
+"pendant un certain temps)"
+
+#: ui_qt/auth/password_admin_window.py:259
+msgid "Session timeout duration (minutes):"
+msgstr "Durée du délai d'attente de la session (minutes) :"
+
+#: ui_qt/auth/password_admin_window.py:269
+msgid "Security Advice Settings"
+msgstr "Paramètres des avis de sécurité"
+
+#: ui_qt/auth/password_admin_window.py:274
+msgid "Show security advice when no password is configured"
+msgstr ""
+"Afficher les avis de sécurité lorsqu'aucun mot de passe n'est configuré"
+
+#: ui_qt/auth/password_admin_window.py:280
+msgid "Password Setup"
+msgstr "Configuration du mot de passe"
+
+#: ui_qt/auth/password_admin_window.py:287
+msgid "Password is configured"
+msgstr "Le mot de passe est configuré"
+
+#: ui_qt/auth/password_admin_window.py:295
+#: ui_qt/auth/password_admin_window.py:501
+msgid "Remove Password"
+msgstr "Supprimer le mot de passe"
+
+#: ui_qt/auth/password_admin_window.py:299
+msgid "Set up a password to enable protection:"
+msgstr "Définissez un mot de passe pour activer la protection :"
+
+#: ui_qt/auth/password_admin_window.py:318
+msgid "Confirm Password:"
+msgstr "Confirmer le mot de passe :"
+
+#: ui_qt/auth/password_admin_window.py:326
+msgid "Set Password"
+msgstr "Définir le mot de passe"
+
+#: ui_qt/auth/password_admin_window.py:339
+#: ui_qt/auth/password_admin_window.py:404
+msgid "Reset to Defaults"
+msgstr "Réinitialisation aux valeurs par défaut"
+
+#: ui_qt/auth/password_admin_window.py:343
+#: ui_qt/auth/password_admin_window.py:432
+msgid "Set to Current"
+msgstr "Régler sur le courant"
+
+#: ui_qt/auth/password_admin_window.py:347
+msgid "Export Cache as JSON"
+msgstr "Exporter le cache au format JSON"
+
+#: ui_qt/auth/password_admin_window.py:351
+msgid "Save Settings"
+msgstr "Sauvegarder les paramètres"
+
+#: ui_qt/auth/password_admin_window.py:397
+msgid "Password protection settings saved."
+msgstr "Sauvegarde des paramètres de protection par mot de passe."
+
+#: ui_qt/auth/password_admin_window.py:406
+msgid ""
+"Are you sure you want to reset all password protection settings to their "
+"default values?"
+msgstr ""
+"Êtes-vous sûr de vouloir rétablir les valeurs par défaut de tous les "
+"paramètres de protection par mot de passe ?"
+
+#: ui_qt/auth/password_admin_window.py:426
+msgid "Settings reset to defaults."
+msgstr "Les paramètres sont réinitialisés aux valeurs par défaut."
+
+#: ui_qt/auth/password_admin_window.py:434
+msgid ""
+"Are you sure you want to restore all settings to their current saved state? "
+"This will discard any unsaved changes."
+msgstr ""
+"Êtes-vous sûr de vouloir rétablir tous les paramètres dans leur état actuel "
+"? Cette opération annulera toutes les modifications non enregistrées."
+
+#: ui_qt/auth/password_admin_window.py:453
+msgid "Settings restored to current saved state."
+msgstr "Les paramètres sont rétablis dans leur état actuel."
+
+#: ui_qt/auth/password_admin_window.py:464
+msgid "Please enter a password."
+msgstr "Veuillez saisir un mot de passe."
+
+#: ui_qt/auth/password_admin_window.py:470
+msgid "Passwords do not match."
+msgstr "Les mots de passe ne correspondent pas."
+
+#: ui_qt/auth/password_admin_window.py:482
+msgid "Password set successfully."
+msgstr "Le mot de passe a été défini avec succès."
+
+#: ui_qt/auth/password_admin_window.py:488
+msgid "Failed to set password."
+msgstr "Échec de la définition du mot de passe."
+
+#: ui_qt/auth/password_admin_window.py:503
+msgid ""
+"Are you sure you want to remove password protection? This will disable all "
+"password requirements."
+msgstr ""
+"Êtes-vous sûr de vouloir supprimer la protection par mot de passe ? Cela "
+"désactivera toutes les exigences en matière de mot de passe."
+
+#: ui_qt/auth/password_admin_window.py:512
+msgid "Password removed successfully."
+msgstr "Le mot de passe a été supprimé avec succès."
+
+#: ui_qt/auth/password_admin_window.py:516
+msgid "Failed to remove password."
+msgstr "Échec de la suppression du mot de passe."
+
+#: ui_qt/auth/password_admin_window.py:556
+msgid "Cache exported as JSON to:"
+msgstr "Cache exporté en JSON vers :"
+
+#: ui_qt/auth/password_admin_window.py:560
+msgid "Failed to export cache as JSON:"
+msgstr "Échec de l'exportation du cache au format JSON :"
+
+#: ui_qt/auth/password_dialog.py:40 ui_qt/auth/password_dialog.py:47
+msgid "⚠ Caps Lock is ON"
+msgstr "⚠ Le mode Majuscule est activé"
+
+#: ui_qt/auth/password_dialog.py:76 ui_qt/auth/password_dialog.py:131
+msgid "Password Required"
+msgstr "Mot de passe requis"
+
+#: ui_qt/auth/password_dialog.py:78
+msgid "Password Protection"
+msgstr "Protection par mot de passe"
+
+#: ui_qt/auth/password_dialog.py:139
+msgid "Password required for: {0}"
+msgstr "Mot de passe requis pour : {0}"
+
+#: ui_qt/auth/password_dialog.py:157
+msgid "Password:"
+msgstr "Mot de passe :"
+
+#: ui_qt/auth/password_dialog.py:179
+msgid "OK"
+msgstr "OK"
+
+#: ui_qt/auth/password_dialog.py:186
+msgid "Password Protection Available"
+msgstr "Protection par mot de passe disponible"
+
+#: ui_qt/auth/password_dialog.py:194
+msgid "This action requires password protection: {0}"
+msgstr "Cette action nécessite une protection par mot de passe : {0}"
+
+#: ui_qt/auth/password_dialog.py:213
+msgid "Password protection is not currently configured. You can:"
+msgstr ""
+"La protection par mot de passe n'est pas configurée actuellement. Vous "
+"pouvez :"
+
+#: ui_qt/auth/password_dialog.py:222
+msgid "• Configure password protection for sensitive actions"
+msgstr "• Configurer la protection par mot de passe des actions sensibles"
+
+#: ui_qt/auth/password_dialog.py:230
+msgid "• Continue without password protection (less secure)"
+msgstr "• Continuer sans protection par mot de passe (moins sûr)"
+
+#: ui_qt/auth/password_dialog.py:237
+msgid "Don't show this security advice again"
+msgstr "Ne plus afficher cet avis de sécurité"
+
+#: ui_qt/auth/password_dialog.py:249
+msgid "Continue Without Protection"
+msgstr "Continuer sans protection"
+
+#: ui_qt/auth/password_dialog.py:252 ui_qt/auth/password_dialog.py:270
+msgid "Configure Protection"
+msgstr "Configurer la protection"
+
+#: ui_qt/auth/password_dialog.py:258
+msgid ""
+"Password protection is required for this action but is not currently "
+"configured."
+msgstr ""
+"La protection par mot de passe est requise pour cette action mais n'est pas "
+"configurée actuellement."
+
+#: ui_qt/auth/password_dialog.py:285
+msgid "Incorrect password"
+msgstr "Mot de passe incorrect"
 
 #: utils/audio_device_manager.py:1556
 msgid "Audio Device Detection Failed"
@@ -3279,7 +3257,3 @@ msgstr "mois"
 #: utils/translations.py:73
 msgid "years"
 msgstr "années"
-
-#: app_qt.py:1107
-msgid "Continue"
-msgstr "Poursuivez"
