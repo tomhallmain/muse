@@ -2,6 +2,10 @@ import platform
 from random import randint
 import time
 import traceback
+
+from utils.vlc_plugin_cache import ensure_vlc_plugin_cache_if_stale
+
+ensure_vlc_plugin_cache_if_stale()
 import vlc
 from typing import TYPE_CHECKING, Any, Callable, Optional
 

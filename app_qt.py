@@ -10,6 +10,10 @@ import time
 import traceback
 from typing import Optional
 
+from utils.vlc_plugin_cache import ensure_vlc_plugin_cache_if_stale
+
+ensure_vlc_plugin_cache_if_stale()
+
 from PySide6.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -185,7 +189,8 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
 
         # Cache media frame handle on main thread so worker threads can use it without touching Qt
         QTimer.singleShot(0, self._cache_media_frame_handle)
-        
+        QTimer.singleShot(0, self._maybe_prompt_vlc_cache_fix)
+
         # Enable media key handling
         self._setup_media_keys()
         self._setup_shortcuts()
@@ -1056,6 +1061,29 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         """Update cached window handle for VLC (must run on main thread)."""
         if hasattr(self, "media_frame") and hasattr(self.media_frame, "get_media_frame_handle"):
             self._cached_media_frame_handle = self.media_frame.get_media_frame_handle()
+
+    def _maybe_prompt_vlc_cache_fix(self) -> None:
+        """Windows: offer to run the elevated VLC plugin cache fixer when the cache is stale."""
+        from utils import vlc_plugin_cache as vpc
+
+        if not vpc.should_show_windows_stale_cache_dialog():
+            return
+        vpc.mark_windows_stale_cache_dialog_shown()
+        title = _("VLC plugin cache")
+        body = _(
+            "The VLC plugin index is out of date (often after a VLC update). "
+            "Updating it requires administrator permission.\n\n"
+            "Start the repair tool in a separate window? It will prompt for permission there."
+        )
+        reply = QMessageBox.question(
+            self,
+            title,
+            body,
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.Yes,
+        )
+        if reply == QMessageBox.StandardButton.Yes:
+            vpc.launch_windows_vlc_cache_fixer()
 
     def _setup_media_keys(self):
         """Set up media key bindings for keyboard media control buttons."""

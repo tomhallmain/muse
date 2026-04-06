@@ -37,6 +37,9 @@ except ImportError:
     _PIL_AVAILABLE = False
 
 try:
+    from utils.vlc_plugin_cache import ensure_vlc_plugin_cache_if_stale
+
+    ensure_vlc_plugin_cache_if_stale()
     import vlc
     _VLC_AVAILABLE = True
 except ImportError:

@@ -22,6 +22,9 @@ try:
 except ImportError:
     raise Exception("Failed to import Coqui TTS. Ensure the code is downloaded and the \"coqui_tts_location\" value is set in the config.")
 
+from utils.vlc_plugin_cache import ensure_vlc_plugin_cache_if_stale
+
+ensure_vlc_plugin_cache_if_stale()
 import vlc
 
 # from ops.speakers import speakers

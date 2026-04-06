@@ -64,6 +64,7 @@ class Config:
         self.enable_library_extender = False
         self.enable_long_track_splitting = False
         self.show_videos_in_main_window = False
+        self.auto_fix_vlc_plugin_cache = True
         self.long_track_splitting_time_cutoff_minutes = 20
         self.play_videos_in_separate_window = False
         self.playlist_recently_played_check_count = 1000
@@ -129,6 +130,7 @@ class Config:
             "enable_long_track_splitting",
             "play_videos_in_separate_window",
             "dj_persona_refresh_context",
+            "auto_fix_vlc_plugin_cache",
         )
         self.set_values(dict,
             "muse_config",
