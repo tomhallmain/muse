@@ -588,7 +588,7 @@ class Muse:
             raise Exception("No tongue twister directory specified")
         logger.info(f"Playing tongue twister from {config.tongue_twisters_dir}")
         playback = Playback.new_playback(config.tongue_twisters_dir, self.get_library_data().data_callbacks)
-        tongue_twister_track, __, ___ = playback._playback_config.next_track()
+        tongue_twister_track = playback._playback_config.next_track().track
         if tongue_twister_track is None or not os.path.exists(tongue_twister_track.filepath):
             raise Exception(f"Invalid tongue twister file: {tongue_twister_track}")
         Prompter.update_history(spot_profile.topic)
