@@ -201,8 +201,19 @@ class Playback:
             self._run_context.skip_track = False
 
             self.vlc_media_player.play()
-            time.sleep(0.5)
-            cumulative_sleep_seconds = 0.5
+            # VLC's play() is asynchronous: the player transitions through
+            # STOPPED → OPENING → BUFFERING → PLAYING.  On a slow disk, large
+            # file, codec loading, or cold start this can exceed 0.5 s, causing
+            # the old single-check approach to declare failure immediately and
+            # silently skip the track.  Poll until VLC reaches PLAYING state or
+            # a hard timeout is exceeded.
+            _VLC_START_TIMEOUT = 5.0
+            _VLC_POLL_INTERVAL = 0.05
+            _deadline = time.time() + _VLC_START_TIMEOUT
+            cumulative_sleep_seconds = 0.0
+            while not self.vlc_media_player.is_playing() and time.time() < _deadline:
+                time.sleep(_VLC_POLL_INTERVAL)
+                cumulative_sleep_seconds += _VLC_POLL_INTERVAL
             if not self.vlc_media_player.is_playing():
                 self.last_track_failed = True
             while (self.vlc_media_player.is_playing() or self._run_context.is_paused) and not self._run_context.skip_track:

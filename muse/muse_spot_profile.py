@@ -247,7 +247,7 @@ class MuseSpotProfile:
                 
             idx += 1
             if idx >= max_iterations:
-                logger.error(f"Failsafe triggered: get_last_spoken_profile exceeded {max_iterations} iterations")
+                logger.debug(f"Failsafe triggered: get_last_spoken_profile exceeded {max_iterations} iterations")
                 return None
 
     def last_spot_profile_more_than_seconds(self, seconds=min_seconds_between_spots):
