@@ -161,9 +161,18 @@ class Playback:
             self.get_muse().check_for_shutdowns()
             if self.has_muse():
                 if not self.has_played_first_track or not self.get_muse().has_started_prep:
-                    # First track, or if user skipped before end of last track
-                    seconds_passed = self.prepare_muse(delayed_prep=True)
-                    self.remaining_delay_seconds -= seconds_passed
+                    # First track, or if user skipped before end of last track.
+                    # Guard: background preparation (prepare_muse called during the
+                    # previous track's playback loop) may have already built a spot
+                    # profile for self.track and stored it in muse_spot_profiles.
+                    # Creating a second profile would (a) cause update_all_spot_profiles
+                    # to push the first one to index-1 without the callback being
+                    # needed there, and (b) leave a stale profile in the list that
+                    # get_spot_profile() would return first, producing the
+                    # "Previous spot profile callback was not set properly" crash.
+                    if not any(p.track == self.track for p in self.muse_spot_profiles):
+                        seconds_passed = self.prepare_muse(delayed_prep=True)
+                        self.remaining_delay_seconds -= seconds_passed
                 elif self.get_spot_profile().needs_repreparation():
                     logger.info("Spot profile track was overwritten and will be reprepared.")
                     # self.muse.cancel_preparation()

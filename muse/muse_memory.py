@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 import pickle
 import time
-import gc
 from typing import Optional, Dict
 
 from muse.dj_persona import DJPersonaManager
@@ -61,12 +60,12 @@ class MuseMemory:
         self.load()
 
     def __getstate__(self):
-        """Control what gets pickled - exclude non-pickleable objects."""
+        """Control what gets pickled - exclude non-pickleable objects.
+
+        MuseSpotProfile.__getstate__ already strips its own callbacks, so
+        we no longer need to mutate the live profile objects here.
+        """
         state = self.__dict__.copy()
-        
-        # Clean up callbacks in all spot profiles to make them pickleable
-        self._clean_spot_profiles_for_pickling(state)
-            
         return state
 
     def __setstate__(self, state):
@@ -204,29 +203,20 @@ class MuseMemory:
         else:
             logger.info("No individual attributes failed to pickle - issue may be with object structure")
 
-    def _clean_spot_profiles_for_pickling(self, state):
-        """Clean up callbacks in spot profiles to make them pickleable."""
-        spot_profile_lists = ['all_spot_profiles', 'last_session_spot_profiles', 'current_session_spot_profiles']
-        
-        for list_name in spot_profile_lists:
-            if list_name in state and isinstance(state[list_name], list):
-                logger.debug(f"Cleaning callbacks in {list_name} for pickling...")
-                for profile in state[list_name]:
-                    if hasattr(profile, 'unset_non_historical_fields'):
-                        profile.unset_non_historical_fields()
-
     def update_all_spot_profiles(self, spot_profile: MuseSpotProfile):
         """Update the spot profiles list and maintain historical snapshots."""
         logger.debug(f"Updating all spot profiles: current count={len(self.all_spot_profiles)}, new profile creation_time={spot_profile.creation_time}")
-        
-        if len(self.all_spot_profiles) > 0:
-            # Clean up the previous spot profile if it exists
-            previous_profile = self.all_spot_profiles[0]
-            logger.debug(f"Cleaning up previous profile: creation_time={previous_profile.creation_time}, was_spoken={previous_profile.was_spoken}")
-            # Clear fields that are no longer needed
-            previous_profile.unset_non_historical_fields()
-            # Force garbage collection of the cleared objects
-            gc.collect()
+
+        # NOTE: do NOT call unset_non_historical_fields() on the previous
+        # profile here.  The previous profile may still be referenced by
+        # Playback.muse_spot_profiles and actively used (e.g. when a
+        # background preparation creates a new profile for the next-next track
+        # while the current-next profile is about to be played).  Zeroing the
+        # callback while the profile is still live causes the
+        # "Previous spot profile callback was not set properly" crash.
+        # Callbacks are stripped safely at serialization time via
+        # MuseSpotProfile.__getstate__(), which works on a copy and never
+        # mutates the live object.
 
         # Add to current profiles
         self.all_spot_profiles.insert(0, spot_profile)

@@ -158,6 +158,18 @@ class MuseSpotProfile:
         self.get_upcoming_tracks_callback = None
         self.topic_translated = None
 
+    def __getstate__(self):
+        """Exclude non-pickleable callbacks when serializing.
+
+        Pickling must never mutate the live object, so we return a copy
+        with the callback fields set to None instead of calling
+        unset_non_historical_fields() on the real instance.
+        """
+        state = self.__dict__.copy()
+        state['get_previous_spot_profile_callback'] = None
+        state['get_upcoming_tracks_callback'] = None
+        return state
+
     def get_previous_spot_profile(self, idx=0):
         """Get the last spot profile that was actually spoken.
 
