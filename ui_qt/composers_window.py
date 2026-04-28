@@ -12,6 +12,9 @@ from PySide6.QtWidgets import (
     QLabel,
     QLineEdit,
     QCheckBox,
+    QListWidget,
+    QListWidgetItem,
+    QMessageBox,
     QPushButton,
     QFileDialog,
     QPlainTextEdit,
@@ -91,7 +94,7 @@ class ComposerDetailsWindow(SmartWindow):
         self.new_composer_name_edit = QLineEdit(self)
         self.new_composer_name_edit.setPlaceholderText("")
         self.new_composer_name_edit.setText(
-            _("New Composer") if self.composer is None else self.composer.name
+            _("New Composer") if self.is_new else str(self.composer.name or "")
         )
         self.new_composer_name_edit.setMinimumWidth(300)
         layout.addWidget(self.new_composer_name_edit, row, 1, 1, -1)
@@ -100,7 +103,9 @@ class ComposerDetailsWindow(SmartWindow):
         layout.addWidget(QLabel(_("Indicators"), self), row, 0, Qt.AlignmentFlag.AlignLeft)
         self.indicators_edit = QLineEdit(self)
         self.indicators_edit.setText(
-            "" if self.composer is None else ":".join(self.composer.indicators)
+            ""
+            if self.is_new
+            else ":".join(str(i) for i in (self.composer.indicators or []) if i)
         )
         self.indicators_edit.setMinimumWidth(300)
         layout.addWidget(self.indicators_edit, row, 1, 1, -1)
@@ -109,7 +114,7 @@ class ComposerDetailsWindow(SmartWindow):
         layout.addWidget(QLabel(_("Start Date"), self), row, 0, Qt.AlignmentFlag.AlignLeft)
         self.start_date_edit = QLineEdit(self)
         self.start_date_edit.setText(
-            "" if self.composer is None else str(self.composer.start_date)
+            "" if self.is_new else str(self.composer.start_date)
         )
         layout.addWidget(self.start_date_edit, row, 1, 1, -1)
         row += 1
@@ -117,7 +122,7 @@ class ComposerDetailsWindow(SmartWindow):
         layout.addWidget(QLabel(_("End Date"), self), row, 0, Qt.AlignmentFlag.AlignLeft)
         self.end_date_edit = QLineEdit(self)
         self.end_date_edit.setText(
-            "" if self.composer is None else str(self.composer.end_date)
+            "" if self.is_new else str(self.composer.end_date)
         )
         layout.addWidget(self.end_date_edit, row, 1, 1, -1)
         row += 1
@@ -127,7 +132,7 @@ class ComposerDetailsWindow(SmartWindow):
         )
         self.dates_are_lifespan_check = QCheckBox(_("Dates are lifespan"), self)
         self.dates_are_lifespan_check.setChecked(
-            True if self.composer is None else self.composer.dates_are_lifespan
+            True if self.is_new else self.composer.dates_are_lifespan
         )
         layout.addWidget(self.dates_are_lifespan_check, row, 1)
         row += 1
@@ -137,7 +142,7 @@ class ComposerDetailsWindow(SmartWindow):
         )
         self.dates_uncertain_check = QCheckBox(_("Dates are uncertain"), self)
         self.dates_uncertain_check.setChecked(
-            True if self.composer is None else self.composer.dates_uncertain
+            True if self.is_new else self.composer.dates_uncertain
         )
         layout.addWidget(self.dates_uncertain_check, row, 1)
         row += 1
@@ -145,7 +150,9 @@ class ComposerDetailsWindow(SmartWindow):
         layout.addWidget(QLabel(_("Genres"), self), row, 0, Qt.AlignmentFlag.AlignLeft)
         self.genres_edit = QLineEdit(self)
         self.genres_edit.setText(
-            "" if self.composer is None else ":".join(self.composer.genres)
+            ""
+            if self.is_new
+            else ":".join(str(g) for g in (self.composer.genres or []) if g)
         )
         self.genres_edit.setMinimumWidth(300)
         layout.addWidget(self.genres_edit, row, 1, 1, -1)
@@ -324,28 +331,43 @@ class ComposerDetailsWindow(SmartWindow):
 
 
 class ImportResultsWindow(SmartWindow):
-    """Window showing summary and quality results after a mass composer import."""
+    """Window showing summary and quality results after a mass composer import or quality check."""
 
-    def __init__(self, master, added, skipped, quality_issues, dimensions="700x500"):
+    def __init__(self, master, quality_issues, added=None, skipped=None,
+                 auto_merged=None, needs_review=None, title=None, dimensions="700x500",
+                 composers_data=None):
         super().__init__(
             persistent_parent=master,
             position_parent=master,
-            title=_("Mass Import Results"),
+            title=title or _("Mass Import Results"),
             geometry=dimensions,
             offset_x=60,
             offset_y=60,
         )
         self.setStyleSheet(AppStyle.get_stylesheet())
-        self._build_ui(added, skipped, quality_issues)
+        self._added = added
+        self._skipped = skipped
+        self._auto_merged = auto_merged
+        self._needs_review = needs_review
+        self._quality_issues = quality_issues
+        self._composers_data = composers_data
+        self._review_list = None
+        self._session_merged = []
+        self._build_ui(added, skipped, auto_merged, needs_review, quality_issues)
         self.show()
 
-    def _build_ui(self, added, skipped, quality_issues):
+    def _build_ui(self, added, skipped, auto_merged, needs_review, quality_issues):
         layout = QVBoxLayout(self)
 
-        summary = _("{0} composer(s) added, {1} already existing (skipped).").format(
-            len(added), len(skipped)
-        )
-        layout.addWidget(QLabel(summary, self))
+        if added is not None and skipped is not None:
+            summary = _("{0} composer(s) added, {1} already existing (skipped).").format(
+                len(added), len(skipped)
+            )
+            if auto_merged:
+                summary += " " + _("{0} auto-merged.").format(len(auto_merged))
+            if needs_review:
+                summary += " " + _("{0} need review (not imported).").format(len(needs_review))
+            layout.addWidget(QLabel(summary, self))
 
         if quality_issues:
             layout.addWidget(QLabel(
@@ -354,6 +376,39 @@ class ImportResultsWindow(SmartWindow):
                 ),
                 self,
             ))
+
+        if needs_review:
+            layout.addWidget(QLabel(
+                _("Needs review — similar to an existing composer, not imported:"), self
+            ))
+            self._review_list = QListWidget(self)
+            self._review_list.setMaximumHeight(180)
+            for inp, matched, ratio in needs_review:
+                item = QListWidgetItem(f"{inp}  ~  {matched}  ({ratio:.0%})")
+                item.setData(Qt.ItemDataRole.UserRole, (inp, matched))
+                self._review_list.addItem(item)
+            layout.addWidget(self._review_list)
+            review_btns = QHBoxLayout()
+            merge_btn = QPushButton(_("Merge Records"), self)
+            merge_btn.clicked.connect(self._merge_selected)
+            review_btns.addWidget(merge_btn)
+            remove_btn = QPushButton(_("Remove from Review"), self)
+            remove_btn.clicked.connect(self._remove_selected)
+            review_btns.addWidget(remove_btn)
+            layout.addLayout(review_btns)
+
+        if auto_merged:
+            layout.addWidget(QLabel(
+                _("Auto-merged — treated as existing composer:"), self
+            ))
+            merged_text = QPlainTextEdit(self)
+            merged_text.setReadOnly(True)
+            merged_text.setPlainText("\n".join(
+                f"{inp}  →  {matched}  ({ratio:.0%})"
+                for inp, matched, ratio in auto_merged
+            ))
+            merged_text.setMaximumHeight(120)
+            layout.addWidget(merged_text)
 
         if skipped:
             layout.addWidget(QLabel(_("Skipped — already existing in library:"), self))
@@ -378,9 +433,97 @@ class ImportResultsWindow(SmartWindow):
         else:
             layout.addWidget(QLabel(_("No quality issues detected."), self))
 
+        btn_row = QHBoxLayout()
+        save_btn = QPushButton(_("Save Report"), self)
+        save_btn.clicked.connect(self.save_report)
+        btn_row.addWidget(save_btn)
         close_btn = QPushButton(_("Close"), self)
         close_btn.clicked.connect(self.close)
-        layout.addWidget(close_btn)
+        btn_row.addWidget(close_btn)
+        layout.addLayout(btn_row)
+
+
+    def _merge_selected(self):
+        if self._review_list is None or self._review_list.currentItem() is None:
+            return
+        item = self._review_list.currentItem()
+        inp, matched = item.data(Qt.ItemDataRole.UserRole)
+        if self._composers_data is not None:
+            success, error_msg = self._composers_data.add_composer_indicators(matched, [inp])
+            if not success:
+                QMessageBox.critical(
+                    self, _("Error"),
+                    _("Failed to save composer:") + f"\n\n{error_msg}",
+                )
+                return
+        self._session_merged.append((inp, matched))
+        self._review_list.takeItem(self._review_list.currentRow())
+
+    def _remove_selected(self):
+        if self._review_list is not None and self._review_list.currentItem() is not None:
+            self._review_list.takeItem(self._review_list.currentRow())
+
+    def save_report(self):
+        default_name = "composer_report_" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M") + ".txt"
+        path, _filter = QFileDialog.getSaveFileName(
+            self, _("Save Report"), default_name, _("Text files (*.txt);;All files (*)")
+        )
+        if not path:
+            return
+
+        lines = []
+        lines.append("Composer Report — " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M"))
+        lines.append("")
+
+        if self._added is not None and self._skipped is not None:
+            summary = f"{len(self._added)} added, {len(self._skipped)} skipped"
+            if self._auto_merged:
+                summary += f", {len(self._auto_merged)} auto-merged"
+            if self._needs_review:
+                summary += f", {len(self._needs_review)} need review (not imported)"
+            lines.append("Summary: " + summary)
+            lines.append("")
+
+        if self._session_merged:
+            lines.append("=== Merged in This Session ===")
+            for inp, matched in self._session_merged:
+                lines.append(f"  {inp}  →  {matched}")
+            lines.append("")
+
+        remaining_review = [
+            (inp, matched, ratio) for inp, matched, ratio in (self._needs_review or [])
+            if not any(inp == m_inp for m_inp, _ in self._session_merged)
+        ]
+        if remaining_review:
+            lines.append("=== Needs Review (similar to existing, not imported) ===")
+            for inp, matched, ratio in remaining_review:
+                lines.append(f"  {inp}  ~  {matched}  ({ratio:.0%})")
+            lines.append("")
+
+        if self._auto_merged:
+            lines.append("=== Auto-merged (treated as existing) ===")
+            for inp, matched, ratio in self._auto_merged:
+                lines.append(f"  {inp}  →  {matched}  ({ratio:.0%})")
+            lines.append("")
+
+        if self._skipped:
+            lines.append("=== Skipped (already in library) ===")
+            for inp, matched in self._skipped:
+                lines.append(f"  {inp}  →  {matched}")
+            lines.append("")
+
+        if self._quality_issues:
+            lines.append("=== Duplicate Indicators (across full library) ===")
+            for indicator, names in sorted(self._quality_issues.items()):
+                lines.append(f"  {indicator!r}: " + ", ".join(sorted(names)))
+        else:
+            lines.append("No quality issues detected.")
+
+        try:
+            with open(path, "w", encoding="utf-8") as f:
+                f.write("\n".join(lines) + "\n")
+        except Exception as e:
+            QMessageBox.critical(self, _("Error"), _("Failed to save report:") + f"\n\n{e}")
 
 
 class ComposersWindow(SmartWindow):
@@ -527,6 +670,10 @@ class ComposersWindow(SmartWindow):
         self.mass_import_btn = QPushButton(_("Mass Import"), self)
         self.mass_import_btn.clicked.connect(self.mass_import)
         inner_layout.addWidget(self.mass_import_btn, 1, 2)
+
+        self.quality_check_btn = QPushButton(_("Quality Check"), self)
+        self.quality_check_btn.clicked.connect(self.quality_check)
+        inner_layout.addWidget(self.quality_check_btn, 2, 2)
 
         layout.addWidget(inner)
 
@@ -750,6 +897,13 @@ class ComposersWindow(SmartWindow):
         ComposersWindow.details_window = ComposerDetailsWindow(self, self, None)
         ComposersWindow.details_window.show()
 
+    def quality_check(self):
+        quality_issues = self.composers_data._check_duplicate_indicators()
+        ImportResultsWindow(
+            self, quality_issues,
+            title=_("Quality Check Results"),
+        )
+
     @require_password(ProtectedActions.EDIT_COMPOSERS)
     def mass_import(self):
         path, _filter = QFileDialog.getOpenFileName(
@@ -775,7 +929,10 @@ class ComposersWindow(SmartWindow):
         self._refresh_widgets(add_results=False)
         self.show_recent_searches()
         ImportResultsWindow(
-            self, result["added"], result["skipped"], result["quality_issues"]
+            self, result["quality_issues"],
+            added=result["added"], skipped=result["skipped"],
+            auto_merged=result["auto_merged"], needs_review=result["needs_review"],
+            composers_data=self.composers_data,
         )
 
     def _refresh_widgets(self, add_results: bool = True):

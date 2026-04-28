@@ -20,6 +20,19 @@ except ImportError:
     def _ascii_fold(s):
         return unicodedata.normalize('NFKD', s).encode('ascii', 'ignore').decode('ascii')
 
+_en_dictionary = None
+
+def _get_en_dictionary():
+    global _en_dictionary
+    if _en_dictionary is None:
+        dict_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'tts', 'dictionary_en.txt')
+        try:
+            with open(dict_path, 'r', encoding='utf-8') as f:
+                _en_dictionary = {line.strip().lower() for line in f if line.strip()}
+        except OSError:
+            _en_dictionary = set()
+    return _en_dictionary
+
 
 class Composer:
     def __init__(self, id, name, indicators=[], start_date=-1, end_date=-1,
@@ -506,6 +519,21 @@ class ComposersData:
                 os.remove(backup_file)
             return False, error_msg
 
+    def add_composer_indicators(self, composer_name, indicators):
+        """Add one or more indicators to an existing composer if not already present, then save.
+
+        Returns:
+            tuple: (bool, str) - (success, error_message)
+        """
+        composer = self._composers.get(composer_name)
+        if composer is None:
+            return False, _("Composer not found")
+        to_add = [ind for ind in indicators if ind not in composer.indicators]
+        if not to_add:
+            return True, ""
+        composer.indicators.extend(to_add)
+        return self.save_composer(composer)
+
     def delete_composer(self, composer):
         """Delete a composer from the JSON file.
         
@@ -600,23 +628,65 @@ class ComposersData:
         return data_search
 
     @staticmethod
-    def _generate_import_indicators(name, last_name_counts):
+    def _generate_import_indicators(name):
         indicators = [name]
 
         folded_name = _ascii_fold(name)
         if folded_name != name and folded_name not in indicators:
             indicators.append(folded_name)
 
-        last_word = name.split()[-1]
-        last_name = NameOps.get_capitalized_part_of_last_name(last_word)
-        if last_name and last_name_counts.get(last_name.lower(), 0) == 1:
-            if last_name not in indicators:
-                indicators.append(last_name)
-            folded_last = _ascii_fold(last_name)
-            if folded_last != last_name and folded_last not in indicators:
-                indicators.append(folded_last)
+        tokens = name.split()
+        last_word = tokens[-1]
+
+        # If last token is a name appendix (Jr., Sr., Roman numerals, etc.),
+        # add a "RealLastName Appendix" combined indicator and use the real last name
+        # for quality-filtered standalone indicator generation.
+        if last_word in NameOps.probable_name_appendices and len(tokens) >= 2:
+            real_last_word = tokens[-2]
+            last_name = NameOps.get_capitalized_part_of_last_name(real_last_word)
+            combined = f"{real_last_word} {last_word}"
+            if combined not in indicators:
+                indicators.append(combined)
+                folded_combined = _ascii_fold(combined)
+                if folded_combined != combined and folded_combined not in indicators:
+                    indicators.append(folded_combined)
+        else:
+            last_name = NameOps.get_capitalized_part_of_last_name(last_word)
+
+        # Add standalone last-name indicator only if it passes quality filters:
+        # must be longer than 4 characters and not a common English word.
+        if last_name and len(last_name) > 4:
+            en_dict = _get_en_dictionary()
+            if last_name.lower() not in en_dict:
+                if last_name not in indicators:
+                    indicators.append(last_name)
+                folded_last = _ascii_fold(last_name)
+                if folded_last != last_name and folded_last not in indicators:
+                    indicators.append(folded_last)
 
         return indicators
+
+    _IMPORT_AUTO_MERGE_THRESHOLD = 0.92
+    _IMPORT_REVIEW_THRESHOLD = 0.75
+
+    def _find_similar_composer(self, name):
+        """Return (best_matching_Composer, similarity_ratio) by folded last-name pre-filter."""
+        from difflib import SequenceMatcher
+        last_key = _ascii_fold(name.split()[-1]).lower()
+        folded_name = _ascii_fold(name).lower()
+
+        candidates = [
+            c for c in self._composers.values()
+            if _ascii_fold(c.name.split()[-1]).lower() == last_key
+        ]
+        best_match = None
+        best_ratio = 0.0
+        for candidate in candidates:
+            ratio = SequenceMatcher(None, folded_name, _ascii_fold(candidate.name).lower()).ratio()
+            if ratio > best_ratio:
+                best_ratio = ratio
+                best_match = candidate
+        return best_match, best_ratio
 
     def _find_existing_composer(self, name):
         if name in self._composers:
@@ -652,19 +722,12 @@ class ComposersData:
         return duplicates
 
     def bulk_import_composers(self, names):
-        last_name_counts = {}
-        clean_names = []
-        for name in names:
-            name = name.strip()
-            if not name:
-                continue
-            clean_names.append(name)
-            last_word = name.split()[-1]
-            last_name = NameOps.get_capitalized_part_of_last_name(last_word).lower()
-            last_name_counts[last_name] = last_name_counts.get(last_name, 0) + 1
+        clean_names = [name.strip() for name in names if name.strip()]
 
         added = []
-        skipped = []
+        skipped = []       # exact indicator match → already in library
+        auto_merged = []   # similarity >= AUTO_MERGE_THRESHOLD → treated as existing
+        needs_review = []  # REVIEW_THRESHOLD <= similarity < AUTO_MERGE_THRESHOLD
         import_time = datetime.datetime.now()
 
         for name in clean_names:
@@ -673,7 +736,33 @@ class ComposersData:
                 skipped.append((name, existing.name))
                 continue
 
-            indicators = ComposersData._generate_import_indicators(name, last_name_counts)
+            best_match, ratio = self._find_similar_composer(name)
+
+            def _try_auto_merge(match, import_name):
+                auto_merged.append((import_name, match.name, ratio))
+                if import_name not in match.indicators:
+                    match.indicators.append(import_name)
+
+            if best_match is not None and ratio >= ComposersData._IMPORT_AUTO_MERGE_THRESHOLD:
+                _try_auto_merge(best_match, name)
+                continue
+
+            # Auto-merge when one name is FirstName LastName and the other adds middle
+            # names — same first and last token, one name has exactly 2 tokens.
+            if best_match is not None:
+                import_tokens = name.split()
+                existing_tokens = best_match.name.split()
+                if (min(len(import_tokens), len(existing_tokens)) == 2
+                        and _ascii_fold(import_tokens[0]).lower() == _ascii_fold(existing_tokens[0]).lower()
+                        and _ascii_fold(import_tokens[-1]).lower() == _ascii_fold(existing_tokens[-1]).lower()):
+                    _try_auto_merge(best_match, name)
+                    continue
+
+            if best_match is not None and ratio >= ComposersData._IMPORT_REVIEW_THRESHOLD:
+                needs_review.append((name, best_match.name, ratio))
+                continue
+
+            indicators = ComposersData._generate_import_indicators(name)
             composer = Composer(
                 id=None,
                 name=name,
@@ -691,7 +780,7 @@ class ComposersData:
             self._composers[name] = composer
             added.append(composer)
 
-        if added:
+        if added or auto_merged:
             import shutil
             backup_file = config.composers_file + '.bak'
             try:
@@ -708,12 +797,17 @@ class ComposersData:
                     os.remove(backup_file)
                 for composer in added:
                     self._composers.pop(composer.name, None)
-                return {'added': [], 'skipped': skipped, 'error': error_msg, 'quality_issues': {}}
+                return {
+                    'added': [], 'skipped': skipped, 'auto_merged': auto_merged,
+                    'needs_review': needs_review, 'error': error_msg, 'quality_issues': {},
+                }
 
         quality_issues = self._check_duplicate_indicators()
         return {
             'added': added,
             'skipped': skipped,
+            'auto_merged': auto_merged,
+            'needs_review': needs_review,
             'error': None,
             'quality_issues': quality_issues,
         }
