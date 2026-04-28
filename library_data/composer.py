@@ -2,6 +2,7 @@ import datetime
 import json
 import os
 import re
+import unicodedata
 
 from library_data.work import Work
 from utils.config import config
@@ -13,10 +14,17 @@ logger = get_logger(__name__)
 
 _ = I18N._
 
+try:
+    from anyascii import anyascii as _ascii_fold
+except ImportError:
+    def _ascii_fold(s):
+        return unicodedata.normalize('NFKD', s).encode('ascii', 'ignore').decode('ascii')
+
 
 class Composer:
     def __init__(self, id, name, indicators=[], start_date=-1, end_date=-1,
-                 dates_are_lifespan=True, dates_uncertain=False, genres=[], works=[], notes={}):
+                 dates_are_lifespan=True, dates_uncertain=False, genres=[], works=[], notes={},
+                 date_added=None):
         self.id = id
         self.name = name
         self.indicators = indicators if len(indicators) > 0 else [name]
@@ -27,6 +35,7 @@ class Composer:
         self.genres = genres
         self.works = works
         self.notes = notes
+        self.date_added = date_added
 
         for work in works:
             self.add_work(work)
@@ -141,19 +150,39 @@ class Composer:
             'dates_uncertain': self.dates_uncertain,
             'genres': self.genres,
             'works': self.works,
-            'notes': self.notes
+            'notes': self.notes,
+            'date_added': self.date_added.isoformat() if isinstance(self.date_added, datetime.datetime) else None,
         }
 
     @staticmethod
-    def from_json(json):
-        return Composer(**json)
+    def from_json(data):
+        date_added = data.get('date_added')
+        if isinstance(date_added, str):
+            try:
+                date_added = datetime.datetime.fromisoformat(date_added)
+            except ValueError:
+                date_added = None
+        return Composer(
+            id=data['id'],
+            name=data['name'],
+            indicators=data.get('indicators', []),
+            start_date=data.get('start_date', -1),
+            end_date=data.get('end_date', -1),
+            dates_are_lifespan=data.get('dates_are_lifespan', True),
+            dates_uncertain=data.get('dates_uncertain', False),
+            genres=data.get('genres', []),
+            works=data.get('works', []),
+            notes=data.get('notes', {}),
+            date_added=date_added,
+        )
 
 
 
 class ComposersDataSearch:
     def __init__(self, composer="", genre="", stored_results_count=0, max_results=200,
                  start_date_greater_than=-1, start_date_less_than=-1,
-                 end_date_greater_than=-1, end_date_less_than=-1):
+                 end_date_greater_than=-1, end_date_less_than=-1,
+                 date_added_after=None, date_added_before=None):
         self.composer = composer.lower()
         self.genre = genre.lower()
         self.max_results = max_results
@@ -165,6 +194,19 @@ class ComposersDataSearch:
         self.dates_specified = any([start_date_greater_than > -1, start_date_less_than > -1,
                                     end_date_greater_than > -1, end_date_less_than > -1])
 
+        if isinstance(date_added_after, str):
+            try:
+                date_added_after = datetime.datetime.fromisoformat(date_added_after)
+            except ValueError:
+                date_added_after = None
+        if isinstance(date_added_before, str):
+            try:
+                date_added_before = datetime.datetime.fromisoformat(date_added_before)
+            except ValueError:
+                date_added_before = None
+        self.date_added_after = date_added_after
+        self.date_added_before = date_added_before
+
         self.results = []
 
     def is_valid(self):
@@ -173,6 +215,8 @@ class ComposersDataSearch:
             field = getattr(self, name)
             if field is not None and field != "":
                 return True
+        if self.date_added_after is not None or self.date_added_before is not None:
+            return True
         for name in ["start_date_greater_than", "start_date_less_than",
                     "end_date_greater_than", "end_date_less_than"]:
             field = getattr(self, name)
@@ -218,7 +262,12 @@ class ComposersDataSearch:
             
         if date_parts:
             parts.append(_("Dates: {0}").format(", ".join(date_parts)))
-            
+
+        if self.date_added_after is not None:
+            parts.append(_("Added after {0}").format(self.date_added_after.strftime("%Y-%m-%d")))
+        if self.date_added_before is not None:
+            parts.append(_("Added before {0}").format(self.date_added_before.strftime("%Y-%m-%d")))
+
         # If no criteria specified, return default title
         if not parts:
             return _("All Composers")
@@ -228,6 +277,18 @@ class ComposersDataSearch:
     def test(self, composer, strict=True):
         if len(self.results) > self.max_results:
             return None
+
+        if self.date_added_after is not None or self.date_added_before is not None:
+            da = composer.date_added
+            if da is None:
+                return False
+            if self.date_added_after is not None and da < self.date_added_after:
+                return False
+            if self.date_added_before is not None and da > self.date_added_before:
+                return False
+            if not self.dates_specified and len(self.composer) == 0 and len(self.genre) == 0:
+                self.results.append(composer)
+                return True
 
         # Check dates first since integer comparisons are fast
         if self.dates_specified:
@@ -300,29 +361,34 @@ class ComposersDataSearch:
 
     def get_dict(self):
         return {
-            "composer": self.composer, 
+            "composer": self.composer,
             "genre": self.genre,
             "stored_results_count": self.stored_results_count,
             "start_date_greater_than": self.start_date_greater_than,
             "start_date_less_than": self.start_date_less_than,
             "end_date_greater_than": self.end_date_greater_than,
-            "end_date_less_than": self.end_date_less_than
+            "end_date_less_than": self.end_date_less_than,
+            "date_added_after": self.date_added_after.isoformat() if self.date_added_after else None,
+            "date_added_before": self.date_added_before.isoformat() if self.date_added_before else None,
         }
 
     def __eq__(self, value: object) -> bool:
         if not isinstance(value, ComposersDataSearch):
             return False
-        return (self.composer == value.composer and 
+        return (self.composer == value.composer and
                 self.genre == value.genre and
                 self.start_date_greater_than == value.start_date_greater_than and
                 self.start_date_less_than == value.start_date_less_than and
                 self.end_date_greater_than == value.end_date_greater_than and
-                self.end_date_less_than == value.end_date_less_than)
+                self.end_date_less_than == value.end_date_less_than and
+                self.date_added_after == value.date_added_after and
+                self.date_added_before == value.date_added_before)
 
     def __hash__(self) -> int:
         return hash((self.composer, self.genre,
                     self.start_date_greater_than, self.start_date_less_than,
-                    self.end_date_greater_than, self.end_date_less_than))
+                    self.end_date_greater_than, self.end_date_less_than,
+                    self.date_added_after, self.date_added_before))
 
 
 
@@ -333,10 +399,19 @@ class ComposersData:
         self._get_composers()
 
     def _get_composers(self):
+        mtime = datetime.datetime.fromtimestamp(os.path.getmtime(config.composers_file))
         with open(config.composers_file, 'r', encoding="utf-8") as f:
             composers = json.load(f)
-        for name, composer in composers.items():
-            self._composers[name] = Composer.from_json(composer)
+        needs_migration = False
+        for name, composer_data in composers.items():
+            composer = Composer.from_json(composer_data)
+            if composer.date_added is None:
+                composer.date_added = mtime
+                needs_migration = True
+            self._composers[name] = composer
+        if needs_migration:
+            self._write_sorted_composers_to_file()
+            logger.info("Stored date_added for composer data where missing")
 
     def _get_next_available_id(self):
         """Find the next available ID in the composers collection.
@@ -404,9 +479,11 @@ class ComposersData:
             import shutil
             shutil.copy2(config.composers_file, backup_file)
             
-            # Assign ID if needed
+            # Assign ID and date_added if needed (new composer)
             self._assign_next_id(composer)
-            
+            if composer.date_added is None:
+                composer.date_added = datetime.datetime.now()
+
             # Update in-memory data
             self._composers[composer.name] = composer
             
@@ -521,6 +598,125 @@ class ComposersData:
 
         data_search.set_stored_results_count()
         return data_search
+
+    @staticmethod
+    def _generate_import_indicators(name, last_name_counts):
+        indicators = [name]
+
+        folded_name = _ascii_fold(name)
+        if folded_name != name and folded_name not in indicators:
+            indicators.append(folded_name)
+
+        last_word = name.split()[-1]
+        last_name = NameOps.get_capitalized_part_of_last_name(last_word)
+        if last_name and last_name_counts.get(last_name.lower(), 0) == 1:
+            if last_name not in indicators:
+                indicators.append(last_name)
+            folded_last = _ascii_fold(last_name)
+            if folded_last != last_name and folded_last not in indicators:
+                indicators.append(folded_last)
+
+        return indicators
+
+    def _find_existing_composer(self, name):
+        if name in self._composers:
+            return self._composers[name]
+
+        folded = _ascii_fold(name)
+        if folded != name and folded in self._composers:
+            return self._composers[folded]
+
+        name_lower = name.lower()
+        folded_lower = folded.lower()
+        for composer in self._composers.values():
+            for indicator in composer.indicators:
+                ind_lower = indicator.lower()
+                if ind_lower == name_lower or (folded != name and ind_lower == folded_lower):
+                    return composer
+        return None
+
+    def _check_duplicate_indicators(self):
+        seen = {}  # lowercase -> (original_indicator, composer_name)
+        duplicates = {}  # original_indicator -> set of composer names
+        for name, composer in self._composers.items():
+            for indicator in composer.indicators:
+                key = indicator.lower()
+                if key in seen:
+                    orig_indicator, other_name = seen[key]
+                    if other_name != name:
+                        if orig_indicator not in duplicates:
+                            duplicates[orig_indicator] = {other_name}
+                        duplicates[orig_indicator].add(name)
+                else:
+                    seen[key] = (indicator, name)
+        return duplicates
+
+    def bulk_import_composers(self, names):
+        last_name_counts = {}
+        clean_names = []
+        for name in names:
+            name = name.strip()
+            if not name:
+                continue
+            clean_names.append(name)
+            last_word = name.split()[-1]
+            last_name = NameOps.get_capitalized_part_of_last_name(last_word).lower()
+            last_name_counts[last_name] = last_name_counts.get(last_name, 0) + 1
+
+        added = []
+        skipped = []
+        import_time = datetime.datetime.now()
+
+        for name in clean_names:
+            existing = self._find_existing_composer(name)
+            if existing is not None:
+                skipped.append((name, existing.name))
+                continue
+
+            indicators = ComposersData._generate_import_indicators(name, last_name_counts)
+            composer = Composer(
+                id=None,
+                name=name,
+                indicators=indicators,
+                start_date=-1,
+                end_date=-1,
+                dates_are_lifespan=True,
+                dates_uncertain=False,
+                genres=[],
+                works=[],
+                notes={},
+                date_added=import_time,
+            )
+            self._assign_next_id(composer)
+            self._composers[name] = composer
+            added.append(composer)
+
+        if added:
+            import shutil
+            backup_file = config.composers_file + '.bak'
+            try:
+                shutil.copy2(config.composers_file, backup_file)
+                success, error_msg = self._write_sorted_composers_to_file()
+                if not success:
+                    raise Exception(error_msg)
+                os.remove(backup_file)
+            except Exception as e:
+                error_msg = str(e)
+                logger.error(f"Error in bulk import: {error_msg}")
+                if os.path.exists(backup_file):
+                    shutil.copy2(backup_file, config.composers_file)
+                    os.remove(backup_file)
+                for composer in added:
+                    self._composers.pop(composer.name, None)
+                return {'added': [], 'skipped': skipped, 'error': error_msg, 'quality_issues': {}}
+
+        quality_issues = self._check_duplicate_indicators()
+        return {
+            'added': added,
+            'skipped': skipped,
+            'error': None,
+            'quality_issues': quality_issues,
+        }
 
 
 composers_data = ComposersData()

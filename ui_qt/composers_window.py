@@ -2,6 +2,7 @@
 Composers search and details windows (PySide6).
 Port of ui/composers_window.py; logic preserved, UI uses Qt.
 """
+import datetime
 import time
 
 from PySide6.QtWidgets import (
@@ -12,6 +13,8 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QCheckBox,
     QPushButton,
+    QFileDialog,
+    QPlainTextEdit,
     QScrollArea,
     QWidget,
     QFrame,
@@ -320,6 +323,66 @@ class ComposerDetailsWindow(SmartWindow):
                 )
 
 
+class ImportResultsWindow(SmartWindow):
+    """Window showing summary and quality results after a mass composer import."""
+
+    def __init__(self, master, added, skipped, quality_issues, dimensions="700x500"):
+        super().__init__(
+            persistent_parent=master,
+            position_parent=master,
+            title=_("Mass Import Results"),
+            geometry=dimensions,
+            offset_x=60,
+            offset_y=60,
+        )
+        self.setStyleSheet(AppStyle.get_stylesheet())
+        self._build_ui(added, skipped, quality_issues)
+        self.show()
+
+    def _build_ui(self, added, skipped, quality_issues):
+        layout = QVBoxLayout(self)
+
+        summary = _("{0} composer(s) added, {1} already existing (skipped).").format(
+            len(added), len(skipped)
+        )
+        layout.addWidget(QLabel(summary, self))
+
+        if quality_issues:
+            layout.addWidget(QLabel(
+                _("{0} duplicate indicator(s) found across library (see below).").format(
+                    len(quality_issues)
+                ),
+                self,
+            ))
+
+        if skipped:
+            layout.addWidget(QLabel(_("Skipped — already existing in library:"), self))
+            skipped_text = QPlainTextEdit(self)
+            skipped_text.setReadOnly(True)
+            skipped_text.setPlainText("\n".join(
+                f"{inp}  →  {matched}" for inp, matched in skipped
+            ))
+            skipped_text.setMaximumHeight(140)
+            layout.addWidget(skipped_text)
+
+        if quality_issues:
+            layout.addWidget(QLabel(_("Duplicate indicators (across full library):"), self))
+            issues_text = QPlainTextEdit(self)
+            issues_text.setReadOnly(True)
+            lines = [
+                f"{indicator!r}: " + ", ".join(sorted(names))
+                for indicator, names in sorted(quality_issues.items())
+            ]
+            issues_text.setPlainText("\n".join(lines))
+            layout.addWidget(issues_text)
+        else:
+            layout.addWidget(QLabel(_("No quality issues detected."), self))
+
+        close_btn = QPushButton(_("Close"), self)
+        close_btn.clicked.connect(self.close)
+        layout.addWidget(close_btn)
+
+
 class ComposersWindow(SmartWindow):
     """Window to search composers data."""
 
@@ -439,11 +502,31 @@ class ComposersWindow(SmartWindow):
         self.end_date_less_edit.returnPressed.connect(self.do_search)
         inner_layout.addWidget(self.end_date_less_edit, 5, 1)
 
+        inner_layout.addWidget(
+            QLabel(_("Date Added After"), self), 6, 0, Qt.AlignmentFlag.AlignLeft
+        )
+        self.date_added_after_edit = QLineEdit(self)
+        self.date_added_after_edit.setPlaceholderText("YYYY-MM-DD")
+        self.date_added_after_edit.returnPressed.connect(self.do_search)
+        inner_layout.addWidget(self.date_added_after_edit, 6, 1)
+
+        inner_layout.addWidget(
+            QLabel(_("Date Added Before"), self), 7, 0, Qt.AlignmentFlag.AlignLeft
+        )
+        self.date_added_before_edit = QLineEdit(self)
+        self.date_added_before_edit.setPlaceholderText("YYYY-MM-DD")
+        self.date_added_before_edit.returnPressed.connect(self.do_search)
+        inner_layout.addWidget(self.date_added_before_edit, 7, 1)
+
         self.search_btn = QPushButton(_("Search"), self)
         self.search_btn.clicked.connect(self.do_search)
-        inner_layout.addWidget(self.search_btn, 6, 0, 1, -1)
+        inner_layout.addWidget(self.search_btn, 8, 0, 1, -1)
 
         inner_layout.addWidget(self.new_composer_btn, 0, 2)
+
+        self.mass_import_btn = QPushButton(_("Mass Import"), self)
+        self.mass_import_btn.clicked.connect(self.mass_import)
+        inner_layout.addWidget(self.mass_import_btn, 1, 2)
 
         layout.addWidget(inner)
 
@@ -539,6 +622,16 @@ class ComposersWindow(SmartWindow):
             if composer_data_search.end_date_less_than is not None
             else ""
         )
+        self.date_added_after_edit.setText(
+            composer_data_search.date_added_after.strftime("%Y-%m-%d")
+            if composer_data_search.date_added_after is not None
+            else ""
+        )
+        self.date_added_before_edit.setText(
+            composer_data_search.date_added_before.strftime("%Y-%m-%d")
+            if composer_data_search.date_added_before is not None
+            else ""
+        )
         self.composer_data_search = composer_data_search
 
     def _parse_date(self, date_str: str) -> int:
@@ -549,6 +642,14 @@ class ComposersWindow(SmartWindow):
         except ValueError:
             return -1
 
+    def _parse_date_added(self, date_str: str):
+        if not date_str:
+            return None
+        try:
+            return datetime.datetime.fromisoformat(date_str)
+        except ValueError:
+            return None
+
     def do_search(self, event=None):
         composer = self.composer_entry.text().strip()
         genre = self.genre_entry.text().strip()
@@ -556,10 +657,13 @@ class ComposersWindow(SmartWindow):
         start_date_less = self._parse_date(self.start_date_less_edit.text().strip())
         end_date_greater = self._parse_date(self.end_date_greater_edit.text().strip())
         end_date_less = self._parse_date(self.end_date_less_edit.text().strip())
+        date_added_after = self._parse_date_added(self.date_added_after_edit.text().strip())
+        date_added_before = self._parse_date_added(self.date_added_before_edit.text().strip())
 
-        if not any([composer, genre]) and sum(
-            [start_date_greater, start_date_less, end_date_greater, end_date_less]
-        ) == -4:
+        if (not any([composer, genre])
+                and sum([start_date_greater, start_date_less, end_date_greater, end_date_less]) == -4
+                and date_added_after is None
+                and date_added_before is None):
             self._refresh_widgets(add_results=False)
             self.show_recent_searches()
             return
@@ -572,6 +676,8 @@ class ComposersWindow(SmartWindow):
             start_date_less_than=start_date_less,
             end_date_greater_than=end_date_greater,
             end_date_less_than=end_date_less,
+            date_added_after=date_added_after,
+            date_added_before=date_added_before,
         )
         self._do_search()
 
@@ -643,6 +749,34 @@ class ComposersWindow(SmartWindow):
                 pass
         ComposersWindow.details_window = ComposerDetailsWindow(self, self, None)
         ComposersWindow.details_window.show()
+
+    @require_password(ProtectedActions.EDIT_COMPOSERS)
+    def mass_import(self):
+        path, _filter = QFileDialog.getOpenFileName(
+            self,
+            _("Select composers list"),
+            "",
+            _("Text files (*.txt);;All files (*)"),
+        )
+        if not path:
+            return
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                names = f.read().splitlines()
+        except Exception as e:
+            self.app_actions.alert(_("Error"), str(e), kind="error", master=self)
+            return
+        result = self.composers_data.bulk_import_composers(names)
+        if result["error"]:
+            self.app_actions.alert(
+                _("Import Error"), result["error"], kind="error", master=self
+            )
+            return
+        self._refresh_widgets(add_results=False)
+        self.show_recent_searches()
+        ImportResultsWindow(
+            self, result["added"], result["skipped"], result["quality_issues"]
+        )
 
     def _refresh_widgets(self, add_results: bool = True):
         self._clear_results_widgets()
