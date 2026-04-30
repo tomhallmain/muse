@@ -2,9 +2,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
-"POT-Creation-Date: 2026-03-31 17:30-0400\n"
-"PO-Revision-Date: 2026-03-31 17:30-0400\n"
-"Last-Translator: Translator Name <translator@example.com>\n"
+"POT-Creation-Date: 2026-04-30 16:39-0400\n"
+"PO-Revision-Date: 2026-04-30 16:39-0400\n"
+"Last-Translator: Thomas Hall <tomhall.main@gmail.com>\n"
 "Language-Team: ru Team <<EMAIL>>\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
@@ -12,64 +12,64 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: app_qt.py:93 app_qt.py:94
+#: app_qt.py:97 app_qt.py:98
 msgid " Muse "
 msgstr " Муза "
 
-#: app_qt.py:220
+#: app_qt.py:225
 msgid "File"
 msgstr "Файл"
 
-#: app_qt.py:221
+#: app_qt.py:226
 msgid "Open Library"
 msgstr "Открытая библиотека"
 
-#: app_qt.py:222
+#: app_qt.py:227
 msgid "Current Track Text"
 msgstr "Текущий текст трека"
 
-#: app_qt.py:224
+#: app_qt.py:229
 msgid "Exit"
 msgstr "выход"
 
-#: app_qt.py:226
+#: app_qt.py:231
 msgid "View"
 msgstr "Посмотреть"
 
-#: app_qt.py:227
+#: app_qt.py:232
 msgid "Toggle Fullscreen"
 msgstr "Переключить полноэкранный режим"
 
-#: app_qt.py:228
+#: app_qt.py:233
 msgid "Toggle Theme"
 msgstr "переключаться Тема"
 
-#: app_qt.py:230 app_qt.py:380 ui_qt/playlist_window.py:67
+#: app_qt.py:235 app_qt.py:385 ui_qt/playlist_window.py:67
 msgid "Playlists"
 msgstr "Плейлисты"
 
-#: app_qt.py:231 app_qt.py:436 ui_qt/favorites_window.py:234
+#: app_qt.py:236 app_qt.py:441 ui_qt/favorites_window.py:234
 #: ui_qt/favorites_window.py:544
 msgid "Favorites"
 msgstr "Любимые"
 
-#: app_qt.py:232 ui_qt/history_window.py:87 ui_qt/history_window.py:314
+#: app_qt.py:237 ui_qt/history_window.py:87 ui_qt/history_window.py:314
 msgid "History"
 msgstr "История"
 
-#: app_qt.py:233 utils/globals.py:553
+#: app_qt.py:238 utils/globals.py:553
 msgid "Composers"
 msgstr "композиторы"
 
-#: app_qt.py:234
+#: app_qt.py:239
 msgid "Personas"
 msgstr "Персонажи"
 
-#: app_qt.py:236
+#: app_qt.py:241
 msgid "Tools"
 msgstr "Инструменты"
 
-#: app_qt.py:237 ui_qt/composers_window.py:442 ui_qt/composers_window.py:497
+#: app_qt.py:242 ui_qt/composers_window.py:664 ui_qt/composers_window.py:727
 #: ui_qt/favorites_window.py:274 ui_qt/history_window.py:121
 #: ui_qt/network_media_window.py:115 ui_qt/network_media_window.py:156
 #: ui_qt/network_media_window.py:223 ui_qt/network_media_window.py:492
@@ -78,97 +78,97 @@ msgstr "Инструменты"
 msgid "Search"
 msgstr "Поиск"
 
-#: app_qt.py:238
+#: app_qt.py:243
 msgid "Schedules"
 msgstr "Расписания"
 
-#: app_qt.py:239 ui_qt/extensions_window.py:39 ui_qt/extensions_window.py:48
+#: app_qt.py:244 ui_qt/extensions_window.py:39 ui_qt/extensions_window.py:48
 #: ui_qt/extensions_window.py:329
 msgid "Extensions"
 msgstr "Расширения"
 
-#: app_qt.py:240 ui_qt/blacklist_window.py:335
+#: app_qt.py:245 ui_qt/blacklist_window.py:335
 msgid "Blacklist"
 msgstr "Черный список"
 
-#: app_qt.py:241 ui_qt/weather_window.py:42 ui_qt/weather_window.py:59
+#: app_qt.py:246 ui_qt/weather_window.py:42 ui_qt/weather_window.py:59
 #: ui_qt/weather_window.py:97
 msgid "Weather"
 msgstr "Погода"
 
-#: app_qt.py:242 ui_qt/tts_window.py:37 ui_qt/tts_window.py:45
+#: app_qt.py:247 ui_qt/tts_window.py:37 ui_qt/tts_window.py:45
 msgid "Text to Speech"
 msgstr "Текст в речь"
 
-#: app_qt.py:243 ui_qt/timer_window.py:37
+#: app_qt.py:248 ui_qt/timer_window.py:37
 msgid "Timer"
 msgstr "Таймер"
 
-#: app_qt.py:244
+#: app_qt.py:249
 msgid "Audio Devices"
 msgstr "Аудиоустройства"
 
-#: app_qt.py:246
+#: app_qt.py:251
 msgid "Configuration"
 msgstr "конфигурация"
 
-#: app_qt.py:247
+#: app_qt.py:252
 msgid "Security Configuration"
 msgstr "Конфигурация безопасности"
 
-#: app_qt.py:321
+#: app_qt.py:326
 msgid "DJ"
 msgstr "Диджей"
 
-#: app_qt.py:322 ui_qt/extensions_window.py:159
+#: app_qt.py:327 ui_qt/extensions_window.py:159
 #: ui_qt/track_details_window.py:69 utils/globals.py:331
 msgid "Title"
 msgstr "Название"
 
-#: app_qt.py:323 ui_qt/track_details_window.py:71 utils/globals.py:142
+#: app_qt.py:328 ui_qt/track_details_window.py:71 utils/globals.py:142
 #: utils/globals.py:332
 msgid "Album"
 msgstr "Альбом"
 
-#: app_qt.py:324 ui_qt/track_details_window.py:73 utils/globals.py:144
+#: app_qt.py:329 ui_qt/track_details_window.py:73 utils/globals.py:144
 #: utils/globals.py:333 utils/globals.py:402
 msgid "Artist"
 msgstr "Художник"
 
-#: app_qt.py:325 ui_qt/track_details_window.py:77 utils/globals.py:146
+#: app_qt.py:330 ui_qt/track_details_window.py:77 utils/globals.py:146
 #: utils/globals.py:334 utils/globals.py:401
 msgid "Composer"
 msgstr "композитор"
 
-#: app_qt.py:326 ui_qt/track_details_window.py:82
+#: app_qt.py:331 ui_qt/track_details_window.py:82
 msgid "Year"
 msgstr "Год"
 
-#: app_qt.py:327
+#: app_qt.py:332
 msgid "Next Up"
 msgstr "Следующий"
 
-#: app_qt.py:328
+#: app_qt.py:333
 msgid "Prior Track"
 msgstr "Предыдущий трек"
 
-#: app_qt.py:329
+#: app_qt.py:334
 msgid "Upcoming Group"
 msgstr "Предстоящие группы"
 
-#: app_qt.py:330
+#: app_qt.py:335
 msgid "Spot Details"
 msgstr "Детали места"
 
-#: app_qt.py:331
+#: app_qt.py:336
 msgid "Extension Status"
 msgstr "Статус продления"
 
-#: app_qt.py:334
+#: app_qt.py:339
 msgid "Volume"
 msgstr "Объем"
 
-#: app_qt.py:340
+#: app_qt.py:345
 msgid ""
 "Base volume input. Actual output may vary per track due to normalization; "
 "see the media overlay number for resolved output volume."
@@ -177,7 +177,7 @@ msgstr ""
 "дорожку в результате настройки по нормализации; см. номер медиакарточки для "
 "утвержденного уровня выхода."
 
-#: app_qt.py:363 app_qt.py:1119 ui_qt/extensions_window.py:259
+#: app_qt.py:368 app_qt.py:1147 ui_qt/extensions_window.py:259
 #: ui_qt/favorites_window.py:381 ui_qt/favorites_window.py:495
 #: ui_qt/media_controls_overlay.py:351 ui_qt/network_media_window.py:236
 #: ui_qt/network_media_window.py:398 ui_qt/search_window.py:375
@@ -185,83 +185,83 @@ msgstr ""
 msgid "Play"
 msgstr "Играть"
 
-#: app_qt.py:368 ui_qt/timer_window.py:130
+#: app_qt.py:373 ui_qt/timer_window.py:130
 msgid "Stop"
 msgstr "Остановись"
 
-#: app_qt.py:372
+#: app_qt.py:377
 msgid "Next"
 msgstr "Следующий"
 
-#: app_qt.py:376
+#: app_qt.py:381
 msgid "Next Grouping"
 msgstr "Следующая группировка"
 
-#: app_qt.py:384
+#: app_qt.py:389
 msgid "Sorting Options"
 msgstr "Параметры сортировки"
 
-#: app_qt.py:388 app_qt.py:700 ui_qt/playlist_window.py:186
+#: app_qt.py:393 app_qt.py:705 ui_qt/playlist_window.py:186
 #: ui_qt/playlist_window.py:243 ui_qt/playlist_window.py:443
 #: ui_qt/playlist_window.py:1042 ui_qt/playlist_window.py:1328
 msgid "(custom)"
 msgstr "(пользовательский)"
 
-#: app_qt.py:388 app_qt.py:700 ui_qt/playlist_window.py:186
+#: app_qt.py:393 app_qt.py:705 ui_qt/playlist_window.py:186
 #: ui_qt/playlist_window.py:443 ui_qt/playlist_window.py:1008
 #: ui_qt/playlist_window.py:1042 ui_qt/playlist_window.py:1328
 msgid "(defaults)"
 msgstr "(умолчания)"
 
-#: app_qt.py:396 app_qt.py:919
+#: app_qt.py:401 app_qt.py:924
 msgid "Shutdown After Current Track"
 msgstr "Отключение после текущего трека"
 
-#: app_qt.py:402
+#: app_qt.py:407
 msgid "Delay Seconds"
 msgstr "Отложить секунды"
 
-#: app_qt.py:411
+#: app_qt.py:416
 msgid "Playlist"
 msgstr "Плейлист"
 
-#: app_qt.py:420 ui_qt/search_window.py:285
+#: app_qt.py:425 ui_qt/search_window.py:285
 msgid "Playlist Sort"
 msgstr "Сортировка плейлиста"
 
-#: app_qt.py:433
+#: app_qt.py:438
 msgid "Favorite"
 msgstr "Любимый"
 
-#: app_qt.py:441 ui_qt/playlist_window.py:1245
+#: app_qt.py:446 ui_qt/playlist_window.py:1245
 msgid "Overwrite"
 msgstr "Переписать"
 
-#: app_qt.py:446
+#: app_qt.py:451
 msgid "Muse"
 msgstr "Муза"
 
-#: app_qt.py:452
+#: app_qt.py:457
 msgid "Extension"
 msgstr "Продление"
 
-#: app_qt.py:458
+#: app_qt.py:463
 msgid "Enable track splitting"
 msgstr "Включить разделение дорожек"
 
-#: app_qt.py:464
+#: app_qt.py:469
 msgid "Use system language for all topics"
 msgstr "Используйте язык системы для всех тем"
 
-#: app_qt.py:564
+#: app_qt.py:569
 msgid "Confirm Quit"
 msgstr "Подтвердить отказ"
 
-#: app_qt.py:564
+#: app_qt.py:569
 msgid "Would you like to quit the application?"
 msgstr "Вы хотите закрыть приложение?"
 
-#: app_qt.py:577 app_qt.py:1177 app_qt.py:1184 app_qt.py:1272 app_qt.py:1317
+#: app_qt.py:582 app_qt.py:1205 app_qt.py:1212 app_qt.py:1300 app_qt.py:1345
 #: ui_qt/audio_device_window.py:320 ui_qt/audio_device_window.py:331
 #: ui_qt/audio_device_window.py:338 ui_qt/audio_device_window.py:343
 #: ui_qt/audio_device_window.py:351 ui_qt/audio_device_window.py:374
@@ -269,114 +269,116 @@ msgstr "Вы хотите закрыть приложение?"
 #: ui_qt/audio_device_window.py:391 ui_qt/audio_device_window.py:414
 #: ui_qt/audio_device_window.py:417 ui_qt/auth/password_admin_window.py:131
 #: ui_qt/auth/password_admin_window.py:544 ui_qt/auth/password_dialog.py:284
-#: ui_qt/blacklist_window.py:173 ui_qt/composers_window.py:291
-#: ui_qt/composers_window.py:316 ui_qt/configuration_window.py:207
-#: ui_qt/configuration_window.py:210 ui_qt/extensions_window.py:375
-#: ui_qt/favorites_window.py:579 ui_qt/personas_window.py:323
-#: ui_qt/personas_window.py:414 ui_qt/personas_window.py:428
-#: ui_qt/personas_window.py:436 ui_qt/personas_window.py:466
-#: ui_qt/playlist_window.py:315 ui_qt/playlist_window.py:338
-#: ui_qt/playlist_window.py:373 ui_qt/playlist_window.py:1197
-#: ui_qt/playlist_window.py:1239 ui_qt/playlist_window.py:1265
-#: ui_qt/playlist_window.py:1276 ui_qt/playlist_window.py:1282
-#: ui_qt/schedules_window.py:169 ui_qt/track_details_window.py:214
+#: ui_qt/blacklist_window.py:173 ui_qt/composers_window.py:301
+#: ui_qt/composers_window.py:326 ui_qt/composers_window.py:455
+#: ui_qt/composers_window.py:526 ui_qt/composers_window.py:921
+#: ui_qt/configuration_window.py:207 ui_qt/configuration_window.py:210
+#: ui_qt/extensions_window.py:375 ui_qt/favorites_window.py:579
+#: ui_qt/personas_window.py:323 ui_qt/personas_window.py:414
+#: ui_qt/personas_window.py:428 ui_qt/personas_window.py:436
+#: ui_qt/personas_window.py:466 ui_qt/playlist_window.py:315
+#: ui_qt/playlist_window.py:338 ui_qt/playlist_window.py:373
+#: ui_qt/playlist_window.py:1197 ui_qt/playlist_window.py:1239
+#: ui_qt/playlist_window.py:1265 ui_qt/playlist_window.py:1276
+#: ui_qt/playlist_window.py:1282 ui_qt/schedules_window.py:169
+#: ui_qt/track_details_window.py:214
 msgid "Error"
 msgstr "ошибка"
 
-#: app_qt.py:662
+#: app_qt.py:667
 msgid "(no playlist configured)"
 msgstr "(плейлист не настроен)"
 
-#: app_qt.py:666
+#: app_qt.py:671
 msgid "(see playlist window)"
 msgstr "(См. окно списка воспроизведений)"
 
-#: app_qt.py:797
+#: app_qt.py:802
 msgid "Confirm Run"
 msgstr "Подтвердить бег"
 
-#: app_qt.py:797
+#: app_qt.py:802
 msgid "Are you sure you want to proceed?"
 msgstr "Вы уверены, что хотите продолжить?"
 
-#: app_qt.py:923
+#: app_qt.py:928
 msgid "Confirm Shutdown"
 msgstr "Подтверждение выключения"
 
-#: app_qt.py:924
+#: app_qt.py:929
 msgid "Are you sure you want to shutdown after the current track finishes?"
 msgstr "Вы уверены, что хотите выключить после завершения текущего трека?"
 
-#: app_qt.py:930
+#: app_qt.py:935
 msgid "Cancel Scheduled Shutdown"
 msgstr "Отменить запланированное отключение"
 
-#: app_qt.py:939 muse/muse_spot_profile.py:216
+#: app_qt.py:944 muse/muse_spot_profile.py:228
 msgid "Track: "
 msgstr "Трек: "
 
-#: app_qt.py:940
+#: app_qt.py:945
 msgid "Album: "
 msgstr "Альбом: "
 
-#: app_qt.py:941
+#: app_qt.py:946
 msgid "Artist: "
 msgstr "Художник: "
 
-#: app_qt.py:942
+#: app_qt.py:947
 msgid "Composer: "
 msgstr "Композитор: "
 
-#: app_qt.py:943
+#: app_qt.py:948
 msgid "Year: "
 msgstr "Год: "
 
-#: app_qt.py:965
+#: app_qt.py:970
 msgid "Next Up: "
 msgstr "Следующий: "
 
-#: app_qt.py:978 muse/muse_spot_profile.py:217
+#: app_qt.py:983 muse/muse_spot_profile.py:229
 msgid "Previous Track: "
 msgstr "Предыдущий трек: "
 
-#: app_qt.py:991
+#: app_qt.py:996
 msgid "Upcoming {0}: {1}"
 msgstr "Предстоящие {0}: {1}"
 
-#: app_qt.py:993
+#: app_qt.py:998
 msgid "Upcoming Group: {0}"
 msgstr "Предстоящие группы: {0}"
 
-#: app_qt.py:1030 app_qt.py:1034
+#: app_qt.py:1035 app_qt.py:1039
 msgid "Directories: {0}"
 msgstr "Каталоги: {0}"
 
-#: app_qt.py:1044
+#: app_qt.py:1049
 msgid "DJ: "
 msgstr "Диджей: "
 
-#: app_qt.py:1107
+#: app_qt.py:1135
 msgid "Continue"
 msgstr "Продолжить"
 
-#: app_qt.py:1109 ui_qt/media_controls_overlay.py:351
+#: app_qt.py:1137 ui_qt/media_controls_overlay.py:351
 #: ui_qt/timer_window.py:126 ui_qt/timer_window.py:195
 msgid "Pause"
 msgstr "Пауза"
 
-#: app_qt.py:1148
+#: app_qt.py:1176
 msgid "Staged Playlist: "
 msgstr "Сценический плейлист: "
 
-#: app_qt.py:1177
+#: app_qt.py:1205
 msgid "Track not found in library for query: "
 msgstr "Треки для запроса не найдены в библиотеке: "
 
-#: app_qt.py:1214
+#: app_qt.py:1242
 msgid "Theme switched to {0}."
 msgstr "Тема переключена на {0}."
 
-#: app_qt.py:1330
+#: app_qt.py:1358
 msgid "Password Admin Window Error"
 msgstr "Пароль Администратор Окно Ошибка"
 
@@ -416,68 +418,68 @@ msgstr "[без преобразования пространства]"
 msgid "[exception: {0}]"
 msgstr "[исключение: {0}]"
 
-#: library_data/composer.py:44
+#: library_data/composer.py:66
 msgid "Composer name cannot be empty"
 msgstr "Имя композитора не может быть пустым"
 
-#: library_data/composer.py:96
+#: library_data/composer.py:118
 msgid "Dates must be valid integers"
 msgstr "Даты должны быть действительными целыми числами."
 
-#: library_data/composer.py:100
+#: library_data/composer.py:122
 msgid "Start date cannot be in the future"
 msgstr "Дата начала не может быть в будущем"
 
-#: library_data/composer.py:102
+#: library_data/composer.py:124
 msgid "End date cannot be in the future"
 msgstr "Дата окончания не может быть в будущем"
 
-#: library_data/composer.py:107
+#: library_data/composer.py:129
 msgid "Start date cannot be after end date"
 msgstr "Дата начала не может быть позднее даты окончания"
 
-#: library_data/composer.py:192 library_data/library_data.py:71
+#: library_data/composer.py:249 library_data/library_data.py:71
 #: ui_qt/favorites_window.py:51 ui_qt/history_window.py:47
 msgid "({0} results)"
 msgstr "({0} результаты)"
 
-#: library_data/composer.py:204
+#: library_data/composer.py:261
 msgid "Composer: {0}"
 msgstr "Композитор: {0}"
 
-#: library_data/composer.py:206
+#: library_data/composer.py:263
 msgid "Genre: {0}"
 msgstr "Жанр: {0}"
 
-#: library_data/composer.py:211
+#: library_data/composer.py:268
 msgid "Start after {0}"
 msgstr "Начать после {0}"
 
-#: library_data/composer.py:213
+#: library_data/composer.py:270
 msgid "Start before {0}"
 msgstr "Начать раньше {0}"
 
-#: library_data/composer.py:215
+#: library_data/composer.py:272
 msgid "End after {0}"
 msgstr "Конец после {0}"
 
-#: library_data/composer.py:217
+#: library_data/composer.py:274
 msgid "End before {0}"
 msgstr "Конец перед {0}"
 
-#: library_data/composer.py:220
+#: library_data/composer.py:277
 msgid "Dates: {0}"
 msgstr "Даты: {0}"
 
-#: library_data/composer.py:224
+#: library_data/composer.py:286
 msgid "All Composers"
 msgstr "Все композиторы"
 
-#: library_data/composer.py:399 library_data/composer.py:442
+#: library_data/composer.py:487 library_data/composer.py:547
 msgid "Invalid composer data"
 msgstr "Недопустимые данные о композиторе"
 
-#: library_data/composer.py:454
+#: library_data/composer.py:530 library_data/composer.py:559
 msgid "Composer not found"
 msgstr "Композитор не найден"
 
@@ -694,31 +696,31 @@ msgstr "Что-то пошло не так. Мы постараемся испр
 msgid "Starting tracks:"
 msgstr "Начальные треки:"
 
-#: muse/muse_spot_profile.py:207
+#: muse/muse_spot_profile.py:219
 msgid "Talking about: "
 msgstr "Поговорим о: "
 
-#: muse/muse_spot_profile.py:216
+#: muse/muse_spot_profile.py:228
 msgid "No track"
 msgstr "Нет следов"
 
-#: muse/muse_spot_profile.py:217
+#: muse/muse_spot_profile.py:229
 msgid "No previous track"
 msgstr "Никаких предыдущих треков"
 
-#: muse/muse_spot_profile.py:219
+#: muse/muse_spot_profile.py:231
 msgid "Speaking about prior track"
 msgstr "Говоря о предыдущем треке"
 
-#: muse/muse_spot_profile.py:221
+#: muse/muse_spot_profile.py:233
 msgid "Speaking about upcoming track"
 msgstr "Говоря о предстоящем треке"
 
-#: muse/muse_spot_profile.py:223
+#: muse/muse_spot_profile.py:235
 msgid "Talking about something"
 msgstr "Говорить о чем-то"
 
-#: muse/playback.py:419
+#: muse/playback.py:443
 msgid "Sleeping for seconds"
 msgstr "Спать в течение нескольких секунд"
 
@@ -816,7 +818,8 @@ msgid "Test Day/Night Switch"
 msgstr "Проверьте переключатель «День/Ночь»"
 
 #: ui_qt/audio_device_window.py:179 ui_qt/auth/password_admin_window.py:355
-#: ui_qt/extensions_window.py:485 ui_qt/favorites_window.py:672
+#: ui_qt/composers_window.py:440 ui_qt/extensions_window.py:485
+#: ui_qt/favorites_window.py:672
 msgid "Close"
 msgstr "Закрыть"
 
@@ -1185,7 +1188,7 @@ msgstr "Импорт черного списка"
 msgid "Successfully imported blacklist"
 msgstr "Успешный импорт черного списка"
 
-#: ui_qt/blacklist_window.py:815
+#: ui_qt/blacklist_window.py:815 ui_qt/composers_window.py:926
 msgid "Import Error"
 msgstr "Ошибка импорта"
 
@@ -1209,139 +1212,139 @@ msgstr "Режим черного списка установлен на: {0}"
 msgid "Silent removal set to: {0}"
 msgstr "Бесшумное удаление установлено на: {0}"
 
-#: ui_qt/composers_window.py:51 ui_qt/composers_window.py:91
-#: ui_qt/composers_window.py:397
+#: ui_qt/composers_window.py:57 ui_qt/composers_window.py:97
+#: ui_qt/composers_window.py:603
 msgid "New Composer"
 msgstr "Новый композитор"
 
-#: ui_qt/composers_window.py:53
+#: ui_qt/composers_window.py:59
 msgid "Modify Composer: {0}"
 msgstr "Модифицировать композитора: {0}"
 
-#: ui_qt/composers_window.py:83
+#: ui_qt/composers_window.py:89
 msgid "Modify Composer"
 msgstr "Модифицировать композитора"
 
-#: ui_qt/composers_window.py:87 ui_qt/library_window.py:101
+#: ui_qt/composers_window.py:93 ui_qt/library_window.py:101
 #: ui_qt/personas_window.py:86
 msgid "Name"
 msgstr "Имя"
 
-#: ui_qt/composers_window.py:97
+#: ui_qt/composers_window.py:103
 msgid "Indicators"
 msgstr "Показатели"
 
-#: ui_qt/composers_window.py:106
+#: ui_qt/composers_window.py:114
 msgid "Start Date"
 msgstr "Дата начала"
 
-#: ui_qt/composers_window.py:114
+#: ui_qt/composers_window.py:122
 msgid "End Date"
 msgstr "Дата окончания"
 
-#: ui_qt/composers_window.py:123 ui_qt/composers_window.py:125
+#: ui_qt/composers_window.py:131 ui_qt/composers_window.py:133
 msgid "Dates are lifespan"
 msgstr "Даты — это срок службы"
 
-#: ui_qt/composers_window.py:133
+#: ui_qt/composers_window.py:141
 msgid "Dates uncertain"
 msgstr "Неопределенные даты"
 
-#: ui_qt/composers_window.py:135
+#: ui_qt/composers_window.py:143
 msgid "Dates are uncertain"
 msgstr "Даты неопределенные"
 
-#: ui_qt/composers_window.py:142 utils/globals.py:554
+#: ui_qt/composers_window.py:150 utils/globals.py:554
 msgid "Genres"
 msgstr "Жанры"
 
-#: ui_qt/composers_window.py:151
+#: ui_qt/composers_window.py:161
 msgid "Notes"
 msgstr "Заметки"
 
-#: ui_qt/composers_window.py:152
+#: ui_qt/composers_window.py:162
 msgid "Add Note"
 msgstr "Добавить комментарий"
 
-#: ui_qt/composers_window.py:167 ui_qt/playlist_window.py:1021
+#: ui_qt/composers_window.py:177 ui_qt/playlist_window.py:1021
 msgid "Save"
 msgstr "Спасти"
 
-#: ui_qt/composers_window.py:171 ui_qt/composers_window.py:200
+#: ui_qt/composers_window.py:181 ui_qt/composers_window.py:210
 #: ui_qt/extensions_window.py:267 ui_qt/personas_window.py:109
 #: ui_qt/playlist_window.py:120 ui_qt/playlist_window.py:346
 #: ui_qt/schedules_window.py:270
 msgid "Delete"
 msgstr "Исключить"
 
-#: ui_qt/composers_window.py:212
+#: ui_qt/composers_window.py:222
 msgid "New note"
 msgstr "Новая нота"
 
-#: ui_qt/composers_window.py:261 ui_qt/personas_window.py:335
+#: ui_qt/composers_window.py:271 ui_qt/personas_window.py:335
 #: ui_qt/personas_window.py:344 ui_qt/personas_window.py:353
 #: ui_qt/personas_window.py:362 ui_qt/personas_window.py:394
 #: ui_qt/track_details_window.py:203
 msgid "Validation Error"
 msgstr "Ошибка проверки"
 
-#: ui_qt/composers_window.py:276
+#: ui_qt/composers_window.py:286
 msgid "Fixes applied"
 msgstr "Примененные исправления"
 
-#: ui_qt/composers_window.py:292
+#: ui_qt/composers_window.py:302 ui_qt/composers_window.py:456
 msgid "Failed to save composer:"
 msgstr "Не удалось сохранить композитора:"
 
-#: ui_qt/composers_window.py:300
+#: ui_qt/composers_window.py:310
 msgid "Delete composer"
 msgstr "Удалить композитора"
 
-#: ui_qt/composers_window.py:302
+#: ui_qt/composers_window.py:312
 msgid "Are you sure you want to delete {0}? This action cannot be undone."
 msgstr "Вы уверены, что хотите удалить {0}? Это действие нельзя отменить."
 
-#: ui_qt/composers_window.py:317
+#: ui_qt/composers_window.py:327
 msgid "Failed to delete composer:"
 msgstr "Не удалось удалить композитора:"
 
-#: ui_qt/composers_window.py:374 ui_qt/composers_window.py:653
+#: ui_qt/composers_window.py:580 ui_qt/composers_window.py:944
 msgid "Composer Search"
 msgstr "Композитор Поиск"
 
-#: ui_qt/composers_window.py:374
+#: ui_qt/composers_window.py:580
 msgid "Search Composers"
 msgstr "Поиск композиторов"
 
-#: ui_qt/composers_window.py:400 ui_qt/search_window.py:242
+#: ui_qt/composers_window.py:606 ui_qt/search_window.py:242
 msgid "Search Composer"
 msgstr "Композитор поиска"
 
-#: ui_qt/composers_window.py:408 ui_qt/search_window.py:252
+#: ui_qt/composers_window.py:614 ui_qt/search_window.py:252
 msgid "Search Genre"
 msgstr "Поисковый жанр"
 
-#: ui_qt/composers_window.py:415
+#: ui_qt/composers_window.py:621
 msgid "Start Date After"
 msgstr "Дата начала после"
 
-#: ui_qt/composers_window.py:422
+#: ui_qt/composers_window.py:628
 msgid "Start Date Before"
 msgstr "Начните дату раньше"
 
-#: ui_qt/composers_window.py:429
+#: ui_qt/composers_window.py:635
 msgid "End Date After"
 msgstr "Дата окончания после"
 
-#: ui_qt/composers_window.py:436
+#: ui_qt/composers_window.py:642
 msgid "End Date Before"
 msgstr "Дата окончания до"
 
-#: ui_qt/composers_window.py:473 ui_qt/search_window.py:318
+#: ui_qt/composers_window.py:703 ui_qt/search_window.py:318
 msgid "No recent searches found."
 msgstr "Не найдено недавних поисковых запросов."
 
-#: ui_qt/composers_window.py:618 ui_qt/extensions_window.py:251
+#: ui_qt/composers_window.py:871 ui_qt/extensions_window.py:251
 #: ui_qt/favorites_window.py:387 ui_qt/favorites_window.py:501
 #: ui_qt/history_window.py:211 ui_qt/history_window.py:283
 #: ui_qt/network_media_window.py:386 ui_qt/search_window.py:703
@@ -3231,3 +3234,111 @@ msgstr "месяцы"
 #: utils/translations.py:73
 msgid "years"
 msgstr "годы"
+
+#: app_qt.py:1072
+msgid "VLC plugin cache"
+msgstr "Кэш плагинов VLC"
+
+#: app_qt.py:1074
+msgid ""
+"The VLC plugin index is out of date (often after a VLC update). Updating it requires administrator permission.\n"
+"\n"
+"Start the repair tool in a separate window? It will prompt for permission there."
+msgstr ""
+"Список плагинов VLC устарел (часто после обновления VLC). Для его обновления требуются права администратора.\n"
+"\n"
+"Запустить инструмент восстановления в отдельном окне? Там будет запрошен доступ."
+
+#: library_data/composer.py:280
+msgid "Added after {0}"
+msgstr "Добавлено после {0}"
+
+#: library_data/composer.py:282
+msgid "Added before {0}"
+msgstr "Добавлено до {0}"
+
+#: ui_qt/composers_window.py:342
+msgid "Mass Import Results"
+msgstr "Результаты массового импорта"
+
+#: ui_qt/composers_window.py:363
+msgid "{0} composer(s) added, {1} already existing (skipped)."
+msgstr "Добавлено {0} композиторов, {1} уже существуют (пропущено)."
+
+#: ui_qt/composers_window.py:367
+msgid "{0} auto-merged."
+msgstr "{0} авто-объединено."
+
+#: ui_qt/composers_window.py:369
+msgid "{0} need review (not imported)."
+msgstr "{0} Требуется проверка (не импортировано)."
+
+#: ui_qt/composers_window.py:374
+msgid "{0} duplicate indicator(s) found across library (see below)."
+msgstr "{0} найдено дубликатов индикаторов в библиотеке (см. ниже)."
+
+#: ui_qt/composers_window.py:382
+msgid "Needs review — similar to an existing composer, not imported:"
+msgstr ""
+"Требует проверки — похож на уже существующего композитора, не импортирован:"
+
+#: ui_qt/composers_window.py:392
+msgid "Merge Records"
+msgstr "Объединить записи"
+
+#: ui_qt/composers_window.py:395
+msgid "Remove from Review"
+msgstr "Удалить из списка для проверки"
+
+#: ui_qt/composers_window.py:402
+msgid "Auto-merged — treated as existing composer:"
+msgstr ""
+"Автоматически объединенные — рассматриваются как существующие композиторы:"
+
+#: ui_qt/composers_window.py:414
+msgid "Skipped — already existing in library:"
+msgstr "Пропущено — уже присутствует в библиотеке:"
+
+#: ui_qt/composers_window.py:424
+msgid "Duplicate indicators (across full library):"
+msgstr "Повторяющиеся индикаторы (во всей библиотеке):"
+
+#: ui_qt/composers_window.py:434
+msgid "No quality issues detected."
+msgstr "Проблем с качеством не выявлено."
+
+#: ui_qt/composers_window.py:437 ui_qt/composers_window.py:469
+msgid "Save Report"
+msgstr "Сохранить Отчет"
+
+#: ui_qt/composers_window.py:469 ui_qt/composers_window.py:913
+msgid "Text files (*.txt);;All files (*)"
+msgstr "Текстовые файлы (*.txt);;Все файлы (*)"
+
+#: ui_qt/composers_window.py:526
+msgid "Failed to save report:"
+msgstr "Не удалось сохранить отчет:"
+
+#: ui_qt/composers_window.py:649
+msgid "Date Added After"
+msgstr "Дата добавления после"
+
+#: ui_qt/composers_window.py:657
+msgid "Date Added Before"
+msgstr "Дата добавления до"
+
+#: ui_qt/composers_window.py:670
+msgid "Mass Import"
+msgstr "Массовый ввоз"
+
+#: ui_qt/composers_window.py:674
+msgid "Quality Check"
+msgstr "Проверка Качества"
+
+#: ui_qt/composers_window.py:904
+msgid "Quality Check Results"
+msgstr "Результаты проверки качества"
+
+#: ui_qt/composers_window.py:911
+msgid "Select composers list"
+msgstr "Выберите список композиторов"
