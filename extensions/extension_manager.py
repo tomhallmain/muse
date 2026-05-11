@@ -472,6 +472,30 @@ class ExtensionManager:
                 logger.error(f"Failed to rename file to remove emoji: {e}")
         return _f, b
 
+    @staticmethod
+    def _j(title: str) -> float:
+        """
+        Partial demerits for titles that often indicate sloppy or off-topic uploads
+        (uniform letter casing, social-style '@' for 'at', stray punctuation between words).
+        Emoji is handled separately in _bad_option.
+        """
+        if not title or not title.strip():
+            return 0.0
+        penalty = 0.0
+        letters = [c for c in title if c.isalpha()]
+        if len(letters) >= 3:
+            if all(c.islower() for c in letters):
+                penalty += 0.08
+            elif all(c.isupper() for c in letters):
+                penalty += 0.08
+        # Spaced '@' as in "artist @ venue" (not email-like local@domain.tld)
+        if re.search(r"\s@\s", title):
+            penalty += 0.07
+        # Other symbols standing alone between whitespace (not typical prose punctuation)
+        standalone = re.findall(r"(^|\s)([#*%$^~=<>+|\\`])($|\s)", title)
+        penalty += min(0.12, 0.04 * len(standalone))
+        return min(penalty, 0.25)
+
     def _m(self, q: str, t: str) -> Dict[str, float]:
         q_lower = q.lower()
         t_lower = t.lower()
@@ -496,11 +520,13 @@ class ExtensionManager:
         metrics['string_similarity'] = 1.0 - (l_dist / max_len) if max_len > 0 else 0.0
         
         # 4. Overall quality score (weighted combination)
-        metrics['overall_quality'] = (
+        base = (
             metrics['substring_match'] * 0.5 +      # Most important
             metrics['word_overlap'] * 0.3 +         # Important
             metrics['string_similarity'] * 0.2      # Less important
         )
+        metrics["presentation_penalty"] = ExtensionManager._j(t)
+        metrics["overall_quality"] = max(0.0, min(1.0, base - metrics["presentation_penalty"]))
         
         return metrics
 
@@ -522,6 +548,7 @@ class ExtensionManager:
                 'substring_match': 0.0,
                 'word_overlap': 0.0,
                 'string_similarity': 0.0,
+                'presentation_penalty': 0.0,
                 'overall_quality': 0.0
             })
         
