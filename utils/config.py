@@ -47,6 +47,7 @@ class Config:
         self.open_weather_city = "Washington"
         self.open_weather_api_key = None
         self.news_api_key = None
+        self.library_extender_key = None
         self.news_api_source_trustworthiness = {}
         self.muse_language_learning_language = "German"
         self.muse_language_learning_language_level = "intermediate"
@@ -106,6 +107,7 @@ class Config:
             "open_weather_city",
             "open_weather_api_key",
             "news_api_key",
+            "library_extender_key",
             "llm_model_name",
             "muse_language_learning_language",
             "muse_language_learning_language_level",

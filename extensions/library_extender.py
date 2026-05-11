@@ -1,9 +1,54 @@
+import json
+import os
 
-from extensions.library_ext_q_dict import q_dict
 from utils import app_info_cache, Utils
+from utils.config import config
+from utils.encryptor import symmetric_decrypt_data_from_file
+from utils.globals import AppInfo
 from utils.logging_setup import get_logger
 
 logger = get_logger(__name__)
+
+_EXT_DIR = os.path.dirname(os.path.abspath(__file__))
+Q_DICT_FILE_LOC = os.path.join(_EXT_DIR, "library_ext_q_dict.enc")
+Q_DICT_CACHE_LOC = os.path.join(_EXT_DIR, "library_ext_q_dict.json")
+
+
+def _load_q_dict():
+    if os.path.isfile(Q_DICT_CACHE_LOC) and os.path.isfile(Q_DICT_FILE_LOC):
+        try:
+            if os.path.getmtime(Q_DICT_CACHE_LOC) >= os.path.getmtime(Q_DICT_FILE_LOC):
+                with open(Q_DICT_CACHE_LOC, "r", encoding="utf-8") as f:
+                    loaded = json.load(f)
+                if isinstance(loaded, dict):
+                    return loaded
+        except Exception as e:
+            logger.warning("Failed to load library extender q_dict cache, will decrypt: %s", e)
+
+    passphrase = (AppInfo.APP_IDENTIFIER + "_library_ext_q_dict").encode("utf-8")
+    encoded_data = symmetric_decrypt_data_from_file(Q_DICT_FILE_LOC, passphrase)
+    q_dict_json = Utils.postprocess_data_from_decryption(encoded_data)
+    loaded = json.loads(q_dict_json)
+    if not isinstance(loaded, dict):
+        raise Exception("library_ext_q_dict.enc did not decrypt to a dictionary")
+
+    tmp = Q_DICT_CACHE_LOC + ".tmp"
+    try:
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(loaded, f, ensure_ascii=False)
+        os.replace(tmp, Q_DICT_CACHE_LOC)
+    except Exception as e:
+        logger.warning("Could not write library extender q_dict cache: %s", e)
+        try:
+            if os.path.isfile(tmp):
+                os.unlink(tmp)
+        except OSError:
+            pass
+
+    return loaded
+
+
+q_dict = _load_q_dict()
 
 for ___q, ___v in q_dict.items():
     try:
@@ -117,11 +162,14 @@ class LibraryExtender():
 
     @staticmethod
     def isyMOLB_(sLRX="", m=1):
+        if not config.library_extender_key or config.library_extender_key.strip() in ["", "<KEY>"]:
+            logger.warning("Library extender key is not configured. Set library_extender_key in config.")
+            return None
         count, hours = app_info_cache.increment_tracker("le_rpd")
         if count > 30:
             return None
         _q = q0.__dict__[q24]
-        __q = {q25: q6}
+        __q = {q25: config.library_extender_key}
         q5 = _q(
             q2, 
             q3, 

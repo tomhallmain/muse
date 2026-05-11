@@ -10,6 +10,7 @@ app_directories_cache*
 media_track_errors.log
 configs/*
 !configs/config_example.json
+extensions/library_ext_q_dict.json
 library_data/data/*
 !library_data/data/artists_example.json
 !library_data/data/blacklist_default.enc
