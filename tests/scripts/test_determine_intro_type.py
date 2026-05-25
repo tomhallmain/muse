@@ -12,7 +12,7 @@ if _project_root not in sys.path:
 from tests.utils.formatting import format_time, format_time_diff, mktime
 
 from muse.muse import Muse
-from muse.muse_memory import MuseMemory
+from muse.muse_memory import muse_memory
 from muse.dj_persona import DJPersona
 
 def create_test_persona(last_hello_time=None, last_signoff_time=None):
@@ -138,8 +138,6 @@ def main():
     reference_time = datetime.datetime(2024, 3, 20, 12, 0, 0)
     reference_timestamp = mktime(reference_time)
     
-    MuseMemory.load()
-    from muse.muse_memory import muse_memory
     muse_memory.get_persona_manager().allow_mock_personas = True
     muse_memory.get_persona_manager().set_current_persona("test_voice")
     muse = get_mock_muse()

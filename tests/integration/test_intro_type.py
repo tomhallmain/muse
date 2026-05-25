@@ -2,7 +2,7 @@ import pytest
 import time
 import datetime
 from muse.muse import Muse
-from muse.muse_memory import MuseMemory
+from muse.muse_memory import muse_memory
 from muse.dj_persona import DJPersona
 from muse.run_context import RunContext
 
@@ -32,8 +32,6 @@ class TestIntroType:
     @pytest.fixture(autouse=True)
     def setup(self, mock_args):
         """Set up test environment."""
-        MuseMemory.load()
-        from muse.muse_memory import muse_memory
         muse_memory.get_persona_manager().allow_mock_personas = True
         muse_memory.get_persona_manager().set_current_persona("test_voice")
         
