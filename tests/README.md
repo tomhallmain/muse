@@ -41,6 +41,44 @@ Not run by `pytest`. These intentionally use **your** library caches and config 
 
 Use `tests/utils/project_setup.py` for the shared “load all caches” bootstrap in scripts.
 
+For sort/playlist scripts against the **fixture library** (no production pickles):
+
+```python
+from tests.utils.project_setup import load_fixture_library_callbacks
+
+callbacks = load_fixture_library_callbacks()
+```
+
+## Audio fixtures (`tests/fixtures/`)
+
+Playlist and integration tests need real MP3 files with varied metadata and durations. The suite keeps a **manifest** (`manifest.json`) and generates binaries on demand.
+
+| Item | Role |
+|------|------|
+| `audio_fixtures.py` | Catalog, ffmpeg generation, mutagen tagging, manifest I/O |
+| `generate_audio_library.py` | CLI to (re)build the library |
+| `audio_library/` | 120 tagged MP3s (12 composers × 3 albums × 3 tracks + extras) |
+| `manifest.json` | Expected metadata per track (written by generator) |
+| `sample_100KB.mp3`, etc. | Legacy size-named samples for spot/length tests |
+
+**Requirements:** `ffmpeg` on PATH; `mutagen` from `requirements.txt`.
+
+Generated MP3 binaries are gitignored (~few MB after generation); `manifest.json` is committed so CI/dev can verify catalog shape without storing audio blobs.
+
+```bash
+python tests/fixtures/generate_audio_library.py
+python tests/fixtures/generate_audio_library.py --force
+```
+
+Pytest fixtures (session-scoped, generated once per run if missing):
+
+- `audio_library_dir` — path to `audio_library/`
+- `audio_library_manifest` — parsed manifest
+- `audio_library_media_tracks` — list of `MediaTrack` from real files
+- `audio_library_callbacks` — callbacks over the full fixture library
+
+Tests that need the library should request `audio_library_callbacks` or `audio_library_media_tracks`. Without `ffmpeg`, those tests are skipped.
+
 ## Running tests
 
 ```bash

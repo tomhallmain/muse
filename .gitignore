@@ -24,3 +24,5 @@ muse_memory
 temp*
 !utils/temp_dir.py
 tts_output/*
+tests/fixtures/audio_library/
+!tests/fixtures/manifest.json

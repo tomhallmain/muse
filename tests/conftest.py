@@ -308,8 +308,44 @@ def test_data_dir():
     return Path(__file__).parent / "fixtures"
 
 
+@pytest.fixture(scope="session")
+def audio_library_dir():
+    """Tagged MP3 library (100+ tracks); generated on first use if missing."""
+    from tests.fixtures.audio_fixtures import ensure_audio_library, ffmpeg_available
+
+    if not ffmpeg_available():
+        pytest.skip("ffmpeg not on PATH — cannot generate audio fixtures")
+    return ensure_audio_library()
+
+
+@pytest.fixture(scope="session")
+def audio_library_manifest(audio_library_dir):
+    from tests.fixtures.audio_fixtures import read_manifest
+
+    return read_manifest()
+
+
+@pytest.fixture
+def audio_library_media_tracks(audio_library_dir):
+    from tests.fixtures.audio_fixtures import load_media_tracks
+
+    return load_media_tracks()
+
+
+@pytest.fixture
+def audio_library_callbacks(audio_library_dir):
+    from tests.fixtures.audio_fixtures import build_fixture_callbacks
+
+    return build_fixture_callbacks()
+
+
 @pytest.fixture
 def sample_audio_file(test_data_dir):
+    from tests.fixtures.audio_fixtures import ensure_legacy_samples, ffmpeg_available
+
+    if not ffmpeg_available():
+        pytest.skip("ffmpeg not on PATH — cannot generate audio fixtures")
+    ensure_legacy_samples()
     return test_data_dir / "sample_100KB.mp3"
 
 

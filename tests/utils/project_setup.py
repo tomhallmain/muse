@@ -40,3 +40,17 @@ def load_library_data():
     LibraryData.load_media_track_cache()
     Playlist.load_recently_played_lists()
     return LibraryData()
+
+
+def load_fixture_library_callbacks():
+    """Return data callbacks backed by ``tests/fixtures/audio_library`` (120 tracks).
+
+    Use for manual scripts when you want playlist/sort checks without production caches.
+    Requires ``ffmpeg`` on first run if the library has not been generated yet.
+    """
+    ensure_project_root()
+    from tests.fixtures.audio_fixtures import build_fixture_callbacks, ensure_audio_library
+
+    print("Ensuring generated audio fixture library...")
+    ensure_audio_library()
+    return build_fixture_callbacks()
