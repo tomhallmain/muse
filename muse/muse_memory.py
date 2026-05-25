@@ -5,6 +5,7 @@ from typing import Optional, Dict
 
 from muse.dj_persona import DJPersonaManager
 from muse.muse_spot_profile import MuseSpotProfile
+from utils.cache_paths import resolve_cache_file
 from utils.globals import Topic
 from utils.logging_setup import get_logger
 from utils import Utils
@@ -54,9 +55,8 @@ class MuseMemory:
         self.tracks_since_last_spoke = 0
         self.last_topic = None
         self._is_loaded = False  # Track if memory has been loaded
+        self._memory_path = resolve_cache_file("muse_memory")
 
-        
-        # Instance-based versions of your static methods
         self.load()
 
     def __getstate__(self):
@@ -96,7 +96,7 @@ class MuseMemory:
             return
             
         try:
-            with open('muse_memory', 'rb') as f:
+            with open(self._memory_path, 'rb') as f:
                 loaded = pickle.load(f)
                 # Copy all attributes from loaded instance, being selective
                 for key, value in loaded.__dict__.items():
@@ -120,7 +120,7 @@ class MuseMemory:
 
     def save(self):
         try:
-            with open('muse_memory', 'wb') as f:
+            with open(self._memory_path, 'wb') as f:
                 pickle.dump(self, f)
         except Exception as e:
             logger.info(f"Error saving muse memory: {e}")

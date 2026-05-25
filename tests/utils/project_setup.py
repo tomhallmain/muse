@@ -1,11 +1,14 @@
-"""Project path setup and library data initialisation for test scripts.
+"""Project path setup and library data initialisation for manual test scripts.
 
-Usage from any test script::
+These helpers load **production** caches from the project root (or from
+``MUSE_CACHE_DIR`` / ``MUSE_CONFIGS_DIR`` if set). They are not used by pytest.
+
+Usage from a script under ``tests/scripts/``::
 
     from tests.utils.project_setup import ensure_project_root, load_library_data
 
-    ensure_project_root()          # adds project root to sys.path
-    library_data = load_library_data()  # loads caches and returns LibraryData
+    ensure_project_root()
+    library_data = load_library_data()
 """
 
 import os

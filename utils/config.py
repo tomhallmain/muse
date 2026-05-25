@@ -18,6 +18,23 @@ library_data_dir = os.path.join(root_dir, "library_data", "data")
 class Config:
     CONFIGS_DIR_LOC = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "configs")
 
+    @staticmethod
+    def resolve_config_path():
+        """Resolve the active config file path, preferring config.json."""
+        configs_dir = os.environ.get("MUSE_CONFIGS_DIR") or Config.CONFIGS_DIR_LOC
+        configs = [f.path for f in os.scandir(configs_dir) if f.is_file() and f.path.endswith(".json")]
+        config_path = None
+        for candidate in configs:
+            basename = os.path.basename(candidate)
+            if basename == "config.json":
+                config_path = candidate
+                break
+            if basename != "config_example.json":
+                config_path = candidate
+        if config_path is None:
+            config_path = os.path.join(Config.CONFIGS_DIR_LOC, "config_example.json")
+        return config_path
+
     def __init__(self, config_path=None):
         self.dict = {}
         self.changed_values = set()  # Track which values have been modified
@@ -76,19 +93,9 @@ class Config:
         self.server_password = "<PASSWORD>"
         self.server_host = "localhost"
 
-        configs =  [ f.path for f in os.scandir(Config.CONFIGS_DIR_LOC) if f.is_file() and f.path.endswith(".json") ]
         self.config_path = config_path
-
         if self.config_path is None:
-            for c in configs:
-                if os.path.basename(c) == "config.json":
-                    self.config_path = c
-                    break
-                elif os.path.basename(c) != "config_example.json":
-                    self.config_path = c
-
-            if self.config_path is None:
-                self.config_path = os.path.join(Config.CONFIGS_DIR_LOC, "config_example.json")
+            self.config_path = Config.resolve_config_path()
 
         try:
             self.dict = json.load(open(self.config_path, "r", encoding="utf-8"))

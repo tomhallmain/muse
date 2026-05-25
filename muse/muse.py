@@ -14,6 +14,7 @@ from extensions.llm import LLM, LLMResponseException, LLMResult
 from library_data.blacklist import Blacklist, BlacklistException
 from library_data.media_track import MediaTrack
 from muse.dj_persona import DJPersona
+from muse.intro_type import determine_intro_type
 from muse.muse_memory import muse_memory
 from muse.schedules_manager import SchedulesManager, ScheduledShutdownException
 from muse.playback import Playback
@@ -889,33 +890,6 @@ class Muse:
         return intro_prompt, result
 
     def _determine_intro_type(self, now_time: float, persona: DJPersona) -> IntroType:
-        last_hello = persona.last_hello_time or 0
-        last_signoff = persona.last_signoff_time or 0
-
-        # If neither hello nor signoff has been said recently, or it's been a long time
-        if last_hello == 0 or last_signoff == 0 or (now_time - last_hello > 6 * 3600 and now_time - last_signoff > 6 * 3600):
-            logger.debug("intro case 1: last_hello: {0}, last_signoff: {1}, now_time: {2}".format(last_hello, last_signoff, now_time))
-            return IntroType.INTRO  
-        
-        # Check if the time difference spans across sleeping hours
-        last_signoff_dt = datetime.datetime.fromtimestamp(last_signoff)
-        now_dt = datetime.datetime.fromtimestamp(now_time)
-        
-        # If the time difference is less than 12 hours but greater than 4 hours and 
-        # spans across sleeping hours (11 PM to 6 AM), treat it as a long absence
-        if ((4 * 3600) < (now_time - last_signoff) < (12 * 3600) and 
-                ((last_signoff_dt.hour >= 23 or last_signoff_dt.hour < 6) and
-                 (now_dt.hour > 4 and now_dt.hour < 10))):
-            logger.debug("intro case 2: last_hello: {0}, last_signoff: {1}, now_time: {2}".format(last_hello, last_signoff, now_time))
-            return IntroType.INTRO
-            
-        # If hello hasn't been said recently but signoff was recent (1-6 hours ago)
-        elif now_time - last_hello > 2 * 3600 and 1 * 3600 < now_time - last_signoff <= 6 * 3600:
-            logger.debug("reintro: last_hello: {0}, last_signoff: {1}, now_time: {2}".format(last_hello, last_signoff, now_time))
-            return IntroType.REINTRO
-        else:
-            # If both hello and signoff were recent, don't say anything
-            logger.debug("no intro: last_hello: {0}, last_signoff: {1}, now_time: {2}".format(last_hello, last_signoff, now_time))
-            return IntroType.NONE
+        return determine_intro_type(now_time, persona)
 
 

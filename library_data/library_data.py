@@ -16,6 +16,7 @@ from library_data.instrument import instruments_data
 from library_data.library_data_callbacks import LibraryDataCallbacks
 from library_data.media_track import MediaTrack
 from utils.app_info_cache import app_info_cache
+from utils.cache_paths import resolve_cache_file
 from utils.config import config
 from utils.globals import MediaFileType, PlaylistSortType
 from utils.logging_setup import get_logger
@@ -303,17 +304,25 @@ class LibraryData:
     _directory_cache_loaded = False
 
     @staticmethod
+    def media_track_cache_path() -> str:
+        return resolve_cache_file(LibraryData.CACHE_FILENAME)
+
+    @staticmethod
+    def directories_cache_path() -> str:
+        return resolve_cache_file(LibraryData.DIRECTORIES_CACHE_FILENAME)
+
+    @staticmethod
     def store_caches():
         # Store DIRECTORIES_CACHE in separate pickle file (not in app_info_cache JSON)
         # This prevents MemoryError when cache is large
         try:
-            with open(LibraryData.DIRECTORIES_CACHE_FILENAME, "wb") as f:
+            with open(LibraryData.directories_cache_path(), "wb") as f:
                 pickle.dump(LibraryData.DIRECTORIES_CACHE, f)
         except Exception as e:
             logger.error(f"Error storing directories cache: {e}")
         
         try:
-            with open(LibraryData.CACHE_FILENAME, "wb") as f:
+            with open(LibraryData.media_track_cache_path(), "wb") as f:
                 pickle.dump(LibraryData.MEDIA_TRACK_CACHE,  f)
         except Exception as e:
             logger.error(f"Error storing media track cache: {e}")
@@ -330,10 +339,11 @@ class LibraryData:
         
         # Try loading from pickle file first (new method)
         try:
-            if os.path.exists(LibraryData.DIRECTORIES_CACHE_FILENAME):
-                with open(LibraryData.DIRECTORIES_CACHE_FILENAME, "rb") as f:
+            directories_path = LibraryData.directories_cache_path()
+            if os.path.exists(directories_path):
+                with open(directories_path, "rb") as f:
                     LibraryData.DIRECTORIES_CACHE = pickle.load(f)
-                logger.debug(f"Loaded directories cache from {LibraryData.DIRECTORIES_CACHE_FILENAME}")
+                logger.debug(f"Loaded directories cache from {directories_path}")
                 LibraryData._directory_cache_loaded = True
                 return
         except Exception as e:
@@ -348,7 +358,7 @@ class LibraryData:
                 logger.info("Loaded directories cache from app_info_cache (migrating to pickle file)")
                 # Migrate to pickle file
                 try:
-                    with open(LibraryData.DIRECTORIES_CACHE_FILENAME, "wb") as f:
+                    with open(LibraryData.directories_cache_path(), "wb") as f:
                         pickle.dump(LibraryData.DIRECTORIES_CACHE, f)
                     # Remove from app_info_cache to free up memory and persist immediately
                     app_info_cache.set(LibraryData.DIRECTORIES_CACHE_KEY, {})
@@ -371,7 +381,7 @@ class LibraryData:
     @staticmethod
     def load_media_track_cache():
         try:
-            with open(LibraryData.CACHE_FILENAME, "rb") as f:
+            with open(LibraryData.media_track_cache_path(), "rb") as f:
                 LibraryData.MEDIA_TRACK_CACHE = pickle.load(f)
         except FileNotFoundError as e:
             logger.info("No media track cache found, creating new one")
@@ -388,9 +398,10 @@ class LibraryData:
                 logger.warning(f"Error parsing library refresh time: {e}")
         
         # Fallback to file modification time if no refresh time is recorded
-        if os.path.exists(LibraryData.CACHE_FILENAME):
+        media_cache_path = LibraryData.media_track_cache_path()
+        if os.path.exists(media_cache_path):
             try:
-                mtime = os.path.getmtime(LibraryData.CACHE_FILENAME)
+                mtime = os.path.getmtime(media_cache_path)
                 return datetime.fromtimestamp(mtime)
             except Exception as e:
                 logger.warning(f"Error getting cache file modification time: {e}")

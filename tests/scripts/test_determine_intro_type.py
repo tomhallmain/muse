@@ -1,3 +1,13 @@
+"""
+Manual exploration script for introduction-type timing (not collected by pytest).
+
+Runs against your real environment by default (muse_memory, config, caches).
+For the isolated regression suite, use: pytest tests/unit/test_determine_intro_type.py
+
+Usage:
+    python tests/scripts/test_determine_intro_type.py
+"""
+
 import sys
 import os
 import time
@@ -11,9 +21,9 @@ if _project_root not in sys.path:
 
 from tests.utils.formatting import format_time, format_time_diff, mktime
 
-from muse.muse import Muse
-from muse.muse_memory import muse_memory
+from muse.intro_type import determine_intro_type
 from muse.dj_persona import DJPersona
+from utils.globals import IntroType
 
 def create_test_persona(last_hello_time=None, last_signoff_time=None):
     """Helper function to create a test persona with specific timing."""
@@ -34,14 +44,9 @@ def create_test_persona(last_hello_time=None, last_signoff_time=None):
         persona.last_signoff_time = last_signoff_time
     return persona
 
-def get_mock_muse():
-    class MockMuseArgs:
-        placeholder = True
-    return Muse(MockMuseArgs(), None, ui_callbacks=None)
-
-def test_case(muse, name, persona, expected_result, now=None):
+def test_case(name, persona, expected_result, now=None):
     """Helper function to run a test case and print the result."""
-    result = muse._determine_intro_type(now, persona)
+    result = determine_intro_type(now, persona)
     print("\n" + "="*80)
     print(f"Test Case: {name}")
     print("-"*40)
@@ -63,7 +68,8 @@ def test_case(muse, name, persona, expected_result, now=None):
     else:
         print(f"\033[91mExpected: {expected_result} | Got: {result} | Status: {status}\033[0m")
 
-def visualize_outcomes(muse, reference_timestamp, hours=48):
+
+def visualize_outcomes(reference_timestamp, hours=48):
     """Create a 2D heatmap showing the distribution of outcomes based on hello and signoff times."""
     time_points = np.linspace(0, hours * 3600, 100)
     outcomes = np.zeros((len(time_points), len(time_points)))
@@ -81,11 +87,11 @@ def visualize_outcomes(muse, reference_timestamp, hours=48):
             persona.last_hello_time = hello_time
             persona.last_signoff_time = signoff_time
             
-            result = muse._determine_intro_type(reference_timestamp, persona)
-            
-            if result == "intro":
+            result = determine_intro_type(reference_timestamp, persona)
+
+            if result == IntroType.INTRO:
                 outcomes[i, j] = 1
-            elif result == "reintro":
+            elif result == IntroType.REINTRO:
                 outcomes[i, j] = 2
             else:
                 outcomes[i, j] = 0
@@ -121,14 +127,14 @@ def visualize_outcomes(muse, reference_timestamp, hours=48):
     plt.close()
     print(f"\nVisualization saved to: {output_file}")
 
-def generate_hourly_visualizations(muse, base_date, hours=24):
+def generate_hourly_visualizations(base_date, hours=24):
     """Generate visualizations for each hour of the day."""
     print("\nGenerating hourly outcome distribution visualizations...")
     for hour in range(24):
         reference_time = base_date.replace(hour=hour, minute=0, second=0)
         reference_timestamp = mktime(reference_time)
         print(f"\nGenerating visualization for {reference_time.strftime('%Y-%m-%d %H:%M:%S')}")
-        visualize_outcomes(muse, reference_timestamp, hours=hours)
+        visualize_outcomes(reference_timestamp, hours=hours)
         print(f"Completed visualization for hour {hour:02d}")
 
 def main():
@@ -138,13 +144,9 @@ def main():
     reference_time = datetime.datetime(2024, 3, 20, 12, 0, 0)
     reference_timestamp = mktime(reference_time)
     
-    muse_memory.get_persona_manager().allow_mock_personas = True
-    muse_memory.get_persona_manager().set_current_persona("test_voice")
-    muse = get_mock_muse()
-    
     # Test Case 1: First-time introduction (no previous interactions)
     persona = create_test_persona()
-    test_case(muse, "First-time introduction", persona, "intro", reference_timestamp)
+    test_case("First-time introduction", persona, IntroType.INTRO, reference_timestamp)
     
     # Test Case 2: Long absence (more than 6 hours since both hello and signoff)
     last_interaction = mktime(reference_time.replace(hour=5, minute=0))
@@ -152,21 +154,21 @@ def main():
         last_hello_time=last_interaction,
         last_signoff_time=last_interaction
     )
-    test_case(muse, "Long absence", persona, "intro", reference_timestamp)
+    test_case("Long absence", persona, IntroType.INTRO, reference_timestamp)
     
     # Test Case 3: Recent return (1-6 hours since signoff, more than 6 hours since hello)
     persona = create_test_persona(
         last_hello_time=mktime(reference_time.replace(hour=5, minute=0)),
         last_signoff_time=mktime(reference_time.replace(hour=9, minute=0))
     )
-    test_case(muse, "Recent return", persona, "reintro", reference_timestamp)
+    test_case("Recent return", persona, IntroType.REINTRO, reference_timestamp)
     
     # Test Case 4: Very recent return (less than 1 hour since signoff)
     persona = create_test_persona(
         last_hello_time=mktime(reference_time.replace(hour=5, minute=0)),
         last_signoff_time=mktime(reference_time.replace(hour=11, minute=30))
     )
-    test_case(muse, "Very recent return", persona, None, reference_timestamp)
+    test_case("Very recent return", persona, IntroType.NONE, reference_timestamp)
     
     # Test Case 5: Sleeping hours case (last signoff at 11 PM, current time 6 AM)
     last_signoff = mktime(reference_time.replace(hour=23, minute=0))
@@ -175,32 +177,32 @@ def main():
         last_hello_time=mktime(reference_time.replace(hour=17, minute=0)),
         last_signoff_time=last_signoff
     )
-    test_case(muse, "Sleeping hours case", persona, "intro", current_time)
+    test_case("Sleeping hours case", persona, IntroType.INTRO, current_time)
     
     # Test Case 6: Recent hello and signoff (both within 6 hours)
     persona = create_test_persona(
         last_hello_time=mktime(reference_time.replace(hour=9, minute=0)),
         last_signoff_time=mktime(reference_time.replace(hour=9, minute=0))
     )
-    test_case(muse, "Recent hello and signoff", persona, "reintro", reference_timestamp)
+    test_case("Recent hello and signoff", persona, IntroType.REINTRO, reference_timestamp)
     
     # Test Case 7: Edge case - exactly 6 hours since signoff
     persona = create_test_persona(
         last_hello_time=mktime(reference_time.replace(hour=5, minute=0)),
         last_signoff_time=mktime(reference_time.replace(hour=6, minute=0))
     )
-    test_case(muse, "Exactly 6 hours since signoff", persona, "reintro", reference_timestamp)
+    test_case("Exactly 6 hours since signoff", persona, IntroType.REINTRO, reference_timestamp)
     
     # Test Case 8: Edge case - exactly 1 hour since signoff
     persona = create_test_persona(
         last_hello_time=mktime(reference_time.replace(hour=5, minute=0)),
         last_signoff_time=mktime(reference_time.replace(hour=11, minute=0))
     )
-    test_case(muse, "Exactly 1 hour since signoff", persona, None, reference_timestamp)
-    
+    test_case("Exactly 1 hour since signoff", persona, IntroType.NONE, reference_timestamp)
+
     # Generate visualizations for each hour of the day
     base_date = datetime.datetime(2024, 3, 20)
-    generate_hourly_visualizations(muse, base_date, hours=24)
+    generate_hourly_visualizations(base_date, hours=24)
 
 if __name__ == "__main__":
     main()
