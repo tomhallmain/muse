@@ -284,39 +284,45 @@ class TestNumberToWordsConverter:
 
 class TestTextCleanerRulesetIntegration:
     """Test integration of number conversion with TextCleanerRuleset."""
-    
-    def test_clean_converts_numbers(self):
-        """Test that TextCleanerRuleset.clean() converts numbers."""
+
+    def test_clean_skips_number_conversion_for_english(self):
+        """English text keeps digits; the TTS model reads them without spelling out."""
         cleaner = TextCleanerRuleset()
-        
+        result = cleaner.clean("I have 5 apples", locale=None)
+        assert "5" in result
+        assert "five" not in result
+
+    def test_clean_converts_numbers_when_not_detected_as_english(self, monkeypatch):
+        """Digits are spelled out only when _is_likely_english returns False."""
+        cleaner = TextCleanerRuleset()
+        monkeypatch.setattr(cleaner, "_is_likely_english", lambda _text: False)
         result = cleaner.clean("I have 5 apples", locale=None)
         assert "five" in result
         assert "5" not in result
-        
-        result = cleaner.clean("The temperature is 25 degrees", locale=None)
-        assert "twenty-five" in result
-        assert "25" not in result
-    
-    def test_clean_preserves_other_cleaning(self):
-        """Test that number conversion works alongside other cleaning rules."""
+
+    def test_clean_preserves_other_cleaning_when_not_english(self, monkeypatch):
+        """Number conversion runs alongside other cleaning rules for non-English paths."""
         cleaner = TextCleanerRuleset()
-        
-        # Test that number conversion happens along with other cleaning
+        monkeypatch.setattr(cleaner, "_is_likely_english", lambda _text: False)
         result = cleaner.clean("I have 3 apples and 2 oranges", locale=None)
         assert "three" in result
         assert "two" in result
-    
-    def test_clean_with_locale(self):
-        """Test that TextCleanerRuleset.clean() respects locale parameter."""
+
+    def test_clean_with_locale_when_not_english(self, monkeypatch):
+        """Locale is passed through to number conversion when conversion runs."""
         cleaner = TextCleanerRuleset()
-        
-        # Test with default locale (should use English)
+        monkeypatch.setattr(cleaner, "_is_likely_english", lambda _text: False)
         result = cleaner.clean("I have 5 apples", locale="en")
         assert "five" in result
-        
-        # Test with None locale (should use English default)
-        result = cleaner.clean("I have 5 apples", locale=None)
-        assert "five" in result
+        assert "5" not in result
+
+    def test_clean_converts_numbers_to_german_from_config(self, monkeypatch):
+        """German number_words from config_example (e.g. 5 -> fünf) apply when locale is de."""
+        cleaner = TextCleanerRuleset()
+        monkeypatch.setattr(cleaner, "_is_likely_english", lambda _text: False)
+        result = cleaner.clean("Ich habe 5 Äpfel", locale="de")
+        assert "fünf" in result
+        assert "5" not in result
 
 
 if __name__ == "__main__":

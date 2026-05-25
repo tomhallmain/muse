@@ -63,17 +63,18 @@ class NumberToWordsConverter:
             negative: Word for "negative" (used for negative numbers)
             to: Word for "to" (used in ranges like "1651 to 1703")
         """
+        defaults = cls._get_words_for_locale(None)
         cls._locale_overrides[locale] = {
-            'ones': ones or cls.ONES,
-            'teens': teens or cls.TEENS,
-            'tens': tens or cls.TENS,
-            'hundred': hundred or cls.HUNDRED,
-            'thousand': thousand or cls.THOUSAND,
-            'million': million or cls.MILLION,
-            'and': and_word or cls.AND,
-            'approximately': approximately or cls.APPROXIMATELY,
-            'negative': negative or cls.NEGATIVE,
-            'to': to or cls.TO
+            'ones': {**defaults['ones'], **(ones or {})},
+            'teens': {**defaults['teens'], **(teens or {})},
+            'tens': {**defaults['tens'], **(tens or {})},
+            'hundred': hundred or defaults['hundred'],
+            'thousand': thousand or defaults['thousand'],
+            'million': million or defaults['million'],
+            'and': and_word or defaults['and'],
+            'approximately': approximately or defaults['approximately'],
+            'negative': negative or defaults['negative'],
+            'to': to or defaults['to'],
         }
     
     @classmethod
@@ -268,13 +269,15 @@ class NumberToWordsConverter:
         # Replace ranges first
         text = re.sub(range_pattern, replace_range, text)
         
+
         # Now handle standalone numbers (but not negative numbers that are part of ranges)
         # Pattern to match integers, but not if preceded by a hyphen that's part of a range
         # This pattern matches standalone numbers, not numbers that are part of words
-        pattern = r'\b(-?\d+)\b'
+        # Standalone integers; \b fails on "-5", so use non-word-char boundaries instead.
+        pattern = r'(?<!\w)-?\d+(?!\w)'
         
         def replace_number(match):
-            num_str = match.group(1)
+            num_str = match.group(0)
             # Skip if this looks like it might be part of a range we already handled
             # (though ranges should already be converted, this is a safety check)
             try:
