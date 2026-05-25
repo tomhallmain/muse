@@ -117,12 +117,36 @@ class Playback:
                 return profile
         raise Exception(f"No spot profile found for track: {track}")
 
+    def _is_track_at_end(self) -> bool:
+        """Return True when VLC has finished the current track."""
+        assert self.vlc_media_player is not None
+        player = self.vlc_media_player
+        if player.get_state() == vlc.State.Ended:
+            return True
+        length_ms = player.get_length()
+        if length_ms <= 0:
+            return False
+        time_ms = player.get_time()
+        if time_ms < 0:
+            return False
+        return time_ms >= length_ms - 500
+
+    def _should_continue_track_wait(self) -> bool:
+        """Whether to keep waiting on the current track before advancing."""
+        if self._run_context.skip_track:
+            return False
+        if self.vlc_media_player.is_playing():
+            return True
+        if not self._run_context.is_paused:
+            return False
+        return not self._is_track_at_end()
+
     def play_one_song(self) -> None:
         if self.get_track():
             self.register_new_song()
             self.vlc_media_player.play()
             time.sleep(0.5)
-            while (self.vlc_media_player.is_playing() or self._run_context.is_paused) and not self._run_context.skip_track:
+            while self._should_continue_track_wait():
                 time.sleep(0.5)
             self.vlc_media_player.stop()
         else:
@@ -225,7 +249,7 @@ class Playback:
                 cumulative_sleep_seconds += _VLC_POLL_INTERVAL
             if not self.vlc_media_player.is_playing():
                 self.last_track_failed = True
-            while (self.vlc_media_player.is_playing() or self._run_context.is_paused) and not self._run_context.skip_track:
+            while self._should_continue_track_wait():
                 time.sleep(0.5)
                 cumulative_sleep_seconds += 0.5
                 seconds_remaining = self.update_progress()
