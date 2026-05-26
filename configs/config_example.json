@@ -40,6 +40,7 @@
     "open_weather_api_key": "<KEY>",
     "open_weather_city": "Washington",
     "news_api_key": "<KEY>",
+    "lastfm_api_key": "<KEY>",
     "news_api_source_trustworthiness": {
         "bbc-news": 0.5
     },

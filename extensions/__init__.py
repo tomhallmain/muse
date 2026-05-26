@@ -4,6 +4,7 @@ from extensions.all_poetry_souper import AllPoetrySouper
 from extensions.calendar_aggregator import CalendarAggregator
 from extensions.hacker_news_souper import HackerNewsSouper
 from extensions.imslp_souper import ImslpSouper
+from extensions.lastfm_api import LastFmReadAPI
 from extensions.library_extender import LibraryExtender
 from extensions.llm import LLM
 from extensions.news_api import NewsAPI
@@ -17,6 +18,7 @@ __all__ = [
     'CalendarAggregator',
     'HackerNewsSouper',
     'ImslpSouper',
+    'LastFmReadAPI',
     'LibraryExtender',
     'LLM',
     'NewsAPI',

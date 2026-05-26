@@ -242,6 +242,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
                 (_("Search"), self.open_search_window),
                 (_("Schedules"), self.open_schedules_window),
                 (_("Extensions"), self.open_extensions_window),
+                (_("Last.fm Library"), self.open_lastfm_window),
                 (_("Blacklist"), self.open_blacklist_window),
                 (_("Weather"), self.open_weather_window),
                 (_("Text to Speech"), self.open_tts_window),
@@ -1327,6 +1328,10 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
     def open_weather_window(self):
         from ui_qt.weather_window import WeatherWindow
         WeatherWindow(self, self.app_actions)
+
+    def open_lastfm_window(self):
+        from ui_qt.lastfm_window import LastFmLibraryWindow
+        LastFmLibraryWindow(self, self.app_actions)
 
     def open_tts_window(self):
         from ui_qt.tts_window import TTSWindow
