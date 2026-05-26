@@ -6,12 +6,11 @@ Env vars must be set at module load time — before app singletons import — be
 Nested conftest files mirror the same bootstrap for alternate collection orders.
 """
 
-import atexit
 import importlib
+import importlib.util
 import os
 import shutil
 import sys
-import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, List, Optional
@@ -19,26 +18,24 @@ from typing import Any, List, Optional
 import pytest
 
 # ---------------------------------------------------------------------------
-# Project root on sys.path
+# Project root on sys.path (see also pythonpath / importmode in pytest.ini)
 # ---------------------------------------------------------------------------
 _project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if _project_root not in sys.path:
     sys.path.insert(0, _project_root)
 
-_config_example_src = os.path.join(_project_root, "configs", "config_example.json")
-
 # ---------------------------------------------------------------------------
 # Bootstrap temp cache/config before any utils/muse singleton import
 # ---------------------------------------------------------------------------
-_bootstrap_tmp = tempfile.mkdtemp(prefix="muse_tests_")
-os.environ.setdefault("MUSE_CACHE_DIR", os.path.join(_bootstrap_tmp, "cache"))
-os.environ.setdefault("MUSE_CONFIGS_DIR", os.path.join(_bootstrap_tmp, "configs"))
-os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
-os.makedirs(os.environ["MUSE_CACHE_DIR"], exist_ok=True)
-os.makedirs(os.environ["MUSE_CONFIGS_DIR"], exist_ok=True)
-if os.path.isfile(_config_example_src):
-    shutil.copy(_config_example_src, os.path.join(os.environ["MUSE_CONFIGS_DIR"], "config.json"))
-atexit.register(shutil.rmtree, _bootstrap_tmp, True)
+_bootstrap_spec = importlib.util.spec_from_file_location(
+    "muse_tests_bootstrap_env",
+    os.path.join(os.path.dirname(__file__), "bootstrap_env.py"),
+)
+_bootstrap_mod = importlib.util.module_from_spec(_bootstrap_spec)
+_bootstrap_spec.loader.exec_module(_bootstrap_mod)
+_bootstrap_mod.apply()
+
+_config_example_src = os.path.join(_project_root, "configs", "config_example.json")
 
 from utils.globals import HistoryType, PlaylistSortType
 
@@ -183,6 +180,14 @@ def _patch_muse_memory_singleton(monkeypatch, memory_instance) -> None:
     monkeypatch.setattr(muse_memory_mod, "muse_memory", memory_instance)
     monkeypatch.setattr(muse_mod, "muse_memory", memory_instance)
     monkeypatch.setattr(pdm, "muse_memory", memory_instance)
+
+
+@pytest.fixture(autouse=True)
+def bypass_password(monkeypatch):
+    """Never prompt for passwords or touch the OS credential store (Weidr-style)."""
+    from tests.utils.auth_test_bypass import install_password_bypass
+
+    install_password_bypass(monkeypatch)
 
 
 @pytest.fixture(autouse=True)

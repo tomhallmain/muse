@@ -1,6 +1,29 @@
 # Muse test suite
 
+## Layout
+
+See [tests/docs/TEST_STRUCTURE.md](docs/TEST_STRUCTURE.md) for the directory map and markers.
+
+| Layer | Path | Notes |
+|-------|------|--------|
+| Unit | `tests/unit/{muse,library_data,tts,utils,fixtures}/` | Domain-aligned; see per-dir `README.md` |
+| Integration | `tests/integration/{muse,library_data}/` | Real MP3s where needed |
+| UI | `tests/ui/{windows,auth}/` | Per-window tests — [UI plan](docs/UI_TEST_PLAN.md), [cache isolation](docs/DATA_CACHE_ISOLATION.md) |
+| Manual | `tests/scripts/` | Not collected by pytest |
+
+```bash
+pytest tests/unit -m unit
+pytest tests/integration -m integration
+pytest -m "not ui"    # skip UI when implemented
+```
+
 ## Isolation (pytest)
+
+**Import paths:** `pytest.ini` sets `--import-mode=importlib` and `pythonpath = .` so folders like `tests/unit/muse/` do not shadow the real `muse` package (see [TEST_STRUCTURE.md](docs/TEST_STRUCTURE.md)).
+
+**Env vars:** `tests/bootstrap_env.py` is applied from `tests/conftest.py` before any app import. `tests/unit/conftest.py` calls the same helper only if `MUSE_CACHE_DIR` is not set yet (edge case). `tests/integration/conftest.py` and `tests/ui/conftest.py` do **not** duplicate env setup — they rely on the root conftest.
+
+**Passwords:** Root autouse `bypass_password` (see `tests/utils/auth_test_bypass.py`) matches the Weidr pattern: no dialogs, no `keyring` / Credential Manager access during pytest.
 
 The root `tests/conftest.py` follows the same pattern as the Weidr project:
 
@@ -21,8 +44,9 @@ Cache file overrides use `MUSE_CACHE_DIR` via `utils/cache_paths.py`. Config ove
 | `muse_memory` | Yes | Fresh instance per test |
 | `app_media_track_cache` / `app_directories_cache` | Yes | Paths under `MUSE_CACHE_DIR`; in-memory reset |
 | Playlist recently-played lists | Yes | Reset via `HistoryType` |
-| `tests/unit/*` | Yes | Pure or mocked; see `tests/unit/conftest.py` |
-| `tests/integration/test_playback_integration.py` | Yes | Uses `mock_data_callbacks` + fixtures only |
+| `tests/unit/**` | Yes | Pure or mocked; see `tests/unit/conftest.py` |
+| `tests/integration/muse/test_playback_integration.py` | Yes | Uses `mock_data_callbacks` + fixtures only |
+| `tests/ui/**` | Yes | Same isolation + `qapp` session fixture |
 
 ### Intro type tests
 
@@ -82,7 +106,8 @@ Tests that need the library should request `audio_library_callbacks` or `audio_l
 ## Running tests
 
 ```bash
-pytest tests/unit/test_determine_intro_type.py
-pytest tests/unit
+pytest tests/unit/muse/test_determine_intro_type.py
+pytest tests/unit -m unit
+pytest tests/integration -m integration
 pytest tests
 ```

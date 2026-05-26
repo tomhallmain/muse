@@ -1,23 +1,18 @@
 """
 conftest for tests/unit/.
 
-Mirrors module-level env setup from the root conftest so singletons never touch
-production cache or config when this directory is collected first.
+If this tree is collected without the parent ``tests/conftest.py`` loading first
+(unusual), apply the same env bootstrap as the root conftest via ``bootstrap_env``.
 """
 
-import atexit
+import importlib.util
 import os
-import shutil
-import tempfile
 
 if "MUSE_CACHE_DIR" not in os.environ:
-    _tmp = tempfile.mkdtemp(prefix="muse_unit_")
-    os.environ["MUSE_CACHE_DIR"] = os.path.join(_tmp, "cache")
-    os.environ["MUSE_CONFIGS_DIR"] = os.path.join(_tmp, "configs")
-    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
-    os.makedirs(os.environ["MUSE_CACHE_DIR"], exist_ok=True)
-    os.makedirs(os.environ["MUSE_CONFIGS_DIR"], exist_ok=True)
-    _src = os.path.join(os.path.dirname(__file__), "..", "..", "configs", "config_example.json")
-    if os.path.isfile(_src):
-        shutil.copy(_src, os.path.join(os.environ["MUSE_CONFIGS_DIR"], "config.json"))
-    atexit.register(shutil.rmtree, _tmp, True)
+    _spec = importlib.util.spec_from_file_location(
+        "muse_tests_bootstrap_env",
+        os.path.join(os.path.dirname(__file__), "..", "bootstrap_env.py"),
+    )
+    _mod = importlib.util.module_from_spec(_spec)
+    _spec.loader.exec_module(_mod)
+    _mod.apply()
