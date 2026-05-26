@@ -26,6 +26,17 @@ DEFAULT_PAGE_LIMIT = 50
 MAX_PAGE_LIMIT = 1000
 DEFAULT_PAGE_DELAY_SECONDS = 0.25
 
+# Last.fm method names are picky; keep canonical spelling but allow tolerant callers.
+_METHOD_ALIASES: dict[str, str] = {
+    "user.getinfo": "user.getInfo",
+    "user.getrecenttracks": "user.getRecentTracks",
+    "user.gettoptracks": "user.getTopTracks",
+    "user.gettopalbums": "user.getTopAlbums",
+    "user.gettopartists": "user.getTopArtists",
+    "user.getlovedtracks": "user.getLovedTracks",
+    "library.getartists": "library.getArtists",
+}
+
 
 class LastFmAPIError(Exception):
     """Raised when the Last.fm API returns an error or the response is invalid."""
@@ -195,6 +206,9 @@ class LastFmReadAPI:
                 "No Last.fm API key configured. Set lastfm_api_key in config.json."
             )
 
+        method = (method or "").strip()
+        method = _METHOD_ALIASES.get(method.lower(), method)
+
         query = {
             "method": method,
             "api_key": self.api_key,
@@ -293,101 +307,15 @@ class LastFmReadAPI:
         username: str,
         page: int = 1,
         limit: int = DEFAULT_PAGE_LIMIT,
-        artist: Optional[str] = None,
+        period: str = "overall",
     ) -> LastFmLibraryAlbumsPage:
-        """Paginated albums in a user's library (``library.getAlbums``)."""
-        try:
-            payload = self._call(
-                "library.getAlbums",
-                user=username,
-                page=page,
-                limit=self._clamp_limit(limit),
-                artist=artist,
-            )
-            root = payload.get("albums") or {}
-            attr = root.get("@attr") or {}
-            albums: List[LastFmLibraryAlbum] = []
-            for item in _as_list(root.get("album")):
-                if not isinstance(item, dict):
-                    continue
-                albums.append(
-                    LastFmLibraryAlbum(
-                        name=_text(item.get("name")) or "",
-                        artist=_artist_name(item.get("artist")),
-                        playcount=_int(item.get("playcount")),
-                        url=_text(item.get("url")),
-                        mbid=_text(item.get("mbid")) or None,
-                        tagcount=_int(item.get("tagcount"), 0) or None,
-                        image_url=_image_url(item.get("image")),
-                    )
-                )
-            return LastFmLibraryAlbumsPage(
-                pagination=_parse_pagination(attr, username),
-                albums=albums,
-            )
-        except LastFmAPIError as exc:
-            logger.warning(
-                "library.getAlbums unavailable, falling back to user.getTopAlbums: %s",
-                exc,
-            )
-            return self._get_top_albums_fallback(
-                username=username,
-                page=page,
-                limit=limit,
-            )
-
-    def get_library_tracks(
-        self,
-        username: str,
-        page: int = 1,
-        limit: int = DEFAULT_PAGE_LIMIT,
-        artist: Optional[str] = None,
-        album: Optional[str] = None,
-    ) -> LastFmLibraryTracksPage:
-        """Paginated tracks in a user's library (``library.getTracks``)."""
-        try:
-            payload = self._call(
-                "library.getTracks",
-                user=username,
-                page=page,
-                limit=self._clamp_limit(limit),
-                artist=artist,
-                album=album,
-            )
-            root = payload.get("tracks") or {}
-            attr = root.get("@attr") or {}
-            tracks: List[LastFmLibraryTrack] = []
-            for item in _as_list(root.get("track")):
-                if not isinstance(item, dict):
-                    continue
-                tracks.append(self._parse_library_track(item))
-            return LastFmLibraryTracksPage(
-                pagination=_parse_pagination(attr, username),
-                tracks=tracks,
-            )
-        except LastFmAPIError as exc:
-            logger.warning(
-                "library.getTracks unavailable, falling back to user.getRecentTracks: %s",
-                exc,
-            )
-            return self._get_recent_tracks_fallback(
-                username=username,
-                page=page,
-                limit=limit,
-            )
-
-    def _get_top_albums_fallback(
-        self,
-        username: str,
-        page: int,
-        limit: int,
-    ) -> LastFmLibraryAlbumsPage:
+        """Paginated top albums for a user (``user.getTopAlbums``)."""
         payload = self._call(
             "user.getTopAlbums",
             user=username,
             page=page,
             limit=self._clamp_limit(limit),
-            period="overall",
+            period=period,
         )
         root = payload.get("topalbums") or {}
         attr = root.get("@attr") or {}
@@ -411,20 +339,22 @@ class LastFmReadAPI:
             albums=albums,
         )
 
-    def _get_recent_tracks_fallback(
+    def get_library_tracks(
         self,
         username: str,
-        page: int,
-        limit: int,
+        page: int = 1,
+        limit: int = DEFAULT_PAGE_LIMIT,
+        period: str = "overall",
     ) -> LastFmLibraryTracksPage:
+        """Paginated top tracks for a user (``user.getTopTracks``)."""
         payload = self._call(
-            "user.getRecentTracks",
+            "user.getTopTracks",
             user=username,
             page=page,
-            limit=min(self._clamp_limit(limit), 200),
-            extended=1,
+            limit=self._clamp_limit(limit),
+            period=period,
         )
-        root = payload.get("recenttracks") or {}
+        root = payload.get("toptracks") or {}
         attr = root.get("@attr") or {}
         tracks: List[LastFmLibraryTrack] = []
         for item in _as_list(root.get("track")):
@@ -434,13 +364,13 @@ class LastFmReadAPI:
                 LastFmLibraryTrack(
                     name=_text(item.get("name")) or "",
                     artist=_artist_name(item.get("artist")),
-                    playcount=0,
-                    album=_text(item.get("album")) or None,
+                    playcount=_int(item.get("playcount")),
+                    album=None,
                     url=_text(item.get("url")),
                     mbid=_text(item.get("mbid")) or None,
                     tagcount=None,
                     image_url=_image_url(item.get("image")),
-                    rank=None,
+                    rank=_int((item.get("@attr") or {}).get("rank"), 0) or None,
                 )
             )
         return LastFmLibraryTracksPage(
@@ -477,15 +407,14 @@ class LastFmReadAPI:
         self,
         username: str,
         limit: int = DEFAULT_PAGE_LIMIT,
-        artist: Optional[str] = None,
-        album: Optional[str] = None,
+        period: str = "overall",
         max_pages: Optional[int] = None,
         page_delay_seconds: float = DEFAULT_PAGE_DELAY_SECONDS,
     ) -> Iterator[LastFmLibraryTrack]:
-        """Yield every track in a user's library, paging through ``library.getTracks``."""
+        """Yield top tracks for a user, paging through ``user.getTopTracks``."""
         yield from self._iter_pages(
             fetch=lambda page: self.get_library_tracks(
-                username, page=page, limit=limit, artist=artist, album=album
+                username, page=page, limit=limit, period=period
             ),
             items_attr="tracks",
             max_pages=max_pages,
@@ -496,14 +425,14 @@ class LastFmReadAPI:
         self,
         username: str,
         limit: int = DEFAULT_PAGE_LIMIT,
-        artist: Optional[str] = None,
+        period: str = "overall",
         max_pages: Optional[int] = None,
         page_delay_seconds: float = DEFAULT_PAGE_DELAY_SECONDS,
     ) -> Iterator[LastFmLibraryAlbum]:
-        """Yield every album in a user's library."""
+        """Yield top albums for a user, paging through ``user.getTopAlbums``."""
         yield from self._iter_pages(
             fetch=lambda page: self.get_library_albums(
-                username, page=page, limit=limit, artist=artist
+                username, page=page, limit=limit, period=period
             ),
             items_attr="albums",
             max_pages=max_pages,

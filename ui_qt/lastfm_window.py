@@ -7,6 +7,9 @@ from __future__ import annotations
 import time
 from typing import Any
 
+import csv
+import os
+
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
     QFileDialog,
@@ -33,6 +36,8 @@ _ = I18N._
 
 class LastFmLibraryWindow(SmartWindow):
     top_level = None
+
+    _MAX_RETRIES = 3
 
     _lookup_complete = Signal(object)
     _status = Signal(str)
@@ -127,6 +132,20 @@ class LastFmLibraryWindow(SmartWindow):
         self.search_btn.setEnabled(not busy)
         self.download_btn.setEnabled(not busy)
 
+    def _call_with_retry(self, fn):
+        delay = 1.0
+        for attempt in range(1, self._MAX_RETRIES + 1):
+            try:
+                return fn()
+            except Exception as exc:
+                if attempt >= self._MAX_RETRIES:
+                    raise
+                self._status.emit(
+                    _("Attempt {0}/{1} failed: {2}. Retrying…").format(attempt, self._MAX_RETRIES, exc)
+                )
+                time.sleep(delay)
+                delay *= 2
+
     def lookup_library(self):
         username = self.user_entry.text().strip()
         if not username:
@@ -144,20 +163,20 @@ class LastFmLibraryWindow(SmartWindow):
 
     def _lookup_library_worker(self, username: str, scope_text: str):
         try:
-            user_info = self.api.get_user_info(username)
+            user_info = self._call_with_retry(lambda: self.api.get_user_info(username))
             scope = self._normalize_scope(scope_text)
             if scope == "tracks":
-                page = self.api.get_library_tracks(username, page=1, limit=100)
+                page = self._call_with_retry(lambda: self.api.get_library_tracks(username, page=1, limit=100))
                 items = [
                     f"{t.playcount:>6}  {t.artist} - {t.name}" for t in page.tracks
                 ]
             elif scope == "albums":
-                page = self.api.get_library_albums(username, page=1, limit=100)
+                page = self._call_with_retry(lambda: self.api.get_library_albums(username, page=1, limit=100))
                 items = [
                     f"{a.playcount:>6}  {a.artist} - {a.name}" for a in page.albums
                 ]
             else:
-                page = self.api.get_library_artists(username, page=1, limit=100)
+                page = self._call_with_retry(lambda: self.api.get_library_artists(username, page=1, limit=100))
                 items = [f"{a.playcount:>6}  {a.name}" for a in page.artists]
             self._lookup_complete.emit(
                 {
@@ -202,14 +221,21 @@ class LastFmLibraryWindow(SmartWindow):
             self.app_actions.alert(_("Missing username"), _("Please enter a Last.fm username."), kind="warning")
             return
 
-        file_path, _ = QFileDialog.getSaveFileName(
+        default_name = f"lastfm_{username}_unique_entries.tsv"
+        file_path, selected_filter = QFileDialog.getSaveFileName(
             self,
             _("Save Unique Library Entries"),
-            f"lastfm_{username}_unique_entries.txt",
-            _("Text Files (*.txt);;All Files (*.*)"),
+            default_name,
+            _("TSV Files (*.tsv);;CSV Files (*.csv);;All Files (*.*)"),
         )
         if not file_path:
             return
+
+        export_kind = "tsv" if selected_filter.startswith("TSV") else "csv" if selected_filter.startswith("CSV") else self._infer_export_kind(file_path)
+        if export_kind == "tsv" and not file_path.lower().endswith(".tsv"):
+            file_path += ".tsv"
+        if export_kind == "csv" and not file_path.lower().endswith(".csv"):
+            file_path += ".csv"
 
         scope = self._normalize_scope(self.scope_combo.currentText())
         unique_mode = self.unique_combo.currentText()
@@ -217,11 +243,11 @@ class LastFmLibraryWindow(SmartWindow):
         self._set_busy.emit(True)
         self._status.emit(_("Downloading unique entries..."))
         Utils.start_thread(
-            lambda: self._download_unique_worker(username, scope, unique_mode, file_path),
+            lambda: self._download_unique_worker(username, scope, unique_mode, file_path, export_kind),
             use_asyncio=False,
         )
 
-    def _download_unique_worker(self, username: str, scope: str, unique_mode: str, file_path: str):
+    def _download_unique_worker(self, username: str, scope: str, unique_mode: str, file_path: str, export_kind: str):
         try:
             if scope == "tracks":
                 sections, total = self._collect_unique_tracks(username, unique_mode)
@@ -230,17 +256,16 @@ class LastFmLibraryWindow(SmartWindow):
             else:
                 sections, total = self._collect_unique_artists(username)
 
-            lines = [f"Last.fm unique entries for user: {username}", ""]
-            for title, values in sections.items():
-                lines.append(f"[{title}]")
-                if values:
-                    lines.extend(sorted(values))
-                else:
-                    lines.append("(none)")
-                lines.append("")
-
-            with open(file_path, "w", encoding="utf-8") as f:
-                f.write("\n".join(lines))
+            delimiter = "\t" if export_kind == "tsv" else ","
+            with open(file_path, "w", encoding="utf-8", newline="") as f:
+                writer = csv.writer(f, delimiter=delimiter)
+                writer.writerow(["section", "value"])
+                for title, values in sections.items():
+                    if not values:
+                        writer.writerow([title, ""])
+                        continue
+                    for v in sorted(values):
+                        writer.writerow([title, v])
 
             self._download_complete.emit(file_path, total)
         except Exception as exc:
@@ -252,7 +277,7 @@ class LastFmLibraryWindow(SmartWindow):
         artists = set()
         albums = set()
         page_num = 1
-        first_page = self.api.get_library_tracks(username, page=page_num, limit=200)
+        first_page = self._call_with_retry(lambda: self.api.get_library_tracks(username, page=1, limit=200))
         total_pages = max(first_page.pagination.total_pages, 1)
 
         def collect(page):
@@ -267,7 +292,7 @@ class LastFmLibraryWindow(SmartWindow):
         collect(first_page)
         self._download_progress.emit(int((page_num / total_pages) * 100), _("Fetched page {0}/{1}").format(page_num, total_pages))
         for page_num in range(2, total_pages + 1):
-            page = self.api.get_library_tracks(username, page=page_num, limit=200)
+            page = self._call_with_retry(lambda p=page_num: self.api.get_library_tracks(username, page=p, limit=200))
             collect(page)
             self._download_progress.emit(int((page_num / total_pages) * 100), _("Fetched page {0}/{1}").format(page_num, total_pages))
             time.sleep(0.2)
@@ -279,7 +304,7 @@ class LastFmLibraryWindow(SmartWindow):
         albums = set()
         artists = set()
         page_num = 1
-        first_page = self.api.get_library_albums(username, page=page_num, limit=200)
+        first_page = self._call_with_retry(lambda: self.api.get_library_albums(username, page=1, limit=200))
         total_pages = max(first_page.pagination.total_pages, 1)
 
         def collect(page):
@@ -292,7 +317,7 @@ class LastFmLibraryWindow(SmartWindow):
         collect(first_page)
         self._download_progress.emit(int((page_num / total_pages) * 100), _("Fetched page {0}/{1}").format(page_num, total_pages))
         for page_num in range(2, total_pages + 1):
-            page = self.api.get_library_albums(username, page=page_num, limit=200)
+            page = self._call_with_retry(lambda p=page_num: self.api.get_library_albums(username, page=p, limit=200))
             collect(page)
             self._download_progress.emit(int((page_num / total_pages) * 100), _("Fetched page {0}/{1}").format(page_num, total_pages))
             time.sleep(0.2)
@@ -303,7 +328,7 @@ class LastFmLibraryWindow(SmartWindow):
     def _collect_unique_artists(self, username: str):
         artists = set()
         page_num = 1
-        first_page = self.api.get_library_artists(username, page=page_num, limit=200)
+        first_page = self._call_with_retry(lambda: self.api.get_library_artists(username, page=1, limit=200))
         total_pages = max(first_page.pagination.total_pages, 1)
         for a in first_page.artists:
             if a.name:
@@ -311,7 +336,7 @@ class LastFmLibraryWindow(SmartWindow):
         self._download_progress.emit(int((page_num / total_pages) * 100), _("Fetched page {0}/{1}").format(page_num, total_pages))
 
         for page_num in range(2, total_pages + 1):
-            page = self.api.get_library_artists(username, page=page_num, limit=200)
+            page = self._call_with_retry(lambda p=page_num: self.api.get_library_artists(username, page=p, limit=200))
             for a in page.artists:
                 if a.name:
                     artists.add(a.name)
@@ -361,6 +386,13 @@ class LastFmLibraryWindow(SmartWindow):
         if "artist" in lowered:
             return "artists"
         return "tracks"
+
+    @staticmethod
+    def _infer_export_kind(file_path: str) -> str:
+        ext = os.path.splitext(file_path.lower())[1]
+        if ext == ".csv":
+            return "csv"
+        return "tsv"
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key.Key_Escape:
