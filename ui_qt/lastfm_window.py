@@ -110,7 +110,7 @@ class LastFmLibraryWindow(SmartWindow):
         self.unique_combo = QComboBox(self)
         self.unique_combo.addItems(
             [
-                _("Main fields from current view"),
+                _("All fields"),
                 _("Artists"),
                 _("Titles"),
                 _("Albums"),
@@ -273,13 +273,21 @@ class LastFmLibraryWindow(SmartWindow):
             delimiter = "\t" if export_kind == "tsv" else ","
             self._write_rows(file_path, headers, rows, delimiter)
 
-            # Auto-enrich with MusicBrainz for "Main fields" tracks only.
-            # Restart the progress bar so the two phases are visually distinct.
+            # MusicBrainz enrichment pass — restarts the progress bar so the
+            # two phases are visually distinct.
             mb_file_path = ""
-            if scope == "tracks" and unique_mode not in (_("Artists"), _("Titles"), _("Albums")):
+            if unique_mode == _("All fields") and scope == "tracks":
                 mb_file_path = self._derive_mb_path(file_path)
                 self._download_progress.emit(0, _("Starting MusicBrainz enrichment…"))
                 self._run_mb_enrichment_and_write(username, mb_file_path, delimiter)
+            elif unique_mode == _("Albums"):
+                mb_file_path = self._derive_mb_path(file_path)
+                self._download_progress.emit(0, _("Starting MusicBrainz enrichment…"))
+                self._run_mb_enrichment_for_albums(username, mb_file_path, delimiter)
+            elif unique_mode == _("Artists"):
+                mb_file_path = self._derive_mb_path(file_path)
+                self._download_progress.emit(0, _("Starting MusicBrainz enrichment…"))
+                self._run_mb_enrichment_for_artists(username, mb_file_path, delimiter)
 
             self._download_complete.emit(file_path, mb_file_path, total)
         except Exception as exc:
@@ -302,6 +310,7 @@ class LastFmLibraryWindow(SmartWindow):
                         "artist": t.artist,
                         "title": t.name,
                         "_mbid": t.mbid or "",
+                        "_album": t.album or "",
                     }
                 if t.artist:
                     artists.add(t.artist)
@@ -330,7 +339,7 @@ class LastFmLibraryWindow(SmartWindow):
                 "playcount": r["playcount"],
                 "rank": r["rank"] if isinstance(r["rank"], int) else None,
                 "mbid": r["_mbid"],
-                "album": None,
+                "album": r["_album"] or None,
             }
             for r in track_rows.values()
         ])
@@ -351,7 +360,7 @@ class LastFmLibraryWindow(SmartWindow):
             rows = [{"album": a} for a in sorted(albums)]
             return headers, rows, len(rows)
 
-        # Main fields: pure Last.fm data only. MusicBrainz enrichment runs
+        # All fields: pure Last.fm data only. MusicBrainz enrichment runs
         # automatically afterwards as a separate pass and writes its own file.
         headers = ["rank", "playcount", "artist", "title"]
         rows = [
@@ -507,6 +516,128 @@ class LastFmLibraryWindow(SmartWindow):
                 "mb_lyricist": "; ".join(mb.get("lyricist", [])) if mb else "",
                 "mb_arranger": "; ".join(mb.get("arranger", [])) if mb else "",
             })
+        self._write_rows(mb_file_path, headers, rows, delimiter)
+
+    def _run_mb_enrichment_for_albums(self, username: str, mb_file_path: str, delimiter: str) -> None:
+        """Aggregate MB credits per LFM album by grouping track MBIDs from the tracks cache."""
+        if self._mb_api is None:
+            self._mb_api = MusicBrainzReadAPI()
+
+        cached_tracks = get_lastfm_cache().get_scope(username, "tracks") or []
+
+        # Group track MBIDs by (artist, album)
+        album_data: dict[tuple, dict] = {}
+        for t in cached_tracks:
+            album = t.get("album") or ""
+            artist = t.get("artist") or ""
+            mbid = t.get("mbid") or ""
+            if not album:
+                continue
+            key = (artist.lower(), album.lower())
+            if key not in album_data:
+                album_data[key] = {"artist": artist, "album": album, "mbids": set()}
+            if mbid:
+                album_data[key]["mbids"].add(mbid)
+
+        all_mbids = list({m for entry in album_data.values() for m in entry["mbids"]})
+        mb_cache = get_mb_cache()
+
+        def mb_progress(completed: int, total: int) -> None:
+            pct = int((completed / total) * 100) if total > 0 else 100
+            self._download_progress.emit(pct, _("MusicBrainz: {0}/{1} recordings").format(completed, total))
+
+        self._mb_api.enrich_recordings(all_mbids, mb_cache, mb_progress)
+
+        headers = ["lfm_artist", "lfm_album", "mb_genres", "mb_composers", "mb_lyricists", "mb_arrangers"]
+        rows = []
+        for entry in sorted(album_data.values(), key=lambda e: (e["artist"].lower(), e["album"].lower())):
+            genres, composers, lyricists, arrangers = [], [], [], []
+            seen: dict[str, set] = {"g": set(), "c": set(), "l": set(), "a": set()}
+            for mbid in entry["mbids"]:
+                mb = mb_cache.get(mbid)
+                if not mb:
+                    continue
+                for v in mb.get("mb_genres", []):
+                    if v not in seen["g"]: genres.append(v); seen["g"].add(v)
+                for v in mb.get("composer", []):
+                    if v not in seen["c"]: composers.append(v); seen["c"].add(v)
+                for v in mb.get("lyricist", []):
+                    if v not in seen["l"]: lyricists.append(v); seen["l"].add(v)
+                for v in mb.get("arranger", []):
+                    if v not in seen["a"]: arrangers.append(v); seen["a"].add(v)
+            rows.append({
+                "lfm_artist": entry["artist"],
+                "lfm_album": entry["album"],
+                "mb_genres": "; ".join(genres),
+                "mb_composers": "; ".join(composers),
+                "mb_lyricists": "; ".join(lyricists),
+                "mb_arrangers": "; ".join(arrangers),
+            })
+
+        if not rows:
+            rows = [dict.fromkeys(headers, "")]
+            rows[0]["lfm_artist"] = "no cached track data — run tracks download first"
+
+        self._write_rows(mb_file_path, headers, rows, delimiter)
+
+    def _run_mb_enrichment_for_artists(self, username: str, mb_file_path: str, delimiter: str) -> None:
+        """Aggregate MB credits per LFM artist by grouping track MBIDs from the tracks cache."""
+        if self._mb_api is None:
+            self._mb_api = MusicBrainzReadAPI()
+
+        cached_tracks = get_lastfm_cache().get_scope(username, "tracks") or []
+
+        # Group track MBIDs by artist
+        artist_data: dict[str, dict] = {}
+        for t in cached_tracks:
+            artist = t.get("artist") or ""
+            mbid = t.get("mbid") or ""
+            if not artist:
+                continue
+            key = artist.lower()
+            if key not in artist_data:
+                artist_data[key] = {"artist": artist, "mbids": set()}
+            if mbid:
+                artist_data[key]["mbids"].add(mbid)
+
+        all_mbids = list({m for entry in artist_data.values() for m in entry["mbids"]})
+        mb_cache = get_mb_cache()
+
+        def mb_progress(completed: int, total: int) -> None:
+            pct = int((completed / total) * 100) if total > 0 else 100
+            self._download_progress.emit(pct, _("MusicBrainz: {0}/{1} recordings").format(completed, total))
+
+        self._mb_api.enrich_recordings(all_mbids, mb_cache, mb_progress)
+
+        headers = ["lfm_artist", "mb_genres", "mb_composers", "mb_lyricists", "mb_arrangers"]
+        rows = []
+        for entry in sorted(artist_data.values(), key=lambda e: e["artist"].lower()):
+            genres, composers, lyricists, arrangers = [], [], [], []
+            seen: dict[str, set] = {"g": set(), "c": set(), "l": set(), "a": set()}
+            for mbid in entry["mbids"]:
+                mb = mb_cache.get(mbid)
+                if not mb:
+                    continue
+                for v in mb.get("mb_genres", []):
+                    if v not in seen["g"]: genres.append(v); seen["g"].add(v)
+                for v in mb.get("composer", []):
+                    if v not in seen["c"]: composers.append(v); seen["c"].add(v)
+                for v in mb.get("lyricist", []):
+                    if v not in seen["l"]: lyricists.append(v); seen["l"].add(v)
+                for v in mb.get("arranger", []):
+                    if v not in seen["a"]: arrangers.append(v); seen["a"].add(v)
+            rows.append({
+                "lfm_artist": entry["artist"],
+                "mb_genres": "; ".join(genres),
+                "mb_composers": "; ".join(composers),
+                "mb_lyricists": "; ".join(lyricists),
+                "mb_arrangers": "; ".join(arrangers),
+            })
+
+        if not rows:
+            rows = [dict.fromkeys(headers, "")]
+            rows[0]["lfm_artist"] = "no cached track data — run tracks download first"
+
         self._write_rows(mb_file_path, headers, rows, delimiter)
 
     def enrich_musicbrainz(self):

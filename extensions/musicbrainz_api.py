@@ -348,9 +348,14 @@ class MusicBrainzReadAPI:
         *progress_callback* is called with ``(completed, total)`` after each
         MBID is resolved (cached or not), where *total* is the number of
         uncached MBIDs that needed network requests.
+
+        Writes are committed to the database at least every 5 minutes so that
+        a long-running job does not lose progress if interrupted.
         """
+        SAVE_INTERVAL = 60  # seconds
         uncached = [m for m in mbids if m and m not in cache]
         total = len(uncached)
+        last_save_at = time.monotonic()
         for i, mbid in enumerate(uncached):
             try:
                 credits = self.get_composition_credits(mbid)
@@ -396,6 +401,10 @@ class MusicBrainzReadAPI:
                 })
             if progress_callback:
                 progress_callback(i + 1, total)
+            if time.monotonic() - last_save_at >= SAVE_INTERVAL:
+                cache.save()
+                last_save_at = time.monotonic()
+                logger.info("Batch save: %d/%d records committed", i + 1, total)
         cache.save()
 
     @staticmethod
