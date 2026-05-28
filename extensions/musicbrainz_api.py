@@ -107,22 +107,24 @@ class MusicBrainzCache:
 
     def __init__(self, path: Path = _CACHE_FILE) -> None:
         self._path = path
-        self._data: Dict[str, Dict[str, Any]] = {}
+        self._data: Optional[Dict[str, Dict[str, Any]]] = None  # None ⇒ not yet loaded
         self._dirty = False
-        self._load()
 
     # ------------------------------------------------------------------
     # Public interface
     # ------------------------------------------------------------------
 
     def get(self, recording_mbid: str) -> Optional[Dict[str, Any]]:
+        self._ensure_loaded()
         return self._data.get(recording_mbid)
 
     def set(self, recording_mbid: str, record: Dict[str, Any]) -> None:
+        self._ensure_loaded()
         self._data[recording_mbid] = record
         self._dirty = True
 
     def __contains__(self, recording_mbid: str) -> bool:
+        self._ensure_loaded()
         return recording_mbid in self._data
 
     def save(self) -> None:
@@ -139,13 +141,17 @@ class MusicBrainzCache:
 
     @property
     def size(self) -> int:
+        self._ensure_loaded()
         return len(self._data)
 
     # ------------------------------------------------------------------
     # Internal
     # ------------------------------------------------------------------
 
-    def _load(self) -> None:
+    def _ensure_loaded(self) -> None:
+        if self._data is not None:
+            return
+        self._data = {}
         if not self._path.exists():
             return
         try:
@@ -157,6 +163,17 @@ class MusicBrainzCache:
         except Exception as exc:
             logger.warning("Could not load MusicBrainz cache from %s: %s", self._path, exc)
             self._data = {}
+
+
+_mb_cache_instance: Optional[MusicBrainzCache] = None
+
+
+def get_mb_cache() -> MusicBrainzCache:
+    """Return the process-wide singleton MusicBrainz recording cache (lazily loaded)."""
+    global _mb_cache_instance
+    if _mb_cache_instance is None:
+        _mb_cache_instance = MusicBrainzCache()
+    return _mb_cache_instance
 
 
 class MusicBrainzReadAPI:

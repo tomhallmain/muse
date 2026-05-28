@@ -9,8 +9,11 @@ API reference: https://www.last.fm/api
 
 from __future__ import annotations
 
+import gzip
+import json
 import time
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional, Sequence, Union
 
 import requests
@@ -496,6 +499,116 @@ class LastFmReadAPI:
             page += 1
             if page_delay_seconds > 0:
                 time.sleep(page_delay_seconds)
+
+
+_LASTFM_CACHE_FILE = Path(__file__).resolve().parent.parent / "configs" / "lastfm_cache.json.gz"
+_lastfm_cache_instance: Optional[LastFmLibraryCache] = None
+
+
+def get_lastfm_cache() -> LastFmLibraryCache:
+    """Return the process-wide singleton Last.fm library cache (lazily loaded)."""
+    global _lastfm_cache_instance
+    if _lastfm_cache_instance is None:
+        _lastfm_cache_instance = LastFmLibraryCache()
+    return _lastfm_cache_instance
+
+
+class LastFmLibraryCache:
+    """
+    Persistent, lazy-loading cache of Last.fm library data keyed by username.
+
+    Stored as gzip-compressed JSON at configs/lastfm_cache.json.gz. Each username
+    entry holds lists of track/album/artist dicts and a per-scope timestamp so the
+    caller can see when data was last refreshed.
+
+    Construction is instant — disk I/O is deferred until the first read or write.
+    """
+
+    # Fields retained per item type (image URLs and tag counts are omitted as
+    # they are not needed for export or MusicBrainz cross-referencing).
+    _TRACK_FIELDS  = ("name", "artist", "playcount", "album", "mbid", "rank")
+    _ALBUM_FIELDS  = ("name", "artist", "playcount", "mbid")
+    _ARTIST_FIELDS = ("name", "playcount", "mbid", "rank")
+
+    def __init__(self, path: Path = _LASTFM_CACHE_FILE) -> None:
+        self._path = path
+        self._data: Optional[Dict[str, Any]] = None  # None ⇒ not yet loaded
+        self._dirty = False
+
+    # ------------------------------------------------------------------
+    # Public interface
+    # ------------------------------------------------------------------
+
+    def get_scope(self, username: str, scope: str) -> Optional[List[Dict[str, Any]]]:
+        """Return cached items for *username* / *scope* ("tracks"/"albums"/"artists"), or None."""
+        self._ensure_loaded()
+        entry = self._data.get(username.lower())
+        return entry.get(scope) if entry else None
+
+    def set_scope(self, username: str, scope: str, items: List[Dict[str, Any]]) -> None:
+        self._ensure_loaded()
+        key = username.lower()
+        if key not in self._data:
+            self._data[key] = {}
+        self._data[key][scope] = items
+        self._data[key][f"{scope}_fetched_at"] = time.time()
+        self._dirty = True
+
+    def fetched_at(self, username: str, scope: str) -> Optional[float]:
+        self._ensure_loaded()
+        entry = self._data.get(username.lower())
+        return entry.get(f"{scope}_fetched_at") if entry else None
+
+    def save(self) -> None:
+        if not self._dirty:
+            return
+        try:
+            self._path.parent.mkdir(parents=True, exist_ok=True)
+            with gzip.open(self._path, "wt", encoding="utf-8") as fh:
+                json.dump(self._data, fh, ensure_ascii=False, separators=(",", ":"))
+            self._dirty = False
+            logger.debug("Last.fm cache saved to %s", self._path)
+        except OSError as exc:
+            logger.error("Could not save Last.fm cache to %s: %s", self._path, exc)
+
+    # ------------------------------------------------------------------
+    # Serialisation helpers
+    # ------------------------------------------------------------------
+
+    @classmethod
+    def serialise_tracks(cls, tracks: List[LastFmLibraryTrack]) -> List[Dict[str, Any]]:
+        return [
+            {f: getattr(t, f if f != "name" else "name", None) for f in cls._TRACK_FIELDS}
+            for t in tracks
+        ]
+
+    @classmethod
+    def serialise_albums(cls, albums: List[LastFmLibraryAlbum]) -> List[Dict[str, Any]]:
+        return [{f: getattr(a, f, None) for f in cls._ALBUM_FIELDS} for a in albums]
+
+    @classmethod
+    def serialise_artists(cls, artists: List[LastFmLibraryArtist]) -> List[Dict[str, Any]]:
+        return [{f: getattr(a, f, None) for f in cls._ARTIST_FIELDS} for a in artists]
+
+    # ------------------------------------------------------------------
+    # Internal
+    # ------------------------------------------------------------------
+
+    def _ensure_loaded(self) -> None:
+        if self._data is not None:
+            return
+        self._data = {}
+        if not self._path.exists():
+            return
+        try:
+            with gzip.open(self._path, "rt", encoding="utf-8") as fh:
+                loaded = json.load(fh)
+            if isinstance(loaded, dict):
+                self._data = loaded
+                logger.debug("Last.fm cache loaded (%d users) from %s", len(self._data), self._path)
+        except Exception as exc:
+            logger.warning("Could not load Last.fm cache from %s: %s", self._path, exc)
+            self._data = {}
 
 
 if __name__ == "__main__":

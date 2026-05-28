@@ -5,7 +5,7 @@ Last.fm public library browser window (PySide6).
 from __future__ import annotations
 
 import time
-from typing import Any
+from typing import Any, Optional
 
 import csv
 import os
@@ -25,8 +25,8 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-from extensions.lastfm_api import LastFmAPIError, LastFmReadAPI
-from extensions.musicbrainz_api import MusicBrainzCache, MusicBrainzReadAPI
+from extensions.lastfm_api import LastFmAPIError, LastFmReadAPI, get_lastfm_cache
+from extensions.musicbrainz_api import MusicBrainzReadAPI, get_mb_cache
 from lib.multi_display_qt import SmartWindow
 from ui_qt.app_style import AppStyle
 from utils.translations import I18N
@@ -45,7 +45,8 @@ class LastFmLibraryWindow(SmartWindow):
     _error = Signal(str)
     _set_busy = Signal(bool)
     _download_progress = Signal(int, str)
-    _download_complete = Signal(str, int)
+    _download_complete = Signal(str, str, int)  # (lfm_file, mb_file_or_empty, count)
+    _enrich_complete = Signal(int)  # total MB cache entries after manual enrichment
 
     def __init__(self, master, app_actions, dimensions: str = "900x700"):
         super().__init__(
@@ -60,8 +61,7 @@ class LastFmLibraryWindow(SmartWindow):
         self.master = master
         self.app_actions = app_actions
         self.api = LastFmReadAPI()
-        self._mb_api = MusicBrainzReadAPI()
-        self._mb_cache = MusicBrainzCache()
+        self._mb_api: Optional[MusicBrainzReadAPI] = None  # created on first enrichment
         self._build_ui()
         self._connect_signals()
         self.setStyleSheet(AppStyle.get_stylesheet())
@@ -123,6 +123,15 @@ class LastFmLibraryWindow(SmartWindow):
         dl_row.addStretch()
         root.addLayout(dl_row)
 
+        mb_row = QHBoxLayout()
+        self.enrich_mb_btn = QPushButton(_("Enrich with MusicBrainz"), self)
+        self.enrich_mb_btn.clicked.connect(self.enrich_musicbrainz)
+        mb_row.addWidget(self.enrich_mb_btn)
+        self.mb_status_label = QLabel("", self)
+        mb_row.addWidget(self.mb_status_label)
+        mb_row.addStretch()
+        root.addLayout(mb_row)
+
     def _connect_signals(self):
         self._lookup_complete.connect(self._on_lookup_complete)
         self._status.connect(self.status_label.setText)
@@ -130,10 +139,12 @@ class LastFmLibraryWindow(SmartWindow):
         self._set_busy.connect(self._on_set_busy)
         self._download_progress.connect(self._on_download_progress)
         self._download_complete.connect(self._on_download_complete)
+        self._enrich_complete.connect(self._on_enrich_complete)
 
     def _on_set_busy(self, busy: bool):
         self.search_btn.setEnabled(not busy)
         self.download_btn.setEnabled(not busy)
+        self.enrich_mb_btn.setEnabled(not busy)
 
     def _call_with_retry(self, fn):
         delay = 1.0
@@ -260,23 +271,22 @@ class LastFmLibraryWindow(SmartWindow):
                 headers, rows, total = self._collect_unique_artists(username)
 
             delimiter = "\t" if export_kind == "tsv" else ","
-            with open(file_path, "w", encoding="utf-8", newline="") as f:
-                writer = csv.DictWriter(f, fieldnames=headers, delimiter=delimiter, extrasaction="ignore")
-                writer.writeheader()
-                for row in rows:
-                    writer.writerow(row)
+            self._write_rows(file_path, headers, rows, delimiter)
 
-            self._download_complete.emit(file_path, total)
+            # Auto-enrich with MusicBrainz for "Main fields" tracks only.
+            # Restart the progress bar so the two phases are visually distinct.
+            mb_file_path = ""
+            if scope == "tracks" and unique_mode not in (_("Artists"), _("Titles"), _("Albums")):
+                mb_file_path = self._derive_mb_path(file_path)
+                self._download_progress.emit(0, _("Starting MusicBrainz enrichment…"))
+                self._run_mb_enrichment_and_write(username, mb_file_path, delimiter)
+
+            self._download_complete.emit(file_path, mb_file_path, total)
         except Exception as exc:
             self._error.emit(str(exc))
             self._set_busy.emit(False)
 
     def _collect_unique_tracks(self, username: str, unique_mode: str):
-        is_main = unique_mode not in (_("Artists"), _("Titles"), _("Albums"))
-        # Last.fm phase uses 0-60% of the progress bar when MB enrichment follows,
-        # otherwise 0-100%.
-        lfm_ceiling = 60 if is_main else 100
-
         track_rows: dict[tuple, dict] = {}
         artists: set[str] = set()
         titles: set[str] = set()
@@ -304,18 +314,27 @@ class LastFmLibraryWindow(SmartWindow):
         first_page = self._call_with_retry(lambda: self.api.get_library_tracks(username, page=1, limit=200))
         total_pages = max(first_page.pagination.total_pages, 1)
         collect(first_page)
-        self._download_progress.emit(
-            int((page_num / total_pages) * lfm_ceiling),
-            _("Fetched page {0}/{1}").format(page_num, total_pages),
-        )
+        self._download_progress.emit(int((page_num / total_pages) * 100), _("Fetched page {0}/{1}").format(page_num, total_pages))
         for page_num in range(2, total_pages + 1):
             page = self._call_with_retry(lambda p=page_num: self.api.get_library_tracks(username, page=p, limit=200))
             collect(page)
-            self._download_progress.emit(
-                int((page_num / total_pages) * lfm_ceiling),
-                _("Fetched page {0}/{1}").format(page_num, total_pages),
-            )
+            self._download_progress.emit(int((page_num / total_pages) * 100), _("Fetched page {0}/{1}").format(page_num, total_pages))
             time.sleep(0.2)
+
+        # Persist to Last.fm cache so MB enrichment can run as a separate step
+        lfm_cache = get_lastfm_cache()
+        lfm_cache.set_scope(username, "tracks", [
+            {
+                "name": r["title"],
+                "artist": r["artist"],
+                "playcount": r["playcount"],
+                "rank": r["rank"] if isinstance(r["rank"], int) else None,
+                "mbid": r["_mbid"],
+                "album": None,
+            }
+            for r in track_rows.values()
+        ])
+        lfm_cache.save()
 
         if unique_mode == _("Artists"):
             headers = ["artist"]
@@ -332,36 +351,16 @@ class LastFmLibraryWindow(SmartWindow):
             rows = [{"album": a} for a in sorted(albums)]
             return headers, rows, len(rows)
 
-        # --- Main fields: enrich from MusicBrainz (60-100%) ---
-        mbids = [r["_mbid"] for r in track_rows.values() if r["_mbid"]]
-
-        def mb_progress(completed: int, total: int) -> None:
-            pct = 60 + int((completed / total) * 40) if total > 0 else 100
-            self._download_progress.emit(
-                pct,
-                _("MusicBrainz: {0}/{1} recordings").format(completed, total),
+        # Main fields: pure Last.fm data only. MusicBrainz enrichment runs
+        # automatically afterwards as a separate pass and writes its own file.
+        headers = ["rank", "playcount", "artist", "title"]
+        rows = [
+            {"rank": r["rank"], "playcount": r["playcount"], "artist": r["artist"], "title": r["title"]}
+            for r in sorted(
+                track_rows.values(),
+                key=lambda r: (r["rank"] if isinstance(r["rank"], int) else 999999, -r["playcount"]),
             )
-
-        self._mb_api.enrich_recordings(mbids, self._mb_cache, mb_progress)
-
-        headers = ["rank", "playcount", "artist", "title", "mb_title", "composer", "lyricist", "arranger"]
-        sorted_tracks = sorted(
-            track_rows.values(),
-            key=lambda r: (r["rank"] if isinstance(r["rank"], int) else 999999, -r["playcount"]),
-        )
-        rows = []
-        for r in sorted_tracks:
-            mb = self._mb_cache.get(r["_mbid"]) if r["_mbid"] else None
-            rows.append({
-                "rank": r["rank"],
-                "playcount": r["playcount"],
-                "artist": r["artist"],
-                "title": r["title"],
-                "mb_title": mb.get("mb_title", "") if mb else "",
-                "composer": "; ".join(mb.get("composer", [])) if mb else "",
-                "lyricist": "; ".join(mb.get("lyricist", [])) if mb else "",
-                "arranger": "; ".join(mb.get("arranger", [])) if mb else "",
-            })
+        ]
         return headers, rows, len(rows)
 
     def _collect_unique_albums(self, username: str, unique_mode: str):
@@ -394,6 +393,11 @@ class LastFmLibraryWindow(SmartWindow):
             collect(page)
             self._download_progress.emit(int((page_num / total_pages) * 100), _("Fetched page {0}/{1}").format(page_num, total_pages))
             time.sleep(0.2)
+
+        # Persist to Last.fm cache
+        lfm_cache = get_lastfm_cache()
+        lfm_cache.set_scope(username, "albums", list(album_rows.values()))
+        lfm_cache.save()
 
         if unique_mode == _("Artists"):
             headers = ["artist"]
@@ -430,6 +434,11 @@ class LastFmLibraryWindow(SmartWindow):
             self._download_progress.emit(int((page_num / total_pages) * 100), _("Fetched page {0}/{1}").format(page_num, total_pages))
             time.sleep(0.2)
 
+        # Persist to Last.fm cache
+        lfm_cache = get_lastfm_cache()
+        lfm_cache.set_scope(username, "artists", list(artist_rows.values()))
+        lfm_cache.save()
+
         headers = ["rank", "playcount", "artist", "mbid"]
         rows = sorted(
             artist_rows.values(),
@@ -441,15 +450,109 @@ class LastFmLibraryWindow(SmartWindow):
         self.progress_bar.setValue(max(0, min(value, 100)))
         self.status_label.setText(status)
 
-    def _on_download_complete(self, file_path: str, unique_count: int):
+    def _on_download_complete(self, file_path: str, mb_file_path: str, unique_count: int):
         self.progress_bar.setValue(100)
         self._set_busy.emit(False)
         self.status_label.setText(_("Download complete."))
-        QMessageBox.information(
-            self,
-            _("Last.fm Download Complete"),
-            _("Saved {0} unique entries to:\n{1}").format(unique_count, file_path),
+        if mb_file_path:
+            body = _("Saved {0} entries.\n\nLast.fm data:\n{1}\n\nMusicBrainz enrichment:\n{2}").format(
+                unique_count, file_path, mb_file_path
+            )
+        else:
+            body = _("Saved {0} unique entries to:\n{1}").format(unique_count, file_path)
+        QMessageBox.information(self, _("Last.fm Download Complete"), body)
+
+    @staticmethod
+    def _derive_mb_path(file_path: str) -> str:
+        """Insert '_mb' before the extension, e.g. 'tracks.tsv' → 'tracks_mb.tsv'."""
+        base, ext = os.path.splitext(file_path)
+        return f"{base}_mb{ext}"
+
+    @staticmethod
+    def _write_rows(file_path: str, headers: list, rows: list, delimiter: str) -> None:
+        with open(file_path, "w", encoding="utf-8", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=headers, delimiter=delimiter, extrasaction="ignore")
+            writer.writeheader()
+            for row in rows:
+                writer.writerow(row)
+
+    def _run_mb_enrichment_and_write(self, username: str, mb_file_path: str, delimiter: str) -> None:
+        """Fetch MB credits for all cached track MBIDs, then write the enriched file."""
+        if self._mb_api is None:
+            self._mb_api = MusicBrainzReadAPI()
+
+        cached = get_lastfm_cache().get_scope(username, "tracks") or []
+        mbids = list({t["mbid"] for t in cached if t.get("mbid")})
+        mb_cache = get_mb_cache()
+
+        def mb_progress(completed: int, total: int) -> None:
+            pct = int((completed / total) * 100) if total > 0 else 100
+            self._download_progress.emit(pct, _("MusicBrainz: {0}/{1} recordings").format(completed, total))
+
+        self._mb_api.enrich_recordings(mbids, mb_cache, mb_progress)
+
+        headers = ["lfm_rank", "lfm_playcount", "lfm_artist", "lfm_title", "mb_title", "mb_composer", "mb_lyricist", "mb_arranger"]
+        rows = []
+        for t in sorted(cached, key=lambda t: (t.get("rank") or 999999, -t.get("playcount", 0))):
+            mb = mb_cache.get(t.get("mbid", "")) if t.get("mbid") else None
+            rows.append({
+                "lfm_rank": t.get("rank") or "",
+                "lfm_playcount": t.get("playcount", 0),
+                "lfm_artist": t.get("artist", ""),
+                "lfm_title": t.get("name", ""),
+                "mb_title": mb.get("mb_title", "") if mb else "",
+                "mb_composer": "; ".join(mb.get("composer", [])) if mb else "",
+                "mb_lyricist": "; ".join(mb.get("lyricist", [])) if mb else "",
+                "mb_arranger": "; ".join(mb.get("arranger", [])) if mb else "",
+            })
+        self._write_rows(mb_file_path, headers, rows, delimiter)
+
+    def enrich_musicbrainz(self):
+        username = self.user_entry.text().strip()
+        if not username:
+            self.app_actions.alert(_("Missing username"), _("Please enter a Last.fm username."), kind="warning")
+            return
+        cached_tracks = get_lastfm_cache().get_scope(username, "tracks")
+        if not cached_tracks:
+            self.app_actions.alert(
+                _("No cached data"),
+                _("Export the library first so the tracks are cached, then run enrichment."),
+                kind="warning",
+            )
+            return
+        self.progress_bar.setValue(0)
+        self._set_busy.emit(True)
+        self._status.emit(_("Enriching from MusicBrainz…"))
+        Utils.start_thread(
+            lambda: self._enrich_mb_worker(cached_tracks),
+            use_asyncio=False,
         )
+
+    def _enrich_mb_worker(self, cached_tracks: list):
+        try:
+            if self._mb_api is None:
+                self._mb_api = MusicBrainzReadAPI()
+            mbids = list({t["mbid"] for t in cached_tracks if t.get("mbid")})
+            mb_cache = get_mb_cache()
+
+            def mb_progress(completed: int, total: int) -> None:
+                pct = int((completed / total) * 100) if total > 0 else 100
+                self._download_progress.emit(
+                    pct,
+                    _("MusicBrainz: {0}/{1} recordings").format(completed, total),
+                )
+
+            self._mb_api.enrich_recordings(mbids, mb_cache, mb_progress)
+            self._enrich_complete.emit(mb_cache.size)
+        except Exception as exc:
+            self._error.emit(str(exc))
+            self._set_busy.emit(False)
+
+    def _on_enrich_complete(self, total_cached: int):
+        self.progress_bar.setValue(100)
+        self._set_busy.emit(False)
+        self.mb_status_label.setText(_("MB cache: {0} recordings").format(total_cached))
+        self.status_label.setText(_("MusicBrainz enrichment complete."))
 
     def _on_error(self, msg: str):
         self.progress_bar.setValue(0)
