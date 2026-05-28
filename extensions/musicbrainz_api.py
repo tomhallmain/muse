@@ -16,9 +16,12 @@ API reference: https://musicbrainz.org/doc/MusicBrainz_API
 
 from __future__ import annotations
 
+import gzip
+import json
 import time
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import requests
 
@@ -28,6 +31,8 @@ logger = get_logger(__name__)
 
 API_ROOT = "https://musicbrainz.org/ws/2/"
 DEFAULT_USER_AGENT = "tomhallmain-Muse-App/1.0"
+
+_CACHE_FILE = Path(__file__).resolve().parent.parent / "configs" / "musicbrainz_cache.json.gz"
 MIN_REQUEST_INTERVAL = 1.05  # MusicBrainz rate limit: 1 req/sec unauthenticated
 
 # Relation types that represent composition credit on a Work.
@@ -88,6 +93,70 @@ class MusicBrainzRecording:
     mbid: str
     title: str
     work_mbids: Tuple[str, ...]
+
+
+class MusicBrainzCache:
+    """
+    Persistent, session-independent cache mapping recording MBIDs to enriched
+    composition data (composer, lyricist, arranger, etc.).
+
+    Stored as gzip-compressed JSON so the file stays small even with thousands
+    of entries. Load on construction; call ``save()`` explicitly after batching
+    new lookups.
+    """
+
+    def __init__(self, path: Path = _CACHE_FILE) -> None:
+        self._path = path
+        self._data: Dict[str, Dict[str, Any]] = {}
+        self._dirty = False
+        self._load()
+
+    # ------------------------------------------------------------------
+    # Public interface
+    # ------------------------------------------------------------------
+
+    def get(self, recording_mbid: str) -> Optional[Dict[str, Any]]:
+        return self._data.get(recording_mbid)
+
+    def set(self, recording_mbid: str, record: Dict[str, Any]) -> None:
+        self._data[recording_mbid] = record
+        self._dirty = True
+
+    def __contains__(self, recording_mbid: str) -> bool:
+        return recording_mbid in self._data
+
+    def save(self) -> None:
+        if not self._dirty:
+            return
+        try:
+            self._path.parent.mkdir(parents=True, exist_ok=True)
+            with gzip.open(self._path, "wt", encoding="utf-8") as fh:
+                json.dump(self._data, fh, ensure_ascii=False, separators=(",", ":"))
+            self._dirty = False
+            logger.debug("MusicBrainz cache saved (%d entries) to %s", len(self._data), self._path)
+        except OSError as exc:
+            logger.error("Could not save MusicBrainz cache to %s: %s", self._path, exc)
+
+    @property
+    def size(self) -> int:
+        return len(self._data)
+
+    # ------------------------------------------------------------------
+    # Internal
+    # ------------------------------------------------------------------
+
+    def _load(self) -> None:
+        if not self._path.exists():
+            return
+        try:
+            with gzip.open(self._path, "rt", encoding="utf-8") as fh:
+                loaded = json.load(fh)
+            if isinstance(loaded, dict):
+                self._data = loaded
+                logger.debug("MusicBrainz cache loaded (%d entries) from %s", len(self._data), self._path)
+        except Exception as exc:
+            logger.warning("Could not load MusicBrainz cache from %s: %s", self._path, exc)
+            self._data = {}
 
 
 class MusicBrainzReadAPI:
@@ -204,6 +273,60 @@ class MusicBrainzReadAPI:
                 logger.warning("Could not fetch work %s: %s", work_mbid, exc)
 
         return combined
+
+    def enrich_recordings(
+        self,
+        mbids: List[str],
+        cache: MusicBrainzCache,
+        progress_callback: Optional[Callable[[int, int], None]] = None,
+    ) -> None:
+        """
+        Resolve composition credits for every recording MBID not already in
+        *cache*, storing normalised records back into *cache* and persisting
+        to disk when done.
+
+        Each cache record has the shape::
+
+            {
+                "mb_title":    str,          # canonical MusicBrainz recording title
+                "composer":    [str, ...],
+                "lyricist":    [str, ...],
+                "arranger":    [str, ...],
+                "orchestrator":[str, ...],
+                "writer":      [str, ...],
+            }
+
+        *progress_callback* is called with ``(completed, total)`` after each
+        MBID is resolved (cached or not), where *total* is the number of
+        uncached MBIDs that needed network requests.
+        """
+        uncached = [m for m in mbids if m and m not in cache]
+        total = len(uncached)
+        for i, mbid in enumerate(uncached):
+            try:
+                credits = self.get_composition_credits(mbid)
+                recording = self._recording_cache.get(mbid)
+                cache.set(mbid, {
+                    "mb_title": recording.title if recording else "",
+                    "composer": [a.name for a in credits.get("composer", [])],
+                    "lyricist": [a.name for a in credits.get("lyricist", [])],
+                    "arranger": [a.name for a in credits.get("arranger", [])],
+                    "orchestrator": [a.name for a in credits.get("orchestrator", [])],
+                    "writer": [a.name for a in credits.get("writer", [])],
+                })
+            except MusicBrainzError as exc:
+                logger.warning("Skipping recording %s during enrichment: %s", mbid, exc)
+                cache.set(mbid, {
+                    "mb_title": "",
+                    "composer": [],
+                    "lyricist": [],
+                    "arranger": [],
+                    "orchestrator": [],
+                    "writer": [],
+                })
+            if progress_callback:
+                progress_callback(i + 1, total)
+        cache.save()
 
     @staticmethod
     def _parse_recording(mbid: str, payload: Dict[str, Any]) -> MusicBrainzRecording:

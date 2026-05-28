@@ -26,6 +26,7 @@ from PySide6.QtWidgets import (
 )
 
 from extensions.lastfm_api import LastFmAPIError, LastFmReadAPI
+from extensions.musicbrainz_api import MusicBrainzCache, MusicBrainzReadAPI
 from lib.multi_display_qt import SmartWindow
 from ui_qt.app_style import AppStyle
 from utils.translations import I18N
@@ -59,6 +60,8 @@ class LastFmLibraryWindow(SmartWindow):
         self.master = master
         self.app_actions = app_actions
         self.api = LastFmReadAPI()
+        self._mb_api = MusicBrainzReadAPI()
+        self._mb_cache = MusicBrainzCache()
         self._build_ui()
         self._connect_signals()
         self.setStyleSheet(AppStyle.get_stylesheet())
@@ -250,22 +253,18 @@ class LastFmLibraryWindow(SmartWindow):
     def _download_unique_worker(self, username: str, scope: str, unique_mode: str, file_path: str, export_kind: str):
         try:
             if scope == "tracks":
-                sections, total = self._collect_unique_tracks(username, unique_mode)
+                headers, rows, total = self._collect_unique_tracks(username, unique_mode)
             elif scope == "albums":
-                sections, total = self._collect_unique_albums(username, unique_mode)
+                headers, rows, total = self._collect_unique_albums(username, unique_mode)
             else:
-                sections, total = self._collect_unique_artists(username)
+                headers, rows, total = self._collect_unique_artists(username)
 
             delimiter = "\t" if export_kind == "tsv" else ","
             with open(file_path, "w", encoding="utf-8", newline="") as f:
-                writer = csv.writer(f, delimiter=delimiter)
-                writer.writerow(["section", "value"])
-                for title, values in sections.items():
-                    if not values:
-                        writer.writerow([title, ""])
-                        continue
-                    for v in sorted(values):
-                        writer.writerow([title, v])
+                writer = csv.DictWriter(f, fieldnames=headers, delimiter=delimiter, extrasaction="ignore")
+                writer.writeheader()
+                for row in rows:
+                    writer.writerow(row)
 
             self._download_complete.emit(file_path, total)
         except Exception as exc:
@@ -273,47 +272,121 @@ class LastFmLibraryWindow(SmartWindow):
             self._set_busy.emit(False)
 
     def _collect_unique_tracks(self, username: str, unique_mode: str):
-        titles = set()
-        artists = set()
-        albums = set()
-        page_num = 1
-        first_page = self._call_with_retry(lambda: self.api.get_library_tracks(username, page=1, limit=200))
-        total_pages = max(first_page.pagination.total_pages, 1)
+        is_main = unique_mode not in (_("Artists"), _("Titles"), _("Albums"))
+        # Last.fm phase uses 0-60% of the progress bar when MB enrichment follows,
+        # otherwise 0-100%.
+        lfm_ceiling = 60 if is_main else 100
+
+        track_rows: dict[tuple, dict] = {}
+        artists: set[str] = set()
+        titles: set[str] = set()
+        albums: set[str] = set()
 
         def collect(page):
             for t in page.tracks:
-                if t.name:
-                    titles.add(t.name)
+                key = (t.artist.lower(), t.name.lower())
+                if key not in track_rows:
+                    track_rows[key] = {
+                        "rank": t.rank if t.rank is not None else "",
+                        "playcount": t.playcount,
+                        "artist": t.artist,
+                        "title": t.name,
+                        "_mbid": t.mbid or "",
+                    }
                 if t.artist:
                     artists.add(t.artist)
+                if t.name:
+                    titles.add(t.name)
                 if t.album:
                     albums.add(t.album)
 
+        page_num = 1
+        first_page = self._call_with_retry(lambda: self.api.get_library_tracks(username, page=1, limit=200))
+        total_pages = max(first_page.pagination.total_pages, 1)
         collect(first_page)
-        self._download_progress.emit(int((page_num / total_pages) * 100), _("Fetched page {0}/{1}").format(page_num, total_pages))
+        self._download_progress.emit(
+            int((page_num / total_pages) * lfm_ceiling),
+            _("Fetched page {0}/{1}").format(page_num, total_pages),
+        )
         for page_num in range(2, total_pages + 1):
             page = self._call_with_retry(lambda p=page_num: self.api.get_library_tracks(username, page=p, limit=200))
             collect(page)
-            self._download_progress.emit(int((page_num / total_pages) * 100), _("Fetched page {0}/{1}").format(page_num, total_pages))
+            self._download_progress.emit(
+                int((page_num / total_pages) * lfm_ceiling),
+                _("Fetched page {0}/{1}").format(page_num, total_pages),
+            )
             time.sleep(0.2)
 
-        sections = self._select_sections(unique_mode, titles=titles, artists=artists, albums=albums)
-        return sections, len(titles) + len(artists) + len(albums)
+        if unique_mode == _("Artists"):
+            headers = ["artist"]
+            rows = [{"artist": a} for a in sorted(artists)]
+            return headers, rows, len(rows)
+
+        if unique_mode == _("Titles"):
+            headers = ["title"]
+            rows = [{"title": t} for t in sorted(titles)]
+            return headers, rows, len(rows)
+
+        if unique_mode == _("Albums"):
+            headers = ["album"]
+            rows = [{"album": a} for a in sorted(albums)]
+            return headers, rows, len(rows)
+
+        # --- Main fields: enrich from MusicBrainz (60-100%) ---
+        mbids = [r["_mbid"] for r in track_rows.values() if r["_mbid"]]
+
+        def mb_progress(completed: int, total: int) -> None:
+            pct = 60 + int((completed / total) * 40) if total > 0 else 100
+            self._download_progress.emit(
+                pct,
+                _("MusicBrainz: {0}/{1} recordings").format(completed, total),
+            )
+
+        self._mb_api.enrich_recordings(mbids, self._mb_cache, mb_progress)
+
+        headers = ["rank", "playcount", "artist", "title", "mb_title", "composer", "lyricist", "arranger"]
+        sorted_tracks = sorted(
+            track_rows.values(),
+            key=lambda r: (r["rank"] if isinstance(r["rank"], int) else 999999, -r["playcount"]),
+        )
+        rows = []
+        for r in sorted_tracks:
+            mb = self._mb_cache.get(r["_mbid"]) if r["_mbid"] else None
+            rows.append({
+                "rank": r["rank"],
+                "playcount": r["playcount"],
+                "artist": r["artist"],
+                "title": r["title"],
+                "mb_title": mb.get("mb_title", "") if mb else "",
+                "composer": "; ".join(mb.get("composer", [])) if mb else "",
+                "lyricist": "; ".join(mb.get("lyricist", [])) if mb else "",
+                "arranger": "; ".join(mb.get("arranger", [])) if mb else "",
+            })
+        return headers, rows, len(rows)
 
     def _collect_unique_albums(self, username: str, unique_mode: str):
-        albums = set()
-        artists = set()
-        page_num = 1
-        first_page = self._call_with_retry(lambda: self.api.get_library_albums(username, page=1, limit=200))
-        total_pages = max(first_page.pagination.total_pages, 1)
+        album_rows: dict[tuple, dict] = {}
+        artists: set[str] = set()
+        album_names: set[str] = set()
 
         def collect(page):
             for a in page.albums:
-                if a.name:
-                    albums.add(a.name)
+                key = (a.artist.lower(), a.name.lower())
+                if key not in album_rows:
+                    album_rows[key] = {
+                        "playcount": a.playcount,
+                        "artist": a.artist,
+                        "album": a.name,
+                        "mbid": a.mbid or "",
+                    }
                 if a.artist:
                     artists.add(a.artist)
+                if a.name:
+                    album_names.add(a.name)
 
+        page_num = 1
+        first_page = self._call_with_retry(lambda: self.api.get_library_albums(username, page=1, limit=200))
+        total_pages = max(first_page.pagination.total_pages, 1)
         collect(first_page)
         self._download_progress.emit(int((page_num / total_pages) * 100), _("Fetched page {0}/{1}").format(page_num, total_pages))
         for page_num in range(2, total_pages + 1):
@@ -322,41 +395,47 @@ class LastFmLibraryWindow(SmartWindow):
             self._download_progress.emit(int((page_num / total_pages) * 100), _("Fetched page {0}/{1}").format(page_num, total_pages))
             time.sleep(0.2)
 
-        sections = self._select_sections(unique_mode, titles=set(), artists=artists, albums=albums)
-        return sections, len(albums) + len(artists)
+        if unique_mode == _("Artists"):
+            headers = ["artist"]
+            rows = [{"artist": a} for a in sorted(artists)]
+        elif unique_mode == _("Albums"):
+            headers = ["album"]
+            rows = [{"album": a} for a in sorted(album_names)]
+        else:
+            headers = ["playcount", "artist", "album", "mbid"]
+            rows = sorted(album_rows.values(), key=lambda r: -r["playcount"])
+        return headers, rows, len(rows)
 
     def _collect_unique_artists(self, username: str):
-        artists = set()
+        artist_rows: dict[str, dict] = {}
+
+        def collect(page):
+            for a in page.artists:
+                if a.name and a.name.lower() not in artist_rows:
+                    artist_rows[a.name.lower()] = {
+                        "rank": a.rank if a.rank is not None else "",
+                        "playcount": a.playcount,
+                        "artist": a.name,
+                        "mbid": a.mbid or "",
+                    }
+
         page_num = 1
         first_page = self._call_with_retry(lambda: self.api.get_library_artists(username, page=1, limit=200))
         total_pages = max(first_page.pagination.total_pages, 1)
-        for a in first_page.artists:
-            if a.name:
-                artists.add(a.name)
+        collect(first_page)
         self._download_progress.emit(int((page_num / total_pages) * 100), _("Fetched page {0}/{1}").format(page_num, total_pages))
-
         for page_num in range(2, total_pages + 1):
             page = self._call_with_retry(lambda p=page_num: self.api.get_library_artists(username, page=p, limit=200))
-            for a in page.artists:
-                if a.name:
-                    artists.add(a.name)
+            collect(page)
             self._download_progress.emit(int((page_num / total_pages) * 100), _("Fetched page {0}/{1}").format(page_num, total_pages))
             time.sleep(0.2)
 
-        return {"Artists": artists}, len(artists)
-
-    def _select_sections(self, unique_mode: str, titles: set[str], artists: set[str], albums: set[str]):
-        if unique_mode == _("Artists"):
-            return {"Artists": artists}
-        if unique_mode == _("Titles"):
-            return {"Titles": titles}
-        if unique_mode == _("Albums"):
-            return {"Albums": albums}
-        return {
-            "Artists": artists,
-            "Titles": titles,
-            "Albums": albums,
-        }
+        headers = ["rank", "playcount", "artist", "mbid"]
+        rows = sorted(
+            artist_rows.values(),
+            key=lambda r: (r["rank"] if isinstance(r["rank"], int) else 999999, -r["playcount"]),
+        )
+        return headers, rows, len(rows)
 
     def _on_download_progress(self, value: int, status: str):
         self.progress_bar.setValue(max(0, min(value, 100)))
