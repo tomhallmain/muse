@@ -73,6 +73,7 @@ class MusicBrainzWork:
     mbid: str
     title: str
     relations: Tuple[MusicBrainzRelation, ...]
+    genres: Tuple[str, ...] = field(default_factory=tuple)
 
     @property
     def composers(self) -> List[MusicBrainzArtist]:
@@ -93,6 +94,8 @@ class MusicBrainzRecording:
     mbid: str
     title: str
     work_mbids: Tuple[str, ...]
+    artist_credit: str = ""  # full credited performer string, e.g. "Rattle & Berliner Philharmoniker"
+    genres: Tuple[str, ...] = field(default_factory=tuple)
 
 
 class MusicBrainzCache:
@@ -229,19 +232,37 @@ class MusicBrainzReadAPI:
         return payload
 
     def get_recording(self, mbid: str) -> MusicBrainzRecording:
-        """Fetch a recording by MBID, including links to its associated works."""
+        """Fetch a recording by MBID, including links to its associated works.
+
+        ``work-level-rels`` causes MB to embed each linked work's own relations
+        inline, so a single request returns both the recording's performer credits
+        and the works' composition credits.  The parsed works are pre-populated
+        into ``_work_cache``; subsequent ``get_work`` calls for those MBIDs will
+        be cache hits and require no additional network request.
+        """
         if mbid in self._recording_cache:
             return self._recording_cache[mbid]
-        payload = self._call(f"recording/{mbid}", inc="work-rels")
+        payload = self._call(
+            f"recording/{mbid}",
+            inc="work-rels+artist-credits+genres+work-level-rels",
+        )
         recording = self._parse_recording(mbid, payload)
         self._recording_cache[mbid] = recording
+        # Pre-populate work cache from inline work-level-rels data so
+        # get_composition_credits doesn't need separate work requests.
+        for rel in payload.get("relations") or []:
+            if rel.get("target-type") == "work":
+                work_data = rel.get("work") or {}
+                work_id = work_data.get("id")
+                if work_id and work_id not in self._work_cache:
+                    self._work_cache[work_id] = self._parse_work(work_id, work_data)
         return recording
 
     def get_work(self, mbid: str) -> MusicBrainzWork:
-        """Fetch a work by MBID, including all artist relations (composer, lyricist, etc.)."""
+        """Fetch a work by MBID, including artist relations and genres."""
         if mbid in self._work_cache:
             return self._work_cache[mbid]
-        payload = self._call(f"work/{mbid}", inc="artist-rels")
+        payload = self._call(f"work/{mbid}", inc="artist-rels+genres")
         work = self._parse_work(mbid, payload)
         self._work_cache[mbid] = work
         return work
@@ -306,6 +327,8 @@ class MusicBrainzReadAPI:
 
             {
                 "mb_title":    str,          # canonical MusicBrainz recording title
+                "mb_artist":   str,          # credited performer string
+                "mb_genres":   [str, ...],   # recording genres then work genres, deduped
                 "composer":    [str, ...],
                 "lyricist":    [str, ...],
                 "arranger":    [str, ...],
@@ -323,8 +346,27 @@ class MusicBrainzReadAPI:
             try:
                 credits = self.get_composition_credits(mbid)
                 recording = self._recording_cache.get(mbid)
+                # Merge genres: recording-level first, then each linked work's genres.
+                # Recording genres tend to describe the performance; work genres tend
+                # to describe the form/style (especially for classical).  Both are
+                # valuable, so we keep both, deduplicated, in that order.
+                seen_genres: set = set()
+                merged_genres: list = []
+                for g in (recording.genres if recording else ()):
+                    if g not in seen_genres:
+                        merged_genres.append(g)
+                        seen_genres.add(g)
+                for work_mbid in (recording.work_mbids if recording else ()):
+                    work = self._work_cache.get(work_mbid)
+                    if work:
+                        for g in work.genres:
+                            if g not in seen_genres:
+                                merged_genres.append(g)
+                                seen_genres.add(g)
                 cache.set(mbid, {
                     "mb_title": recording.title if recording else "",
+                    "mb_artist": recording.artist_credit if recording else "",
+                    "mb_genres": merged_genres,
                     "composer": [a.name for a in credits.get("composer", [])],
                     "lyricist": [a.name for a in credits.get("lyricist", [])],
                     "arranger": [a.name for a in credits.get("arranger", [])],
@@ -335,6 +377,8 @@ class MusicBrainzReadAPI:
                 logger.warning("Skipping recording %s during enrichment: %s", mbid, exc)
                 cache.set(mbid, {
                     "mb_title": "",
+                    "mb_artist": "",
+                    "mb_genres": [],
                     "composer": [],
                     "lyricist": [],
                     "arranger": [],
@@ -354,10 +398,29 @@ class MusicBrainzReadAPI:
                 work_id = work.get("id")
                 if work_id:
                     work_mbids.append(work_id)
+
+        # Build the full credited performer string by concatenating each credit's
+        # name and its join-phrase (e.g. " & ", ", ") exactly as MB intends.
+        credit_parts = []
+        for entry in payload.get("artist-credit") or []:
+            if not isinstance(entry, dict):
+                continue
+            name = entry.get("name") or (entry.get("artist") or {}).get("name") or ""
+            if name:
+                credit_parts.append(name + (entry.get("joinphrase") or ""))
+        artist_credit = "".join(credit_parts)
+
+        genres = tuple(
+            g["name"]
+            for g in sorted(payload.get("genres") or [], key=lambda g: -g.get("count", 0))
+            if isinstance(g, dict) and g.get("name")
+        )
         return MusicBrainzRecording(
             mbid=payload.get("id") or mbid,
             title=payload.get("title") or "",
             work_mbids=tuple(work_mbids),
+            artist_credit=artist_credit,
+            genres=genres,
         )
 
     @staticmethod
@@ -380,10 +443,16 @@ class MusicBrainzReadAPI:
                 ),
                 attributes=tuple(rel.get("attributes") or []),
             ))
+        genres = tuple(
+            g["name"]
+            for g in sorted(payload.get("genres") or [], key=lambda g: -g.get("count", 0))
+            if isinstance(g, dict) and g.get("name")
+        )
         return MusicBrainzWork(
             mbid=payload.get("id") or mbid,
             title=payload.get("title") or "",
             relations=tuple(relations),
+            genres=genres,
         )
 
 

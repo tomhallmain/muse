@@ -491,7 +491,7 @@ class LastFmLibraryWindow(SmartWindow):
 
         self._mb_api.enrich_recordings(mbids, mb_cache, mb_progress)
 
-        headers = ["lfm_rank", "lfm_playcount", "lfm_artist", "lfm_title", "mb_title", "mb_composer", "mb_lyricist", "mb_arranger"]
+        headers = ["lfm_rank", "lfm_playcount", "lfm_artist", "lfm_title", "mb_title", "mb_artist", "mb_genres", "mb_composer", "mb_lyricist", "mb_arranger"]
         rows = []
         for t in sorted(cached, key=lambda t: (t.get("rank") or 999999, -t.get("playcount", 0))):
             mb = mb_cache.get(t.get("mbid", "")) if t.get("mbid") else None
@@ -501,6 +501,8 @@ class LastFmLibraryWindow(SmartWindow):
                 "lfm_artist": t.get("artist", ""),
                 "lfm_title": t.get("name", ""),
                 "mb_title": mb.get("mb_title", "") if mb else "",
+                "mb_artist": mb.get("mb_artist", "") if mb else "",
+                "mb_genres": "; ".join(mb.get("mb_genres", [])) if mb else "",
                 "mb_composer": "; ".join(mb.get("composer", [])) if mb else "",
                 "mb_lyricist": "; ".join(mb.get("lyricist", [])) if mb else "",
                 "mb_arranger": "; ".join(mb.get("arranger", [])) if mb else "",
