@@ -16,8 +16,6 @@ API reference: https://musicbrainz.org/doc/MusicBrainz_API
 
 from __future__ import annotations
 
-import gzip
-import json
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -100,72 +98,83 @@ class MusicBrainzRecording:
 
 class MusicBrainzCache:
     """
-    Persistent, session-independent cache mapping recording MBIDs to enriched
-    composition data (composer, lyricist, arranger, etc.).
+    Persistent cache mapping recording MBIDs to enriched composition data.
 
-    Stored as gzip-compressed JSON so the file stays small even with thousands
-    of entries. Load on construction; call ``save()`` explicitly after batching
-    new lookups.
+    Backed by the mb_recordings table in configs/muse_library.db.  Each
+    set() call executes the INSERT but does not commit; call save() to flush
+    a batch of writes.  The path argument is retained for backward compatibility
+    but unused.
+
+    Multi-valued fields (mb_genres, composer, lyricist, arranger, orchestrator,
+    writer) are stored as "; "-delimited strings in the DB and returned as
+    lists — callers see the same interface as the former gzip implementation.
     """
 
-    def __init__(self, path: Path = _CACHE_FILE) -> None:
-        self._path = path
-        self._data: Optional[Dict[str, Dict[str, Any]]] = None  # None ⇒ not yet loaded
-        self._dirty = False
+    _MULTI_VALUE_FIELDS = ("mb_genres", "composer", "lyricist", "arranger", "orchestrator", "writer")
+
+    def __init__(self, path: Path = _CACHE_FILE) -> None:  # noqa: ARG002
+        pass
 
     # ------------------------------------------------------------------
     # Public interface
     # ------------------------------------------------------------------
 
     def get(self, recording_mbid: str) -> Optional[Dict[str, Any]]:
-        self._ensure_loaded()
-        return self._data.get(recording_mbid)
+        from utils.db import get_connection, delim_to_list
+        row = get_connection().execute(
+            "SELECT mb_title, mb_artist, mb_genres, composer, lyricist, "
+            "arranger, orchestrator, writer FROM mb_recordings WHERE mbid=?",
+            (recording_mbid,),
+        ).fetchone()
+        if row is None:
+            return None
+        record = dict(row)
+        for field in self._MULTI_VALUE_FIELDS:
+            record[field] = delim_to_list(record[field])
+        return record
 
     def set(self, recording_mbid: str, record: Dict[str, Any]) -> None:
-        self._ensure_loaded()
-        self._data[recording_mbid] = record
-        self._dirty = True
+        import time
+        from utils.db import get_connection, list_to_delim
+        get_connection().execute(
+            """INSERT OR REPLACE INTO mb_recordings
+               (mbid, mb_title, mb_artist, mb_genres, composer,
+                lyricist, arranger, orchestrator, writer, fetched_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (
+                recording_mbid,
+                record.get("mb_title", ""),
+                record.get("mb_artist", ""),
+                list_to_delim(record.get("mb_genres", [])),
+                list_to_delim(record.get("composer", [])),
+                list_to_delim(record.get("lyricist", [])),
+                list_to_delim(record.get("arranger", [])),
+                list_to_delim(record.get("orchestrator", [])),
+                list_to_delim(record.get("writer", [])),
+                time.time(),
+            ),
+        )
 
     def __contains__(self, recording_mbid: str) -> bool:
-        self._ensure_loaded()
-        return recording_mbid in self._data
+        from utils.db import get_connection
+        row = get_connection().execute(
+            "SELECT 1 FROM mb_recordings WHERE mbid=? LIMIT 1",
+            (recording_mbid,),
+        ).fetchone()
+        return row is not None
 
     def save(self) -> None:
-        if not self._dirty:
-            return
-        try:
-            self._path.parent.mkdir(parents=True, exist_ok=True)
-            with gzip.open(self._path, "wt", encoding="utf-8") as fh:
-                json.dump(self._data, fh, ensure_ascii=False, separators=(",", ":"))
-            self._dirty = False
-            logger.debug("MusicBrainz cache saved (%d entries) to %s", len(self._data), self._path)
-        except OSError as exc:
-            logger.error("Could not save MusicBrainz cache to %s: %s", self._path, exc)
+        """Commit any pending batch writes to the database."""
+        from utils.db import get_connection
+        get_connection().commit()
+        logger.debug("MusicBrainz cache committed")
 
     @property
     def size(self) -> int:
-        self._ensure_loaded()
-        return len(self._data)
-
-    # ------------------------------------------------------------------
-    # Internal
-    # ------------------------------------------------------------------
-
-    def _ensure_loaded(self) -> None:
-        if self._data is not None:
-            return
-        self._data = {}
-        if not self._path.exists():
-            return
-        try:
-            with gzip.open(self._path, "rt", encoding="utf-8") as fh:
-                loaded = json.load(fh)
-            if isinstance(loaded, dict):
-                self._data = loaded
-                logger.debug("MusicBrainz cache loaded (%d entries) from %s", len(self._data), self._path)
-        except Exception as exc:
-            logger.warning("Could not load MusicBrainz cache from %s: %s", self._path, exc)
-            self._data = {}
+        from utils.db import get_connection
+        return get_connection().execute(
+            "SELECT COUNT(*) FROM mb_recordings"
+        ).fetchone()[0]
 
 
 _mb_cache_instance: Optional[MusicBrainzCache] = None

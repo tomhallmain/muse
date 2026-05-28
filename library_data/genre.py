@@ -2,7 +2,7 @@
 import json
 import re
 
-from utils.config import config
+from utils.db import get_connection, delim_to_list
 from utils.logging_setup import get_logger
 
 logger = get_logger(__name__)
@@ -74,10 +74,15 @@ class GenresData:
         self._get_genres()
 
     def _get_genres(self):
-        with open(config.genres_file, 'r', encoding="utf-8") as f:
-            genres = json.load(f)
-        for name, genre in genres.items():
-            self._genres[name] = Genre.from_json(genre)
+        rows = get_connection().execute(
+            "SELECT name, transliterations, notes FROM genres"
+        ).fetchall()
+        for row in rows:
+            self._genres[row["name"]] = Genre(
+                name=row["name"],
+                transliterations=delim_to_list(row["transliterations"]),
+                notes=json.loads(row["notes"] or "{}"),
+            )
 
     def get_genre_names(self):
         return [genre.name for genre in self._genres.values()]

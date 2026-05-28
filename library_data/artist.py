@@ -2,7 +2,7 @@
 import json
 import re
 
-from utils.config import config
+from utils.db import get_connection, delim_to_list
 from utils.logging_setup import get_logger
 
 logger = get_logger(__name__)
@@ -84,10 +84,23 @@ class ArtistsData:
         self._get_artists()
 
     def _get_artists(self):
-        with open(config.artists_file, 'r', encoding="utf-8") as f:
-            artists = json.load(f)
-        for name, artist in artists.items():
-            self._artists[name] = Artist.from_json(artist)
+        rows = get_connection().execute(
+            "SELECT id, name, indicators, start_date, end_date, "
+            "dates_are_lifespan, dates_uncertain, genres, albums, notes FROM artists"
+        ).fetchall()
+        for row in rows:
+            self._artists[row["name"]] = Artist(
+                id=row["id"],
+                name=row["name"],
+                indicators=delim_to_list(row["indicators"]),
+                start_date=row["start_date"] if row["start_date"] is not None else -1,
+                end_date=row["end_date"] if row["end_date"] is not None else -1,
+                dates_are_lifespan=bool(row["dates_are_lifespan"]),
+                dates_uncertain=bool(row["dates_uncertain"]),
+                genres=delim_to_list(row["genres"]),
+                albums=delim_to_list(row["albums"]),
+                notes=json.loads(row["notes"] or "{}"),
+            )
 
     def get_artist_names(self):
         return [artist.name for artist in self._artists.values()]

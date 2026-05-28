@@ -9,8 +9,6 @@ API reference: https://www.last.fm/api
 
 from __future__ import annotations
 
-import gzip
-import json
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -515,64 +513,98 @@ def get_lastfm_cache() -> LastFmLibraryCache:
 
 class LastFmLibraryCache:
     """
-    Persistent, lazy-loading cache of Last.fm library data keyed by username.
+    Persistent cache of Last.fm library data keyed by username.
 
-    Stored as gzip-compressed JSON at configs/lastfm_cache.json.gz. Each username
-    entry holds lists of track/album/artist dicts and a per-scope timestamp so the
-    caller can see when data was last refreshed.
+    Backed by the lfm_tracks and lfm_scopes tables in configs/muse_library.db.
+    set_scope() writes and commits immediately; save() is a no-op retained for
+    interface compatibility.
 
-    Construction is instant — disk I/O is deferred until the first read or write.
+    The path argument is retained for backward compatibility but unused.
     """
 
-    # Fields retained per item type (image URLs and tag counts are omitted as
-    # they are not needed for export or MusicBrainz cross-referencing).
+    # Fields retained per item type (image URLs and tag counts omitted).
     _TRACK_FIELDS  = ("name", "artist", "playcount", "album", "mbid", "rank")
     _ALBUM_FIELDS  = ("name", "artist", "playcount", "mbid")
     _ARTIST_FIELDS = ("name", "playcount", "mbid", "rank")
 
-    def __init__(self, path: Path = _LASTFM_CACHE_FILE) -> None:
-        self._path = path
-        self._data: Optional[Dict[str, Any]] = None  # None ⇒ not yet loaded
-        self._dirty = False
+    _SCOPE_FIELDS: Dict[str, tuple] = {
+        "tracks":  _TRACK_FIELDS,
+        "albums":  _ALBUM_FIELDS,
+        "artists": _ARTIST_FIELDS,
+    }
+
+    def __init__(self, path: Path = _LASTFM_CACHE_FILE) -> None:  # noqa: ARG002
+        pass
 
     # ------------------------------------------------------------------
     # Public interface
     # ------------------------------------------------------------------
 
     def get_scope(self, username: str, scope: str) -> Optional[List[Dict[str, Any]]]:
-        """Return cached items for *username* / *scope* ("tracks"/"albums"/"artists"), or None."""
-        self._ensure_loaded()
-        entry = self._data.get(username.lower())
-        return entry.get(scope) if entry else None
+        """Return cached items for *username* / *scope*, or None if never fetched."""
+        from utils.db import get_connection
+        conn = get_connection()
+        sentinel = conn.execute(
+            "SELECT 1 FROM lfm_scopes WHERE username=? AND scope=?",
+            (username.lower(), scope),
+        ).fetchone()
+        if sentinel is None:
+            return None
+        rows = conn.execute(
+            "SELECT name, artist, playcount, album, mbid, rank "
+            "FROM lfm_tracks WHERE username=? AND scope=? ORDER BY rank ASC NULLS LAST",
+            (username.lower(), scope),
+        ).fetchall()
+        fields = self._SCOPE_FIELDS.get(scope, self._TRACK_FIELDS)
+        return [{f: row[f] for f in fields} for row in rows]
 
     def set_scope(self, username: str, scope: str, items: List[Dict[str, Any]]) -> None:
-        self._ensure_loaded()
+        from utils.db import get_connection
+        conn = get_connection()
         key = username.lower()
-        if key not in self._data:
-            self._data[key] = {}
-        self._data[key][scope] = items
-        self._data[key][f"{scope}_fetched_at"] = time.time()
-        self._dirty = True
+        now = time.time()
+        conn.execute(
+            "INSERT OR REPLACE INTO lfm_scopes (username, scope, fetched_at) VALUES (?, ?, ?)",
+            (key, scope, now),
+        )
+        conn.execute(
+            "DELETE FROM lfm_tracks WHERE username=? AND scope=?", (key, scope)
+        )
+        if items:
+            conn.executemany(
+                """INSERT OR REPLACE INTO lfm_tracks
+                   (username, scope, mbid, name, artist, playcount, rank, album, fetched_at)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                [
+                    (
+                        key,
+                        scope,
+                        item.get("mbid") or "",
+                        item.get("name", ""),
+                        item.get("artist") or "",
+                        item.get("playcount") or 0,
+                        item.get("rank"),
+                        item.get("album"),
+                        now,
+                    )
+                    for item in items
+                ],
+            )
+        conn.commit()
 
     def fetched_at(self, username: str, scope: str) -> Optional[float]:
-        self._ensure_loaded()
-        entry = self._data.get(username.lower())
-        return entry.get(f"{scope}_fetched_at") if entry else None
+        from utils.db import get_connection
+        row = get_connection().execute(
+            "SELECT fetched_at FROM lfm_scopes WHERE username=? AND scope=?",
+            (username.lower(), scope),
+        ).fetchone()
+        return row[0] if row else None
 
     def save(self) -> None:
-        if not self._dirty:
-            return
-        try:
-            self._path.parent.mkdir(parents=True, exist_ok=True)
-            with gzip.open(self._path, "wt", encoding="utf-8") as fh:
-                json.dump(self._data, fh, ensure_ascii=False, separators=(",", ":"))
-            self._dirty = False
-            logger.debug("Last.fm cache saved to %s", self._path)
-        except OSError as exc:
-            logger.error("Could not save Last.fm cache to %s: %s", self._path, exc)
+        """No-op — writes are committed immediately in set_scope()."""
 
     # ------------------------------------------------------------------
-    # Serialisation helpers
+    # Serialisation helpers (unchanged from gzip implementation)
     # ------------------------------------------------------------------
 
     @classmethod
@@ -589,26 +621,6 @@ class LastFmLibraryCache:
     @classmethod
     def serialise_artists(cls, artists: List[LastFmLibraryArtist]) -> List[Dict[str, Any]]:
         return [{f: getattr(a, f, None) for f in cls._ARTIST_FIELDS} for a in artists]
-
-    # ------------------------------------------------------------------
-    # Internal
-    # ------------------------------------------------------------------
-
-    def _ensure_loaded(self) -> None:
-        if self._data is not None:
-            return
-        self._data = {}
-        if not self._path.exists():
-            return
-        try:
-            with gzip.open(self._path, "rt", encoding="utf-8") as fh:
-                loaded = json.load(fh)
-            if isinstance(loaded, dict):
-                self._data = loaded
-                logger.debug("Last.fm cache loaded (%d users) from %s", len(self._data), self._path)
-        except Exception as exc:
-            logger.warning("Could not load Last.fm cache from %s: %s", self._path, exc)
-            self._data = {}
 
 
 if __name__ == "__main__":

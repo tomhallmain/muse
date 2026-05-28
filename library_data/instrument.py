@@ -1,8 +1,7 @@
 
-import json
 import re
 
-from utils.config import config
+from utils.db import get_connection
 from utils.logging_setup import get_logger
 
 logger = get_logger(__name__)
@@ -79,10 +78,9 @@ class InstrumentsData:
         self._get_instruments()
 
     def _get_instruments(self):
-        with open(config.instruments_file, 'r', encoding="utf-8") as f:
-            instruments = json.load(f)
-        for instrument in instruments:
-            self._instruments[instrument] = Instrument(instrument)
+        rows = get_connection().execute("SELECT name FROM instruments").fetchall()
+        for row in rows:
+            self._instruments[row["name"]] = Instrument(row["name"])
 
     def get_instrument_names(self):
         return [instrument.name for instrument in self._instruments.values()]

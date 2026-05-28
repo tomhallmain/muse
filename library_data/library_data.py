@@ -1,10 +1,12 @@
 from datetime import datetime
 import copy
 import glob
+import json
 import os
 import pickle
 import re
 import threading
+import time
 import traceback
 
 from extensions.extension_manager import ExtensionManager
@@ -313,19 +315,47 @@ class LibraryData:
 
     @staticmethod
     def store_caches():
-        # Store DIRECTORIES_CACHE in separate pickle file (not in app_info_cache JSON)
-        # This prevents MemoryError when cache is large
+        from utils.db import get_connection
+        conn = get_connection()
+        now = time.time()
+
+        # Directories
         try:
-            with open(LibraryData.directories_cache_path(), "wb") as f:
-                pickle.dump(LibraryData.DIRECTORIES_CACHE, f)
+            rows = [
+                (path, json.dumps(files), now)
+                for path, files in LibraryData.DIRECTORIES_CACHE.items()
+            ]
+            conn.executemany(
+                "INSERT OR REPLACE INTO directories (path, files, scanned_at) VALUES (?, ?, ?)",
+                rows,
+            )
+            conn.commit()
+            logger.debug("Stored %d directory entries to DB", len(rows))
         except Exception as e:
-            logger.error(f"Error storing directories cache: {e}")
-        
+            logger.error(f"Error storing directories cache to DB: {e}")
+
+        # Media tracks — column list is derived from to_db_row() so schema changes
+        # only need to be made in one place (MediaTrack.to_db_row).
         try:
-            with open(LibraryData.media_track_cache_path(), "wb") as f:
-                pickle.dump(LibraryData.MEDIA_TRACK_CACHE,  f)
+            rows = []
+            for filepath, track in LibraryData.MEDIA_TRACK_CACHE.items():
+                try:
+                    r = track.to_db_row()
+                    r["scanned_at"] = now
+                    rows.append(r)
+                except Exception as e:
+                    logger.warning(f"Skipping track {filepath} for DB store: {e}")
+            if rows:
+                cols = list(rows[0].keys())
+                sql = (
+                    f"INSERT OR REPLACE INTO media_tracks "
+                    f"({', '.join(cols)}) VALUES ({', '.join(['?'] * len(cols))})"
+                )
+                conn.executemany(sql, [tuple(r[c] for c in cols) for r in rows])
+                conn.commit()
+                logger.debug("Stored %d tracks to DB", len(rows))
         except Exception as e:
-            logger.error(f"Error storing media track cache: {e}")
+            logger.error(f"Error storing media track cache to DB: {e}")
 
     @staticmethod
     def load_directory_cache(force_reload=False):
@@ -337,7 +367,21 @@ class LibraryData:
         if force_reload:
             LibraryData._directory_cache_loaded = False
         
-        # Try loading from pickle file first (new method)
+        # Try loading from DB first
+        try:
+            from utils.db import get_connection
+            rows = get_connection().execute(
+                "SELECT path, files FROM directories"
+            ).fetchall()
+            if rows:
+                LibraryData.DIRECTORIES_CACHE = {r["path"]: json.loads(r["files"]) for r in rows}
+                logger.debug("Loaded %d directory entries from DB", len(rows))
+                LibraryData._directory_cache_loaded = True
+                return
+        except Exception as e:
+            logger.warning(f"Failed to load directories cache from DB: {e}")
+
+        # Fallback: try loading from pickle file
         try:
             directories_path = LibraryData.directories_cache_path()
             if os.path.exists(directories_path):
@@ -380,10 +424,24 @@ class LibraryData:
     
     @staticmethod
     def load_media_track_cache():
+        # Try loading from DB first
+        try:
+            from utils.db import get_connection
+            rows = get_connection().execute("SELECT * FROM media_tracks").fetchall()
+            if rows:
+                LibraryData.MEDIA_TRACK_CACHE = {
+                    r["filepath"]: MediaTrack.from_db_row(r) for r in rows
+                }
+                logger.debug("Loaded %d tracks from DB", len(rows))
+                return
+        except Exception as e:
+            logger.warning(f"Failed to load media track cache from DB: {e}")
+
+        # Fallback: try loading from pickle file
         try:
             with open(LibraryData.media_track_cache_path(), "rb") as f:
                 LibraryData.MEDIA_TRACK_CACHE = pickle.load(f)
-        except FileNotFoundError as e:
+        except FileNotFoundError:
             logger.info("No media track cache found, creating new one")
 
     @staticmethod

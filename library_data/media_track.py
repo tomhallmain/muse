@@ -342,6 +342,88 @@ class MediaTrack:
             self.title = None
             self.ext = None
 
+    # ------------------------------------------------------------------
+    # DB serialisation
+    # ------------------------------------------------------------------
+
+    @classmethod
+    def from_db_row(cls, row):
+        """Construct a MediaTrack from a DB row without any filesystem I/O."""
+        track = cls.__new__(cls)
+        track.filepath = row["filepath"]
+        track.parent_filepath = row["parent_filepath"]
+        track.title = row["title"]
+        track.tracktitle = row["tracktitle"]
+        track.artist = row["artist"]
+        track.albumartist = row["albumartist"]
+        track.album = row["album"]
+        track.composer = row["composer"]
+        track.tracknumber = row["tracknumber"] if row["tracknumber"] is not None else -1
+        track.totaltracks = row["totaltracks"] if row["totaltracks"] is not None else -1
+        track.discnumber = row["discnumber"] if row["discnumber"] is not None else -1
+        track.totaldiscs = row["totaldiscs"] if row["totaldiscs"] is not None else -1
+        track.genre = row["genre"]
+        track.year = row["year"]
+        track.compilation = bool(row["compilation"])
+        track.compilation_name = row["compilation_name"]
+        track.mean_volume = row["mean_volume"] if row["mean_volume"] is not None else -9999.0
+        track.max_volume = row["max_volume"] if row["max_volume"] is not None else -9999.0
+        track.length = row["length"] if row["length"] is not None else -1.0
+        track.artwork = None
+        track.form = row["form"]
+        track.instrument = row["instrument"]
+        is_video = row["is_video"]
+        track.is_video = bool(is_video) if is_video is not None else None
+        track._is_extended = False
+
+        if track.filepath:
+            track.basename = os.path.basename(track.filepath)
+            track.ext = os.path.splitext(track.basename)[1]
+        else:
+            track.basename = None
+            track.ext = None
+
+        from utils.utils import Utils
+        track.searchable_title = Utils.ascii_normalize(track.title.lower()) if track.title else None
+        track.searchable_artist = Utils.ascii_normalize(track.artist.lower()) if track.artist else None
+        track.searchable_album = Utils.ascii_normalize(track.album.lower()) if track.album else None
+        track.searchable_composer = Utils.ascii_normalize(track.composer.lower()) if track.composer else None
+        track.searchable_genre = Utils.ascii_normalize(track.genre.lower()) if track.genre else None
+        return track
+
+    def to_db_row(self) -> dict:
+        """Return a dict of column → value for INSERT OR REPLACE into media_tracks."""
+        def _int_or_none(v, sentinel=-1):
+            return None if v == sentinel else v
+
+        def _float_or_none(v, sentinel=-9999.0):
+            return None if v == sentinel else v
+
+        return {
+            "filepath": self.filepath,
+            "parent_filepath": self.parent_filepath,
+            "title": self.title,
+            "tracktitle": self.tracktitle,
+            "artist": self.artist,
+            "albumartist": self.albumartist,
+            "album": self.album,
+            "composer": self.composer,
+            "tracknumber": _int_or_none(self.tracknumber),
+            "totaltracks": _int_or_none(self.totaltracks),
+            "discnumber": _int_or_none(self.discnumber),
+            "totaldiscs": _int_or_none(self.totaldiscs),
+            "genre": self.genre,
+            "year": self.year,
+            "compilation": 1 if self.compilation else 0,
+            "compilation_name": self.compilation_name,
+            "mean_volume": _float_or_none(self.mean_volume),
+            "max_volume": _float_or_none(self.max_volume),
+            "length": _float_or_none(self.length, -1.0),
+            "form": self.form,
+            "instrument": self.instrument,
+            "is_video": (1 if self.is_video else 0) if self.is_video is not None else None,
+        }
+
     def get_parent_filepath(self):
         return self.filepath if self.parent_filepath is None else self.parent_filepath
 

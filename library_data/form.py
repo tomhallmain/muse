@@ -2,7 +2,7 @@
 import json
 import re
 
-from utils.config import config
+from utils.db import get_connection, delim_to_list
 from utils.logging_setup import get_logger
 
 logger = get_logger(__name__)
@@ -75,10 +75,15 @@ class FormsData:
         self._get_forms()
 
     def _get_forms(self):
-        with open(config.forms_file, 'r', encoding="utf-8") as f:
-            forms = json.load(f)
-        for name, form in forms.items():
-            self._forms[name] = Form.from_json(form)
+        rows = get_connection().execute(
+            "SELECT name, transliterations, notes FROM forms"
+        ).fetchall()
+        for row in rows:
+            self._forms[row["name"]] = Form(
+                name=row["name"],
+                transliterations=delim_to_list(row["transliterations"]),
+                notes=json.loads(row["notes"] or "{}"),
+            )
 
     def get_form_names(self):
         return [form.name for form in self._forms.values()]
