@@ -26,11 +26,13 @@ from utils.translations import I18N
 
 _ = I18N._
 
-# Directory-action option values
-_DIR_NONE         = "none"
-_DIR_RENAME       = "rename"
-_DIR_MOVE_EXIST   = "move_existing"
-_DIR_MOVE_NEW     = "move_new"
+from utils.track_path_preview import (
+    DIR_ACTION_NONE as _DIR_NONE,
+    DIR_ACTION_RENAME as _DIR_RENAME,
+    DIR_ACTION_MOVE_EXIST as _DIR_MOVE_EXIST,
+    DIR_ACTION_MOVE_NEW as _DIR_MOVE_NEW,
+    compute_proposed_filepath,
+)
 
 
 class RenameConfirmationWindow(QDialog):
@@ -304,53 +306,33 @@ class RenameConfirmationWindow(QDialog):
         return [_DIR_NONE, _DIR_RENAME, _DIR_MOVE_EXIST, _DIR_MOVE_NEW][idx]
 
     def _compute_proposed_path(self) -> str:
-        from library_data.media_track import MediaTrack
-
-        t = self._track
-        current_file      = t.filepath
-        current_album_dir = os.path.dirname(current_file)
-        current_artist_dir = os.path.dirname(current_album_dir)
-        music_root        = os.path.dirname(current_artist_dir)
-
-        # Artist dir
-        artist_action = self._action_from_group(self._artist_btns) \
-            if self._artist_group.isVisible() else _DIR_NONE
-        if artist_action == _DIR_RENAME:
-            new_artist = MediaTrack.sanitize_filename_stem(
-                self._metadata.get("artist", "") or t.artist or ""
-            )
-            new_artist_dir = os.path.join(music_root, new_artist)
-        elif artist_action in (_DIR_MOVE_EXIST, _DIR_MOVE_NEW):
-            new_artist_dir = self._artist_target_edit.text().strip() or current_artist_dir
-        else:
-            new_artist_dir = current_artist_dir
-
-        # Album dir
-        album_action = self._action_from_group(self._album_btns) \
-            if self._album_group.isVisible() else _DIR_NONE
-        if album_action == _DIR_RENAME:
-            new_album = MediaTrack.sanitize_filename_stem(
-                self._metadata.get("album", "") or t.album or ""
-            )
-            new_album_dir = os.path.join(new_artist_dir, new_album)
-        elif album_action in (_DIR_MOVE_EXIST, _DIR_MOVE_NEW):
-            new_album_dir = self._album_target_edit.text().strip() or current_album_dir
-        else:
-            new_album_dir = os.path.join(
-                new_artist_dir, os.path.basename(current_album_dir)
-            )
-
-        # Filename
-        basename = t.basename
-        if self._rename_file_check.isVisible() and self._rename_file_check.isChecked():
-            title = self._metadata.get("title", "") or t.title or ""
-            stem = MediaTrack.sanitize_filename_stem(title)
-            if self._retain_ids_check.isVisible() and self._retain_ids_check.isChecked():
-                stem = MediaTrack.reattach_ids(stem, self._current_ids)
-            if stem:
-                basename = stem + t.ext
-
-        return os.path.join(new_album_dir, basename)
+        artist_action = (
+            self._action_from_group(self._artist_btns)
+            if self._artist_group.isVisible()
+            else _DIR_NONE
+        )
+        album_action = (
+            self._action_from_group(self._album_btns)
+            if self._album_group.isVisible()
+            else _DIR_NONE
+        )
+        return compute_proposed_filepath(
+            self._track,
+            self._metadata,
+            rename_track_file=(
+                self._rename_file_check.isVisible()
+                and self._rename_file_check.isChecked()
+            ),
+            retain_ids=(
+                self._retain_ids_check.isVisible()
+                and self._retain_ids_check.isChecked()
+            ),
+            id_tags=self._current_ids,
+            artist_action=artist_action,
+            album_action=album_action,
+            artist_target=self._artist_target_edit.text().strip(),
+            album_target=self._album_target_edit.text().strip(),
+        )
 
     def _update_preview(self) -> None:
         proposed = self._compute_proposed_path()

@@ -187,6 +187,7 @@ class TrackDetailsWindow(SmartWindow):
 
         self._retain_ids_check = QCheckBox(_("Retain IDs in filename (e.g. [FLAC])"), rename_file_group)
         self._retain_ids_check.setChecked(True)
+        self._retain_ids_check.toggled.connect(self._update_filepath_preview)
         rfg_layout.addWidget(self._retain_ids_check, 1, 0, 1, 2)
 
         btn_row_file = QHBoxLayout()
@@ -296,34 +297,30 @@ class TrackDetailsWindow(SmartWindow):
     # ------------------------------------------------------------------
 
     def _update_filepath_preview(self) -> None:
-        """Recompute the proposed path from the current form values and update
-        the preview label without opening the confirmation window."""
+        """Recompute the proposed path using the same rules as the confirmation dialog.
+
+        Assumes default directory actions (tag-only: paths stay on disk) and file
+        rename when the title field differs, matching RenameConfirmationWindow defaults.
+        """
         track = TrackDetailsWindow.AUDIO_TRACK
         if not track:
             return
 
-        current_album_dir  = os.path.dirname(track.filepath)
-        current_artist_dir = os.path.dirname(current_album_dir)
-        music_root         = os.path.dirname(current_artist_dir)
+        from library_data.media_track import MediaTrack
+        from utils.track_path_preview import compute_proposed_filepath
 
-        # Propose new artist dir only when the artist field differs from the
-        # current artist directory name (best-effort heuristic).
-        new_artist = self.artist_edit.text().strip()
-        current_artist_dirname = os.path.basename(current_artist_dir)
-        if new_artist and new_artist != (track.artist or ""):
-            proposed_artist_dir = os.path.join(music_root, new_artist)
-        else:
-            proposed_artist_dir = current_artist_dir
+        metadata, _ = self._collect_metadata()
+        current_stem = os.path.splitext(track.basename or "")[0]
+        _, id_tags = MediaTrack.extract_ids(current_stem)
+        title_changed = str(metadata.get("title", "") or "") != str(track.title or "")
 
-        # Propose new album dir similarly.
-        new_album = self.album_edit.text().strip()
-        current_album_dirname = os.path.basename(current_album_dir)
-        if new_album and new_album != (track.album or ""):
-            proposed_album_dir = os.path.join(proposed_artist_dir, new_album)
-        else:
-            proposed_album_dir = os.path.join(proposed_artist_dir, current_album_dirname)
-
-        proposed_path = os.path.join(proposed_album_dir, track.basename)
+        proposed_path = compute_proposed_filepath(
+            track,
+            metadata,
+            rename_track_file=title_changed,
+            retain_ids=self._retain_ids_check.isChecked(),
+            id_tags=id_tags,
+        )
         self._proposed_path_label.setText(proposed_path)
 
         if proposed_path != track.filepath:
@@ -463,8 +460,10 @@ class TrackDetailsWindow(SmartWindow):
                     )
                     return
 
+            from utils.path_move import destination_occupied, move_on_disk
+
             new_path = os.path.join(target, track.basename)
-            if os.path.exists(new_path) and os.path.abspath(new_path) != os.path.abspath(track.filepath):
+            if destination_occupied(track.filepath, new_path):
                 self.app_actions.alert(
                     _("Move Failed"),
                     _("A file named '{}' already exists in the target directory.").format(
@@ -476,7 +475,7 @@ class TrackDetailsWindow(SmartWindow):
 
             old_path = track.filepath
             try:
-                os.rename(old_path, new_path)
+                new_path = move_on_disk(old_path, new_path)
             except OSError as exc:
                 self.app_actions.alert(
                     _("Move Failed"), str(exc), kind="error", master=self

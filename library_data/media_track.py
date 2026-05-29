@@ -843,11 +843,13 @@ class MediaTrack:
             return False, "New name is the same as the current filename."
 
         new_path = os.path.join(os.path.dirname(self.filepath), new_basename)
-        if os.path.exists(new_path):
+        from utils.path_move import destination_occupied, move_on_disk
+
+        if destination_occupied(self.filepath, new_path):
             return False, f'A file named "{new_basename}" already exists in this directory.'
 
         try:
-            os.rename(self.filepath, new_path)
+            move_on_disk(self.filepath, new_path)
         except OSError as exc:
             return False, f"Rename failed: {exc}"
 
@@ -882,13 +884,15 @@ class MediaTrack:
         parent_dir = os.path.dirname(old_dir)
         new_dir = os.path.join(parent_dir, new_folder_name)
 
-        if os.path.abspath(old_dir) == os.path.abspath(new_dir):
+        from utils.path_move import destination_occupied, move_on_disk, paths_equivalent
+
+        if paths_equivalent(old_dir, new_dir):
             return False, "New folder name is the same as the current name."
-        if os.path.exists(new_dir):
+        if destination_occupied(old_dir, new_dir):
             return False, f'A directory named "{new_folder_name}" already exists.'
 
         try:
-            os.rename(old_dir, new_dir)
+            move_on_disk(old_dir, new_dir)
         except OSError as exc:
             return False, f"Rename failed: {exc}"
 
@@ -923,13 +927,15 @@ class MediaTrack:
         parent_dir = os.path.dirname(old_dir)
         new_dir    = os.path.join(parent_dir, new_artist_name)
 
-        if os.path.abspath(old_dir) == os.path.abspath(new_dir):
+        from utils.path_move import destination_occupied, move_on_disk, paths_equivalent
+
+        if paths_equivalent(old_dir, new_dir):
             return False, "New artist folder name is the same as the current name."
-        if os.path.exists(new_dir):
+        if destination_occupied(old_dir, new_dir):
             return False, f'A directory named "{new_artist_name}" already exists.'
 
         try:
-            os.rename(old_dir, new_dir)
+            move_on_disk(old_dir, new_dir)
         except OSError as exc:
             return False, f"Rename failed: {exc}"
 
