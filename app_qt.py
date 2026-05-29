@@ -119,6 +119,9 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         self._library_data: Optional[LibraryData] = None
         self._closing = False  # Guard for multiple on_closing calls
         self._active_run_token = None
+        self._pending_resume_filepath: Optional[str] = None
+        self._pending_resume_position_ms: int = 0
+        self._pending_resume_skip_issued: bool = False
         # So @require_password and dialogs (e.g. PasswordDialog) have a parent window
         self.master = self
         # Initialize media key handler
@@ -385,7 +388,11 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
 
         self.playlists_btn = QPushButton(_("Playlists"))
         self.playlists_btn.clicked.connect(self.open_playlist_window)
-        controls_layout.addWidget(self.playlists_btn, 2, 0, 1, 2)
+        controls_layout.addWidget(self.playlists_btn, 2, 0)
+
+        self.continue_session_btn = QPushButton(_("Continue Session"))
+        self.continue_session_btn.clicked.connect(self.continue_last_session)
+        controls_layout.addWidget(self.continue_session_btn, 2, 1)
 
         self._sort_config_btn = QPushButton(_("Sorting Options"))
         self._sort_config_btn.clicked.connect(self._open_sort_config_override)
@@ -556,6 +563,80 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         FFmpegHandler.cleanup_cache()
         TempDir.cleanup()
 
+    def _save_playback_session(self) -> None:
+        """Snapshot the active playlist and in-track position to app_info_cache."""
+        from datetime import datetime
+        from muse.playback_session import PlaybackSession, PlaybackSessionStore
+
+        active = PlaybackStateManager.get_active_config()
+        if active is None:
+            return
+        current_track = active.current_track()
+        if current_track is None or not current_track.filepath:
+            return
+
+        resolved_tracks: list = []
+        descriptor = None
+        for pc in active.playback_configs:
+            resolved_tracks.extend(
+                t.filepath for t in pc.playlist.sorted_tracks if t.filepath
+            )
+            if descriptor is None:
+                pd = getattr(pc, "playlist_descriptor", None)
+                if pd is not None:
+                    descriptor = pd.to_dict()
+
+        if not resolved_tracks:
+            return
+
+        position_ms = 0
+        try:
+            if self.current_run and self.current_run.is_started:
+                position_ms = max(0, self.current_run.get_playback().vlc_media_player.get_time())
+        except Exception:
+            pass
+
+        session = PlaybackSession(
+            resolved_tracks=resolved_tracks,
+            current_track_filepath=current_track.filepath,
+            position_ms=position_ms,
+            descriptor=descriptor,
+            saved_at=datetime.now().isoformat(),
+        )
+        PlaybackSessionStore.save(session)
+        if descriptor is not None:
+            PlaybackSessionStore.push_recent_descriptor(descriptor)
+        logger.debug("Saved playback session: %s at %dms", current_track.filepath, position_ms)
+
+    def continue_last_session(self) -> None:
+        """Restore the last saved playback session."""
+        from muse.playback_config import PlaybackConfig
+        from muse.playback_config_master import PlaybackConfigMaster
+        from muse.playlist_descriptor import PlaylistDescriptor
+        from muse.playback_session import PlaybackSessionStore
+        from utils.globals import PlaylistSortType, PlaybackMasterStrategy
+
+        session = PlaybackSessionStore.load()
+        if not session or not session.resolved_tracks:
+            qt_alert(self, _("No Session"), _("No previous session found to continue."), "showinfo")
+            return
+
+        pd = PlaylistDescriptor(
+            name=_("Last Session"),
+            track_filepaths=session.resolved_tracks,
+            sort_type=PlaylistSortType.SEQUENCE,
+        )
+        pc = PlaybackConfig.from_playlist_descriptor(pd, self.library_data.data_callbacks)
+        master = PlaybackConfigMaster([pc])
+        PlaybackStateManager.set_master_config(master)
+        self.set_playback_master_strategy(PlaybackMasterStrategy.PLAYLIST_CONFIG)
+
+        self._pending_resume_filepath = session.current_track_filepath
+        self._pending_resume_position_ms = session.position_ms
+        self._pending_resume_skip_issued = False
+
+        self.run(override_scheduled=True)
+
     def store_info_cache(self):
         """Save application config to cache. Geometry is handled by SmartMainWindow."""
         if self.runner_app_config is not None:
@@ -563,6 +644,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
                 if self.config_history_index > 0:
                     self.config_history_index -= 1
         app_info_cache.set("config_history_index", self.config_history_index)
+        self._save_playback_session()
         # Note: Window geometry is saved by SmartMainWindow.closeEvent()
         PersistentDataManager.store()
 
@@ -875,7 +957,25 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         if self.progress_bar is not None:
             self.progress_bar.setValue(progress)
         self.media_frame.update_playback_progress(int(elapsed_time), int(total_duration))
+        self._apply_pending_resume()
         QApplication.processEvents()
+
+    def _apply_pending_resume(self) -> None:
+        """On the first progress tick after a Continue Session, seek to saved position."""
+        if not self._pending_resume_filepath:
+            return
+        current = self.get_current_track()
+        if current is None:
+            return
+        if current.filepath == self._pending_resume_filepath:
+            if self._pending_resume_position_ms > 0:
+                self.seek_in_track(self._pending_resume_position_ms)
+            self._pending_resume_filepath = None
+            self._pending_resume_position_ms = 0
+            self._pending_resume_skip_issued = False
+        elif not self._pending_resume_skip_issued:
+            self.skip_to_track(self._pending_resume_filepath)
+            self._pending_resume_skip_issued = True
 
     def next(self, event=None):
         if not self.current_run.is_started:
