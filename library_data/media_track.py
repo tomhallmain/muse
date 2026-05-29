@@ -84,6 +84,10 @@ dict_keys(['tag_aliases', 'tag_map', 'resolvers', 'singular_keys', 'filename', '
 class MediaTrack:
     music_tag_ignored_tags = ['comment', 'isrc', 'lyrics', 'artwork']
     non_numeric_chars = re.compile(r"[^0-9\.\-]+")
+    # Matches bracketed ID tags embedded in filenames, e.g. [FLAC], [2024], [Hi-Res].
+    # These are stripped from the display title by clean_track_value() but should be
+    # retained in the filesystem path by default so existing filenames are not mangled.
+    _ID_PATTERN = re.compile(r'\s*\[([A-Za-z0-9_\-]+)\]')
     ffprobe_available = None
 
     # Class-level error collection
@@ -778,4 +782,168 @@ class MediaTrack:
             logger.error(f"Failed to update track metadata: {str(e)}")
             return False
 
+    # ------------------------------------------------------------------
+    # Filesystem rename helpers
+    # ------------------------------------------------------------------
+
+    #: Characters that are illegal in filenames on Windows or Unix.
+    _INVALID_STEM_RE = re.compile(r'[\\/:*?"<>|\x00-\x1f]')
+
+    @staticmethod
+    def extract_ids(stem: str) -> tuple:
+        """Return ``(clean_stem, [id1, id2, …])`` with ID tags separated out.
+
+        Example: ``"01. Title [FLAC] [2024]"`` → ``("01. Title", ["FLAC", "2024"])``
+        """
+        ids = [m.group(1) for m in MediaTrack._ID_PATTERN.finditer(stem)]
+        clean = MediaTrack._ID_PATTERN.sub("", stem).strip()
+        return clean, ids
+
+    @staticmethod
+    def reattach_ids(stem: str, ids: list) -> str:
+        """Append *ids* back onto *stem* in their original bracket notation."""
+        if not ids:
+            return stem
+        return stem + " " + " ".join(f"[{i}]" for i in ids)
+
+    @staticmethod
+    def sanitize_filename_stem(stem: str) -> str:
+        """Return *stem* with filesystem-unsafe characters replaced by '_'.
+
+        Strips leading/trailing whitespace and dots, replaces illegal
+        characters with underscores, and collapses multiple consecutive
+        underscores/spaces into one.
+        """
+        sanitized = MediaTrack._INVALID_STEM_RE.sub("_", stem)
+        sanitized = sanitized.strip(" .")
+        # Collapse runs of whitespace or underscores introduced by substitution
+        sanitized = re.sub(r"_+", "_", sanitized)
+        sanitized = re.sub(r" +", " ", sanitized)
+        return sanitized
+
+    def rename_file(self, new_stem: str) -> tuple:
+        """Rename this audio file on disk.
+
+        *new_stem* is the desired filename **without** the extension.
+        The extension is preserved from the current file.
+
+        Returns ``(True, new_filepath)`` on success,
+        ``(False, error_message)`` on failure.
+        """
+        new_stem = self.sanitize_filename_stem(new_stem.strip())
+        if not new_stem:
+            return False, "New filename cannot be empty."
+
+        # Strip the extension if the caller accidentally included it
+        if new_stem.lower().endswith(self.ext.lower()):
+            new_stem = new_stem[: -len(self.ext)]
+
+        new_basename = new_stem + self.ext
+        if new_basename == self.basename:
+            return False, "New name is the same as the current filename."
+
+        new_path = os.path.join(os.path.dirname(self.filepath), new_basename)
+        if os.path.exists(new_path):
+            return False, f'A file named "{new_basename}" already exists in this directory.'
+
+        try:
+            os.rename(self.filepath, new_path)
+        except OSError as exc:
+            return False, f"Rename failed: {exc}"
+
+        old_path = self.filepath
+        self.filepath = new_path
+        self.basename = new_basename
+
+        # Propagate the path change to every filepath-keyed cache in the app.
+        try:
+            from utils.filepath_update import propagate_file_rename
+            propagate_file_rename(old_path, new_path)
+        except Exception as exc:
+            logger.warning("Cache propagation failed after file rename: %s", exc)
+
+        logger.info("Renamed track file: %s → %s", old_path, new_path)
+        return True, new_path
+
+    def rename_album_folder(self, new_folder_name: str) -> tuple:
+        """Rename the album directory that contains this track.
+
+        All sibling tracks whose DB paths share the same directory prefix are
+        updated in a single SQL statement so the cache stays consistent.
+
+        Returns ``(True, new_directory)`` on success,
+        ``(False, error_message)`` on failure.
+        """
+        new_folder_name = self.sanitize_filename_stem(new_folder_name.strip())
+        if not new_folder_name:
+            return False, "New folder name cannot be empty."
+
+        old_dir = os.path.dirname(os.path.abspath(self.filepath))
+        parent_dir = os.path.dirname(old_dir)
+        new_dir = os.path.join(parent_dir, new_folder_name)
+
+        if os.path.abspath(old_dir) == os.path.abspath(new_dir):
+            return False, "New folder name is the same as the current name."
+        if os.path.exists(new_dir):
+            return False, f'A directory named "{new_folder_name}" already exists.'
+
+        try:
+            os.rename(old_dir, new_dir)
+        except OSError as exc:
+            return False, f"Rename failed: {exc}"
+
+        # Update this track's own filepath before propagating so any
+        # in-memory object comparisons use the new path.
+        self.filepath = os.path.join(new_dir, self.basename)
+
+        # Propagate the directory rename to every filepath-keyed cache.
+        try:
+            from utils.filepath_update import propagate_directory_rename
+            propagate_directory_rename(old_dir, new_dir)
+        except Exception as exc:
+            logger.warning("Cache propagation failed after directory rename: %s", exc)
+
+        logger.info("Renamed album folder: %s → %s", old_dir, new_dir)
+        return True, new_dir
+
+    def rename_artist_folder(self, new_artist_name: str) -> tuple:
+        """Rename the artist directory (two levels above this track file).
+
+        All albums and tracks beneath it are updated in every cache.
+        **Warning:** affects every track by this artist in the library.
+
+        Returns ``(True, new_artist_directory)`` or ``(False, error_message)``.
+        """
+        new_artist_name = self.sanitize_filename_stem(new_artist_name.strip())
+        if not new_artist_name:
+            return False, "New artist folder name cannot be empty."
+
+        album_dir  = os.path.dirname(os.path.abspath(self.filepath))
+        old_dir    = os.path.dirname(album_dir)   # artist dir
+        parent_dir = os.path.dirname(old_dir)
+        new_dir    = os.path.join(parent_dir, new_artist_name)
+
+        if os.path.abspath(old_dir) == os.path.abspath(new_dir):
+            return False, "New artist folder name is the same as the current name."
+        if os.path.exists(new_dir):
+            return False, f'A directory named "{new_artist_name}" already exists.'
+
+        try:
+            os.rename(old_dir, new_dir)
+        except OSError as exc:
+            return False, f"Rename failed: {exc}"
+
+        # Update this track's path before propagating.
+        self.filepath = os.path.join(
+            new_dir, os.path.basename(album_dir), self.basename
+        )
+
+        try:
+            from utils.filepath_update import propagate_directory_rename
+            propagate_directory_rename(old_dir, new_dir)
+        except Exception as exc:
+            logger.warning("Cache propagation failed after artist folder rename: %s", exc)
+
+        logger.info("Renamed artist folder: %s → %s", old_dir, new_dir)
+        return True, new_dir
 
