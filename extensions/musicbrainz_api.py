@@ -12,6 +12,34 @@ Composer credits in MusicBrainz live on Works, not Recordings. The lookup
 path is: Recording MBID → linked Work(s) → Work's artist relations.
 
 API reference: https://musicbrainz.org/doc/MusicBrainz_API
+
+─── Last.fm MBID data-quality notes ────────────────────────────────────────────
+Last.fm MBID fields are crowd-sourced and unreliable.  Known failure causes:
+
+  • Wrong entity type: Last.fm sometimes stores a Release (album) MBID in the
+    recording/track MBID field.  If /recording/{mbid} returns 404, it may be
+    worth retrying the same MBID against /release/{mbid} to confirm whether the
+    ID is a valid Release rather than a Recording (see TODO in
+    get_composition_credits).  A hit there would explain ~40 % of apparent
+    failures without any data being truly absent from MusicBrainz.
+
+  • Merged/redirected MBIDs: MusicBrainz merges duplicate recordings; the old
+    MBID becomes invalid.  The MB API does not transparently redirect these at
+    the WS2 JSON endpoint (unlike the HTML UI), so they return 404.
+
+  • Deleted recordings: recordings later found to be duplicates or mistakes are
+    removed; their MBIDs never resolve again.
+
+  • Stale scrobble data: scrobbles from before ~2009 pre-date the current MBID
+    schema; IDs from that era may reference entities that were renumbered or no
+    longer exist.
+
+  • User-submitted corrections: Last.fm crowd-sources MBID tagging.  Users
+    occasionally submit the artist or release MBID instead of the recording MBID,
+    or copy a MBID from a different track on the same album.
+
+  • Malformed UUIDs: some clients write partial, truncated, or all-zero UUIDs
+    that are syntactically invalid and will never resolve.
 """
 
 from __future__ import annotations
@@ -176,6 +204,53 @@ class MusicBrainzCache:
             "SELECT COUNT(*) FROM mb_recordings"
         ).fetchone()[0]
 
+    # ------------------------------------------------------------------
+    # Failed-lookup tracking
+    #
+    # MBIDs whose endpoint returned a non-retriable error (e.g. 404) are
+    # stored in mb_failed_lookups so that subsequent enrichment runs skip
+    # them without issuing redundant network requests.  These are kept in
+    # a separate table from mb_recordings so that credit-free recordings
+    # (which have a legitimate empty row) are never confused with invalid
+    # or stale MBIDs.
+    # ------------------------------------------------------------------
+
+    def set_failed(
+        self,
+        mbid: str,
+        endpoint: str = "recording",
+        status_code: Optional[int] = None,
+    ) -> None:
+        import time as _time
+        from utils.db import get_connection
+        get_connection().execute(
+            "INSERT OR REPLACE INTO mb_failed_lookups "
+            "(mbid, endpoint, status_code, failed_at) VALUES (?, ?, ?, ?)",
+            (mbid, endpoint, status_code, _time.time()),
+        )
+
+    def has_failed(self, mbid: str) -> bool:
+        from utils.db import get_connection
+        return get_connection().execute(
+            "SELECT 1 FROM mb_failed_lookups WHERE mbid=? LIMIT 1",
+            (mbid,),
+        ).fetchone() is not None
+
+    def get_failed(self, mbid: str) -> Optional[Dict[str, Any]]:
+        from utils.db import get_connection
+        row = get_connection().execute(
+            "SELECT endpoint, status_code, failed_at FROM mb_failed_lookups WHERE mbid=?",
+            (mbid,),
+        ).fetchone()
+        return dict(row) if row else None
+
+    @property
+    def failed_count(self) -> int:
+        from utils.db import get_connection
+        return get_connection().execute(
+            "SELECT COUNT(*) FROM mb_failed_lookups"
+        ).fetchone()[0]
+
 
 _mb_cache_instance: Optional[MusicBrainzCache] = None
 
@@ -206,6 +281,10 @@ class MusicBrainzReadAPI:
         self._recording_cache: Dict[str, MusicBrainzRecording] = {}
         self._work_cache: Dict[str, MusicBrainzWork] = {}
         self._artist_cache: Dict[str, MusicBrainzArtist] = {}
+        # Maps MBID → HTTP status code for recording fetches that failed.
+        # Populated by get_composition_credits so enrich_recordings can write
+        # a precise entry to mb_failed_lookups without re-raising the exception.
+        self._failed_recording_codes: Dict[str, Optional[int]] = {}
 
     def _call(self, endpoint: str, **params: Any) -> Dict[str, Any]:
         elapsed = time.monotonic() - self._last_request_at
@@ -308,6 +387,14 @@ class MusicBrainzReadAPI:
             recording = self.get_recording(recording_mbid)
         except MusicBrainzError as exc:
             logger.warning("Could not fetch recording %s: %s", recording_mbid, exc)
+            self._failed_recording_codes[recording_mbid] = exc.status_code
+            # TODO: if exc.status_code == 404, consider retrying against
+            # /release/{recording_mbid} — Last.fm frequently stores Release
+            # MBIDs in the recording field.  A successful release lookup would
+            # confirm the MBID is valid but points to the wrong entity type,
+            # and could surface album-level genre data even without composer
+            # credits.  See module docstring for the full list of data-quality
+            # causes.
             return {}
 
         combined: Dict[str, List[MusicBrainzArtist]] = {}
@@ -353,52 +440,56 @@ class MusicBrainzReadAPI:
         a long-running job does not lose progress if interrupted.
         """
         SAVE_INTERVAL = 60  # seconds
-        uncached = [m for m in mbids if m and m not in cache]
+        # Skip MBIDs already in mb_recordings *and* those already known to have
+        # failed — avoids re-issuing requests for stale/invalid Last.fm MBIDs.
+        uncached = [m for m in mbids if m and m not in cache and not cache.has_failed(m)]
         total = len(uncached)
         last_save_at = time.monotonic()
         for i, mbid in enumerate(uncached):
             try:
                 credits = self.get_composition_credits(mbid)
                 recording = self._recording_cache.get(mbid)
-                # Merge genres: recording-level first, then each linked work's genres.
-                # Recording genres tend to describe the performance; work genres tend
-                # to describe the form/style (especially for classical).  Both are
-                # valuable, so we keep both, deduplicated, in that order.
-                seen_genres: set = set()
-                merged_genres: list = []
-                for g in (recording.genres if recording else ()):
-                    if g not in seen_genres:
-                        merged_genres.append(g)
-                        seen_genres.add(g)
-                for work_mbid in (recording.work_mbids if recording else ()):
-                    work = self._work_cache.get(work_mbid)
-                    if work:
-                        for g in work.genres:
-                            if g not in seen_genres:
-                                merged_genres.append(g)
-                                seen_genres.add(g)
-                cache.set(mbid, {
-                    "mb_title": recording.title if recording else "",
-                    "mb_artist": recording.artist_credit if recording else "",
-                    "mb_genres": merged_genres,
-                    "composer": [a.name for a in credits.get("composer", [])],
-                    "lyricist": [a.name for a in credits.get("lyricist", [])],
-                    "arranger": [a.name for a in credits.get("arranger", [])],
-                    "orchestrator": [a.name for a in credits.get("orchestrator", [])],
-                    "writer": [a.name for a in credits.get("writer", [])],
-                })
+
+                if recording is None:
+                    # get_recording raised MusicBrainzError (swallowed inside
+                    # get_composition_credits).  Persist to the failed-lookup
+                    # table rather than writing a blank row to mb_recordings so
+                    # that genuinely credit-free recordings stay distinguishable
+                    # from invalid or stale MBIDs.
+                    status_code = self._failed_recording_codes.get(mbid)
+                    cache.set_failed(mbid, endpoint="recording", status_code=status_code)
+                    logger.debug("Recorded failed lookup for %s (status=%s)", mbid, status_code)
+                else:
+                    # Merge genres: recording-level first, then each linked work's genres.
+                    # Recording genres tend to describe the performance; work genres tend
+                    # to describe the form/style (especially for classical).  Both are
+                    # valuable, so we keep both, deduplicated, in that order.
+                    seen_genres: set = set()
+                    merged_genres: list = []
+                    for g in recording.genres:
+                        if g not in seen_genres:
+                            merged_genres.append(g)
+                            seen_genres.add(g)
+                    for work_mbid in recording.work_mbids:
+                        work = self._work_cache.get(work_mbid)
+                        if work:
+                            for g in work.genres:
+                                if g not in seen_genres:
+                                    merged_genres.append(g)
+                                    seen_genres.add(g)
+                    cache.set(mbid, {
+                        "mb_title": recording.title,
+                        "mb_artist": recording.artist_credit,
+                        "mb_genres": merged_genres,
+                        "composer": [a.name for a in credits.get("composer", [])],
+                        "lyricist": [a.name for a in credits.get("lyricist", [])],
+                        "arranger": [a.name for a in credits.get("arranger", [])],
+                        "orchestrator": [a.name for a in credits.get("orchestrator", [])],
+                        "writer": [a.name for a in credits.get("writer", [])],
+                    })
             except MusicBrainzError as exc:
                 logger.warning("Skipping recording %s during enrichment: %s", mbid, exc)
-                cache.set(mbid, {
-                    "mb_title": "",
-                    "mb_artist": "",
-                    "mb_genres": [],
-                    "composer": [],
-                    "lyricist": [],
-                    "arranger": [],
-                    "orchestrator": [],
-                    "writer": [],
-                })
+                cache.set_failed(mbid, endpoint="recording", status_code=exc.status_code)
             if progress_callback:
                 progress_callback(i + 1, total)
             if time.monotonic() - last_save_at >= SAVE_INTERVAL:

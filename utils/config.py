@@ -77,6 +77,22 @@ class Config:
         self.number_words = {}  # Locale-specific number word configurations
         self.coqui_tts_location = ""
         self.coqui_tts_model = ("tts_models/multilingual/multi-dataset/xtts_v2", "Royston Min", "en")
+        self.tts_provider = "coqui"
+        # Kokoro
+        self.kokoro_model = "kokoro-v1.0"
+        self.kokoro_voice = "af_heart"
+        # F5-TTS
+        self.f5tts_model = "F5TTS_v1_Base"
+        self.f5tts_reference_audio = None   # path to reference WAV
+        self.f5tts_reference_text = ""      # optional; auto-transcribed if empty
+        # MaskGCT
+        self.maskgct_reference_audio = None  # path to reference WAV
+        self.maskgct_language = "en"
+        # Piper
+        self.piper_model_path = None         # path to a specific .onnx model file (optional)
+        self.piper_voices_dir = None         # directory for auto-downloaded voice models
+        self.piper_quality = "medium"        # preferred quality tier: x_low / low / medium / high
+        self.piper_auto_download = True      # download a voice automatically if piper_model_path is unset
         self.max_chunk_tokens = 200
 
         self.enable_dynamic_volume = True
@@ -120,6 +136,13 @@ class Config:
             "llm_model_name",
             "muse_language_learning_language",
             "muse_language_learning_language_level",
+            "tts_provider",
+            "kokoro_model",
+            "kokoro_voice",
+            "f5tts_model",
+            "f5tts_reference_text",
+            "maskgct_language",
+            "piper_quality",
         )
         self.set_values(int,
             "max_chunk_tokens",
@@ -142,6 +165,7 @@ class Config:
             "play_videos_in_separate_window",
             "dj_persona_refresh_context",
             "auto_fix_vlc_plugin_cache",
+            "piper_auto_download",
         )
         self.set_values(dict,
             "muse_config",
@@ -152,8 +176,12 @@ class Config:
             "prompts_directory",
             "tongue_twisters_dir",
             "coqui_tts_location",
+            "piper_voices_dir",
         )
         self.set_filepaths(
+            "f5tts_reference_audio",
+            "maskgct_reference_audio",
+            "piper_model_path",
             "artists_file",
             "composers_file",
             "forms_file",

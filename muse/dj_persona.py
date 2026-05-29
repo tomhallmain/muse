@@ -1,12 +1,13 @@
 """DJ Persona management for the Muse application."""
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 from typing import List, Dict, Optional, Tuple, Any
 from pathlib import Path
 import time
 
 from extensions.llm import LLMResult
-from tts.speakers import speakers
 from utils.config import config
 from utils.logging_setup import get_logger
 from utils.utils import Utils
@@ -15,6 +16,84 @@ from utils.translations import I18N, SUPPORTED_LANGUAGE_CODES
 logger = get_logger(__name__)
 
 _ = I18N._
+
+# ---------------------------------------------------------------------------
+# Provider–language support matrix
+#
+# Maps provider value string → language_code → compatibility.
+#   True  : fully supported
+#   str   : supported with a quality caveat (treated as True + warning text)
+#   absent: not supported (treated as False)
+#
+# "all" as the dict value means the provider supports every language.
+# Based on the assessment in docs/tts-provider-abstraction.md.
+# ---------------------------------------------------------------------------
+_LANG_SUPPORT: Dict[str, Any] = {
+    "coqui":   "all",
+    "kokoro": {
+        "en": True, "ja": True, "zh": True, "es": True,
+        "fr": True, "hi": True, "it": True, "pt": True, "ko": True,
+        "de": "experimental quality for German — consider Piper instead",
+    },
+    "f5tts": {
+        "en": True,
+        "zh": "experimental quality",
+    },
+    "maskgct": {
+        "en": True,
+        "zh": "experimental quality",
+    },
+    "piper":  "all",
+}
+
+
+def _lang_compat(language_code: str, provider_value: str) -> Tuple[bool, str]:
+    """Return (supported, caveat_str) for the given language/provider pair."""
+    support = _LANG_SUPPORT.get(provider_value, {})
+    if support == "all":
+        return True, ""
+    entry = support.get(language_code)
+    if entry is True:
+        return True, ""
+    if isinstance(entry, str):
+        return True, entry  # caveat warning, but still usable
+    return False, (
+        f"Provider '{provider_value}' does not reliably support language '{language_code}'. "
+        "Consider Piper or Coqui for this locale."
+    )
+
+
+def _voice_compat(voice_name: str, provider_value: str) -> Tuple[bool, str]:
+    """Return (valid, reason_str) for the given voice_name/provider pair."""
+    if provider_value == "coqui":
+        from tts.speakers import speakers as _COQUI
+        if voice_name in _COQUI:
+            return True, ""
+        return False, f'"{voice_name}" is not a known Coqui speaker name.'
+
+    if provider_value == "kokoro":
+        from tts.providers.kokoro import KOKORO_VOICES
+        if voice_name in KOKORO_VOICES:
+            return True, ""
+        return False, f'"{voice_name}" is not a known Kokoro voice ID.'
+
+    if provider_value in ("f5tts", "maskgct"):
+        if not voice_name:
+            return True, "No per-persona reference audio set — app-level config will be used."
+        if Path(voice_name).is_file():
+            return True, ""
+        return False, f'Reference audio file not found: "{voice_name}".'
+
+    if provider_value == "piper":
+        if not voice_name:
+            return True, "No per-persona Piper model set — app-level config will be used."
+        p = Path(voice_name)
+        if p.is_file() and p.suffix == ".onnx":
+            return True, ""
+        return False, f'Piper .onnx model not found: "{voice_name}".'
+
+    return True, ""
+
 
 @dataclass
 class DJPersona:
@@ -45,17 +124,10 @@ class DJPersona:
         if self.language_code not in SUPPORTED_LANGUAGE_CODES:
             raise ValueError(f"Invalid language code: {self.language_code}. Must be one of {SUPPORTED_LANGUAGE_CODES}")
         
-        if self.voice_name not in speakers:
-            try: 
-                for speaker in speakers:
-                    if Utils.is_similar_strings(speaker, self.voice_name):
-                        logger.warning(f"Found similar voice name \"{self.voice_name}\", using valid speaker name \"{speaker}\" instead")
-                        self.voice_name = speaker
-                        break
-            except Exception as e:
-                logger.error(f"Error validating voice name: {e}")
-                raise ValueError(f"Invalid voice name: {self.voice_name}. Must be one of {list(speakers.keys())}")
-        
+        # Voice name validation is provider-specific and handled at speak-time
+        # via DJPersona.available_for_provider() (see docs/tts-provider-abstraction.md).
+        # Coqui speaker fuzzy-matching moved to CoquiTTSProvider.resolve_voice_name().
+
         if self.artwork_paths is not None:
             test_paths = list(self.artwork_paths)
             for path in test_paths:
@@ -112,6 +184,30 @@ class DJPersona:
             num_units, unit = I18N.time_ago(time_diff)
             return _("The listener last tuned in {0} {1} ago").format(num_units, unit)
         return _("The listener last tuned in recently")
+
+    def available_for_provider(self, provider: Any) -> Tuple[bool, str]:
+        """Return ``(is_available, reason)`` for the given TTS provider.
+
+        *provider* is a ``TTSProviderType`` enum value.  Checks both that this
+        persona's ``voice_name`` is a valid value for the provider *and* that
+        the provider supports this persona's ``language_code``.
+
+        ``is_available`` is ``False`` only when one of those checks fails
+        outright; a non-empty ``reason`` on a ``True`` result is an advisory
+        warning (e.g. degraded quality for this language).
+        """
+        provider_value: str = provider.value if hasattr(provider, "value") else str(provider)
+
+        voice_ok, voice_reason = _voice_compat(self.voice_name, provider_value)
+        lang_ok, lang_reason = _lang_compat(self.language_code, provider_value)
+
+        if not voice_ok:
+            return False, voice_reason
+        if not lang_ok:
+            return False, lang_reason
+
+        warnings = [r for r in (voice_reason, lang_reason) if r]
+        return True, "; ".join(warnings)
 
     def update_from_dict(self, new_data: 'DJPersona', refresh_context=False) -> None:
         """Update the persona from a new DJPersona object."""
@@ -391,3 +487,15 @@ class DJPersonaManager:
     def get_all_personas(self) -> Dict[str, DJPersona]:
         """Get all personas as a dictionary."""
         return self.personas.copy()
+
+    def personas_for_provider(self, provider: Any) -> Dict[str, "DJPersona"]:
+        """Return only the personas that are fully configured for *provider*.
+
+        Personas that pass ``available_for_provider`` with a caveat warning are
+        included; only those that return ``is_available=False`` are excluded.
+        Useful for populating provider-aware UI dropdowns.
+        """
+        return {
+            k: v for k, v in self.personas.items()
+            if v.available_for_provider(provider)[0]
+        }

@@ -180,6 +180,18 @@ CREATE TABLE IF NOT EXISTS mb_recordings (
     fetched_at   REAL NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_mb_composer ON mb_recordings(composer);
+
+-- ─── MusicBrainz failed-lookup cache ─────────────────────────────────────────
+-- Tracks every MBID whose MusicBrainz endpoint returned a non-retriable error
+-- (e.g. 404 Not Found).  Kept separate from mb_recordings so that genuinely
+-- credit-free recordings are not confused with invalid or stale MBIDs.
+
+CREATE TABLE IF NOT EXISTS mb_failed_lookups (
+    mbid        TEXT PRIMARY KEY,
+    endpoint    TEXT NOT NULL DEFAULT '',  -- e.g. 'recording', 'release'
+    status_code INTEGER,                   -- HTTP status if available, else NULL
+    failed_at   REAL NOT NULL              -- unix timestamp
+);
 """
 
 

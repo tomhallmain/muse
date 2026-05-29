@@ -62,7 +62,7 @@ class Muse:
 
         if persona:
             self.memory.get_persona_manager().set_current_persona(persona.voice_name)
-            self.voice = Voice(persona.voice_name, run_context=self._run_context)
+            self.voice = Voice(persona.voice_name, language=persona.language_code, run_context=self._run_context)
             self.wiki_search = WikiOpenSearchAPI(language_code=persona.language_code)
         else:
             self.voice = Voice(initial_voice, run_context=self._run_context)
@@ -230,7 +230,7 @@ class Muse:
             if persona:
                 # Set the new persona
                 self.memory.get_persona_manager().set_current_persona(persona.voice_name)
-                self.voice = Voice(persona.voice_name, run_context=self._run_context)
+                self.voice = Voice(persona.voice_name, language=persona.language_code, run_context=self._run_context)
                 
                 # Update UI with new persona
                 if self.ui_callbacks and self.ui_callbacks.update_dj_persona_callback is not None:

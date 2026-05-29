@@ -10,10 +10,14 @@ from PySide6.QtWidgets import (
     QLabel,
     QLineEdit,
     QCheckBox,
+    QComboBox,
     QPushButton,
     QTabWidget,
     QWidget,
     QFrame,
+    QGroupBox,
+    QScrollArea,
+    QFileDialog,
 )
 from PySide6.QtCore import Qt
 
@@ -132,17 +136,155 @@ class ConfigurationWindow(SmartWindow):
         tab_layout.addWidget(frame)
 
     def create_tts_tab(self):
-        frame = QFrame(self.tts_tab)
-        layout = QGridLayout(frame)
-        layout.setContentsMargins(10, 10, 10, 10)
+        scroll = QScrollArea(self.tts_tab)
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        content = QWidget()
+        main_layout = QVBoxLayout(content)
+        main_layout.setContentsMargins(10, 10, 10, 10)
+        main_layout.setSpacing(8)
 
-        self.add_config_entry(frame, layout, "coqui_tts_location", _("Coqui TTS Location"), 0)
-        self.add_config_entry(frame, layout, "llm_model_name", _("LLM Model Name"), 1)
-        self.add_config_entry(frame, layout, "max_chunk_tokens", _("Max Chunk Tokens"), 2)
+        # ── Common fields ─────────────────────────────────────────────
+        common_frame = QFrame(content)
+        common_layout = QGridLayout(common_frame)
+        common_layout.setContentsMargins(0, 0, 0, 0)
+
+        # Provider combo
+        common_layout.addWidget(
+            QLabel(_("TTS Provider:"), common_frame), 0, 0,
+            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
+        )
+        self._provider_combo = QComboBox(common_frame)
+        for value in ("coqui", "kokoro", "f5tts", "maskgct", "piper"):
+            self._provider_combo.addItem(value)
+        current = getattr(config, "tts_provider", "coqui") or "coqui"
+        self._provider_combo.setCurrentText(current)
+        self._provider_combo.currentTextChanged.connect(self._on_tts_provider_changed)
+        common_layout.addWidget(self._provider_combo, 0, 1, Qt.AlignmentFlag.AlignLeft)
+        self.config_vars["tts_provider"] = (self._provider_combo, "combo")
+
+        self.add_config_entry(common_frame, common_layout, "llm_model_name", _("LLM Model Name"), 1)
+        self.add_config_entry(common_frame, common_layout, "max_chunk_tokens", _("Max Chunk Tokens"), 2)
+        main_layout.addWidget(common_frame)
+
+        # ── Coqui section ─────────────────────────────────────────────
+        self._coqui_section = QGroupBox(_("Coqui TTS"), content)
+        coqui_layout = QGridLayout(self._coqui_section)
+        self.add_config_entry(
+            self._coqui_section, coqui_layout,
+            "coqui_tts_location", _("TTS Library Path"), 0,
+        )
+        main_layout.addWidget(self._coqui_section)
+
+        # ── Kokoro section ────────────────────────────────────────────
+        self._kokoro_section = QGroupBox(_("Kokoro TTS"), content)
+        kokoro_layout = QGridLayout(self._kokoro_section)
+
+        kokoro_layout.addWidget(
+            QLabel(_("Voice:"), self._kokoro_section), 0, 0,
+            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
+        )
+        self._kokoro_voice_combo = QComboBox(self._kokoro_section)
+        try:
+            from tts.providers.kokoro import KOKORO_VOICES
+            self._kokoro_voice_combo.addItems(KOKORO_VOICES)
+        except Exception:
+            self._kokoro_voice_combo.addItem("af_heart")
+        saved_voice = getattr(config, "kokoro_voice", "af_heart") or "af_heart"
+        idx = self._kokoro_voice_combo.findText(saved_voice)
+        self._kokoro_voice_combo.setCurrentIndex(max(idx, 0))
+        kokoro_layout.addWidget(self._kokoro_voice_combo, 0, 1, Qt.AlignmentFlag.AlignLeft)
+        self.config_vars["kokoro_voice"] = (self._kokoro_voice_combo, "combo")
+
+        self.add_config_entry(
+            self._kokoro_section, kokoro_layout,
+            "kokoro_model", _("Model"), 1,
+        )
+        main_layout.addWidget(self._kokoro_section)
+
+        # ── F5-TTS section ────────────────────────────────────────────
+        self._f5tts_section = QGroupBox(_("F5-TTS"), content)
+        f5_layout = QGridLayout(self._f5tts_section)
+        self.add_config_filepath_entry(
+            self._f5tts_section, f5_layout,
+            "f5tts_reference_audio", _("Reference Audio (.wav)"), 0,
+            _("Audio files") + " (*.wav *.mp3 *.flac)",
+        )
+        self.add_config_entry(
+            self._f5tts_section, f5_layout,
+            "f5tts_reference_text", _("Reference Text (optional)"), 1,
+        )
+        self.add_config_entry(
+            self._f5tts_section, f5_layout,
+            "f5tts_model", _("Model"), 2,
+        )
+        main_layout.addWidget(self._f5tts_section)
+
+        # ── MaskGCT section ───────────────────────────────────────────
+        self._maskgct_section = QGroupBox(_("MaskGCT / Amphion"), content)
+        mgct_layout = QGridLayout(self._maskgct_section)
+        self.add_config_filepath_entry(
+            self._maskgct_section, mgct_layout,
+            "maskgct_reference_audio", _("Reference Audio (.wav)"), 0,
+            _("Audio files") + " (*.wav *.mp3 *.flac)",
+        )
+        self.add_config_entry(
+            self._maskgct_section, mgct_layout,
+            "maskgct_language", _("Language Code"), 1,
+        )
+        main_layout.addWidget(self._maskgct_section)
+
+        # ── Piper section ─────────────────────────────────────────────
+        self._piper_section = QGroupBox(_("Piper TTS"), content)
+        piper_layout = QGridLayout(self._piper_section)
+        self.add_config_filepath_entry(
+            self._piper_section, piper_layout,
+            "piper_model_path", _("Model Path (.onnx, optional)"), 0,
+            _("ONNX models") + " (*.onnx)",
+        )
+        self.add_config_dirpath_entry(
+            self._piper_section, piper_layout,
+            "piper_voices_dir", _("Voices Cache Directory"), 1,
+        )
+
+        piper_layout.addWidget(
+            QLabel(_("Quality:"), self._piper_section), 2, 0,
+            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
+        )
+        self._piper_quality_combo = QComboBox(self._piper_section)
+        for q in ("x_low", "low", "medium", "high"):
+            self._piper_quality_combo.addItem(q)
+        saved_q = getattr(config, "piper_quality", "medium") or "medium"
+        self._piper_quality_combo.setCurrentText(saved_q)
+        piper_layout.addWidget(self._piper_quality_combo, 2, 1, Qt.AlignmentFlag.AlignLeft)
+        self.config_vars["piper_quality"] = (self._piper_quality_combo, "combo")
+
+        self.add_config_checkbox(
+            self._piper_section, piper_layout,
+            "piper_auto_download", _("Auto-download voice for language"), 3,
+        )
+        main_layout.addWidget(self._piper_section)
+
+        main_layout.addStretch()
+        scroll.setWidget(content)
 
         tab_layout = QVBoxLayout(self.tts_tab)
         tab_layout.setContentsMargins(0, 0, 0, 0)
-        tab_layout.addWidget(frame)
+        tab_layout.addWidget(scroll)
+
+        # Apply initial visibility
+        self._on_tts_provider_changed(current)
+
+    def _on_tts_provider_changed(self, provider_value: str):
+        sections = {
+            "coqui":   self._coqui_section,
+            "kokoro":  self._kokoro_section,
+            "f5tts":   self._f5tts_section,
+            "maskgct": self._maskgct_section,
+            "piper":   self._piper_section,
+        }
+        for key, section in sections.items():
+            section.setVisible(key == provider_value)
 
     def add_config_entry(self, parent, layout, key, label_text, row):
         label = QLabel(label_text, parent)
@@ -153,6 +295,63 @@ class ConfigurationWindow(SmartWindow):
         val = config.get_config_value(key)
         entry.setText(str(val) if val is not None else "")
         layout.addWidget(entry, row, 1, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+        self.config_vars[key] = (entry, "entry")
+
+    def add_config_filepath_entry(self, parent, layout, key, label_text, row, file_filter=""):
+        """A config entry row with an inline Browse button for file paths."""
+        label = QLabel(label_text, parent)
+        layout.addWidget(label, row, 0, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+
+        row_widget = QWidget(parent)
+        row_layout = QHBoxLayout(row_widget)
+        row_layout.setContentsMargins(0, 0, 0, 0)
+
+        entry = QLineEdit(row_widget)
+        entry.setMinimumWidth(260)
+        val = config.get_config_value(key)
+        entry.setText(str(val) if val is not None else "")
+        row_layout.addWidget(entry)
+
+        browse_btn = QPushButton(_("Browse"), row_widget)
+        _filter = file_filter
+
+        def _browse():
+            path, _ = QFileDialog.getOpenFileName(self, label_text, "", _filter)
+            if path:
+                entry.setText(path)
+
+        browse_btn.clicked.connect(_browse)
+        row_layout.addWidget(browse_btn)
+
+        layout.addWidget(row_widget, row, 1, Qt.AlignmentFlag.AlignLeft)
+        self.config_vars[key] = (entry, "entry")
+
+    def add_config_dirpath_entry(self, parent, layout, key, label_text, row):
+        """A config entry row with an inline Browse button for directory paths."""
+        label = QLabel(label_text, parent)
+        layout.addWidget(label, row, 0, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+
+        row_widget = QWidget(parent)
+        row_layout = QHBoxLayout(row_widget)
+        row_layout.setContentsMargins(0, 0, 0, 0)
+
+        entry = QLineEdit(row_widget)
+        entry.setMinimumWidth(260)
+        val = config.get_config_value(key)
+        entry.setText(str(val) if val is not None else "")
+        row_layout.addWidget(entry)
+
+        browse_btn = QPushButton(_("Browse"), row_widget)
+
+        def _browse():
+            path = QFileDialog.getExistingDirectory(self, label_text)
+            if path:
+                entry.setText(path)
+
+        browse_btn.clicked.connect(_browse)
+        row_layout.addWidget(browse_btn)
+
+        layout.addWidget(row_widget, row, 1, Qt.AlignmentFlag.AlignLeft)
         self.config_vars[key] = (entry, "entry")
 
     def add_config_checkbox(self, parent, layout, key, label_text, row):
@@ -197,6 +396,8 @@ class ConfigurationWindow(SmartWindow):
             for key, (widget, kind) in self.config_vars.items():
                 if kind == "checkbox":
                     config.set_config_value(key, widget.isChecked())
+                elif kind == "combo":
+                    config.set_config_value(key, widget.currentText())
                 else:
                     config.set_config_value(key, widget.text())
 

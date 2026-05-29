@@ -1,51 +1,33 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 import os
 import subprocess
-import sys
 import time
 from typing import Optional, Callable
 import uuid
 
-import torch
 import music_tag
 
+from tts.providers import BaseTTSProvider, TTSProviderType, get_provider
+from tts.chunker import Chunker
 from utils.config import config
 from utils.job_queue import JobQueue
 from utils.logging_setup import get_logger
 from utils.utils import Utils
-
-try:
-    sys.path.insert(0, config.coqui_tts_location)
-    from TTS.api import TTS
-    # Utils.remove_extra_handlers()
-except ImportError:
-    raise Exception("Failed to import Coqui TTS. Ensure the code is downloaded and the \"coqui_tts_location\" value is set in the config.")
-
 from utils.vlc_plugin_cache import ensure_vlc_plugin_cache_if_stale
 
 ensure_vlc_plugin_cache_if_stale()
 import vlc
 
-# from ops.speakers import speakers
-from tts.chunker import Chunker
-from utils.config import config
-from utils.job_queue import JobQueue
-from utils.utils import Utils
-
-# Get device
-device = "cuda" if torch.cuda.is_available() else "cpu"
-
-# List available 🐸TTS models
-# pprint.pprint(TTS().list_models())
-
-# Get logger for this module
 logger = get_logger(__name__)
 
 @dataclass
 class TTSConfig:
     """Configuration for TextToSpeechRunner and related classes."""
-    model: str
+    model: object  # provider-specific: Coqui uses (model_name, speaker, language) tuple
+    provider: TTSProviderType = TTSProviderType.COQUI
+    voice: Optional[str] = None     # per-invocation voice override (speaker name, voice ID, or file path)
+    language: str = "en"            # BCP-47 language code; used by Piper auto-download and passed to providers
     filepath: str = "test"
     overwrite: bool = False
     delete_interim_files: bool = True
@@ -158,6 +140,12 @@ class TextToSpeechRunner:
 
     def __init__(self, config: TTSConfig):
         self.config = config
+        self._provider: BaseTTSProvider = get_provider(config)
+        if not self._provider.is_available():
+            raise Exception(
+                f"TTS provider '{config.provider}' is not available on this system. "
+                "Check that the required package is installed and configured correctly."
+            )
         # WARNING: The speech queue is shared across all TTSRunner instances.
         # When skip is triggered, it will cancel ALL pending speech jobs, not just
         # the current one. This means if multiple TTS invocations are running
@@ -168,7 +156,6 @@ class TextToSpeechRunner:
         self.speech_queue = JobQueue("Speech Queue")
         self.output_path = os.path.splitext(os.path.basename(config.filepath))[0]
         self.output_path_normalized = Utils.ascii_normalize(self.output_path)
-        self.model = config.model
         self.overwrite = config.overwrite
         self.counter = 0
         self.audio_paths = []
@@ -222,25 +209,7 @@ class TextToSpeechRunner:
             logger.info("Using existing generation file: " + final_output_path_mp3)
             return
         logger.info("Generating speech file: " + output_path)
-        try:
-            # Init TTS with the target model name
-            tts = TTS(model_name=self.model[0], progress_bar=False).to(device)
-            # Run TTS with error handling
-            try:
-                tts.tts_to_file(text=text,
-                              speaker=self.model[1],
-                              file_path=output_path,
-                              language=self.model[2])
-            except Exception as e:
-                logger.error(f"TTS generation failed: {str(e)}")
-                # Check if the file was created despite the error
-                if not os.path.exists(output_path):
-                    raise Exception("TTS failed to generate audio file")
-                # If file exists, we can continue despite the error
-                logger.info("TTS generated file despite error, continuing...")
-        except Exception as e:
-            logger.error(f"TTS initialization failed: {str(e)}")
-            raise
+        self._provider.generate_speech_file(text, output_path)
 
     def play_async(self, filepath):
         if self.run_context and self.run_context.should_skip():
@@ -363,36 +332,26 @@ class TextToSpeechRunner:
             raise Exception("Could not convert file to MP3: " + str(e))
 
     def add_metadata(self, output_path, text_content):
-        # Add metadata if the MP3 file was successfully created
         try:
             f = music_tag.load_file(output_path)
-            
-            # Basic track info
-            if text_content and text_content.strip() != "":
+
+            if text_content and text_content.strip():
                 f['lyrics'] = text_content
-                # Use first line of text as title if available
-                first_line = text_content.split('\n')[0][:50]  # Limit length for title
-                f['tracktitle'] = first_line
+                f['tracktitle'] = text_content.split('\n')[0][:50]
             else:
                 f['tracktitle'] = "Unknown"
-            
-            # Artist and source info
-            speaker_name = self.model[1] if self.model[1] else "Unknown Speaker"
-            f['artist'] = f"{speaker_name} (CoquiAI)"
-            f['album'] = "Muse app output"
-            
-            # Additional metadata for identification
-            f['albumartist'] = "CoquiAI TTS"
-            f['genre'] = "Text-to-Speech"
-            f['comment'] = f"Generated using CoquiAI TTS model: {self.model[0]}"
-            if self.model[2]:  # If language is specified
-                f['comment'] = f"{f['comment']} (Language: {self.model[2]})"
 
-            f['year'] = datetime.now().year
+            meta = self._provider.metadata_info()
+            f['artist']      = meta.get("artist", "Unknown Speaker")
+            f['album']       = "Muse app output"
+            f['albumartist'] = meta.get("albumartist", "TTS")
+            f['genre']       = "Text-to-Speech"
+            f['comment']     = meta.get("comment", "")
+            f['year']        = datetime.now().year
             f.save()
-            logger.info(f"Added metadata to {output_path}")
+            logger.info("Added metadata to %s", output_path)
         except Exception as e:
-            logger.warning(f"Could not add metadata: {e}")
+            logger.warning("Could not add metadata: %s", e)
 
     def get_output_path_no_unicode(self):
         output_path = os.path.join(TextToSpeechRunner.output_directory, self.output_path + '.wav')

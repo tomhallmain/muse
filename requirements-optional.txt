@@ -20,3 +20,24 @@ dbus-python; sys_platform == 'linux'
 # Required for the PySide6 version (app_qt.py) on macOS and Linux (Windows uses native Qt key detection).
 # Used by lib/media_keys.py for global hotkey detection when the window doesn't have focus.
 pynput
+
+# ── TTS providers (install only the ones you intend to use) ──────────────────
+
+# Kokoro: fast, high-quality named-voice TTS (Apache 2.0, ~82M params, ONNX).
+# tts_provider = "kokoro" in config.json
+kokoro-onnx
+
+# F5-TTS: zero-shot voice cloning from a reference WAV (MIT).
+# tts_provider = "f5tts" in config.json
+f5-tts
+
+# MaskGCT / Amphion: zero-shot voice cloning (non-commercial research license).
+# tts_provider = "maskgct" in config.json
+# Alternatively: git clone https://github.com/open-mmlab/Amphion && pip install -e Amphion/
+amphion
+
+# Piper: fast CPU-only TTS with 35+ language voices (Apache 2.0 / MIT).
+# tts_provider = "piper" in config.json
+# Voice .onnx files must be downloaded separately from:
+#   https://huggingface.co/rhasspy/piper-voices
+piper-tts
