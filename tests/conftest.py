@@ -121,6 +121,71 @@ def _reset_playback_state() -> None:
     PlaybackStateManager.reset()
 
 
+# ---------------------------------------------------------------------------
+# DB isolation helpers
+# ---------------------------------------------------------------------------
+
+def _make_isolated_db_conn():
+    """Return a fresh in-memory SQLite connection seeded from example files.
+
+    Uses the same schema as the real DB but skips the legacy-JSON migration
+    and gzip-cache imports to avoid slow I/O and real-file dependencies.
+    """
+    import sqlite3
+
+    from utils.db import (
+        _create_schema,
+        _seed_artists,
+        _seed_composers,
+        _seed_forms,
+        _seed_genres,
+        _seed_instruments,
+        _set_meta,
+    )
+
+    conn = sqlite3.connect(":memory:")
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA foreign_keys=ON")
+    _create_schema(conn)
+    _seed_forms(conn)
+    _seed_genres(conn)
+    _seed_instruments(conn)
+    _seed_composers(conn)
+    _seed_artists(conn)
+    _set_meta(conn, "seeded", "1")
+    conn.commit()
+    return conn
+
+
+def _patch_db_connection_singleton(monkeypatch, conn) -> None:
+    """Redirect get_connection() to *conn* for all known call sites.
+
+    Patches the utils.db module (for callers that import inside functions)
+    and the four library_data modules that bind ``get_connection`` at module
+    load time via a top-level ``from utils.db import get_connection``.
+    When ``reload_metadata_singletons`` later creates fresh ArtistsData() /
+    FormsData() / GenresData() / InstrumentsData() instances those constructors
+    will use the isolated connection.
+    """
+    import utils.db as db_mod
+
+    monkeypatch.setattr(db_mod, "get_connection", lambda: conn)
+    monkeypatch.setattr(db_mod, "_connection", conn)
+
+    for module_name in (
+        "library_data.artist",
+        "library_data.form",
+        "library_data.genre",
+        "library_data.instrument",
+    ):
+        try:
+            module = importlib.import_module(module_name)
+        except Exception:
+            continue
+        if hasattr(module, "get_connection"):
+            monkeypatch.setattr(module, "get_connection", lambda c=conn: c)
+
+
 def _patch_app_info_cache_singleton(monkeypatch, cache_instance) -> None:
     """Patch the app_info_cache singleton everywhere tests may hold a reference.
 
@@ -163,6 +228,9 @@ def _patch_config_singleton(monkeypatch, config_instance) -> None:
         "muse.playback",
         "muse.dj_persona",
         "library_data.library_data",
+        # composer.py still reads from a JSON file via config.composers_file, so
+        # it must see the isolated config instance to avoid reading the real file.
+        "library_data.composer",
     ):
         try:
             module = importlib.import_module(module_name)
@@ -192,7 +260,20 @@ def bypass_password(monkeypatch):
 
 @pytest.fixture(autouse=True)
 def isolated_singletons(tmp_path, monkeypatch):
-    """Point app singletons at a fresh per-test temp directory."""
+    """Point app singletons at a fresh per-test temp directory.
+
+    Also redirects the SQLite DB connection to an isolated in-memory database
+    so tests never touch the real muse_library.db on disk.  The in-memory DB
+    is seeded from the example JSON files (same as a fresh production install)
+    but skips the slow legacy-JSON and gzip-cache migrations.
+
+    The DB patch is applied before the other singletons are (re)constructed so
+    that any singleton whose __init__ calls get_connection() picks up the
+    isolated connection.  In particular, when the UI conftest's
+    ``isolated_metadata_files`` later calls ``reload_metadata_singletons()``,
+    the new ArtistsData / FormsData / GenresData / InstrumentsData instances
+    will load from the in-memory DB rather than the real one.
+    """
     cache_dir = tmp_path / "cache"
     configs_dir = tmp_path / "configs"
     cache_dir.mkdir()
@@ -203,13 +284,34 @@ def isolated_singletons(tmp_path, monkeypatch):
     monkeypatch.setenv("MUSE_CACHE_DIR", str(cache_dir))
     monkeypatch.setenv("MUSE_CONFIGS_DIR", str(configs_dir))
 
+    # --- DB isolation (must come before singleton construction below) ---
+    isolated_db_conn = _make_isolated_db_conn()
+    _patch_db_connection_singleton(monkeypatch, isolated_db_conn)
+
     from utils.app_info_cache import AppInfoCache
 
     new_cache = AppInfoCache()
     _patch_app_info_cache_singleton(monkeypatch, new_cache)
 
     config_module = importlib.import_module("utils.config")
-    _patch_config_singleton(monkeypatch, config_module.Config())
+    config_instance = config_module.Config()
+    # Resolve composers_file to an absolute path so ComposersData() (which still
+    # reads from JSON, not the DB) opens the right file regardless of CWD.
+    _composers_example = os.path.join(
+        _project_root, "library_data", "data", "composers_example.json"
+    )
+    if os.path.isfile(_composers_example):
+        config_instance.composers_file = _composers_example
+    _patch_config_singleton(monkeypatch, config_instance)
+    # Rebuild composers_data so it reads from the isolated example file rather
+    # than whatever the module-level singleton loaded at import time.
+    try:
+        import library_data.composer as _composer_mod
+        monkeypatch.setattr(
+            _composer_mod, "composers_data", _composer_mod.ComposersData()
+        )
+    except Exception:
+        pass
 
     import muse.muse_memory as mm
 
@@ -218,6 +320,10 @@ def isolated_singletons(tmp_path, monkeypatch):
 
     _reset_library_caches()
     _reset_playlist_history()
+
+    yield
+
+    isolated_db_conn.close()
 
 
 @pytest.fixture(autouse=True)
