@@ -33,7 +33,7 @@ def compute_proposed_filepath(
     """Return the absolute path after applying *metadata* and *actions*."""
     from library_data.media_track import MediaTrack
 
-    current_file = track.filepath
+    current_file = os.path.normpath(track.filepath)
     current_album_dir = os.path.dirname(current_file)
     current_artist_dir = os.path.dirname(current_album_dir)
     music_root = os.path.dirname(current_artist_dir)
@@ -62,7 +62,7 @@ def compute_proposed_filepath(
 
     basename = track.basename
     if rename_track_file:
-        title = metadata.get("title", "") or track.title or ""
+        title = metadata["title"] if "title" in metadata else (track.title or "")
         stem = MediaTrack.sanitize_filename_stem(title)
         if retain_ids and id_tags:
             stem = MediaTrack.reattach_ids(stem, id_tags)

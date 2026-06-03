@@ -51,7 +51,7 @@ def make_track(
 class TestComputeProposedFilepath:
     def test_no_changes_returns_current_path(self):
         result = compute_proposed_filepath(make_track(), {})
-        assert result == TRACK_PATH
+        assert result == os.path.normpath(TRACK_PATH)
 
     def test_title_changed_renames_file_basename(self):
         result = compute_proposed_filepath(

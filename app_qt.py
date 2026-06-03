@@ -579,7 +579,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         descriptor = None
         for pc in active.playback_configs:
             resolved_tracks.extend(
-                t.filepath for t in pc.playlist.sorted_tracks if t.filepath
+                t.filepath for t in pc.get_list().sorted_tracks if t.filepath
             )
             if descriptor is None:
                 pd = getattr(pc, "playlist_descriptor", None)
