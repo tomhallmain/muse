@@ -420,8 +420,8 @@ class LLM:
 
     def cancel_generation(self):
         """Cancel any ongoing LLM generation."""
-        logger.info("Cancelling LLM generation")
         if self._thread and self._thread.is_alive():
+            logger.info("Cancelling LLM generation")
             self._cancelled = True
             self._thread.join(timeout=1.0)
             if self._thread.is_alive():

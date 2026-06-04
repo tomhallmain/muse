@@ -97,6 +97,13 @@ class TestPlaybackSessionStore:
         app_info_cache.set(LAST_SESSION_KEY, "not-a-dict")
         assert PlaybackSessionStore.load() is None
 
+    def test_load_returns_none_when_from_dict_raises(self):
+        from utils.app_info_cache import app_info_cache
+        from unittest.mock import patch
+        app_info_cache.set(LAST_SESSION_KEY, {"resolved_tracks": []})
+        with patch.object(PlaybackSession, "from_dict", side_effect=ValueError("bad")):
+            assert PlaybackSessionStore.load() is None
+
     def test_save_overwrites_previous_session(self):
         PlaybackSessionStore.save(make_session(current_track_filepath="/music/a.flac"))
         PlaybackSessionStore.save(make_session(current_track_filepath="/music/b.flac"))

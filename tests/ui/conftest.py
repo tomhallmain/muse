@@ -83,15 +83,16 @@ def fixture_library_data(audio_library_media_tracks, audio_library_dir):
     )
 
 
-@pytest.fixture(autouse=True)
-def reset_ui_window_state():
-    """Clear class-level UI lists so tests do not share recent searches/favorites."""
+def _reset_window_state():
+    """Reset all known window class-level singletons and recent-item lists."""
+    from ui_qt.blacklist_preview_window import BlacklistPreviewWindow
     from ui_qt.composers_window import ComposersWindow
     from ui_qt.favorites_window import FavoritesWindow
     from ui_qt.history_window import HistoryWindow
     from ui_qt.library_window import LibraryWindow
     from ui_qt.playlist_window import MasterPlaylistWindow
     from ui_qt.search_window import SearchWindow
+    from ui_qt.weather_window import WeatherWindow
 
     SearchWindow.recent_searches = []
     SearchWindow.top_level = None
@@ -103,10 +104,18 @@ def reset_ui_window_state():
     HistoryWindow.top_level = None
     LibraryWindow.top_level = None
     MasterPlaylistWindow.top_level = None
+    BlacklistPreviewWindow.top_level = None
+    WeatherWindow.top_level = None
+    WeatherWindow.CITY = None
 
+
+@pytest.fixture(autouse=True)
+def reset_ui_window_state():
+    """Clear class-level UI lists so tests do not share recent searches/favorites."""
     from muse.playback_config_master import PlaybackConfigMaster
     from muse.playback_state import PlaybackStateManager
 
+    _reset_window_state()
     PlaybackStateManager.reset()
     PlaybackConfigMaster.open_configs.clear()
 
@@ -114,13 +123,4 @@ def reset_ui_window_state():
 
     PlaybackStateManager.reset()
     PlaybackConfigMaster.open_configs.clear()
-    SearchWindow.recent_searches = []
-    SearchWindow.top_level = None
-    FavoritesWindow.recent_favorites = []
-    FavoritesWindow.top_level = None
-    ComposersWindow.recent_searches = []
-    ComposersWindow.top_level = None
-    ComposersWindow.details_window = None
-    HistoryWindow.top_level = None
-    LibraryWindow.top_level = None
-    MasterPlaylistWindow.top_level = None
+    _reset_window_state()

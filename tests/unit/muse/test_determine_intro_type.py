@@ -114,3 +114,21 @@ class TestDetermineIntroType:
             )
             == IntroType.NONE
         )
+
+    def test_overnight_signoff_morning_return_gives_intro(self):
+        # Signed off at 23:30, returns at 07:00 next morning — 7.5 h gap,
+        # signoff hour >= 23, now hour in (4, 10): triggers case 2.
+        base = datetime.datetime(2024, 3, 20)
+        last_hello = mktime(base.replace(hour=17))
+        last_signoff = mktime(base.replace(hour=23, minute=30))
+        now = mktime(base.replace(hour=7)) + 86400
+        assert determine_intro_type(now, persona(last_hello, last_signoff)) == IntroType.INTRO
+
+    def test_early_morning_signoff_morning_return_gives_intro(self):
+        # Signed off at 02:00, returns at 08:00 same day — 6 h gap,
+        # signoff hour < 6, now hour in (4, 10): triggers case 2.
+        base = datetime.datetime(2024, 3, 20)
+        last_hello = mktime(base.replace(hour=20, minute=0) - datetime.timedelta(days=1))
+        last_signoff = mktime(base.replace(hour=2))
+        now = mktime(base.replace(hour=8))
+        assert determine_intro_type(now, persona(last_hello, last_signoff)) == IntroType.INTRO

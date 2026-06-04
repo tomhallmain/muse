@@ -560,7 +560,7 @@ class WindowResizeHandler(QObject):
             return False
         
         # Check if clicked widget is a button - don't intercept button clicks
-        widget_at_pos = QApplication.widgetAt(event.globalPos())
+        widget_at_pos = QApplication.widgetAt(event.globalPosition().toPoint())
         if widget_at_pos is not None:
             if isinstance(widget_at_pos, QPushButton):
                 return False
