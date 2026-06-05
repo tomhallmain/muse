@@ -43,6 +43,13 @@ _LANG_SUPPORT: Dict[str, Any] = {
         "en": True,
         "zh": "experimental quality",
     },
+    "zonos": {
+        "en": True,
+        "de": True,
+        "fr": True,
+        "ja": True,
+        "zh": True,
+    },
     "piper":  "all",
 }
 
@@ -77,7 +84,7 @@ def _voice_compat(voice_name: str, provider_value: str) -> Tuple[bool, str]:
             return True, ""
         return False, f'"{voice_name}" is not a known Kokoro voice ID.'
 
-    if provider_value in ("f5tts", "maskgct"):
+    if provider_value in ("f5tts", "maskgct", "zonos"):
         if not voice_name:
             return True, "No per-persona reference audio set — app-level config will be used."
         if Path(voice_name).is_file():

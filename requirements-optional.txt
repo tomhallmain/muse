@@ -41,3 +41,9 @@ amphion
 # Voice .onnx files must be downloaded separately from:
 #   https://huggingface.co/rhasspy/piper-voices
 piper-tts
+
+# Zonos: high-quality zero-shot voice cloning (Apache 2.0).
+# tts_provider = "zonos" in config.json
+# Requires espeak-ng on PATH; GPU recommended (6 GB+ VRAM).
+# Also: pip install torch torchaudio  (if not already installed for Coqui)
+git+https://github.com/Zyphra/Zonos.git

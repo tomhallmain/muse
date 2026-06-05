@@ -93,6 +93,10 @@ class Config:
         self.piper_voices_dir = None         # directory for auto-downloaded voice models
         self.piper_quality = "medium"        # preferred quality tier: x_low / low / medium / high
         self.piper_auto_download = True      # download a voice automatically if piper_model_path is unset
+        # Zonos (Zyphra)
+        self.zonos_model = "Zyphra/Zonos-v0.1-transformer"
+        self.zonos_reference_audio = None   # path to reference clip (10–30 s)
+        self.zonos_language = "en"          # default when not overridden by persona
         self.max_chunk_tokens = 200
 
         self.enable_dynamic_volume = True
@@ -142,6 +146,8 @@ class Config:
             "f5tts_model",
             "f5tts_reference_text",
             "maskgct_language",
+            "zonos_model",
+            "zonos_language",
             "piper_quality",
         )
         self.set_values(int,
@@ -181,6 +187,7 @@ class Config:
         self.set_filepaths(
             "f5tts_reference_audio",
             "maskgct_reference_audio",
+            "zonos_reference_audio",
             "piper_model_path",
             "artists_file",
             "composers_file",

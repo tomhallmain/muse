@@ -21,6 +21,7 @@ class TTSProviderType(str, Enum):
     F5TTS   = "f5tts"
     MASKGCT = "maskgct"
     PIPER   = "piper"
+    ZONOS   = "zonos"
 
 
 class BaseTTSProvider(ABC):
@@ -123,6 +124,15 @@ def get_provider(tts_config: Any) -> BaseTTSProvider:
             quality=getattr(app_config, "piper_quality", "medium"),
             voices_dir=getattr(app_config, "piper_voices_dir", None),
             auto_download=getattr(app_config, "piper_auto_download", True),
+        )
+
+    if provider_type == TTSProviderType.ZONOS:
+        from tts.providers.zonos import ZonosTTSProvider
+        return ZonosTTSProvider(
+            reference_audio=per_voice or getattr(app_config, "zonos_reference_audio", None),
+            model=getattr(app_config, "zonos_model", "Zyphra/Zonos-v0.1-transformer"),
+            language=getattr(app_config, "zonos_language", "en")
+            or getattr(tts_config, "language", "en"),
         )
 
     raise ValueError(

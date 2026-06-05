@@ -38,6 +38,7 @@ _PROVIDERS = [
     (_("F5-TTS"),  TTSProviderType.F5TTS),
     (_("MaskGCT"), TTSProviderType.MASKGCT),
     (_("Piper"),   TTSProviderType.PIPER),
+    (_("Zonos"),   TTSProviderType.ZONOS),
 ]
 _LABEL_TO_TYPE = {label: ptype for label, ptype in _PROVIDERS}
 _TYPE_TO_LABEL = {ptype: label for label, ptype in _PROVIDERS}
@@ -215,6 +216,8 @@ class TTSWindow(SmartWindow):
             return getattr(config, "f5tts_reference_audio", "") or ""
         if provider == TTSProviderType.MASKGCT:
             return getattr(config, "maskgct_reference_audio", "") or ""
+        if provider == TTSProviderType.ZONOS:
+            return getattr(config, "zonos_reference_audio", "") or ""
         if provider == TTSProviderType.PIPER:
             return getattr(config, "piper_model_path", "") or ""
         return ""
@@ -247,9 +250,13 @@ class TTSWindow(SmartWindow):
             self.voice_combo.currentTextChanged.connect(self._on_named_voice_change)
             self.voice_stack.setCurrentIndex(_PAGE_NAMED)
 
-        elif p in (TTSProviderType.F5TTS, TTSProviderType.MASKGCT):
-            label = _("Ref. audio (F5-TTS):") if p == TTSProviderType.F5TTS \
-                else _("Ref. audio (MaskGCT):")
+        elif p in (TTSProviderType.F5TTS, TTSProviderType.MASKGCT, TTSProviderType.ZONOS):
+            if p == TTSProviderType.F5TTS:
+                label = _("Ref. audio (F5-TTS):")
+            elif p == TTSProviderType.MASKGCT:
+                label = _("Ref. audio (MaskGCT):")
+            else:
+                label = _("Ref. audio (Zonos):")
             self.voice_label.setText(label)
             self.voice_file_edit.setText(self._voice_name or "")
             self.voice_stack.setCurrentIndex(_PAGE_FILE)
@@ -282,6 +289,8 @@ class TTSWindow(SmartWindow):
             config.set_config_value("f5tts_reference_audio", self._voice_name)
         elif self._provider == TTSProviderType.MASKGCT:
             config.set_config_value("maskgct_reference_audio", self._voice_name)
+        elif self._provider == TTSProviderType.ZONOS:
+            config.set_config_value("zonos_reference_audio", self._voice_name)
         elif self._provider == TTSProviderType.PIPER:
             config.set_config_value("piper_model_path", self._voice_name)
 
@@ -383,7 +392,7 @@ class TTSWindow(SmartWindow):
 
         # Finalise and persist voice for file-path providers in case the user
         # typed the path manually without using Browse.
-        if self._provider in (TTSProviderType.F5TTS, TTSProviderType.MASKGCT):
+        if self._provider in (TTSProviderType.F5TTS, TTSProviderType.MASKGCT, TTSProviderType.ZONOS):
             typed = self.voice_file_edit.text().strip()
             if typed != self._voice_name:
                 self._voice_name = typed
@@ -424,7 +433,7 @@ class TTSWindow(SmartWindow):
             self._update_status(_("Error: File is empty"))
             return
 
-        if self._provider in (TTSProviderType.F5TTS, TTSProviderType.MASKGCT):
+        if self._provider in (TTSProviderType.F5TTS, TTSProviderType.MASKGCT, TTSProviderType.ZONOS):
             typed = self.voice_file_edit.text().strip()
             if typed != self._voice_name:
                 self._voice_name = typed

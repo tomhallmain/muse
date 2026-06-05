@@ -155,7 +155,7 @@ class ConfigurationWindow(SmartWindow):
             Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
         )
         self._provider_combo = QComboBox(common_frame)
-        for value in ("coqui", "kokoro", "f5tts", "maskgct", "piper"):
+        for value in ("coqui", "kokoro", "f5tts", "maskgct", "piper", "zonos"):
             self._provider_combo.addItem(value)
         current = getattr(config, "tts_provider", "coqui") or "coqui"
         self._provider_combo.setCurrentText(current)
@@ -234,6 +234,24 @@ class ConfigurationWindow(SmartWindow):
         )
         main_layout.addWidget(self._maskgct_section)
 
+        # ── Zonos section ─────────────────────────────────────────────
+        self._zonos_section = QGroupBox(_("Zonos / Zyphra"), content)
+        zonos_layout = QGridLayout(self._zonos_section)
+        self.add_config_filepath_entry(
+            self._zonos_section, zonos_layout,
+            "zonos_reference_audio", _("Reference Audio (10–30 s)"), 0,
+            _("Audio files") + " (*.wav *.mp3 *.flac)",
+        )
+        self.add_config_entry(
+            self._zonos_section, zonos_layout,
+            "zonos_model", _("Model (HuggingFace ID)"), 1,
+        )
+        self.add_config_entry(
+            self._zonos_section, zonos_layout,
+            "zonos_language", _("Default Language Code"), 2,
+        )
+        main_layout.addWidget(self._zonos_section)
+
         # ── Piper section ─────────────────────────────────────────────
         self._piper_section = QGroupBox(_("Piper TTS"), content)
         piper_layout = QGridLayout(self._piper_section)
@@ -281,6 +299,7 @@ class ConfigurationWindow(SmartWindow):
             "kokoro":  self._kokoro_section,
             "f5tts":   self._f5tts_section,
             "maskgct": self._maskgct_section,
+            "zonos":   self._zonos_section,
             "piper":   self._piper_section,
         }
         for key, section in sections.items():
