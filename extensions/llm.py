@@ -10,6 +10,7 @@ import time
 from typing import Callable, Iterator, List, Optional, Tuple
 from urllib import request
 
+from extensions.llm_redundancy import DefaultRedundancyPolicy, RedundancyPolicy
 from utils.logging_setup import get_logger
 from utils import Utils
 
@@ -72,6 +73,8 @@ class LLMResult:
     prompt_eval_duration: int
     eval_count: int
     eval_duration: int
+    truncated: bool = False
+    truncation_reason: str = ""
 
     @classmethod
     def from_json(cls, data: dict, context_provided=False) -> 'LLMResult':
@@ -145,12 +148,14 @@ class LLM:
         state_key=None,
         track_prompts_and_responses=False,
         use_streaming: bool = False,
+        use_redundancy_elimination: bool = False,
     ):
         self.model_name = model_name
         self.run_context = run_context
         self.state_key = state_key if state_key is not None else LLM.DEFAULT_STATE
         self.track_prompts_and_responses = bool(track_prompts_and_responses)
         self.use_streaming = bool(use_streaming)
+        self.use_redundancy_elimination = bool(use_redundancy_elimination)
         self.prompt_response_history = []
         self._prompt_response_lock = threading.Lock()
         state_suffix = "".join(
@@ -233,6 +238,7 @@ class LLM:
         system_prompt_drop_rate=DEFAULT_SYSTEM_PROMPT_DROP_RATE,
         stream: Optional[bool] = None,
         on_stream_chunk: Optional[Callable[[StreamChunk], None]] = None,
+        redundancy_policy: Optional[RedundancyPolicy] = None,
     ):
         """Ask the LLM a question and optionally extract a JSON value."""
         logger.debug(f"LLM.ask called with query length: {len(query)}, json_key: {json_key}")
@@ -253,7 +259,18 @@ class LLM:
             system_prompt_drop_rate=system_prompt_drop_rate,
             stream=stream,
             on_stream_chunk=on_stream_chunk,
+            redundancy_policy=redundancy_policy,
         )
+
+    def _resolve_redundancy_policy(
+        self,
+        redundancy_policy: Optional[RedundancyPolicy],
+    ) -> Optional[RedundancyPolicy]:
+        if redundancy_policy is not None:
+            return redundancy_policy
+        if self.use_redundancy_elimination:
+            return DefaultRedundancyPolicy()
+        return None
 
     def _build_generate_payload(
         self,
@@ -268,7 +285,7 @@ class LLM:
         data = {
             "model": self.model_name,
             "prompt": query,
-            "stream": False,
+            "stream": stream,
             # "options": { # TODO enable more options for LLM queries
             #     "temperature": 0.7,
             #     "top_p": 0.9,
@@ -312,6 +329,8 @@ class LLM:
             response=result.response,
             context_provided=context_provided,
             system_prompt_included=system_prompt_included,
+            truncated=result.truncated,
+            truncation_reason=result.truncation_reason,
         )
         logger.debug(f"LLM response received, length: {len(result.response)}")
         if result.validate():
@@ -363,6 +382,13 @@ class LLM:
             system_prompt_included=system_prompt_included,
         )
 
+    def _close_active_stream(self) -> None:
+        if self._active_http_response is not None:
+            try:
+                self._active_http_response.close()
+            except Exception as exc:
+                logger.debug("Error closing LLM stream: %s", exc)
+
     def _generate_response_streaming(
         self,
         query: str,
@@ -371,6 +397,7 @@ class LLM:
         system_prompt,
         system_prompt_drop_rate,
         on_stream_chunk: Optional[Callable[[StreamChunk], None]] = None,
+        redundancy_policy: Optional[RedundancyPolicy] = None,
     ) -> LLMResult:
         data, system_prompt_included = self._build_generate_payload(
             query,
@@ -384,13 +411,33 @@ class LLM:
 
         accumulated = ""
         final: dict = {}
+        truncated = False
+        truncation_reason = ""
         for event in self._iter_ollama_stream_events(req, timeout):
             delta = event.get("response", "") or ""
             if delta:
                 accumulated += delta
             done = bool(event.get("done"))
+            stream_chunk = StreamChunk(text=delta, accumulated=accumulated, done=done)
             if on_stream_chunk is not None:
-                on_stream_chunk(StreamChunk(text=delta, accumulated=accumulated, done=done))
+                on_stream_chunk(stream_chunk)
+            if redundancy_policy is not None and not done:
+                verdict = redundancy_policy.on_chunk(stream_chunk)
+                if verdict.should_stop:
+                    if verdict.truncate_to is not None:
+                        accumulated = verdict.truncate_to
+                    truncation_reason = verdict.reason or "redundancy"
+                    truncated = True
+                    final = dict(event)
+                    final["done"] = True
+                    final["done_reason"] = truncation_reason
+                    logger.info(
+                        "LLM stream stopped early (%s); %d chars kept",
+                        truncation_reason,
+                        len(accumulated),
+                    )
+                    self._close_active_stream()
+                    break
             if done:
                 final = event
                 break
@@ -409,6 +456,8 @@ class LLM:
             {**final, "response": accumulated},
             context_provided=context is not None,
         )
+        result.truncated = truncated
+        result.truncation_reason = truncation_reason
         return self._finalize_result(
             result,
             query=query,
@@ -425,19 +474,29 @@ class LLM:
         system_prompt_drop_rate=DEFAULT_SYSTEM_PROMPT_DROP_RATE,
         stream: Optional[bool] = None,
         on_stream_chunk: Optional[Callable[[StreamChunk], None]] = None,
+        redundancy_policy: Optional[RedundancyPolicy] = None,
     ):
         """Generate a response from the LLM.
 
-        When *stream* is ``True`` (or :attr:`use_streaming` on the instance),
-        reads Ollama's NDJSON stream and assembles the full text before
-        returning.  *on_stream_chunk* is called after each delta for live UI
-        updates.  Redundancy-based early stopping is not implemented yet.
+        When *stream* is ``True`` (or :attr:`use_streaming` / a redundancy
+        *redundancy_policy* is set), reads Ollama's NDJSON stream and assembles
+        the full text before returning.  *on_stream_chunk* is called after each
+        delta.  *redundancy_policy* may stop generation early on repetition.
         """
         logger.debug(f"LLM.generate_response called with query length: {len(query)}")
         query = self._sanitize_query(query)
         timeout = self._get_timeout(timeout)
+        policy = self._resolve_redundancy_policy(redundancy_policy)
+        if policy is not None and self._is_thinking_model():
+            logger.debug("Redundancy policy disabled for thinking model")
+            policy = None
         use_stream = self.use_streaming if stream is None else stream
-        logger.info(f"Asking LLM {self.model_name} (stream={use_stream}):\n{query}")
+        if policy is not None:
+            use_stream = True
+        logger.info(
+            f"Asking LLM {self.model_name} (stream={use_stream}, "
+            f"redundancy={'on' if policy else 'off'}):\n{query}"
+        )
         try:
             if use_stream:
                 return self._generate_response_streaming(
@@ -447,6 +506,7 @@ class LLM:
                     system_prompt,
                     system_prompt_drop_rate,
                     on_stream_chunk=on_stream_chunk,
+                    redundancy_policy=policy,
                 )
             return self._generate_response_buffered(
                 query,
@@ -464,7 +524,15 @@ class LLM:
             self.increment_failure_count()
             raise LLMResponseException(f"Failed to generate LLM response: {e}")
 
-    def _track_prompt_response(self, prompt, response, context_provided=False, system_prompt_included=False):
+    def _track_prompt_response(
+        self,
+        prompt,
+        response,
+        context_provided=False,
+        system_prompt_included=False,
+        truncated=False,
+        truncation_reason="",
+    ):
         """Record prompt/response pairs for debugging when enabled."""
         if not self.track_prompts_and_responses:
             return
@@ -475,6 +543,8 @@ class LLM:
             "response": response,
             "context_provided": bool(context_provided),
             "system_prompt_included": bool(system_prompt_included),
+            "truncated": bool(truncated),
+            "truncation_reason": truncation_reason or "",
         }
         with self._prompt_response_lock:
             self.prompt_response_history.append(entry)
@@ -512,6 +582,7 @@ class LLM:
         system_prompt_drop_rate=DEFAULT_SYSTEM_PROMPT_DROP_RATE,
         stream: Optional[bool] = None,
         on_stream_chunk: Optional[Callable[[StreamChunk], None]] = None,
+        redundancy_policy: Optional[RedundancyPolicy] = None,
     ):
         """Generate a response from the LLM in a separate thread with cancellation support."""
         logger.debug(f"LLM.generate_response_async called with query length: {len(query)}")
@@ -531,6 +602,7 @@ class LLM:
                     system_prompt_drop_rate,
                     stream=stream,
                     on_stream_chunk=on_stream_chunk,
+                    redundancy_policy=redundancy_policy,
                 )
                 if not self._cancelled:
                     self._result = result
@@ -651,11 +723,7 @@ class LLM:
     def cancel_generation(self):
         """Cancel any ongoing LLM generation."""
         self._cancelled = True
-        if self._active_http_response is not None:
-            try:
-                self._active_http_response.close()
-            except Exception as exc:
-                logger.debug("Error closing active LLM HTTP response: %s", exc)
+        self._close_active_stream()
         if self._thread and self._thread.is_alive():
             logger.info("Cancelling LLM generation")
             self._thread.join(timeout=1.0)
