@@ -51,7 +51,7 @@ class Muse:
         if self._schedule is None:
             raise Exception("Failed to establish active schedule")
         self.memory = muse_memory
-        self.llm = LLM(model_name=config.llm_model_name, state_key="muse")
+        self.llm = LLM.from_config(config, state_key="muse", run_context=self._run_context)
         
         initial_voice = self._schedule.voice
         persona = self.memory.get_persona_manager().get_persona(initial_voice)
@@ -735,7 +735,13 @@ class Muse:
         # NOTE excluding context for now because it's being deprecated for some reason.
         result = self.llm.ask(prompt, json_key=json_key, context=None, system_prompt=system_prompt)
         text = result.response if result else ""
-        
+        if result and getattr(result, "truncated", False):
+            logger.info(
+                "LLM response truncated early (%s); %d chars",
+                result.truncation_reason or "redundancy",
+                len(text),
+            )
+
         # Update context with the new context from the response
         self.memory.get_persona_manager().update_context(result)
         

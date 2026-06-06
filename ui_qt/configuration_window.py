@@ -164,7 +164,16 @@ class ConfigurationWindow(SmartWindow):
         self.config_vars["tts_provider"] = (self._provider_combo, "combo")
 
         self.add_config_entry(common_frame, common_layout, "llm_model_name", _("LLM Model Name"), 1)
-        self.add_config_entry(common_frame, common_layout, "max_chunk_tokens", _("Max Chunk Tokens"), 2)
+        self.add_config_checkbox(
+            common_frame, common_layout,
+            "llm_use_streaming", _("Stream LLM responses (Ollama NDJSON)"), 2,
+        )
+        self.add_config_checkbox(
+            common_frame, common_layout,
+            "llm_stream_redundancy",
+            _("Stop LLM on repetitive output (streaming redundancy)"), 3,
+        )
+        self.add_config_entry(common_frame, common_layout, "max_chunk_tokens", _("Max Chunk Tokens"), 4)
         main_layout.addWidget(common_frame)
 
         # ── Coqui section ─────────────────────────────────────────────

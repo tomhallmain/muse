@@ -124,11 +124,10 @@ class LLMResult:
 
 
 class LLM:
-    """
-    Interface for interacting with the Ollama LLM API.
+    """Interface for interacting with the Ollama LLM API.
 
-    Planned: streaming redundancy elimination (detect repetitive output during
-    generation and stop early). See docs/llm-streaming-redundancy-elimination.md.
+    Optional streaming and redundancy elimination — see
+    docs/llm-streaming-redundancy-elimination.md.
     """
     ENDPOINT = "http://localhost:11434/api/generate"
     DEFAULT_TIMEOUT = 180
@@ -169,12 +168,53 @@ class LLM:
         self._exception = None
         self._thread = None
         self._active_http_response = None
-        logger.info(f"Using LLM model: {self.model_name} (state: {self.state_key})")
+        logger.info(
+            "Using LLM model: %s (state: %s, stream=%s, redundancy=%s)",
+            self.model_name,
+            self.state_key,
+            self.use_streaming,
+            self.use_redundancy_elimination,
+        )
         if self.track_prompts_and_responses:
             logger.info(
                 "LLM prompt/response tracking is enabled (file: %s)",
                 self.prompt_response_history_file,
             )
+
+    @classmethod
+    def from_config(
+        cls,
+        config_obj=None,
+        *,
+        state_key: Optional[str] = None,
+        run_context=None,
+        track_prompts_and_responses: Optional[bool] = None,
+    ) -> "LLM":
+        """Build an :class:`LLM` from a host-application config object.
+
+        Reads optional attributes (all default to off when absent):
+
+        - ``llm_model_name``
+        - ``llm_use_streaming``
+        - ``llm_stream_redundancy``
+        - ``llm_track_prompts_and_responses``
+        """
+        if config_obj is None:
+            from utils.config import config as config_obj
+        return cls(
+            model_name=getattr(config_obj, "llm_model_name", "deepseek-r1:14b"),
+            run_context=run_context,
+            state_key=state_key,
+            track_prompts_and_responses=(
+                bool(getattr(config_obj, "llm_track_prompts_and_responses", False))
+                if track_prompts_and_responses is None
+                else track_prompts_and_responses
+            ),
+            use_streaming=bool(getattr(config_obj, "llm_use_streaming", False)),
+            use_redundancy_elimination=bool(
+                getattr(config_obj, "llm_stream_redundancy", False)
+            ),
+        )
 
     @classmethod
     def _get_failure_count_for_state(cls, state_key):

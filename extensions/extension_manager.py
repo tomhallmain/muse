@@ -59,7 +59,8 @@ class ExtensionManager:
         app_info_cache.set("extension_strategy", ExtensionManager.strategy.name)
 
     def __init__(self, ui_callbacks: Optional[Any], data_callbacks: Optional[Any]) -> None:
-        self.llm = LLM()
+        from utils.config import config
+        self.llm = LLM.from_config(config, state_key="extension_manager")
         self.prompter = Prompter()
         self.extension_wait_min: int = 60
         self.extension_wait_expected_max: int = 90

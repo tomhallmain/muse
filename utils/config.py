@@ -72,6 +72,8 @@ class Config:
         self.debug = False
 
         self.llm_model_name = "deepseek-r1:14b"
+        self.llm_use_streaming = False
+        self.llm_stream_redundancy = False
 
         self.text_cleaner_ruleset = []
         self.number_words = {}  # Locale-specific number word configurations
@@ -172,6 +174,8 @@ class Config:
             "dj_persona_refresh_context",
             "auto_fix_vlc_plugin_cache",
             "piper_auto_download",
+            "llm_use_streaming",
+            "llm_stream_redundancy",
         )
         self.set_values(dict,
             "muse_config",

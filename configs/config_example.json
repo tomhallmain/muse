@@ -314,6 +314,8 @@
     "piper_quality": "medium",
     "piper_auto_download": true,
     "llm_model_name": "deepseek-r1:14b",
+    "llm_use_streaming": false,
+    "llm_stream_redundancy": false,
     "max_chunk_tokens": 200,
     "enable_library_extender": false,
     "auto_fix_vlc_plugin_cache": true,
