@@ -3,17 +3,39 @@
 import importlib.util
 import json
 import sys
+import types
 from pathlib import Path
 
 _ROOT = Path(__file__).resolve().parents[3]
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
+# Load sibling modules without executing extensions/__init__.py (circular imports).
+def _ensure_extensions_namespace() -> None:
+    pkg = sys.modules.get("extensions")
+    if pkg is not None and getattr(pkg, "__path__", None):
+        return
+    namespace = types.ModuleType("extensions")
+    namespace.__path__ = [str(_ROOT / "extensions")]
+    sys.modules["extensions"] = namespace
+
+
+_ensure_extensions_namespace()
+
+_spec_red = importlib.util.spec_from_file_location(
+    "extensions.llm_redundancy", _ROOT / "extensions" / "llm_redundancy.py"
+)
+_red = importlib.util.module_from_spec(_spec_red)
+assert _spec_red.loader is not None
+sys.modules["extensions.llm_redundancy"] = _red
+_spec_red.loader.exec_module(_red)
+
 _spec = importlib.util.spec_from_file_location(
-    "llm_standalone", _ROOT / "extensions" / "llm.py"
+    "extensions.llm", _ROOT / "extensions" / "llm.py"
 )
 _llm = importlib.util.module_from_spec(_spec)
 assert _spec.loader is not None
+sys.modules["extensions.llm"] = _llm
 _spec.loader.exec_module(_llm)
 
 LLM = _llm.LLM
@@ -21,15 +43,14 @@ LLMResult = _llm.LLMResult
 StreamChunk = _llm.StreamChunk
 accumulate_ollama_stream_events = _llm.accumulate_ollama_stream_events
 
-_spec_red = importlib.util.spec_from_file_location(
-    "llm_redundancy_standalone", _ROOT / "extensions" / "llm_redundancy.py"
-)
-_red = importlib.util.module_from_spec(_spec_red)
-assert _spec_red.loader is not None
-_spec_red.loader.exec_module(_red)
-
 DefaultRedundancyPolicy = _red.DefaultRedundancyPolicy
 truncate_duplicate_paragraph = _red.truncate_duplicate_paragraph
+visible_text_for_policy = _red.visible_text_for_policy
+strip_thinking_blocks = _red.strip_thinking_blocks
+streaming_visible_response = _red.streaming_visible_response
+THINKING_OPEN_TAG = _red.THINKING_OPEN_TAG
+THINKING_CLOSE_TAG = _red.THINKING_CLOSE_TAG
+USE_INSTANCE_REDUNDANCY = _llm._USE_INSTANCE_REDUNDANCY
 
 
 def _ndjson_lines(*objects) -> list[bytes]:
@@ -101,3 +122,64 @@ class TestLLMStreamingFlags:
         assert data["stream"] is True
         data_off, _ = llm._build_generate_payload("hi", stream=False)
         assert data_off["stream"] is False
+
+    def test_explicit_none_disables_instance_redundancy(self):
+        llm = LLM(use_redundancy_elimination=True)
+        assert llm._resolve_redundancy_policy(USE_INSTANCE_REDUNDANCY) is not None
+        assert llm._resolve_redundancy_policy(None) is None
+
+    def test_json_path_disables_stream_and_redundancy(self, monkeypatch):
+        llm = LLM(use_streaming=True, use_redundancy_elimination=True)
+        captured = {}
+
+        def fake_async(*args, **kwargs):
+            captured.update(kwargs)
+            return LLMResult(
+                response='{"key": "value"}',
+                context=None,
+                context_provided=False,
+                created_at="",
+                done=True,
+                done_reason="stop",
+                total_duration=0,
+                load_duration=0,
+                prompt_eval_count=0,
+                prompt_eval_duration=0,
+                eval_count=0,
+                eval_duration=0,
+            )
+
+        monkeypatch.setattr(llm, "generate_response_async", fake_async)
+        llm.generate_json_get_value("prompt", "key")
+        assert captured["stream"] is False
+        assert captured["redundancy_policy"] is None
+
+
+class TestThinkingModelStreaming:
+    def test_visible_text_empty_while_thinking_open(self):
+        raw = THINKING_OPEN_TAG + "internal monologue"
+        assert visible_text_for_policy(raw) == ""
+
+    def test_visible_text_after_thinking_closed(self):
+        raw = THINKING_OPEN_TAG + "think" + THINKING_CLOSE_TAG + "\n\nHello world"
+        assert visible_text_for_policy(raw) == "Hello world"
+
+    def test_strip_thinking_blocks_removes_stray_tags(self):
+        text = "Answer " + THINKING_OPEN_TAG + "oops" + THINKING_CLOSE_TAG + " here"
+        assert strip_thinking_blocks(text) == "Answer oops here"
+
+    def test_streaming_visible_response(self):
+        raw = THINKING_OPEN_TAG + "x" + THINKING_CLOSE_TAG + "\n\nFinal answer."
+        assert streaming_visible_response(raw) == "Final answer."
+
+    def test_strip_thinking_blocks_redacted_thinking_alias(self):
+        alias = "redacted_" + "thinking"
+        open_tag = "<" + alias + ">"
+        close_tag = "</" + alias + ">"
+        raw = open_tag + "\ninternal\n" + close_tag + "\n\nHey Leute,"
+        assert strip_thinking_blocks(raw) == "Hey Leute,"
+
+    def test_clean_response_for_models_strips_think_tags(self):
+        llm = LLM(model_name="llama3")
+        raw = THINKING_OPEN_TAG + "planning\n" + THINKING_CLOSE_TAG + "\n\nHello!"
+        assert llm._clean_response_for_models(raw) == "Hello!"

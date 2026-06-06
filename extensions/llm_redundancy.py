@@ -34,25 +34,55 @@ class RedundancyPolicy(Protocol):
         ...
 
 
+# Known thinking wrapper tag names (most common first).
+THINKING_TAG_NAMES: Tuple[str, ...] = ("think", "redacted_thinking")
+
+def thinking_tag_pairs() -> List[Tuple[str, str]]:
+    """Return ``(open, close)`` tag pairs for all supported thinking wrappers."""
+    return [("<" + name + ">", "</" + name + ">") for name in THINKING_TAG_NAMES]
+
+
+# Primary tag pair — ``think`` is what DeepSeek-R1, Qwen3, etc. emit in practice.
+THINKING_OPEN_TAG, THINKING_CLOSE_TAG = thinking_tag_pairs()[0]
+
+
 def visible_text_for_policy(accumulated: str) -> str:
     """Text visible for redundancy checks (skips in-progress thinking blocks).
 
-    When a deepseek-style ``redacted_thinking`` block is open, returns an empty
-    string so internal monologue does not trigger false stops.
+    When a thinking block is open, returns an empty string so internal monologue
+    does not trigger false stops.  Supports multiple tag spellings (``think``,
+    ``redacted_thinking``, …).
     """
     text = accumulated
-    _t = "redacted_thinking"
-    open_tag = "<" + _t + ">"
-    close_tag = "</" + _t + ">"
-    if open_tag not in text:
-        return text
-    last_open = text.rfind(open_tag)
-    last_close = text.rfind(close_tag)
-    if last_close < last_open:
-        return ""
-    if last_close >= 0:
-        return text[last_close + len(close_tag) :].strip()
+    for open_tag, close_tag in thinking_tag_pairs():
+        if open_tag not in text:
+            continue
+        last_open = text.rfind(open_tag)
+        last_close = text.rfind(close_tag)
+        if last_close < last_open:
+            return ""
+        if last_close >= 0:
+            return text[last_close + len(close_tag) :].strip()
     return text
+
+
+def strip_thinking_blocks(text: str) -> str:
+    """Remove thinking wrappers from *text* (``think``, ``redacted_thinking``, …)."""
+    for open_tag, close_tag in thinking_tag_pairs():
+        if text.strip().startswith(open_tag) and close_tag in text:
+            text = text[text.rfind(close_tag) + len(close_tag) :].strip()
+    for open_tag, close_tag in thinking_tag_pairs():
+        if open_tag in text:
+            text = text.replace(open_tag, "").replace(close_tag, "").strip()
+    return text
+
+
+def streaming_visible_response(accumulated: str) -> str:
+    """Answer text exposed during streaming (thinking blocks excluded)."""
+    visible = visible_text_for_policy(accumulated)
+    if not visible:
+        return ""
+    return strip_thinking_blocks(visible)
 
 
 def truncate_duplicate_paragraph(text: str) -> str:
@@ -133,7 +163,7 @@ class DefaultRedundancyPolicy:
                 self._stall_text = delta
                 self._stall_count = 1
             if self._stall_count >= self.stall_limit and len(delta.strip()) >= 4:
-                trimmed = chunk.accumulated
+                trimmed = visible
                 excess = delta * (self._stall_count - 1)
                 if excess and trimmed.endswith(excess):
                     trimmed = trimmed[: -len(excess)].rstrip()

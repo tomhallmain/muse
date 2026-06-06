@@ -10,11 +10,19 @@ import time
 from typing import Callable, Iterator, List, Optional, Tuple
 from urllib import request
 
-from extensions.llm_redundancy import DefaultRedundancyPolicy, RedundancyPolicy
+from extensions.llm_redundancy import (
+    DefaultRedundancyPolicy,
+    RedundancyPolicy,
+    strip_thinking_blocks,
+    streaming_visible_response,
+)
 from utils.logging_setup import get_logger
 from utils import Utils
 
 logger = get_logger(__name__)
+
+# Sentinel: omit *redundancy_policy* to follow :attr:`LLM.use_redundancy_elimination`.
+_USE_INSTANCE_REDUNDANCY = object()
 
 class LLMResponseException(Exception):
     """Raised when LLM call fails"""
@@ -278,7 +286,7 @@ class LLM:
         system_prompt_drop_rate=DEFAULT_SYSTEM_PROMPT_DROP_RATE,
         stream: Optional[bool] = None,
         on_stream_chunk: Optional[Callable[[StreamChunk], None]] = None,
-        redundancy_policy: Optional[RedundancyPolicy] = None,
+        redundancy_policy=_USE_INSTANCE_REDUNDANCY,
     ):
         """Ask the LLM a question and optionally extract a JSON value."""
         logger.debug(f"LLM.ask called with query length: {len(query)}, json_key: {json_key}")
@@ -302,15 +310,13 @@ class LLM:
             redundancy_policy=redundancy_policy,
         )
 
-    def _resolve_redundancy_policy(
-        self,
-        redundancy_policy: Optional[RedundancyPolicy],
-    ) -> Optional[RedundancyPolicy]:
-        if redundancy_policy is not None:
-            return redundancy_policy
-        if self.use_redundancy_elimination:
-            return DefaultRedundancyPolicy()
-        return None
+    def _resolve_redundancy_policy(self, redundancy_policy) -> Optional[RedundancyPolicy]:
+        """Resolve policy: sentinel → instance flag; ``None`` → off; else use policy."""
+        if redundancy_policy is _USE_INSTANCE_REDUNDANCY:
+            if self.use_redundancy_elimination:
+                return DefaultRedundancyPolicy()
+            return None
+        return redundancy_policy
 
     def _build_generate_payload(
         self,
@@ -449,23 +455,38 @@ class LLM:
         req = self._make_generate_request(data)
         logger.debug("Making LLM request (streaming)...")
 
-        accumulated = ""
+        accumulated_raw = ""
         final: dict = {}
         truncated = False
         truncation_reason = ""
+        thinking_model = self._is_thinking_model()
         for event in self._iter_ollama_stream_events(req, timeout):
             delta = event.get("response", "") or ""
             if delta:
-                accumulated += delta
+                accumulated_raw += delta
             done = bool(event.get("done"))
-            stream_chunk = StreamChunk(text=delta, accumulated=accumulated, done=done)
+            accumulated_visible = (
+                streaming_visible_response(accumulated_raw)
+                if thinking_model
+                else accumulated_raw
+            )
+            stream_chunk = StreamChunk(
+                text=delta,
+                accumulated=accumulated_visible,
+                done=done,
+            )
             if on_stream_chunk is not None:
                 on_stream_chunk(stream_chunk)
             if redundancy_policy is not None and not done:
-                verdict = redundancy_policy.on_chunk(stream_chunk)
+                policy_chunk = StreamChunk(
+                    text=delta,
+                    accumulated=accumulated_raw,
+                    done=done,
+                )
+                verdict = redundancy_policy.on_chunk(policy_chunk)
                 if verdict.should_stop:
                     if verdict.truncate_to is not None:
-                        accumulated = verdict.truncate_to
+                        accumulated_raw = verdict.truncate_to
                     truncation_reason = verdict.reason or "redundancy"
                     truncated = True
                     final = dict(event)
@@ -474,7 +495,7 @@ class LLM:
                     logger.info(
                         "LLM stream stopped early (%s); %d chars kept",
                         truncation_reason,
-                        len(accumulated),
+                        len(accumulated_raw),
                     )
                     self._close_active_stream()
                     break
@@ -486,14 +507,14 @@ class LLM:
             raise LLMGenerationCancelled()
 
         if not final:
-            final = {"done": True, "response": accumulated}
+            final = {"done": True, "response": accumulated_raw}
             if self._cancelled:
                 final["done_reason"] = "cancelled"
-        elif not accumulated and final.get("response"):
-            accumulated = final.get("response", "") or ""
+        elif not accumulated_raw and final.get("response"):
+            accumulated_raw = final.get("response", "") or ""
 
         result = LLMResult.from_json(
-            {**final, "response": accumulated},
+            {**final, "response": accumulated_raw},
             context_provided=context is not None,
         )
         result.truncated = truncated
@@ -514,7 +535,7 @@ class LLM:
         system_prompt_drop_rate=DEFAULT_SYSTEM_PROMPT_DROP_RATE,
         stream: Optional[bool] = None,
         on_stream_chunk: Optional[Callable[[StreamChunk], None]] = None,
-        redundancy_policy: Optional[RedundancyPolicy] = None,
+        redundancy_policy=_USE_INSTANCE_REDUNDANCY,
     ):
         """Generate a response from the LLM.
 
@@ -522,14 +543,14 @@ class LLM:
         *redundancy_policy* is set), reads Ollama's NDJSON stream and assembles
         the full text before returning.  *on_stream_chunk* is called after each
         delta.  *redundancy_policy* may stop generation early on repetition.
+
+        Pass ``redundancy_policy=None`` explicitly to disable redundancy even
+        when :attr:`use_redundancy_elimination` is on (e.g. JSON extraction).
         """
         logger.debug(f"LLM.generate_response called with query length: {len(query)}")
         query = self._sanitize_query(query)
         timeout = self._get_timeout(timeout)
         policy = self._resolve_redundancy_policy(redundancy_policy)
-        if policy is not None and self._is_thinking_model():
-            logger.debug("Redundancy policy disabled for thinking model")
-            policy = None
         use_stream = self.use_streaming if stream is None else stream
         if policy is not None:
             use_stream = True
@@ -622,7 +643,7 @@ class LLM:
         system_prompt_drop_rate=DEFAULT_SYSTEM_PROMPT_DROP_RATE,
         stream: Optional[bool] = None,
         on_stream_chunk: Optional[Callable[[StreamChunk], None]] = None,
-        redundancy_policy: Optional[RedundancyPolicy] = None,
+        redundancy_policy=_USE_INSTANCE_REDUNDANCY,
     ):
         """Generate a response from the LLM in a separate thread with cancellation support."""
         logger.debug(f"LLM.generate_response_async called with query length: {len(query)}")
@@ -688,9 +709,29 @@ class LLM:
         
         return self._result
 
-    def generate_json_get_value(self, query, json_key, timeout=DEFAULT_TIMEOUT, context=None, system_prompt=None, system_prompt_drop_rate=DEFAULT_SYSTEM_PROMPT_DROP_RATE):
-        """Generate a response and extract a specific JSON value."""
-        result = self.generate_response_async(query, timeout=timeout, context=context, system_prompt=system_prompt, system_prompt_drop_rate=system_prompt_drop_rate)
+    def generate_json_get_value(
+        self,
+        query,
+        json_key,
+        timeout=DEFAULT_TIMEOUT,
+        context=None,
+        system_prompt=None,
+        system_prompt_drop_rate=DEFAULT_SYSTEM_PROMPT_DROP_RATE,
+    ):
+        """Generate a response and extract a specific JSON value.
+
+        Always uses buffered (non-streaming) mode without redundancy so partial
+        JSON is never returned.
+        """
+        result = self.generate_response_async(
+            query,
+            timeout=timeout,
+            context=context,
+            system_prompt=system_prompt,
+            system_prompt_drop_rate=system_prompt_drop_rate,
+            stream=False,
+            redundancy_policy=None,
+        )
         if result is None:
             raise LLMResponseException("Failed to generate LLM response - Result is None")
         return result._get_json_attr(json_key)
@@ -717,13 +758,7 @@ class LLM:
             used in this application. This includes Chinese (Han), Japanese (Hiragana, Katakana, Kanji),
             and Korean (Hangul) characters.
         """
-        # First handle thinking model specific cleaning
-        if self._is_thinking_model():
-            if response_text.strip().startswith("<think>") and "</think>" in response_text:
-                response_text = response_text[response_text.rfind("</think>") + len("</think>"):].strip()
-            if "<think>" in response_text:
-                # Sometimes the model will return extra misplaced <think> tags in the non-thinking section of the response.
-                response_text = response_text.replace("<think>", "").replace("</think>", "").strip()
+        response_text = strip_thinking_blocks(response_text)
 
         # Remove "Final Answer:" prefix if present
         if response_text.strip().startswith("Final Answer:"):
