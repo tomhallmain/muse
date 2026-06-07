@@ -10,6 +10,9 @@ from utils.logging_setup import get_logger
 
 logger = get_logger(__name__)
 
+TRACK_EXCLUSIONS_KEY = "playlist_track_exclusions"
+_DEFAULT_TRACK_EXCLUSIONS = ["TTS"]
+
 if TYPE_CHECKING:
     from library_data.library_data_callbacks import LibraryDataCallbacks
 
@@ -72,11 +75,22 @@ class Playlist:
         Playlist.update_list(Playlist.recently_played_forms, track.get_form(), sort_type=PlaylistSortType.FORM_SHUFFLE)
         Playlist.update_list(Playlist.recently_played_instruments, track.get_instrument(), sort_type=PlaylistSortType.INSTRUMENT_SHUFFLE)
 
-    def __init__(self, tracks: List[str] = [], _type: PlaylistSortType = PlaylistSortType.SEQUENCE, 
-                 data_callbacks: Optional['LibraryDataCallbacks'] = None, start_track: Optional[MediaTrack] = None, 
+    def __init__(self, tracks: List[str] = [], _type: PlaylistSortType = PlaylistSortType.SEQUENCE,
+                 data_callbacks: Optional['LibraryDataCallbacks'] = None, start_track: Optional[MediaTrack] = None,
                  loop: bool = False,
                  sort_config: Optional[SortConfig] = None,
                  deterministic_group_order: bool = False) -> None:
+        exclusions = [e.lower() for e in app_info_cache.get(TRACK_EXCLUSIONS_KEY, _DEFAULT_TRACK_EXCLUSIONS)]
+        if exclusions:
+            excluded = [t for t in tracks if any(e in t.lower() for e in exclusions)]
+            if excluded:
+                logger.info(f"Excluded {len(excluded)} track(s) from playlist (filters: {exclusions})")
+                for t in excluded:
+                    logger.debug(f"  Excluded: {t}")
+                tracks = [t for t in tracks if t not in set(excluded)]
+            self.excluded_count = len(excluded)
+        else:
+            self.excluded_count = 0
         self.in_sequence: List[str] = list(tracks)
         self.sort_type: PlaylistSortType = _type
         self.pending_tracks: List[str] = list(tracks)

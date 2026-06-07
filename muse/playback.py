@@ -66,6 +66,7 @@ class Playback:
         # Timer volume override
         self._timer_volume_override = False
         self._timer_override_volume = 20
+        self._exclusion_toast_shown = False
 
     def has_muse(self) -> bool:
         return self._run and self._run.args.muse and self.muse is not None and self.muse.voice.can_speak
@@ -89,6 +90,14 @@ class Playback:
         self.track = result.track
         self._track_result = result
         self._run_context.skip_grouping = False
+        if not self._exclusion_toast_shown:
+            self._exclusion_toast_shown = True
+            playlist = self._playback_config.get_list()
+            excluded_count = getattr(playlist, 'excluded_count', None)
+            if isinstance(excluded_count, int) and excluded_count > 0 and self.ui_callbacks is not None:
+                self.ui_callbacks.toast(
+                    _("{0} track(s) excluded from playlist by filters").format(excluded_count)
+                )
         if not self.has_attempted_track_split:
             self.track, self.did_advance, self.places_from_current = self.ensure_splittable_track(self.track, True)
         if self.has_muse() and self.get_muse().has_started_prep:
