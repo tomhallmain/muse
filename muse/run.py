@@ -172,7 +172,8 @@ class Run:
         """Cancel all operations."""
         logger.info("Canceling...")
         self._run_context.update_action(UserAction.CANCEL)
-        self.get_playback().stop()
+        if self._playback is not None:
+            self._playback.stop()
 
     def open_text(self) -> None:
         song_text_filepath = self.get_playback().get_track_text_file()

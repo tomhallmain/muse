@@ -158,3 +158,42 @@ class TestPlaybackConfigPlaylistAttribute:
         from muse.playlist import Playlist
         pc = PlaybackConfig(data_callbacks=mock_data_callbacks, explicit_tracks=[])
         assert isinstance(pc.get_list(), Playlist)
+
+
+# ---------------------------------------------------------------------------
+# Run.cancel() guard — regression for "Playback not initialized" crash
+# ---------------------------------------------------------------------------
+
+@pytest.mark.unit
+class TestRunCancelGuard:
+    """Regression: Run.cancel() raised RuntimeError when called before playback
+    was initialized (e.g. on the initial placeholder run at app startup, or when
+    continue_last_session fired before any track had started)."""
+
+    @staticmethod
+    def _make_run():
+        """Construct a placeholder Run with Muse and LibraryData mocked out."""
+        from unittest.mock import MagicMock, patch
+        from muse.run import Run
+        from muse.run_config import RunConfig
+        with patch("muse.run.Muse", return_value=MagicMock()), \
+             patch("muse.run.LibraryData", return_value=MagicMock()):
+            return Run(RunConfig(placeholder=True))
+
+    def test_cancel_before_playback_initialized_does_not_raise(self):
+        run = self._make_run()
+        assert run._playback is None
+        run.cancel()  # must not raise
+
+    def test_cancel_marks_run_context_cancelled(self):
+        run = self._make_run()
+        run.cancel()
+        assert run.is_cancelled()
+
+    def test_cancel_with_playback_initialized_calls_stop(self):
+        from unittest.mock import MagicMock
+        run = self._make_run()
+        mock_playback = MagicMock()
+        run._playback = mock_playback
+        run.cancel()
+        mock_playback.stop.assert_called_once()

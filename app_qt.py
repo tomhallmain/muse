@@ -635,7 +635,8 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         self._pending_resume_position_ms = session.position_ms
         self._pending_resume_skip_issued = False
 
-        self.run(override_scheduled=True)
+        override_scheduled = self.current_run is not None and not self.current_run.is_placeholder()
+        self.run(override_scheduled=override_scheduled)
 
     def store_info_cache(self):
         """Save application config to cache. Geometry is handled by SmartMainWindow."""
