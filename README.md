@@ -42,6 +42,7 @@ Muse is a media player with an integrated voice synthesizer attached to an LLM. 
 - `enable_long_track_splitting`, `long_track_splitting_time_cutoff_minutes` - If playing tracks randomly, usually we don't want to dive into a long track. Muse will attempt to detect individual portions of long tracks to play rather than play the entire track to keep things fresh.
 - `muse_language_learning_language`, `muse_language_learning_language_level` - If you are learning a language, set these values to a desired language and language level to have Muse attemp to teach it. Note that Coqui models don't support many languages.
 - `llm_model_name` - The name of the LLM to use, exactly the same as Ollama model name.
+- `llm_stream_redundancy`, `llm_thinking_budget_chars` - Enable streaming redundancy elimination to detect and stop repetitive or stalled LLM output early. For thinking models (e.g. DeepSeek-R1, Qwen3), `llm_thinking_budget_chars` sets a character budget for the internal reasoning block before generation is cut off (default: 8000).
 - `text_cleaner_ruleset` - Add rules to this list to edit text before it is spoken by muse.
 - `tongue_twisters_dir` - If using the "tongue_twister" topic, set this to a directory containing audio files of tongue twisters (or any other set of audio files!) for muse to play intermittently.
 - `prompts_directory` - Directory containing prompts for different topics and languages. Supports:

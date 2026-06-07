@@ -172,9 +172,9 @@ class Playback:
     def run(self) -> None:
         assert self.vlc_media_player is not None
         if self.has_muse():
+            self.get_muse().check_schedules(self._get_upcoming_tracks_callback())
             if not self.has_played_first_track:
                 self.update_ui_art_for_muse()
-            self.get_muse().check_schedules(self._get_upcoming_tracks_callback())
         while self.get_track() and not self._run.is_cancelled():
             # Check if user requested shutdown after the previous track finished
             if self.has_played_first_track and self._run_context.shutdown_after_track:
