@@ -156,6 +156,7 @@ class LLM:
         track_prompts_and_responses=False,
         use_streaming: bool = False,
         use_redundancy_elimination: bool = False,
+        thinking_budget_chars: Optional[int] = None,
     ):
         self.model_name = model_name
         self.run_context = run_context
@@ -163,6 +164,7 @@ class LLM:
         self.track_prompts_and_responses = bool(track_prompts_and_responses)
         self.use_streaming = bool(use_streaming)
         self.use_redundancy_elimination = bool(use_redundancy_elimination)
+        self.thinking_budget_chars = thinking_budget_chars
         self.prompt_response_history = []
         self._prompt_response_lock = threading.Lock()
         state_suffix = "".join(
@@ -205,10 +207,13 @@ class LLM:
         - ``llm_model_name``
         - ``llm_use_streaming``
         - ``llm_stream_redundancy``
+        - ``llm_thinking_budget_chars``
         - ``llm_track_prompts_and_responses``
         """
         if config_obj is None:
             from utils.config import config as config_obj
+        raw_budget = getattr(config_obj, "llm_thinking_budget_chars", None)
+        thinking_budget = int(raw_budget) if raw_budget is not None else None
         return cls(
             model_name=getattr(config_obj, "llm_model_name", "deepseek-r1:14b"),
             run_context=run_context,
@@ -222,6 +227,7 @@ class LLM:
             use_redundancy_elimination=bool(
                 getattr(config_obj, "llm_stream_redundancy", False)
             ),
+            thinking_budget_chars=thinking_budget,
         )
 
     @classmethod
@@ -314,7 +320,10 @@ class LLM:
         """Resolve policy: sentinel → instance flag; ``None`` → off; else use policy."""
         if redundancy_policy is _USE_INSTANCE_REDUNDANCY:
             if self.use_redundancy_elimination:
-                return DefaultRedundancyPolicy()
+                kwargs = {}
+                if self.thinking_budget_chars is not None:
+                    kwargs["thinking_budget_chars"] = self.thinking_budget_chars
+                return DefaultRedundancyPolicy(**kwargs)
             return None
         return redundancy_policy
 

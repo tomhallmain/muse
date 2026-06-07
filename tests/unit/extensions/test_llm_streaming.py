@@ -48,6 +48,7 @@ truncate_duplicate_paragraph = _red.truncate_duplicate_paragraph
 visible_text_for_policy = _red.visible_text_for_policy
 strip_thinking_blocks = _red.strip_thinking_blocks
 streaming_visible_response = _red.streaming_visible_response
+thinking_chars_in_progress = _red.thinking_chars_in_progress
 THINKING_OPEN_TAG = _red.THINKING_OPEN_TAG
 THINKING_CLOSE_TAG = _red.THINKING_CLOSE_TAG
 USE_INSTANCE_REDUNDANCY = _llm._USE_INSTANCE_REDUNDANCY
@@ -268,3 +269,69 @@ class TestGenerateResponseBuffered:
         )
         llm.generate_response("test", stream=False, redundancy_policy=None)
         assert llm.get_failure_count() == 0
+
+
+class TestThinkingBudget:
+    """Tests for the thinking_budget_chars feature in DefaultRedundancyPolicy."""
+
+    def test_thinking_chars_in_progress_open_block(self):
+        """Reports chars accumulated inside an unclosed thinking block."""
+        content = "some internal reasoning"
+        raw = THINKING_OPEN_TAG + content
+        assert thinking_chars_in_progress(raw) == len(content)
+
+    def test_thinking_chars_in_progress_closed_block(self):
+        """Returns 0 when the thinking block is already closed."""
+        raw = THINKING_OPEN_TAG + "reasoning" + THINKING_CLOSE_TAG + "\n\nAnswer."
+        assert thinking_chars_in_progress(raw) == 0
+
+    def test_thinking_chars_in_progress_no_tags(self):
+        """Returns 0 for plain text with no thinking tags."""
+        assert thinking_chars_in_progress("just a normal response") == 0
+
+    def test_budget_not_exceeded_returns_false(self):
+        """Policy does not fire when thinking chars are within budget."""
+        policy = DefaultRedundancyPolicy(thinking_budget_chars=500)
+        raw = THINKING_OPEN_TAG + "x" * 100  # 100 chars, well under 500
+        chunk = StreamChunk(text="x", accumulated=raw, done=False)
+        assert not policy.on_chunk(chunk).should_stop
+
+    def test_budget_exceeded_fires_verdict(self):
+        """Policy fires with reason thinking_budget_exceeded when over budget."""
+        policy = DefaultRedundancyPolicy(thinking_budget_chars=50)
+        raw = THINKING_OPEN_TAG + "x" * 100  # 100 chars, over budget of 50
+        chunk = StreamChunk(text="x", accumulated=raw, done=False)
+        verdict = policy.on_chunk(chunk)
+        assert verdict.should_stop
+        assert verdict.reason == "thinking_budget_exceeded"
+
+    def test_budget_truncate_to_is_empty_string(self):
+        """truncate_to is empty so the caller treats this as a failed response."""
+        policy = DefaultRedundancyPolicy(thinking_budget_chars=10)
+        raw = THINKING_OPEN_TAG + "x" * 50
+        chunk = StreamChunk(text="x", accumulated=raw, done=False)
+        verdict = policy.on_chunk(chunk)
+        assert verdict.truncate_to == ""
+
+    def test_budget_default_is_8000(self):
+        """thinking_budget_chars defaults to 8000; fires on absurdly long blocks."""
+        policy = DefaultRedundancyPolicy()
+        assert policy.thinking_budget_chars == 8_000
+        chunk_under = StreamChunk(text="x", accumulated=THINKING_OPEN_TAG + "x" * 100, done=False)
+        assert not policy.on_chunk(chunk_under).should_stop
+        chunk_over = StreamChunk(text="x", accumulated=THINKING_OPEN_TAG + "x" * 10_000, done=False)
+        assert policy.on_chunk(chunk_over).should_stop
+
+    def test_budget_fires_before_redundancy_checks(self):
+        """Budget check runs even when visible text is empty (block still open)."""
+        # If the redundancy checks ran first they would short-circuit on empty
+        # visible text and return False — budget must check before that guard.
+        policy = DefaultRedundancyPolicy(
+            thinking_budget_chars=10,
+            min_length=200,  # would prevent redundancy from firing
+        )
+        raw = THINKING_OPEN_TAG + "x" * 100
+        chunk = StreamChunk(text="x", accumulated=raw, done=False)
+        verdict = policy.on_chunk(chunk)
+        assert verdict.should_stop
+        assert verdict.reason == "thinking_budget_exceeded"

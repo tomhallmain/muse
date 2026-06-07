@@ -74,6 +74,7 @@ class Config:
         self.llm_model_name = "deepseek-r1:14b"
         self.llm_use_streaming = False
         self.llm_stream_redundancy = False
+        self.llm_thinking_budget_chars = None
 
         self.text_cleaner_ruleset = []
         self.number_words = {}  # Locale-specific number word configurations
@@ -176,6 +177,7 @@ class Config:
             "piper_auto_download",
             "llm_use_streaming",
             "llm_stream_redundancy",
+            "llm_thinking_budget_chars",
         )
         self.set_values(dict,
             "muse_config",

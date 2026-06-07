@@ -46,6 +46,22 @@ def thinking_tag_pairs() -> List[Tuple[str, str]]:
 THINKING_OPEN_TAG, THINKING_CLOSE_TAG = thinking_tag_pairs()[0]
 
 
+def thinking_chars_in_progress(accumulated: str) -> int:
+    """Return the number of chars accumulated inside an open (unclosed) thinking block.
+
+    Returns 0 when no thinking block is open or when the accumulated text contains
+    no thinking tags at all.
+    """
+    for open_tag, close_tag in thinking_tag_pairs():
+        if open_tag not in accumulated:
+            continue
+        last_open = accumulated.rfind(open_tag)
+        last_close = accumulated.rfind(close_tag)
+        if last_close < last_open:
+            return len(accumulated) - (last_open + len(open_tag))
+    return 0
+
+
 def visible_text_for_policy(accumulated: str) -> str:
     """Text visible for redundancy checks (skips in-progress thinking blocks).
 
@@ -131,11 +147,13 @@ class DefaultRedundancyPolicy:
         min_paragraph_length: int = 40,
         stall_limit: int = 3,
         similarity_fn: Optional[SimilarityFn] = None,
+        thinking_budget_chars: Optional[int] = 8_000,
     ) -> None:
         self.min_length = min_length
         self.min_paragraph_length = min_paragraph_length
         self.stall_limit = stall_limit
         self._similarity = similarity_fn or _default_similarity
+        self.thinking_budget_chars = thinking_budget_chars
         self._stall_text: Optional[str] = None
         self._stall_count = 0
         self._similar_counts: dict = {}
@@ -150,6 +168,18 @@ class DefaultRedundancyPolicy:
         return [p.strip() for p in text.split("\n\n") if p.strip()]
 
     def on_chunk(self, chunk) -> RedundancyVerdict:
+        # ── Thinking-block budget ───────────────────────────────────────
+        # Checked before the visible-text guard so it fires even when the
+        # thinking block is still open (visible would be "" in that case).
+        if self.thinking_budget_chars is not None:
+            in_progress = thinking_chars_in_progress(chunk.accumulated)
+            if in_progress > self.thinking_budget_chars:
+                return RedundancyVerdict(
+                    True,
+                    reason="thinking_budget_exceeded",
+                    truncate_to="",
+                )
+
         visible = visible_text_for_policy(chunk.accumulated)
         if not visible or len(visible) < self.min_length:
             return RedundancyVerdict(False)
