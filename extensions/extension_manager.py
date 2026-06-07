@@ -219,10 +219,10 @@ class ExtensionManager:
             Utils.start_thread(self._extend, use_asyncio=False, args=args)
 
     def extend_by_title(self, title: str, strict: bool = False) -> None:
-        self._simple("track title: \"" + title + "\"", attr=TrackAttribute.TITLE, strict=(title if strict else None))
+        self._simple("track title: \"" + title + "\"", attr=TrackAttribute.TITLE, strict=(title if strict else None), entity=title)
 
     def extend_by_album(self, album: str, strict: bool = False) -> None:
-        self._simple("album title: \"" + album + "\"", attr=TrackAttribute.ALBUM, strict=(album if strict else None))
+        self._simple("album title: \"" + album + "\"", attr=TrackAttribute.ALBUM, strict=(album if strict else None), entity=album)
 
     def extend_by_artist(self, artist: str, strict: bool = False) -> None:
         # Skip LLM call if it's been failing
@@ -236,11 +236,12 @@ class ExtensionManager:
             except LLMResponseException as e:
                 logger.warning(f"LLM call failed for artist '{artist}', falling back to simple query: {e}")
                 query = artist
-        self._simple(query, attr=TrackAttribute.ARTIST, strict=(artist if strict else None))
+        obj = self.data_callbacks.instance.artists.get_data(artist)
+        self._simple(query, attr=TrackAttribute.ARTIST, strict=(artist if strict else None), entity=obj or artist)
 
     def extend_by_composer(self, composer_name: str) -> None:
         composer = self.data_callbacks.instance.composers.get_data(composer_name)
-        self._simple("music composed by " + composer_name, attr=TrackAttribute.COMPOSER, strict=composer)
+        self._simple("music composed by " + composer_name, attr=TrackAttribute.COMPOSER, strict=composer, entity=composer or composer_name)
 
     def extend_by_genre(self, genre: str, strict: bool = False) -> None:
         # Skip LLM call if it's been failing
@@ -254,7 +255,8 @@ class ExtensionManager:
             except LLMResponseException as e:
                 logger.warning(f"LLM call failed for genre '{genre}', falling back to simple query: {e}")
                 query = genre
-        self._simple(query, attr=TrackAttribute.GENRE, strict=(genre if strict else None))
+        obj = self.data_callbacks.instance.genres.get_data(genre)
+        self._simple(query, attr=TrackAttribute.GENRE, strict=(genre if strict else None), entity=obj or genre)
 
     def extend_by_instrument(self, instrument: str, genre: str = "Classical", strict: bool = False) -> None:
         # Skip LLM call if it's been failing
@@ -269,9 +271,10 @@ class ExtensionManager:
             except LLMResponseException as e:
                 logger.warning(f"LLM call failed for instrument '{instrument}' with genre '{genre}', falling back to simple query: {e}")
                 query = f"{instrument} {genre}"
-        self._simple(query, attr=TrackAttribute.INSTRUMENT, strict=(instrument if strict else None))
+        obj = self.data_callbacks.instance.instruments.get_data(instrument)
+        self._simple(query, attr=TrackAttribute.INSTRUMENT, strict=(instrument if strict else None), entity=obj or instrument)
 
-    def _simple(self, q: str, m: int = 6, depth: int = 0, attr: Optional[TrackAttribute] = None, strict: Optional[Union[str, 'Composer']] = None) -> None:
+    def _simple(self, q: str, m: int = 6, depth: int = 0, attr: Optional[TrackAttribute] = None, strict: Optional[Union[str, 'Composer']] = None, entity: Optional[Any] = None) -> None:
         r = self.s(q, m)
         if r is not None and r.i():
             a = r.o()
@@ -279,7 +282,7 @@ class ExtensionManager:
                 i.n = SoupUtils.clean_html(i.n)
                 i.d = SoupUtils.clean_html(i.d)
                 i.m = self._m(q, i.n)
-                logger.info(f"Extension option: {i.n} {i.x()}")            
+                logger.info(f"Extension option: {i.n} {i.x()}")
             opts = []
             shuffled = a.copy()
             random.shuffle(shuffled)
@@ -296,7 +299,7 @@ class ExtensionManager:
                 if depth > 4:
                     logger.error(f"Unable to find valid results after multiple attempts: {q}")
                     raise Exception(f"Unable to find valid results: {q}")
-                self._simple(q, m=m*2, depth=depth+1, attr=attr, strict=strict)
+                self._simple(q, m=m*2, depth=depth+1, attr=attr, strict=strict, entity=entity)
                 return
             b = opts[0]
             b1 = opts[1] if len(opts) > 1 else None
@@ -304,7 +307,7 @@ class ExtensionManager:
             if b1:
                 logger.info(f"Backup option: {b1.n} - {b1.x()}")
             logger.info(b.d)
-            self.delayed(b, attr, s=q, b1=b1)
+            self.delayed(b, attr, s=q, b1=b1, entity=entity)
         else:
             if r is None:
                 logger.warning("Tracking too many requests.")
@@ -398,11 +401,11 @@ class ExtensionManager:
                 return True
         return False
 
-    def delayed(self, b, attr: Optional[TrackAttribute], s: str, b1=None) -> None:
-        thread = Utils.start_thread(self._delayed, use_asyncio=False, args=[b, attr, s, b1])
+    def delayed(self, b, attr: Optional[TrackAttribute], s: str, b1=None, entity: Optional[Any] = None) -> None:
+        thread = Utils.start_thread(self._delayed, use_asyncio=False, args=[b, attr, s, b1, True, entity])
         ExtensionManager.DELAYED_THREADS.append(thread)
 
-    def _delayed(self, b, attr: Optional[TrackAttribute], s: str, b1=None, sleep: bool = True) -> None:
+    def _delayed(self, b, attr: Optional[TrackAttribute], s: str, b1=None, sleep: bool = True, entity: Optional[Any] = None) -> None:
         if sleep:
             time_seconds = self.get_extension_sleep_time(1000, 2000)
             check_cadence = 150
@@ -416,6 +419,22 @@ class ExtensionManager:
 
         try:
             f, b = self._a(b, b1)
+            if entity and f:
+                if isinstance(entity, str):
+                    _aliases, _name = [entity], entity
+                else:
+                    _aliases = getattr(entity, 'indicators', None) or getattr(entity, 'transliterations', None) or []
+                    _name = getattr(entity, 'name', str(entity))
+                    if not _aliases:
+                        _aliases = [_name]
+                _bn = os.path.basename(f)
+                if not any(a.lower() in _bn.lower() for a in _aliases):
+                    _n = os.path.join(os.path.dirname(f), _name + " - " + _bn)
+                    try:
+                        os.rename(f, _n)
+                        f = _n
+                    except Exception as e:
+                        logger.error(f"Failed to rename: {e}")
             self._append(b, f, attr, s)
             PlaybackConfigMaster.assign_extension(f)
             if self.ui_callbacks is not None:
