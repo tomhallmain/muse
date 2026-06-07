@@ -183,3 +183,88 @@ class TestThinkingModelStreaming:
         llm = LLM(model_name="llama3")
         raw = THINKING_OPEN_TAG + "planning\n" + THINKING_CLOSE_TAG + "\n\nHello!"
         assert llm._clean_response_for_models(raw) == "Hello!"
+
+    def test_streaming_visible_response_passthrough_for_plain_text(self):
+        """streaming_visible_response must be a no-op when no thinking tags are present."""
+        plain = "No thinking here, just a normal response."
+        assert streaming_visible_response(plain) == plain
+
+    def test_is_thinking_model_covers_known_prefixes(self):
+        for model in ("deepseek-r1:14b", "qwen3:8b", "qwq:32b"):
+            assert LLM(model_name=model)._is_thinking_model(), f"{model} should be detected"
+        for model in ("llama3", "mistral", "phi3"):
+            assert not LLM(model_name=model)._is_thinking_model(), f"{model} should not be detected"
+
+
+class TestGenerateResponseBuffered:
+    """Tests for the non-streaming (_generate_response_buffered) path."""
+
+    @staticmethod
+    def _make_urlopen(response_dict):
+        """Return a urlopen stub that reads back *response_dict* as JSON bytes."""
+        body = json.dumps(response_dict).encode("utf-8")
+
+        class _FakeResp:
+            def read(self):
+                return body
+
+        def fake_urlopen(req, timeout=None):
+            return _FakeResp()
+
+        return fake_urlopen
+
+    def test_returns_correct_llmresult(self, monkeypatch):
+        llm = LLM(model_name="llama3")
+        monkeypatch.setattr(
+            _llm.request, "urlopen",
+            self._make_urlopen({
+                "response": "Hello world",
+                "done": True,
+                "done_reason": "stop",
+                "eval_count": 42,
+                "total_duration": 1000,
+                "load_duration": 100,
+                "prompt_eval_count": 5,
+                "prompt_eval_duration": 50,
+                "eval_duration": 900,
+            }),
+        )
+        result = llm.generate_response("test", stream=False, redundancy_policy=None)
+        assert result.response == "Hello world"
+        assert result.done is True
+        assert result.eval_count == 42
+        assert result.truncated is False
+        assert result.truncation_reason == ""
+
+    def test_never_sets_truncated(self, monkeypatch):
+        """Buffered path must not set truncated=True even when use_redundancy_elimination is on."""
+        llm = LLM(model_name="llama3", use_redundancy_elimination=True)
+        monkeypatch.setattr(
+            _llm.request, "urlopen",
+            self._make_urlopen({"response": "Some response text.", "done": True}),
+        )
+        result = llm.generate_response("test", stream=False, redundancy_policy=None)
+        assert result.truncated is False
+
+    def test_strips_thinking_blocks(self, monkeypatch):
+        """_clean_response_for_models must strip thinking tags in buffered mode."""
+        llm = LLM(model_name="llama3")
+        raw = THINKING_OPEN_TAG + "internal plan\n" + THINKING_CLOSE_TAG + "\n\nFinal answer."
+        monkeypatch.setattr(
+            _llm.request, "urlopen",
+            self._make_urlopen({"response": raw, "done": True}),
+        )
+        result = llm.generate_response("test", stream=False, redundancy_policy=None)
+        assert result.response == "Final answer."
+
+    def test_resets_failure_count_on_success(self, monkeypatch):
+        """A valid buffered response resets the per-state failure counter."""
+        llm = LLM(model_name="llama3")
+        llm.increment_failure_count()
+        assert llm.get_failure_count() == 1
+        monkeypatch.setattr(
+            _llm.request, "urlopen",
+            self._make_urlopen({"response": "Good response.", "done": True}),
+        )
+        llm.generate_response("test", stream=False, redundancy_policy=None)
+        assert llm.get_failure_count() == 0

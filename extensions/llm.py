@@ -459,17 +459,14 @@ class LLM:
         final: dict = {}
         truncated = False
         truncation_reason = ""
-        thinking_model = self._is_thinking_model()
         for event in self._iter_ollama_stream_events(req, timeout):
             delta = event.get("response", "") or ""
             if delta:
                 accumulated_raw += delta
             done = bool(event.get("done"))
-            accumulated_visible = (
-                streaming_visible_response(accumulated_raw)
-                if thinking_model
-                else accumulated_raw
-            )
+            # streaming_visible_response is a no-op when no thinking tags are
+            # present, so calling it unconditionally is safe for all models.
+            accumulated_visible = streaming_visible_response(accumulated_raw)
             stream_chunk = StreamChunk(
                 text=delta,
                 accumulated=accumulated_visible,
@@ -508,8 +505,6 @@ class LLM:
 
         if not final:
             final = {"done": True, "response": accumulated_raw}
-            if self._cancelled:
-                final["done_reason"] = "cancelled"
         elif not accumulated_raw and final.get("response"):
             accumulated_raw = final.get("response", "") or ""
 
@@ -736,9 +731,13 @@ class LLM:
             raise LLMResponseException("Failed to generate LLM response - Result is None")
         return result._get_json_attr(json_key)
 
+    # Model name prefixes known to use <think>…</think> reasoning blocks.
+    _THINKING_MODEL_PREFIXES = ("deepseek-r1", "qwen3", "qwq")
+
     def _is_thinking_model(self) -> bool:
-        """Check if the current model is a thinking model that uses internal prompts."""
-        return self.model_name.startswith("deepseek-r1")
+        """Return True if the model is known to emit thinking-block wrapper tags."""
+        name_lower = self.model_name.lower()
+        return any(name_lower.startswith(p) for p in self._THINKING_MODEL_PREFIXES)
 
     def _clean_response_for_models(self, response_text, accept_mostly_cjk_response=False):
         """
