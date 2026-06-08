@@ -149,6 +149,45 @@ def _infer_genre_dir(
     return genre_dir
 
 
+def _remove_empty_parents(path: str, stop_at: str) -> None:
+    """Remove empty ancestor directories up to (but not including) stop_at."""
+    stop = os.path.normpath(stop_at)
+    directory = os.path.dirname(os.path.normpath(path))
+    while True:
+        norm = os.path.normpath(directory)
+        if norm == stop or not norm.startswith(stop + os.sep):
+            break
+        try:
+            if not os.listdir(directory):
+                os.rmdir(directory)
+                directory = os.path.dirname(directory)
+            else:
+                break
+        except OSError:
+            break
+
+
+def delete_extension_file(filepath: str) -> bool:
+    """Delete the extension file and remove any empty parent directories.
+
+    Returns True if the file was deleted, False if it was missing or the
+    deletion failed.  Empty directories created by auto-filing are pruned
+    back up to config.directories[0] so nothing is left stranded.
+    """
+    if not filepath or not os.path.exists(filepath):
+        logger.warning("Delete skipped: file not found at %s", filepath)
+        return False
+    try:
+        os.remove(filepath)
+        logger.info("Deleted extension file: %s", filepath)
+        if config.directories:
+            _remove_empty_parents(filepath, config.directories[0])
+        return True
+    except OSError as e:
+        logger.error("Failed to delete extension file %s: %s", filepath, e)
+        return False
+
+
 def file_extension(
     f: str,
     attr: Optional[TrackAttribute],
@@ -187,7 +226,13 @@ def file_extension(
 
     try:
         os.makedirs(target_dir, exist_ok=True)
-        new_path = os.path.join(target_dir, os.path.basename(f))
+        basename = os.path.basename(f)
+        stem, ext = os.path.splitext(basename)
+        new_path = os.path.join(target_dir, basename)
+        counter = 2
+        while os.path.exists(new_path):
+            new_path = os.path.join(target_dir, f"{stem} {counter}{ext}")
+            counter += 1
         os.rename(f, new_path)
         logger.info("Auto-filed extension to: %s", new_path)
         return new_path

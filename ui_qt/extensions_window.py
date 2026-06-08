@@ -343,6 +343,10 @@ class ExtensionsWindow(SmartWindow):
             master=self,
         )
         if res:
+            filepath = extension.get("filename")
+            if filepath:
+                from extensions.extension_filer import delete_extension_file
+                delete_extension_file(filepath)
             if extension in ExtensionManager.extensions:
                 ExtensionManager.extensions.remove(extension)
                 ExtensionManager.store_extensions()

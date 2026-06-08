@@ -17,6 +17,8 @@ from extensions.extension_filer import (
     _genre_from_filesystem,
     _infer_genre_dir,
     _match_genre,
+    _remove_empty_parents,
+    delete_extension_file,
     file_extension,
 )
 from utils.globals import TrackAttribute
@@ -270,6 +272,37 @@ class TestFileExtension:
         result = file_extension(str(src), TrackAttribute.ARTIST, "Bach", "Bach", "BWV 1")
         assert result is None
 
+    def test_name_clash_increments_suffix(self, tmp_path, monkeypatch):
+        (tmp_path / "Classical").mkdir()
+        monkeypatch.setattr(filer, "config", _mock_config(str(tmp_path)))
+        entity = _artist_entity("Bach", genres=["Classical"])
+        # Pre-create the would-be target to force a clash
+        target_dir = tmp_path / "Classical" / "Bach" / "Unknown Album"
+        target_dir.mkdir(parents=True)
+        (target_dir / "track.mp3").write_bytes(b"existing")
+        src = tmp_path / "track.mp3"
+        src.write_bytes(b"new")
+        result = file_extension(str(src), TrackAttribute.ARTIST, "Bach", entity, "BWV 1")
+        assert result is not None
+        assert os.path.basename(result) == "track 2.mp3"
+        assert os.path.exists(result)
+        # Original clash file must be untouched
+        assert (target_dir / "track.mp3").read_bytes() == b"existing"
+
+    def test_name_clash_increments_past_multiple_existing(self, tmp_path, monkeypatch):
+        (tmp_path / "Classical").mkdir()
+        monkeypatch.setattr(filer, "config", _mock_config(str(tmp_path)))
+        entity = _artist_entity("Bach", genres=["Classical"])
+        target_dir = tmp_path / "Classical" / "Bach" / "Unknown Album"
+        target_dir.mkdir(parents=True)
+        (target_dir / "track.mp3").write_bytes(b"1")
+        (target_dir / "track 2.mp3").write_bytes(b"2")
+        src = tmp_path / "track.mp3"
+        src.write_bytes(b"new")
+        result = file_extension(str(src), TrackAttribute.ARTIST, "Bach", entity, "BWV 1")
+        assert result is not None
+        assert os.path.basename(result) == "track 3.mp3"
+
     def test_source_file_no_longer_at_original_path(self, tmp_path, monkeypatch):
         (tmp_path / "Classical").mkdir()
         monkeypatch.setattr(filer, "config", _mock_config(str(tmp_path)))
@@ -278,3 +311,80 @@ class TestFileExtension:
         entity = _artist_entity("Bach", genres=["Classical"])
         file_extension(str(src), TrackAttribute.ARTIST, "Bach", entity, "BWV 1")
         assert not src.exists()
+
+
+# ---------------------------------------------------------------------------
+# delete_extension_file / _remove_empty_parents
+# ---------------------------------------------------------------------------
+
+@pytest.mark.unit
+class TestDeleteExtensionFile:
+    def test_deletes_existing_file(self, tmp_path, monkeypatch):
+        f = tmp_path / "track.mp3"
+        f.write_bytes(b"audio")
+        monkeypatch.setattr(filer, "config", _mock_config(str(tmp_path)))
+        assert delete_extension_file(str(f)) is True
+        assert not f.exists()
+
+    def test_returns_false_for_missing_file(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(filer, "config", _mock_config(str(tmp_path)))
+        assert delete_extension_file(str(tmp_path / "nonexistent.mp3")) is False
+
+    def test_returns_false_for_empty_path(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(filer, "config", _mock_config(str(tmp_path)))
+        assert delete_extension_file("") is False
+
+    def test_empty_parent_dirs_pruned(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(filer, "config", _mock_config(str(tmp_path)))
+        deep = tmp_path / "Classical" / "Bach" / "Unknown Album"
+        deep.mkdir(parents=True)
+        f = deep / "track.mp3"
+        f.write_bytes(b"audio")
+        delete_extension_file(str(f))
+        # All three auto-created dirs should be gone
+        assert not (tmp_path / "Classical" / "Bach").exists()
+        assert not (tmp_path / "Classical").exists()
+
+    def test_non_empty_parent_dir_preserved(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(filer, "config", _mock_config(str(tmp_path)))
+        deep = tmp_path / "Classical" / "Bach" / "Unknown Album"
+        deep.mkdir(parents=True)
+        (deep / "track.mp3").write_bytes(b"delete me")
+        (deep / "other.mp3").write_bytes(b"keep me")
+        delete_extension_file(str(deep / "track.mp3"))
+        # Album dir still has a sibling file — must not be removed
+        assert deep.exists()
+        assert (deep / "other.mp3").exists()
+
+    def test_prune_stops_at_base_dir(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(filer, "config", _mock_config(str(tmp_path)))
+        sub = tmp_path / "Classical"
+        sub.mkdir()
+        f = sub / "track.mp3"
+        f.write_bytes(b"audio")
+        delete_extension_file(str(f))
+        # Classical is empty and should be pruned, but base tmp_path must survive
+        assert not sub.exists()
+        assert tmp_path.exists()
+
+
+@pytest.mark.unit
+class TestRemoveEmptyParents:
+    def test_removes_chain_of_empty_dirs(self, tmp_path):
+        deep = tmp_path / "a" / "b" / "c"
+        deep.mkdir(parents=True)
+        _remove_empty_parents(str(deep / "file.mp3"), str(tmp_path))
+        assert not (tmp_path / "a").exists()
+
+    def test_stops_at_non_empty_dir(self, tmp_path):
+        deep = tmp_path / "a" / "b"
+        deep.mkdir(parents=True)
+        (tmp_path / "a" / "sibling").mkdir()
+        _remove_empty_parents(str(deep / "file.mp3"), str(tmp_path))
+        assert (tmp_path / "a").exists()
+
+    def test_does_not_remove_stop_dir(self, tmp_path):
+        sub = tmp_path / "a"
+        sub.mkdir()
+        _remove_empty_parents(str(sub / "file.mp3"), str(tmp_path))
+        assert tmp_path.exists()
