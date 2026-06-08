@@ -1,4 +1,5 @@
 import random
+import re
 from typing import List, Optional, TYPE_CHECKING
 
 from library_data.media_track import MediaTrack
@@ -12,6 +13,18 @@ logger = get_logger(__name__)
 
 TRACK_EXCLUSIONS_KEY = "playlist_track_exclusions"
 _DEFAULT_TRACK_EXCLUSIONS = ["TTS"]
+
+
+def _matches_exclusion(filepath: str, exclusion: str) -> bool:
+    """Return True if *exclusion* appears in *filepath* as a standalone token.
+
+    Matching is case-sensitive (the exclusion string is used as-is) and the
+    token must not be immediately surrounded by ASCII letters, so a filter of
+    "TTS" will match "/tts_output/TTS_voice.mp3" but not "Rottsolk" or
+    "Quartettsatz" where the letters happen to spell 'tts' inside a word.
+    """
+    pattern = r'(?<![a-zA-Z])' + re.escape(exclusion) + r'(?![a-zA-Z])'
+    return bool(re.search(pattern, filepath))
 
 if TYPE_CHECKING:
     from library_data.library_data_callbacks import LibraryDataCallbacks
@@ -80,9 +93,9 @@ class Playlist:
                  loop: bool = False,
                  sort_config: Optional[SortConfig] = None,
                  deterministic_group_order: bool = False) -> None:
-        exclusions = [e.lower() for e in app_info_cache.get(TRACK_EXCLUSIONS_KEY, _DEFAULT_TRACK_EXCLUSIONS)]
+        exclusions = app_info_cache.get(TRACK_EXCLUSIONS_KEY, _DEFAULT_TRACK_EXCLUSIONS)
         if exclusions:
-            excluded = [t for t in tracks if any(e in t.lower() for e in exclusions)]
+            excluded = [t for t in tracks if any(_matches_exclusion(t, e) for e in exclusions)]
             if excluded:
                 logger.info(f"Excluded {len(excluded)} track(s) from playlist (filters: {exclusions})")
                 for t in excluded:

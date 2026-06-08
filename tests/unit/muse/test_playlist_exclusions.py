@@ -36,9 +36,39 @@ class TestPlaylistTrackExclusions:
         playlist = Playlist(tracks, data_callbacks=mock_data_callbacks)
         assert playlist.excluded_count == 0
 
-    def test_exclusion_is_case_insensitive(self, mock_data_callbacks):
+    def test_exclusion_is_case_sensitive(self, mock_data_callbacks):
         from muse.playlist import Playlist
+        # "TTS" (uppercase) must not match "tts_voice" (lowercase)
         tracks = ["/output/tts_voice.mp3", "/output/TTS_UPPER.mp3", "/music/good.flac"]
+        playlist = Playlist(tracks, data_callbacks=mock_data_callbacks)
+        assert playlist.excluded_count == 1
+        assert "/output/TTS_UPPER.mp3" not in playlist.in_sequence
+        assert "/output/tts_voice.mp3" in playlist.in_sequence
+        assert "/music/good.flac" in playlist.in_sequence
+
+    def test_no_false_positives_for_tts_substring_in_words(self, mock_data_callbacks):
+        from muse.playlist import Playlist
+        # Real-world false positives from the logs: "tts" embedded inside artist/album words.
+        # None of these should be excluded by the default "TTS" filter.
+        tracks = [
+            r"F:\iTunes Music\Tempesta di Mare & Clara Rottsolk\Scarlatti_ Cantatas\01 Tu sei.m4a",
+            r"F:\iTunes Music\Tokyo String Quartet\Schubert\05 Quartettsatz.m4a",
+            r"F:\iTunes Music\Ronn McFarlane\Highland King Vol. 2\28 The Newest Scotts Measure.m4a",
+            r"F:\iTunes Music\His Majesties Sagbutts and Cornetts\Venice Preserved\01 Canzon.m4a",
+            "/music/clean_track.flac",
+        ]
+        playlist = Playlist(tracks, data_callbacks=mock_data_callbacks)
+        assert playlist.excluded_count == 0
+        assert len(playlist.in_sequence) == 5
+
+    def test_tts_label_in_filename_still_excluded(self, mock_data_callbacks):
+        from muse.playlist import Playlist
+        # Confirm that genuine TTS output files are still caught after the fix.
+        tracks = [
+            "/tts_output/TTS_hello.mp3",
+            "/tts_output/TTS_goodbye.mp3",
+            "/music/good.flac",
+        ]
         playlist = Playlist(tracks, data_callbacks=mock_data_callbacks)
         assert playlist.excluded_count == 2
         assert "/music/good.flac" in playlist.in_sequence
