@@ -165,8 +165,6 @@ class Muse:
         if self.ui_callbacks is not None:
             if self.ui_callbacks.update_next_up_callback is not None:
                 self.ui_callbacks.update_next_up_callback(spot_profile.get_upcoming_track_title())
-            if self.ui_callbacks.update_prior_track_callback is not None:
-                self.ui_callbacks.update_prior_track_callback(spot_profile.get_previous_track_title())
             if self.ui_callbacks.update_spot_profile_topics_text is not None:
                 self.ui_callbacks.update_spot_profile_topics_text(spot_profile.get_topic_text())
         if spot_profile.is_going_to_say_something():
@@ -189,8 +187,6 @@ class Muse:
         if self.ui_callbacks is not None:
             if self.ui_callbacks.update_next_up_callback is not None:
                 self.ui_callbacks.update_next_up_callback(spot_profile.get_upcoming_track_title())
-            if self.ui_callbacks.update_prior_track_callback is not None:
-                self.ui_callbacks.update_prior_track_callback(spot_profile.get_previous_track_title())
             if self.ui_callbacks.update_spot_profile_topics_text is not None:
                 self.ui_callbacks.update_spot_profile_topics_text(spot_profile.get_topic_text())
 
