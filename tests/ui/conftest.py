@@ -87,6 +87,7 @@ def _reset_window_state():
     """Reset all known window class-level singletons and recent-item lists."""
     from ui_qt.blacklist_preview_window import BlacklistPreviewWindow
     from ui_qt.composers_window import ComposersWindow
+    from ui_qt.configuration_window import ConfigurationWindow
     from ui_qt.favorites_window import FavoritesWindow
     from ui_qt.history_window import HistoryWindow
     from ui_qt.library_window import LibraryWindow
@@ -101,6 +102,7 @@ def _reset_window_state():
     ComposersWindow.recent_searches = []
     ComposersWindow.top_level = None
     ComposersWindow.details_window = None
+    ConfigurationWindow.top_level = None
     HistoryWindow.top_level = None
     LibraryWindow.top_level = None
     MasterPlaylistWindow.top_level = None

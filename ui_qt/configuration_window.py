@@ -16,14 +16,17 @@ from PySide6.QtWidgets import (
     QWidget,
     QFrame,
     QGroupBox,
+    QListWidget,
     QScrollArea,
     QFileDialog,
 )
 from PySide6.QtCore import Qt
 
 from lib.multi_display_qt import SmartWindow
+from muse.playlist import TRACK_EXCLUSIONS_KEY, _DEFAULT_TRACK_EXCLUSIONS
 from ui_qt.app_style import AppStyle
 from ui_qt.auth.password_utils import require_password
+from utils.app_info_cache import app_info_cache
 from utils.config import config
 from utils.globals import ProtectedActions
 from utils.translations import I18N
@@ -61,16 +64,19 @@ class ConfigurationWindow(SmartWindow):
         self.audio_tab = QWidget(self)
         self.api_tab = QWidget(self)
         self.tts_tab = QWidget(self)
+        self.playlist_options_tab = QWidget(self)
 
         self.notebook.addTab(self.general_tab, _("General"))
         self.notebook.addTab(self.audio_tab, _("Audio"))
         self.notebook.addTab(self.api_tab, _("API Keys"))
         self.notebook.addTab(self.tts_tab, _("TTS Settings"))
+        self.notebook.addTab(self.playlist_options_tab, _("Playlist Options"))
 
         self.create_general_tab()
         self.create_audio_tab()
         self.create_api_tab()
         self.create_tts_tab()
+        self.create_playlist_options_tab()
 
         layout.addWidget(self.notebook)
 
@@ -302,6 +308,58 @@ class ConfigurationWindow(SmartWindow):
         # Apply initial visibility
         self._on_tts_provider_changed(current)
 
+    def create_playlist_options_tab(self):
+        layout = QVBoxLayout(self.playlist_options_tab)
+        layout.setContentsMargins(10, 10, 10, 10)
+        layout.setSpacing(8)
+
+        group = QGroupBox(_("Track Exclusion Filters"), self.playlist_options_tab)
+        group_layout = QVBoxLayout(group)
+        group_layout.setSpacing(6)
+
+        desc = QLabel(
+            _("Tracks whose file path contains any of these strings (case-insensitive) will be excluded from playlists."),
+            group,
+        )
+        desc.setWordWrap(True)
+        group_layout.addWidget(desc)
+
+        self._exclusions_list = QListWidget(group)
+        for entry in app_info_cache.get(TRACK_EXCLUSIONS_KEY, _DEFAULT_TRACK_EXCLUSIONS):
+            self._exclusions_list.addItem(entry)
+        group_layout.addWidget(self._exclusions_list)
+
+        add_row = QWidget(group)
+        add_layout = QHBoxLayout(add_row)
+        add_layout.setContentsMargins(0, 0, 0, 0)
+        self._exclusion_entry = QLineEdit(add_row)
+        self._exclusion_entry.setPlaceholderText(_("New exclusion string..."))
+        self._exclusion_entry.returnPressed.connect(self._add_exclusion)
+        add_layout.addWidget(self._exclusion_entry)
+        add_btn = QPushButton(_("Add"), add_row)
+        add_btn.clicked.connect(self._add_exclusion)
+        add_layout.addWidget(add_btn)
+        remove_btn = QPushButton(_("Remove Selected"), add_row)
+        remove_btn.clicked.connect(self._remove_exclusion)
+        add_layout.addWidget(remove_btn)
+        group_layout.addWidget(add_row)
+
+        layout.addWidget(group)
+        layout.addStretch()
+
+    def _add_exclusion(self):
+        text = self._exclusion_entry.text().strip()
+        if not text:
+            return
+        existing = [self._exclusions_list.item(i).text() for i in range(self._exclusions_list.count())]
+        if text not in existing:
+            self._exclusions_list.addItem(text)
+        self._exclusion_entry.clear()
+
+    def _remove_exclusion(self):
+        for item in self._exclusions_list.selectedItems():
+            self._exclusions_list.takeItem(self._exclusions_list.row(item))
+
     def _on_tts_provider_changed(self, provider_value: str):
         sections = {
             "coqui":   self._coqui_section,
@@ -428,6 +486,12 @@ class ConfigurationWindow(SmartWindow):
                     config.set_config_value(key, widget.currentText())
                 else:
                     config.set_config_value(key, widget.text())
+
+            exclusions = [
+                self._exclusions_list.item(i).text()
+                for i in range(self._exclusions_list.count())
+            ]
+            app_info_cache.set(TRACK_EXCLUSIONS_KEY, exclusions)
 
             if config.save_config():
                 self.app_actions.toast(_("Configuration saved successfully"))

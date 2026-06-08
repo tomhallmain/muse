@@ -205,6 +205,7 @@ def _patch_app_info_cache_singleton(monkeypatch, cache_instance) -> None:
         "library_data.library_data",
         "muse.prompter",
         "muse.schedules_manager",
+        "ui_qt.configuration_window",
     ):
         try:
             module = importlib.import_module(module_name)
@@ -231,6 +232,7 @@ def _patch_config_singleton(monkeypatch, config_instance) -> None:
         # composer.py still reads from a JSON file via config.composers_file, so
         # it must see the isolated config instance to avoid reading the real file.
         "library_data.composer",
+        "ui_qt.configuration_window",
     ):
         try:
             module = importlib.import_module(module_name)

@@ -89,6 +89,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
     _sig_favorite_status = Signal(object)
     _sig_run_finished = Signal(object, object)
     _sig_shutdown = Signal()
+    _sig_toast = Signal(str)
 
     def __init__(self):
         # Initialize SmartMainWindow with geometry persistence enabled
@@ -180,6 +181,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         self._sig_favorite_status.connect(self._do_update_favorite_status)
         self._sig_run_finished.connect(self._on_run_finished)
         self._sig_shutdown.connect(self.on_closing)
+        self._sig_toast.connect(self._do_toast)
 
         # Connect media frame overlay signals
         self.media_frame.seek_requested.connect(self.seek_in_track)
@@ -1345,6 +1347,9 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
 
     def toast(self, message):
         logger.info("Toast: %s", message)
+        self._sig_toast.emit(message)
+
+    def _do_toast(self, message):
         msg = QMessageBox(self)
         msg.setWindowTitle("")
         msg.setText(message)
