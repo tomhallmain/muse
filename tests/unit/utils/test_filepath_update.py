@@ -466,3 +466,256 @@ class TestLibFileCross:
 
         assert P_ALBUM2 in LibraryData.DIRECTORIES_CACHE
         assert P_TRACK_XDIR in LibraryData.DIRECTORIES_CACHE[P_ALBUM2]
+
+
+# ---------------------------------------------------------------------------
+# propagate_file_delete helpers
+# ---------------------------------------------------------------------------
+
+class TestDbFileDelete:
+    def test_removes_track_row(self, isolated_db):
+        conn = isolated_db
+        conn.execute(
+            "INSERT INTO media_tracks (filepath, title, scanned_at) VALUES (?, ?, ?)",
+            (P_TRACK, "My Track", 1.0),
+        )
+        conn.commit()
+
+        from utils.filepath_update import _db_file_delete
+        _db_file_delete(P_TRACK)
+
+        row = conn.execute(
+            "SELECT * FROM media_tracks WHERE filepath=?", (P_TRACK,)
+        ).fetchone()
+        assert row is None
+
+    def test_no_row_does_not_raise(self, isolated_db):
+        from utils.filepath_update import _db_file_delete
+        _db_file_delete("/nonexistent/track.flac")  # must not raise
+
+
+class TestDbDirJsonFileDelete:
+    def test_removes_filepath_from_files_json(self, isolated_db):
+        conn = isolated_db
+        other = "/music/Artist/Album/other.flac"
+        conn.execute(
+            "INSERT INTO directories VALUES (?, ?, ?)",
+            (P_ALBUM, json.dumps([P_TRACK, other]), 1.0),
+        )
+        conn.commit()
+
+        from utils.filepath_update import _db_dir_json_file_delete
+        _db_dir_json_file_delete(P_TRACK)
+
+        files = _dir_files(conn, P_ALBUM)
+        assert P_TRACK not in files
+        assert other in files
+
+    def test_no_directory_row_does_not_raise(self, isolated_db):
+        from utils.filepath_update import _db_dir_json_file_delete
+        _db_dir_json_file_delete(P_TRACK)  # no row in DB — must not raise
+
+
+class TestLibFileDelete:
+    def test_removes_from_media_track_cache(self):
+        from types import SimpleNamespace
+        from library_data.library_data import LibraryData
+        from utils.filepath_update import _lib_file_delete
+
+        track = SimpleNamespace(filepath=P_TRACK)
+        LibraryData.MEDIA_TRACK_CACHE[P_TRACK] = track
+
+        _lib_file_delete(P_TRACK)
+
+        assert P_TRACK not in LibraryData.MEDIA_TRACK_CACHE
+
+    def test_removes_from_all_tracks(self):
+        from types import SimpleNamespace
+        from library_data.library_data import LibraryData
+        from utils.filepath_update import _lib_file_delete
+
+        track = SimpleNamespace(filepath=P_TRACK)
+        LibraryData.all_tracks = [track]
+
+        _lib_file_delete(P_TRACK)
+
+        assert track not in LibraryData.all_tracks
+
+    def test_removes_from_directories_cache(self):
+        from library_data.library_data import LibraryData
+        from utils.filepath_update import _lib_file_delete
+
+        other = "/music/Artist/Album/other.flac"
+        LibraryData.DIRECTORIES_CACHE[P_ALBUM] = [P_TRACK, other]
+
+        _lib_file_delete(P_TRACK)
+
+        assert P_TRACK not in LibraryData.DIRECTORIES_CACHE[P_ALBUM]
+        assert other in LibraryData.DIRECTORIES_CACHE[P_ALBUM]
+
+    def test_absent_path_is_noop(self):
+        from library_data.library_data import LibraryData
+        from utils.filepath_update import _lib_file_delete
+
+        LibraryData.DIRECTORIES_CACHE[P_ALBUM] = ["/other/track.flac"]
+
+        _lib_file_delete(P_TRACK)  # must not raise or mutate unrelated entries
+
+        assert "/other/track.flac" in LibraryData.DIRECTORIES_CACHE[P_ALBUM]
+
+
+class TestPlaylistFileDelete:
+    def test_removes_from_recently_played_filepaths(self):
+        from muse.playlist import Playlist
+        from utils.filepath_update import _playlist_file_delete
+
+        Playlist.recently_played_filepaths = [P_TRACK, P_TRACK_NEW]
+
+        _playlist_file_delete(P_TRACK)
+
+        assert P_TRACK not in Playlist.recently_played_filepaths
+        assert P_TRACK_NEW in Playlist.recently_played_filepaths
+
+    def test_persists_removal_to_app_info_cache(self):
+        from muse.playlist import Playlist
+        from utils.app_info_cache import app_info_cache
+        from utils.globals import HistoryType
+        from utils.filepath_update import _playlist_file_delete
+
+        key = HistoryType.TRACKS.value
+        app_info_cache.set(key, [P_TRACK, P_TRACK_NEW])
+        Playlist.recently_played_filepaths = [P_TRACK, P_TRACK_NEW]
+
+        _playlist_file_delete(P_TRACK)
+
+        assert P_TRACK not in app_info_cache.get(key, [])
+        assert P_TRACK_NEW in app_info_cache.get(key, [])
+
+
+class TestSessionFileDelete:
+    def _make_session(self, current=P_TRACK, resolved=None, desc=None):
+        return {
+            "current_track_filepath": current,
+            "resolved_tracks": resolved or [P_TRACK],
+            "descriptor": desc or {},
+        }
+
+    def test_clears_current_track_filepath_when_matched(self):
+        from utils.app_info_cache import app_info_cache
+        from utils.filepath_update import _session_file_delete
+
+        app_info_cache.set("last_playback_session", self._make_session())
+
+        _session_file_delete(P_TRACK)
+
+        stored = app_info_cache.get("last_playback_session")
+        assert stored["current_track_filepath"] == ""
+
+    def test_leaves_current_track_filepath_when_different(self):
+        from utils.app_info_cache import app_info_cache
+        from utils.filepath_update import _session_file_delete
+
+        other = "/music/other.flac"
+        app_info_cache.set("last_playback_session", self._make_session(current=other))
+
+        _session_file_delete(P_TRACK)
+
+        stored = app_info_cache.get("last_playback_session")
+        assert stored["current_track_filepath"] == other
+
+    def test_removes_from_resolved_tracks(self):
+        from utils.app_info_cache import app_info_cache
+        from utils.filepath_update import _session_file_delete
+
+        session = self._make_session(resolved=[P_TRACK, P_TRACK_NEW])
+        app_info_cache.set("last_playback_session", session)
+
+        _session_file_delete(P_TRACK)
+
+        stored = app_info_cache.get("last_playback_session")
+        assert P_TRACK not in stored["resolved_tracks"]
+        assert P_TRACK_NEW in stored["resolved_tracks"]
+
+    def test_removes_from_descriptor_track_filepaths(self):
+        from utils.app_info_cache import app_info_cache
+        from utils.filepath_update import _session_file_delete
+
+        desc = {"track_filepaths": [P_TRACK, P_TRACK_NEW]}
+        app_info_cache.set("last_playback_session", self._make_session(desc=desc))
+
+        _session_file_delete(P_TRACK)
+
+        stored = app_info_cache.get("last_playback_session")
+        assert P_TRACK not in stored["descriptor"]["track_filepaths"]
+        assert P_TRACK_NEW in stored["descriptor"]["track_filepaths"]
+
+    def test_no_session_does_not_raise(self):
+        from utils.filepath_update import _session_file_delete
+        _session_file_delete(P_TRACK)  # no session set — must not raise
+
+
+class TestFavoritesFileDelete:
+    def test_removes_matching_favorite(self):
+        from utils.app_info_cache import app_info_cache
+        from utils.filepath_update import _favorites_file_delete
+
+        favs = [{"filepath": P_TRACK, "title": "My Track"}, {"filepath": P_TRACK_NEW}]
+        app_info_cache.set("favorites", favs)
+
+        _favorites_file_delete(P_TRACK)
+
+        stored = app_info_cache.get("favorites", [])
+        assert not any(f.get("filepath") == P_TRACK for f in stored)
+        assert any(f.get("filepath") == P_TRACK_NEW for f in stored)
+
+    def test_no_match_leaves_favorites_unchanged(self):
+        from utils.app_info_cache import app_info_cache
+        from utils.filepath_update import _favorites_file_delete
+
+        favs = [{"filepath": P_TRACK_NEW}]
+        app_info_cache.set("favorites", favs)
+
+        _favorites_file_delete(P_TRACK)
+
+        stored = app_info_cache.get("favorites", [])
+        assert len(stored) == 1
+
+
+class TestPlaylistDescriptorsFileDelete:
+    def test_removes_from_playlist_descriptor(self):
+        from utils.app_info_cache import app_info_cache
+        from utils.filepath_update import _playlist_descriptors_file_delete
+
+        desc = {"track_filepaths": [P_TRACK, P_TRACK_NEW]}
+        app_info_cache.set("playlist_descriptors", {"list_a": desc})
+
+        _playlist_descriptors_file_delete(P_TRACK)
+
+        raw = app_info_cache.get("playlist_descriptors", {})
+        assert P_TRACK not in raw["list_a"]["track_filepaths"]
+        assert P_TRACK_NEW in raw["list_a"]["track_filepaths"]
+
+    def test_removes_from_recent_descriptor(self):
+        from utils.app_info_cache import app_info_cache
+        from utils.filepath_update import _playlist_descriptors_file_delete
+
+        recent = [{"track_filepaths": [P_TRACK, P_TRACK_NEW]}]
+        app_info_cache.set("recent_playlist_descriptors", recent)
+
+        _playlist_descriptors_file_delete(P_TRACK)
+
+        stored = app_info_cache.get("recent_playlist_descriptors", [])
+        assert P_TRACK not in stored[0]["track_filepaths"]
+        assert P_TRACK_NEW in stored[0]["track_filepaths"]
+
+    def test_no_match_does_not_mutate(self):
+        from utils.app_info_cache import app_info_cache
+        from utils.filepath_update import _playlist_descriptors_file_delete
+
+        desc = {"track_filepaths": [P_TRACK_NEW]}
+        app_info_cache.set("playlist_descriptors", {"list_a": desc})
+
+        _playlist_descriptors_file_delete(P_TRACK)
+
+        raw = app_info_cache.get("playlist_descriptors", {})
+        assert raw["list_a"]["track_filepaths"] == [P_TRACK_NEW]

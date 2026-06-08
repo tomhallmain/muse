@@ -27,10 +27,8 @@ from utils.translations import I18N
 _ = I18N._
 
 from utils.track_path_preview import (
-    DIR_ACTION_NONE as _DIR_NONE,
-    DIR_ACTION_RENAME as _DIR_RENAME,
-    DIR_ACTION_MOVE_EXIST as _DIR_MOVE_EXIST,
-    DIR_ACTION_MOVE_NEW as _DIR_MOVE_NEW,
+    DirAction,
+    TrackActionKey,
     compute_proposed_filepath,
 )
 
@@ -289,7 +287,7 @@ class RenameConfirmationWindow(QDialog):
 
         def _on_toggled():
             action = self._action_from_group(btn_group)
-            target_widget.setVisible(action in (_DIR_MOVE_EXIST, _DIR_MOVE_NEW))
+            target_widget.setVisible(action in (DirAction.MOVE_EXIST, DirAction.MOVE_NEW))
             self._update_preview()
 
         btn_group.buttonToggled.connect(lambda *_: _on_toggled())
@@ -303,18 +301,18 @@ class RenameConfirmationWindow(QDialog):
     @staticmethod
     def _action_from_group(btn_group: QButtonGroup) -> str:
         idx = btn_group.checkedId()
-        return [_DIR_NONE, _DIR_RENAME, _DIR_MOVE_EXIST, _DIR_MOVE_NEW][idx]
+        return [DirAction.NONE, DirAction.RENAME, DirAction.MOVE_EXIST, DirAction.MOVE_NEW][idx]
 
     def _compute_proposed_path(self) -> str:
         artist_action = (
             self._action_from_group(self._artist_btns)
             if self._artist_group.isVisible()
-            else _DIR_NONE
+            else DirAction.NONE
         )
         album_action = (
             self._action_from_group(self._album_btns)
             if self._album_group.isVisible()
-            else _DIR_NONE
+            else DirAction.NONE
         )
         return compute_proposed_filepath(
             self._track,
@@ -348,20 +346,24 @@ class RenameConfirmationWindow(QDialog):
 
     def _on_apply(self) -> None:
         actions = {
-            "rename_track_file": (
+            TrackActionKey.RENAME_FILE: (
                 self._rename_file_check.isVisible()
                 and self._rename_file_check.isChecked()
             ),
-            "retain_ids": (
+            TrackActionKey.RETAIN_IDS: (
                 self._retain_ids_check.isVisible()
                 and self._retain_ids_check.isChecked()
             ),
-            "album_action":  self._action_from_group(self._album_btns)
-                             if self._album_group.isVisible() else _DIR_NONE,
-            "album_target":  self._album_target_edit.text().strip(),
-            "artist_action": self._action_from_group(self._artist_btns)
-                             if self._artist_group.isVisible() else _DIR_NONE,
-            "artist_target": self._artist_target_edit.text().strip(),
+            TrackActionKey.ALBUM_ACTION: (
+                self._action_from_group(self._album_btns)
+                if self._album_group.isVisible() else DirAction.NONE
+            ),
+            TrackActionKey.ALBUM_TARGET:  self._album_target_edit.text().strip(),
+            TrackActionKey.ARTIST_ACTION: (
+                self._action_from_group(self._artist_btns)
+                if self._artist_group.isVisible() else DirAction.NONE
+            ),
+            TrackActionKey.ARTIST_TARGET: self._artist_target_edit.text().strip(),
         }
         self.accept()
         self._on_confirm(self._metadata, actions)

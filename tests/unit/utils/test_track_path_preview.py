@@ -11,10 +11,7 @@ from types import SimpleNamespace
 import pytest
 
 from utils.track_path_preview import (
-    DIR_ACTION_MOVE_EXIST,
-    DIR_ACTION_MOVE_NEW,
-    DIR_ACTION_NONE,
-    DIR_ACTION_RENAME,
+    DirAction,
     compute_proposed_filepath,
 )
 
@@ -95,7 +92,7 @@ class TestComputeProposedFilepath:
     def test_artist_rename_action_changes_artist_directory(self):
         result = compute_proposed_filepath(
             make_track(), {"artist": "NewArtist"},
-            artist_action=DIR_ACTION_RENAME,
+            artist_action=DirAction.RENAME,
         )
         parts = result.split(os.sep)
         assert "NewArtist" in parts
@@ -104,7 +101,7 @@ class TestComputeProposedFilepath:
     def test_album_rename_action_changes_album_directory(self):
         result = compute_proposed_filepath(
             make_track(), {"album": "NewAlbum"},
-            album_action=DIR_ACTION_RENAME,
+            album_action=DirAction.RENAME,
         )
         parts = result.split(os.sep)
         assert "NewAlbum" in parts
@@ -114,15 +111,15 @@ class TestComputeProposedFilepath:
         result = compute_proposed_filepath(
             make_track(),
             {"artist": "NewArtist", "album": "NewAlbum"},
-            artist_action=DIR_ACTION_RENAME,
-            album_action=DIR_ACTION_RENAME,
+            artist_action=DirAction.RENAME,
+            album_action=DirAction.RENAME,
         )
         assert result.startswith(os.path.normpath("/music/NewArtist/NewAlbum") + os.sep)
 
     def test_artist_move_existing_uses_provided_target(self):
         result = compute_proposed_filepath(
             make_track(), {},
-            artist_action=DIR_ACTION_MOVE_EXIST,
+            artist_action=DirAction.MOVE_EXIST,
             artist_target="/other/location",
         )
         # Album stays under the new artist target; file stays the same.
@@ -131,7 +128,7 @@ class TestComputeProposedFilepath:
     def test_album_move_existing_uses_provided_target(self):
         result = compute_proposed_filepath(
             make_track(), {},
-            album_action=DIR_ACTION_MOVE_EXIST,
+            album_action=DirAction.MOVE_EXIST,
             album_target="/other/album",
         )
         assert result.startswith("/other/album")
@@ -139,7 +136,7 @@ class TestComputeProposedFilepath:
     def test_artist_dir_action_none_keeps_artist_directory(self):
         result = compute_proposed_filepath(
             make_track(), {"artist": "NewArtist"},
-            artist_action=DIR_ACTION_NONE,
+            artist_action=DirAction.NONE,
         )
         # With NONE, artist dir is unchanged even if the metadata field differs.
         assert os.path.normpath("/music/Artist") in result

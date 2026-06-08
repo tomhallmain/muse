@@ -10,12 +10,24 @@ actions).
 from __future__ import annotations
 
 import os
+from enum import Enum
 from typing import List, Optional
 
-DIR_ACTION_NONE = "none"
-DIR_ACTION_RENAME = "rename"
-DIR_ACTION_MOVE_EXIST = "move_existing"
-DIR_ACTION_MOVE_NEW = "move_new"
+class DirAction(str, Enum):
+    NONE       = "none"
+    RENAME     = "rename"
+    MOVE_EXIST = "move_existing"
+    MOVE_NEW   = "move_new"
+
+
+class TrackActionKey(str, Enum):
+    """Keys for the actions dict passed from RenameConfirmationWindow to _on_rename_confirmed."""
+    RENAME_FILE  = "rename_track_file"
+    RETAIN_IDS   = "retain_ids"
+    ALBUM_ACTION = "album_action"
+    ALBUM_TARGET = "album_target"
+    ARTIST_ACTION = "artist_action"
+    ARTIST_TARGET = "artist_target"
 
 
 def compute_proposed_filepath(
@@ -25,8 +37,8 @@ def compute_proposed_filepath(
     rename_track_file: bool = False,
     retain_ids: bool = False,
     id_tags: Optional[List[str]] = None,
-    artist_action: str = DIR_ACTION_NONE,
-    album_action: str = DIR_ACTION_NONE,
+    artist_action: str = DirAction.NONE,
+    album_action: str = DirAction.NONE,
     artist_target: str = "",
     album_target: str = "",
 ) -> str:
@@ -38,22 +50,22 @@ def compute_proposed_filepath(
     current_artist_dir = os.path.dirname(current_album_dir)
     music_root = os.path.dirname(current_artist_dir)
 
-    if artist_action == DIR_ACTION_RENAME:
+    if artist_action == DirAction.RENAME:
         new_artist = MediaTrack.sanitize_filename_stem(
             metadata.get("artist", "") or track.artist or ""
         )
         new_artist_dir = os.path.join(music_root, new_artist)
-    elif artist_action in (DIR_ACTION_MOVE_EXIST, DIR_ACTION_MOVE_NEW):
+    elif artist_action in (DirAction.MOVE_EXIST, DirAction.MOVE_NEW):
         new_artist_dir = artist_target.strip() or current_artist_dir
     else:
         new_artist_dir = current_artist_dir
 
-    if album_action == DIR_ACTION_RENAME:
+    if album_action == DirAction.RENAME:
         new_album = MediaTrack.sanitize_filename_stem(
             metadata.get("album", "") or track.album or ""
         )
         new_album_dir = os.path.join(new_artist_dir, new_album)
-    elif album_action in (DIR_ACTION_MOVE_EXIST, DIR_ACTION_MOVE_NEW):
+    elif album_action in (DirAction.MOVE_EXIST, DirAction.MOVE_NEW):
         new_album_dir = album_target.strip() or current_album_dir
     else:
         new_album_dir = os.path.join(

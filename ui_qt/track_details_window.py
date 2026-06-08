@@ -16,6 +16,7 @@ from PySide6.QtWidgets import (
     QScrollArea,
     QGroupBox,
     QCheckBox,
+    QMessageBox,
     QWidget,
 )
 from PySide6.QtCore import Qt
@@ -23,6 +24,7 @@ from PySide6.QtCore import Qt
 from lib.multi_display_qt import SmartWindow
 from extensions.open_weather import OpenWeatherAPI
 from ui_qt.app_style import AppStyle
+from utils.track_path_preview import DirAction, TrackActionKey
 from utils.translations import I18N
 
 _ = I18N._
@@ -234,6 +236,27 @@ class TrackDetailsWindow(SmartWindow):
         layout.addWidget(rename_album_group, row, 0, 1, 2)
         row += 1
 
+        # ── Delete track file ─────────────────────────────────────────
+        delete_group = QGroupBox(_("Delete Track File"), form_widget)
+        dg_layout = QVBoxLayout(delete_group)
+
+        delete_warning = QLabel(
+            _("Permanently deletes the file from disk and removes it from all caches. "
+              "This cannot be undone."),
+            delete_group,
+        )
+        delete_warning.setWordWrap(True)
+        delete_warning.setStyleSheet("color: #cc4444; font-size: 10px;")
+        dg_layout.addWidget(delete_warning)
+
+        delete_btn = QPushButton(_("Delete Track"), delete_group)
+        delete_btn.setStyleSheet("QPushButton { color: #cc4444; }")
+        delete_btn.clicked.connect(self._confirm_delete_track)
+        dg_layout.addWidget(delete_btn)
+
+        layout.addWidget(delete_group, row, 0, 1, 2)
+        row += 1
+
         self.show()
 
     # ------------------------------------------------------------------
@@ -373,6 +396,14 @@ class TrackDetailsWindow(SmartWindow):
         """Execute all changes chosen in the confirmation window."""
         track = TrackDetailsWindow.AUDIO_TRACK
 
+        has_file_changes = (
+            actions.get(TrackActionKey.RENAME_FILE)
+            or actions.get(TrackActionKey.ARTIST_ACTION, DirAction.NONE) != DirAction.NONE
+            or actions.get(TrackActionKey.ALBUM_ACTION, DirAction.NONE) != DirAction.NONE
+        )
+        if has_file_changes and not self._warn_if_current_track():
+            return
+
         # 1. Save metadata tags first.
         if not track.update_metadata(metadata):
             self.app_actions.alert(
@@ -383,33 +414,33 @@ class TrackDetailsWindow(SmartWindow):
             return
 
         # 2. Artist directory action (before album, since album is beneath artist).
-        artist_action = actions.get("artist_action", "none")
-        if artist_action != "none":
+        artist_action = actions.get(TrackActionKey.ARTIST_ACTION, DirAction.NONE)
+        if artist_action != DirAction.NONE:
             self._execute_dir_action(
                 track,
                 level="artist",
                 action=artist_action,
-                target=actions.get("artist_target", ""),
+                target=actions.get(TrackActionKey.ARTIST_TARGET, ""),
                 new_tag_value=metadata.get("artist", "") or track.artist or "",
             )
 
         # 3. Album directory action (uses track.filepath which may have moved).
-        album_action = actions.get("album_action", "none")
-        if album_action != "none":
+        album_action = actions.get(TrackActionKey.ALBUM_ACTION, DirAction.NONE)
+        if album_action != DirAction.NONE:
             self._execute_dir_action(
                 track,
                 level="album",
                 action=album_action,
-                target=actions.get("album_target", ""),
+                target=actions.get(TrackActionKey.ALBUM_TARGET, ""),
                 new_tag_value=metadata.get("album", "") or track.album or "",
             )
 
         # 4. Rename the track file to match the new title if requested.
-        if actions.get("rename_track_file"):
+        if actions.get(TrackActionKey.RENAME_FILE):
             from library_data.media_track import MediaTrack
             title = metadata.get("title", "") or track.title or ""
             stem = MediaTrack.sanitize_filename_stem(title)
-            if actions.get("retain_ids") and track.basename:
+            if actions.get(TrackActionKey.RETAIN_IDS) and track.basename:
                 _, ids = MediaTrack.extract_ids(os.path.splitext(track.basename)[0])
                 stem = MediaTrack.reattach_ids(stem, ids)
             if stem:
@@ -434,7 +465,7 @@ class TrackDetailsWindow(SmartWindow):
             current_dir = os.path.dirname(album_dir)
             parent_dir  = os.path.dirname(current_dir)
 
-        if action == "rename":
+        if action == DirAction.RENAME:
             new_name = MediaTrack.sanitize_filename_stem(new_tag_value)
             if not new_name:
                 return
@@ -447,10 +478,10 @@ class TrackDetailsWindow(SmartWindow):
                     _("Rename Failed"), result, kind="error", master=self
                 )
 
-        elif action in ("move_existing", "move_new"):
+        elif action in (DirAction.MOVE_EXIST, DirAction.MOVE_NEW):
             if not target:
                 return
-            if action == "move_new":
+            if action == DirAction.MOVE_NEW:
                 try:
                     os.makedirs(target, exist_ok=True)
                 except OSError as exc:
@@ -508,6 +539,71 @@ class TrackDetailsWindow(SmartWindow):
         self.setWindowTitle(_("Track Details") + " - " + (track.title or ""))
 
     # ------------------------------------------------------------------
+    # Current-track guard
+    # ------------------------------------------------------------------
+
+    def _is_current_track(self) -> bool:
+        """Return True if the open track is the one currently playing."""
+        track = TrackDetailsWindow.AUDIO_TRACK
+        if not track:
+            return False
+        current = None
+        try:
+            current = self.app_actions.get_current_track()
+        except Exception:
+            pass
+        if current is None:
+            return False
+        import os
+        return os.path.normpath(track.filepath) == os.path.normpath(getattr(current, "filepath", ""))
+
+    def _warn_if_current_track(self) -> bool:
+        """Show a confirmation dialog when the track is currently playing.
+
+        Returns True if the caller should proceed, False if the user cancelled.
+        """
+        if not self._is_current_track():
+            return True
+        msg = QMessageBox(self)
+        msg.setWindowTitle(_("Currently Playing"))
+        msg.setText(
+            _("This track is currently playing. "
+              "Modifying it may interrupt playback. Proceed?")
+        )
+        msg.setStandardButtons(
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+        )
+        msg.setDefaultButton(QMessageBox.StandardButton.No)
+        return msg.exec() == QMessageBox.StandardButton.Yes
+
+    # ------------------------------------------------------------------
+    # Delete track
+    # ------------------------------------------------------------------
+
+    def _confirm_delete_track(self) -> None:
+        track = TrackDetailsWindow.AUDIO_TRACK
+        if not track:
+            return
+        msg = QMessageBox(self)
+        msg.setWindowTitle(_("Confirm Delete"))
+        msg.setText(
+            _("Permanently delete this file from disk?\n\n{0}\n\n"
+              "This cannot be undone.").format(track.filepath)
+        )
+        msg.setStandardButtons(
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+        )
+        msg.setDefaultButton(QMessageBox.StandardButton.No)
+        msg.setIcon(QMessageBox.Icon.Warning)
+        if msg.exec() != QMessageBox.StandardButton.Yes:
+            return
+
+        ok = self.app_actions.delete_track(track.filepath)
+        if ok:
+            self.app_actions.toast(_("Track deleted: {}").format(track.filepath))
+            self.close()
+
+    # ------------------------------------------------------------------
     # Rename section actions
     # ------------------------------------------------------------------
 
@@ -553,6 +649,8 @@ class TrackDetailsWindow(SmartWindow):
         if not new_stem:
             self.app_actions.alert(_("Error"), _("Filename cannot be empty."), kind="error", master=self)
             return
+        if not self._warn_if_current_track():
+            return
 
         # Flush metadata before renaming so the embedded tags are in sync.
         self.update_track_data()
@@ -570,6 +668,8 @@ class TrackDetailsWindow(SmartWindow):
         new_name = self._album_folder_edit.text().strip()
         if not new_name:
             self.app_actions.alert(_("Error"), _("Folder name cannot be empty."), kind="error", master=self)
+            return
+        if not self._warn_if_current_track():
             return
 
         ok, result = track.rename_album_folder(new_name)

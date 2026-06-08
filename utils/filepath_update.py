@@ -31,6 +31,9 @@ Caches covered
 │ app_info_cache: playlist_desc   │ track_filepaths, source_dirs │ load/patch/store │
 │ app_info_cache: recent_desc     │ same fields per recent entry │ load/patch/store │
 └─────────────────────────────────┴──────────────────────────────┴──────────────────┘
+
+propagate_file_delete covers the same set of stores, removing every reference to the
+deleted path rather than remapping it.
 """
 
 from __future__ import annotations
@@ -114,6 +117,17 @@ def propagate_directory_rename(old_dir: str, new_dir: str) -> None:
     _guarded("PlaybackSession",      lambda: _session_directory(old_dir, new_dir))
     _guarded("Favorites",            lambda: _favorites_directory(old_dir, new_dir))
     _guarded("PlaylistDescriptors",  lambda: _playlist_descriptors_directory(old_dir, new_dir))
+
+
+def propagate_file_delete(filepath: str) -> None:
+    """Remove every reference to filepath from all caches after the file is deleted."""
+    _guarded("db:media_tracks",      lambda: _db_file_delete(filepath))
+    _guarded("db:directories.files", lambda: _db_dir_json_file_delete(filepath))
+    _guarded("LibraryData",          lambda: _lib_file_delete(filepath))
+    _guarded("Playlist.history",     lambda: _playlist_file_delete(filepath))
+    _guarded("PlaybackSession",      lambda: _session_file_delete(filepath))
+    _guarded("Favorites",            lambda: _favorites_file_delete(filepath))
+    _guarded("PlaylistDescriptors",  lambda: _playlist_descriptors_file_delete(filepath))
 
 
 # ---------------------------------------------------------------------------
@@ -549,3 +563,145 @@ def _favorites_directory(old_dir: str, new_dir: str) -> None:
     if changed:
         app_info_cache.set("favorites", favs)
         app_info_cache.store()
+
+
+# ---------------------------------------------------------------------------
+# Delete helpers — remove all references to a deleted filepath
+# ---------------------------------------------------------------------------
+
+def _db_file_delete(filepath: str) -> None:
+    from utils.db import get_connection
+    conn = get_connection()
+    conn.execute("DELETE FROM media_tracks WHERE filepath=?", (filepath,))
+    conn.commit()
+
+
+def _db_dir_json_file_delete(filepath: str) -> None:
+    from utils.db import get_connection
+    old_dir = os.path.dirname(filepath)
+    conn = get_connection()
+    row = conn.execute(
+        "SELECT files FROM directories WHERE path=?", (old_dir,)
+    ).fetchone()
+    if row:
+        try:
+            files: list = json.loads(row["files"] or "[]")
+            updated = [f for f in files if _norm(f) != _norm(filepath)]
+            if updated != files:
+                conn.execute(
+                    "UPDATE directories SET files=? WHERE path=?",
+                    (json.dumps(updated), old_dir),
+                )
+                conn.commit()
+        except json.JSONDecodeError:
+            pass
+
+
+def _lib_file_delete(filepath: str) -> None:
+    from library_data.library_data import LibraryData
+
+    LibraryData.MEDIA_TRACK_CACHE.pop(filepath, None)
+
+    LibraryData.all_tracks = [
+        t for t in LibraryData.all_tracks if _norm(t.filepath) != _norm(filepath)
+    ]
+
+    old_dir = os.path.dirname(filepath)
+    if old_dir in LibraryData.DIRECTORIES_CACHE:
+        LibraryData.DIRECTORIES_CACHE[old_dir] = [
+            f for f in LibraryData.DIRECTORIES_CACHE[old_dir]
+            if _norm(f) != _norm(filepath)
+        ]
+
+
+def _playlist_file_delete(filepath: str) -> None:
+    from muse.playlist import Playlist
+    from utils.globals import HistoryType
+    from utils.app_info_cache import app_info_cache
+    key = HistoryType.TRACKS.value
+
+    Playlist.recently_played_filepaths = [
+        f for f in Playlist.recently_played_filepaths if _norm(f) != _norm(filepath)
+    ]
+    cached = app_info_cache.get(key, [])
+    updated = [f for f in cached if _norm(f) != _norm(filepath)]
+    if updated != cached:
+        app_info_cache.set(key, updated)
+        app_info_cache.store()
+
+
+def _session_file_delete(filepath: str) -> None:
+    from muse.playback_session import LAST_SESSION_KEY
+    from utils.app_info_cache import app_info_cache
+
+    session = app_info_cache.get(LAST_SESSION_KEY)
+    if not isinstance(session, dict):
+        return
+
+    changed = False
+    if _norm(session.get("current_track_filepath", "")) == _norm(filepath):
+        session["current_track_filepath"] = ""
+        changed = True
+
+    tracks = session.get("resolved_tracks", [])
+    updated = [t for t in tracks if _norm(t) != _norm(filepath)]
+    if updated != tracks:
+        session["resolved_tracks"] = updated
+        changed = True
+
+    desc = session.get("descriptor")
+    if isinstance(desc, dict):
+        fps = desc.get("track_filepaths")
+        if isinstance(fps, list):
+            new_fps = [f for f in fps if _norm(f) != _norm(filepath)]
+            if new_fps != fps:
+                desc["track_filepaths"] = new_fps
+                changed = True
+
+    if changed:
+        app_info_cache.set(LAST_SESSION_KEY, session)
+        app_info_cache.store()
+
+
+def _favorites_file_delete(filepath: str) -> None:
+    from utils.app_info_cache import app_info_cache
+    favs = app_info_cache.get("favorites", [])
+    if not isinstance(favs, list):
+        return
+    updated = [
+        f for f in favs
+        if not (isinstance(f, dict) and _norm(f.get("filepath", "")) == _norm(filepath))
+    ]
+    if len(updated) != len(favs):
+        app_info_cache.set("favorites", updated)
+        app_info_cache.store()
+
+
+def _playlist_descriptors_file_delete(filepath: str) -> None:
+    from muse.playlist_descriptor import PLAYLIST_DESCRIPTORS_CACHE_KEY
+    from muse.playback_session import RECENT_DESCRIPTORS_KEY
+    from utils.app_info_cache import app_info_cache
+
+    def _remove_from_desc(data: dict) -> bool:
+        fps = data.get("track_filepaths")
+        if not isinstance(fps, list):
+            return False
+        updated = [f for f in fps if _norm(f) != _norm(filepath)]
+        if updated != fps:
+            data["track_filepaths"] = updated
+            return True
+        return False
+
+    raw = app_info_cache.get(PLAYLIST_DESCRIPTORS_CACHE_KEY, {})
+    if isinstance(raw, dict):
+        changed = any(_remove_from_desc(v) for v in raw.values() if isinstance(v, dict))
+        if changed:
+            app_info_cache.set(PLAYLIST_DESCRIPTORS_CACHE_KEY, raw)
+            app_info_cache.store()
+
+    recents = app_info_cache.get(RECENT_DESCRIPTORS_KEY, []) or []
+    if isinstance(recents, list):
+        changed = any(_remove_from_desc(d) for d in recents if isinstance(d, dict))
+        if changed:
+            app_info_cache.set(RECENT_DESCRIPTORS_KEY, recents)
+            app_info_cache.store()
