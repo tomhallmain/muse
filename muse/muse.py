@@ -626,7 +626,9 @@ class Muse:
         if spot_profile.track is None or spot_profile.topic is None or topic is None:
             raise Exception("No track or topic specified")
         prompt = self.get_prompt(topic)
-        prompt = prompt.format(TRACK_DETAILS=track.get_track_details())
+        persona = self.get_current_persona()
+        name = persona.name if persona is not None else "Muse"
+        prompt = prompt.format(TRACK_DETAILS=track.get_track_details(), NAME=name)
         track_context = self.generate_text(prompt)
         self.say_at_some_point(track_context, spot_profile, None)
 
