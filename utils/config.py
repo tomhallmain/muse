@@ -104,6 +104,8 @@ class Config:
 
         self.enable_dynamic_volume = True
         self.enable_library_extender = False
+        self.auto_file_extensions = False
+        self.auto_file_extensions_genres = []
         self.enable_long_track_splitting = False
         self.show_videos_in_main_window = False
         self.auto_fix_vlc_plugin_cache = True
@@ -166,10 +168,12 @@ class Config:
             "coqui_tts_model",
             "save_tts_output_topics",
             "dj_personas",
+            "auto_file_extensions_genres",
         )
         self.set_values(bool,
             "enable_dynamic_volume",
             "enable_library_extender",
+            "auto_file_extensions",
             "enable_long_track_splitting",
             "play_videos_in_separate_window",
             "dj_persona_refresh_context",

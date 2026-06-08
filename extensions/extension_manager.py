@@ -419,7 +419,11 @@ class ExtensionManager:
 
         try:
             f, b = self._a(b, b1)
-            if entity and f:
+
+            # Extract entity display name and aliases for rename and auto-filing
+            _aliases: list = []
+            _name: Optional[str] = None
+            if entity:
                 if isinstance(entity, str):
                     _aliases, _name = [entity], entity
                 else:
@@ -427,6 +431,9 @@ class ExtensionManager:
                     _name = getattr(entity, 'name', str(entity))
                     if not _aliases:
                         _aliases = [_name]
+
+            # Prefix filename with entity name when it isn't already present
+            if _name and f:
                 _bn = os.path.basename(f)
                 if not any(a.lower() in _bn.lower() for a in _aliases):
                     _n = os.path.join(os.path.dirname(f), _name + " - " + _bn)
@@ -435,6 +442,14 @@ class ExtensionManager:
                         f = _n
                     except Exception as e:
                         logger.error(f"Failed to rename: {e}")
+
+            # Auto-file into genre/artist/album subdirectory
+            if config.auto_file_extensions and f:
+                from extensions.extension_filer import file_extension
+                filed = file_extension(f, attr, _name, entity, b.n, llm=self.llm)
+                if filed:
+                    f = filed
+
             self._append(b, f, attr, s)
             PlaybackConfigMaster.assign_extension(f)
             if self.ui_callbacks is not None:

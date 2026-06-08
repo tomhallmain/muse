@@ -101,6 +101,7 @@ class ConfigurationWindow(SmartWindow):
         )
         self.add_config_checkbox(frame, layout, "enable_dynamic_volume", _("Enable Dynamic Volume"), 4)
         self.add_config_checkbox(frame, layout, "enable_library_extender", _("Enable Library Extender"), 5)
+        self.add_config_checkbox(frame, layout, "auto_file_extensions", _("Auto-File Extensions"), 6)
         self.add_config_checkbox(frame, layout, "enable_long_track_splitting", _("Enable Long Track Splitting"), 6)
         self.add_config_entry(
             frame, layout, "long_track_splitting_time_cutoff_minutes", _("Long Track Cutoff (minutes)"), 7
