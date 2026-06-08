@@ -429,7 +429,18 @@ class Playback:
                 # Clear the label on error
                 if self.ui_callbacks.update_upcoming_group_callback is not None:
                     self.ui_callbacks.update_upcoming_group_callback("")
-        
+
+        if self.ui_callbacks.update_current_group_callback is not None:
+            try:
+                tr = self._track_result
+                self.ui_callbacks.update_current_group_callback(
+                    tr.current_grouping, tr.group_position, tr.group_total,
+                    self.get_grouping_type(),
+                )
+            except Exception as e:
+                logger.debug(f"Error updating current group: {e}")
+                self.ui_callbacks.update_current_group_callback(None, None, None, None)
+
         if self.ui_callbacks.update_favorite_status is not None:
             self.ui_callbacks.update_favorite_status(self.track)
         if self.ui_callbacks.update_album_artwork is not None:

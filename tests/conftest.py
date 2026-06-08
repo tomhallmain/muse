@@ -62,6 +62,9 @@ class MockMediaTrack:
     def get_instrument(self):
         return self._instrument
 
+    def get_parent_filepath(self):
+        return self.filepath
+
 
 @dataclass
 class MockDataCallbacks:

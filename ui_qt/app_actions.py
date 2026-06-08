@@ -15,6 +15,7 @@ class AppActions:
         "update_next_up_callback",
         "update_prior_track_callback",
         "update_upcoming_group_callback",
+        "update_current_group_callback",
         "update_spot_profile_topics_text",
         "update_progress_callback",
         "update_extension_status",

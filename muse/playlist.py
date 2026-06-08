@@ -190,7 +190,7 @@ class Playlist:
             skip_grouping: If True, skip the grouping check
             places_from_current: The number of places from the current track to get the next track
         """
-        if len(self.sorted_tracks) == 0 or (self.current_track_index + places_from_current) >= len(self.sorted_tracks):
+        if len(self.sorted_tracks) == 0 or (self.current_track_index + 1 + places_from_current) >= len(self.sorted_tracks):
             if self.loop and len(self.sorted_tracks) > 0:
                 self._reset_for_loop()
                 return self.next_track(skip_grouping, places_from_current)
@@ -241,7 +241,25 @@ class Playlist:
                 logger.info("")
         Playlist.update_recently_played_lists(next_track)
         self.print_upcoming("next_track after")
-        return TrackResult(next_track, old_grouping, new_grouping)
+        group_position = None
+        group_total = None
+        current_grouping = None
+        if self.sort_type.is_grouping_type() and next_track is not None:
+            _attr = self.sort_type.getter_name_mapping()
+            def _get_group(t, _a=_attr):
+                v = getattr(t, _a)
+                return v() if callable(v) else v
+            current_grouping = _get_group(next_track)
+            if current_grouping is not None:
+                group_position = sum(
+                    1 for i in range(self.current_track_index + 1)
+                    if _get_group(self.sorted_tracks[i]) == current_grouping
+                )
+                group_total = sum(1 for t in self.sorted_tracks if _get_group(t) == current_grouping)
+        return TrackResult(
+            next_track, old_grouping, new_grouping,
+            group_position=group_position, group_total=group_total, current_grouping=current_grouping,
+        )
 
     def upcoming_track(self, places_from_current: int = 1) -> TrackResult:
         """Returns the upcoming track, old grouping, and new grouping.

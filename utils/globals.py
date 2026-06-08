@@ -781,4 +781,7 @@ class TrackResult(NamedTuple):
     new_grouping: Optional[str] = None
     config_index: Optional[int] = None   # Index of the config that produced this track
     config_changed: bool = False         # True when config switched since the previous track
+    group_position: Optional[int] = None  # 1-based position of track within its group
+    group_total: Optional[int] = None     # Total tracks in the current group
+    current_grouping: Optional[str] = None  # Group name for the current track
 

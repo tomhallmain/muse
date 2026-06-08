@@ -82,6 +82,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
     _sig_prior_track = Signal(str)
     _sig_spot_profile = Signal(str)
     _sig_upcoming_group = Signal(object, object)
+    _sig_current_group = Signal(object, object, object, object)
     _sig_progress = Signal(int, float, float)
     _sig_extension_status = Signal(str)
     _sig_album_artwork = Signal(str)
@@ -135,6 +136,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
             "update_prior_track_callback": self.update_previous_track_text,
             "update_spot_profile_topics_text": self.update_spot_profile_topics_text,
             "update_upcoming_group_callback": self.update_upcoming_group_text,
+            "update_current_group_callback": self.update_current_group_text,
             "update_progress_callback": self.update_progress_bar,
             "update_extension_status": self.update_label_extension_status,
             "update_album_artwork": self.update_album_artwork,
@@ -174,6 +176,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         self._sig_prior_track.connect(self._do_update_previous_track_text)
         self._sig_spot_profile.connect(self._do_update_spot_profile_topics_text)
         self._sig_upcoming_group.connect(self._do_update_upcoming_group_text)
+        self._sig_current_group.connect(self._do_update_current_group_text)
         self._sig_progress.connect(self._do_update_progress_bar)
         self._sig_extension_status.connect(self._do_update_label_extension_status)
         self._sig_album_artwork.connect(self._do_update_album_artwork)
@@ -335,6 +338,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         self.label_artist_text = add_label(_("Artist"))
         self.label_composer_text = add_label(_("Composer"))
         self.label_year_text = add_label(_("Year"))
+        self.label_current_group = add_label(_("Current Group"))
         self.label_next_up = add_label(_("Next Up"))
         self.label_previous_title = add_label(_("Prior Track"))
         self.label_upcoming_group = add_label(_("Upcoming Group"))
@@ -1101,6 +1105,31 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
             else:
                 upcoming_group_text = _("Upcoming Group: {0}").format(upcoming_group_text)
         self.label_upcoming_group.setText(str(upcoming_group_text)[:500])
+        QApplication.processEvents()
+
+    def update_current_group_text(self, group_name, position, total, grouping_type=None):
+        self._sig_current_group.emit(group_name, position, total, grouping_type)
+
+    def _do_update_current_group_text(self, group_name, position, total, grouping_type):
+        if group_name is None or position is None or total is None:
+            self.label_current_group.setText("")
+        else:
+            type_name = None
+            if grouping_type is not None and hasattr(grouping_type, "get_grouping_readable_name"):
+                type_name = grouping_type.get_grouping_readable_name()
+            prefix = type_name or _("Group")
+            # Album, artist and composer names are already shown in the track detail
+            # labels, so only show the position counter for those sort types.
+            _detail_label_types = {
+                PlaylistSortType.ALBUM_SHUFFLE,
+                PlaylistSortType.ARTIST_SHUFFLE,
+                PlaylistSortType.COMPOSER_SHUFFLE,
+            }
+            if grouping_type in _detail_label_types:
+                text = _("{0}: {1}/{2}").format(prefix, position, total)
+            else:
+                text = _("{0}: {1} ({2}/{3})").format(prefix, group_name, position, total)
+            self.label_current_group.setText(str(text)[:500])
         QApplication.processEvents()
 
     def update_spot_profile_topics_text(self, muse_text):
