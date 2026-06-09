@@ -40,6 +40,9 @@ Muse is a media player with an integrated voice synthesizer attached to an LLM. 
 - `play_videos_in_separate_window` - If the track is a video, play it in a separate window from the main window
 - `playlist_recently_played_check_count` - As each track is played, the attributes are stored in lists of recently-played attributes. Set this to a higher value to reduce the chance that you hear recently-played tracks after a random sort has been applied.
 - `enable_long_track_splitting`, `long_track_splitting_time_cutoff_minutes` - If playing tracks randomly, usually we don't want to dive into a long track. Muse will attempt to detect individual portions of long tracks to play rather than play the entire track to keep things fresh.
+- `enable_library_extender`, `library_extender_key` - Enables the library extender feature, which periodically searches for and downloads new tracks to extend the library. Requires an API key.
+- `auto_file_extensions` - Automatically move downloaded extension tracks into a genre/artist/album subdirectory structure under the first configured directory.
+- `auto_file_extensions_genres` - List of genre directory names to use as filing targets for auto-filed extensions. If empty, all Title-Case subdirectories of the root directory are treated as candidates.
 - `muse_language_learning_language`, `muse_language_learning_language_level` - If you are learning a language, set these values to a desired language and language level to have Muse attemp to teach it. Note that Coqui models don't support many languages.
 - `llm_model_name` - The name of the LLM to use, exactly the same as Ollama model name.
 - `llm_stream_redundancy`, `llm_thinking_budget_chars` - Enable streaming redundancy elimination to detect and stop repetitive or stalled LLM output early. For thinking models (e.g. DeepSeek-R1, Qwen3), `llm_thinking_budget_chars` sets a character budget for the internal reasoning block before generation is cut off (default: 8000).

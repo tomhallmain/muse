@@ -417,8 +417,14 @@ class ExtensionManager:
                     self.ui_callbacks.update_extension_status(_("Extension \"{0}\" waiting for {1} minutes").format(SoupUtils.clean_html(b.n), round(float(time_seconds) / 60)))
                 Utils.long_sleep(check_cadence, "Extension thread delay wait", total=time_seconds, print_cadence=180)
 
+        if self.ui_callbacks is not None:
+            self.ui_callbacks.update_extension_status(_("Fetching extension \"{0}\"").format(SoupUtils.clean_html(b.n)))
         try:
             f, b = self._a(b, b1)
+
+            if config.embed_extension_artwork and f:
+                from extensions.extension_filer import embed_artwork_from_sidecar
+                embed_artwork_from_sidecar(f)
 
             # Extract entity display name and aliases for rename and auto-filing
             _aliases: list = []
@@ -463,7 +469,7 @@ class ExtensionManager:
             raise e
 
     def _a(self, b, b1=None) -> tuple[str, Any]:
-        a = b.da(g=config.directories[0])
+        a = b.da(g=config.directories[0], t=config.embed_extension_artwork)
         e1 = " Destination: "
         logger.warning(f"extending delayed: {a}")
         e = "[download]"

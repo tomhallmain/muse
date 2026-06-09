@@ -319,6 +319,9 @@
     "llm_thinking_budget_chars": 8000,
     "max_chunk_tokens": 200,
     "enable_library_extender": false,
+    "auto_file_extensions": false,
+    "auto_file_extensions_genres": [],
+    "embed_extension_artwork": true,
     "auto_fix_vlc_plugin_cache": true,
     "library_extender_key": "<KEY>"
 }

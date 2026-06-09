@@ -99,7 +99,7 @@ class EogfiaqREkb:
     def x(self):
         return qa + self.w
 
-    def da(self, o=True, g=None):
+    def da(self, o=True, g=None, t=False):
         a = _q.split(" ")
         y = str(q26)
         a.append(y)
@@ -109,6 +109,9 @@ class EogfiaqREkb:
         if o:
             a.extend(q30.split(" "))
             a.append("-x")
+            if t:
+                a.append(q34)
+                a.append(q35)
         a.append(self.x())
         return a
 

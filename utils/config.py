@@ -106,6 +106,7 @@ class Config:
         self.enable_library_extender = False
         self.auto_file_extensions = False
         self.auto_file_extensions_genres = []
+        self.embed_extension_artwork = True
         self.enable_long_track_splitting = False
         self.show_videos_in_main_window = False
         self.auto_fix_vlc_plugin_cache = True
@@ -174,6 +175,7 @@ class Config:
             "enable_dynamic_volume",
             "enable_library_extender",
             "auto_file_extensions",
+            "embed_extension_artwork",
             "enable_long_track_splitting",
             "play_videos_in_separate_window",
             "dj_persona_refresh_context",

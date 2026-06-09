@@ -167,6 +167,56 @@ def _remove_empty_parents(path: str, stop_at: str) -> None:
             break
 
 
+def _find_sidecar(filepath: str) -> Optional[str]:
+    stem = os.path.splitext(filepath)[0]
+    for ext in ('.webp', '.jpg', '.jpeg', '.png'):
+        p = stem + ext
+        if os.path.exists(p):
+            return p
+    return None
+
+
+def embed_artwork_from_sidecar(filepath: str) -> bool:
+    from library_data.media_track import MediaTrack
+    sidecar = _find_sidecar(filepath)
+    track = MediaTrack(filepath)
+    art = track.get_album_artwork()
+    try:
+        if art and os.path.getsize(art) > 100:
+            if sidecar:
+                try:
+                    os.remove(sidecar)
+                except OSError:
+                    pass
+            return True
+    except OSError:
+        pass
+    if not sidecar:
+        return False
+    try:
+        with open(sidecar, "rb") as fh:
+            data = fh.read()
+        if sidecar.lower().endswith(".webp"):
+            try:
+                import io
+                from PIL import Image
+                buf = io.BytesIO()
+                Image.open(io.BytesIO(data)).convert("RGB").save(buf, format="JPEG")
+                data = buf.getvalue()
+            except ImportError:
+                logger.warning("Pillow not available; embedding WebP as-is")
+        track.update_metadata({"artwork": data})
+        return True
+    except Exception as e:
+        logger.debug("Sidecar embed failed: %s", e)
+        return False
+    finally:
+        try:
+            os.remove(sidecar)
+        except OSError:
+            pass
+
+
 def delete_extension_file(filepath: str) -> bool:
     """Delete the extension file and remove any empty parent directories.
 
