@@ -201,3 +201,46 @@ class TestScourPlaylistResistance:
         # Neither of the first two positions should be Beethoven
         front_composers = [t.composer for t in pl.sorted_tracks[:2]]
         assert "Beethoven" not in front_composers
+
+    def test_resistant_track_not_re_rolled_on_subsequent_passes(
+        self, composer_playlist, mock_tracks, monkeypatch
+    ):
+        """A track that wins a resistance roll must not be re-evaluated on later passes.
+
+        The bug: without resistant_ids, scour_playlist re-rolls every recently-played
+        track on each iteration of the while loop.  A track that resisted on pass 1
+        (roll < score) can fail on pass 2 (roll > score) and be moved incorrectly.
+
+        Proof via controlled rolls (score = 0.5):
+          roll 1 — pass 1, Vivaldi: 0.3 < 0.5 → resists → should be permanently exempt
+          roll 2 — pass 2, Vivaldi without fix: 0.8 > 0.5 → fails → incorrectly moved
+          roll 2 — pass 2, Vivaldi with fix: never called because id is in resistant_ids
+
+        The test asserts Vivaldi stays at position 0 after the scour.
+        """
+        import random as random_mod
+
+        pl = composer_playlist
+        vivaldi   = next(t for t in mock_tracks if t.composer == "Vivaldi")
+        beethoven = [t for t in mock_tracks if t.composer == "Beethoven"]
+        others    = [t for t in pl.sorted_tracks
+                     if t.composer not in ("Vivaldi", "Beethoven")]
+
+        # vivaldi (favorited, score 0.5) at slot 0; Beethoven (not favorited) fills slot 1
+        pl.sorted_tracks = [vivaldi] + beethoven + others
+
+        # Provide enough values that iter() never runs dry regardless of fix/no-fix
+        rolls = iter([0.3, 0.8, 0.0, 0.0, 0.0, 0.0])
+        monkeypatch.setattr(random_mod, "random", lambda: next(rolls))
+
+        pl.scour_playlist(
+            "composer",
+            ["Vivaldi", "Beethoven"],
+            recently_played_check_count=2,
+            inclusion_chance={"vivaldi": 0.5},
+        )
+
+        assert pl.sorted_tracks[0].composer == "Vivaldi", (
+            "Vivaldi should remain at the front after resisting on pass 1; "
+            "re-rolling on later passes would incorrectly move it"
+        )

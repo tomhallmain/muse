@@ -67,22 +67,10 @@ class MuseSpotProfile:
         # Speak about the upcoming track, even if it's the first one.
         self.speak_about_upcoming_track = track is not None and track._is_extended or random.random() < self.chance_speak_before_track
         
-        # Modify the talk_about_something probability calculation
-        if previous_track is not None:
-            base_chance = self.topic_discussion_chance_factor
-            previous_profile = self.get_last_spoken_profile()
-            time_since_last = self.get_time() - previous_profile.get_time() if previous_profile else self.min_seconds_between_spots
-            # Increase probability up to 4x base chance after 15 minutes of silence
-            # Use minutes instead of seconds for more meaningful adjustment
-            minutes_since_last = time_since_last / 60
-            adjusted_chance = min(base_chance * 4, base_chance * (1 + minutes_since_last / 15))
-            self.talk_about_something = random.random() < adjusted_chance
-            logger.info(f"Talk about something: {self.talk_about_something}, base chance: {base_chance}, adjusted chance: {adjusted_chance}, minutes since last: {minutes_since_last}, previous profile time: {previous_profile.get_time() if previous_profile else 'None'}, current time: {self.creation_time}")
-        else:
-            # Skip talking about random stuff if we just started playing, to avoid a long delay.
-            self.talk_about_something = False
+        self._calculate_talk_about_something(previous_track)
             
         self.has_already_spoken = False
+        self.speaking_duration = 0.0  # seconds spent in maybe_dj; set by playback after speaking
         self.last_track_failed = last_track_failed
         self.skip_previous_track_remark = last_track_failed or skip_track
         self.immediate = False
@@ -105,6 +93,34 @@ class MuseSpotProfile:
             self.speak_about_upcoming_group = False
             
         self.override_time_restriction = self.speak_about_prior_track and previous_track._is_extended or self.speak_about_upcoming_track and track._is_extended
+
+
+    def _calculate_talk_about_something(self, previous_track):
+        # Modify the talk_about_something probability calculation
+        if previous_track is not None:
+            base_chance = self.topic_discussion_chance_factor
+            previous_profile = self.get_last_spoken_profile()
+            time_since_last = self.get_time() - previous_profile.get_time() if previous_profile else self.min_seconds_between_spots
+            # If the last spoken spot ran long (heavy TTS), subtract that speaking time from
+            # the apparent silence so eagerness-to-speak doesn't increase as fast.
+            last_speaking = getattr(previous_profile, 'speaking_duration', 0.0) if previous_profile else 0.0
+            effective_time = max(0.0, time_since_last - last_speaking)
+            # Increase probability up to 4x base chance after 15 minutes of silence
+            # Use minutes instead of seconds for more meaningful adjustment
+            minutes_since_last = effective_time / 60
+            adjusted_chance = min(base_chance * 4, base_chance * (1 + minutes_since_last / 15))
+            # Speaking time carries extra suppressive weight beyond its deduction from silence:
+            # scale down proportionally using the same 15-minute curve as a reference, so a
+            # 15-minute speaking spot halves the adjusted chance before the floor clamp.
+            if last_speaking > 0:
+                speaking_minutes = last_speaking / 60
+                adjusted_chance = max(base_chance, adjusted_chance * (15.0 / (15.0 + speaking_minutes)))
+            self.talk_about_something = random.random() < adjusted_chance
+            logger.info(f"Talk about something: {self.talk_about_something}, base chance: {base_chance}, adjusted chance: {adjusted_chance}, minutes since last: {minutes_since_last}, last speaking duration: {last_speaking:.1f}s, previous profile time: {previous_profile.get_time() if previous_profile else 'None'}, current time: {self.creation_time}")
+        else:
+            # Skip talking about random stuff if we just started playing, to avoid a long delay.
+            self.talk_about_something = False
+
 
     @classmethod
     def get_previous_tracks(cls, count=1):
@@ -190,16 +206,31 @@ class MuseSpotProfile:
         # The spot profile may not have been prepared yet, so use creation time in this case.
         return self.creation_time if self.preparation_time is None else self.preparation_time
 
+    def _required_gap_seconds(self) -> float:
+        """Minimum silence required before the next spot is allowed to speak.
+
+        Extended by the last spot's actual speaking duration: a heavy TTS spot
+        naturally suppresses subsequent spots until the listener has had a real
+        break of at least min_seconds_between_spots of quiet time.
+        """
+        base = MuseSpotProfile.min_seconds_between_spots
+        last = self.get_last_spoken_profile()
+        if last is None:
+            return base
+        extra = getattr(last, 'speaking_duration', 0.0)
+        return base + extra
+
     def is_going_to_say_something(self):
         if self.say_good_day or self.speak_about_prior_group or self.speak_about_upcoming_group:
             return True
-        no_time_restriction = self.last_spot_profile_more_than_seconds(MuseSpotProfile.min_seconds_between_spots)
+        required_gap = self._required_gap_seconds()
+        no_time_restriction = self.last_spot_profile_more_than_seconds(required_gap)
         if not no_time_restriction:
             no_time_restriction = self.override_time_restriction
             if no_time_restriction:
                 logger.info("Overriding time restriction on spot profile due to library extension")
             else:
-                logger.info("Time restriction applied to current spot profile preparation")
+                logger.info(f"Time restriction applied to current spot profile preparation (required gap: {required_gap:.0f}s)")
         return no_time_restriction and (self.speak_about_prior_track or self.speak_about_upcoming_track or self.talk_about_something)
 
     def update_skip_previous_track_remark(self, skip_track):

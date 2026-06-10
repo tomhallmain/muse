@@ -219,6 +219,7 @@ class Playback:
                 if self.get_spot_profile().is_going_to_say_something():
                     self.update_ui_art_for_muse()
                     seconds_passed = self.get_muse().maybe_dj(self.get_spot_profile())
+                    self.get_spot_profile().speaking_duration = seconds_passed
                     self.remaining_delay_seconds -= seconds_passed
                     self.register_new_song()
                     # self.muse.maybe_dj_prior(self.muse_spot_profile)
