@@ -83,6 +83,8 @@ dict_keys(['tag_aliases', 'tag_map', 'resolvers', 'singular_keys', 'filename', '
 
 class MediaTrack:
     music_tag_ignored_tags = ['comment', 'isrc', 'lyrics', 'artwork']
+    # Container formats not supported by music_tag/mutagen; routed directly to pymediainfo.
+    _music_tag_unsupported_extensions = frozenset({'.webm', '.mkv'})
     non_numeric_chars = re.compile(r"[^0-9\.\-]+")
     # Matches bracketed ID tags embedded in filenames, e.g. [FLAC], [2024], [Hi-Res].
     # These are stripped from the display title by clean_track_value() but should be
@@ -205,6 +207,9 @@ class MediaTrack:
             logger.error(f"Failed to get year from MediaInfo: {str(e)}")
 
     def _try_music_tag_load(self, filepath):
+        if os.path.splitext(filepath)[1].lower() in self._music_tag_unsupported_extensions:
+            self._try_media_info_fallback(filepath)
+            return
         try:
             music_tag_wrapper = music_tag.load_file(filepath)
         except FileNotFoundError:
