@@ -12,6 +12,7 @@ from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
     QPushButton,
+    QSpinBox,
     QTabWidget,
     QWidget,
     QFrame,
@@ -23,7 +24,12 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt
 
 from lib.multi_display_qt import SmartWindow
-from muse.playlist import TRACK_EXCLUSIONS_KEY, _DEFAULT_TRACK_EXCLUSIONS
+from muse.playlist import (
+    GROUP_MAX_MINUTES_KEY,
+    GROUP_MAX_TRACKS_KEY,
+    TRACK_EXCLUSIONS_KEY,
+    _DEFAULT_TRACK_EXCLUSIONS,
+)
 from ui_qt.app_style import AppStyle
 from ui_qt.auth.password_utils import require_password
 from utils.app_info_cache import app_info_cache
@@ -347,6 +353,33 @@ class ConfigurationWindow(SmartWindow):
         group_layout.addWidget(add_row)
 
         layout.addWidget(group)
+
+        limits_group = QGroupBox(_("Group Limits"), self.playlist_options_tab)
+        limits_layout = QGridLayout(limits_group)
+        limits_layout.setSpacing(6)
+
+        limits_desc = QLabel(
+            _("When sorting by a group (composer, artist, album, etc.), stop playback after reaching either limit. Set to 0 to disable."),
+            limits_group,
+        )
+        limits_desc.setWordWrap(True)
+        limits_layout.addWidget(limits_desc, 0, 0, 1, 2)
+
+        limits_layout.addWidget(QLabel(_("Max tracks per group:"), limits_group), 1, 0)
+        self._group_max_tracks_spin = QSpinBox(limits_group)
+        self._group_max_tracks_spin.setRange(0, 9999)
+        self._group_max_tracks_spin.setSpecialValueText(_("Unlimited"))
+        self._group_max_tracks_spin.setValue(app_info_cache.get(GROUP_MAX_TRACKS_KEY, 0))
+        limits_layout.addWidget(self._group_max_tracks_spin, 1, 1)
+
+        limits_layout.addWidget(QLabel(_("Max minutes per group:"), limits_group), 2, 0)
+        self._group_max_minutes_spin = QSpinBox(limits_group)
+        self._group_max_minutes_spin.setRange(0, 9999)
+        self._group_max_minutes_spin.setSpecialValueText(_("Unlimited"))
+        self._group_max_minutes_spin.setValue(app_info_cache.get(GROUP_MAX_MINUTES_KEY, 0))
+        limits_layout.addWidget(self._group_max_minutes_spin, 2, 1)
+
+        layout.addWidget(limits_group)
         layout.addStretch()
 
     def _add_exclusion(self):
@@ -494,6 +527,8 @@ class ConfigurationWindow(SmartWindow):
                 for i in range(self._exclusions_list.count())
             ]
             app_info_cache.set(TRACK_EXCLUSIONS_KEY, exclusions)
+            app_info_cache.set(GROUP_MAX_TRACKS_KEY, self._group_max_tracks_spin.value())
+            app_info_cache.set(GROUP_MAX_MINUTES_KEY, self._group_max_minutes_spin.value())
 
             if config.save_config():
                 self.app_actions.toast(_("Configuration saved successfully"))

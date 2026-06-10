@@ -270,6 +270,13 @@ class Playback:
             self.has_played_first_track = True
             if self.increment_count():
                 break
+            self._playback_config.update_group_time(
+                self._track_result.current_grouping,
+                self.get_track_length(),
+            )
+            if self._playback_config.has_exceeded_group_limits(self._track_result):
+                logger.info("Stopping playback: group limit reached.")
+                break
 
     def update_progress(self) -> float:
         assert self.vlc_media_player is not None

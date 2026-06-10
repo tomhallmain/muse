@@ -185,6 +185,12 @@ class PlaybackConfig:
         self.get_list().print_upcoming("split_track after")
         return tracks[0]
 
+    def update_group_time(self, group_name, duration_seconds: float) -> None:
+        pass
+
+    def has_exceeded_group_limits(self, track_result) -> bool:
+        return False
+
     def __str__(self) -> str:
         base = "PlaybackConfig(type=" + str(self.type) + ", directories=" + str(len(self.directories))
         if self.playlist_descriptor is not None:

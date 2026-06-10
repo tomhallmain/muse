@@ -14,6 +14,9 @@ logger = get_logger(__name__)
 TRACK_EXCLUSIONS_KEY = "playlist_track_exclusions"
 _DEFAULT_TRACK_EXCLUSIONS = ["TTS"]
 
+GROUP_MAX_TRACKS_KEY = "playlist_group_max_tracks"
+GROUP_MAX_MINUTES_KEY = "playlist_group_max_minutes"
+
 
 def _matches_exclusion(filepath: str, exclusion: str) -> bool:
     """Return True if *exclusion* appears in *filepath* as a standalone token.

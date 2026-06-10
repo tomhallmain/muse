@@ -5,8 +5,9 @@ from typing import Dict, List, Optional, Any
 
 from library_data.media_track import MediaTrack
 from muse.playback_config import PlaybackConfig
-from muse.playlist import Playlist
+from muse.playlist import GROUP_MAX_MINUTES_KEY, GROUP_MAX_TRACKS_KEY, Playlist
 from muse.sort_config import SortConfig
+from utils.app_info_cache import app_info_cache
 from utils.globals import TrackResult
 from utils.logging_setup import get_logger
 
@@ -109,6 +110,10 @@ class PlaybackConfigMaster:
         self.playing: bool = False
         self.played_tracks: List[MediaTrack] = []
         self.next_track_override: Optional[str] = None
+
+        # Group limit tracking
+        self._current_group: Optional[str] = None
+        self._current_group_time: float = 0.0
 
         PlaybackConfigMaster.open_configs.append(self)
 
@@ -364,6 +369,49 @@ class PlaybackConfigMaster:
 
     def set_playing(self, playing: bool = True) -> None:
         self.playing = playing
+
+    # ------------------------------------------------------------------
+    # Group limit helpers
+    # ------------------------------------------------------------------
+
+    def update_group_time(self, group_name: Optional[str], duration_seconds: float) -> None:
+        """Record that a track from *group_name* just finished playing.
+
+        Resets the accumulated time whenever the group changes so each new
+        group starts its clock from zero.
+        """
+        if group_name != self._current_group:
+            self._current_group = group_name
+            self._current_group_time = 0.0
+        self._current_group_time += duration_seconds
+
+    def has_exceeded_group_limits(self, track_result: TrackResult) -> bool:
+        """Return True if either group limit has been reached after the last track.
+
+        Only evaluated when a grouping sort type is active (i.e. current_grouping
+        is set on the TrackResult).  A limit of 0 means unlimited.
+        """
+        if not track_result.current_grouping:
+            return False
+
+        max_tracks = app_info_cache.get(GROUP_MAX_TRACKS_KEY, 0)
+        if max_tracks and track_result.group_position is not None:
+            if track_result.group_position >= max_tracks:
+                logger.info(
+                    f"Group track limit reached: {track_result.group_position}/{max_tracks} "
+                    f"tracks in group '{track_result.current_grouping}'"
+                )
+                return True
+
+        max_minutes = app_info_cache.get(GROUP_MAX_MINUTES_KEY, 0)
+        if max_minutes and self._current_group_time >= max_minutes * 60:
+            logger.info(
+                f"Group time limit reached: {self._current_group_time / 60:.1f}/{max_minutes} min "
+                f"in group '{track_result.current_grouping}'"
+            )
+            return True
+
+        return False
 
     # ------------------------------------------------------------------
     # Dunder helpers
