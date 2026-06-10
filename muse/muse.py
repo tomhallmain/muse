@@ -233,15 +233,15 @@ class Muse:
                 context = None  # NOTE: not using context for now as it is being deprecated
                 intro_result = self.llm.ask(intro_prompt, context=context)
                 if intro_result and intro_result.response:
-                    self.say(intro_result.response, locale=persona.language_code)
+                    self.prepare_to_say(intro_result.response, locale=persona.language_code)
                     self.memory.get_persona_manager().update_context(intro_result)
                 else:
-                    self.say(_("Hello, I'm {0}").format(persona.name), locale=persona.language_code)
+                    self.prepare_to_say(_("Hello, I'm {0}").format(persona.name), locale=persona.language_code)
                 persona.last_hello_time = time.time()
         except Exception as e:
             logger.error(f"Failed to generate introduction: {e}")
             logger.error(f"Traceback: {traceback.format_exc()}")
-            self.say(_("Hello, I'm your DJ"), locale=I18N.locale)
+            self.prepare_to_say(_("Hello, I'm your DJ"), locale=I18N.locale)
 
     def change_voice(self, voice_name, get_upcoming_tracks_callback=None, *, skip_intro: bool = False):
         """Switch to a new DJ persona by voice name.
@@ -250,6 +250,11 @@ class Muse:
         switched, but no introduction is generated or spoken immediately.
         Instead the intro is deferred and fires from ``prepare()`` once the
         first track has played.
+
+        When *skip_intro* is ``False`` (mid-session transition) the intro is
+        generated and queued via ``prepare_to_say``, then the speech queue is
+        drained synchronously before returning.  This guarantees the intro plays
+        in the gap between tracks rather than overlapping with the next track.
         """
         try:
             persona = self.memory.get_persona_manager().get_persona(voice_name)
@@ -273,13 +278,18 @@ class Muse:
                 self.voice = Voice(voice_name, run_context=self._run_context)
                 if self.ui_callbacks and self.ui_callbacks.update_dj_persona_callback is not None:
                     self.ui_callbacks.update_dj_persona_callback("")
-                self.say(_("Hello, I'm your DJ"), locale=I18N.locale)
+                self.prepare_to_say(_("Hello, I'm your DJ"), locale=I18N.locale)
 
         except Exception as e:
             logger.error(f"Failed to change voice to {voice_name}: {e}")
             traceback.print_exc()
             self.voice = Voice(voice_name, run_context=self._run_context)
-            self.say(_("Hello"), locale=I18N.locale)
+            self.prepare_to_say(_("Hello"), locale=I18N.locale)
+
+        if not skip_intro:
+            # Drain the speech queue now, while still between tracks, so the intro
+            # finishes playing before vlc_media_player.play() starts the next track.
+            self.voice.finish_speaking()
 
     def check_for_shutdowns(self):
         now = datetime.datetime.now()

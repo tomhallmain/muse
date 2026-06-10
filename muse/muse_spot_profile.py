@@ -47,11 +47,9 @@ class MuseSpotProfile:
             if len(self._track_history) > self._max_track_history:
                 self._track_history = self._track_history[-self._max_track_history:]
         
-        # say good day on the second spot (i.e. first spot after the first track)
-        self.say_good_day = previous_track is not None and (
-                self.get_previous_spot_profile().previous_track is None and random.random() < 0.5
-                # TODO: say good day if there has been a long time since the last good day
-        )
+        # say good day on the third spot (i.e. second spot after the first track)
+        self.say_good_day = self.get_spot_index() == 2 and random.random() < 0.5
+        # TODO: say good day if there has been a long time since the last good day
         
         # Determine if this is the first track in a session
         self.is_first_track = previous_track is None and not self._track_history
@@ -178,6 +176,13 @@ class MuseSpotProfile:
             raise Exception("Previous spot profile callback was not set properly")
         # logger.debug(f"Getting previous spot profile: idx={idx}, creation_time={self.creation_time}")
         return self.get_previous_spot_profile_callback(idx=idx, creation_time=self.creation_time)
+
+    def get_spot_index(self):
+        """Return the 0-based index of this spot within the current session (0 = first spot)."""
+        idx = 0
+        while self.get_previous_spot_profile(idx=idx) is not None:
+            idx += 1
+        return idx
 
     def get_time(self):
         # The spot profile may not have been prepared yet, so use creation time in this case.

@@ -298,7 +298,13 @@ class Playback:
         if not self.has_attempted_track_split: # this is alternately covered by self.get_track()
             next_track, self.did_advance, self.places_from_current = self.ensure_splittable_track(next_track, delayed_prep)
 
-        previous_track = (self.previous_track if delayed_prep else self.track) if self.has_played_first_track else None
+        if delayed_prep:
+            previous_track = self.previous_track if self.has_played_first_track else None
+        else:
+            # Background prep runs while the current track is playing; self.track is that
+            # track and is always set by this point, so use it as the previous track for
+            # the upcoming spot regardless of has_played_first_track.
+            previous_track = self.track
 
         # Get the spot profile with the upcoming tracks callback
         spot_profile = self.get_muse().get_spot_profile(

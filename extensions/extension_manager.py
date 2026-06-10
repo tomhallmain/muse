@@ -134,7 +134,7 @@ class ExtensionManager:
                     break
                 if self.ui_callbacks is not None:
                     self.ui_callbacks.update_extension_status(_("Extension thread waiting for {0} minutes").format(round(float(sleep_time_seconds) / 60)))
-                Utils.long_sleep(check_cadence, "extension thread", total=sleep_time_seconds, print_cadence=180)
+                Utils.long_sleep(check_cadence, "extension: startup delay", total=sleep_time_seconds, print_cadence=180)
             logger.info("Extension thread woke up")
         while True:
             self._extend_by_random_attr(voice)
@@ -147,7 +147,7 @@ class ExtensionManager:
                     break
                 if ExtensionManager.extension_thread_delayed_complete and self.ui_callbacks is not None:
                     self.ui_callbacks.update_extension_status(_("Extension thread waiting for {0} minutes").format(sleep_time_minutes))
-                Utils.long_sleep(check_cadence * 60, "extension thread", total=sleep_time_minutes * 60, print_cadence=180)
+                Utils.long_sleep(check_cadence * 60, "extension: idle between cycles", total=sleep_time_minutes * 60, print_cadence=180)
 
     def _extend_by_random_attr(self, voice: Optional[Any] = None) -> None:
         extendible_attrs: Dict[TrackAttribute, Callable[[], str]] = {
@@ -415,7 +415,7 @@ class ExtensionManager:
                     break
                 if self.ui_callbacks is not None:
                     self.ui_callbacks.update_extension_status(_("Extension \"{0}\" waiting for {1} minutes").format(SoupUtils.clean_html(b.n), round(float(time_seconds) / 60)))
-                Utils.long_sleep(check_cadence, "Extension thread delay wait", total=time_seconds, print_cadence=180)
+                Utils.long_sleep(check_cadence, f"extension: pre-download delay", total=time_seconds, print_cadence=180)
 
         if self.ui_callbacks is not None:
             self.ui_callbacks.update_extension_status(_("Fetching extension \"{0}\"").format(SoupUtils.clean_html(b.n)))
