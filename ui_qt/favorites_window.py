@@ -79,11 +79,19 @@ class FavoritesDataSearch:
 class FavoritesWindow(SmartWindow):
     """Window to search and manage favorites."""
 
-    COL_0_WIDTH = 150
     top_level = None
     MAX_RESULTS = 200
     details_window = None
     recent_favorites = []
+
+    _COL_KIND     = 0
+    _COL_VALUE    = 1
+    _COL_ARTIST   = 2
+    _COL_ALBUM    = 3
+    _COL_COMPOSER = 4
+    _COL_PLAY     = 5
+    _COL_DETAILS  = 6
+    _COL_REMOVE   = 7
 
     @staticmethod
     def load_favorites():
@@ -227,7 +235,7 @@ class FavoritesWindow(SmartWindow):
         app_actions.toast(_("Favorite updated successfully."))
         return True
 
-    def __init__(self, master, app_actions, library_data, dimensions="600x600"):
+    def __init__(self, master, app_actions, library_data, dimensions="1050x600"):
         super().__init__(
             persistent_parent=master,
             position_parent=master,
@@ -284,6 +292,10 @@ class FavoritesWindow(SmartWindow):
         self.results_widget = QWidget(self.scroll)
         self.results_layout = QGridLayout(self.results_widget)
         self.results_layout.setContentsMargins(0, 0, 0, 0)
+        self.results_layout.setColumnStretch(self._COL_VALUE,    3)
+        self.results_layout.setColumnStretch(self._COL_ARTIST,   2)
+        self.results_layout.setColumnStretch(self._COL_ALBUM,    2)
+        self.results_layout.setColumnStretch(self._COL_COMPOSER, 2)
         self.scroll.setWidget(self.results_widget)
         layout.addWidget(self.scroll, 1)
 
@@ -348,55 +360,82 @@ class FavoritesWindow(SmartWindow):
         self.search_btn_list.clear()
         self.play_btn_list.clear()
 
+    def _add_header_row(self):
+        from PySide6.QtGui import QFont
+        headers = [
+            _("Kind"), _("Value"), _("Artist"), _("Album"), _("Composer"), "", "", "",
+        ]
+        font = QFont()
+        font.setBold(True)
+        for col, text in enumerate(headers):
+            if not text:
+                continue
+            lbl = QLabel(text, self.results_widget)
+            lbl.setFont(font)
+            self.results_layout.addWidget(lbl, 0, col)
+
+    def _add_row(self, row: int, favorite: Favorite):
+        if favorite.attribute == TrackAttribute.TITLE:
+            track = self._get_track_for_favorite(favorite)
+            if not track:
+                value_text = f"{favorite.value} ({_('File not found')})"
+            else:
+                value_text = track.title.strip() if track.title else track.filepath.strip()
+            artist_text   = favorite.artist
+            album_text    = favorite.album
+            composer_text = favorite.composer
+        else:
+            value_text    = favorite.value
+            artist_text   = favorite.value if favorite.attribute == TrackAttribute.ARTIST   else ""
+            album_text    = favorite.value if favorite.attribute == TrackAttribute.ALBUM    else ""
+            composer_text = favorite.value if favorite.attribute == TrackAttribute.COMPOSER else ""
+
+        kind_lbl = QLabel(favorite.attribute.get_translation(), self.results_widget)
+        kind_lbl.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred)
+        self.results_layout.addWidget(kind_lbl, row, self._COL_KIND)
+        self.favorite_list.append(kind_lbl)
+
+        for col, text in (
+            (self._COL_VALUE,    value_text),
+            (self._COL_ARTIST,   artist_text),
+            (self._COL_ALBUM,    album_text),
+            (self._COL_COMPOSER, composer_text),
+        ):
+            lbl = QLabel(text, self.results_widget)
+            lbl.setWordWrap(True)
+            lbl.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+            self.results_layout.addWidget(lbl, row, col)
+            self.favorite_list.append(lbl)
+
+        play_btn = QPushButton(_("Play"), self.results_widget)
+        play_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        play_btn.clicked.connect(lambda checked=False, f=favorite: self._play_favorite(f))
+        self.results_layout.addWidget(play_btn, row, self._COL_PLAY)
+        self.play_btn_list.append(play_btn)
+
+        details_btn = QPushButton(_("Details"), self.results_widget)
+        details_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        details_btn.clicked.connect(lambda checked=False, f=favorite: self.open_details(f))
+        self.results_layout.addWidget(details_btn, row, self._COL_DETAILS)
+        self.open_details_btn_list.append(details_btn)
+
+        remove_btn = QPushButton(_("Remove"), self.results_widget)
+        remove_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        remove_btn.clicked.connect(lambda checked=False, f=favorite: self._on_remove_favorite(f))
+        self.results_layout.addWidget(remove_btn, row, self._COL_REMOVE)
+        self.open_details_btn_list.append(remove_btn)
+
     def show_recent_favorites(self):
         self._clear_results_widgets()
-        if len(FavoritesWindow.recent_favorites) == 0:
+        if not FavoritesWindow.recent_favorites:
             lbl = QLabel(_("No favorites found."), self.results_widget)
             self.results_layout.addWidget(lbl, 0, 0)
             self.favorite_list.append(lbl)
             return
+        self._add_header_row()
         for i, favorite in enumerate(FavoritesWindow.recent_favorites):
-            if favorite is None:
-                continue
-            row = i + 1
-            if favorite.attribute == TrackAttribute.TITLE:
-                track = self._get_track_for_favorite(favorite)
-                if not track:
-                    display_text = f"{favorite.value} ({_('File not found')})"
-                else:
-                    title = track.title.strip() if track.title else ""
-                    filepath = track.filepath.strip() if track.filepath else ""
-                    display_text = title or filepath or _("No title or filepath available")
-            else:
-                display_text = (
-                    f"{favorite.attribute.get_translation()}: {favorite.value}"
-                )
-
-            title_label = QLabel(display_text, self.results_widget)
-            title_label.setWordWrap(True)
-            title_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-            self.results_layout.addWidget(title_label, row, 0)
-            self.favorite_list.append(title_label)
-
-            play_btn = QPushButton(_("Play"), self.results_widget)
-            play_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-            self.results_layout.addWidget(play_btn, row, 1)
-            self.play_btn_list.append(play_btn)
-            play_btn.clicked.connect(lambda checked=False, f=favorite: self._play_favorite(f))
-
-            details_btn = QPushButton(_("Details"), self.results_widget)
-            details_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-            self.results_layout.addWidget(details_btn, row, 2)
-            self.open_details_btn_list.append(details_btn)
-            details_btn.clicked.connect(lambda checked=False, f=favorite: self.open_details(f))
-
-            remove_btn = QPushButton(_("Remove"), self.results_widget)
-            remove_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-            self.results_layout.addWidget(remove_btn, row, 3)
-            self.open_details_btn_list.append(remove_btn)
-            remove_btn.clicked.connect(
-                lambda checked=False, f=favorite: self._on_remove_favorite(f)
-            )
+            if favorite is not None:
+                self._add_row(i + 1, favorite)
 
     def _on_remove_favorite(self, favorite):
         if FavoritesWindow.remove_favorite(favorite):
@@ -471,46 +510,11 @@ class FavoritesWindow(SmartWindow):
             return
         results = self.favorite_data_search.get_results()
         logger.info("Found %s results", len(results))
+        if not results:
+            return
+        self._add_header_row()
         for i, favorite in enumerate(results):
-            row = i + 1
-            if favorite.attribute == TrackAttribute.TITLE:
-                track = self._get_track_for_favorite(favorite)
-                if not track:
-                    display_text = f"{favorite.value} ({_('File not found')})"
-                else:
-                    title = track.title.strip() if track.title else ""
-                    filepath = track.filepath.strip() if track.filepath else ""
-                    display_text = title or filepath or _("No title or filepath available")
-            else:
-                display_text = (
-                    f"{favorite.attribute.get_translation()}: {favorite.value}"
-                )
-
-            title_label = QLabel(display_text, self.results_widget)
-            title_label.setWordWrap(True)
-            title_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-            self.results_layout.addWidget(title_label, row, 0)
-            self.favorite_list.append(title_label)
-
-            play_btn = QPushButton(_("Play"), self.results_widget)
-            play_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-            self.results_layout.addWidget(play_btn, row, 1)
-            self.play_btn_list.append(play_btn)
-            play_btn.clicked.connect(lambda checked=False, f=favorite: self._play_favorite(f))
-
-            details_btn = QPushButton(_("Details"), self.results_widget)
-            details_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-            self.results_layout.addWidget(details_btn, row, 2)
-            self.open_details_btn_list.append(details_btn)
-            details_btn.clicked.connect(lambda checked=False, f=favorite: self.open_details(f))
-
-            remove_btn = QPushButton(_("Remove"), self.results_widget)
-            remove_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-            self.results_layout.addWidget(remove_btn, row, 3)
-            self.open_details_btn_list.append(remove_btn)
-            remove_btn.clicked.connect(
-                lambda checked=False, f=favorite: self._on_remove_favorite(f)
-            )
+            self._add_row(i + 1, favorite)
 
     @require_password(ProtectedActions.EDIT_FAVORITES)
     def open_details(self, favorite):

@@ -693,11 +693,6 @@ class LLM:
                 if self.run_context and self.run_context.should_skip():
                     logger.debug("Cancelling LLM generation due to skip request")
                     self.cancel_generation()
-                    # Give the thread a moment to clean up
-                    self._thread.join(timeout=1.0)
-                    if self._thread.is_alive():
-                        logger.error("Thread did not terminate gracefully, forcing cleanup")
-                    self._thread = None  # Force cleanup even if thread is still alive
                     return None
                 time.sleep(self.CHECK_INTERVAL)
         except Exception as e:

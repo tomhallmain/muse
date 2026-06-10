@@ -197,6 +197,42 @@ class TestThinkingModelStreaming:
             assert not LLM(model_name=model)._is_thinking_model(), f"{model} should not be detected"
 
 
+class TestCancelOnSkip:
+    """Regression tests for cancellation via run_context.should_skip()."""
+
+    def test_skip_during_generation_returns_none_without_error(self, monkeypatch):
+        """generate_response_async must return None (not raise) when should_skip
+        fires while the generation thread is blocked mid-request.
+
+        Regression: cancel_generation() set self._thread = None, but the old
+        code then tried self._thread.join() on the now-None reference, raising
+        AttributeError: 'NoneType' object has no attribute 'join'."""
+        import threading
+
+        class _SkipAlways:
+            def should_skip(self):
+                return True
+
+        llm = LLM(model_name="llama3", run_context=_SkipAlways())
+
+        # Block the HTTP call so the thread is still alive when the monitoring
+        # loop first calls should_skip() and triggers cancel_generation().
+        unblock = threading.Event()
+
+        class _BlockingResp:
+            def read(self):
+                unblock.wait(timeout=10)
+                return json.dumps({"response": "Hello", "done": True}).encode("utf-8")
+
+        monkeypatch.setattr(
+            _llm.request, "urlopen", lambda req, timeout=None: _BlockingResp()
+        )
+
+        result = llm.generate_response_async("test prompt", stream=False, redundancy_policy=None)
+        unblock.set()  # let the background daemon thread exit cleanly
+        assert result is None
+
+
 class TestGenerateResponseBuffered:
     """Tests for the non-streaming (_generate_response_buffered) path."""
 
