@@ -6,7 +6,7 @@ from library_data.media_track import MediaTrack
 from muse.sort_config import SortConfig
 from utils.app_info_cache import app_info_cache
 from utils.config import config
-from utils.globals import PlaylistSortType, HistoryType, TrackResult
+from utils.globals import PlaylistSortType, HistoryType, TrackAttribute, TrackResult
 from utils.logging_setup import get_logger
 
 logger = get_logger(__name__)
@@ -16,6 +16,64 @@ _DEFAULT_TRACK_EXCLUSIONS = ["TTS"]
 
 GROUP_MAX_TRACKS_KEY = "playlist_group_max_tracks"
 GROUP_MAX_MINUTES_KEY = "playlist_group_max_minutes"
+GROUP_REDUNDANCY_SCORE_KEY = "playlist_group_redundancy_score"
+
+_TRACK_FAVORITE_IMPLIED_FACTOR = 0.5
+
+# Maps track_attr getter name → TrackAttribute for direct-tier favorite lookup.
+_TRACK_ATTR_TO_ENUM = {
+    "album":     TrackAttribute.ALBUM,
+    "artist":    TrackAttribute.ARTIST,
+    "composer":  TrackAttribute.COMPOSER,
+    "get_genre": TrackAttribute.GENRE,
+}
+
+# Maps track_attr getter name → field name on a track-title Favorite.
+# get_genre is absent: Favorite does not store genre on track-title entries.
+_TRACK_ATTR_TO_FAV_FIELD = {
+    "album":    "album",
+    "artist":   "artist",
+    "composer": "composer",
+}
+
+
+def _build_inclusion_chance(track_attr: str, redundancy_score: float) -> dict:
+    """Return {lowercased_group_value: resistance_probability} built from favorites.
+
+    Scanned once before the sort loop; the inner per-track check is then a
+    single O(1) dict lookup.
+
+    Direct tier  — the group attribute itself is favorited → full redundancy_score.
+    Implied tier — a track-title favorite stores matching metadata for this
+                   attribute → redundancy_score * _TRACK_FAVORITE_IMPLIED_FACTOR.
+    """
+    if redundancy_score <= 0.0:
+        return {}
+    raw_favorites = app_info_cache.get("favorites", [])
+    if not raw_favorites:
+        return {}
+    from library_data.favorite import Favorite
+    ta_enum = _TRACK_ATTR_TO_ENUM.get(track_attr)
+    fav_field = _TRACK_ATTR_TO_FAV_FIELD.get(track_attr)
+    implied_score = redundancy_score * _TRACK_FAVORITE_IMPLIED_FACTOR
+    chance: dict = {}
+    for raw_fav in raw_favorites:
+        if not isinstance(raw_fav, dict):
+            continue
+        try:
+            fav = Favorite.from_dict(raw_fav)
+        except Exception:
+            continue
+        if ta_enum is not None and fav.attribute == ta_enum:
+            # Direct tier: always wins over any earlier implied entry.
+            chance[fav.value_lower] = redundancy_score
+        elif fav_field is not None and fav.attribute == TrackAttribute.TITLE:
+            # Implied tier: only written if a direct entry doesn't already exist.
+            field_val = getattr(fav, fav_field, "").lower()
+            if field_val and field_val not in chance:
+                chance[field_val] = implied_score
+            # TODO: Extend the scope of the implied tier to other attrs
+    return chance
 
 
 def _matches_exclusion(filepath: str, exclusion: str) -> bool:
@@ -101,8 +159,8 @@ class Playlist:
             excluded = [t for t in tracks if any(_matches_exclusion(t, e) for e in exclusions)]
             if excluded:
                 logger.info(f"Excluded {len(excluded)} track(s) from playlist (filters: {exclusions})")
-                for t in excluded:
-                    logger.debug(f"  Excluded: {t}")
+                # for t in excluded:
+                    # logger.debug(f"  Excluded: {t}")
                 tracks = [t for t in tracks if t not in set(excluded)]
             self.excluded_count = len(excluded)
         else:
@@ -471,106 +529,167 @@ class Playlist:
             f"overlap={overlap_count}, check_count={check_count}"
         )
 
+        redundancy_score = float(app_info_cache.get(GROUP_REDUNDANCY_SCORE_KEY, 0.0))
+        inclusion_chance = _build_inclusion_chance(track_attr, redundancy_score)
+
         use_scour = self.sort_config.check_entire_playlist or playlist_size <= 500
         if use_scour:
-            return self.scour_playlist(track_attr, recently_played_attr_list, check_count)
+            return self.scour_playlist(track_attr, recently_played_attr_list, check_count, inclusion_chance)
         else:
-            return self.reshuffle_tracks(track_attr, recently_played_attr_list, check_count)
+            return self.reshuffle_tracks(track_attr, recently_played_attr_list, check_count, inclusion_chance)
 
-    def scour_playlist(self, track_attr, recently_played_attr_list, recently_played_check_count):
+    def scour_playlist(self, track_attr, recently_played_attr_list, recently_played_check_count,
+                       inclusion_chance=None):
         """Scours the playlist to ensure the first N tracks don't contain recently played attributes.
-        
-        This method is used to maintain variety in playlists across sessions by ensuring that tracks 
-        with recently played attributes (like albums, artists, genres, etc.) are moved out of the
-        earliest portion of the playlist.
-        
+
         Args:
             track_attr (str): The attribute name to check on each track (e.g., 'album', 'artist')
             recently_played_attr_list (list): List of attribute values that have been recently played
             recently_played_check_count (int): Number of tracks from the start to check and maintain
-            
+            inclusion_chance (dict): Optional {lowercased_value: probability} map built from
+                favorites.  A track whose group value is present in this dict is left in place
+                with the given probability instead of being moved.
+
         Returns:
             int: Number of tracks checked during the process. Returns 0 if no reshuffling was needed.
         """
+        if inclusion_chance is None:
+            inclusion_chance = {}
+        recently_played_set = frozenset(recently_played_attr_list)
+        is_callable_attr = track_attr.startswith("get_")
         tracks_checked = 0
         max_tracks_to_check = min(100000, self.size())  # Reasonable limit for most playlists
         total_moved = 0
+        total_resisted = 0
+        # Tracks that won their resistance roll are exempt for the rest of this sort run.
+        # Uses id() so this works regardless of whether the track type defines __hash__.
+        resistant_ids: set = set()
         logger.info(f"Scouring playlist for tracks not in {len(recently_played_attr_list)} recently played {track_attr}s with {recently_played_check_count} tracks to check")
 
         while tracks_checked < max_tracks_to_check:
             tracks_to_be_reshuffled = []
             earliest_tracks = list(self.sorted_tracks[:recently_played_check_count])
-            
-            # First pass: identify tracks that need to be reshuffled
+
             for track in earliest_tracks:
-                if getattr(track, track_attr) in recently_played_attr_list:
-                    tracks_to_be_reshuffled.append(track)
-            
-            # If no tracks need reshuffling, we're done
+                if id(track) in resistant_ids:
+                    continue
+                raw = getattr(track, track_attr)
+                if is_callable_attr:
+                    raw = raw()
+                if raw not in recently_played_set:
+                    continue
+                if inclusion_chance:
+                    chance = inclusion_chance.get((raw or "").lower(), 0.0)
+                    if chance > 0.0 and random.random() < chance:
+                        resistant_ids.add(id(track))
+                        total_resisted += 1
+                        continue
+                tracks_to_be_reshuffled.append(track)
+
             if not tracks_to_be_reshuffled:
                 if total_moved > 0:
-                    logger.info(f"Successfully moved all {total_moved} tracks with recently played {track_attr} out of first {recently_played_check_count} positions")
+                    logger.info(
+                        f"Scour complete: moved {total_moved} tracks, "
+                        f"{total_resisted} resisted (favorited) for {track_attr} "
+                        f"out of first {recently_played_check_count} positions"
+                    )
                 else:
                     logger.info(f"No tracks needed reshuffling for {track_attr}")
                 return tracks_checked
-                
+
             logger.info(f"Found {len(tracks_to_be_reshuffled)} tracks with recently played {track_attr} in first {recently_played_check_count} positions")
-                
+
             # Remove tracks that need reshuffling and add them to the end
             for track in tracks_to_be_reshuffled:
                 self.sorted_tracks.remove(track)
                 self.sorted_tracks.append(track)
                 total_moved += 1
-            
+
             tracks_checked += len(earliest_tracks)
-            
+
         logger.info(f"Hit max tracks limit ({max_tracks_to_check}) while trying to move tracks with recently played {track_attr}")
         return tracks_checked
 
-    def reshuffle_tracks(self, track_attr, recently_played_attr_list, recently_played_check_count):
+    def reshuffle_tracks(self, track_attr, recently_played_attr_list, recently_played_check_count,
+                         inclusion_chance=None):
         """A less thorough alternative to scour_playlist for reducing recently played tracks.
-        
+
         This method attempts to reduce the number of recently played tracks in the earliest portion
         of the playlist by moving them to the end. Unlike scour_playlist, it:
         - Makes multiple passes through the early part of the playlist to gradually improve distribution
         - May not completely eliminate recently played tracks from the earliest portion
         - Stops after reaching a stable minimum or hitting max attempts
-        
+
         This method provides fewer guarantees about the final playlist distribution, but it may end up
         producing playlists more to the users taste by including some recently played tracks sooner and
         preserving some of the earlier randomization.
-   
+
         Args:
             track_attr (str): The attribute name to check on each track (e.g., 'album', 'artist')
             recently_played_attr_list (list): List of attribute values that have been recently played
             recently_played_check_count (int): Number of tracks from the start to check and maintain
-            
+            inclusion_chance (dict): Optional {lowercased_value: probability} map built from
+                favorites.  A track whose group value is present in this dict is left in place
+                with the given probability instead of being moved.
+
         Returns:
             int: Number of reshuffling attempts made before reaching a stable state or max attempts
         """
+        if inclusion_chance is None:
+            inclusion_chance = {}
+        recently_played_set = frozenset(recently_played_attr_list)
+        is_callable_attr = track_attr.startswith("get_")
+        # Tracks that won their resistance roll are exempt for the rest of this sort run.
+        # Uses id() so this works regardless of whether the track type defines __hash__.
+        resistant_ids: set = set()
+
+        def _collect(earliest):
+            """Collect candidates to reshuffle from the given track slice.
+
+            Returns (tracks_to_be_reshuffled, tracks_to_check) where tracks_to_check
+            is the subset that falls within the first recently_played_check_count
+            positions and therefore counts toward the stable-minimum heuristic.
+            Resistant tracks (those that already won a resistance roll) are skipped
+            permanently so they are never re-evaluated on subsequent passes.
+            """
+            to_reshuffle = []
+            to_check = []
+            count = 0
+            for track in earliest:
+                if id(track) in resistant_ids:
+                    count += 1
+                    continue
+                raw = getattr(track, track_attr)
+                if is_callable_attr:
+                    raw = raw()
+                if raw in recently_played_set:
+                    if inclusion_chance:
+                        chance = inclusion_chance.get((raw or "").lower(), 0.0)
+                        if chance > 0.0 and random.random() < chance:
+                            resistant_ids.add(id(track))
+                            count += 1
+                            continue
+                    to_reshuffle.append(track)
+                    if count < recently_played_check_count:
+                        to_check.append(track)
+                    elif not to_check:
+                        break
+                count += 1
+            return to_reshuffle, to_check
+
         # Reshuffle twice as many tracks as checked to reduce reshuffling iterations
         doubled_check_count = recently_played_check_count * 2
         earliest_tracks = list(self.sorted_tracks[:doubled_check_count])
-        tracks_to_be_reshuffled = []
-        tracks_to_check = []
-        count = 0
+        tracks_to_be_reshuffled, tracks_to_check = _collect(earliest_tracks)
         attempts = 0
         max_attempts = 30
         stable_attempts = 0
         min_stable_attempts = 5  # Number of attempts with same count before considering it stable
         last_track_count = None
-        for track in earliest_tracks:
-            if getattr(track, track_attr) in recently_played_attr_list:
-                tracks_to_be_reshuffled.append(track)
-                if count < recently_played_check_count:
-                    tracks_to_check.append(track)
-                elif len(tracks_to_check) == 0:
-                    break
-            count += 1
         while len(tracks_to_check) > 0:
             current_check_count = len(tracks_to_check)
             logger.info(f"Reshuffling playlist recently played track count: {current_check_count} (attempt {attempts})")
-            
+
             # Check if we've hit a stable minimum
             if last_track_count is not None and current_check_count == last_track_count:
                 stable_attempts += 1
@@ -581,21 +700,12 @@ class Playlist:
                 stable_attempts = 0
             last_track_count = current_check_count
 
+            # Remove tracks that need reshuffling and add them to the end
             for track in tracks_to_be_reshuffled:
                 self.sorted_tracks.remove(track)
                 self.sorted_tracks.append(track)
-            tracks_to_be_reshuffled.clear()
-            tracks_to_check.clear()
             earliest_tracks = list(self.sorted_tracks[:doubled_check_count])
-            count = 0
-            for track in earliest_tracks:
-                if getattr(track, track_attr) in recently_played_attr_list:
-                    tracks_to_be_reshuffled.append(track)
-                    if count < recently_played_check_count:
-                        tracks_to_check.append(track)
-                    elif len(tracks_to_check) == 0:
-                        break
-                count += 1
+            tracks_to_be_reshuffled, tracks_to_check = _collect(earliest_tracks)
             attempts += 1
             if attempts == max_attempts:
                 logger.info(f"Hit max attempts limit, too many recently played tracks found in playlist")
