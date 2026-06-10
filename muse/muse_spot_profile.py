@@ -179,6 +179,8 @@ class MuseSpotProfile:
 
     def get_spot_index(self):
         """Return the 0-based index of this spot within the current session (0 = first spot)."""
+        if self.get_previous_spot_profile_callback is None:
+            return 0
         idx = 0
         while self.get_previous_spot_profile(idx=idx) is not None:
             idx += 1

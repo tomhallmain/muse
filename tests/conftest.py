@@ -65,6 +65,18 @@ class MockMediaTrack:
     def get_parent_filepath(self):
         return self.filepath
 
+    def is_invalid(self):
+        return False
+
+    def get_track_length(self):
+        return 120.0
+
+    def get_is_video(self):
+        return False
+
+    def get_volume(self):
+        return (-20.0, -10.0)
+
 
 @dataclass
 class MockDataCallbacks:

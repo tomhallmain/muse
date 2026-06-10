@@ -278,29 +278,17 @@ class MuseMemory:
             # logger.debug(f"Returning profile at index {idx}")
             return self.current_session_spot_profiles[idx]
             
-        # Find first profile created before the given creation time
-        base_idx = idx
-        while base_idx < len(self.current_session_spot_profiles):
-            profile = self.current_session_spot_profiles[base_idx]
-            # logger.debug(f"Checking profile at {base_idx}: creation_time={profile.creation_time}, target_time={creation_time}, was_spoken={profile.was_spoken}")
+        # Return the idx-th most recent profile whose creation_time is before the given
+        # time.  The list is newest-first (insert(0, ...)), so a forward scan naturally
+        # yields most-recent → oldest — matching the idx=0 "most recent" contract.
+        count = 0
+        for profile in self.current_session_spot_profiles:
             if profile.creation_time < creation_time:
-                break
-            base_idx += 1
-            
-        # If no profile found before creation time, return None
-        if base_idx >= len(self.current_session_spot_profiles):
-            logger.debug("No profile found before creation time, returning None")
-            return None
-            
-        # Return profile at (base_idx + requested_idx) if it exists
-        target_idx = base_idx + idx
-        if target_idx >= len(self.current_session_spot_profiles):
-            # logger.debug(f"Target index {target_idx} beyond list length, returning None")
-            return None
-
-        spot_profile = self.current_session_spot_profiles[target_idx]
-        # logger.debug(f"Returning profile at target index {target_idx}: creation_time={spot_profile.creation_time}, was_spoken={spot_profile.was_spoken}")
-        return spot_profile
+                if count == idx:
+                    return profile
+                count += 1
+        logger.debug("No profile found before creation time, returning None")
+        return None
 
     def update_last_topic(self, topic):
         """Update the last topic that was discussed.
