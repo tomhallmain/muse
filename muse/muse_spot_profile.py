@@ -15,6 +15,9 @@ class MuseSpotProfile:
     chance_speak_before_track = config.muse_config[Globals.ConfigKeys.CHANCE_SPEAK_BEFORE_TRACK]
     topic_discussion_chance_factor = config.muse_config[Globals.ConfigKeys.TOPIC_DISCUSSION_CHANCE_FACTOR]
     min_seconds_between_spots = config.muse_config[Globals.ConfigKeys.MIN_SECONDS_BETWEEN_SPOTS]
+    # Multiplier applied to per-track speaking chances and topic-discussion chance
+    # at group transitions so the DJ is more engaged at musical boundaries.
+    _GROUP_TRANSITION_BOOST = 2.0
 
     # Class-level track history management
     _track_history = []  # List of (track, timestamp) tuples
@@ -60,15 +63,36 @@ class MuseSpotProfile:
         #     self.was_spoken = True
         # else:
         self.was_spoken = False
-        
+
+        # If the playlist has been sorted by a grouping (e.g. artist, album, composer etc.)
+        # the DJ needs to keep track of it and be eager to let us know when there is a change.
+        # Detect the transition first so the speaking-chance calculations below can use it.
+        self.old_grouping = old_grouping
+        self.new_grouping = new_grouping
+        self.grouping_type = grouping_type
+        self.config_changed = track_result.config_changed
+        is_group_transition = (
+            old_grouping is not None and new_grouping is not None
+            and old_grouping != new_grouping and not self.config_changed
+        )
+        if is_group_transition:
+            self.speak_about_prior_group = previous_track is not None and random.random() < 0.5
+            self.speak_about_upcoming_group = track is not None and random.random() < 0.9
+        else:
+            self.speak_about_prior_group = False
+            self.speak_about_upcoming_group = False
+
         # Speak about the previous track as long as there is one.
-        self.speak_about_prior_track = previous_track is not None and (previous_track._is_extended or random.random() < self.chance_speak_after_track)
-        
+        # Boost the chance at group transitions so track-level commentary accompanies the boundary.
+        after_chance = min(1.0, self.chance_speak_after_track * (self._GROUP_TRANSITION_BOOST if is_group_transition else 1.0))
+        self.speak_about_prior_track = previous_track is not None and (previous_track._is_extended or random.random() < after_chance)
+
         # Speak about the upcoming track, even if it's the first one.
-        self.speak_about_upcoming_track = track is not None and track._is_extended or random.random() < self.chance_speak_before_track
-        
-        self._calculate_talk_about_something(previous_track)
-            
+        before_chance = min(1.0, self.chance_speak_before_track * (self._GROUP_TRANSITION_BOOST if is_group_transition else 1.0))
+        self.speak_about_upcoming_track = track is not None and track._is_extended or random.random() < before_chance
+
+        self._calculate_talk_about_something(previous_track, is_group_transition)
+
         self.has_already_spoken = False
         self.speaking_duration = 0.0  # seconds spent in maybe_dj; set by playback after speaking
         self.last_track_failed = last_track_failed
@@ -77,28 +101,23 @@ class MuseSpotProfile:
         self.is_prepared = False
         self.topic = None
         self.topic_translated = None
-        
-        # If the playlist has been sorted by a grouping (e.g. artist, album, composer etc.)
-        # the DJ needs to keep track of it and be eager to let us know when there a change.
-        self.old_grouping = old_grouping
-        self.new_grouping = new_grouping
-        self.grouping_type = grouping_type
-        self.config_changed = track_result.config_changed
-        if (old_grouping is not None and new_grouping is not None
-                and old_grouping != new_grouping and not self.config_changed):
-            self.speak_about_prior_group = previous_track is not None and random.random() < 0.5
-            self.speak_about_upcoming_group = track is not None and random.random() < 0.9
-        else:
-            self.speak_about_prior_group = False
-            self.speak_about_upcoming_group = False
-            
-        self.override_time_restriction = self.speak_about_prior_track and previous_track._is_extended or self.speak_about_upcoming_track and track._is_extended
+
+        # At group transitions, lift the time restriction unconditionally — a boundary moment
+        # should never be silenced by timing alone. Also lifted for extended tracks.
+        self.override_time_restriction = (
+            is_group_transition
+            or self.speak_about_prior_track and previous_track._is_extended
+            or self.speak_about_upcoming_track and track._is_extended
+        )
 
 
-    def _calculate_talk_about_something(self, previous_track):
+    def _calculate_talk_about_something(self, previous_track, is_group_transition=False):
         # Modify the talk_about_something probability calculation
         if previous_track is not None:
             base_chance = self.topic_discussion_chance_factor
+            # At group transitions the DJ has more to discuss, so raise the ceiling.
+            if is_group_transition:
+                base_chance = min(1.0, base_chance * self._GROUP_TRANSITION_BOOST)
             previous_profile = self.get_last_spoken_profile()
             time_since_last = self.get_time() - previous_profile.get_time() if previous_profile else self.min_seconds_between_spots
             # If the last spoken spot ran long (heavy TTS), subtract that speaking time from
