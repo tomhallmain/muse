@@ -159,6 +159,12 @@ class Voice:
             return
         self._tts.await_pending_speech_jobs()
 
+    def clear_queue(self):
+        """Cancel all pending speech jobs so priority speech plays immediately."""
+        if not self.can_speak or self._tts is None:
+            return
+        self._tts.speech_queue.cancel()
+
     def add_speech_file_to_queue(self, filepath: str):
         if not self.can_speak or self._tts is None:
             logger.warning("Cannot speak.")

@@ -301,6 +301,7 @@ class Muse:
             raise e
 
     def sign_off(self, now):
+        self.voice.clear_queue()
         now_general_word = _("tonight") if (now.hour < 5 or now.hour > 19) else _("today")
         tomorrow = SchedulesManager.get_tomorrow(now)
         self.prepare_to_say(_("The scheduled shutdown time has arrived. That's it for {0}.").format(now_general_word))

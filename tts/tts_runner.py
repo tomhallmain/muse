@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 import os
 import subprocess
+import threading
 import time
 from typing import Optional, Callable
 import uuid
@@ -154,6 +155,8 @@ class TextToSpeechRunner:
         # the DJ's speech is supplementary to the music experience, but this should
         # be reviewed if more critical TTS functionality is added in the future.
         self.speech_queue = JobQueue("Speech Queue")
+        self._generation_condition = threading.Condition()
+        self._active_generations = 0
         self.output_path = os.path.splitext(os.path.basename(config.filepath))[0]
         self.output_path_normalized = Utils.ascii_normalize(self.output_path)
         self.overwrite = config.overwrite
@@ -208,7 +211,7 @@ class TextToSpeechRunner:
         if os.path.exists(final_output_path_mp3) and not self.overwrite:
             logger.info("Using existing generation file: " + final_output_path_mp3)
             return
-        logger.info("Generating speech file: " + output_path)
+        logger.info(f"Generating speech file [{self.config.provider.value}]: {output_path}")
         self._provider.generate_speech_file(text, output_path)
 
     def play_async(self, filepath):
@@ -243,6 +246,14 @@ class TextToSpeechRunner:
                         time.sleep(.5)
             self.clean()
         else:
+            # Wait for any in-progress speak() call to finish generating all its
+            # chunks before checking the queue.  Without this, save_for_last=True
+            # callers (e.g. extension announcements) could see an empty queue,
+            # proceed immediately, and land before the chunks that are about to
+            # be added by a concurrently running speak().
+            with self._generation_condition:
+                while self._active_generations > 0:
+                    self._generation_condition.wait()
             while self.speech_queue.has_pending():
                 time.sleep(.5)
             while self.speech_queue.job_running:
@@ -282,12 +293,15 @@ class TextToSpeechRunner:
         if self.run_context and self.run_context.should_skip():
             # Clear the speech queue when skipping
             return self.speech_queue.cancel()
-            
+
+        with self._generation_condition:
+            self._active_generations += 1
+
         invocation = TTSSpeakInvocation.create(self._speak, self.config)
-        
+
         try:
             full_text = invocation.process_text(text, locale)
-            
+
             while self.speech_queue.job_running:
                 if self.run_context and self.run_context.should_skip():
                     # Clear the speech queue when skipping
@@ -296,16 +310,22 @@ class TextToSpeechRunner:
             return self.combine_audio_files(save_mp3, text_content=full_text)
         finally:
             invocation.cleanup()
+            with self._generation_condition:
+                self._active_generations -= 1
+                self._generation_condition.notify_all()
 
     def speak_file(self, filepath, save_mp3=True, split_on_each_line=False, locale=None):
         if self.run_context and self.run_context.should_skip():
             return self.speech_queue.cancel()
-            
+
+        with self._generation_condition:
+            self._active_generations += 1
+
         invocation = TTSSpeakInvocation.create(self._speak, self.config)
-        
+
         try:
             full_text = invocation.process_file(filepath, split_on_each_line, locale)
-            
+
             while self.speech_queue.job_running:
                 if self.run_context and self.run_context.should_skip():
                     return self.speech_queue.cancel()
@@ -313,6 +333,9 @@ class TextToSpeechRunner:
             return self.combine_audio_files(save_mp3, text_content=full_text)
         finally:
             invocation.cleanup()
+            with self._generation_condition:
+                self._active_generations -= 1
+                self._generation_condition.notify_all()
 
     def convert_to_mp3(self, file_path, text_content=None):
         if not os.path.exists(file_path):
