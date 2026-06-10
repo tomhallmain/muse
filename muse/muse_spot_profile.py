@@ -18,6 +18,10 @@ class MuseSpotProfile:
     # Multiplier applied to per-track speaking chances and topic-discussion chance
     # at group transitions so the DJ is more engaged at musical boundaries.
     _GROUP_TRANSITION_BOOST = 2.0
+    # Minimum seconds since the last spoken group-transition spot before the boost
+    # applies again. Prevents a noisy DJ when many consecutive single-track groups
+    # appear (e.g. a library with mostly one-track-per-composer entries).
+    _GROUP_TRANSITION_COOLDOWN_SECONDS = 300
 
     # Class-level track history management
     _track_history = []  # List of (track, timestamp) tuples
@@ -75,6 +79,7 @@ class MuseSpotProfile:
             old_grouping is not None and new_grouping is not None
             and old_grouping != new_grouping and not self.config_changed
         )
+        self.is_group_transition = is_group_transition
         if is_group_transition:
             self.speak_about_prior_group = previous_track is not None and random.random() < 0.5
             self.speak_about_upcoming_group = track is not None and random.random() < 0.9
@@ -82,16 +87,18 @@ class MuseSpotProfile:
             self.speak_about_prior_group = False
             self.speak_about_upcoming_group = False
 
+        _should_boost = self._should_boost_for_group_transition(is_group_transition)
+
         # Speak about the previous track as long as there is one.
         # Boost the chance at group transitions so track-level commentary accompanies the boundary.
-        after_chance = min(1.0, self.chance_speak_after_track * (self._GROUP_TRANSITION_BOOST if is_group_transition else 1.0))
+        after_chance = min(1.0, self.chance_speak_after_track * (self._GROUP_TRANSITION_BOOST if _should_boost else 1.0))
         self.speak_about_prior_track = previous_track is not None and (previous_track._is_extended or random.random() < after_chance)
 
         # Speak about the upcoming track, even if it's the first one.
-        before_chance = min(1.0, self.chance_speak_before_track * (self._GROUP_TRANSITION_BOOST if is_group_transition else 1.0))
+        before_chance = min(1.0, self.chance_speak_before_track * (self._GROUP_TRANSITION_BOOST if _should_boost else 1.0))
         self.speak_about_upcoming_track = track is not None and track._is_extended or random.random() < before_chance
 
-        self._calculate_talk_about_something(previous_track, is_group_transition)
+        self._calculate_talk_about_something(previous_track, _should_boost)
 
         self.has_already_spoken = False
         self.speaking_duration = 0.0  # seconds spent in maybe_dj; set by playback after speaking
@@ -317,6 +324,44 @@ class MuseSpotProfile:
             idx += 1
             if idx >= max_iterations:
                 logger.debug(f"Failsafe triggered: get_last_spoken_profile exceeded {max_iterations} iterations")
+                return None
+
+    def _should_boost_for_group_transition(self, is_group_transition: bool) -> bool:
+        """Return True if track-speaking and topic-discussion chances should be boosted.
+
+        Only boosts when this is a group transition AND enough time has passed since
+        the last spoken group-transition spot. Without the cooldown, a library of many
+        single-track groups would trigger the boost on every spot.
+        """
+        if not is_group_transition:
+            return False
+        last_gt = self._get_last_spoken_group_transition_profile()
+        if last_gt is None:
+            return True
+        time_since_last_gt = self.get_time() - last_gt.get_time()
+        should_boost = time_since_last_gt >= self._GROUP_TRANSITION_COOLDOWN_SECONDS
+        if not should_boost:
+            logger.info(f"Group transition boost suppressed: last group transition spot was {time_since_last_gt:.0f}s ago (cooldown={self._GROUP_TRANSITION_COOLDOWN_SECONDS}s)")
+        return should_boost
+
+    def _get_last_spoken_group_transition_profile(self):
+        """Get the most recent spoken profile where a group transition was announced.
+
+        Used to enforce the transition-boost cooldown so rapid single-track group
+        changes don't all receive the full eagerness boost.
+        Uses getattr for is_group_transition to tolerate older pickled profiles.
+        """
+        idx = 0
+        max_iterations = 100  # Failsafe to prevent infinite loops
+        while True:
+            profile = self.get_previous_spot_profile(idx=idx)
+            if profile is None:
+                return None
+            if profile.was_spoken and getattr(profile, 'is_group_transition', False):
+                return profile
+            idx += 1
+            if idx >= max_iterations:
+                logger.debug(f"Failsafe triggered: _get_last_spoken_group_transition_profile exceeded {max_iterations} iterations")
                 return None
 
     def last_spot_profile_more_than_seconds(self, seconds=min_seconds_between_spots):

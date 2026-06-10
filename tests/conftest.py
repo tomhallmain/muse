@@ -130,10 +130,12 @@ def _reset_playback_state() -> None:
     from muse.playback_config import PlaybackConfig
     from muse.playback_config_master import PlaybackConfigMaster
     from muse.playback_state import PlaybackStateManager
+    from muse.muse_spot_profile import MuseSpotProfile
 
     PlaybackConfig.open_configs.clear()
     PlaybackConfigMaster.open_configs.clear()
     PlaybackStateManager.reset()
+    MuseSpotProfile.clear_session()
 
 
 # ---------------------------------------------------------------------------
