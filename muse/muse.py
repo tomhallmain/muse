@@ -769,15 +769,17 @@ class Muse:
         self.memory.get_persona_manager().update_context(result)
         
         generations = []
-        all_blacklist_items = set()
-        blacklist_items = list(Blacklist.find_blacklisted_items(text).keys())
-        # Filter out excluded items (items already in prompt)
-        blacklist_items = [item for item in blacklist_items if item not in blacklisted_items_in_prompt]
+        all_violations = {}
+        violations = {
+            tag: pattern
+            for tag, pattern in Blacklist.find_blacklisted_items(text).items()
+            if tag not in blacklisted_items_in_prompt
+        }
         attempts = 0
-        while len(blacklist_items) > 0:
-            all_blacklist_items.update(set(blacklist_items))
-            blacklist_items_str = ", ".join(sorted([str(i) for i in all_blacklist_items]))
-            logger.info("Hit blacklisted items: " + blacklist_items_str)
+        while violations:
+            all_violations.update(violations)
+            violations_summary = Blacklist.format_violations_summary(all_violations)
+            logger.info("Hit blacklisted items:\n%s", violations_summary)
             logger.info("Text: " + text)
             # NOTE excluding context for now because it's being deprecated for some reason.
             result = self.llm.ask(prompt, json_key=json_key, context=None, system_prompt=system_prompt)
@@ -785,16 +787,17 @@ class Muse:
             if text.strip() == "":
                 raise LLMResponseException("No response text was generated!")
             generations.append(text)
-            blacklist_items = list(Blacklist.find_blacklisted_items(text).keys())
-            # Filter out excluded items (items already in prompt)
-            blacklist_items = [item for item in blacklist_items if item not in blacklisted_items_in_prompt]
+            violations = {
+                tag: pattern
+                for tag, pattern in Blacklist.find_blacklisted_items(text).items()
+                if tag not in blacklisted_items_in_prompt
+            }
             attempts += 1
             if attempts > 2:
-                blacklist_items_str = ", ".join(sorted([str(i) for i in all_blacklist_items]))
                 texts_str = "\n".join(generations)
                 raise BlacklistException(
-                    f"Failed to generate text - blacklist items found: {blacklist_items_str}\n{texts_str}",
-                    filtered=all_blacklist_items
+                    f"Failed to generate text - blacklist items found:\n{violations_summary}\n\nContext:\n{texts_str}",
+                    filtered=set(all_violations.values()),
                 )
         return text
 

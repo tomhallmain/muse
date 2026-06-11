@@ -61,6 +61,7 @@ from utils import (
     I18N,
     Utils,
     get_logger,
+    set_logger_level,
 )
 
 logger = get_logger(__name__)
@@ -1273,12 +1274,27 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         )
         self._media_key_handler.setup_qt(self)
 
+    def _bind(self, key_sequence: str, callback, guarded: bool = True) -> None:
+        """Bind a keyboard shortcut to *callback* on this window."""
+        shortcut = QShortcut(QKeySequence(key_sequence), self)
+        shortcut.setContext(Qt.ShortcutContext.WindowShortcut)
+        if guarded:
+            def _guarded_callback():
+                if not self.isActiveWindow():
+                    return
+                callback()
+
+            shortcut.activated.connect(_guarded_callback)
+        else:
+            shortcut.activated.connect(callback)
+        if not hasattr(self, "_shortcuts"):
+            self._shortcuts = []
+        self._shortcuts.append(shortcut)
+
     def _setup_shortcuts(self):
         """Set up local keyboard shortcuts for the main window."""
-        self._space_pause_shortcut = QShortcut(QKeySequence(Qt.Key.Key_Space), self)
-        # Window-scoped so focused dialogs do not trigger this shortcut.
-        self._space_pause_shortcut.setContext(Qt.ShortcutContext.WindowShortcut)
-        self._space_pause_shortcut.activated.connect(self._on_spacebar_pressed)
+        self._bind("Space", self._toggle_play_pause)
+        self._bind("Ctrl+D", self.toggle_debug, guarded=False)
 
     def _toggle_play_pause(self):
         """Toggle playback state between running and paused."""
@@ -1286,12 +1302,6 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
             self.pause()
         else:
             self.run()
-
-    def _on_spacebar_pressed(self):
-        """Handle spacebar play/pause only when the main window is active."""
-        if not self.isActiveWindow():
-            return
-        self._toggle_play_pause()
 
     def _set_playback_paused_ui(self, paused: bool):
         self._is_playback_paused = bool(paused)
@@ -1419,6 +1429,16 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         # Apply theme to custom title bar
         self.apply_frameless_theme(is_dark)
         self.toast(_("Theme switched to {0}.").format(AppStyle.get_theme_name()))
+
+    def toggle_debug(self) -> None:
+        config.debug = not config.debug
+        set_logger_level(config.debug)
+        suffix = " (Debug)" if config.debug else ""
+        self.setWindowTitle(_(" Muse ") + suffix)
+        self.toast(
+            _("Debug mode toggled.")
+            + (" (Enabled)" if config.debug else " (Disabled)")
+        )
 
     def toast(self, message):
         logger.info("Toast: %s", message)

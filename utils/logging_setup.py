@@ -82,5 +82,17 @@ def get_logger(module_name: str) -> logging.Logger:
 
     return logger
 
+
+def set_logger_level(debug: bool) -> None:
+    """Set log level on all Muse log handlers based on debug mode."""
+    level = logging.DEBUG if debug else logging.INFO
+    for name in logging.root.manager.loggerDict:
+        if not name.startswith("muse."):
+            continue
+        module_logger = logging.getLogger(name)
+        for handler in module_logger.handlers:
+            handler.setLevel(level)
+
+
 # Initialize root logger for backward compatibility
-root_logger: logging.Logger = get_logger("root") 
+root_logger: logging.Logger = get_logger("root")

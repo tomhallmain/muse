@@ -518,6 +518,24 @@ class Blacklist:
         return filtered
 
     @staticmethod
+    def format_violations_summary(violations: dict) -> str:
+        """Format blacklist violations for logging and error messages.
+
+        Args:
+            violations: dict from find_blacklisted_items mapping matched text to pattern
+
+        Returns:
+            str: Summary listing matched patterns and each matched text segment
+        """
+        if not violations:
+            return ""
+        patterns = sorted(set(violations.values()))
+        lines = [f"patterns: {', '.join(patterns)}", "matches:"]
+        for tag, pattern in sorted(violations.items(), key=lambda x: (x[1], x[0])):
+            lines.append(f'  "{tag}" → pattern "{pattern}"')
+        return "\n".join(lines)
+
+    @staticmethod
     def get_violation_item(string: str) -> BlacklistItem:
         """Check if a single string violates any blacklist items.
         
