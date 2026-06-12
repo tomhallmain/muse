@@ -570,6 +570,8 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         app_info_cache.wipe_instance()
         FFmpegHandler.cleanup_cache()
         TempDir.cleanup()
+        from tts.tts_runner import TextToSpeechRunner
+        TextToSpeechRunner.cleanup_orphaned_output_files()
 
     def _save_playback_session(self) -> None:
         """Snapshot the active playlist and in-track position to app_info_cache."""

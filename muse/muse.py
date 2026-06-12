@@ -684,7 +684,12 @@ class Muse:
         self.say_at_some_point(language_response, spot_profile, Topic.LANGUAGE_LEARNING)
 
     def start_extensions_thread(self, initial_sleep=True, overwrite_cache=False):
-        self.get_library_data().start_extensions_thread(initial_sleep=initial_sleep, overwrite_cache=overwrite_cache, voice=self.voice)
+        voice = self.voice if self.args.muse and self.voice.can_speak else None
+        self.get_library_data().start_extensions_thread(
+            initial_sleep=initial_sleep,
+            overwrite_cache=overwrite_cache,
+            voice=voice,
+        )
 
     def should_use_two_call_approach(self) -> bool:
         """Determine if we should use the two-call translation approach for added variety."""

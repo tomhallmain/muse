@@ -482,3 +482,10 @@ def sample_audio_file(test_data_dir):
 @pytest.fixture
 def temp_dir(tmp_path):
     return tmp_path
+
+
+def pytest_sessionfinish(session, exitstatus):
+    """Remove disposable TTS artifacts left in tts_output by integration tests."""
+    from tts.output_cleanup import cleanup_default_output_directory
+
+    cleanup_default_output_directory()

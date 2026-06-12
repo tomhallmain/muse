@@ -9,6 +9,7 @@ import uuid
 
 import music_tag
 
+from tts.output_cleanup import cleanup_default_output_directory, is_orphaned_output_wav
 from tts.providers import BaseTTSProvider, TTSProviderType, get_provider
 from tts.chunker import Chunker
 from utils.config import config
@@ -166,6 +167,13 @@ class TextToSpeechRunner:
         self.delete_interim_files = config.delete_interim_files if config.auto_play else False
         self.auto_play = config.auto_play
         self.run_context = config.run_context
+
+    is_orphaned_output_wav = staticmethod(is_orphaned_output_wav)
+
+    @staticmethod
+    def cleanup_orphaned_output_files(directory: Optional[str] = None) -> int:
+        """Remove unnamed interim WAV files left in tts_output."""
+        return cleanup_default_output_directory(directory)
 
     def clean(self):
         if len(self.used_audio_paths) > 0:
