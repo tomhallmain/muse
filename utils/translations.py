@@ -32,6 +32,18 @@ class I18N:
             return s
 
     @staticmethod
+    def N_(msgid: str) -> str:
+        """Return *msgid* unchanged; marks the string for gettext extraction.
+
+        Use with :meth:`get_translation_override` when the active locale may
+        differ from ``I18N.locale`` (e.g. per-persona TTS). Extraction tools
+        must be told about ``N_`` explicitly, e.g.::
+
+            pygettext.py -d base -k _ -k N_ -o locale/base.pot .
+        """
+        return msgid
+
+    @staticmethod
     def day_of_the_week(day_index=0):
         if day_index == 0:
             return I18N._('Monday')
@@ -71,6 +83,20 @@ class I18N:
             return int(seconds / 2592000), I18N._("months")
         else:
             return int(seconds / 31536000), I18N._("years")
+    
+    @staticmethod
+    def get_translation_override(msgid: str, locale=None) -> str:
+        """Translate *msgid* for *locale*, or the installed locale when omitted.
+
+        *msgid* should come from :meth:`N_` (or a plain ``_()`` call) so
+        pygettext/xgettext can find it in the catalog.
+        """
+        if locale is None:
+            return I18N._(msgid)
+        translation = gettext.translation(
+            "base", I18N.localedir, languages=[locale], fallback=True
+        )
+        return translation.gettext(msgid)
 
     '''
     NOTE when gathering the translation strings, set _() == to gettext.gettext() instead of the above, and run:

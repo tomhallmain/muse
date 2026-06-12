@@ -324,6 +324,33 @@ class TestTextCleanerRulesetIntegration:
         assert "fünf" in result
         assert "5" not in result
 
+    def test_clean_replaces_hash_only_when_followed_by_number(self, monkeypatch):
+        """# is spoken as 'number N' only when digits follow; bare # is left alone."""
+        cleaner = TextCleanerRuleset()
+        monkeypatch.setattr(cleaner, "_is_likely_english", lambda _text: True)
+
+        numbered = cleaner.clean("Movement #5 in C major", locale="en")
+        assert "Number 5" in numbered
+        assert "#5" not in numbered
+
+        spaced = cleaner.clean("Movement # 12 in G major", locale="en")
+        assert "Number 12" in spaced
+        assert "# 12" not in spaced
+
+        bare_hash = cleaner.clean("C# minor is a key", locale="en")
+        assert "Number" not in bare_hash
+        assert "Zahl" not in bare_hash
+        assert "#" in bare_hash
+
+        trailing_hash = cleaner.clean("See appendix # for details", locale="en")
+        assert "Number" not in trailing_hash
+        assert "Zahl" not in trailing_hash
+        assert "#" in trailing_hash
+
+        german_numbered = cleaner.clean("Satz #5 in C-Dur", locale="de")
+        assert "Zahl 5" in german_numbered
+        assert "#5" not in german_numbered
+
 
 if __name__ == "__main__":
     pytest.main([__file__])

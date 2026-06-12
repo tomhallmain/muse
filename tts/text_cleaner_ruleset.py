@@ -514,7 +514,9 @@ class TextCleanerRuleset:
         text = text.replace("\u201c", '"').replace('\u201d', '"')
         text = text.replace("\u00ab", '"').replace('\u00bb', '"')
         text = re.sub("#+", "#", text)
-        text = re.sub("#()", _("Number \\1"), text)
+        hash_label_key = "Number \\1"
+        maybe_false_hash_label = _(hash_label_key)
+        text = re.sub(r"#\s*(\d+)", I18N.get_translation_override(hash_label_key, locale), text)
         text = re.sub("(\\*)+", " ", text)
         return text
 
