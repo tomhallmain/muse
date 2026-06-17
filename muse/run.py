@@ -46,6 +46,16 @@ class Run:
     def is_placeholder(self) -> bool:
         return self.args.placeholder
 
+    def has_previous_track(self) -> bool:
+        """Return True if a previous track exists in this run (i.e. at least two tracks have played)."""
+        return self.is_started and self._playback is not None and bool(self._playback.previous_track)
+
+    def get_previous_track(self):
+        """Return the MediaTrack that played before the current one, or None."""
+        if not self.has_previous_track():
+            return None
+        return self._playback.previous_track
+
     def next(self) -> None:
         """Skip to the next track."""
         self._run_context.update_action(UserAction.SKIP_TRACK)

@@ -402,6 +402,12 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         self.continue_session_btn.clicked.connect(self.continue_last_session)
         controls_layout.addWidget(self.continue_session_btn, 2, 1)
 
+        self.previous_track_btn = QPushButton(_("Previous Track"))
+        self.previous_track_btn.clicked.connect(self.play_previous_track)
+        self.previous_track_btn.setEnabled(False)
+        self.previous_track_btn.setVisible(False)
+        controls_layout.addWidget(self.previous_track_btn, 2, 1)
+
         self._sort_config_btn = QPushButton(_("Sorting Options"))
         self._sort_config_btn.clicked.connect(self._open_sort_config_override)
         controls_layout.addWidget(self._sort_config_btn, 3, 0)
@@ -856,6 +862,14 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
             self.progress_bar.deleteLater()
             self.progress_bar = None
 
+    def _refresh_session_buttons(self):
+        """Swap Continue Session / Previous Track based on whether a run is active."""
+        active = self._run_controls_active
+        self.continue_session_btn.setVisible(not active)
+        self.previous_track_btn.setVisible(active)
+        if active:
+            self.previous_track_btn.setEnabled(self.current_run.has_previous_track())
+
     def _show_progress_widgets(self):
         """Ensure the sidebar progress/cancel widgets are visible for an active run."""
         self._run_controls_active = True
@@ -868,12 +882,14 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
             self._sidebar_layout.addWidget(self.progress_bar, self._progress_bar_row, 0, 1, 3)
         self.progress_bar.show()
         self._refresh_transport_controls_ui()
+        self._refresh_session_buttons()
 
     def _hide_progress_widgets(self):
         """Hide sidebar progress/cancel widgets when no active run is shown."""
         self._run_controls_active = False
         self.destroy_progress_bar()
         self._refresh_transport_controls_ui()
+        self._refresh_session_buttons()
 
     def run(self, event=None, track=None, override_scheduled=False):
         """Debounced entry point: schedules a single run after a short quiet period."""
@@ -1060,11 +1076,18 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         self.current_run.pause()
         self._set_playback_paused_ui(not self._is_playback_paused)
 
+    def play_previous_track(self, event=None):
+        """Skip back to the track that played immediately before the current one."""
+        track = self.current_run.get_previous_track()
+        if track is None:
+            return
+        if not os.path.exists(track.filepath):
+            self.alert(_("Previous Track"), _("Previous track file no longer exists."), kind="info")
+            return
+        self.skip_to_track(track.filepath)
+
     def previous(self, event=None):
-        """Handle previous track media key. Currently not implemented in the playback system."""
-        # Note: The application doesn't currently support going to previous tracks
-        # This method is bound to the media key but does nothing for now
-        logger.debug("Previous track media key pressed (not implemented)")
+        self.play_previous_track()
 
     def cancel(self, event=None):
         self.current_run.cancel()
@@ -1139,6 +1162,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         else:
             previous_track_text = _("Previous Track: ") + str(previous_track_text)
         self.label_previous_title.setText(str(previous_track_text)[:500])
+        self._refresh_session_buttons()
         QApplication.processEvents()
 
     def update_upcoming_group_text(self, upcoming_group_text, grouping_type=None):
