@@ -37,6 +37,7 @@ class Muse:
     preparation_starts_minutes_from_end = float(config.muse_config[Globals.ConfigKeys.PREPARATION_STARTS_MINUTES_FROM_END])
     preparation_starts_after_seconds_sleep = int(config.muse_config[Globals.ConfigKeys.PREPARATION_STARTS_AFTER_SECONDS_SLEEP])
     _startup_topic_failures_logged = False
+    _dict_words: list = []
 
     def __init__(self, args, library_data, run_context, ui_callbacks=None):
         self.args = args
@@ -674,13 +675,30 @@ class Muse:
         funny_story = self.generate_text(self.get_prompt(Topic.FUNNY_STORY))
         self.say_at_some_point(funny_story, spot_profile, Topic.FUNNY_STORY)
 
+    @classmethod
+    def _get_random_word(cls) -> str:
+        if not cls._dict_words:
+            dict_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tts", "dictionary_en.txt")
+            try:
+                with open(dict_path, encoding="utf-8") as f:
+                    cls._dict_words = [w for w in (line.strip() for line in f) if 4 <= len(w) <= 12 and w.isalpha()]
+            except Exception as e:
+                logger.warning("Could not load dictionary for language learning prompt: %s", e)
+                cls._dict_words = ["music", "history", "nature", "travel"]
+        for _ in range(10):
+            word = random.choice(cls._dict_words)
+            if not Blacklist.find_blacklisted_items(word):
+                return word
+        return "music"
+
     def teach_language(self, spot_profile):
         prompt = self.get_prompt(Topic.LANGUAGE_LEARNING)
         prompt = prompt.format(
             LANGUAGE=config.muse_language_learning_language,
-            LEVEL=config.muse_language_learning_language_level.strip() if config.muse_language_learning_language_level and config.muse_language_learning_language_level.strip() else "basic"
+            LEVEL=config.muse_language_learning_language_level.strip() if config.muse_language_learning_language_level and config.muse_language_learning_language_level.strip() else "basic",
+            WORD=self._get_random_word(),
         )
-        language_response = self.generate_text(prompt)
+        language_response = self.generate_text(prompt, include_time_context=False)
         self.say_at_some_point(language_response, spot_profile, Topic.LANGUAGE_LEARNING)
 
     def start_extensions_thread(self, initial_sleep=True, overwrite_cache=False):
@@ -728,7 +746,7 @@ class Muse:
             logger.info(f"Failed to translate prompt for topic {topic} into language {language_code} with error: {e}")
         return prompt
 
-    def generate_text(self, prompt, json_key=None, include_time_context=True):
+    def generate_text(self, prompt, json_key=None, include_time_context=True, interrupt_on_skip=True):
         """Generate text using the current DJ persona's context."""
         # Get the current persona's context and system prompt
         context, system_prompt = self.memory.get_persona_manager().get_context_and_system_prompt()
@@ -761,7 +779,7 @@ class Muse:
         
         # Use the context and system prompt in the LLM call
         # NOTE excluding context for now because it's being deprecated for some reason.
-        result = self.llm.ask(prompt, json_key=json_key, context=None, system_prompt=system_prompt)
+        result = self.llm.ask(prompt, json_key=json_key, context=None, system_prompt=system_prompt, interrupt_on_skip=interrupt_on_skip)
         text = result.response if result else ""
         if result and getattr(result, "truncated", False):
             logger.info(
@@ -772,7 +790,7 @@ class Muse:
 
         # Update context with the new context from the response
         self.memory.get_persona_manager().update_context(result)
-        
+
         generations = []
         all_violations = {}
         violations = {
@@ -787,7 +805,7 @@ class Muse:
             logger.info("Hit blacklisted items:\n%s", violations_summary)
             logger.info("Text: " + text)
             # NOTE excluding context for now because it's being deprecated for some reason.
-            result = self.llm.ask(prompt, json_key=json_key, context=None, system_prompt=system_prompt)
+            result = self.llm.ask(prompt, json_key=json_key, context=None, system_prompt=system_prompt, interrupt_on_skip=interrupt_on_skip)
             text = result.response if result else ""
             if text.strip() == "":
                 raise LLMResponseException("No response text was generated!")

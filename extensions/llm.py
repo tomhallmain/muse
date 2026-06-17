@@ -293,6 +293,7 @@ class LLM:
         stream: Optional[bool] = None,
         on_stream_chunk: Optional[Callable[[StreamChunk], None]] = None,
         redundancy_policy=_USE_INSTANCE_REDUNDANCY,
+        interrupt_on_skip: bool = True,
     ):
         """Ask the LLM a question and optionally extract a JSON value."""
         logger.debug(f"LLM.ask called with query length: {len(query)}, json_key: {json_key}")
@@ -304,6 +305,7 @@ class LLM:
                 context=context,
                 system_prompt=system_prompt,
                 system_prompt_drop_rate=system_prompt_drop_rate,
+                interrupt_on_skip=interrupt_on_skip,
             )
         return self.generate_response_async(
             query,
@@ -314,6 +316,7 @@ class LLM:
             stream=stream,
             on_stream_chunk=on_stream_chunk,
             redundancy_policy=redundancy_policy,
+            interrupt_on_skip=interrupt_on_skip,
         )
 
     def _resolve_redundancy_policy(self, redundancy_policy) -> Optional[RedundancyPolicy]:
@@ -648,8 +651,16 @@ class LLM:
         stream: Optional[bool] = None,
         on_stream_chunk: Optional[Callable[[StreamChunk], None]] = None,
         redundancy_policy=_USE_INSTANCE_REDUNDANCY,
+        interrupt_on_skip: bool = True,
     ):
-        """Generate a response from the LLM in a separate thread with cancellation support."""
+        """Generate a response from the LLM in a separate thread with cancellation support.
+
+        When *interrupt_on_skip* is ``False`` the generation thread is allowed to
+        run to completion even if a skip is requested mid-generation.  The caller
+        is still responsible for checking whether to use the result after returning.
+        Use this for content that should be delivered complete-or-not-at-all
+        (topic commentary, track context, etc.).
+        """
         logger.debug(f"LLM.generate_response_async called with query length: {len(query)}")
         self._cancelled = False
         self._result = None
@@ -690,7 +701,7 @@ class LLM:
         # Wait for completion or cancellation
         try:
             while self._thread and self._thread.is_alive():
-                if self.run_context and self.run_context.should_skip():
+                if interrupt_on_skip and self.run_context and self.run_context.should_skip():
                     logger.debug("Cancelling LLM generation due to skip request")
                     self.cancel_generation()
                     return None
@@ -716,6 +727,7 @@ class LLM:
         context=None,
         system_prompt=None,
         system_prompt_drop_rate=DEFAULT_SYSTEM_PROMPT_DROP_RATE,
+        interrupt_on_skip: bool = True,
     ):
         """Generate a response and extract a specific JSON value.
 
@@ -730,6 +742,7 @@ class LLM:
             system_prompt_drop_rate=system_prompt_drop_rate,
             stream=False,
             redundancy_policy=None,
+            interrupt_on_skip=interrupt_on_skip,
         )
         if result is None:
             raise LLMResponseException("Failed to generate LLM response - Result is None")
