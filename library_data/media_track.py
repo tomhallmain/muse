@@ -502,7 +502,11 @@ class MediaTrack:
     def get_volume(self):
         if self.mean_volume < -200:
             try:
-                self.mean_volume, self.max_volume = FFmpegHandler.get_volume(self.filepath)
+                limit = FFmpegHandler.LOUDNESS_ANALYZE_MAX_SECONDS
+                max_seconds = limit if self.length > limit else None
+                self.mean_volume, self.max_volume = FFmpegHandler.get_volume(
+                    self.filepath, max_seconds=max_seconds
+                )
             except Exception as e:
                 if "emoji characters" in str(e):
                     logger.warning(f"Skipping volume analysis for file with special characters: {self.filepath}")

@@ -16,13 +16,16 @@ logger = get_logger(__name__)
 
 class FFmpegHandler:
     """Handler for all FFmpeg operations with filename sanitization."""
-    
+
     # Cache of sanitized filenames to their original paths
     _filename_cache: Dict[str, str] = {}
     ffprobe_available = Utils.executable_available("ffprobe")
     ffmpeg_available = Utils.executable_available("ffmpeg")
     # Maximum size for file copying (100MB)
     MAX_COPY_SIZE = 100 * 1024 * 1024
+    # Loudness analysis is capped at this many seconds for long files.
+    # 20 minutes gives a representative sample without decoding the full file.
+    LOUDNESS_ANALYZE_MAX_SECONDS: float = 20 * 60
 
     @staticmethod
     def cleanup_cache():
@@ -121,10 +124,17 @@ class FFmpegHandler:
             return filepath
 
     @staticmethod
-    def get_volume(filepath: str) -> Tuple[float, float]:
-        """Get mean and max volume for a media file."""
+    def get_volume(filepath: str, max_seconds: Optional[float] = None) -> Tuple[float, float]:
+        """Get mean and max volume for a media file.
+
+        Args:
+            max_seconds: If given, analyse only the first N seconds of the file.
+                         For files shorter than this, ffmpeg simply stops at EOF, so
+                         passing a cap is safe regardless of actual duration.
+        """
         sanitized_path = FFmpegHandler.sanitize_filename(filepath)
-        args = ["ffmpeg", "-i", sanitized_path, "-af", "volumedetect", "-f", "null", "/dev/null"]
+        duration_args = ["-t", str(int(max_seconds))] if max_seconds is not None else []
+        args = ["ffmpeg", *duration_args, "-i", sanitized_path, "-af", "volumedetect", "-f", "null", "/dev/null"]
         mean_volume = -9999.0
         max_volume = -9999.0
         mean_volume_tag = "] mean_volume: "
