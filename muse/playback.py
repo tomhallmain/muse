@@ -429,7 +429,7 @@ class Playback:
         return track, False, False
 
     def get_grouping_type(self):
-        if self.track and self.track._is_stream:
+        if self.track and self.track.is_stream():
             return None
         try:
             return self._playback_config.get_list().sort_type
@@ -480,7 +480,7 @@ class Playback:
         spawns a thread to generate and speak a brief track-context comment.
         """
         track = self.track
-        if track is None or not getattr(track, "_is_stream", False):
+        if track is None or not self.is_stream():
             return
         changed = track.update_from_icy(artist, title)
         if not changed:
@@ -507,7 +507,7 @@ class Playback:
         self.vlc_media_player = vlc.MediaPlayer(self.track.filepath)
         if self.track.get_is_video():
             self.ensure_video_frame()
-        if self.track and self.track._is_stream:
+        if self.track and self.track.is_stream():
             self._start_icy_thread(self.track.filepath)
         self.update_ui()
 
@@ -535,7 +535,7 @@ class Playback:
             if self.ui_callbacks.update_spot_profile_topics_text is not None:
                 self.ui_callbacks.update_spot_profile_topics_text(spot_profile.get_topic_text())
         
-        if self.track and self.track._is_stream:
+        if self.track and self.track.is_stream():
             # Streams have no meaningful sort-type grouping — clear both group labels.
             if self.ui_callbacks.update_upcoming_group_callback is not None:
                 self.ui_callbacks.update_upcoming_group_callback("")

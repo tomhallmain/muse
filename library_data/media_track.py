@@ -640,6 +640,9 @@ class MediaTrack:
                 self.instrument = ""
         return self.instrument
 
+    def is_stream(self):
+        return hasattr(self, "_is_stream") and self._is_stream
+
     @staticmethod
     def _prep_track_text(text):
         # TODO i18n to detect track language context

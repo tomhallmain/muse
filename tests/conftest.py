@@ -78,6 +78,9 @@ class MockMediaTrack:
     def get_volume(self):
         return (-20.0, -10.0)
 
+    def is_stream(self) -> bool:
+        return self._is_stream
+
 
 @dataclass
 class MockDataCallbacks:
@@ -251,6 +254,9 @@ def _patch_config_singleton(monkeypatch, config_instance) -> None:
         # it must see the isolated config instance to avoid reading the real file.
         "library_data.composer",
         "ui_qt.configuration_window",
+        # app_qt does `from utils import config` at import time, so the module-level
+        # name must be patched separately — otherwise get_args() reads real directories.
+        "app_qt",
     ):
         try:
             module = importlib.import_module(module_name)

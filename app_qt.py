@@ -787,7 +787,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
 
     def set_favorite(self, _state=None):
         favorited = self.favorite_check.isChecked()
-        current_track = self.current_run.get_current_track() if self.current_run else None
+        current_track = self.get_current_track()
         if current_track is not None:
             from ui_qt.favorites_window import FavoritesWindow
             FavoritesWindow.set_favorite(current_track, favorited)
@@ -883,17 +883,21 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         self.continue_session_btn.setVisible(not active)
         self.previous_track_btn.setVisible(active)
         if active and self.current_run:
-            try:
-                current_track = (
-                    self.current_run.get_current_track()
-                    if self.current_run.is_started else None
-                )
-            except (RuntimeError, AttributeError):
-                current_track = None
-            is_stream = getattr(current_track, "_is_stream", False)
+            current_track = self.get_current_track()
+            is_stream = current_track and current_track.is_stream()
             self.previous_track_btn.setEnabled(
                 self.current_run.has_previous_track() and not is_stream
             )
+
+    def _get_current_track(self):
+        try:
+            current_track = (
+                self.current_run.get_current_track()
+                if self.current_run.is_started else None
+            )
+        except (RuntimeError, AttributeError):
+            current_track = None
+        return current_track
 
     def _show_progress_widgets(self):
         """Ensure the sidebar progress/cancel widgets are visible for an active run."""
@@ -1015,15 +1019,8 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
                 self.progress_bar.setRange(0, 100)
                 self.progress_bar.setValue(progress)
         # Pass -1 as duration sentinel for live streams so the overlay shows "LIVE".
-        try:
-            current_track = (
-                self.current_run.get_current_track()
-                if self.current_run and self.current_run.is_started
-                else None
-            )
-        except (RuntimeError, AttributeError):
-            current_track = None
-        is_live = getattr(current_track, "_is_stream", False)
+        current_track = self._get_current_track()
+        is_live = current_track and current_track.is_stream()
         display_duration = -1 if is_live else int(total_duration)
         self.media_frame.update_playback_progress(int(elapsed_time), display_duration)
         self._apply_pending_resume()
@@ -1445,7 +1442,13 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
 
     def get_current_track(self):
         if self.current_run and not self.current_run.is_complete:
-            return self.current_run.get_current_track()
+            try:
+                return (
+                    self.current_run.get_current_track()
+                    if self.current_run.is_started else None
+                )
+            except (RuntimeError, AttributeError):
+                return None
         return None
 
     def _find_track(self, search_query):

@@ -140,7 +140,7 @@ class PlaybackConfig:
     def get_list(self) -> Playlist:
         if self.list.is_valid():
             return self.list
-        if getattr(self.start_track, '_is_stream', False):
+        if self.start_track and self.start_track.is_stream():
             # Stream track: build a single-item playlist without library lookups.
             self.list = Playlist(
                 [], self.type, data_callbacks=self.data_callbacks,
