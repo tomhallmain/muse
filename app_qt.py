@@ -200,6 +200,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         # Cache media frame handle on main thread so worker threads can use it without touching Qt
         QTimer.singleShot(0, self._cache_media_frame_handle)
         QTimer.singleShot(0, self._maybe_prompt_vlc_cache_fix)
+        QTimer.singleShot(0, self._start_watchlist_service)
 
         # Enable media key handling
         self._setup_media_keys()
@@ -247,6 +248,8 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
                 (_("History"), self.open_history_window),
                 (_("Composers"), self.open_composers_window),
                 (_("Personas"), self.open_personas_window),
+                None,
+                (_("Internet Radio"), self.open_network_media_window),
             ]),
             (_("Tools"), [
                 (_("Search"), self.open_search_window),
@@ -571,8 +574,20 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         # Save app config (not geometry - SmartMainWindow handles that)
         self.store_info_cache()
 
+    def _start_watchlist_service(self) -> None:
+        try:
+            from muse.radio_watchlist import watchlist_service
+            watchlist_service.start(self.app_actions)
+        except Exception:
+            pass
+
     def _final_cleanup(self):
         """Final cleanup after all state is saved."""
+        try:
+            from muse.radio_watchlist import watchlist_service
+            watchlist_service.stop()
+        except Exception:
+            pass
         app_info_cache.wipe_instance()
         FFmpegHandler.cleanup_cache()
         TempDir.cleanup()
@@ -867,8 +882,18 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         active = self._run_controls_active
         self.continue_session_btn.setVisible(not active)
         self.previous_track_btn.setVisible(active)
-        if active:
-            self.previous_track_btn.setEnabled(self.current_run.has_previous_track())
+        if active and self.current_run:
+            try:
+                current_track = (
+                    self.current_run.get_current_track()
+                    if self.current_run.is_started else None
+                )
+            except (RuntimeError, AttributeError):
+                current_track = None
+            is_stream = getattr(current_track, "_is_stream", False)
+            self.previous_track_btn.setEnabled(
+                self.current_run.has_previous_track() and not is_stream
+            )
 
     def _show_progress_widgets(self):
         """Ensure the sidebar progress/cancel widgets are visible for an active run."""
@@ -982,8 +1007,25 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
 
     def _do_update_progress_bar(self, progress, elapsed_time, total_duration):
         if self.progress_bar is not None:
-            self.progress_bar.setValue(progress)
-        self.media_frame.update_playback_progress(int(elapsed_time), int(total_duration))
+            if total_duration <= 0:
+                if self.progress_bar.maximum() != 100:
+                    self.progress_bar.setRange(0, 100)
+                self.progress_bar.setValue(100)  # static full bar for live streams
+            else:
+                self.progress_bar.setRange(0, 100)
+                self.progress_bar.setValue(progress)
+        # Pass -1 as duration sentinel for live streams so the overlay shows "LIVE".
+        try:
+            current_track = (
+                self.current_run.get_current_track()
+                if self.current_run and self.current_run.is_started
+                else None
+            )
+        except (RuntimeError, AttributeError):
+            current_track = None
+        is_live = getattr(current_track, "_is_stream", False)
+        display_duration = -1 if is_live else int(total_duration)
+        self.media_frame.update_playback_progress(int(elapsed_time), display_duration)
         self._apply_pending_resume()
         QApplication.processEvents()
 
@@ -1559,6 +1601,14 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
     def open_lastfm_window(self):
         from ui_qt.lastfm_window import LastFmLibraryWindow
         LastFmLibraryWindow(self, self.app_actions)
+
+    def open_network_media_window(self):
+        from ui_qt.network_media_window import NetworkMediaWindow
+        if NetworkMediaWindow.top_level is not None:
+            NetworkMediaWindow.top_level.raise_()
+            NetworkMediaWindow.top_level.activateWindow()
+            return
+        NetworkMediaWindow(self, self.app_actions)
 
     def open_tts_window(self):
         from ui_qt.tts_window import TTSWindow

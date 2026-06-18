@@ -1,5 +1,6 @@
 import platform
 from random import randint
+import threading
 import time
 import traceback
 
@@ -59,6 +60,7 @@ class Playback:
         self.has_attempted_track_split = False
         self.count = 0
         self.muse_spot_profiles = []
+        self._stream_profile_building = False  # guard against concurrent rebuilds
         self.remaining_delay_seconds = Globals.DELAY_TIME_SECONDS
         # Last track result from next_track/upcoming_track, carries grouping info
         self._track_result: TrackResult = TrackResult()
@@ -67,6 +69,9 @@ class Playback:
         self._timer_volume_override = False
         self._timer_override_volume = 20
         self._exclusion_toast_shown = False
+        # ICY metadata polling (live radio streams)
+        self._icy_stop_event: Optional[threading.Event] = None
+        self._icy_thread: Optional[threading.Thread] = None
 
     def has_muse(self) -> bool:
         return self._run and self._run.args.muse and self.muse is not None and self.muse.voice.can_speak
@@ -145,6 +150,11 @@ class Playback:
         if self._run_context.skip_track:
             return False
         if self.vlc_media_player.is_playing():
+            return True
+        # Keep waiting while a stream is still opening or buffering (can take
+        # longer than the 5-second startup poll for remote streams).
+        state = self.vlc_media_player.get_state()
+        if state in (vlc.State.Opening, vlc.State.Buffering):
             return True
         if not self._run_context.is_paused:
             return False
@@ -263,9 +273,15 @@ class Playback:
                 time.sleep(0.5)
                 cumulative_sleep_seconds += 0.5
                 seconds_remaining = self.update_progress()
-                if self.has_muse() and \
+                if self.has_muse() and seconds_remaining >= 0 and \
                         self.get_muse().ready_to_prepare(cumulative_sleep_seconds, seconds_remaining):
                     self.prepare_muse()
+                elif (self.has_muse() and seconds_remaining < 0
+                      and cumulative_sleep_seconds >= 120
+                      and not any(p.track == self.track for p in self.muse_spot_profiles)
+                      and not self._stream_profile_building):
+                    self._stream_profile_building = True
+                    Utils.start_thread(self._rebuild_stream_spot_profile, use_asyncio=False)
 
             self.vlc_media_player.stop()
             self.has_played_first_track = True
@@ -290,7 +306,42 @@ class Playback:
 
     def reset_muse(self) -> None:
         self.get_muse().reset()
-        self.muse_spot_profiles.remove(self.get_spot_profile(self.track))
+        try:
+            self.muse_spot_profiles.remove(self.get_spot_profile(self.track))
+        except Exception:
+            pass
+        # For streams the inner wait-loop never triggers background prepare_muse
+        # (seconds_remaining is always negative).  Rebuild the profile immediately
+        # so ICY title-change commentary has a valid spot to use.
+
+    def _rebuild_stream_spot_profile(self) -> None:
+        """Background: create a fresh spot profile for the currently-playing stream.
+
+        Called after reset_muse so that ICY title-change callbacks can find a
+        valid profile.  The profile is appended only after prepare() finishes so
+        get_spot_profile() never receives a half-initialised object.
+        """
+        try:
+            muse = self.get_muse()
+            track = self.track
+            if track is None or self._track_result is None:
+                return
+            previous_track = self.previous_track if self.has_played_first_track else None
+            spot_profile = muse.get_spot_profile(
+                previous_track,
+                self._track_result._replace(track=track),
+                self.last_track_failed,
+                False,
+                self.get_grouping_type(),
+                get_upcoming_tracks_callback=self._get_upcoming_tracks_callback(),
+            )
+            spot_profile.immediate = True
+            muse.prepare(spot_profile)
+            self.muse_spot_profiles.append(spot_profile)
+        except Exception:
+            logger.warning("Failed to rebuild stream spot profile for ICY commentary", exc_info=True)
+        finally:
+            self._stream_profile_building = False
 
     def prepare_muse(self, delayed_prep: bool = False) -> int:
         """Prepare the DJ for the next track."""
@@ -378,6 +429,8 @@ class Playback:
         return track, False, False
 
     def get_grouping_type(self):
+        if self.track and self.track._is_stream:
+            return None
         try:
             return self._playback_config.get_list().sort_type
         except AttributeError:
@@ -391,12 +444,71 @@ class Playback:
                 get_upcoming_tracks_callback=self._get_upcoming_tracks_callback())
         self.muse_spot_profiles.append(spot_profile)
 
+    # ── ICY metadata polling ──────────────────────────────────────────────────
+
+    def _stop_icy_thread(self) -> None:
+        """Signal the ICY polling thread to exit and wait briefly for it."""
+        if self._icy_stop_event is not None:
+            self._icy_stop_event.set()
+            self._icy_stop_event = None
+        if self._icy_thread is not None and self._icy_thread.is_alive():
+            self._icy_thread.join(timeout=2.0)
+        self._icy_thread = None
+
+    def _start_icy_thread(self, url: str) -> None:
+        """Start ICY metadata polling for *url* in a background daemon thread."""
+        self._stop_icy_thread()
+        stop = threading.Event()
+        self._icy_stop_event = stop
+
+        def _run() -> None:
+            try:
+                from extensions.icy_metadata import poll_icy_metadata
+                poll_icy_metadata(url, stop, self._on_icy_title_change)
+            except Exception:
+                logger.exception("ICY polling thread raised unexpectedly")
+
+        t = threading.Thread(target=_run, name="icy-metadata", daemon=True)
+        self._icy_thread = t
+        t.start()
+
+    def _on_icy_title_change(self, artist: str, title: str) -> None:
+        """Called from the ICY thread when ``StreamTitle`` changes.
+
+        Updates the track object's artist/title and refreshes the sidebar via
+        the Qt-signal-safe ``track_details_callback``.  If Muse is active,
+        spawns a thread to generate and speak a brief track-context comment.
+        """
+        track = self.track
+        if track is None or not getattr(track, "_is_stream", False):
+            return
+        changed = track.update_from_icy(artist, title)
+        if not changed:
+            return
+        if self.ui_callbacks is not None and self.ui_callbacks.track_details_callback is not None:
+            self.ui_callbacks.track_details_callback(track)
+        if self.has_muse() and self.muse_spot_profiles:
+            try:
+                spot_profile = self.get_spot_profile()
+                muse = self.get_muse()
+                Utils.start_thread(
+                    lambda t=track, sp=spot_profile: muse.talk_about_icy_track(t, sp),
+                    use_asyncio=False,
+                )
+            except Exception:
+                logger.warning("Could not trigger Muse ICY commentary", exc_info=True)
+
+    # ── Song registration / VLC lifecycle ────────────────────────────────────
+
     def register_new_song(self) -> None:
         assert self.track is not None
         logger.info(f"Playing track file: {self.track.filepath}")
+        self._stop_icy_thread()
         self.vlc_media_player = vlc.MediaPlayer(self.track.filepath)
         if self.track.get_is_video():
             self.ensure_video_frame()
+        if self.track and self.track._is_stream:
+            self._start_icy_thread(self.track.filepath)
         self.update_ui()
 
     def ensure_video_frame(self) -> None:
@@ -423,37 +535,44 @@ class Playback:
             if self.ui_callbacks.update_spot_profile_topics_text is not None:
                 self.ui_callbacks.update_spot_profile_topics_text(spot_profile.get_topic_text())
         
-        # Update upcoming group if using a grouping sort type
-        if self.ui_callbacks.update_upcoming_group_callback is not None:
-            try:
-                sort_type = self.get_grouping_type()
-                if sort_type and isinstance(sort_type, PlaylistSortType) and sort_type.is_grouping_type():
-                    # Get the next grouping that will be encountered in the playlist
-                    next_grouping = self._playback_config.upcoming_grouping()
-                    if next_grouping is not None:
-                        self.ui_callbacks.update_upcoming_group_callback(next_grouping, grouping_type=sort_type)
-                    else:
-                        # No grouping change found - all remaining tracks are in the same group
-                        self.ui_callbacks.update_upcoming_group_callback("")
-                else:
-                    # Not using a grouping sort type, clear the label
-                    self.ui_callbacks.update_upcoming_group_callback("")
-            except Exception as e:
-                logger.debug(f"Error updating upcoming group: {e}")
-                # Clear the label on error
-                if self.ui_callbacks.update_upcoming_group_callback is not None:
-                    self.ui_callbacks.update_upcoming_group_callback("")
-
-        if self.ui_callbacks.update_current_group_callback is not None:
-            try:
-                tr = self._track_result
-                self.ui_callbacks.update_current_group_callback(
-                    tr.current_grouping, tr.group_position, tr.group_total,
-                    self.get_grouping_type(),
-                )
-            except Exception as e:
-                logger.debug(f"Error updating current group: {e}")
+        if self.track and self.track._is_stream:
+            # Streams have no meaningful sort-type grouping — clear both group labels.
+            if self.ui_callbacks.update_upcoming_group_callback is not None:
+                self.ui_callbacks.update_upcoming_group_callback("")
+            if self.ui_callbacks.update_current_group_callback is not None:
                 self.ui_callbacks.update_current_group_callback(None, None, None, None)
+        else:
+            # Update upcoming group if using a grouping sort type
+            if self.ui_callbacks.update_upcoming_group_callback is not None:
+                try:
+                    sort_type = self.get_grouping_type()
+                    if sort_type and isinstance(sort_type, PlaylistSortType) and sort_type.is_grouping_type():
+                        # Get the next grouping that will be encountered in the playlist
+                        next_grouping = self._playback_config.upcoming_grouping()
+                        if next_grouping is not None:
+                            self.ui_callbacks.update_upcoming_group_callback(next_grouping, grouping_type=sort_type)
+                        else:
+                            # No grouping change found - all remaining tracks are in the same group
+                            self.ui_callbacks.update_upcoming_group_callback("")
+                    else:
+                        # Not using a grouping sort type, clear the label
+                        self.ui_callbacks.update_upcoming_group_callback("")
+                except Exception as e:
+                    logger.debug(f"Error updating upcoming group: {e}")
+                    # Clear the label on error
+                    if self.ui_callbacks.update_upcoming_group_callback is not None:
+                        self.ui_callbacks.update_upcoming_group_callback("")
+
+            if self.ui_callbacks.update_current_group_callback is not None:
+                try:
+                    tr = self._track_result
+                    self.ui_callbacks.update_current_group_callback(
+                        tr.current_grouping, tr.group_position, tr.group_total,
+                        self.get_grouping_type(),
+                    )
+                except Exception as e:
+                    logger.debug(f"Error updating current group: {e}")
+                    self.ui_callbacks.update_current_group_callback(None, None, None, None)
 
         if self.ui_callbacks.update_favorite_status is not None:
             self.ui_callbacks.update_favorite_status(self.track)
@@ -542,6 +661,7 @@ class Playback:
         self.vlc_media_player.play()
 
     def stop(self) -> None:
+        self._stop_icy_thread()
         self.vlc_media_player.stop()
 
     def get_current_track_artwork(self) -> str:

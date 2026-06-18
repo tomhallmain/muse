@@ -52,6 +52,7 @@ class MockMediaTrack:
     _form: str
     _instrument: str
     _is_extended: bool = False
+    _is_stream: bool = False
 
     def get_genre(self):
         return self._genre

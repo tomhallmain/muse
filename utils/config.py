@@ -120,6 +120,10 @@ class Config:
         self.server_password = "<PASSWORD>"
         self.server_host = "localhost"
 
+        self.radio_watchlist_enabled = False
+        self.radio_watchlist_cooldown_minutes = 30
+        self.radio_watchlist_max_stations = 10
+
         self.config_path = config_path
         if self.config_path is None:
             self.config_path = Config.resolve_config_path()
@@ -162,6 +166,8 @@ class Config:
             "playlist_recently_played_check_count",
             "max_recent_searches",
             "max_search_results",
+            "radio_watchlist_cooldown_minutes",
+            "radio_watchlist_max_stations",
         )
         self.set_values(list,
             "directories",
@@ -184,6 +190,7 @@ class Config:
             "llm_use_streaming",
             "llm_stream_redundancy",
             "llm_thinking_budget_chars",
+            "radio_watchlist_enabled",
         )
         self.set_values(dict,
             "muse_config",

@@ -152,6 +152,7 @@ class Muse:
         return Muse.enable_preparation \
             and cumulative_sleep_seconds > Muse.preparation_starts_after_seconds_sleep \
             and not self.has_started_prep \
+            and ms_remaining >= 0 \
             and ms_remaining < int(Muse.preparation_starts_minutes_from_end * 60 * 1000)
 
     def prepare(self, spot_profile):
@@ -478,14 +479,25 @@ class Muse:
             if previous_track is None and topic == Topic.TRACK_CONTEXT_POST:
                 excluded_topics.append(topic)
 
+        _fallback_attempts = 0
         while topic in excluded_topics:
-            topic = self.get_topic(previous_track, excluded_topics=excluded_topics)
+            excluded_topics.append(topic)
+            topic = Prompter.get_oldest_topic(excluded_topics=excluded_topics)
+            _fallback_attempts += 1
+            if _fallback_attempts > len(Topic):
+                logger.warning("get_topic: all topics excluded, returning None")
+                return None
 
         return topic
 
     def set_topic(self, spot_profile):
-        spot_profile.topic = self.get_topic(spot_profile.previous_track)
-        spot_profile.topic_translated = spot_profile.topic.translate()
+        excluded_topics = (
+            Topic.excluded_for_stream()
+            if spot_profile.track is not None and spot_profile.track.is_stream()
+            else []
+        )
+        spot_profile.topic = self.get_topic(spot_profile.previous_track, excluded_topics=excluded_topics)
+        spot_profile.topic_translated = spot_profile.topic.translate() if spot_profile.topic is not None else ""
 
     def talk_about_something(self, spot_profile):
         if (spot_profile.has_already_spoken and random.random() < 0.75) \
@@ -639,6 +651,20 @@ class Muse:
         prompt = prompt.format(TRACK_DETAILS=track.get_track_details(), NAME=name)
         track_context = self.generate_text(prompt)
         self.say_at_some_point(track_context, spot_profile, None)
+
+    def talk_about_icy_track(self, track, spot_profile) -> None:
+        """Speak a brief comment about a new track detected via ICY metadata.
+
+        Called in a background thread by ``Playback._on_icy_title_change``.
+        Uses the ``TRACK_CONTEXT_PRIOR`` prompt so the DJ introduces the song
+        now playing.  Silently exits on any error so polling is never disrupted.
+        """
+        if not self.voice.can_speak:
+            return
+        try:
+            self.talk_about_track_context(track, spot_profile, Topic.TRACK_CONTEXT_PRIOR)
+        except Exception:
+            logger.debug("talk_about_icy_track skipped", exc_info=True)
 
     def talk_about_playlist_context(self, spot_profile):
         # Counts are higher for upcoming tracks to bias the response towards what to expect next.

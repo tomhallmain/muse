@@ -212,18 +212,26 @@ class MediaControlsOverlay(QWidget):
     # ------------------------------------------------------------------
 
     def update_progress(self, current_ms: int, duration_ms: int):
-        """Called on every progress tick from the backend."""
+        """Called on every progress tick from the backend.
+
+        A ``duration_ms`` of -1 is the sentinel for a live radio stream:
+        the seek slider is frozen and the total label shows "LIVE".
+        """
+        is_live = duration_ms < 0
         self._current_ms = current_ms
-        self._duration_ms = duration_ms
-        self._has_track = duration_ms > 0
+        self._duration_ms = 0 if is_live else duration_ms
+        self._has_track = is_live or duration_ms > 0
         self._refresh_play_pause_button()
 
         if not self._user_is_seeking:
-            pos = int((current_ms / duration_ms) * SLIDER_MAX) if duration_ms > 0 else 0
-            self._seek_slider.setValue(pos)
+            if is_live:
+                self._seek_slider.setValue(0)
+            else:
+                pos = int((current_ms / duration_ms) * SLIDER_MAX) if duration_ms > 0 else 0
+                self._seek_slider.setValue(pos)
 
         self._elapsed_label.setText(_fmt_time(current_ms))
-        self._total_label.setText(_fmt_time(duration_ms))
+        self._total_label.setText(_("LIVE") if is_live else _fmt_time(duration_ms))
 
     def set_paused(self, paused: bool):
         self._is_paused = paused

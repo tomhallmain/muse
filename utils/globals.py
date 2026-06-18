@@ -497,6 +497,11 @@ class Topic(Enum):
         return str(self.value)
 
     @staticmethod
+    def excluded_for_stream() -> list:
+        """Topics that require local-library context and must not be used for live streams."""
+        return [Topic.TRACK_CONTEXT_PRIOR, Topic.TRACK_CONTEXT_POST, Topic.PLAYLIST_CONTEXT]
+
+    @staticmethod
     def from_value(value):
         """Convert various input types to a Topic enum value.
         

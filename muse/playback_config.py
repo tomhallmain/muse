@@ -140,6 +140,14 @@ class PlaybackConfig:
     def get_list(self) -> Playlist:
         if self.list.is_valid():
             return self.list
+        if getattr(self.start_track, '_is_stream', False):
+            # Stream track: build a single-item playlist without library lookups.
+            self.list = Playlist(
+                [], self.type, data_callbacks=self.data_callbacks,
+                sort_config=self.sort_config,
+                direct_tracks=[self.start_track],
+            )
+            return self.list
         if self._explicit_tracks is not None:
             track_list = self._explicit_tracks
         else:

@@ -309,6 +309,7 @@ class MediaTrack:
         self.searchable_composer = None
         self.searchable_genre = None
         self._is_extended = False
+        self._is_stream = False
         self.is_video = None
 
         if self.filepath is not None and self.filepath != "":
@@ -465,6 +466,9 @@ class MediaTrack:
         if prepped.strip() == "":
             return  _("Unknown artist")
         return prepped
+
+    def is_stream(self) -> bool:
+        return False
 
     def is_invalid(self):
         if self.basename is None:

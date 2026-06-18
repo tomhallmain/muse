@@ -153,7 +153,8 @@ class Playlist:
                  data_callbacks: Optional['LibraryDataCallbacks'] = None, start_track: Optional[MediaTrack] = None,
                  loop: bool = False,
                  sort_config: Optional[SortConfig] = None,
-                 deterministic_group_order: bool = False) -> None:
+                 deterministic_group_order: bool = False,
+                 direct_tracks: Optional[List[MediaTrack]] = None) -> None:
         exclusions = app_info_cache.get(TRACK_EXCLUSIONS_KEY, _DEFAULT_TRACK_EXCLUSIONS)
         if exclusions:
             excluded = [t for t in tracks if any(_matches_exclusion(t, e) for e in exclusions)]
@@ -180,9 +181,15 @@ class Playlist:
                 self.data_callbacks.get_track is not None and \
                 self.data_callbacks.get_all_tracks is not None
         self.sorted_tracks: List[MediaTrack] = []
-        for track_filepath in list(tracks):
-            track = self.data_callbacks.get_track(track_filepath)
-            self.sorted_tracks.append(track)
+        if direct_tracks is not None:
+            for track in direct_tracks:
+                self.sorted_tracks.append(track)
+                self.in_sequence.append(track.filepath)
+                self.pending_tracks.append(track.filepath)
+        else:
+            for track_filepath in list(tracks):
+                track = self.data_callbacks.get_track(track_filepath)
+                self.sorted_tracks.append(track)
         logger.info(f"Playlist length: {self.size()}")
         if self.size() > 0:
             self.sort()
