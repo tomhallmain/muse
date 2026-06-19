@@ -24,10 +24,16 @@ class RandomWikiResponse:
         page_content_key = list(pages_content.keys())[0]
         page_content = pages_content[page_content_key]
         self.title = page_content['title']
-        self.data = SoupUtils.remove_tags(page_content['extract'].replace('\n', ''))
+        # Preserve paragraph structure so callers can filter individual paragraphs.
+        self.paragraphs = [
+            SoupUtils.remove_tags(p)
+            for p in page_content['extract'].split('\n')
+            if p.strip()
+        ]
+        self.data = ' '.join(self.paragraphs)
 
     def is_valid(self) -> bool:
-        return self.title is not None and self.title != "" and self.data is not None and self.data != ""
+        return bool(self.title) and bool(self.data)
 
     def __str__(self) -> str:
         return self.title + '\n\n' + self.data

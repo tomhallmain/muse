@@ -323,5 +323,8 @@
     "auto_file_extensions_genres": [],
     "embed_extension_artwork": true,
     "auto_fix_vlc_plugin_cache": true,
+    "radio_watchlist_enabled": false,
+    "radio_watchlist_cooldown_minutes": 30,
+    "radio_watchlist_max_stations": 10,
     "library_extender_key": "<KEY>"
 }

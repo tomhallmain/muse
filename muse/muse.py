@@ -678,22 +678,66 @@ class Muse:
         self.say_at_some_point(playlist_context, spot_profile, Topic.PLAYLIST_CONTEXT)
 
     def talk_about_random_wiki_article(self, spot_profile):
-        article_blacklisted = True
+        article = None
+        paragraph_skipped = False
         blacklisted_words_found = set()
-        count = 0
-        while article_blacklisted:
-            article = self.wiki_search.random_wiki()
-            if article is None or not article.is_valid():
+        for _attempt in range(11):
+            candidate = self.wiki_search.random_wiki()
+            if candidate is None or not candidate.is_valid():
                 raise Exception("No valid wiki article found")
-            article_text = str(article)[:2000]
-            blacklist_words = list(Blacklist.find_blacklisted_items(article_text).keys())
-            blacklisted_words_found.update(blacklist_words)
-            article_blacklisted = len(blacklist_words) > 0
-            if count > 10:
-                raise Exception(f"No valid wiki article found after 10 tries. Blacklisted words: {blacklisted_words_found}")
-            count += 1
+
+            # Title (and the page title itself) must never contain a violation.
+            if Blacklist.find_blacklisted_items(candidate.title):
+                continue
+
+            # Check each body paragraph independently.
+            violated = []
+            for i, para in enumerate(candidate.paragraphs):
+                patterns = Blacklist.find_violated_patterns(para)
+                if patterns:
+                    violated.append((i, patterns))
+
+            total_violations = sum(len(patterns) for _, patterns in violated)
+
+            if total_violations == 0:
+                article = candidate
+                break
+            elif total_violations == 1 and len(violated) == 1 and len(candidate.paragraphs) > 1:
+                # Exactly one match in one paragraph of a multi-paragraph article:
+                # drop that paragraph and proceed.
+                skipped_idx, skipped_patterns = violated[0]
+                pattern = next(iter(skipped_patterns))
+                logger.info(
+                    f"Wiki article '{candidate.title}': skipping paragraph "
+                    f"{skipped_idx + 1} (blacklist pattern: '{pattern}')"
+                )
+                candidate.paragraphs = [
+                    p for i, p in enumerate(candidate.paragraphs) if i != skipped_idx
+                ]
+                candidate.data = ' '.join(candidate.paragraphs)
+                article = candidate
+                paragraph_skipped = True
+                break
+            else:
+                # Multiple violations, or the only paragraph is violated: reject.
+                blacklisted_words_found.update(
+                    pattern for _, patterns in violated for pattern in patterns
+                )
+
+        if article is None:
+            raise Exception(
+                f"No valid wiki article found after 10 tries. "
+                f"Blacklisted words: {blacklisted_words_found}"
+            )
         prompt = self.get_prompt(Topic.RANDOM_WIKI_ARTICLE)
-        prompt = prompt.format(ARTICLE=str(article)[:2000])
+        article_str = str(article)[:2000]
+        if paragraph_skipped:
+            article_str = (
+                "[Note: one section of this article was omitted due to a content "
+                "restriction. Please briefly let the listener know you skipped a part.]\n\n"
+                + article_str
+            )
+        prompt = prompt.format(ARTICLE=article_str)
         summary = self.generate_text(prompt)
         self.say_at_some_point(summary, spot_profile, Topic.RANDOM_WIKI_ARTICLE)
 

@@ -518,6 +518,17 @@ class Blacklist:
         return filtered
 
     @staticmethod
+    def find_violated_patterns(text: str) -> set:
+        """Return the set of distinct blacklist patterns matched in text.
+
+        Unlike find_blacklisted_items(), which keys its result on the matched
+        text segment and can return multiple entries for a single pattern match
+        (due to comma- and dot-splitting), this method deduplicates by pattern
+        so that one real violation is always counted as one.
+        """
+        return set(Blacklist.find_blacklisted_items(text).values())
+
+    @staticmethod
     def format_violations_summary(violations: dict) -> str:
         """Format blacklist violations for logging and error messages.
 
