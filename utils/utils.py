@@ -360,6 +360,18 @@ class Utils:
             return "English"
 
     @staticmethod
+    def get_language_code_for_name(language_name='English'):
+        """Reverse of get_english_language_name(): map a language name (e.g. 'German') to its code ('de')."""
+        if language_name is None or language_name.strip() == "" or language_name.strip().lower() == "english":
+            return "en"
+        try:
+            import langcodes
+            return langcodes.find(language_name).language or "en"
+        except Exception as e:
+            logger.error(f"Error while getting language code for name '{language_name}': {e}")
+            return "en"
+
+    @staticmethod
     def play_sound(sound="success"):
         if sys.platform != 'win32':
             return

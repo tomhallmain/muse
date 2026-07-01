@@ -490,12 +490,29 @@ class Muse:
 
         return topic
 
+    def _teachable_language_codes(self) -> List[str]:
+        """Languages the listener is currently learning that the active persona
+        (if any) is allowed to teach. Empty means the LANGUAGE_LEARNING topic
+        should not be selected right now."""
+        configured_codes = [
+            entry.get("language_code") for entry in config.muse_language_learning_languages
+            if entry.get("language_code")
+        ]
+        if not configured_codes:
+            return []
+        persona = self.get_current_persona()
+        if persona is None:
+            return configured_codes
+        return persona.teachable_language_codes(configured_codes)
+
     def set_topic(self, spot_profile):
         excluded_topics = (
             Topic.excluded_for_stream()
             if spot_profile.track is not None and spot_profile.track.is_stream()
             else []
         )
+        if not self._teachable_language_codes():
+            excluded_topics.append(Topic.LANGUAGE_LEARNING)
         spot_profile.topic = self.get_topic(spot_profile.previous_track, excluded_topics=excluded_topics)
         spot_profile.topic_translated = spot_profile.topic.translate() if spot_profile.topic is not None else ""
 
@@ -762,10 +779,24 @@ class Muse:
         return "music"
 
     def teach_language(self, spot_profile):
+        # Pick one of the languages this persona is allowed to teach right now.
+        # When a persona can teach several (e.g. Sofia: French and Spanish),
+        # this rotates between them across invocations rather than sticking to one.
+        teachable_codes = self._teachable_language_codes()
+        if not teachable_codes:
+            raise Exception("No teachable language available for the current persona")
+        language_code = random.choice(teachable_codes)
+        chosen = next(
+            (entry for entry in config.muse_language_learning_languages
+             if entry.get("language_code") == language_code),
+            {},
+        )
+        level = chosen.get("level", "").strip() if chosen.get("level") else ""
+
         prompt = self.get_prompt(Topic.LANGUAGE_LEARNING)
         prompt = prompt.format(
-            LANGUAGE=config.muse_language_learning_language,
-            LEVEL=config.muse_language_learning_language_level.strip() if config.muse_language_learning_language_level and config.muse_language_learning_language_level.strip() else "basic",
+            LANGUAGE=Utils.get_english_language_name(language_code),
+            LEVEL=level or "basic",
             WORD=self._get_random_word(),
         )
         language_response = self.generate_text(prompt, include_time_context=False)
@@ -785,18 +816,31 @@ class Muse:
 
     def get_prompt(self, topic):
         prompt = self.prompter.get_prompt_update_history(topic)
+
+        # A persona-specific override replaces the shared prompts/<lang>/<topic>.txt
+        # file text, but still goes through the same translation logic below.
+        persona = self.get_current_persona()
+        override = persona.get_prompt_override(topic.get_prompt_topic_value()) if persona is not None else None
+        if override:
+            prompt = override
+
         if not self.args.use_system_language_for_all_topics:
             return prompt
-        
+
         # Get the current persona's language code
-        persona = self.get_current_persona()
         language_code = persona.language_code if persona else Utils.get_default_user_language()
         language = Utils.get_english_language_name(language_code) if persona else Muse.SYSTEM_LANGUAGE_NAME_IN_ENGLISH
-        
+
         # Special case for language learning
         if topic == Topic.LANGUAGE_LEARNING:
-            # Don't replace the whole prompt, it would be trying to teach the same language the prompt is already in.
-            if persona and language == config.muse_language_learning_language:
+            # Don't replace the whole prompt, it would be trying to teach the same
+            # language the prompt is already in -- e.g. no point translating "teach
+            # a German phrase" into German if the persona already speaks German.
+            configured_codes = {
+                entry.get("language_code") for entry in config.muse_language_learning_languages
+                if entry.get("language_code")
+            }
+            if persona and persona.language_code in configured_codes:
                 return prompt
             language_code = Utils.get_default_user_language()
         
@@ -806,8 +850,10 @@ class Muse:
             return prompt
         
         try:
-            # Use two-call approach occasionally for added variety
-            if self.should_use_two_call_approach():
+            # A persona override has no per-language file on disk to look up, so it
+            # can only be localized by translating the override text itself -- same
+            # as the occasional two-call approach used for variety on normal topics.
+            if override or self.should_use_two_call_approach():
                 translation_prompt = self.prompter.get_translation_prompt(language_code, language, prompt)
                 prompt = self.generate_text(translation_prompt, json_key="prompt")
             else:

@@ -35,7 +35,7 @@ from ui_qt.auth.password_utils import require_password
 from utils.app_info_cache import app_info_cache
 from utils.config import config
 from utils.globals import ProtectedActions
-from utils.translations import I18N
+from utils.translations import I18N, SUPPORTED_LANGUAGE_CODES
 
 _ = I18N._
 
@@ -99,12 +99,6 @@ class ConfigurationWindow(SmartWindow):
 
         self.add_config_entry(frame, layout, "foreground_color", _("Foreground Color"), 0)
         self.add_config_entry(frame, layout, "background_color", _("Background Color"), 1)
-        self.add_config_entry(
-            frame, layout, "muse_language_learning_language", _("Language Learning Language"), 2
-        )
-        self.add_config_entry(
-            frame, layout, "muse_language_learning_language_level", _("Language Learning Level"), 3
-        )
         self.add_config_checkbox(frame, layout, "enable_dynamic_volume", _("Enable Dynamic Volume"), 4)
         self.add_config_checkbox(frame, layout, "enable_library_extender", _("Enable Library Extender"), 5)
         self.add_config_checkbox(frame, layout, "auto_file_extensions", _("Auto-File Extensions"), 6)
@@ -117,6 +111,70 @@ class ConfigurationWindow(SmartWindow):
         tab_layout = QVBoxLayout(self.general_tab)
         tab_layout.setContentsMargins(0, 0, 0, 0)
         tab_layout.addWidget(frame)
+        tab_layout.addWidget(self._build_language_learning_group())
+        tab_layout.addStretch()
+
+    def _build_language_learning_group(self):
+        """Languages the listener is currently learning (with a level each).
+
+        A persona can only run the language-learning topic for languages in this
+        list that its own `can_teach_languages` allows (see personas window);
+        a persona allowed to teach more than one rotates between them.
+        """
+        group = QGroupBox(_("Language Learning"), self.general_tab)
+        group_layout = QVBoxLayout(group)
+        group_layout.setSpacing(6)
+
+        desc = QLabel(
+            _("Languages the listener is currently learning. Add more than one if "
+              "you're learning several at once -- each persona teaches only the "
+              "ones its \"Can Teach Languages\" setting allows."),
+            group,
+        )
+        desc.setWordWrap(True)
+        group_layout.addWidget(desc)
+
+        self._language_learning_list = QListWidget(group)
+        for entry in config.muse_language_learning_languages:
+            code = entry.get("language_code", "")
+            level = entry.get("level", "")
+            self._language_learning_list.addItem(f"{code}: {level}")
+        group_layout.addWidget(self._language_learning_list)
+
+        add_row = QWidget(group)
+        add_layout = QHBoxLayout(add_row)
+        add_layout.setContentsMargins(0, 0, 0, 0)
+        self._language_learning_code_combo = QComboBox(add_row)
+        self._language_learning_code_combo.addItems(SUPPORTED_LANGUAGE_CODES)
+        add_layout.addWidget(self._language_learning_code_combo)
+        self._language_learning_level_entry = QLineEdit(add_row)
+        self._language_learning_level_entry.setPlaceholderText(_("Level (e.g. beginner, intermediate)"))
+        add_layout.addWidget(self._language_learning_level_entry)
+        add_btn = QPushButton(_("Add"), add_row)
+        add_btn.clicked.connect(self._add_language_learning_entry)
+        add_layout.addWidget(add_btn)
+        remove_btn = QPushButton(_("Remove Selected"), add_row)
+        remove_btn.clicked.connect(self._remove_language_learning_entry)
+        add_layout.addWidget(remove_btn)
+        group_layout.addWidget(add_row)
+
+        return group
+
+    def _add_language_learning_entry(self):
+        code = self._language_learning_code_combo.currentText()
+        level = self._language_learning_level_entry.text().strip() or "intermediate"
+        existing_codes = [
+            self._language_learning_list.item(i).text().split(":", 1)[0]
+            for i in range(self._language_learning_list.count())
+        ]
+        if code in existing_codes:
+            return
+        self._language_learning_list.addItem(f"{code}: {level}")
+        self._language_learning_level_entry.clear()
+
+    def _remove_language_learning_entry(self):
+        for item in self._language_learning_list.selectedItems():
+            self._language_learning_list.takeItem(self._language_learning_list.row(item))
 
     def create_audio_tab(self):
         frame = QFrame(self.audio_tab)
@@ -521,6 +579,15 @@ class ConfigurationWindow(SmartWindow):
                     config.set_config_value(key, widget.currentText())
                 else:
                     config.set_config_value(key, widget.text())
+
+            language_learning_languages = []
+            for i in range(self._language_learning_list.count()):
+                code, _sep, level = self._language_learning_list.item(i).text().partition(":")
+                language_learning_languages.append({
+                    "language_code": code.strip(),
+                    "level": level.strip(),
+                })
+            config.set_config_value("muse_language_learning_languages", language_learning_languages)
 
             exclusions = [
                 self._exclusions_list.item(i).text()

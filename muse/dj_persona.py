@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Dict, Optional, Tuple, Any
 from pathlib import Path
 import time
@@ -118,6 +118,14 @@ class DJPersona:
     last_signoff_time: Optional[float] = None
     artwork_paths: Optional[List[str]] = None
     is_mock: bool = False
+    # Language codes this persona is allowed to run the language-learning topic
+    # for, or ["*"] (default) meaning any language the listener is currently
+    # learning (utils.config.config.muse_language_learning_languages). Personas
+    # with more than one entry rotate between them (see teachable_language_codes).
+    can_teach_languages: List[str] = field(default_factory=lambda: ["*"])
+    # Per-topic prompt text overriding the shared prompts/<lang>/<topic>.txt file
+    # for this persona only. Keyed by Topic.get_prompt_topic_value().
+    prompt_overrides: Dict[str, str] = field(default_factory=dict)
 
     def __post_init__(self):
         if self.context is None:
@@ -126,11 +134,22 @@ class DJPersona:
             self.characteristics = []
         if not hasattr(self, "is_mock"):
             self.is_mock = False
-            
+        if self.can_teach_languages is None:
+            self.can_teach_languages = ["*"]
+        if self.prompt_overrides is None:
+            self.prompt_overrides = {}
+
         # Validate language code
         if self.language_code not in SUPPORTED_LANGUAGE_CODES:
             raise ValueError(f"Invalid language code: {self.language_code}. Must be one of {SUPPORTED_LANGUAGE_CODES}")
-        
+
+        # Validate can_teach_languages: "*" (any) or known language codes
+        for code in self.can_teach_languages:
+            if code != "*" and code not in SUPPORTED_LANGUAGE_CODES:
+                raise ValueError(
+                    f"Invalid can_teach_languages entry: {code}. Must be '*' or one of {SUPPORTED_LANGUAGE_CODES}"
+                )
+
         # Voice name validation is provider-specific and handled at speak-time
         # via DJPersona.available_for_provider() (see docs/tts-provider-abstraction.md).
         # Coqui speaker fuzzy-matching moved to CoquiTTSProvider.resolve_voice_name().
@@ -216,6 +235,24 @@ class DJPersona:
         warnings = [r for r in (voice_reason, lang_reason) if r]
         return True, "; ".join(warnings)
 
+    def teachable_language_codes(self, candidate_codes: List[str]) -> List[str]:
+        """Filter *candidate_codes* (e.g. the listener's current learning languages)
+        down to the ones this persona is allowed to teach.
+
+        A persona whose ``can_teach_languages`` contains ``"*"`` can teach any of
+        them; a persona listing specific codes only teaches the overlap. Used to
+        let one persona rotate between several languages, and to let different
+        personas each own a different language.
+        """
+        if "*" in self.can_teach_languages:
+            return list(candidate_codes)
+        return [c for c in candidate_codes if c in self.can_teach_languages]
+
+    def get_prompt_override(self, prompt_topic_value: str) -> Optional[str]:
+        """Return this persona's custom prompt text for a topic (keyed by
+        ``Topic.get_prompt_topic_value()``), or None if it has no override."""
+        return self.prompt_overrides.get(prompt_topic_value) or None
+
     def update_from_dict(self, new_data: 'DJPersona', refresh_context=False) -> None:
         """Update the persona from a new DJPersona object."""
         for key, value in new_data.__dict__.items():
@@ -240,7 +277,9 @@ class DJPersona:
             "language": self.language,
             "language_code": self.language_code,
             "last_hello_time": self.last_hello_time,
-            "last_signoff_time": self.last_signoff_time
+            "last_signoff_time": self.last_signoff_time,
+            "can_teach_languages": self.can_teach_languages,
+            "prompt_overrides": self.prompt_overrides,
         }
 
     @classmethod
@@ -260,7 +299,9 @@ class DJPersona:
             language=data.get("language", "English"),
             language_code=data.get("language_code", "en"),
             last_hello_time=data.get("last_hello_time"),
-            last_signoff_time=data.get("last_signoff_time")
+            last_signoff_time=data.get("last_signoff_time"),
+            can_teach_languages=data.get("can_teach_languages", ["*"]),
+            prompt_overrides=data.get("prompt_overrides", {}),
         )
 
 class DJPersonaManager:

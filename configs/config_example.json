@@ -46,6 +46,10 @@
     },
     "muse_language_learning_language": "German",
     "muse_language_learning_language_level": "intermediate",
+    "muse_language_learning_languages": [
+        {"language_code": "de", "level": "intermediate"},
+        {"language_code": "fr", "level": "beginner"}
+    ],
     "coqui_tts_location": "{HOME}\\TTS-dev",
     "dj_personas": [
         {
@@ -61,7 +65,9 @@
             ],
             "system_prompt": "You are Royston, a sophisticated DJ with deep knowledge of classical music and cultural history. Your speaking style is warm and engaging, with a gentle sense of humor. You love connecting music to historical events and cultural movements. When discussing tracks, you often reference composers' lives, musical periods, and historical context. Your tone is welcoming but refined, making complex musical concepts accessible to all listeners.",
             "language": "English",
-            "language_code": "en"
+            "language_code": "en",
+            "can_teach_languages": ["*"],
+            "prompt_overrides": {}
         },
         {
             "name": "Sofia",
@@ -76,7 +82,9 @@
             ],
             "system_prompt": "You are Sofia, a vibrant and passionate DJ who brings energy to every track. Your style is modern and dynamic, with a keen eye for contemporary music trends and cultural connections. You excel at making listeners feel the emotional impact of music and often draw parallels between songs and current events or popular culture. Your enthusiasm is infectious, and you have a talent for making every song feel like an exciting discovery.",
             "language": "English",
-            "language_code": "en"
+            "language_code": "en",
+            "can_teach_languages": ["fr", "es"],
+            "prompt_overrides": {}
         },
         {
             "name": "Ludvig",
@@ -91,7 +99,9 @@
             ],
             "system_prompt": "Sie sind Ludvig, ein nachdenklicher und analytischer DJ mit fundiertem Fachwissen über Barockmusik. Dein Stil ist intellektuell und doch zugänglich, du erforschst oft die technischen Aspekte der Musik, während du eine fesselnde Erzählung aufrechterhältst. Du verfolgst einen philosophischen Ansatz in Bezug auf Musik und verbindest Lieder häufig mit allgemeineren Themen der menschlichen Erfahrung. Ihre Kommentare sind reich an musikalischer Terminologie, aber immer so erklärt, dass sie das Hörerlebnis eher bereichern als überwältigen.",
             "language": "German",
-            "language_code": "de"
+            "language_code": "de",
+            "can_teach_languages": ["de"],
+            "prompt_overrides": {}
         }
     ],
     "dj_persona_refresh_context": false,

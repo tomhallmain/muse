@@ -19,6 +19,7 @@ from PySide6.QtWidgets import (
     QHeaderView,
     QPushButton,
     QAbstractItemView,
+    QListWidget,
 )
 from PySide6.QtCore import Qt
 
@@ -27,7 +28,7 @@ from ui_qt.app_style import AppStyle
 from ui_qt.auth.password_utils import require_password
 from muse.dj_persona import DJPersona, DJPersonaManager
 from tts.speakers import speakers
-from utils.globals import ProtectedActions, PersonaSex
+from utils.globals import ProtectedActions, PersonaSex, Topic
 from utils.logging_setup import get_logger
 from utils.translations import I18N, SUPPORTED_LANGUAGE_CODES
 from utils.utils import Utils
@@ -121,13 +122,16 @@ class PersonasWindow(SmartWindow):
         self.basic_tab = QWidget(self.notebook)
         self.characteristics_tab = QWidget(self.notebook)
         self.prompt_tab = QWidget(self.notebook)
+        self.prompt_overrides_tab = QWidget(self.notebook)
         self.notebook.addTab(self.basic_tab, _("Basic Info"))
         self.notebook.addTab(self.characteristics_tab, _("Characteristics"))
         self.notebook.addTab(self.prompt_tab, _("System Prompt"))
+        self.notebook.addTab(self.prompt_overrides_tab, _("Prompt Overrides"))
 
         self._create_basic_tab()
         self._create_characteristics_tab()
         self._create_prompt_tab()
+        self._create_prompt_overrides_tab()
         content_layout.addWidget(self.notebook)
 
         action_layout = QHBoxLayout()
@@ -183,6 +187,24 @@ class PersonasWindow(SmartWindow):
         self.language_code_combo.addItems(SUPPORTED_LANGUAGE_CODES)
         self.language_code_combo.currentTextChanged.connect(self._on_language_code_change)
         layout.addWidget(self.language_code_combo, row, 1)
+        row += 1
+
+        layout.addWidget(QLabel(_("Can Teach Languages:"), self.basic_tab), row, 0)
+        self.can_teach_languages_edit = QLineEdit(self.basic_tab)
+        self.can_teach_languages_edit.setMinimumWidth(320)
+        self.can_teach_languages_edit.setPlaceholderText(
+            _("* (any) or comma-separated codes, e.g. fr,es")
+        )
+        layout.addWidget(self.can_teach_languages_edit, row, 1)
+        can_teach_help = QLabel(
+            _("Which of the listener's current \"Language Learning\" languages (see "
+              "Configuration) this persona is allowed to teach. A persona listing "
+              "more than one code rotates between them. \"*\" allows any of them."),
+            self.basic_tab,
+        )
+        can_teach_help.setWordWrap(True)
+        row += 1
+        layout.addWidget(can_teach_help, row, 0, 1, 2)
 
     def _create_characteristics_tab(self):
         layout = QVBoxLayout(self.characteristics_tab)
@@ -209,6 +231,77 @@ class PersonasWindow(SmartWindow):
         )
         instructions.setWordWrap(True)
         layout.addWidget(instructions)
+
+    def _create_prompt_overrides_tab(self):
+        self._prompt_overrides = {}
+
+        layout = QVBoxLayout(self.prompt_overrides_tab)
+        desc = QLabel(
+            _("Optional: replace the shared prompt text for a specific topic, for "
+              "this persona only. Topics with no override use the normal "
+              "prompts/<language>/<topic>.txt file."),
+            self.prompt_overrides_tab,
+        )
+        desc.setWordWrap(True)
+        layout.addWidget(desc)
+
+        topic_row = QWidget(self.prompt_overrides_tab)
+        topic_row_layout = QHBoxLayout(topic_row)
+        topic_row_layout.setContentsMargins(0, 0, 0, 0)
+        topic_row_layout.addWidget(QLabel(_("Topic:"), topic_row))
+        self.override_topic_combo = QComboBox(topic_row)
+        self.override_topic_combo.addItems(sorted({t.get_prompt_topic_value() for t in Topic}))
+        self.override_topic_combo.currentTextChanged.connect(self._on_override_topic_change)
+        topic_row_layout.addWidget(self.override_topic_combo)
+        layout.addWidget(topic_row)
+
+        self.override_text = QPlainTextEdit(self.prompt_overrides_tab)
+        self.override_text.setMinimumHeight(150)
+        layout.addWidget(self.override_text)
+
+        btn_row = QWidget(self.prompt_overrides_tab)
+        btn_row_layout = QHBoxLayout(btn_row)
+        btn_row_layout.setContentsMargins(0, 0, 0, 0)
+        set_btn = QPushButton(_("Set Override for Topic"), btn_row)
+        set_btn.clicked.connect(self._set_prompt_override)
+        btn_row_layout.addWidget(set_btn)
+        clear_btn = QPushButton(_("Clear Override for Topic"), btn_row)
+        clear_btn.clicked.connect(self._clear_prompt_override)
+        btn_row_layout.addWidget(clear_btn)
+        layout.addWidget(btn_row)
+
+        layout.addWidget(QLabel(_("Topics with an override set:"), self.prompt_overrides_tab))
+        self.override_keys_list = QListWidget(self.prompt_overrides_tab)
+        layout.addWidget(self.override_keys_list)
+
+    def _on_override_topic_change(self, topic_key):
+        self.override_text.setPlainText(self._prompt_overrides.get(topic_key, ""))
+
+    def _set_prompt_override(self):
+        topic_key = self.override_topic_combo.currentText()
+        text = self.override_text.toPlainText().strip()
+        if not text:
+            return
+        self._prompt_overrides[topic_key] = text
+        self._refresh_override_keys_list()
+
+    def _clear_prompt_override(self):
+        topic_key = self.override_topic_combo.currentText()
+        self._prompt_overrides.pop(topic_key, None)
+        self.override_text.clear()
+        self._refresh_override_keys_list()
+
+    def _refresh_override_keys_list(self):
+        self.override_keys_list.clear()
+        self.override_keys_list.addItems(sorted(self._prompt_overrides.keys()))
+
+    @staticmethod
+    def _parse_can_teach_languages(text: str) -> list:
+        text = (text or "").strip()
+        if not text or text == "*":
+            return ["*"]
+        codes = [c.strip().lower() for c in text.split(",") if c.strip()]
+        return codes or ["*"]
 
     def refresh_persona_list(self):
         self.persona_table.setRowCount(0)
@@ -243,6 +336,10 @@ class PersonasWindow(SmartWindow):
         idx = self.sex_combo.findText(PersonaSex.MALE.get_translation())
         if idx >= 0:
             self.sex_combo.setCurrentIndex(idx)
+        self.can_teach_languages_edit.setText("*")
+        self._prompt_overrides = {}
+        self.override_text.clear()
+        self._refresh_override_keys_list()
         default_characteristics = [
             _("music enthusiast"),
             _("knowledgeable about various genres"),
@@ -275,6 +372,10 @@ class PersonasWindow(SmartWindow):
                 "\n".join(persona.characteristics) if persona.characteristics else ""
             )
             self.prompt_text.setPlainText(persona.system_prompt or "")
+            self.can_teach_languages_edit.setText(", ".join(persona.can_teach_languages))
+            self._prompt_overrides = dict(persona.prompt_overrides or {})
+            self.override_text.clear()
+            self._refresh_override_keys_list()
 
     @require_password(ProtectedActions.EDIT_PERSONAS)
     def add_persona(self):
@@ -386,6 +487,8 @@ class PersonasWindow(SmartWindow):
                 "system_prompt": prompt_plain,
                 "language": self.language_edit.text().strip(),
                 "language_code": self.language_code_combo.currentText(),
+                "can_teach_languages": self._parse_can_teach_languages(self.can_teach_languages_edit.text()),
+                "prompt_overrides": dict(self._prompt_overrides),
             }
             try:
                 persona = DJPersona.from_dict(persona_data)
@@ -449,8 +552,12 @@ class PersonasWindow(SmartWindow):
         self.name_edit.clear()
         self.tone_edit.clear()
         self.language_edit.clear()
+        self.can_teach_languages_edit.clear()
         self.characteristics_text.clear()
         self.prompt_text.clear()
+        self._prompt_overrides = {}
+        self.override_text.clear()
+        self._refresh_override_keys_list()
         self.selected_persona = None
         self.set_default_persona_values()
 
