@@ -42,6 +42,13 @@ class ExtensionManager:
     minimum_allowed_duration_seconds: int = 120
     extension_thread: Optional[Any] = None
 
+    # Candidate currently selected and waiting out its pre-download delay, if any.
+    # Dict shape: {"id": str, "title": str, "rejected": bool}
+    pending_candidate: Optional[Dict[str, Any]] = None
+    # IDs (LibraryExtender `.w`) the user has explicitly rejected before download;
+    # excluded from future selection via _bad_option/_is_rejected.
+    rejected_ids: set = set()
+
     @staticmethod
     def load_extensions() -> None:
         ExtensionManager.extensions = app_info_cache.get("extensions", [])
@@ -52,11 +59,32 @@ class ExtensionManager:
         except KeyError:
             ExtensionManager.strategy = ExtensionStrategy.RANDOM
             logger.warning(f"Invalid strategy '{strategy_name}' found in cache, defaulting to RANDOM")
-    
+        ExtensionManager.rejected_ids = set(app_info_cache.get("rejected_extension_ids", []))
+
     @staticmethod
     def store_extensions() -> None:
         app_info_cache.set("extensions", list(ExtensionManager.extensions))
         app_info_cache.set("extension_strategy", ExtensionManager.strategy.name)
+        app_info_cache.set("rejected_extension_ids", list(ExtensionManager.rejected_ids))
+
+    @staticmethod
+    def reject_pending_candidate() -> bool:
+        """Reject the extension candidate currently waiting to be downloaded.
+
+        Marks it excluded from future selection and signals the waiting
+        ``_delayed`` thread to skip the download. Does not start a new
+        extension job -- the regular recurring extension cycle already
+        picks up the next candidate on its own schedule.
+
+        Returns True if there was a pending candidate to reject.
+        """
+        pending = ExtensionManager.pending_candidate
+        if pending is None:
+            return False
+        ExtensionManager.rejected_ids.add(pending["id"])
+        pending["rejected"] = True
+        ExtensionManager.store_extensions()
+        return True
 
     def __init__(self, ui_callbacks: Optional[Any], data_callbacks: Optional[Any]) -> None:
         from utils.config import config
@@ -320,9 +348,16 @@ class ExtensionManager:
                 or self.is_in_library(b)
                 or (strict and self._strict_test(b, attr, strict))
                 or self._is_blacklisted(b)
+                or self._is_rejected(b)
                 or (Utils.contains_emoji(b.n) and random.random() > 0.05)  # 95% chance to skip emoji titles
                 or self._is_compilation(b)
                 or self._not_music(b))
+
+    def _is_rejected(self, b) -> bool:
+        if b.w in ExtensionManager.rejected_ids:
+            logger.info(f"Skipping previously-rejected candidate: {b.n}")
+            return True
+        return False
 
     def is_in_library(self, b) -> bool:
         if b.w is None or b.w.strip() == "":
@@ -407,15 +442,27 @@ class ExtensionManager:
 
     def _delayed(self, b, attr: Optional[TrackAttribute], s: str, b1=None, sleep: bool = True, entity: Optional[Any] = None) -> None:
         if sleep:
+            ExtensionManager.pending_candidate = {"id": b.w, "title": b.n, "rejected": False}
             time_seconds = self.get_extension_sleep_time(1000, 2000)
             check_cadence = 150
             while time_seconds > 0:
+                if ExtensionManager.pending_candidate.get("rejected"):
+                    break
                 time_seconds -= check_cadence
                 if time_seconds <= 0:
                     break
                 if self.ui_callbacks is not None:
                     self.ui_callbacks.update_extension_status(_("Extension \"{0}\" waiting for {1} minutes").format(SoupUtils.clean_html(b.n), round(float(time_seconds) / 60)))
                 Utils.long_sleep(check_cadence, f"extension: pre-download delay", total=time_seconds, print_cadence=180)
+
+            if ExtensionManager.pending_candidate.get("rejected"):
+                logger.info(f"Extension candidate rejected before download: {b.n}")
+                if self.ui_callbacks is not None:
+                    self.ui_callbacks.update_extension_status(_("Extension \"{0}\" rejected").format(SoupUtils.clean_html(b.n)))
+                ExtensionManager.pending_candidate = None
+                ExtensionManager.extension_thread_delayed_complete = True
+                return
+            ExtensionManager.pending_candidate = None
 
         if self.ui_callbacks is not None:
             self.ui_callbacks.update_extension_status(_("Fetching extension \"{0}\"").format(SoupUtils.clean_html(b.n)))

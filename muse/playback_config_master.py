@@ -67,11 +67,16 @@ class PlaybackConfigMaster:
             return None
         return playing.current_track()
 
+    _WAIT_LOG_INTERVAL_SECONDS = 600  # log recurrence at 10-minute intervals, not every poll
+
     @staticmethod
     def assign_extension(new_file: str) -> None:
+        waited = 0.0
         while not PlaybackConfigMaster.ready_for_extension:
-            logger.info("Waiting for config to accept extension...")
+            if waited % PlaybackConfigMaster._WAIT_LOG_INTERVAL_SECONDS == 0:
+                logger.info("Waiting for config to accept extension...")
             time.sleep(5)
+            waited += 5
         logger.info("Assigning extension to playback")
         PlaybackConfigMaster.ready_for_extension = False
         for open_config in PlaybackConfigMaster.open_configs:

@@ -63,6 +63,7 @@ class ExtensionsWindow(SmartWindow):
         self._init_sidebar(layout)
         self._init_extension_list(layout)
         self._refresh_extension_list()
+        self._update_pending_display()
         self.show()
 
     def _init_sidebar(self, main_layout):
@@ -81,6 +82,15 @@ class ExtensionsWindow(SmartWindow):
         check_status_btn = QPushButton(_("Check Status"), sidebar)
         check_status_btn.clicked.connect(self._check_thread_status)
         sidebar_layout.addWidget(check_status_btn)
+
+        sidebar_layout.addWidget(QLabel(_("Pending Extension"), sidebar))
+        self.pending_label = QLabel(_("None"), sidebar)
+        self.pending_label.setWordWrap(True)
+        sidebar_layout.addWidget(self.pending_label)
+
+        self.reject_pending_btn = QPushButton(_("Reject"), sidebar)
+        self.reject_pending_btn.clicked.connect(self._reject_pending_candidate)
+        sidebar_layout.addWidget(self.reject_pending_btn)
 
         sidebar_layout.addWidget(QLabel(_("Strategy"), sidebar))
         self.strategy_combo = QComboBox(sidebar)
@@ -391,6 +401,33 @@ class ExtensionsWindow(SmartWindow):
             if not ExtensionManager.extension_thread_delayed_complete:
                 status += _(" (processing delayed operation)")
         self.status_label.setText(status)
+        self._update_pending_display()
+
+    def _update_pending_display(self):
+        pending = ExtensionManager.pending_candidate
+        if pending and not pending.get("rejected"):
+            self.pending_label.setText(pending.get("title", ""))
+            self.reject_pending_btn.setEnabled(True)
+        else:
+            self.pending_label.setText(_("None"))
+            self.reject_pending_btn.setEnabled(False)
+
+    @require_password(ProtectedActions.EDIT_EXTENSIONS)
+    def _reject_pending_candidate(self):
+        pending = ExtensionManager.pending_candidate
+        if not pending or pending.get("rejected"):
+            self._update_pending_display()
+            return
+        res = self.app_actions.alert(
+            _("Confirm Reject"),
+            _("Reject the pending extension \"{0}\" before it downloads? "
+              "It will not be suggested again.").format(pending.get("title", "")),
+            kind="askokcancel",
+            master=self,
+        )
+        if res:
+            ExtensionManager.reject_pending_candidate()
+            self._update_pending_display()
 
 
 class ExtensionDetailsWindow(SmartWindow):
