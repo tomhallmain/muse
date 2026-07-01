@@ -480,7 +480,7 @@ class Playback:
         spawns a thread to generate and speak a brief track-context comment.
         """
         track = self.track
-        if track is None or not self.is_stream():
+        if track is None or not track.is_stream():
             return
         changed = track.update_from_icy(artist, title)
         if not changed:
