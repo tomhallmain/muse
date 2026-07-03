@@ -26,3 +26,4 @@ temp*
 tts_output/*
 tests/fixtures/audio_library/
 !tests/fixtures/manifest.json
+scripts/i18n_fixes.json
