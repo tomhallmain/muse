@@ -22,6 +22,7 @@ from PySide6.QtCore import Qt, QTimer, Signal
 
 from lib.multi_display_qt import SmartWindow
 from library_data.library_data import LibraryDataSearch
+from muse.playlist import get_exclusion_match
 from ui_qt.app_style import AppStyle
 from ui_qt.auth.password_utils import require_password
 from utils.app_info_cache import app_info_cache
@@ -359,6 +360,15 @@ class SearchWindow(SmartWindow):
             self.results_layout.addWidget(results_count_label, row, 4)
             self.composer_list.append(results_count_label)
 
+            excluded_by = self._get_exclusion_match(track)
+            if excluded_by:
+                exclusion_tooltip = _(
+                    "Won't be played: matches playlist exclusion filter \"{0}\"."
+                ).format(excluded_by)
+                for lbl in (title_label, album_label):
+                    lbl.setStyleSheet("color: grey;")
+                    lbl.setToolTip(exclusion_tooltip)
+
             search_btn = QPushButton(_("Search"), self.results_widget)
             search_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
             self.open_details_btn_list.append(search_btn)
@@ -374,6 +384,9 @@ class SearchWindow(SmartWindow):
 
             play_btn = QPushButton(_("Play"), self.results_widget)
             play_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+            if excluded_by:
+                play_btn.setEnabled(False)
+                play_btn.setToolTip(exclusion_tooltip)
             self.play_btn_list.append(play_btn)
             self.results_layout.addWidget(play_btn, row, 6)
 
@@ -700,6 +713,16 @@ class SearchWindow(SmartWindow):
             composer_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
             self.results_layout.addWidget(composer_label, row, 4)
             self.composer_list.append(composer_label)
+
+            excluded_by = self._get_exclusion_match(track)
+            if excluded_by:
+                exclusion_tooltip = _(
+                    "Won't be played: matches playlist exclusion filter \"{0}\"."
+                ).format(excluded_by)
+                for lbl in (title_label, artist_label, album_label, composer_label):
+                    lbl.setStyleSheet("color: grey;")
+                    lbl.setToolTip(exclusion_tooltip)
+
             details_btn = QPushButton(_("Details"), self.results_widget)
             details_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
             self.open_details_btn_list.append(details_btn)
@@ -713,6 +736,9 @@ class SearchWindow(SmartWindow):
             details_btn.clicked.connect(make_details_handler(track))
             play_btn = QPushButton(_("Play"), self.results_widget)
             play_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+            if excluded_by:
+                play_btn.setEnabled(False)
+                play_btn.setToolTip(exclusion_tooltip)
             self.play_btn_list.append(play_btn)
             self.results_layout.addWidget(play_btn, row, 6)
 
@@ -735,6 +761,16 @@ class SearchWindow(SmartWindow):
                 return handler
 
             add_pl_btn.clicked.connect(make_add_to_playlist_handler(track))
+
+    @staticmethod
+    def _get_exclusion_match(track):
+        """Return the exclusion token that would keep *track* out of shuffled
+        playback, or None if it's clear. Used to warn about -- and block --
+        picking a track from search that the playlist builder would drop, which
+        would otherwise crash playback instead of just not honoring the pick."""
+        if track is None or not getattr(track, "filepath", None):
+            return None
+        return get_exclusion_match(track.filepath)
 
     def open_details(self, track):
         pass

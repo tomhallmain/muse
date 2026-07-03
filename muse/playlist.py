@@ -87,6 +87,21 @@ def _matches_exclusion(filepath: str, exclusion: str) -> bool:
     pattern = r'(?<![a-zA-Z])' + re.escape(exclusion) + r'(?![a-zA-Z])'
     return bool(re.search(pattern, filepath))
 
+
+def get_exclusion_match(filepath: str) -> Optional[str]:
+    """Return the configured exclusion token that *filepath* matches (see
+    ``_matches_exclusion``), or None if it's clear of all of them.
+
+    Public wrapper so callers outside this module (e.g. SearchWindow, to warn
+    before a pick that the playlist builder would otherwise silently drop) can
+    check a track without reaching into the exclusion-matching internals.
+    """
+    exclusions = app_info_cache.get(TRACK_EXCLUSIONS_KEY, _DEFAULT_TRACK_EXCLUSIONS)
+    for exclusion in exclusions or []:
+        if _matches_exclusion(filepath, exclusion):
+            return exclusion
+    return None
+
 if TYPE_CHECKING:
     from library_data.library_data_callbacks import LibraryDataCallbacks
 

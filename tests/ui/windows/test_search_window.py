@@ -77,3 +77,50 @@ class TestSearchWindow:
         assert count > 0
         assert any("symphony" in (t.title or "").lower() for t in win.library_data_search.get_results())
         win.close()
+
+    def test_excluded_result_play_button_disabled_with_tooltip(
+        self, qapp, qt_master, mock_app_actions, fixture_library_data
+    ):
+        """A result matching playlist_track_exclusions must not be startable from
+        search -- Playlist would silently drop it as a start track and crash
+        (see set_start_track's "Playlist start track not in playlist!")."""
+        from ui_qt.search_window import SearchWindow
+        from muse.playlist import TRACK_EXCLUSIONS_KEY
+        from utils.app_info_cache import app_info_cache
+
+        app_info_cache.set(TRACK_EXCLUSIONS_KEY, ["Beethoven"])
+        win = SearchWindow(qt_master, mock_app_actions, fixture_library_data)
+        # Drain the __init__-scheduled QTimer.singleShot(0, show_recent_searches)
+        # now, while there's nothing recent yet, so it can't fire later (mid
+        # run_search_sync's own event-pump) and clobber the results grid we're
+        # about to build with a stale "recent searches" view.
+        process_events_for(0.1)
+        win.composer_entry.setText("beethoven")
+        win.library_data_search = LibraryDataSearch(composer="beethoven", max_results=20)
+        count = run_search_sync(win)
+        assert count > 0
+        assert len(win.play_btn_list) == count
+        for play_btn in win.play_btn_list:
+            assert not play_btn.isEnabled()
+            assert "Beethoven" in play_btn.toolTip()
+        win.close()
+
+    def test_non_excluded_result_play_button_stays_enabled(
+        self, qapp, qt_master, mock_app_actions, fixture_library_data
+    ):
+        from ui_qt.search_window import SearchWindow
+        from muse.playlist import TRACK_EXCLUSIONS_KEY
+        from utils.app_info_cache import app_info_cache
+
+        app_info_cache.set(TRACK_EXCLUSIONS_KEY, ["Beethoven"])
+        win = SearchWindow(qt_master, mock_app_actions, fixture_library_data)
+        process_events_for(0.1)  # drain the deferred show_recent_searches() timer first
+        win.composer_entry.setText("mozart")
+        win.library_data_search = LibraryDataSearch(composer="mozart", max_results=20)
+        count = run_search_sync(win)
+        assert count > 0
+        assert len(win.play_btn_list) == count
+        for play_btn in win.play_btn_list:
+            assert play_btn.isEnabled()
+            assert play_btn.toolTip() == ""
+        win.close()

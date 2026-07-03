@@ -106,6 +106,36 @@ class TestPlaylistTrackExclusions:
 
 
 # ---------------------------------------------------------------------------
+# get_exclusion_match() -- public per-filepath check used by SearchWindow to
+# warn about / disable picking a track that Playlist would otherwise drop.
+# ---------------------------------------------------------------------------
+
+@pytest.mark.unit
+class TestGetExclusionMatch:
+    def test_returns_matched_token_for_excluded_path(self):
+        from muse.playlist import get_exclusion_match
+        assert get_exclusion_match("/tts_output/TTS_hello.mp3") == "TTS"
+
+    def test_returns_none_for_clean_path(self):
+        from muse.playlist import get_exclusion_match
+        assert get_exclusion_match("/music/good.flac") is None
+
+    def test_uses_custom_exclusions_from_cache(self):
+        from muse.playlist import get_exclusion_match, TRACK_EXCLUSIONS_KEY
+        from utils.app_info_cache import app_info_cache
+        app_info_cache.set(TRACK_EXCLUSIONS_KEY, ["JINGLE"])
+        assert get_exclusion_match("/ads/JINGLE_intro.mp3") == "JINGLE"
+        # TTS is not in the custom list, so it's no longer excluded.
+        assert get_exclusion_match("/tts/TTS_track.mp3") is None
+
+    def test_no_false_positive_for_substring_in_word(self):
+        from muse.playlist import get_exclusion_match
+        assert get_exclusion_match(
+            r"F:\iTunes Music\Tempesta di Mare & Clara Rottsolk\Scarlatti_ Cantatas\01 Tu sei.m4a"
+        ) is None
+
+
+# ---------------------------------------------------------------------------
 # Playback toast notification
 # ---------------------------------------------------------------------------
 
