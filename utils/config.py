@@ -67,15 +67,8 @@ class Config:
         self.lastfm_api_key = None
         self.library_extender_key = None
         self.news_api_source_trustworthiness = {}
-        # Legacy globals: a single language/level, kept only so existing config.json
-        # files migrate cleanly. Superseded by muse_language_learning_languages, which
-        # supports the listener learning several languages at once (see below).
-        self.muse_language_learning_language = "German"
-        self.muse_language_learning_language_level = "intermediate"
-        # List of {"language_code": str, "level": str} the listener is currently
-        # learning. None (not yet loaded/migrated) is distinct from [] (explicitly
-        # disabled by the user) -- see the migration step at the end of __init__.
-        self.muse_language_learning_languages = None
+        # List of {"language_code": str, "level": str} the listener is currently learning.
+        self.muse_language_learning_languages = []
         self.debug = False
 
         self.llm_model_name = "deepseek-r1:14b"
@@ -155,8 +148,6 @@ class Config:
             "lastfm_api_key",
             "library_extender_key",
             "llm_model_name",
-            "muse_language_learning_language",
-            "muse_language_learning_language_level",
             "tts_provider",
             "kokoro_model",
             "kokoro_voice",
@@ -238,13 +229,16 @@ class Config:
 
         self.coqui_tts_model = tuple(self.coqui_tts_model)
 
-        # One-time migration from the legacy single language/level globals.
-        # Only runs when the new key was never set/loaded at all (None); an
-        # explicit [] means the user disabled language learning and must stay disabled.
-        if self.muse_language_learning_languages is None:
+        # One-time migration from the legacy single language/level keys (pre-dates
+        # muse_language_learning_languages). Reads straight from the loaded JSON
+        # dict rather than instance attributes, since those legacy keys no longer
+        # have a home on Config itself. Keyed on the new field's *absence* from the
+        # file (not just an empty list) -- an explicit [] means the user disabled
+        # language learning and must stay disabled even if legacy keys linger.
+        if "muse_language_learning_languages" not in self.dict and self.dict.get("muse_language_learning_language"):
             self.muse_language_learning_languages = [{
-                "language_code": Utils.get_language_code_for_name(self.muse_language_learning_language),
-                "level": self.muse_language_learning_language_level or "intermediate",
+                "language_code": Utils.get_language_code_for_name(self.dict["muse_language_learning_language"]),
+                "level": self.dict.get("muse_language_learning_language_level") or "intermediate",
             }]
 
     def get_config_value(self, key):

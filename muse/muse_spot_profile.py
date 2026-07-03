@@ -96,7 +96,7 @@ class MuseSpotProfile:
 
         # Speak about the upcoming track, even if it's the first one.
         before_chance = min(1.0, self.chance_speak_before_track * (self._GROUP_TRANSITION_BOOST if _should_boost else 1.0))
-        self.speak_about_upcoming_track = track is not None and track._is_extended or random.random() < before_chance
+        self.speak_about_upcoming_track = track is not None and (track._is_extended or random.random() < before_chance)
 
         self._calculate_talk_about_something(previous_track, _should_boost)
 

@@ -113,6 +113,7 @@ class MockArgs:
         self.overwrite = False
         self.track = None
         self.placeholder = False
+        self.use_system_language_for_all_topics = False
 
 
 def _reset_library_caches() -> None:

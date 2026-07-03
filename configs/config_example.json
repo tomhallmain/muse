@@ -44,8 +44,6 @@
     "news_api_source_trustworthiness": {
         "bbc-news": 0.5
     },
-    "muse_language_learning_language": "German",
-    "muse_language_learning_language_level": "intermediate",
     "muse_language_learning_languages": [
         {"language_code": "de", "level": "intermediate"},
         {"language_code": "fr", "level": "beginner"}

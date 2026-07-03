@@ -43,7 +43,7 @@ Muse is a media player with an integrated voice synthesizer attached to an LLM. 
 - `enable_library_extender`, `library_extender_key` - Enables the library extender feature, which periodically searches for and downloads new tracks to extend the library. Requires an API key.
 - `auto_file_extensions` - Automatically move downloaded extension tracks into a genre/artist/album subdirectory structure under the first configured directory.
 - `auto_file_extensions_genres` - List of genre directory names to use as filing targets for auto-filed extensions. If empty, all Title-Case subdirectories of the root directory are treated as candidates.
-- `muse_language_learning_language`, `muse_language_learning_language_level` - If you are learning a language, set these values to a desired language and language level to have Muse attemp to teach it. Note that Coqui models don't support many languages.
+- `muse_language_learning_languages` - List of `{"language_code": ..., "level": ...}` you are currently learning; Muse will teach one at random each time the topic comes up (so you can learn several languages at once). The persona speaking picks only among the ones its `can_teach_languages` allows (see `dj_personas`). Replaces the older single `muse_language_learning_language`/`muse_language_learning_language_level` fields, which are still read once to migrate existing configs. Note that Coqui models don't support many languages.
 - `llm_model_name` - The name of the LLM to use, exactly the same as Ollama model name.
 - `llm_stream_redundancy`, `llm_thinking_budget_chars` - Enable streaming redundancy elimination to detect and stop repetitive or stalled LLM output early. For thinking models (e.g. DeepSeek-R1, Qwen3), `llm_thinking_budget_chars` sets a character budget for the internal reasoning block before generation is cut off (default: 8000).
 - `text_cleaner_ruleset` - Add rules to this list to edit text before it is spoken by muse.
@@ -52,7 +52,7 @@ Muse is a media player with an integrated voice synthesizer attached to an LLM. 
   - System prompts in root directory
   - Language-specific prompts in subdirectories (e.g., 'en/', 'de/')
   - Automatic translation fallback when language-specific prompts aren't available
-- `dj_personas` - Configure different DJ personas with unique voices, tones, and characteristics. Each persona can have its own language settings. The "voice_name" must match one of the Coqui speakers, see `tts/speakers.py` for the full list.
+- `dj_personas` - Configure different DJ personas with unique voices, tones, and characteristics. Each persona can have its own language settings, plus `can_teach_languages` (which of `muse_language_learning_languages` this persona is allowed to teach -- `"*"` for any, or specific codes) and `prompt_overrides` (persona-specific text for a given topic, replacing the shared `prompts/<lang>/<topic>.txt` file). The "voice_name" must match one of the Coqui speakers, see `tts/speakers.py` for the full list.
 
 
 ## Usage
@@ -92,7 +92,7 @@ The following prompts are located in the prompts folder, and are used to generat
 - `joke` - This one is still challenging for some of the local LLMs.
 - `aphorism` - Have the LLM share an aphorism.
 - `motivation` - The LLM should share an inspirational message of some sort.
-- `language_learning` - If the `muse_language_learning_language` config option is set, the LLM will attempt to teach the language.
+- `language_learning` - If `muse_language_learning_languages` is set, the LLM will attempt to teach one of them (the current persona's `can_teach_languages` decides which).
 - `fable` - Have the LLM share a fable. Unfortunately it usually seems to get stuck talking about kings or ants.
 - `calendar` - Have the LLM tell you something interesting about the calendar day.
 

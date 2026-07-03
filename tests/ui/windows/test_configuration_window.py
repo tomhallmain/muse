@@ -1,13 +1,15 @@
 """
-UI tests for ConfigurationWindow — Playlist Options tab.
+UI tests for ConfigurationWindow — Playlist Options and General tabs.
 
 Covers the exclusion-filter list widget: loading from app_info_cache,
 adding entries (button and Return key), duplicate/empty-string guards,
 removing selected entries, and saving back to app_info_cache.
 
-Also contains a signal-bridge regression test: verifies that a
-signal-based toast implementation delivers the slot call on the main
-thread even when toast() is called from a background thread.
+Also covers the General tab's Language Learning list widget (loading
+from config.muse_language_learning_languages, add/remove, save), and
+contains a signal-bridge regression test: verifies that a signal-based
+toast implementation delivers the slot call on the main thread even
+when toast() is called from a background thread.
 """
 import importlib
 import threading
@@ -18,6 +20,9 @@ from PySide6.QtWidgets import QApplication
 
 from muse.playlist import TRACK_EXCLUSIONS_KEY, _DEFAULT_TRACK_EXCLUSIONS
 from tests.utils.qt_test_helpers import process_events_for
+from utils.translations import I18N
+
+_ = I18N._
 
 
 # ---------------------------------------------------------------------------
@@ -34,11 +39,21 @@ def _open_window(qt_master, mock_app_actions):
 def _switch_to_playlist_options(win):
     notebook = win.notebook
     for i in range(notebook.count()):
-        if "Playlist Options" in notebook.tabText(i):
+        if _("Playlist Options") in notebook.tabText(i):
             notebook.setCurrentIndex(i)
             QApplication.processEvents()
             return
     raise AssertionError("Playlist Options tab not found")
+
+
+def _switch_to_general(win):
+    notebook = win.notebook
+    for i in range(notebook.count()):
+        if _("General") in notebook.tabText(i):
+            notebook.setCurrentIndex(i)
+            QApplication.processEvents()
+            return
+    raise AssertionError("General tab not found")
 
 
 def _close_clean(win):
@@ -59,7 +74,7 @@ class TestPlaylistOptionsTabLoading:
     def test_tab_exists(self, qapp, qt_master, mock_app_actions):
         win = _open_window(qt_master, mock_app_actions)
         labels = [win.notebook.tabText(i) for i in range(win.notebook.count())]
-        assert any("Playlist Options" in t for t in labels)
+        assert any(_("Playlist Options") in t for t in labels)
         _close_clean(win)
 
     def test_default_exclusions_loaded_on_open(self, qapp, qt_master, mock_app_actions):
@@ -258,6 +273,181 @@ class TestPlaylistOptionsTabSave:
         QApplication.processEvents()
 
         assert app_info_cache.get(TRACK_EXCLUSIONS_KEY) == ["TTS"]
+        _close_clean(win)
+
+
+# ---------------------------------------------------------------------------
+# General tab — Language Learning list — loading
+# ---------------------------------------------------------------------------
+
+@pytest.mark.ui
+class TestGeneralTabLanguageLearningLoading:
+    def test_tab_exists(self, qapp, qt_master, mock_app_actions):
+        win = _open_window(qt_master, mock_app_actions)
+        labels = [win.notebook.tabText(i) for i in range(win.notebook.count())]
+        assert any(_("General") in t for t in labels)
+        _close_clean(win)
+
+    def test_existing_languages_loaded_on_open(self, qapp, qt_master, mock_app_actions, monkeypatch):
+        cfg_mod = importlib.import_module("utils.config")
+        monkeypatch.setattr(cfg_mod.config, "muse_language_learning_languages", [
+            {"language_code": "de", "level": "intermediate"},
+            {"language_code": "fr", "level": "beginner"},
+        ])
+        win = _open_window(qt_master, mock_app_actions)
+        _switch_to_general(win)
+        items = [win._language_learning_list.item(i).text()
+                 for i in range(win._language_learning_list.count())]
+        assert items == ["de: intermediate", "fr: beginner"]
+        _close_clean(win)
+
+    def test_empty_list_shows_empty(self, qapp, qt_master, mock_app_actions, monkeypatch):
+        cfg_mod = importlib.import_module("utils.config")
+        monkeypatch.setattr(cfg_mod.config, "muse_language_learning_languages", [])
+        win = _open_window(qt_master, mock_app_actions)
+        _switch_to_general(win)
+        assert win._language_learning_list.count() == 0
+        _close_clean(win)
+
+
+# ---------------------------------------------------------------------------
+# General tab — Language Learning list — add
+# ---------------------------------------------------------------------------
+
+@pytest.mark.ui
+class TestGeneralTabLanguageLearningAdd:
+    def test_add_via_button(self, qapp, qt_master, mock_app_actions, monkeypatch):
+        cfg_mod = importlib.import_module("utils.config")
+        monkeypatch.setattr(cfg_mod.config, "muse_language_learning_languages", [])
+        win = _open_window(qt_master, mock_app_actions)
+        _switch_to_general(win)
+
+        idx = win._language_learning_code_combo.findText("es")
+        win._language_learning_code_combo.setCurrentIndex(idx)
+        win._language_learning_level_entry.setText("beginner")
+        win._add_language_learning_entry()
+        QApplication.processEvents()
+
+        items = [win._language_learning_list.item(i).text()
+                 for i in range(win._language_learning_list.count())]
+        assert "es: beginner" in items
+        _close_clean(win)
+
+    def test_default_level_when_blank(self, qapp, qt_master, mock_app_actions, monkeypatch):
+        cfg_mod = importlib.import_module("utils.config")
+        monkeypatch.setattr(cfg_mod.config, "muse_language_learning_languages", [])
+        win = _open_window(qt_master, mock_app_actions)
+        _switch_to_general(win)
+
+        idx = win._language_learning_code_combo.findText("it")
+        win._language_learning_code_combo.setCurrentIndex(idx)
+        win._language_learning_level_entry.setText("")
+        win._add_language_learning_entry()
+
+        items = [win._language_learning_list.item(i).text()
+                 for i in range(win._language_learning_list.count())]
+        assert "it: intermediate" in items
+        _close_clean(win)
+
+    def test_duplicate_code_not_added(self, qapp, qt_master, mock_app_actions, monkeypatch):
+        cfg_mod = importlib.import_module("utils.config")
+        monkeypatch.setattr(cfg_mod.config, "muse_language_learning_languages", [
+            {"language_code": "de", "level": "intermediate"},
+        ])
+        win = _open_window(qt_master, mock_app_actions)
+        _switch_to_general(win)
+
+        idx = win._language_learning_code_combo.findText("de")
+        win._language_learning_code_combo.setCurrentIndex(idx)
+        win._language_learning_level_entry.setText("advanced")
+        win._add_language_learning_entry()
+
+        assert win._language_learning_list.count() == 1
+        _close_clean(win)
+
+
+# ---------------------------------------------------------------------------
+# General tab — Language Learning list — remove
+# ---------------------------------------------------------------------------
+
+@pytest.mark.ui
+class TestGeneralTabLanguageLearningRemove:
+    def test_remove_selected_entry(self, qapp, qt_master, mock_app_actions, monkeypatch):
+        cfg_mod = importlib.import_module("utils.config")
+        monkeypatch.setattr(cfg_mod.config, "muse_language_learning_languages", [
+            {"language_code": "de", "level": "intermediate"},
+            {"language_code": "fr", "level": "beginner"},
+        ])
+        win = _open_window(qt_master, mock_app_actions)
+        _switch_to_general(win)
+
+        win._language_learning_list.setCurrentRow(0)
+        win._remove_language_learning_entry()
+        QApplication.processEvents()
+
+        items = [win._language_learning_list.item(i).text()
+                 for i in range(win._language_learning_list.count())]
+        assert "de: intermediate" not in items
+        assert "fr: beginner" in items
+        _close_clean(win)
+
+    def test_remove_with_nothing_selected_is_safe(self, qapp, qt_master, mock_app_actions, monkeypatch):
+        cfg_mod = importlib.import_module("utils.config")
+        monkeypatch.setattr(cfg_mod.config, "muse_language_learning_languages", [
+            {"language_code": "de", "level": "intermediate"},
+        ])
+        win = _open_window(qt_master, mock_app_actions)
+        _switch_to_general(win)
+
+        win._language_learning_list.clearSelection()
+        win._remove_language_learning_entry()  # must not raise
+
+        assert win._language_learning_list.count() == 1
+        _close_clean(win)
+
+
+# ---------------------------------------------------------------------------
+# General tab — Language Learning list — save
+# ---------------------------------------------------------------------------
+
+@pytest.mark.ui
+class TestGeneralTabLanguageLearningSave:
+    def test_save_persists_languages_to_config(self, qapp, qt_master, mock_app_actions, monkeypatch):
+        cfg_mod = importlib.import_module("utils.config")
+        monkeypatch.setattr(cfg_mod.config, "muse_language_learning_languages", [])
+        monkeypatch.setattr(cfg_mod.config, "save_config", lambda: True)
+        win = _open_window(qt_master, mock_app_actions)
+        _switch_to_general(win)
+
+        idx = win._language_learning_code_combo.findText("de")
+        win._language_learning_code_combo.setCurrentIndex(idx)
+        win._language_learning_level_entry.setText("intermediate")
+        win._add_language_learning_entry()
+
+        win.save_config()
+        QApplication.processEvents()
+
+        assert cfg_mod.config.muse_language_learning_languages == [
+            {"language_code": "de", "level": "intermediate"},
+        ]
+        _close_clean(win)
+
+    def test_save_with_empty_list_disables_feature(self, qapp, qt_master, mock_app_actions, monkeypatch):
+        cfg_mod = importlib.import_module("utils.config")
+        monkeypatch.setattr(cfg_mod.config, "muse_language_learning_languages", [
+            {"language_code": "de", "level": "intermediate"},
+        ])
+        monkeypatch.setattr(cfg_mod.config, "save_config", lambda: True)
+        win = _open_window(qt_master, mock_app_actions)
+        _switch_to_general(win)
+
+        win._language_learning_list.setCurrentRow(0)
+        win._remove_language_learning_entry()
+
+        win.save_config()
+        QApplication.processEvents()
+
+        assert cfg_mod.config.muse_language_learning_languages == []
         _close_clean(win)
 
 
