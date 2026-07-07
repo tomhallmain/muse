@@ -51,7 +51,7 @@ msgstr "Плейлисты"
 #: app_qt.py:247 app_qt.py:466 ui_qt/favorites_window.py:242
 #: ui_qt/favorites_window.py:548
 msgid "Favorites"
-msgstr "Любимые"
+msgstr "Избранное"
 
 #: app_qt.py:248 ui_qt/history_window.py:87 ui_qt/history_window.py:314
 msgid "History"
@@ -143,7 +143,7 @@ msgstr "Альбом"
 #: ui_qt/rename_confirmation_window.py:87 ui_qt/track_details_window.py:99
 #: utils/globals.py:144 utils/globals.py:333 utils/globals.py:402
 msgid "Artist"
-msgstr "Художник"
+msgstr "Исполнитель"
 
 #: app_qt.py:344 ui_qt/favorites_window.py:366
 #: ui_qt/rename_confirmation_window.py:89 ui_qt/track_details_window.py:105
@@ -367,7 +367,7 @@ msgstr "Альбом: "
 
 #: app_qt.py:1165
 msgid "Artist: "
-msgstr "Художник: "
+msgstr "Исполнитель: "
 
 #: app_qt.py:1166
 msgid "Composer: "
@@ -596,7 +596,7 @@ msgstr "Неизвестный альбом"
 
 #: library_data/media_track.py:467
 msgid "Unknown artist"
-msgstr "Неизвестный художник"
+msgstr "Неизвестный исполнитель"
 
 #: library_data/media_track.py:653 library_data/media_track.py:654
 msgid "Number \\1"
@@ -1377,7 +1377,7 @@ msgstr "Добавить комментарий"
 
 #: ui_qt/composers_window.py:177 ui_qt/playlist_window.py:1021
 msgid "Save"
-msgstr "Спасти"
+msgstr "Сохранить"
 
 #: ui_qt/composers_window.py:181 ui_qt/composers_window.py:210
 #: ui_qt/extensions_window.py:277 ui_qt/personas_window.py:110
@@ -2053,7 +2053,7 @@ msgstr "Значение"
 
 #: ui_qt/favorites_window.py:431
 msgid "No favorites found."
-msgstr "Любимые не найдены."
+msgstr "Избранное не найдено."
 
 #: ui_qt/favorites_window.py:568
 msgid "No valid play query could be generated for this favorite"
@@ -2067,11 +2067,11 @@ msgstr "Никаких фаворитов"
 
 #: ui_qt/favorites_window.py:589
 msgid "No favorites available to play."
-msgstr "Любимые игры не доступны."
+msgstr "В избранном нет доступных элементов для воспроизведения."
 
 #: ui_qt/favorites_window.py:603
 msgid "Favorite Details"
-msgstr "Любимые детали"
+msgstr "Детали избранного"
 
 #: ui_qt/favorites_window.py:638
 msgid "Type: Track"
@@ -2115,7 +2115,7 @@ msgstr "Вид библиотеки"
 
 #: ui_qt/lastfm_window.py:83 utils/globals.py:555
 msgid "Tracks"
-msgstr "Следы"
+msgstr "Треки"
 
 #: ui_qt/lastfm_window.py:83 ui_qt/lastfm_window.py:116
 #: ui_qt/lastfm_window.py:283 ui_qt/lastfm_window.py:358
@@ -2127,7 +2127,7 @@ msgstr "Альбомы"
 #: ui_qt/lastfm_window.py:287 ui_qt/lastfm_window.py:348
 #: ui_qt/lastfm_window.py:411 utils/globals.py:557
 msgid "Artists"
-msgstr "художники"
+msgstr "исполнители"
 
 #: ui_qt/lastfm_window.py:86
 msgid "Load User Library"
@@ -2295,7 +2295,7 @@ msgstr "Поиск:"
 
 #: ui_qt/library_window.py:101
 msgid "Count"
-msgstr "граф"
+msgstr "Количество"
 
 #: ui_qt/library_window.py:111
 msgid "Total Tracks: {}"
@@ -2307,7 +2307,7 @@ msgstr "Всего альбомов: {}"
 
 #: ui_qt/library_window.py:123
 msgid "Total Artists: {}"
-msgstr "Всего художников: {}"
+msgstr "Всего исполнителей: {}"
 
 #: ui_qt/library_window.py:129
 msgid "Total Composers: {}"
@@ -2319,7 +2319,7 @@ msgstr "Общие инструменты: {}"
 
 #: ui_qt/library_window.py:145
 msgid "Total Forms: {}"
-msgstr "Общие формы: {}"
+msgstr "Всего форм: {}"
 
 #: ui_qt/library_window.py:149
 msgid "Cache Updated: {}"
@@ -2331,7 +2331,7 @@ msgstr "Кэш недоступен"
 
 #: ui_qt/media_controls_overlay.py:151 ui_qt/media_controls_overlay.py:354
 msgid "Mute"
-msgstr "немой"
+msgstr "Без звука"
 
 #: ui_qt/media_controls_overlay.py:166
 msgid ""
@@ -2347,7 +2347,7 @@ msgstr "LIVE"
 
 #: ui_qt/media_controls_overlay.py:354
 msgid "Unmute"
-msgstr "Размутить"
+msgstr "Включить звук"
 
 #: ui_qt/network_media_window.py:92
 msgid "Station:"
@@ -3128,7 +3128,7 @@ msgstr "Создание и изменение расписаний"
 
 #: ui_qt/schedules_window.py:236
 msgid "Clear schedules"
-msgstr "ясный график"
+msgstr "Очистить расписания"
 
 #: ui_qt/search_window.py:125
 msgid "No matching tracks found"
@@ -3163,7 +3163,7 @@ msgstr "Поиск исполнителя"
 
 #: ui_qt/search_window.py:263
 msgid "Search Instrument"
-msgstr "Инструмент Поиска"
+msgstr "Поиск по инструменту"
 
 #: ui_qt/search_window.py:273
 msgid "Search Form"
@@ -3283,7 +3283,7 @@ msgstr "Сортировка конфигурации: Перезапись"
 
 #: ui_qt/sort_config_window.py:34
 msgid "Sort Options"
-msgstr "Сортировка Опций"
+msgstr "Параметры сортировки"
 
 #: ui_qt/sort_config_window.py:54
 msgid "Non-default values here override every playlist in the master config."
@@ -3363,7 +3363,7 @@ msgstr "Сбросить"
 
 #: ui_qt/timer_window.py:153 ui_qt/timer_window.py:244
 msgid "Running..."
-msgstr "Бегущий..."
+msgstr "Выполняется..."
 
 #: ui_qt/timer_window.py:155 ui_qt/timer_window.py:239
 msgid "Timer Complete!"
@@ -3395,7 +3395,7 @@ msgstr "Возобновить"
 
 #: ui_qt/track_details_window.py:70 ui_qt/weather_window.py:60
 msgid "Update"
-msgstr "обновление"
+msgstr "Обновить"
 
 #: ui_qt/track_details_window.py:76
 msgid "Current path:"
@@ -3487,7 +3487,7 @@ msgstr "{0} не может быть отрицательным"
 
 #: ui_qt/track_details_window.py:316
 msgid "{0} must be a valid number"
-msgstr "{0} дійсне чи сіть"
+msgstr "{0} должно быть действительным числом"
 
 #: ui_qt/track_details_window.py:411
 msgid "Failed to update track metadata. Check the logs."
@@ -3587,11 +3587,11 @@ msgstr "Нет выбранного файла"
 
 #: ui_qt/tts_window.py:113
 msgid "Options"
-msgstr "Варианты"
+msgstr "Параметры"
 
 #: ui_qt/tts_window.py:118
 msgid "Provider:"
-msgstr "Провайдер:"
+msgstr "Поставщик:"
 
 #: ui_qt/tts_window.py:131 ui_qt/tts_window.py:230
 msgid "Speaker:"
@@ -3643,7 +3643,7 @@ msgstr "Модель (.onnx):"
 
 #: ui_qt/tts_window.py:299
 msgid "Provider saved: {provider}, voice: {voice}"
-msgstr "Провайдер сохранён: {provider}, голос: {voice}"
+msgstr "Поставщик сохранён: {provider}, голос: {voice}"
 
 #: ui_qt/tts_window.py:301
 msgid "(auto)"
@@ -4058,7 +4058,7 @@ msgstr "Вся музыка"
 
 #: utils/globals.py:292
 msgid "Playlist Config"
-msgstr "Плейлист Конфигурация"
+msgstr "Конфигурация плейлиста"
 
 #: utils/globals.py:454
 msgid "weather"
@@ -4134,7 +4134,7 @@ msgstr "Изучение языка"
 
 #: utils/globals.py:560
 msgid "Forms"
-msgstr "формы"
+msgstr "Формы"
 
 #: utils/globals.py:561
 msgid "Instruments"
@@ -4234,11 +4234,11 @@ msgstr "Запуск приложения"
 
 #: utils/globals.py:769
 msgid "Access Password Administration"
-msgstr "Доступ Пароль Администрирование"
+msgstr "Доступ к администрированию пароля"
 
 #: utils/job_queue.py:47
 msgid " (Pending runs: {0})"
-msgstr " (Ожидающие запуски: {0})"
+msgstr " (Запуски в ожидании: {0})"
 
 #: utils/translations.py:49
 msgid "Monday"

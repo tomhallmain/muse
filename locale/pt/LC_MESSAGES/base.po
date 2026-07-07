@@ -2829,7 +2829,7 @@ msgstr "Para cima"
 
 #: ui_qt/playlist_window.py:165 ui_qt/playlist_window.py:1182
 msgid "Down"
-msgstr "Aara baixo"
+msgstr "Para baixo"
 
 #: ui_qt/playlist_window.py:168
 msgid "Shuffle"
@@ -2884,7 +2884,7 @@ msgstr "Excluir a playlist \"{0}\"?"
 
 #: ui_qt/playlist_window.py:426
 msgid "Sequential Preview"
-msgstr "Prvisão Sequencial"
+msgstr "Pré-visualização sequencial"
 
 #: ui_qt/playlist_window.py:658
 msgid "played"
@@ -3346,7 +3346,7 @@ msgstr "Horas:"
 
 #: ui_qt/timer_window.py:79
 msgid "Minutes:"
-msgstr "Minutas:"
+msgstr "Minutos:"
 
 #: ui_qt/timer_window.py:84
 msgid "Seconds:"
@@ -3371,7 +3371,7 @@ msgstr "Redefinir"
 
 #: ui_qt/timer_window.py:153 ui_qt/timer_window.py:244
 msgid "Running..."
-msgstr "Correndo..."
+msgstr "Em execução..."
 
 #: ui_qt/timer_window.py:155 ui_qt/timer_window.py:239
 msgid "Timer Complete!"
@@ -4130,7 +4130,7 @@ msgstr "mais sobre a última faixa"
 
 #: utils/globals.py:484
 msgid "more about our playlist"
-msgstr "mais sobre nossa lista de reprodução"
+msgstr "mais sobre a nossa lista de reprodução"
 
 #: utils/globals.py:486
 msgid "random wiki article"

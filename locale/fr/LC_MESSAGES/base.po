@@ -1180,7 +1180,7 @@ msgstr "Supprimer"
 
 #: ui_qt/blacklist_window.py:485
 msgid "Toggle"
-msgstr "Toggler"
+msgstr "Basculer"
 
 #: ui_qt/blacklist_window.py:497 ui_qt/blacklist_window.py:504
 #: ui_qt/blacklist_window.py:511
@@ -1413,7 +1413,7 @@ msgstr "Fixations appliquées"
 
 #: ui_qt/composers_window.py:302 ui_qt/composers_window.py:456
 msgid "Failed to save composer:"
-msgstr "Impossible de sauver le compositeur :"
+msgstr "Impossible d'enregistrer le compositeur :"
 
 #: ui_qt/composers_window.py:310
 msgid "Delete composer"
@@ -2922,7 +2922,7 @@ msgstr "Mode source"
 
 #: ui_qt/playlist_window.py:968 ui_qt/playlist_window.py:1099
 msgid "Directory"
-msgstr "Annuaire"
+msgstr "Dossier"
 
 #: ui_qt/playlist_window.py:969
 msgid "Explicit Tracks"
@@ -3143,11 +3143,11 @@ msgstr "Créer et modifier des horaires"
 
 #: ui_qt/schedules_window.py:236
 msgid "Clear schedules"
-msgstr "Des horaires clairs"
+msgstr "Effacer les horaires"
 
 #: ui_qt/search_window.py:125
 msgid "No matching tracks found"
-msgstr "Aucune trace correspondante trouvée"
+msgstr "Aucune piste correspondante trouvée"
 
 #: ui_qt/search_window.py:154
 msgid "Search Library"
@@ -3296,7 +3296,7 @@ msgstr "Ajouté à \"{0}\""
 
 #: ui_qt/sort_config_window.py:34
 msgid "Sort Config Override"
-msgstr "Tri de configuration redémarré"
+msgstr "Remplacement de la configuration de tri"
 
 #: ui_qt/sort_config_window.py:34
 msgid "Sort Options"
@@ -4209,7 +4209,7 @@ msgstr "Sans introduction"
 
 #: utils/globals.py:755
 msgid "Run Search"
-msgstr "Recherche d'exécution"
+msgstr "Exécuter la recherche"
 
 #: utils/globals.py:756
 msgid "View Library"
@@ -4265,7 +4265,7 @@ msgstr "Démarrer l'application"
 
 #: utils/globals.py:769
 msgid "Access Password Administration"
-msgstr "Accès Mot de passe Administration"
+msgstr "Accès à l'administration du mot de passe"
 
 #: utils/job_queue.py:47
 msgid " (Pending runs: {0})"

@@ -1411,7 +1411,7 @@ msgstr "Angewandte Korrekturen"
 
 #: ui_qt/composers_window.py:302 ui_qt/composers_window.py:456
 msgid "Failed to save composer:"
-msgstr "Versäumt, Komponist zu retten:"
+msgstr "Speichern des Komponisten fehlgeschlagen:"
 
 #: ui_qt/composers_window.py:310
 msgid "Delete composer"
@@ -1953,15 +1953,15 @@ msgstr ""
 
 #: ui_qt/extensions_window.py:394
 msgid "No extension thread running"
-msgstr "Keine Verlängerungsfäden läuft"
+msgstr "Kein Erweiterungs-Thread aktiv"
 
 #: ui_qt/extensions_window.py:396
 msgid "Extension thread terminated"
-msgstr "Verlängerungsfäden beendet"
+msgstr "Erweiterungs-Thread beendet"
 
 #: ui_qt/extensions_window.py:398
 msgid "Extension thread running"
-msgstr "Verlängerungsfäden läuft"
+msgstr "Erweiterungs-Thread läuft"
 
 #: ui_qt/extensions_window.py:400
 msgid " (with pending jobs)"
@@ -2343,15 +2343,15 @@ msgstr "Kein Cache verfügbar"
 
 #: ui_qt/media_controls_overlay.py:151 ui_qt/media_controls_overlay.py:354
 msgid "Mute"
-msgstr "Still"
+msgstr "Stummschalten"
 
 #: ui_qt/media_controls_overlay.py:166
 msgid ""
 "Effective output volume after track normalization. Sidebar/overlay slider "
 "sets base volume."
 msgstr ""
-"Effektive Ausgabehäufigkeit nach der Track-Normalisierung. Mit dem "
-"Sidebar-/Überlagerschalter legt man die Basis-Häufigkeit fest."
+"Effektive Ausgabelautstärke nach der Track-Normalisierung. Mit dem "
+"Sidebar-/Überlagerschalter legt man die Basis-Lautstärke fest."
 
 #: ui_qt/media_controls_overlay.py:234
 msgid "LIVE"
@@ -2359,7 +2359,7 @@ msgstr "LIVE"
 
 #: ui_qt/media_controls_overlay.py:354
 msgid "Unmute"
-msgstr "Aufstummen"
+msgstr "Stummschaltung aufheben"
 
 #: ui_qt/network_media_window.py:92
 msgid "Station:"
@@ -2881,9 +2881,10 @@ msgid ""
 "\n"
 "This will resolve the current {1} source and replace it with a fixed list of tracks. This cannot be undone."
 msgstr ""
-"Konvertieren '{0}' in eine explizite Wiedergliedliste?\n"
+"Konvertieren '{0}' in eine explizite Titelliste?\n"
 "\n"
-"Dies wird die aktuelle {1} Quelle beenden und durch eine feste Liste von Wiedergliedern ersetzen. Dies kann nicht rückgängig gemacht werden."
+"Dies wird die aktuelle {1} Quelle beenden und durch eine feste Liste von "
+"Titeln ersetzen. Dies kann nicht rückgängig gemacht werden."
 
 #: ui_qt/playlist_window.py:334
 msgid "Playlist \"{0}\" frozen to {1} tracks."
@@ -3145,7 +3146,7 @@ msgstr "Zeitpläne erstellen und ändern"
 
 #: ui_qt/schedules_window.py:236
 msgid "Clear schedules"
-msgstr "Klare Zeitpläne"
+msgstr "Zeitpläne löschen"
 
 #: ui_qt/search_window.py:125
 msgid "No matching tracks found"
@@ -3273,7 +3274,7 @@ msgstr "Geben Sie einen Namen für diese Playlist ein."
 
 #: ui_qt/search_window.py:858
 msgid "Playlist \"{0}\" saved"
-msgstr "Playist \"{0}\" gespeichert"
+msgstr "Playlist \"{0}\" gespeichert"
 
 #: ui_qt/search_window.py:876
 msgid "No track-based playlists exist. Enter a name for a new one:"
@@ -3287,7 +3288,7 @@ msgstr "hat die Playlist \"{0}\" erstellt mit dem Track"
 
 #: ui_qt/search_window.py:894
 msgid "Add to Playlist"
-msgstr "Zu Warteschlange hinzufügen"
+msgstr "Zur Playlist hinzufügen"
 
 #: ui_qt/search_window.py:895
 msgid "Select a playlist:"
@@ -3313,7 +3314,7 @@ msgstr ""
 
 #: ui_qt/sort_config_window.py:60
 msgid "Skip memory reshuffle"
-msgstr "Gedächtnisres shuffle überspringen"
+msgstr "Speicher-Neuordnung überspringen"
 
 #: ui_qt/sort_config_window.py:62
 msgid "Disable recently-played memory reshuffling"
@@ -3321,7 +3322,7 @@ msgstr "Die Umbenennung von kürzlich abgespielten Dateien deaktivieren"
 
 #: ui_qt/sort_config_window.py:67
 msgid "Skip random start"
-msgstr "Den zufälligen Start überspringen"
+msgstr "Zufälligen Start überspringen"
 
 #: ui_qt/sort_config_window.py:69
 msgid "Use deterministic grouping order instead of random start-track seeding"
@@ -4044,7 +4045,7 @@ msgstr "Bitte wechseln Sie bei Bedarf manuell zum gewünschten Gerät."
 
 #: utils/globals.py:150 utils/globals.py:336 utils/globals.py:404
 msgid "Form"
-msgstr "Musikalische Form"
+msgstr "Form"
 
 #: utils/globals.py:228 utils/globals.py:406
 msgid "Random"
@@ -4160,7 +4161,7 @@ msgstr "Sprachenlernen"
 
 #: utils/globals.py:560
 msgid "Forms"
-msgstr "Formulare"
+msgstr "Formen"
 
 #: utils/globals.py:561
 msgid "Instruments"

@@ -1124,7 +1124,7 @@ msgstr "Añadir a la lista negra"
 
 #: ui_qt/blacklist_window.py:406
 msgid "Clear items"
-msgstr "Borrar los artículos"
+msgstr "Borrar los elementos"
 
 #: ui_qt/blacklist_window.py:439
 msgid ""
@@ -1156,7 +1156,7 @@ msgstr "Revelar los conceptos"
 
 #: ui_qt/blacklist_window.py:461
 msgid "Item"
-msgstr "Artículo"
+msgstr "Elemento"
 
 #: ui_qt/blacklist_window.py:472 ui_qt/blacklist_window.py:743
 msgid "Disabled"
@@ -2874,9 +2874,10 @@ msgid ""
 "\n"
 "This will resolve the current {1} source and replace it with a fixed list of tracks. This cannot be undone."
 msgstr ""
-"¿Convertir \"{0}\" en una lista.de.tracks explícita?\n"
+"¿Convertir \"{0}\" en una lista de pistas explícita?\n"
 "\n"
-"Esto resolverá la fuente actual {1} y la reemplazará con una.lista.fija.de.tracks. Esto no se puede.des.hacer."
+"Esto resolverá la fuente actual {1} y la reemplazará con una lista fija de "
+"pistas. Esto no se puede deshacer."
 
 #: ui_qt/playlist_window.py:334
 msgid "Playlist \"{0}\" frozen to {1} tracks."
@@ -3138,7 +3139,7 @@ msgstr "Crear y modificar horarios"
 
 #: ui_qt/schedules_window.py:236
 msgid "Clear schedules"
-msgstr "Horarios claros"
+msgstr "Borrar horarios"
 
 #: ui_qt/search_window.py:125
 msgid "No matching tracks found"
@@ -3173,7 +3174,7 @@ msgstr "Buscar Artista"
 
 #: ui_qt/search_window.py:263
 msgid "Search Instrument"
-msgstr "Instrumento de búsqueda"
+msgstr "Buscar por instrumento"
 
 #: ui_qt/search_window.py:273
 msgid "Search Form"
@@ -3255,7 +3256,7 @@ msgstr "+ Lista de reproducción"
 
 #: ui_qt/search_window.py:837
 msgid "No Search"
-msgstr "Sin Buscar"
+msgstr "Sin búsqueda"
 
 #: ui_qt/search_window.py:838
 msgid "Please fill in at least one search field first."
@@ -3297,7 +3298,7 @@ msgstr "Ordenar Configuración Sobrescribir"
 
 #: ui_qt/sort_config_window.py:34
 msgid "Sort Options"
-msgstr "Opciones de ordenar"
+msgstr "Opciones de ordenación"
 
 #: ui_qt/sort_config_window.py:54
 msgid "Non-default values here override every playlist in the master config."

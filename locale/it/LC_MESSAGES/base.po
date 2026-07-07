@@ -853,7 +853,7 @@ msgstr "Inserisci qualche testo sopra, quindi fai clic su Test."
 #: tests/ui/windows/test_configuration_window.py:77
 #: ui_qt/configuration_window.py:79
 msgid "Playlist Options"
-msgstr "Elenco di playback Opzioni"
+msgstr "Opzioni playlist"
 
 #: tests/ui/windows/test_configuration_window.py:52
 #: tests/ui/windows/test_configuration_window.py:288
@@ -2842,7 +2842,7 @@ msgstr "Lista (riproduce sequenzialmente)"
 
 #: ui_qt/playlist_window.py:182
 msgid "Sort Config Override..."
-msgstr "Ordine della configurazione di sostituzione..."
+msgstr "Sovrascrittura configurazione ordinamento..."
 
 #: ui_qt/playlist_window.py:200 ui_qt/playlist_window.py:426
 #: ui_qt/playlist_window.py:563 ui_qt/playlist_window.py:658
@@ -2902,7 +2902,7 @@ msgstr "Salta a"
 
 #: ui_qt/playlist_window.py:918
 msgid "Edit Playlist"
-msgstr "Modifica Elenco di Ripresea"
+msgstr "Modifica playlist"
 
 #: ui_qt/playlist_window.py:954
 msgid "Playlist Name"
@@ -2974,7 +2974,7 @@ msgstr "Playlist aggiornata completamente"
 
 #: ui_qt/playlist_window.py:1313
 msgid "Playlist created successfully"
-msgstr "Elenco di riproduzione creato con successo"
+msgstr "Playlist creata con successo"
 
 #: ui_qt/rename_confirmation_window.py:57
 msgid "Confirm Changes"
@@ -3135,7 +3135,7 @@ msgstr "Creare e modificare le pianificazioni"
 
 #: ui_qt/schedules_window.py:236
 msgid "Clear schedules"
-msgstr "Orari chiari"
+msgstr "Cancella orari"
 
 #: ui_qt/search_window.py:125
 msgid "No matching tracks found"
@@ -3247,7 +3247,7 @@ msgstr "Trova altro"
 
 #: ui_qt/search_window.py:753
 msgid "+ Playlist"
-msgstr "+ Elenco di canzoni"
+msgstr "+ Playlist"
 
 #: ui_qt/search_window.py:837
 msgid "No Search"
@@ -3259,17 +3259,17 @@ msgstr "Si prega di compilare almeno un campo di ricerca prima."
 
 #: ui_qt/search_window.py:844
 msgid "Enter a name for this playlist:"
-msgstr "Inserisci un nome per questo elenco di playback"
+msgstr "Inserisci un nome per questa playlist"
 
 #: ui_qt/search_window.py:858
 msgid "Playlist \"{0}\" saved"
-msgstr "Elenco playlist '{0}' salvato"
+msgstr "Playlist «{0}» salvata"
 
 #: ui_qt/search_window.py:876
 msgid "No track-based playlists exist. Enter a name for a new one:"
 msgstr ""
-"Nessun playlist basato su tracce esiste. Inserisci un nome per crearne uno "
-"nuovo."
+"Nessuna playlist basata su tracce esiste. Inserisci un nome per "
+"crearne uno nuovo."
 
 #: ui_qt/search_window.py:888
 msgid "Created playlist \"{0}\" with track"
@@ -3277,7 +3277,7 @@ msgstr "Creato elenco playlist \"{0}\" con traccia"
 
 #: ui_qt/search_window.py:894
 msgid "Add to Playlist"
-msgstr "Aggiungere alla Playlist"
+msgstr "Aggiungi alla playlist"
 
 #: ui_qt/search_window.py:895
 msgid "Select a playlist:"
@@ -3289,7 +3289,7 @@ msgstr "Aggiunto a '{0}'"
 
 #: ui_qt/sort_config_window.py:34
 msgid "Sort Config Override"
-msgstr "Ordine della configurazione di sostituzione"
+msgstr "Sovrascrittura configurazione ordinamento"
 
 #: ui_qt/sort_config_window.py:34
 msgid "Sort Options"
@@ -3298,7 +3298,7 @@ msgstr "Opzioni di ordinamento"
 #: ui_qt/sort_config_window.py:54
 msgid "Non-default values here override every playlist in the master config."
 msgstr ""
-"Valori non predefiniti qui sovrascrivono ogni elenco di canzoni nel config "
+"Valori non predefiniti qui sovrascrivono ogni playlist nel config "
 "principale."
 
 #: ui_qt/sort_config_window.py:60
@@ -4076,7 +4076,7 @@ msgstr "Tutta la musica"
 
 #: utils/globals.py:292
 msgid "Playlist Config"
-msgstr "Configurazione dell'elenco di canzoni"
+msgstr "Configurazione playlist"
 
 #: utils/globals.py:454
 msgid "weather"
@@ -4136,7 +4136,7 @@ msgstr "più sull'ultimo brano"
 
 #: utils/globals.py:484
 msgid "more about our playlist"
-msgstr "più sulla nostra playlist"
+msgstr "Di più sulla nostra playlist"
 
 #: utils/globals.py:486
 msgid "random wiki article"
