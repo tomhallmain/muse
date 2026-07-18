@@ -51,6 +51,7 @@ class MockMediaTrack:
     _genre: str
     _form: str
     _instrument: str
+    _catalogue: str
     _is_extended: bool = False
     _is_stream: bool = False
 
@@ -62,6 +63,9 @@ class MockMediaTrack:
 
     def get_instrument(self):
         return self._instrument
+
+    def get_catalogue(self):
+        return self._catalogue
 
     def get_parent_filepath(self):
         return self.filepath
@@ -375,33 +379,36 @@ def mock_tracks():
     return [
         MockMediaTrack(
             filepath="track1.mp3",
-            title="Symphony No. 5 - I",
-            album="Beethoven: Symphony No. 5",
+            title="Piano Sonata in C Minor",
+            album="Beethoven: Piano Sonatas",
             artist="Berlin Philharmonic",
             composer="Beethoven",
             _genre="Classical",
             _form="Symphony",
             _instrument="Orchestra",
+            _catalogue="Beethoven: Piano Sonatas",
         ),
         MockMediaTrack(
             filepath="track2.mp3",
-            title="Symphony No. 5 - II",
-            album="Beethoven: Symphony No. 5",
+            title="Piano Sonata in F Minor",
+            album="Beethoven: Piano Sonatas",
             artist="Berlin Philharmonic",
             composer="Beethoven",
             _genre="Classical",
             _form="Symphony",
             _instrument="Orchestra",
+            _catalogue="Beethoven: Piano Sonatas",
         ),
         MockMediaTrack(
             filepath="track3.mp3",
-            title="The Four Seasons - Spring",
-            album="Vivaldi: The Four Seasons",
+            title="Opera Excerpt I",
+            album="Vivaldi Operas Vol. 1",
             artist="Academy of St Martin",
             composer="Vivaldi",
             _genre="Classical",
             _form="Concerto",
             _instrument="Violin",
+            _catalogue="Vivaldi Operas",
         ),
         MockMediaTrack(
             filepath="track4.mp3",
@@ -412,6 +419,7 @@ def mock_tracks():
             _genre="Jazz",
             _form="Jazz Standard",
             _instrument="Piano",
+            _catalogue="Time Out",
         ),
         MockMediaTrack(
             filepath="track5.mp3",
@@ -422,6 +430,7 @@ def mock_tracks():
             _genre="Jazz",
             _form="Jazz Standard",
             _instrument="Piano",
+            _catalogue="Time Out",
         ),
         MockMediaTrack(
             filepath="track6.mp3",
@@ -432,6 +441,18 @@ def mock_tracks():
             _genre="Rock",
             _form="Rock Song",
             _instrument="Guitar",
+            _catalogue="Led Zeppelin IV",
+        ),
+        MockMediaTrack(
+            filepath="track7.mp3",
+            title="Opera Excerpt II",
+            album="Vivaldi Operas Vol. 2",
+            artist="Academy of St Martin",
+            composer="Vivaldi",
+            _genre="Classical",
+            _form="Concerto",
+            _instrument="Violin",
+            _catalogue="Vivaldi Operas",
         ),
     ]
 

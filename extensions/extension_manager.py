@@ -422,6 +422,7 @@ class ExtensionManager:
         # Not music patterns to detect
         patterns = [
             r'biography',
+            r'(^|\W)RPG',
         ]
         return self._do_check(b, patterns)
 

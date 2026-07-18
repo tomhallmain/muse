@@ -3039,6 +3039,10 @@ msgstr "Form"
 msgid "Instrument"
 msgstr "Instrument"
 
+#: utils/globals.py:153 utils/globals.py:338 utils/globals.py:407
+msgid "Catalogue"
+msgstr "Catalogue"
+
 #: utils/globals.py:228 utils/globals.py:406
 msgid "Random"
 msgstr "Random"
@@ -3070,6 +3074,10 @@ msgstr "Form Shuffle"
 #: utils/globals.py:235
 msgid "Instrument Shuffle"
 msgstr "Instrument Shuffle"
+
+#: utils/globals.py:236
+msgid "Catalogue Shuffle"
+msgstr "Catalogue Shuffle"
 
 #: utils/globals.py:291
 msgid "All Music"
@@ -3174,6 +3182,10 @@ msgstr "Forms"
 #: utils/globals.py:561
 msgid "Instruments"
 msgstr "Instruments"
+
+#: utils/globals.py:562
+msgid "Catalogues"
+msgstr "Catalogues"
 
 #: utils/globals.py:606
 msgid "Remove word/phrase (only the blacklisted part)"

@@ -33,6 +33,7 @@ logger = get_logger(__name__)
 
 class LibraryDataSearch:
     def __init__(self, all="", title="", album="", artist="", composer="", genre="", instrument="", form="",
+                 catalogue="",
                  selected_track_path=None, stored_results_count=0, max_results=200, id=None, offset=0):
         self.all = all.lower()
         self.title = title.lower()
@@ -42,6 +43,7 @@ class LibraryDataSearch:
         self.genre = genre.lower()
         self.instrument = instrument.lower()
         self.form = form.lower()
+        self.catalogue = catalogue.lower()
         self.stored_results_count = stored_results_count
         self.selected_track_path = selected_track_path
         self.max_results = max_results
@@ -53,7 +55,7 @@ class LibraryDataSearch:
 
     def is_valid(self):
         all_fields_empty = True
-        for name in ["all", "title", "album", "artist", "composer", "genre", "instrument", "form"]:
+        for name in ["all", "title", "album", "artist", "composer", "genre", "instrument", "form", "catalogue"]:
             field = getattr(self, name)
             if field is not None and field.strip() != "":
                 all_fields_empty = False
@@ -110,7 +112,9 @@ class LibraryDataSearch:
                 attrs_to_get.append(("instrument", "get_instrument"))
             if len(self.form) > 0:
                 attrs_to_get.append(("form", "get_form"))
-            
+            if len(self.catalogue) > 0:
+                attrs_to_get.append(("catalogue", "get_catalogue"))
+
             is_match = True
             for search_attr, track_attr in attrs_to_get:
                 track_value = getattr(audio_track, track_attr)
@@ -145,7 +149,7 @@ class LibraryDataSearch:
             return
         search_field = None
         if attr is None:
-            for _attr in ["title", "album", "artist", "composer", "genre", "instrument", "form"]:
+            for _attr in ["title", "album", "artist", "composer", "genre", "instrument", "form", "catalogue"]:
                 if len(getattr(self, _attr)) > 0:
                     search_field = _attr
                     attr = self._get_searchable_track_attr(_attr)
@@ -202,6 +206,8 @@ class LibraryDataSearch:
             return "get_instrument"
         elif search_attr  == "form":
             return "get_form"
+        elif search_attr == "catalogue":
+            return "get_catalogue"
         else:
             raise Exception(f"Invalid search attribute: {search_attr}")
 
@@ -210,6 +216,8 @@ class LibraryDataSearch:
             return PlaylistSortType.TITLE
         elif len(self.album) > 0:
             return PlaylistSortType.ALBUM_SHUFFLE
+        elif len(self.catalogue) > 0:
+            return PlaylistSortType.CATALOGUE_SHUFFLE
         elif len(self.artist) > 0:
             return PlaylistSortType.ARTIST_SHUFFLE
         elif len(self.composer) > 0:
@@ -231,7 +239,7 @@ class LibraryDataSearch:
 
     def __str__(self) -> str:
         out = ""
-        for _attr in ["all", "title", "album", "artist", "composer", "genre", "instrument", "form"]:
+        for _attr in ["all", "title", "album", "artist", "composer", "genre", "instrument", "form", "catalogue"]:
             if len(getattr(self, _attr)) > 0:
                 out += _attr + ": \"" + getattr(self, _attr) + "\", "
         return out[:-2]
@@ -245,6 +253,7 @@ class LibraryDataSearch:
             instrument=self.instrument,
             form=self.form,
             album=self.album,
+            catalogue=self.catalogue,
         )
 
     def matches_no_selected_track_path(self, value: object) -> bool:
@@ -282,6 +291,7 @@ class LibraryDataSearch:
             "genre": self.genre,
             "instrument": self.instrument,
             "form": self.form,
+            "catalogue": self.catalogue,
             "selected_track_path": self.selected_track_path,
             "stored_results_count": self.stored_results_count,
             "max_results": self.max_results,

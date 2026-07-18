@@ -22,6 +22,7 @@ def _make_tracks(*specs):
             _genre="Classical",
             _form="Symphony",
             _instrument="Orchestra",
+            _catalogue=album,
         ))
     return tracks
 

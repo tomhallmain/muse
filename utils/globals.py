@@ -94,6 +94,7 @@ class PlaylistSortType(Enum):
     GENRE_SHUFFLE = 'GENRE_SHUFFLE'
     FORM_SHUFFLE = 'FORM_SHUFFLE'
     INSTRUMENT_SHUFFLE = 'INSTRUMENT_SHUFFLE'
+    CATALOGUE_SHUFFLE = 'CATALOGUE_SHUFFLE'
 
     def is_grouping_type(self):
         return self not in [PlaylistSortType.RANDOM, PlaylistSortType.SEQUENCE]
@@ -107,7 +108,8 @@ class PlaylistSortType(Enum):
             self.COMPOSER_SHUFFLE: 'composer',
             self.GENRE_SHUFFLE: 'get_genre',
             self.FORM_SHUFFLE: 'get_form',
-            self.INSTRUMENT_SHUFFLE: 'get_instrument'
+            self.INSTRUMENT_SHUFFLE: 'get_instrument',
+            self.CATALOGUE_SHUFFLE: 'get_catalogue'
         }[self]
 
     def grouping_list_name_mapping(self):
@@ -119,7 +121,8 @@ class PlaylistSortType(Enum):
             self.COMPOSER_SHUFFLE: HistoryType.COMPOSERS,
             self.GENRE_SHUFFLE: HistoryType.GENRES,
             self.FORM_SHUFFLE: HistoryType.FORMS,
-            self.INSTRUMENT_SHUFFLE: HistoryType.INSTRUMENTS
+            self.INSTRUMENT_SHUFFLE: HistoryType.INSTRUMENTS,
+            self.CATALOGUE_SHUFFLE: HistoryType.CATALOGUES
         }[self]
 
     def get_translation(self):
@@ -131,7 +134,8 @@ class PlaylistSortType(Enum):
             PlaylistSortType.COMPOSER_SHUFFLE,
             PlaylistSortType.GENRE_SHUFFLE,
             PlaylistSortType.FORM_SHUFFLE,
-            PlaylistSortType.INSTRUMENT_SHUFFLE
+            PlaylistSortType.INSTRUMENT_SHUFFLE,
+            PlaylistSortType.CATALOGUE_SHUFFLE
         ]
         return PlaylistSortType.get_translated_names()[types.index(self)]
 
@@ -150,20 +154,23 @@ class PlaylistSortType(Enum):
             return _("Form")
         if self == PlaylistSortType.INSTRUMENT_SHUFFLE:
             return _("Instrument")
+        if self == PlaylistSortType.CATALOGUE_SHUFFLE:
+            return _("Catalogue")
         raise Exception(f"Unhandled sort type {self}")
 
     def get_scope_priority(self) -> int:
         """
         Returns the scope priority/size for sorting purposes.
         Higher numbers indicate larger scopes (more tracks typically match).
-        Priority order: GENRE > COMPOSER > ARTIST > INSTRUMENT > FORM > ALBUM > RANDOM/SEQUENCE
+        Priority order: GENRE > COMPOSER > ARTIST > INSTRUMENT > FORM > CATALOGUE > ALBUM > RANDOM/SEQUENCE
         """
         priority_map = {
-            PlaylistSortType.GENRE_SHUFFLE: 6,
-            PlaylistSortType.COMPOSER_SHUFFLE: 5,
-            PlaylistSortType.ARTIST_SHUFFLE: 4,
-            PlaylistSortType.INSTRUMENT_SHUFFLE: 3,
-            PlaylistSortType.FORM_SHUFFLE: 2,
+            PlaylistSortType.GENRE_SHUFFLE: 7,
+            PlaylistSortType.COMPOSER_SHUFFLE: 6,
+            PlaylistSortType.ARTIST_SHUFFLE: 5,
+            PlaylistSortType.INSTRUMENT_SHUFFLE: 4,
+            PlaylistSortType.FORM_SHUFFLE: 3,
+            PlaylistSortType.CATALOGUE_SHUFFLE: 2,
             PlaylistSortType.ALBUM_SHUFFLE: 1,
             PlaylistSortType.RANDOM: 0,
             PlaylistSortType.SEQUENCE: 0,
@@ -171,8 +178,9 @@ class PlaylistSortType(Enum):
         return priority_map.get(self, 0)
 
     @staticmethod
-    def get_largest_scope_from_search_fields(composer: str = "", artist: str = "", genre: str = "", 
-                                             instrument: str = "", form: str = "", album: str = "") -> 'PlaylistSortType':
+    def get_largest_scope_from_search_fields(composer: str = "", artist: str = "", genre: str = "",
+                                             instrument: str = "", form: str = "", album: str = "",
+                                             catalogue: str = "") -> 'PlaylistSortType':
         """
         Determines the largest scope from the provided search fields.
         Returns the PlaylistSortType corresponding to the field with the largest scope.
@@ -185,6 +193,7 @@ class PlaylistSortType(Enum):
             (genre, PlaylistSortType.GENRE_SHUFFLE),
             (instrument, PlaylistSortType.INSTRUMENT_SHUFFLE),
             (form, PlaylistSortType.FORM_SHUFFLE),
+            (catalogue, PlaylistSortType.CATALOGUE_SHUFFLE),
             (album, PlaylistSortType.ALBUM_SHUFFLE),
         ]
         
@@ -233,6 +242,7 @@ class PlaylistSortType(Enum):
             _('Genre Shuffle'),
             _('Form Shuffle'),
             _('Instrument Shuffle'),
+            _('Catalogue Shuffle'),
         ]
 
     @staticmethod
@@ -245,7 +255,8 @@ class PlaylistSortType(Enum):
             PlaylistSortType.COMPOSER_SHUFFLE,
             PlaylistSortType.GENRE_SHUFFLE,
             PlaylistSortType.FORM_SHUFFLE,
-            PlaylistSortType.INSTRUMENT_SHUFFLE
+            PlaylistSortType.INSTRUMENT_SHUFFLE,
+            PlaylistSortType.CATALOGUE_SHUFFLE
         ]
         try:
             return types[PlaylistSortType.get_translated_names().index(translation)]
@@ -312,6 +323,7 @@ class TrackAttribute(Enum):
     GENRE = "genre"
     FORM = "form"
     INSTRUMENT = "instrument"
+    CATALOGUE = "catalogue"
 
     def get_translation(self):
         types = [
@@ -322,6 +334,7 @@ class TrackAttribute(Enum):
             TrackAttribute.GENRE,
             TrackAttribute.FORM,
             TrackAttribute.INSTRUMENT,
+            TrackAttribute.CATALOGUE,
         ]
         return TrackAttribute.get_translated_names()[types.index(self)]
 
@@ -335,6 +348,7 @@ class TrackAttribute(Enum):
             _('Genre'),
             _('Form'),
             _('Instrument'),
+            _('Catalogue'),
         ]
 
     @staticmethod
@@ -347,6 +361,7 @@ class TrackAttribute(Enum):
             TrackAttribute.GENRE,
             TrackAttribute.FORM,
             TrackAttribute.INSTRUMENT,
+            TrackAttribute.CATALOGUE,
         ]
         try:
             return types[TrackAttribute.get_translated_names().index(translation)]
@@ -366,6 +381,8 @@ class TrackAttribute(Enum):
             return PlaylistSortType.FORM_SHUFFLE
         elif self == TrackAttribute.ALBUM:
             return PlaylistSortType.ALBUM_SHUFFLE
+        elif self == TrackAttribute.CATALOGUE:
+            return PlaylistSortType.CATALOGUE_SHUFFLE
         else:
             return PlaylistSortType.RANDOM
 
@@ -536,6 +553,7 @@ class HistoryType(Enum):
     GENRES = "recently_played_genres"
     FORMS = "recently_played_forms"
     INSTRUMENTS = "recently_played_instruments"
+    CATALOGUES = "recently_played_catalogues"
 
     def get_translation(self):
         types = [
@@ -546,6 +564,7 @@ class HistoryType(Enum):
             HistoryType.GENRES,
             HistoryType.FORMS,
             HistoryType.INSTRUMENTS,
+            HistoryType.CATALOGUES,
         ]
         return HistoryType.get_translated_names()[types.index(self)]
 
@@ -559,6 +578,7 @@ class HistoryType(Enum):
             _('Genres'),
             _('Forms'),
             _('Instruments'),
+            _('Catalogues'),
         ]
 
     @staticmethod
@@ -571,6 +591,7 @@ class HistoryType(Enum):
             HistoryType.GENRES,
             HistoryType.FORMS,
             HistoryType.INSTRUMENTS,
+            HistoryType.CATALOGUES,
         ]
         try:
             return types[HistoryType.get_translated_names().index(translation)]
@@ -586,7 +607,8 @@ class HistoryType(Enum):
             HistoryType.COMPOSERS: TrackAttribute.COMPOSER,
             HistoryType.GENRES: TrackAttribute.GENRE,
             HistoryType.FORMS: TrackAttribute.FORM,
-            HistoryType.INSTRUMENTS: TrackAttribute.INSTRUMENT
+            HistoryType.INSTRUMENTS: TrackAttribute.INSTRUMENT,
+            HistoryType.CATALOGUES: TrackAttribute.CATALOGUE
         }[self]
 
 

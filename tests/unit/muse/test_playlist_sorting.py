@@ -15,6 +15,7 @@ class TestPlaylistSorting:
         self.original_genres = Playlist.recently_played_genres.copy()
         self.original_forms = Playlist.recently_played_forms.copy()
         self.original_instruments = Playlist.recently_played_instruments.copy()
+        self.original_catalogues = Playlist.recently_played_catalogues.copy()
 
         # Set up mock historical data
         Playlist.recently_played_filepaths = [
@@ -52,6 +53,11 @@ class TestPlaylistSorting:
             "Orchestra",
             "Trumpet",
         ]
+        Playlist.recently_played_catalogues = [
+            "Mozart: Symphonies",
+            "Bach: Complete Organ Works",
+            "The Riverbend Sessions",
+        ]
 
         yield
 
@@ -63,6 +69,7 @@ class TestPlaylistSorting:
         Playlist.recently_played_genres = self.original_genres
         Playlist.recently_played_forms = self.original_forms
         Playlist.recently_played_instruments = self.original_instruments
+        Playlist.recently_played_catalogues = self.original_catalogues
 
     def test_sequence_sort(self, mock_data_callbacks, mock_tracks):
         """Test sequential sorting (no randomization)."""
@@ -222,6 +229,33 @@ class TestPlaylistSorting:
                 for i in range(len(instrument_tracks) - 1):
                     assert instrument_tracks[i].get_instrument() == instrument_tracks[i + 1].get_instrument()
 
+    def test_catalogue_shuffle(self, mock_data_callbacks, mock_tracks):
+        """Test catalogue shuffle - tracks from different albums in the same catalogue
+        (e.g. different Vol. N releases) should stay together."""
+        playlist = Playlist(
+            tracks=[t.filepath for t in mock_tracks],
+            _type=PlaylistSortType.CATALOGUE_SHUFFLE,
+            data_callbacks=mock_data_callbacks
+        )
+
+        # Sanity check the fixture actually has a catalogue spanning multiple albums.
+        vivaldi_tracks = [t for t in mock_tracks if t.get_catalogue() == "Vivaldi Operas"]
+        assert len({t.album for t in vivaldi_tracks}) > 1
+
+        # Get all unique catalogues and their tracks
+        catalogues = {}
+        for track in playlist.sorted_tracks:
+            catalogue = track.get_catalogue()
+            if catalogue not in catalogues:
+                catalogues[catalogue] = []
+            catalogues[catalogue].append(track)
+
+        # Verify tracks from the same catalogue are consecutive
+        for catalogue_tracks in catalogues.values():
+            if len(catalogue_tracks) > 1:
+                for i in range(len(catalogue_tracks) - 1):
+                    assert catalogue_tracks[i].get_catalogue() == catalogue_tracks[i + 1].get_catalogue()
+
     def test_random_shuffle(self, mock_data_callbacks, mock_tracks):
         """Test random shuffle."""
         playlist = Playlist(
@@ -255,4 +289,5 @@ class TestPlaylistSorting:
         assert track.composer == Playlist.recently_played_composers[0]
         assert track.get_genre() == Playlist.recently_played_genres[0]
         assert track.get_form() == Playlist.recently_played_forms[0]
-        assert track.get_instrument() == Playlist.recently_played_instruments[0] 
+        assert track.get_instrument() == Playlist.recently_played_instruments[0]
+        assert track.get_catalogue() == Playlist.recently_played_catalogues[0]

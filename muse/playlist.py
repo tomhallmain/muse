@@ -114,6 +114,7 @@ class Playlist:
     recently_played_genres: List[str] = []
     recently_played_forms: List[str] = []
     recently_played_instruments: List[str] = []
+    recently_played_catalogues: List[str] = []
 
     @staticmethod
     def load_recently_played_lists() -> None:
@@ -152,6 +153,8 @@ class Playlist:
             recently_played_check_count = int(max(recently_played_check_count / 4, 1))
         elif sort_type == PlaylistSortType.ALBUM_SHUFFLE:
             recently_played_check_count = int(max(recently_played_check_count / 2, 1))
+        elif sort_type == PlaylistSortType.CATALOGUE_SHUFFLE:
+            recently_played_check_count = int(max(recently_played_check_count / 3, 1))
         return recently_played_check_count
 
     @staticmethod
@@ -163,6 +166,7 @@ class Playlist:
         Playlist.update_list(Playlist.recently_played_genres, track.get_genre(), sort_type=PlaylistSortType.GENRE_SHUFFLE)
         Playlist.update_list(Playlist.recently_played_forms, track.get_form(), sort_type=PlaylistSortType.FORM_SHUFFLE)
         Playlist.update_list(Playlist.recently_played_instruments, track.get_instrument(), sort_type=PlaylistSortType.INSTRUMENT_SHUFFLE)
+        Playlist.update_list(Playlist.recently_played_catalogues, track.get_catalogue(), sort_type=PlaylistSortType.CATALOGUE_SHUFFLE)
 
     def __init__(self, tracks: List[str] = [], _type: PlaylistSortType = PlaylistSortType.SEQUENCE,
                  data_callbacks: Optional['LibraryDataCallbacks'] = None, start_track: Optional[MediaTrack] = None,

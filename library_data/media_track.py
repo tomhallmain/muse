@@ -25,6 +25,13 @@ _ = I18N._
 # Get logger for this module
 logger = get_logger(__name__)
 
+# Marker words/abbreviations (case-insensitive) that indicate an album is one volume of a
+# broader "catalogue" release, e.g. "Beethoven Sonatas Vol. 1" -> catalogue "Beethoven Sonatas".
+# Vols?\.? / Volumes? / Volumen cover en/es/fr/it/pt; Bd. is the German "Band" abbreviation
+# (bare "Band" is deliberately excluded - it collides with "band" the music group); Том is Russian.
+_CATALOGUE_MARKER_RE = re.compile(r'\b(?:Volumes?|Volumen|Vols?\.?|Bd\.|Том)(?!\w)', re.IGNORECASE)
+_CATALOGUE_TRAILING_SEP_RE = re.compile(r'[\s:,\-–—]+$')
+
 # Optional third party imports
 try:
     import music_tag
@@ -295,6 +302,7 @@ class MediaTrack:
         self.artwork = None
         self.form = None
         self.instrument = None
+        self.catalogue = None
 
         # Unused tags:
         # bitrate : 128000
@@ -382,6 +390,7 @@ class MediaTrack:
         track.artwork = None
         track.form = row["form"]
         track.instrument = row["instrument"]
+        track.catalogue = None  # not persisted; derived lazily by get_catalogue()
         is_video = row["is_video"]
         track.is_video = bool(is_video) if is_video is not None else None
         track._is_extended = False
@@ -643,6 +652,26 @@ class MediaTrack:
             else:
                 self.instrument = ""
         return self.instrument
+
+    @staticmethod
+    def _derive_catalogue(album):
+        """Strip a Vol./Volume/transliteration marker and anything after it from an album
+        name, to identify the broader catalogue release it belongs to. Falls back to the
+        original album string if no marker is found, or if stripping would leave nothing
+        (e.g. a marker-only album like "Vol. 1"), so unrelated albums never get bucketed
+        together."""
+        if not album:
+            return album
+        match = _CATALOGUE_MARKER_RE.search(album)
+        if not match:
+            return album
+        candidate = _CATALOGUE_TRAILING_SEP_RE.sub('', album[:match.start()]).strip()
+        return candidate if candidate else album
+
+    def get_catalogue(self):
+        if self.catalogue is None:
+            self.catalogue = MediaTrack._derive_catalogue(self.album) if self.album else ""
+        return self.catalogue
 
     def is_stream(self):
         return hasattr(self, "_is_stream") and self._is_stream

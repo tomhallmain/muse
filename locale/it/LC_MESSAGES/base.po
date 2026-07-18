@@ -3014,6 +3014,10 @@ msgstr "Forma musicale"
 msgid "Instrument"
 msgstr "Strumento musicale"
 
+#: utils/globals.py:153 utils/globals.py:338 utils/globals.py:407
+msgid "Catalogue"
+msgstr "Catalogo"
+
 #: ui_qt/rename_confirmation_window.py:98 ui_qt/track_details_window.py:151
 msgid "Lyrics"
 msgstr "Testi"
@@ -4070,6 +4074,10 @@ msgstr "Mischiare le forme"
 msgid "Instrument Shuffle"
 msgstr "Mischia di strumenti"
 
+#: utils/globals.py:236
+msgid "Catalogue Shuffle"
+msgstr "Mischia di cataloghi"
+
 #: utils/globals.py:291
 msgid "All Music"
 msgstr "Tutta la musica"
@@ -4157,6 +4165,10 @@ msgstr "Forme"
 #: utils/globals.py:561
 msgid "Instruments"
 msgstr "Strumenti"
+
+#: utils/globals.py:562
+msgid "Catalogues"
+msgstr "Cataloghi"
 
 #: utils/globals.py:606
 msgid "Remove word/phrase (only the blacklisted part)"
