@@ -751,6 +751,7 @@ class ProtectedActions(Enum):
     VIEW_LIBRARY = "view_library"
     VIEW_HISTORY = "view_history"
     EDIT_COMPOSERS = "edit_composers"
+    EDIT_FORMS = "edit_forms"
     EDIT_PERSONAS = "edit_personas"
     EDIT_SCHEDULES = "edit_schedules"
     EDIT_EXTENSIONS = "edit_extensions"
@@ -778,6 +779,7 @@ class ProtectedActions(Enum):
             ProtectedActions.VIEW_LIBRARY: _("View Library"),
             ProtectedActions.VIEW_HISTORY: _("View History"),
             ProtectedActions.EDIT_COMPOSERS: _("Edit Composers"),
+            ProtectedActions.EDIT_FORMS: _("Edit Forms"),
             ProtectedActions.EDIT_PERSONAS: _("Edit Personas"),
             ProtectedActions.EDIT_SCHEDULES: _("Edit Schedules"),
             ProtectedActions.EDIT_EXTENSIONS: _("Edit Extensions"),

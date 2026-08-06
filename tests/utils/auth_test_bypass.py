@@ -56,6 +56,7 @@ def install_password_bypass(monkeypatch) -> None:
         "ui_qt.history_window",
         "ui_qt.favorites_window",
         "ui_qt.composers_window",
+        "ui_qt.forms_window",
         "ui_qt.playlist_window",
         "ui_qt.configuration_window",
         "ui_qt.extensions_window",

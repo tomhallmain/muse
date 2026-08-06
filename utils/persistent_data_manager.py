@@ -13,6 +13,7 @@ from muse.playlist import Playlist
 from muse.schedules_manager import SchedulesManager
 from ui_qt.composers_window import ComposersWindow
 from ui_qt.favorites_window import FavoritesWindow
+from ui_qt.forms_window import FormsWindow
 from ui_qt.search_window import SearchWindow
 from utils.audio_device_manager import AudioDeviceManager
 
@@ -31,6 +32,7 @@ class PersistentDataManager:
         ExtensionManager.store_extensions()
         SearchWindow.store_recent_searches()
         ComposersWindow.store_recent_searches()
+        FormsWindow.store_recent_searches()
         FavoritesWindow.store_favorites()
         AudioDeviceManager.store_settings()
         PlaybackStateManager.store_override_sort_config()
@@ -48,6 +50,7 @@ class PersistentDataManager:
         ExtensionManager.load_extensions()
         SearchWindow.load_recent_searches()
         ComposersWindow.load_recent_searches()
+        FormsWindow.load_recent_searches()
         FavoritesWindow.load_favorites()
         AudioDeviceManager.load_settings()
         PlaybackStateManager.load_override_sort_config()

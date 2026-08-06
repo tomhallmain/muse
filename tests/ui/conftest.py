@@ -89,6 +89,7 @@ def _reset_window_state():
     from ui_qt.composers_window import ComposersWindow
     from ui_qt.configuration_window import ConfigurationWindow
     from ui_qt.favorites_window import FavoritesWindow
+    from ui_qt.forms_window import FormsWindow
     from ui_qt.history_window import HistoryWindow
     from ui_qt.library_window import LibraryWindow
     from ui_qt.playlist_window import MasterPlaylistWindow
@@ -102,6 +103,9 @@ def _reset_window_state():
     ComposersWindow.recent_searches = []
     ComposersWindow.top_level = None
     ComposersWindow.details_window = None
+    FormsWindow.recent_searches = []
+    FormsWindow.top_level = None
+    FormsWindow.details_window = None
     ConfigurationWindow.top_level = None
     HistoryWindow.top_level = None
     LibraryWindow.top_level = None

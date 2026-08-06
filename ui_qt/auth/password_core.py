@@ -18,6 +18,7 @@ class SecurityConfig:
         ProtectedActions.VIEW_LIBRARY.value: False,
         ProtectedActions.VIEW_HISTORY.value: False,
         ProtectedActions.EDIT_COMPOSERS.value: False,
+        ProtectedActions.EDIT_FORMS.value: False,
         ProtectedActions.EDIT_SCHEDULES.value: True,
         ProtectedActions.EDIT_EXTENSIONS.value: False,
         ProtectedActions.EDIT_PLAYLISTS.value: False,

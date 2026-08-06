@@ -232,6 +232,7 @@ def _patch_app_info_cache_singleton(monkeypatch, cache_instance) -> None:
         "muse.prompter",
         "muse.schedules_manager",
         "ui_qt.configuration_window",
+        "ui_qt.forms_window",
     ):
         try:
             module = importlib.import_module(module_name)
@@ -341,6 +342,19 @@ def isolated_singletons(tmp_path, monkeypatch):
         monkeypatch.setattr(
             _composer_mod, "composers_data", _composer_mod.ComposersData()
         )
+    except Exception:
+        pass
+    # Same for forms_data (DB-backed; must use the isolated in-memory connection).
+    try:
+        import library_data.form as _form_mod
+        _fresh_forms = _form_mod.FormsData()
+        monkeypatch.setattr(_form_mod, "forms_data", _fresh_forms)
+        try:
+            import ui_qt.forms_window as _forms_window_mod
+            if hasattr(_forms_window_mod, "forms_data"):
+                monkeypatch.setattr(_forms_window_mod, "forms_data", _fresh_forms)
+        except Exception:
+            pass
     except Exception:
         pass
 
