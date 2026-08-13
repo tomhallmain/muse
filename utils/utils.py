@@ -535,35 +535,31 @@ class Utils:
     @staticmethod
     def parse_isod(isostring) -> float:
         """
-        Parse the ISO8601 duration string as hours, minutes, seconds to seconds
-        Example: "PT3H2M59.989333S"
+        Parse the ISO8601 duration string as weeks, days, hours, minutes,
+        seconds to seconds. Example: "PT3H2M59.989333S"
+
+        The date portion (weeks/days) and time portion (hours/minutes/
+        seconds) are parsed independently around the "T" separator, rather
+        than requiring a literal "PT" substring: some APIs (e.g. YouTube,
+        for a live broadcast with no fixed duration yet) report a date-only
+        duration with no time portion at all, e.g. "P0D" or "P0".
         """
-        separators = {
-            "PT": None,
-            "W": "weeks",
-            "D": "days",
-            "H": "hours",
-            "M": "minutes",
-            "S": "seconds",
-        }
-        duration_vals = {}
         original_isostring = str(isostring)
-        for sep, unit in separators.items():
-            partitioned = isostring.partition(sep)
-            if partitioned[1] == sep:
-                # Matched this unit
-                isostring = partitioned[2]
-                if sep == "PT":
-                    continue # Successful prefix match
-                dur_str = partitioned[0]
-                dur_val = float(dur_str) if "." in dur_str else int(dur_str)
-                duration_vals.update({unit: dur_val})
-            else:
-                if sep == "PT":
-                    raise ValueError("Missing PT prefix: " + original_isostring)
-                else:
-                    # No match for this unit: it's absent
-                    duration_vals.update({unit: 0})
+        if not original_isostring.startswith("P"):
+            raise ValueError("Missing P prefix: " + original_isostring)
+        date_part, _, time_part = original_isostring[1:].partition("T")
+        duration_vals = {}
+        for part, units in (
+            (date_part, {"W": "weeks", "D": "days"}),
+            (time_part, {"H": "hours", "M": "minutes", "S": "seconds"}),
+        ):
+            for sep, unit in units.items():
+                partitioned = part.partition(sep)
+                if partitioned[1] == sep:
+                    # Matched this unit
+                    dur_str = partitioned[0]
+                    duration_vals[unit] = float(dur_str) if "." in dur_str else int(dur_str)
+                    part = partitioned[2]
         td = timedelta(**duration_vals)
         return td.total_seconds()
 
