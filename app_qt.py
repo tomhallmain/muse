@@ -248,6 +248,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
                 (_("History"), self.open_history_window),
                 (_("Composers"), self.open_composers_window),
                 (_("Forms"), self.open_forms_window),
+                (_("Genres"), self.open_genres_window),
                 (_("Personas"), self.open_personas_window),
                 None,
                 (_("Internet Radio"), self.open_network_media_window),
@@ -1555,6 +1556,11 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
     def open_forms_window(self):
         from ui_qt.forms_window import FormsWindow
         FormsWindow(self, self.app_actions)
+
+    @require_password(ProtectedActions.EDIT_GENRES)
+    def open_genres_window(self):
+        from ui_qt.genres_window import GenresWindow
+        GenresWindow(self, self.app_actions)
 
     @require_password(ProtectedActions.EDIT_PERSONAS)
     def open_personas_window(self):

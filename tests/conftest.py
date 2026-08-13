@@ -233,6 +233,7 @@ def _patch_app_info_cache_singleton(monkeypatch, cache_instance) -> None:
         "muse.schedules_manager",
         "ui_qt.configuration_window",
         "ui_qt.forms_window",
+        "ui_qt.genres_window",
     ):
         try:
             module = importlib.import_module(module_name)
@@ -353,6 +354,19 @@ def isolated_singletons(tmp_path, monkeypatch):
             import ui_qt.forms_window as _forms_window_mod
             if hasattr(_forms_window_mod, "forms_data"):
                 monkeypatch.setattr(_forms_window_mod, "forms_data", _fresh_forms)
+        except Exception:
+            pass
+    except Exception:
+        pass
+    # Same for genre_data (DB-backed; must use the isolated in-memory connection).
+    try:
+        import library_data.genre as _genre_mod
+        _fresh_genres = _genre_mod.GenresData()
+        monkeypatch.setattr(_genre_mod, "genre_data", _fresh_genres)
+        try:
+            import ui_qt.genres_window as _genres_window_mod
+            if hasattr(_genres_window_mod, "genre_data"):
+                monkeypatch.setattr(_genres_window_mod, "genre_data", _fresh_genres)
         except Exception:
             pass
     except Exception:
