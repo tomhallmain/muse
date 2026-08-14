@@ -29,7 +29,7 @@ from lib.multi_display_qt import SmartWindow
 from library_data.blacklist import BlacklistItem, Blacklist
 from ui_qt.app_style import AppStyle
 from ui_qt.auth.password_utils import require_password
-from utils.globals import ProtectedActions, BlacklistMode
+from utils.globals import ProtectedActions, BlacklistMode, BlacklistItemType
 from utils.app_info_cache import app_info_cache
 from utils.translations import I18N
 
@@ -85,6 +85,7 @@ class BlacklistModifyWindow(SmartWindow):
             "use_word_boundary": self.blacklist_item.use_word_boundary,
             "exception_pattern": self.blacklist_item.exception_pattern,
             "use_space_as_optional_nonword": self.blacklist_item.use_space_as_optional_nonword,
+            "item_type": self.blacklist_item.item_type,
         }
 
         self.setStyleSheet(AppStyle.get_stylesheet())
@@ -108,6 +109,18 @@ class BlacklistModifyWindow(SmartWindow):
         self.enabled_checkbox = QCheckBox(_("Enabled"), self)
         self.enabled_checkbox.setChecked(self.blacklist_item.enabled)
         layout.addWidget(self.enabled_checkbox, row, 0)
+        row += 1
+
+        layout.addWidget(QLabel(_("Type"), self), row, 0)
+        self.type_combo = QComboBox(self)
+        self.type_combo.addItems(BlacklistItemType.display_values())
+        idx = self.type_combo.findText(self.blacklist_item.item_type.display())
+        if idx >= 0:
+            self.type_combo.setCurrentIndex(idx)
+        self.type_combo.setToolTip(
+            _("Scope this item to a specific kind of text (e.g. only channel names), or Any to check it everywhere, as before.")
+        )
+        layout.addWidget(self.type_combo, row, 1, 1, -1)
         row += 1
 
         self.regex_checkbox = QCheckBox(_("Use glob-based regex"), self)
@@ -163,6 +176,7 @@ class BlacklistModifyWindow(SmartWindow):
             "use_word_boundary": self.word_boundary_checkbox.isChecked(),
             "use_space_as_optional_nonword": self.space_as_optional_nonword_checkbox.isChecked(),
             "exception_pattern": self.exception_pattern_edit.text().strip(),
+            "item_type": BlacklistItemType.from_display(self.type_combo.currentText()),
         }
         return current_values != self.original_values
 
@@ -188,6 +202,7 @@ class BlacklistModifyWindow(SmartWindow):
             use_word_boundary=self.word_boundary_checkbox.isChecked(),
             use_space_as_optional_nonword=self.space_as_optional_nonword_checkbox.isChecked(),
             exception_pattern=exception_pattern,
+            item_type=BlacklistItemType.from_display(self.type_combo.currentText()),
         )
 
     def finalize_blacklist_item(self):
@@ -457,8 +472,8 @@ If you are young, not sure, or even an adult, click the close button on this win
 
         # Table of items
         self.table = QTableWidget(self.content_widget)
-        self.table.setColumnCount(2)
-        self.table.setHorizontalHeaderLabels([_("Item"), _("Enabled")])
+        self.table.setColumnCount(3)
+        self.table.setHorizontalHeaderLabels([_("Item"), _("Enabled"), _("Type")])
         self.table.horizontalHeader().setSectionResizeMode(
             0, QHeaderView.ResizeMode.Stretch
         )
@@ -471,6 +486,7 @@ If you are young, not sure, or even an adult, click the close button on this win
             self.table.setItem(i, 0, QTableWidgetItem(item.display_text()))
             enabled_str = "✓" if item.enabled else _("Disabled")
             self.table.setItem(i, 1, QTableWidgetItem(enabled_str))
+            self.table.setItem(i, 2, QTableWidgetItem(item.item_type.display()))
 
         self.table.cellDoubleClicked.connect(self._on_table_double_click)
         self.content_layout.addWidget(self.table)

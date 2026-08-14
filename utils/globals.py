@@ -643,6 +643,49 @@ class BlacklistMode(Enum):
                 return mode
 
 
+class BlacklistItemType(Enum):
+    # An item's own default scope: not tied to a particular identity type,
+    # so it's checked in every typed query. What new items default to and
+    # what legacy (pre-type) items are treated as on load.
+    GENERAL = "general"
+    # Query-only wildcard: a caller passes this to mean "no type
+    # restriction, check every item" -- equivalent to omitting item_type.
+    # Never a valid value for an item's own type (see assignable_types());
+    # kept distinct from GENERAL so neither name has to carry both
+    # meanings ("this item is unscoped" vs. "this query isn't scoping").
+    ANY = "any"
+    ARTIST = "artist"
+    CHANNEL = "channel"
+
+    def __str__(self):
+        return self.value
+
+    def display(self):
+        _ = I18N._
+        display_map = {
+            BlacklistItemType.GENERAL: _(u"General"),
+            BlacklistItemType.ANY: _(u"Any"),
+            BlacklistItemType.ARTIST: _(u"Artist"),
+            BlacklistItemType.CHANNEL: _(u"Channel"),
+        }
+        return display_map.get(self, str(self))
+
+    @staticmethod
+    def assignable_types():
+        """Types a user can actually assign to an item. Excludes ANY, which only has meaning as a query filter."""
+        return [BlacklistItemType.GENERAL, BlacklistItemType.ARTIST, BlacklistItemType.CHANNEL]
+
+    @staticmethod
+    def display_values():
+        return [item_type.display() for item_type in BlacklistItemType.assignable_types()]
+
+    @staticmethod
+    def from_display(display_str):
+        for item_type in BlacklistItemType.assignable_types():
+            if item_type.display() == display_str:
+                return item_type
+
+
 class PersonaSex(Enum):
     """Enumeration of persona sex/gender options."""
     MALE = "M"

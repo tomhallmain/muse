@@ -2,8 +2,9 @@ import csv
 import json
 import os
 import re
+from typing import Optional
 
-from utils.globals import AppInfo, BlacklistMode
+from utils.globals import AppInfo, BlacklistItemType, BlacklistMode
 from utils.encryptor import symmetric_encrypt_data_to_file, symmetric_decrypt_data_from_file
 from utils.logging_setup import get_logger
 from utils.translations import I18N
@@ -142,12 +143,14 @@ class BlacklistItem:
         use_word_boundary: bool = True,
         use_space_as_optional_nonword: bool = True,
         exception_pattern: str = None,
+        item_type: BlacklistItemType = BlacklistItemType.GENERAL,
     ):
         self.enabled = enabled
         self.use_regex = use_regex
         self.use_word_boundary = use_word_boundary
         self.exception_pattern = exception_pattern
         self.use_space_as_optional_nonword = use_space_as_optional_nonword
+        self.item_type = item_type
         
         # Process the string based on the new property
         
@@ -213,6 +216,7 @@ class BlacklistItem:
             "use_word_boundary": self.use_word_boundary,
             "use_space_as_optional_nonword": self.use_space_as_optional_nonword,
             "exception_pattern": self.exception_pattern,
+            "type": self.item_type.value,
         }
 
     @classmethod
@@ -236,7 +240,17 @@ class BlacklistItem:
         exception_pattern = data.get("exception_pattern", None)
         if exception_pattern is not None and not isinstance(exception_pattern, str):
             exception_pattern = None
-        return cls(data["string"], enabled, use_regex, use_word_boundary, use_space_as_optional_nonword, exception_pattern)
+        item_type = cls._parse_item_type(data.get("type"))
+        return cls(data["string"], enabled, use_regex, use_word_boundary, use_space_as_optional_nonword, exception_pattern, item_type)
+
+    @staticmethod
+    def _parse_item_type(value: Optional[str]) -> BlacklistItemType:
+        """Parse a serialized type value. Missing, invalid, or ANY (never a valid item type) all default to GENERAL."""
+        try:
+            item_type = BlacklistItemType(value) if value is not None else BlacklistItemType.GENERAL
+        except ValueError:
+            return BlacklistItemType.GENERAL
+        return BlacklistItemType.GENERAL if item_type == BlacklistItemType.ANY else item_type
 
     def matches_tag(self, tag: str) -> bool:
         """Check if a tag matches this blacklist item.
@@ -377,7 +391,8 @@ class Blacklist:
                     item.use_regex,
                     item.use_word_boundary,
                     item.use_space_as_optional_nonword,
-                    item.exception_pattern
+                    item.exception_pattern,
+                    item.item_type.value,
                 ))
             # Sort to ensure consistent ordering
             version_data.sort()
@@ -467,33 +482,46 @@ class Blacklist:
         Blacklist.add_item(tag)
 
     @staticmethod
-    def find_blacklisted_items(text: str) -> dict:
+    def _item_applies(blacklist_item: "BlacklistItem", item_type: Optional[BlacklistItemType]) -> bool:
+        """Whether blacklist_item should be checked for a match of the given type.
+
+        item_type of None or ANY both mean "no type restriction requested" --
+        every item applies, matching pre-typed behavior exactly. Otherwise an
+        item applies if it's untyped (GENERAL) or typed to match.
+        """
+        if item_type is None or item_type == BlacklistItemType.ANY:
+            return True
+        return blacklist_item.item_type in (BlacklistItemType.GENERAL, item_type)
+
+    @staticmethod
+    def find_blacklisted_items(text: str, item_type: Optional[BlacklistItemType] = None) -> dict:
         """Find any blacklisted items in the given text.
-        
+
         Args:
             text: The text to check for blacklisted items
-            
+            item_type: If given, only items typed ANY or matching this type are checked
+
         Returns:
             dict: A dictionary mapping found blacklisted tags to their blacklist items.
                  Empty if no blacklisted items are found.
         """
         filtered = {}
         user_tags = text.split(',')
-        
+
         for tag in user_tags:
             # Clean the tag by removing parentheses and extra whitespace
             tag = tag.strip()
             if not tag:
                 continue
-                
+
             # Remove outer parentheses if they exist
             while tag.startswith('(') or tag.startswith('['):
                 tag = tag[1:].strip()
             while tag.endswith(')') or tag.endswith(']'):
                 tag = tag[:-1].strip()
-                
+
             for blacklist_item in Blacklist.TAG_BLACKLIST:
-                if not blacklist_item.enabled:
+                if not blacklist_item.enabled or not Blacklist._item_applies(blacklist_item, item_type):
                     continue
                 if blacklist_item.matches_tag(tag):
                     filtered[tag] = blacklist_item.string
@@ -509,16 +537,16 @@ class Blacklist:
             while tag.endswith(')') or tag.endswith(']'):
                 tag = tag[:-1].strip()
             for blacklist_item in Blacklist.TAG_BLACKLIST:
-                if not blacklist_item.enabled:
+                if not blacklist_item.enabled or not Blacklist._item_applies(blacklist_item, item_type):
                     continue
                 if blacklist_item.matches_tag(tag):
                     filtered[tag] = blacklist_item.string
                     break
-                    
+
         return filtered
 
     @staticmethod
-    def find_violated_patterns(text: str) -> set:
+    def find_violated_patterns(text: str, item_type: Optional[BlacklistItemType] = None) -> set:
         """Return the set of distinct blacklist patterns matched in text.
 
         Unlike find_blacklisted_items(), which keys its result on the matched
@@ -526,7 +554,7 @@ class Blacklist:
         (due to comma- and dot-splitting), this method deduplicates by pattern
         so that one real violation is always counted as one.
         """
-        return set(Blacklist.find_blacklisted_items(text).values())
+        return set(Blacklist.find_blacklisted_items(text, item_type).values())
 
     @staticmethod
     def format_violations_summary(violations: dict) -> str:
@@ -547,17 +575,22 @@ class Blacklist:
         return "\n".join(lines)
 
     @staticmethod
-    def get_violation_item(string: str) -> BlacklistItem:
+    def get_violation_item(string: str, item_type: Optional[BlacklistItemType] = None) -> BlacklistItem:
         """Check if a single string violates any blacklist items.
-        
+
         Args:
             string: The string to check against the blacklist
-            
+            item_type: If given, only items typed ANY or matching this type are checked
+
         Returns:
             BlacklistItem: The first blacklist item that matches the string, or None if no violations
         """
         for blacklist_item in Blacklist.TAG_BLACKLIST:
-            if blacklist_item.enabled and blacklist_item.matches_tag(string):
+            if (
+                blacklist_item.enabled
+                and Blacklist._item_applies(blacklist_item, item_type)
+                and blacklist_item.matches_tag(string)
+            ):
                 return blacklist_item
         return None
 
@@ -617,7 +650,8 @@ class Blacklist:
                         Blacklist.add_to_blacklist(BlacklistItem(item))
                     elif isinstance(item, dict) and 'string' in item:
                         enabled = item.get('enabled', True)
-                        Blacklist.add_to_blacklist(BlacklistItem(item['string'], enabled))
+                        item_type = BlacklistItem._parse_item_type(item.get('type'))
+                        Blacklist.add_to_blacklist(BlacklistItem(item['string'], enabled, item_type=item_type))
                     else:
                         logger.error(f"Invalid item type in JSON blacklist import: {type(item)}")
             else:
