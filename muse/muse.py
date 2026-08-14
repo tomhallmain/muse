@@ -112,8 +112,9 @@ class Muse:
 
     def get_spot_profile(self, previous_track=None, track_result=None, last_track_failed=False, skip_track=False,
                          grouping_type=None, get_upcoming_tracks_callback=None):
+        can_speak = self.args.muse and self.voice.can_speak
         return self.memory.get_spot_profile(previous_track, track_result, last_track_failed, skip_track,
-                                            grouping_type, get_upcoming_tracks_callback)
+                                            grouping_type, get_upcoming_tracks_callback, can_speak=can_speak)
 
     def set_get_playlist_callback(self, get_playlist_callback):
         self.get_playlist_callback = get_playlist_callback

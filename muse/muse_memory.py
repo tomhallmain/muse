@@ -329,13 +329,14 @@ class MuseMemory:
         return self.last_topic in topic_enums
 
     def get_spot_profile(self, previous_track=None, track_result=None, last_track_failed=False, skip_track=False,
-                         grouping_type=None, get_upcoming_tracks_callback=None):
+                         grouping_type=None, get_upcoming_tracks_callback=None, can_speak=True):
         from utils.globals import TrackResult
         if track_result is None:
             track_result = TrackResult()
         spot_profile = MuseSpotProfile(previous_track, track_result, last_track_failed, skip_track, grouping_type,
                                        get_previous_spot_profile_callback=self.get_previous_session_spot_profile,
-                                       get_upcoming_tracks_callback=get_upcoming_tracks_callback)
+                                       get_upcoming_tracks_callback=get_upcoming_tracks_callback,
+                                       can_speak=can_speak)
         self.update_all_spot_profiles(spot_profile)
         self.update_current_session_spot_profiles(spot_profile)
         return spot_profile

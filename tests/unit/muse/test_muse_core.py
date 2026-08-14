@@ -68,6 +68,23 @@ class TestMuseSpot:
         assert not profile_both.last_track_failed
         assert not profile_both.has_already_spoken
 
+    def test_muse_spot_skips_talk_about_something_when_cannot_speak(self, test_data_dir):
+        """No callback is supplied on purpose: get_last_spoken_profile() would
+        raise if it were reached, so a regression fails loudly instead of
+        passing silently."""
+        track1 = MediaTrack(str(test_data_dir / "sample_500KB.mp3"))
+        track2 = MediaTrack(str(test_data_dir / "sample_1MB.mp3"))
+
+        profile = MuseSpotProfile(
+            previous_track=track1,
+            track_result=TrackResult(track2),
+            last_track_failed=False,
+            skip_track=False,
+            grouping_type=None,
+            can_speak=False,
+        )
+        assert profile.talk_about_something is False
+
 @pytest.mark.unit
 class TestPlayback:
     def test_playback_config(self, mock_data_callbacks):

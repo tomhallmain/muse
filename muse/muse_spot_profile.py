@@ -33,9 +33,10 @@ class MuseSpotProfile:
                  track_result: TrackResult,
                  last_track_failed,
                  skip_track,
-                 grouping_type, 
+                 grouping_type,
                  get_previous_spot_profile_callback=None,
-                 get_upcoming_tracks_callback=None):
+                 get_upcoming_tracks_callback=None,
+                 can_speak=True):
         track = track_result.track
         old_grouping = track_result.old_grouping
         new_grouping = track_result.new_grouping
@@ -98,7 +99,7 @@ class MuseSpotProfile:
         before_chance = min(1.0, self.chance_speak_before_track * (self._GROUP_TRANSITION_BOOST if _should_boost else 1.0))
         self.speak_about_upcoming_track = track is not None and (track._is_extended or random.random() < before_chance)
 
-        self._calculate_talk_about_something(previous_track, _should_boost)
+        self._calculate_talk_about_something(previous_track, _should_boost, can_speak)
 
         self.has_already_spoken = False
         self.speaking_duration = 0.0  # seconds spent in maybe_dj; set by playback after speaking
@@ -118,8 +119,13 @@ class MuseSpotProfile:
         )
 
 
-    def _calculate_talk_about_something(self, previous_track, is_group_transition=False):
+    def _calculate_talk_about_something(self, previous_track, is_group_transition=False, can_speak=True):
         # Modify the talk_about_something probability calculation
+        if not can_speak:
+            # Nothing will ever be spoken this session; skip get_last_spoken_profile().
+            self.talk_about_something = False
+            logger.debug("Skipping talk-about-something calculation: Muse is not active")
+            return
         if previous_track is not None:
             base_chance = self.topic_discussion_chance_factor
             # At group transitions the DJ has more to discuss, so raise the ceiling.
