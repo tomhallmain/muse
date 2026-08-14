@@ -165,6 +165,60 @@ class TestAppShell:
         process_events_for(0.5)
         qapp.processEvents()
 
+    def test_toggle_fullscreen_hides_sidebar_and_title_bar(self, qapp, isolated_singletons):
+        """Fullscreen must hide the sidebar and title bar, not just resize the
+        window, otherwise the media frame isn't actually the only thing shown.
+
+        Escape must also exit fullscreen: it's the only way back once the
+        title bar (where the "Toggle Fullscreen" menu item lives) is hidden.
+        """
+        from PySide6.QtCore import Qt
+        from PySide6.QtTest import QTest
+
+        from app_qt import MuseAppQt
+
+        window = MuseAppQt()
+        window.show()
+        window.activateWindow()
+        process_events_for(0.3)
+
+        assert not window.fullscreen
+        assert window.sidebar.isVisible()
+        assert window.get_title_bar().isVisible()
+        assert not window.isFullScreen()
+
+        window.toggle_fullscreen()
+        process_events_for(0.2)
+
+        assert window.fullscreen
+        assert not window.sidebar.isVisible()
+        assert not window.get_title_bar().isVisible()
+        assert window.isFullScreen()
+
+        # Escape while not in fullscreen must be a no-op (window stays open).
+        window.toggle_fullscreen()  # back to normal
+        process_events_for(0.2)
+        QTest.keyClick(window, Qt.Key.Key_Escape)
+        process_events_for(0.2)
+        assert not window.fullscreen
+        assert window.isVisible()
+
+        # Escape while in fullscreen must exit it via the real key binding.
+        window.toggle_fullscreen()
+        process_events_for(0.2)
+        assert window.fullscreen
+        QTest.keyClick(window, Qt.Key.Key_Escape)
+        process_events_for(0.2)
+
+        assert not window.fullscreen
+        assert window.sidebar.isVisible()
+        assert window.get_title_bar().isVisible()
+        assert not window.isFullScreen()
+
+        window.close()
+        process_events_for(0.5)
+        qapp.processEvents()
+
     def test_muse_app_qt_constructs_and_closes(self, qapp, isolated_singletons):
         """Boot ``MuseAppQt`` offscreen with isolated caches; no playback started."""
         from app_qt import MuseAppQt

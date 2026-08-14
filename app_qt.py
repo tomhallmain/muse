@@ -517,6 +517,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         self._refresh_transport_controls_ui()
 
         main_layout.addWidget(sidebar)
+        self.sidebar = sidebar
         self._sidebar_layout = sidebar_layout
 
         self.media_frame = MediaFrame(self, fill_canvas=True)
@@ -1364,6 +1365,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         """Set up local keyboard shortcuts for the main window."""
         self._bind("Space", self._toggle_play_pause)
         self._bind("Ctrl+D", self.toggle_debug, guarded=False)
+        self._bind("Escape", self._exit_fullscreen_via_escape, guarded=False)
 
     def _toggle_play_pause(self):
         """Toggle playback state between running and paused."""
@@ -1489,10 +1491,21 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
 
     def toggle_fullscreen(self):
         self.fullscreen = not self.fullscreen
+        title_bar = self.get_title_bar()
         if self.fullscreen:
+            self.sidebar.setVisible(False)
+            if title_bar:
+                title_bar.setVisible(False)
             self.showFullScreen()
         else:
+            self.sidebar.setVisible(True)
+            if title_bar:
+                title_bar.setVisible(True)
             self.showNormal()
+
+    def _exit_fullscreen_via_escape(self):
+        if self.fullscreen:
+            self.toggle_fullscreen()
 
     def toggle_theme(self):
         AppStyle.IS_DEFAULT_THEME = not AppStyle.IS_DEFAULT_THEME
