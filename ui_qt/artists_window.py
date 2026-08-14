@@ -222,7 +222,7 @@ class ArtistDetailsWindow(SmartWindow):
     def refresh(self):
         self._add_note_widgets()
 
-    @require_password(ProtectedActions.EDIT_ARTISTS)
+    @require_password(ProtectedActions.EDIT_LIBRARY_VOCABULARY)
     def finalize_artist(self, event=None):
         start_val = self.start_date_edit.text().strip()
         end_val = self.end_date_edit.text().strip()
@@ -316,7 +316,7 @@ class ArtistDetailsWindow(SmartWindow):
                 master=self,
             )
 
-    @require_password(ProtectedActions.EDIT_ARTISTS)
+    @require_password(ProtectedActions.EDIT_LIBRARY_VOCABULARY)
     def delete_artist(self, event=None):
         res = self.app_actions.alert(
             _("Delete artist"),
@@ -583,7 +583,7 @@ class ArtistsWindow(SmartWindow):
                 lambda checked=False, a=artist: self.open_details(a)
             )
 
-    @require_password(ProtectedActions.EDIT_ARTISTS)
+    @require_password(ProtectedActions.EDIT_LIBRARY_VOCABULARY)
     def open_details(self, artist: Artist):
         if ArtistsWindow.details_window is not None:
             try:
@@ -593,7 +593,7 @@ class ArtistsWindow(SmartWindow):
         ArtistsWindow.details_window = ArtistDetailsWindow(self, self, artist)
         ArtistsWindow.details_window.show()
 
-    @require_password(ProtectedActions.EDIT_ARTISTS)
+    @require_password(ProtectedActions.EDIT_LIBRARY_VOCABULARY)
     def new_artist(self):
         if ArtistsWindow.details_window is not None:
             try:

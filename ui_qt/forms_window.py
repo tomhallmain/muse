@@ -168,7 +168,7 @@ class FormDetailsWindow(SmartWindow):
     def refresh(self):
         self._add_note_widgets()
 
-    @require_password(ProtectedActions.EDIT_FORMS)
+    @require_password(ProtectedActions.EDIT_LIBRARY_VOCABULARY)
     def finalize_form(self, event=None):
         temp_form = Form(
             name=self.name_edit.text().strip(),
@@ -236,7 +236,7 @@ class FormDetailsWindow(SmartWindow):
                 master=self,
             )
 
-    @require_password(ProtectedActions.EDIT_FORMS)
+    @require_password(ProtectedActions.EDIT_LIBRARY_VOCABULARY)
     def delete_form(self, event=None):
         res = self.app_actions.alert(
             _("Delete form"),
@@ -485,7 +485,7 @@ class FormsWindow(SmartWindow):
                 lambda checked=False, f=form: self.open_details(f)
             )
 
-    @require_password(ProtectedActions.EDIT_FORMS)
+    @require_password(ProtectedActions.EDIT_LIBRARY_VOCABULARY)
     def open_details(self, form: Form):
         if FormsWindow.details_window is not None:
             try:
@@ -495,7 +495,7 @@ class FormsWindow(SmartWindow):
         FormsWindow.details_window = FormDetailsWindow(self, self, form)
         FormsWindow.details_window.show()
 
-    @require_password(ProtectedActions.EDIT_FORMS)
+    @require_password(ProtectedActions.EDIT_LIBRARY_VOCABULARY)
     def new_form(self):
         if FormsWindow.details_window is not None:
             try:

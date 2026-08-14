@@ -17,8 +17,7 @@ class SecurityConfig:
         ProtectedActions.RUN_SEARCH.value: False,
         ProtectedActions.VIEW_LIBRARY.value: False,
         ProtectedActions.VIEW_HISTORY.value: False,
-        ProtectedActions.EDIT_COMPOSERS.value: False,
-        ProtectedActions.EDIT_FORMS.value: False,
+        ProtectedActions.EDIT_LIBRARY_VOCABULARY.value: False,
         ProtectedActions.EDIT_SCHEDULES.value: True,
         ProtectedActions.EDIT_EXTENSIONS.value: False,
         ProtectedActions.EDIT_PLAYLISTS.value: False,
@@ -35,15 +34,59 @@ class SecurityConfig:
     # Default security advertisement settings
     DEFAULT_SHOW_SECURITY_ADVICE = True  # Show security advice when no password is configured
 
+    # Renamed/merged ProtectedActions values, old cache key -> current enum.
+    # A user's existing preference (protected or not) is carried over to the
+    # new key on load rather than silently resetting to the new key's
+    # default; the old key is then dropped. edit_composers -> merged into
+    # EDIT_LIBRARY_VOCABULARY along with Forms/Genres/Artists (see
+    # docs/property-config-windows.md, "Protected action consolidation").
+    LEGACY_ACTION_KEYS = {
+        "edit_composers": ProtectedActions.EDIT_LIBRARY_VOCABULARY,
+        "edit_forms": ProtectedActions.EDIT_LIBRARY_VOCABULARY,
+        "edit_genres": ProtectedActions.EDIT_LIBRARY_VOCABULARY,
+        "edit_artists": ProtectedActions.EDIT_LIBRARY_VOCABULARY,
+    }
+
     def __init__(self):
         self._load_settings()
-    
+
+    def _migrate_legacy_action_keys(self) -> bool:
+        """One-time migration for renamed/merged ProtectedActions members.
+
+        Checked on every load, but only does real work the first time a
+        given cache is loaded after the rename/merge — once the old keys are
+        gone there's nothing left to find. Also covers settings saved by a
+        version of the app between the merge and the rename (multiple old
+        keys collapsing onto the same new key). If old keys disagree, the
+        most protective (True) value wins, since a looser value should never
+        silently emerge from a rename. Returns whether anything changed, so
+        the caller only re-persists when there was actually a migration.
+        """
+        migrated = False
+        for old_key, new_action in self.LEGACY_ACTION_KEYS.items():
+            if old_key not in self.protected_actions:
+                continue
+            old_value = self.protected_actions.pop(old_key)
+            new_key = new_action.value
+            if new_key in self.protected_actions:
+                self.protected_actions[new_key] = self.protected_actions[new_key] or old_value
+            else:
+                self.protected_actions[new_key] = old_value
+            migrated = True
+        return migrated
+
     def _load_settings(self):
         """Load settings from cache or use defaults."""
         self.session_timeout_enabled = app_info_cache.get("session_timeout_enabled", default_val=self.DEFAULT_SESSION_TIMEOUT_ENABLED)
         self.session_timeout_minutes = app_info_cache.get("session_timeout_minutes", default_val=self.DEFAULT_SESSION_TIMEOUT_MINUTES)
         self.protected_actions = app_info_cache.get("protected_actions", default_val=self.DEFAULT_PROTECTED_ACTIONS.copy())
         self.show_security_advice = app_info_cache.get("show_security_advice", default_val=self.DEFAULT_SHOW_SECURITY_ADVICE)
+
+        if self._migrate_legacy_action_keys():
+            # Persist the migration now so the legacy key doesn't linger in
+            # the cache and get re-migrated (harmlessly, but pointlessly)
+            # on every future load.
+            self.save_settings()
 
         # Exclude START_APPLICATION from Qt (not used on startup)
         if ProtectedActions.START_APPLICATION.value in self.protected_actions:

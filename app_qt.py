@@ -1548,22 +1548,22 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         from ui_qt.library_window import LibraryWindow
         LibraryWindow(self, self.app_actions, self.library_data)
 
-    @require_password(ProtectedActions.EDIT_COMPOSERS)
+    @require_password(ProtectedActions.EDIT_LIBRARY_VOCABULARY)
     def open_composers_window(self):
         from ui_qt.composers_window import ComposersWindow
         ComposersWindow(self, self.app_actions)
 
-    @require_password(ProtectedActions.EDIT_FORMS)
+    @require_password(ProtectedActions.EDIT_LIBRARY_VOCABULARY)
     def open_forms_window(self):
         from ui_qt.forms_window import FormsWindow
         FormsWindow(self, self.app_actions)
 
-    @require_password(ProtectedActions.EDIT_GENRES)
+    @require_password(ProtectedActions.EDIT_LIBRARY_VOCABULARY)
     def open_genres_window(self):
         from ui_qt.genres_window import GenresWindow
         GenresWindow(self, self.app_actions)
 
-    @require_password(ProtectedActions.EDIT_ARTISTS)
+    @require_password(ProtectedActions.EDIT_LIBRARY_VOCABULARY)
     def open_artists_window(self):
         from ui_qt.artists_window import ArtistsWindow
         ArtistsWindow(self, self.app_actions)

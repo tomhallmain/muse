@@ -750,10 +750,7 @@ class ProtectedActions(Enum):
     RUN_SEARCH = "run_search"
     VIEW_LIBRARY = "view_library"
     VIEW_HISTORY = "view_history"
-    EDIT_COMPOSERS = "edit_composers"
-    EDIT_FORMS = "edit_forms"
-    EDIT_GENRES = "edit_genres"
-    EDIT_ARTISTS = "edit_artists"
+    EDIT_LIBRARY_VOCABULARY = "edit_library_vocabulary"
     EDIT_PERSONAS = "edit_personas"
     EDIT_SCHEDULES = "edit_schedules"
     EDIT_EXTENSIONS = "edit_extensions"
@@ -780,10 +777,7 @@ class ProtectedActions(Enum):
             ProtectedActions.RUN_SEARCH: _("Run Search"),
             ProtectedActions.VIEW_LIBRARY: _("View Library"),
             ProtectedActions.VIEW_HISTORY: _("View History"),
-            ProtectedActions.EDIT_COMPOSERS: _("Edit Composers"),
-            ProtectedActions.EDIT_FORMS: _("Edit Forms"),
-            ProtectedActions.EDIT_GENRES: _("Edit Genres"),
-            ProtectedActions.EDIT_ARTISTS: _("Edit Artists"),
+            ProtectedActions.EDIT_LIBRARY_VOCABULARY: _("Edit Library Vocabulary"),
             ProtectedActions.EDIT_PERSONAS: _("Edit Personas"),
             ProtectedActions.EDIT_SCHEDULES: _("Edit Schedules"),
             ProtectedActions.EDIT_EXTENSIONS: _("Edit Extensions"),

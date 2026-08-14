@@ -236,7 +236,7 @@ class ComposerDetailsWindow(SmartWindow):
             if "end_date" in fixes:
                 self.end_date_edit.setText(fixes["end_date"])
 
-    @require_password(ProtectedActions.EDIT_COMPOSERS)
+    @require_password(ProtectedActions.EDIT_LIBRARY_VOCABULARY)
     def finalize_composer(self, event=None):
         start_val = self.start_date_edit.text().strip()
         end_val = self.end_date_edit.text().strip()
@@ -304,7 +304,7 @@ class ComposerDetailsWindow(SmartWindow):
                 master=self,
             )
 
-    @require_password(ProtectedActions.EDIT_COMPOSERS)
+    @require_password(ProtectedActions.EDIT_LIBRARY_VOCABULARY)
     def delete_composer(self, event=None):
         res = self.app_actions.alert(
             _("Delete composer"),
@@ -875,7 +875,7 @@ class ComposersWindow(SmartWindow):
                 lambda checked=False, c=composer: self.open_details(c)
             )
 
-    @require_password(ProtectedActions.EDIT_COMPOSERS)
+    @require_password(ProtectedActions.EDIT_LIBRARY_VOCABULARY)
     def open_details(self, composer: Composer):
         if ComposersWindow.details_window is not None:
             try:
@@ -887,7 +887,7 @@ class ComposersWindow(SmartWindow):
         )
         ComposersWindow.details_window.show()
 
-    @require_password(ProtectedActions.EDIT_COMPOSERS)
+    @require_password(ProtectedActions.EDIT_LIBRARY_VOCABULARY)
     def new_composer(self):
         if ComposersWindow.details_window is not None:
             try:
@@ -904,7 +904,7 @@ class ComposersWindow(SmartWindow):
             title=_("Quality Check Results"),
         )
 
-    @require_password(ProtectedActions.EDIT_COMPOSERS)
+    @require_password(ProtectedActions.EDIT_LIBRARY_VOCABULARY)
     def mass_import(self):
         path, _filter = QFileDialog.getOpenFileName(
             self,

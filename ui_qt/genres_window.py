@@ -168,7 +168,7 @@ class GenreDetailsWindow(SmartWindow):
     def refresh(self):
         self._add_note_widgets()
 
-    @require_password(ProtectedActions.EDIT_GENRES)
+    @require_password(ProtectedActions.EDIT_LIBRARY_VOCABULARY)
     def finalize_genre(self, event=None):
         temp_genre = Genre(
             name=self.name_edit.text().strip(),
@@ -236,7 +236,7 @@ class GenreDetailsWindow(SmartWindow):
                 master=self,
             )
 
-    @require_password(ProtectedActions.EDIT_GENRES)
+    @require_password(ProtectedActions.EDIT_LIBRARY_VOCABULARY)
     def delete_genre(self, event=None):
         res = self.app_actions.alert(
             _("Delete genre"),
@@ -487,7 +487,7 @@ class GenresWindow(SmartWindow):
                 lambda checked=False, g=genre: self.open_details(g)
             )
 
-    @require_password(ProtectedActions.EDIT_GENRES)
+    @require_password(ProtectedActions.EDIT_LIBRARY_VOCABULARY)
     def open_details(self, genre: Genre):
         if GenresWindow.details_window is not None:
             try:
@@ -497,7 +497,7 @@ class GenresWindow(SmartWindow):
         GenresWindow.details_window = GenreDetailsWindow(self, self, genre)
         GenresWindow.details_window.show()
 
-    @require_password(ProtectedActions.EDIT_GENRES)
+    @require_password(ProtectedActions.EDIT_LIBRARY_VOCABULARY)
     def new_genre(self):
         if GenresWindow.details_window is not None:
             try:
