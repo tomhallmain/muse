@@ -88,7 +88,9 @@ CREATE TABLE IF NOT EXISTS genres (
 );
 
 CREATE TABLE IF NOT EXISTS instruments (
-    name TEXT PRIMARY KEY
+    name             TEXT PRIMARY KEY,
+    transliterations TEXT NOT NULL DEFAULT '',
+    notes            TEXT NOT NULL DEFAULT '{}'
 );
 
 -- ─── Directory and media-track caches ───────────────────────────────────────
@@ -210,6 +212,7 @@ def get_connection() -> sqlite3.Connection:
             conn.execute("PRAGMA journal_mode=WAL")
             conn.execute("PRAGMA foreign_keys=ON")
             _create_schema(conn)
+            _migrate_instruments_columns(conn)
             _seed_if_needed(conn)
             _migrate_gzip_caches(conn)
             _connection = conn
@@ -236,6 +239,30 @@ def delim_to_list(value: str) -> List[str]:
 
 def _create_schema(conn: sqlite3.Connection) -> None:
     conn.executescript(_SCHEMA)
+
+
+def _migrate_instruments_columns(conn: sqlite3.Connection) -> None:
+    """Add transliterations/notes columns to a pre-existing instruments table.
+
+    ``CREATE TABLE IF NOT EXISTS`` in ``_SCHEMA`` only defines the full
+    shape for a brand-new database; an existing installation's instruments
+    table predates these two columns and is left untouched by it. Runs on
+    every connection open, but is a no-op past the first time for a given
+    database (checked via PRAGMA table_info rather than a db_meta flag, so
+    it stays correct even if the table is ever created some other way).
+    """
+    existing_columns = {
+        row[1] for row in conn.execute("PRAGMA table_info(instruments)").fetchall()
+    }
+    if "transliterations" not in existing_columns:
+        conn.execute(
+            "ALTER TABLE instruments ADD COLUMN transliterations TEXT NOT NULL DEFAULT ''"
+        )
+    if "notes" not in existing_columns:
+        conn.execute(
+            "ALTER TABLE instruments ADD COLUMN notes TEXT NOT NULL DEFAULT '{}'"
+        )
+    conn.commit()
 
 
 def _get_meta(conn: sqlite3.Connection, key: str) -> Optional[str]:
@@ -307,6 +334,23 @@ def _seed_genres(conn: sqlite3.Connection) -> None:
     logger.debug("Seeded %d genres", len(rows))
 
 
+def _instrument_rows_from_json(data) -> list:
+    """Normalize instruments JSON to (name, transliterations, notes) rows.
+
+    Supports both the long-standing flat-array format (``["Accordion", ...]``,
+    still what instruments_example.json/instruments.json ship as — no
+    transliterations/notes, just names) and the name-keyed object format
+    used by Form/Genre/Artist (``{"Accordion": {"name": ..., ...}}``), which
+    is what a future ``export_instruments_example.py`` run will produce.
+    """
+    if isinstance(data, list):
+        return [(name, "", "{}") for name in data]
+    return [
+        (v["name"], list_to_delim(v.get("transliterations", [])), json.dumps(v.get("notes", {})))
+        for v in data.values()
+    ]
+
+
 def _seed_instruments(conn: sqlite3.Connection) -> None:
     path = _DATA_DIR / "instruments_example.json"
     if not path.exists():
@@ -314,11 +358,12 @@ def _seed_instruments(conn: sqlite3.Connection) -> None:
         return
     with open(path, "r", encoding="utf-8") as f:
         data = json.load(f)
+    rows = _instrument_rows_from_json(data)
     conn.executemany(
-        "INSERT OR IGNORE INTO instruments (name) VALUES (?)",
-        [(name,) for name in data],
+        "INSERT OR IGNORE INTO instruments (name, transliterations, notes) VALUES (?, ?, ?)",
+        rows,
     )
-    logger.debug("Seeded %d instruments", len(data))
+    logger.debug("Seeded %d instruments", len(rows))
 
 
 def _seed_composers(conn: sqlite3.Connection) -> None:
@@ -471,9 +516,10 @@ def _migrate_legacy_instruments(conn: sqlite3.Connection) -> None:
         return
     with open(path, "r", encoding="utf-8") as f:
         data = json.load(f)
+    rows = _instrument_rows_from_json(data)
     conn.executemany(
-        "INSERT OR IGNORE INTO instruments (name) VALUES (?)",
-        [(name,) for name in data],
+        "INSERT OR IGNORE INTO instruments (name, transliterations, notes) VALUES (?, ?, ?)",
+        rows,
     )
     conn.commit()
 

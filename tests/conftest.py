@@ -235,6 +235,7 @@ def _patch_app_info_cache_singleton(monkeypatch, cache_instance) -> None:
         "ui_qt.forms_window",
         "ui_qt.genres_window",
         "ui_qt.artists_window",
+        "ui_qt.instruments_window",
     ):
         try:
             module = importlib.import_module(module_name)
@@ -381,6 +382,19 @@ def isolated_singletons(tmp_path, monkeypatch):
             import ui_qt.artists_window as _artists_window_mod
             if hasattr(_artists_window_mod, "artists_data"):
                 monkeypatch.setattr(_artists_window_mod, "artists_data", _fresh_artists)
+        except Exception:
+            pass
+    except Exception:
+        pass
+    # Same for instruments_data (DB-backed; must use the isolated in-memory connection).
+    try:
+        import library_data.instrument as _instrument_mod
+        _fresh_instruments = _instrument_mod.InstrumentsData()
+        monkeypatch.setattr(_instrument_mod, "instruments_data", _fresh_instruments)
+        try:
+            import ui_qt.instruments_window as _instruments_window_mod
+            if hasattr(_instruments_window_mod, "instruments_data"):
+                monkeypatch.setattr(_instruments_window_mod, "instruments_data", _fresh_instruments)
         except Exception:
             pass
     except Exception:

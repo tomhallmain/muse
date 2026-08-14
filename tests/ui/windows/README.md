@@ -13,5 +13,6 @@ Per-window UI tests (offscreen Qt). All use fixtures from `tests/ui/conftest.py`
 | `test_forms_window.py` | Implemented | Search sonata; list all; recent searches in app cache |
 | `test_genres_window.py` | Implemented | Search Baroque; list all; recent searches persist across open/close |
 | `test_artists_window.py` | Implemented | Search Allman Brothers Band; list all; recent searches persist across open/close |
+| `test_instruments_window.py` | Implemented | Search accordion; list all; recent searches persist across open/close |
 
 Planned next: `test_sort_config_window.py`, `test_track_details_window.py`, end-to-end seek/preview (port `tests/scripts/test_seek_preview_qt.py`).
