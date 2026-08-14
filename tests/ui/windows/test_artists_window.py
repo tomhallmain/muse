@@ -69,8 +69,8 @@ class TestArtistsWindow:
         self, qapp, qt_master, mock_app_actions, isolated_singletons
     ):
         """ArtistsWindow wires load/store into __init__/closeEvent, same as
-        GenresWindow — see docs/property-config-windows.md for why Forms/
-        Composers don't do this despite defining both methods.
+        GenresWindow. Forms/Composers define both methods but never call
+        either, so recent searches there don't survive a restart.
         """
         from ui_qt.artists_window import ArtistsWindow
 

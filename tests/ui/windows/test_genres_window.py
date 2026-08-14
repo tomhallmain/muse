@@ -69,9 +69,8 @@ class TestGenresWindow:
         self, qapp, qt_master, mock_app_actions, isolated_singletons
     ):
         """GenresWindow wires load/store into __init__/closeEvent (unlike Forms/
-        Composers, which define both but never call either — see
-        docs/property-config-windows.md). Covers that wiring specifically,
-        through the real window lifecycle rather than calling the two
+        Composers, which define both but never call either). Covers that
+        wiring through the real window lifecycle rather than calling the two
         staticmethods directly.
         """
         from ui_qt.genres_window import GenresWindow

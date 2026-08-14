@@ -26,7 +26,6 @@ _ = I18N._
 #   absent: not supported (treated as False)
 #
 # "all" as the dict value means the provider supports every language.
-# Based on the assessment in docs/tts-provider-abstraction.md.
 # ---------------------------------------------------------------------------
 _LANG_SUPPORT: Dict[str, Any] = {
     "coqui":   "all",
@@ -151,8 +150,8 @@ class DJPersona:
                 )
 
         # Voice name validation is provider-specific and handled at speak-time
-        # via DJPersona.available_for_provider() (see docs/tts-provider-abstraction.md).
-        # Coqui speaker fuzzy-matching moved to CoquiTTSProvider.resolve_voice_name().
+        # via DJPersona.available_for_provider(). Coqui speaker fuzzy-matching
+        # moved to CoquiTTSProvider.resolve_voice_name().
 
         if self.artwork_paths is not None:
             test_paths = list(self.artwork_paths)

@@ -2,9 +2,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
-"POT-Creation-Date: 2026-07-03 14:28-0400\n"
-"PO-Revision-Date: 2026-07-03 14:28-0400\n"
-"Last-Translator: Thomas Hall <tomhall.main@gmail.com>\n"
+"POT-Creation-Date: 2026-08-13 23:36-0400\n"
+"PO-Revision-Date: 2026-08-13 23:36-0400\n"
+"Last-Translator: Translator Name <translator@example.com>\n"
 "Language-Team: de Team <<EMAIL>>\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
@@ -12,7 +12,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: app_qt.py:100 app_qt.py:101 app_qt.py:1508
+#: app_qt.py:100 app_qt.py:101 app_qt.py:1512
 msgid " Muse "
 msgstr " Muse "
 
@@ -44,11 +44,11 @@ msgstr "Vollbild vergrößern"
 msgid "Toggle Theme"
 msgstr "Themen ändern"
 
-#: app_qt.py:246 app_qt.py:400 ui_qt/playlist_window.py:67
+#: app_qt.py:246 app_qt.py:404 ui_qt/playlist_window.py:67
 msgid "Playlists"
 msgstr "Wiedergabelisten"
 
-#: app_qt.py:247 app_qt.py:466 ui_qt/favorites_window.py:242
+#: app_qt.py:247 app_qt.py:470 ui_qt/favorites_window.py:242
 #: ui_qt/favorites_window.py:548
 msgid "Favorites"
 msgstr "Favoriten"
@@ -57,134 +57,138 @@ msgstr "Favoriten"
 msgid "History"
 msgstr "Geschichte"
 
-#: app_qt.py:249 utils/globals.py:558
+#: app_qt.py:249 utils/globals.py:577
 msgid "Composers"
 msgstr "Komponisten"
 
-#: app_qt.py:250
+#: app_qt.py:254
 msgid "Personas"
 msgstr "Rollen"
 
-#: app_qt.py:252 ui_qt/network_media_window.py:62
+#: app_qt.py:256 ui_qt/network_media_window.py:62
 msgid "Internet Radio"
 msgstr "Internetradio"
 
-#: app_qt.py:254
+#: app_qt.py:258
 msgid "Tools"
 msgstr "Werkzeuge"
 
-#: app_qt.py:255 ui_qt/composers_window.py:664 ui_qt/composers_window.py:727
-#: ui_qt/favorites_window.py:282 ui_qt/history_window.py:121
+#: app_qt.py:259 ui_qt/artists_window.py:434 ui_qt/artists_window.py:489
+#: ui_qt/composers_window.py:664 ui_qt/composers_window.py:727
+#: ui_qt/favorites_window.py:282 ui_qt/forms_window.py:342
+#: ui_qt/forms_window.py:394 ui_qt/genres_window.py:344
+#: ui_qt/genres_window.py:396 ui_qt/history_window.py:121
+#: ui_qt/instruments_window.py:346 ui_qt/instruments_window.py:398
 #: ui_qt/network_media_window.py:111 ui_qt/network_media_window.py:129
 #: ui_qt/search_window.py:201 ui_qt/search_window.py:372
 #: ui_qt/search_window.py:918
 msgid "Search"
 msgstr "Suche"
 
-#: app_qt.py:256
+#: app_qt.py:260
 msgid "Schedules"
 msgstr "Zeitpläne"
 
-#: app_qt.py:257 ui_qt/extensions_window.py:39 ui_qt/extensions_window.py:48
+#: app_qt.py:261 ui_qt/extensions_window.py:39 ui_qt/extensions_window.py:48
 #: ui_qt/extensions_window.py:339
 msgid "Extensions"
 msgstr "Erweiterungen"
 
-#: app_qt.py:258
+#: app_qt.py:262
 msgid "Last.fm Library"
 msgstr "Last.fm Bibliothek"
 
-#: app_qt.py:259 ui_qt/blacklist_window.py:335
+#: app_qt.py:263 ui_qt/blacklist_window.py:335
 msgid "Blacklist"
 msgstr "Sperrliste"
 
-#: app_qt.py:260 ui_qt/weather_window.py:42 ui_qt/weather_window.py:59
+#: app_qt.py:264 ui_qt/weather_window.py:42 ui_qt/weather_window.py:59
 #: ui_qt/weather_window.py:97
 msgid "Weather"
 msgstr "Wetter"
 
-#: app_qt.py:261 ui_qt/tts_window.py:56 ui_qt/tts_window.py:64
+#: app_qt.py:265 ui_qt/tts_window.py:56 ui_qt/tts_window.py:64
 msgid "Text to Speech"
 msgstr "Text-en-Sprache"
 
-#: app_qt.py:262 ui_qt/timer_window.py:37
+#: app_qt.py:266 ui_qt/timer_window.py:37
 msgid "Timer"
 msgstr "Zeitschalter"
 
-#: app_qt.py:263
+#: app_qt.py:267
 msgid "Audio Devices"
 msgstr "Audiogeräte"
 
-#: app_qt.py:265
+#: app_qt.py:269
 msgid "Configuration"
 msgstr "Konfiguration"
 
-#: app_qt.py:266
+#: app_qt.py:270
 msgid "Security Configuration"
 msgstr "Sicherheitskonfiguration"
 
-#: app_qt.py:340
+#: app_qt.py:344
 msgid "DJ"
 msgstr "DJ"
 
-#: app_qt.py:341 ui_qt/extensions_window.py:169
+#: app_qt.py:345 ui_qt/extensions_window.py:169
 #: ui_qt/rename_confirmation_window.py:85 ui_qt/track_details_window.py:91
-#: utils/globals.py:331
+#: utils/globals.py:344
 msgid "Title"
 msgstr "Titel"
 
-#: app_qt.py:342 ui_qt/favorites_window.py:366
+#: app_qt.py:346 ui_qt/favorites_window.py:366
 #: ui_qt/rename_confirmation_window.py:86 ui_qt/track_details_window.py:95
-#: utils/globals.py:142 utils/globals.py:332
+#: utils/globals.py:146 utils/globals.py:345
 msgid "Album"
 msgstr "Album"
 
-#: app_qt.py:343 ui_qt/favorites_window.py:366
+#: app_qt.py:347 ui_qt/favorites_window.py:366
 #: ui_qt/rename_confirmation_window.py:87 ui_qt/track_details_window.py:99
-#: utils/globals.py:144 utils/globals.py:333 utils/globals.py:402
+#: utils/globals.py:148 utils/globals.py:346 utils/globals.py:419
 msgid "Artist"
 msgstr "Künstler"
 
-#: app_qt.py:344 ui_qt/favorites_window.py:366
+#: app_qt.py:348 ui_qt/favorites_window.py:366
 #: ui_qt/rename_confirmation_window.py:89 ui_qt/track_details_window.py:105
-#: utils/globals.py:146 utils/globals.py:334 utils/globals.py:401
+#: utils/globals.py:150 utils/globals.py:347 utils/globals.py:418
 msgid "Composer"
 msgstr "Komponist"
 
-#: app_qt.py:345 ui_qt/rename_confirmation_window.py:91
+#: app_qt.py:349 ui_qt/rename_confirmation_window.py:91
 #: ui_qt/track_details_window.py:110
 msgid "Year"
 msgstr "Jahr"
 
-#: app_qt.py:346
+#: app_qt.py:350
 msgid "Current Group"
 msgstr "Aktuelle Gruppe"
 
-#: app_qt.py:347
+#: app_qt.py:351
 msgid "Next Up"
 msgstr "Weiter oben"
 
-#: app_qt.py:348
+#: app_qt.py:352
 msgid "Prior Track"
 msgstr "Vorherige Audiospur"
 
-#: app_qt.py:349
+#: app_qt.py:353
 msgid "Upcoming Group"
 msgstr "Bevorstehende Gruppe"
 
-#: app_qt.py:350
+#: app_qt.py:354
 msgid "Spot Details"
 msgstr "Details zur Stelle"
 
-#: app_qt.py:351
+#: app_qt.py:355
 msgid "Extension Status"
 msgstr "Stand der Erweiterung"
 
-#: app_qt.py:354
+#: app_qt.py:358
 msgid "Volume"
 msgstr "Band"
 
-#: app_qt.py:360
+#: app_qt.py:364
 msgid ""
 "Base volume input. Actual output may vary per track due to normalization; "
 "see the media overlay number for resolved output volume."
@@ -193,110 +197,111 @@ msgstr ""
 "aufgrund der Normalisierung variieren; siehe die Medien-Overlay-Nummer für "
 "die fertige Ausgabehäufigkeit."
 
-#: app_qt.py:383 app_qt.py:1401 ui_qt/extensions_window.py:269
+#: app_qt.py:387 app_qt.py:1405 ui_qt/extensions_window.py:269
 #: ui_qt/favorites_window.py:410 ui_qt/media_controls_overlay.py:359
 #: ui_qt/network_media_window.py:334 ui_qt/search_window.py:385
 #: ui_qt/search_window.py:737
 msgid "Play"
 msgstr "Spiel"
 
-#: app_qt.py:388 ui_qt/timer_window.py:130
+#: app_qt.py:392 ui_qt/timer_window.py:130
 msgid "Stop"
 msgstr "Stopp"
 
-#: app_qt.py:392
+#: app_qt.py:396
 msgid "Next"
 msgstr "Weiter"
 
-#: app_qt.py:396
+#: app_qt.py:400
 msgid "Next Grouping"
 msgstr "Nächste Gruppierung"
 
-#: app_qt.py:404
+#: app_qt.py:408
 msgid "Continue Session"
 msgstr "Fortfahren"
 
-#: app_qt.py:408 app_qt.py:1124
+#: app_qt.py:412 app_qt.py:1128
 msgid "Previous Track"
 msgstr "Vorheriger Titel"
 
-#: app_qt.py:414
+#: app_qt.py:418
 msgid "Sorting Options"
 msgstr "Sortierungsoptionen"
 
-#: app_qt.py:418 app_qt.py:820 ui_qt/playlist_window.py:186
+#: app_qt.py:422 app_qt.py:824 ui_qt/playlist_window.py:186
 #: ui_qt/playlist_window.py:243 ui_qt/playlist_window.py:443
 #: ui_qt/playlist_window.py:1042 ui_qt/playlist_window.py:1328
 msgid "(custom)"
 msgstr "(benediktiert)"
 
-#: app_qt.py:418 app_qt.py:820 ui_qt/playlist_window.py:186
+#: app_qt.py:422 app_qt.py:824 ui_qt/playlist_window.py:186
 #: ui_qt/playlist_window.py:443 ui_qt/playlist_window.py:1008
 #: ui_qt/playlist_window.py:1042 ui_qt/playlist_window.py:1328
 msgid "(defaults)"
 msgstr "(Standardwerte)"
 
-#: app_qt.py:426 app_qt.py:1143
+#: app_qt.py:430 app_qt.py:1147
 msgid "Shutdown After Current Track"
 msgstr "Herunterfahren nach dem aktuellen Titel"
 
-#: app_qt.py:432
+#: app_qt.py:436
 msgid "Delay Seconds"
 msgstr "Verzögerung Sekunden"
 
-#: app_qt.py:441
+#: app_qt.py:445
 msgid "Playlist"
 msgstr "Wiedergabeliste"
 
-#: app_qt.py:450 ui_qt/search_window.py:286
+#: app_qt.py:454 ui_qt/search_window.py:286
 msgid "Playlist Sort"
 msgstr "Wiedergabeliste sortieren"
 
-#: app_qt.py:463
+#: app_qt.py:467
 msgid "Favorite"
 msgstr "Favorit"
 
-#: app_qt.py:471 ui_qt/playlist_window.py:1245
+#: app_qt.py:475 ui_qt/playlist_window.py:1245
 msgid "Overwrite"
 msgstr "Überschreiben Sie"
 
-#: app_qt.py:476
+#: app_qt.py:480
 msgid "Muse"
 msgstr "Muse"
 
-#: app_qt.py:482
+#: app_qt.py:486
 msgid "Extension"
 msgstr "Erweiterung"
 
-#: app_qt.py:488
+#: app_qt.py:492
 msgid "Enable track splitting"
 msgstr "Spurtrennung einschalten"
 
-#: app_qt.py:494
+#: app_qt.py:498
 msgid "Use system language for all topics"
 msgstr "Verwendung der Systemsprache"
 
-#: app_qt.py:652
+#: app_qt.py:656
 msgid "No Session"
 msgstr "Aktive Sitzung existiert nicht"
 
-#: app_qt.py:652
+#: app_qt.py:656
 msgid "No previous session found to continue."
 msgstr "Keine vorherige Session zur Fortsetzung gefunden."
 
-#: app_qt.py:656
+#: app_qt.py:660
 msgid "Last Session"
 msgstr "Letzte Sitzung"
 
-#: app_qt.py:684
+#: app_qt.py:688
 msgid "Confirm Quit"
 msgstr "Beenden bestätigen"
 
-#: app_qt.py:684
+#: app_qt.py:688
 msgid "Would you like to quit the application?"
 msgstr "Möchten Sie die Anwendung beenden?"
 
-#: app_qt.py:697 app_qt.py:1465 app_qt.py:1472 app_qt.py:1573 app_qt.py:1630
+#: app_qt.py:701 app_qt.py:1469 app_qt.py:1476 app_qt.py:1597 app_qt.py:1654
+#: ui_qt/artists_window.py:313 ui_qt/artists_window.py:338
 #: ui_qt/audio_device_window.py:320 ui_qt/audio_device_window.py:331
 #: ui_qt/audio_device_window.py:338 ui_qt/audio_device_window.py:343
 #: ui_qt/audio_device_window.py:351 ui_qt/audio_device_window.py:374
@@ -309,6 +314,9 @@ msgstr "Möchten Sie die Anwendung beenden?"
 #: ui_qt/composers_window.py:526 ui_qt/composers_window.py:921
 #: ui_qt/configuration_window.py:604 ui_qt/configuration_window.py:607
 #: ui_qt/extensions_window.py:389 ui_qt/favorites_window.py:583
+#: ui_qt/forms_window.py:233 ui_qt/forms_window.py:256
+#: ui_qt/genres_window.py:233 ui_qt/genres_window.py:256
+#: ui_qt/instruments_window.py:233 ui_qt/instruments_window.py:258
 #: ui_qt/personas_window.py:424 ui_qt/personas_window.py:517
 #: ui_qt/personas_window.py:531 ui_qt/personas_window.py:539
 #: ui_qt/personas_window.py:573 ui_qt/playlist_window.py:315
@@ -321,103 +329,103 @@ msgstr "Möchten Sie die Anwendung beenden?"
 msgid "Error"
 msgstr "Fehler"
 
-#: app_qt.py:782
+#: app_qt.py:786
 msgid "(no playlist configured)"
 msgstr "(keine Wiedergabliste konfiguriert)"
 
-#: app_qt.py:786
+#: app_qt.py:790
 msgid "(see playlist window)"
 msgstr "(achten Sie auf dem Playlist-Fenster)"
 
-#: app_qt.py:941
+#: app_qt.py:945
 msgid "Confirm Run"
 msgstr "Lauf bestätigen"
 
-#: app_qt.py:941
+#: app_qt.py:945
 msgid "Are you sure you want to proceed?"
 msgstr "Sind Sie sicher, dass Sie fortfahren wollen?"
 
-#: app_qt.py:1079
+#: app_qt.py:1083
 msgid "Delete Failed"
 msgstr "Löschen fehlgeschlagen"
 
-#: app_qt.py:1124
+#: app_qt.py:1128
 msgid "Previous track file no longer exists."
 msgstr "Die vorherige Datei existiert nicht mehr."
 
-#: app_qt.py:1147
+#: app_qt.py:1151
 msgid "Confirm Shutdown"
 msgstr "Bestätigen Herunterfahren"
 
-#: app_qt.py:1148
+#: app_qt.py:1152
 msgid "Are you sure you want to shutdown after the current track finishes?"
 msgstr "Sind Sie sicher, dass Sie nach dem aktuellen Titel abbrechen möchten?"
 
-#: app_qt.py:1154
+#: app_qt.py:1158
 msgid "Cancel Scheduled Shutdown"
 msgstr "Geplantes Herunterfahren abbrechen"
 
-#: app_qt.py:1163 muse/muse_spot_profile.py:292
+#: app_qt.py:1167 muse/muse_spot_profile.py:298
 msgid "Track: "
 msgstr "Titel: "
 
-#: app_qt.py:1164
+#: app_qt.py:1168
 msgid "Album: "
 msgstr "Album: "
 
-#: app_qt.py:1165
+#: app_qt.py:1169
 msgid "Artist: "
 msgstr "Künstler: "
 
-#: app_qt.py:1166
+#: app_qt.py:1170
 msgid "Composer: "
 msgstr "Komponist: "
 
-#: app_qt.py:1167
+#: app_qt.py:1171
 msgid "Year: "
 msgstr "Jahr: "
 
-#: app_qt.py:1189
+#: app_qt.py:1193
 msgid "Next Up: "
 msgstr "Nächster Punkt: "
 
-#: app_qt.py:1202 muse/muse_spot_profile.py:293
+#: app_qt.py:1206 muse/muse_spot_profile.py:299
 msgid "Previous Track: "
 msgstr "Vorheriger Titel: "
 
-#: app_qt.py:1216
+#: app_qt.py:1220
 msgid "Upcoming {0}: {1}"
 msgstr "Bevorstehend {0}: {1}"
 
-#: app_qt.py:1218
+#: app_qt.py:1222
 msgid "Upcoming Group: {0}"
 msgstr "Bevorstehende Gruppe: {0}"
 
-#: app_qt.py:1232
+#: app_qt.py:1236
 msgid "Group"
 msgstr "Gruppe"
 
-#: app_qt.py:1241
+#: app_qt.py:1245
 msgid "{0}: {1}/{2}"
 msgstr "{0}: {1}/{2}"
 
-#: app_qt.py:1243
+#: app_qt.py:1247
 msgid "{0}: {1} ({2}/{3})"
 msgstr "{0}: {1} ({2}/{3})"
 
-#: app_qt.py:1280 app_qt.py:1284
+#: app_qt.py:1284 app_qt.py:1288
 msgid "Directories: {0}"
 msgstr "Verzeichnisse: {0}"
 
-#: app_qt.py:1294
+#: app_qt.py:1298
 msgid "DJ: "
 msgstr "DJ: "
 
-#: app_qt.py:1317
+#: app_qt.py:1321
 msgid "VLC plugin cache"
 msgstr "VLC Plugin-Cache"
 
-#: app_qt.py:1319
+#: app_qt.py:1323
 msgid ""
 "The VLC plugin index is out of date (often after a VLC update). Updating it requires administrator permission.\n"
 "\n"
@@ -427,32 +435,32 @@ msgstr ""
 "\n"
 "Möchten Sie das Reparatur-Tool in einem separaten Fenster starten? Dort werden Sie zur Eingabe der Berechtigungen aufgefordert."
 
-#: app_qt.py:1389
+#: app_qt.py:1393
 msgid "Continue"
 msgstr "Fortsfahren"
 
-#: app_qt.py:1391 ui_qt/media_controls_overlay.py:359
+#: app_qt.py:1395 ui_qt/media_controls_overlay.py:359
 #: ui_qt/timer_window.py:126 ui_qt/timer_window.py:195
 msgid "Pause"
 msgstr "Pause"
 
-#: app_qt.py:1430
+#: app_qt.py:1434
 msgid "Staged Playlist: "
 msgstr "Inszenierte Wiedergabeliste: "
 
-#: app_qt.py:1465
+#: app_qt.py:1469
 msgid "Track not found in library for query: "
 msgstr "Titel für Abfrage nicht in Bibliothek gefunden: "
 
-#: app_qt.py:1502
+#: app_qt.py:1506
 msgid "Theme switched to {0}."
 msgstr "Thema wechselt zu {0}"
 
-#: app_qt.py:1510
+#: app_qt.py:1514
 msgid "Debug mode toggled."
 msgstr "Debug-Modus umgeschaltet."
 
-#: app_qt.py:1643
+#: app_qt.py:1667
 msgid "Password Admin Window Error"
 msgstr "Passwort Administrator-Fenster Fehler"
 
@@ -468,19 +476,19 @@ msgstr "In Kürze werden wir uns einen neuen Track von {0} {1} anhören."
 msgid "Extension failed for {0} with value '{1}': {2}"
 msgstr "Erweiterung fehlte für {0} mit Wert '{1}': {2}"
 
-#: extensions/extension_manager.py:455
+#: extensions/extension_manager.py:456
 msgid "Extension \"{0}\" waiting for {1} minutes"
 msgstr "Erweiterung „{0}“ wartet seit {1} Minuten"
 
-#: extensions/extension_manager.py:461
+#: extensions/extension_manager.py:462
 msgid "Extension \"{0}\" rejected"
 msgstr "Die Erweiterung \"{0}\" wurde abgelehnt"
 
-#: extensions/extension_manager.py:468
+#: extensions/extension_manager.py:469
 msgid "Fetching extension \"{0}\""
 msgstr "Erweiterung \"{0}\" herunterladen"
 
-#: extensions/extension_manager.py:509
+#: extensions/extension_manager.py:510
 msgid "Extension \"{0}\" ready"
 msgstr "Erweiterung „{0}“ bereit"
 
@@ -504,23 +512,26 @@ msgstr "[Ausnahme: {0}]"
 msgid "Composer name cannot be empty"
 msgstr "Komponistname kann nicht leer sein"
 
-#: library_data/composer.py:118
+#: library_data/artist.py:82 library_data/composer.py:118
+#: ui_qt/artists_window.py:235
 msgid "Dates must be valid integers"
 msgstr "Termine müssen gültige ganze Zahlen sein"
 
-#: library_data/composer.py:122
+#: library_data/artist.py:86 library_data/composer.py:122
 msgid "Start date cannot be in the future"
 msgstr "Startdatum kann nicht in Zukunft"
 
-#: library_data/composer.py:124
+#: library_data/artist.py:88 library_data/composer.py:124
 msgid "End date cannot be in the future"
 msgstr "Enddatum kann in Zukunft nicht erreicht werden"
 
-#: library_data/composer.py:129
+#: library_data/artist.py:90 library_data/composer.py:129
 msgid "Start date cannot be after end date"
 msgstr "Das Startdatum kann nicht nach dem Enddatum liegen."
 
-#: library_data/composer.py:249 library_data/library_data.py:74
+#: library_data/artist.py:129 library_data/composer.py:249
+#: library_data/form.py:93 library_data/genre.py:94
+#: library_data/instrument.py:95 library_data/library_data.py:76
 #: ui_qt/favorites_window.py:51 ui_qt/history_window.py:47
 msgid "({0} results)"
 msgstr "({0} Ergebnisse)"
@@ -529,7 +540,8 @@ msgstr "({0} Ergebnisse)"
 msgid "Composer: {0}"
 msgstr "Komponist: {0}"
 
-#: library_data/composer.py:263
+#: library_data/artist.py:137 library_data/composer.py:263
+#: library_data/genre.py:98
 msgid "Genre: {0}"
 msgstr "Genre: {0}"
 
@@ -573,41 +585,41 @@ msgstr "Invalide Komponistendaten"
 msgid "Composer not found"
 msgstr "Komponist nicht gefunden"
 
-#: library_data/library_data.py:519
+#: library_data/library_data.py:529
 msgid "Updating tracks"
 msgstr "Aktualisieren von Titeln"
 
-#: library_data/library_data.py:535
+#: library_data/library_data.py:545
 msgid "Refreshing cache... ({0}/{1} files)"
 msgstr "Cache aktualisieren... ({0}/{1} Dateien)"
 
-#: library_data/library_data.py:604
+#: library_data/library_data.py:614
 msgid ""
 "Searching for tracks... ({0} files searched, {1} files may be remaining)"
 msgstr ""
 "Suche nach Tracks... ({0} Dateien durchsucht, {1} Dateien können übrig sein)"
 
-#: library_data/media_track.py:455
+#: library_data/media_track.py:464
 msgid "Unknown title"
 msgstr "Unbekannter Titel"
 
-#: library_data/media_track.py:461
+#: library_data/media_track.py:470
 msgid "Unknown album"
 msgstr "Unbekanntes Album"
 
-#: library_data/media_track.py:467
+#: library_data/media_track.py:476
 msgid "Unknown artist"
 msgstr "Unbekannter Künstler"
 
-#: library_data/media_track.py:653 library_data/media_track.py:654
+#: library_data/media_track.py:682 library_data/media_track.py:683
 msgid "Number \\1"
 msgstr " Zahl \\1"
 
-#: library_data/media_track.py:655
+#: library_data/media_track.py:684
 msgid "\\1text to speech\\2"
 msgstr "\\1Text-in-Sprache\\2"
 
-#: library_data/media_track.py:656
+#: library_data/media_track.py:685
 msgid " Opus \\2"
 msgstr " Opus \\2"
 
@@ -631,136 +643,136 @@ msgstr "Der Hörer schaltete zuletzt vor {0} {1} ein"
 msgid "The listener last tuned in recently"
 msgstr "Der Hörer hat zuletzt vor kurzem eingeschaltet"
 
-#: muse/muse.py:241
+#: muse/muse.py:242
 msgid "Hello, I'm {0}"
 msgstr "Hallo, ich bin {0}"
 
-#: muse/muse.py:246 muse/muse.py:283
+#: muse/muse.py:247 muse/muse.py:284
 msgid "Hello, I'm your DJ"
 msgstr "Hallo, ich bin dein DJ"
 
-#: muse/muse.py:289
+#: muse/muse.py:290
 msgid "Hello"
 msgstr "Hallo."
 
-#: muse/muse.py:307
+#: muse/muse.py:308
 msgid "tonight"
 msgstr "heute Abend"
 
-#: muse/muse.py:307
+#: muse/muse.py:308
 msgid "today"
 msgstr "heute"
 
-#: muse/muse.py:309
+#: muse/muse.py:310
 msgid "The scheduled shutdown time has arrived. That's it for {0}."
 msgstr "Die geplante Abschaltzeit ist gekommen. Das war's für {0}."
 
-#: muse/muse.py:313
+#: muse/muse.py:314
 msgid "I'll be on again tomorrow."
 msgstr "Ich bin morgen wieder da."
 
-#: muse/muse.py:315
+#: muse/muse.py:316
 msgid "Tomorrow you'll hear from {0}."
 msgstr "Morgen werden Sie von {0} hören."
 
-#: muse/muse.py:319
+#: muse/muse.py:320
 msgid "The next time I'll be on is next week, at the same time."
 msgstr "Das nächste Mal bin ich nächste Woche zur gleichen Zeit dran."
 
-#: muse/muse.py:321
+#: muse/muse.py:322
 msgid "I'll be on again this coming {0}."
 msgstr "Ich werde am kommenden {0} wieder dabei sein."
 
-#: muse/muse.py:332
+#: muse/muse.py:333
 msgid "Good morning"
 msgstr "Guten Morgen"
 
-#: muse/muse.py:334
+#: muse/muse.py:335
 msgid "Good day"
 msgstr "Guten Tag"
 
-#: muse/muse.py:336
+#: muse/muse.py:337
 msgid "Good afternoon"
 msgstr "Guten Tag"
 
-#: muse/muse.py:338
+#: muse/muse.py:339
 msgid "Good evening"
 msgstr "Guten Abend"
 
-#: muse/muse.py:353
+#: muse/muse.py:354
 msgid "That was \"{0}\" in \"{1}\""
 msgstr "Das war „{0}“ aus „{1}“"
 
-#: muse/muse.py:355 muse/muse.py:401
+#: muse/muse.py:356 muse/muse.py:402
 msgid " by \"{0}\"."
 msgstr " von „{0}“."
 
-#: muse/muse.py:360
+#: muse/muse.py:361
 msgid "That was a new track. How'd you like that?"
 msgstr "Das war ein neuer Track. Wie hat dir das gefallen?"
 
-#: muse/muse.py:362
+#: muse/muse.py:363
 msgid "That was a new one. How'd you like it?"
 msgstr "Das war eine Neuheit. Wie hat es dir gefallen?"
 
-#: muse/muse.py:397
+#: muse/muse.py:398
 msgid "To start, we'll be playing: \"{0}\" from \"{1}\""
 msgstr "Zu Beginn spielen wir „{0}“ aus „{1}“"
 
-#: muse/muse.py:399
+#: muse/muse.py:400
 msgid "Next up, we'll be playing: \"{0}\" from \"{1}\""
 msgstr "Als Nächstes spielen wir „{0}“ aus „{1}“"
 
-#: muse/muse.py:406
+#: muse/muse.py:407
 msgid "This one is a new track."
 msgstr "Dies ist ein neuer Titel."
 
-#: muse/muse.py:418
+#: muse/muse.py:419
 msgid "After that short interlude, we're back to our {0} shuffle."
 msgstr ""
 "Nach diesem kurzen Intermezzo kehren wir zu unserem {0} Shuffle zurück."
 
-#: muse/muse.py:421
+#: muse/muse.py:422
 msgid "We've been listening to a group of tracks from the {0} {1}"
 msgstr "Wir haben uns eine Gruppe von Titeln aus der {0} {1} angehört"
 
-#: muse/muse.py:431
+#: muse/muse.py:432
 msgid "We're listening to a group of tracks from the {0} {1}."
 msgstr "Wir hören uns eine Gruppe von Titeln aus der {0} {1} an."
 
-#: muse/muse.py:434
+#: muse/muse.py:435
 msgid "We're going to start a new group of tracks from the {0} {1}."
 msgstr "Wir beginnen eine neue Gruppe von Tracks mit den {0} {1}."
 
-#: muse/muse.py:441
+#: muse/muse.py:442
 msgid "This {0} has {1} tracks in total."
 msgstr "Dieses {0} hat insgesamt {1} Titel."
 
-#: muse/muse.py:442
+#: muse/muse.py:443
 msgid "There are {0} tracks in this {1}."
 msgstr "Es gibt {0} Titel in diesem {1}."
 
-#: muse/muse.py:443
+#: muse/muse.py:444
 msgid "We've got {0} tracks from this {1} coming up."
 msgstr "Wir haben {0} Titel aus diesem {1} für Sie."
 
-#: muse/muse.py:444
+#: muse/muse.py:445
 msgid "This {0} contains {1} tracks."
 msgstr "Dieses {0} enthält {1} Titel."
 
-#: muse/muse.py:523
+#: muse/muse.py:524
 msgid "First let's hear about {0}"
 msgstr "Zuerst etwas über {0}"
 
-#: muse/muse.py:525
+#: muse/muse.py:526
 msgid "But first, let's hear about {0}."
 msgstr "Doch zunächst etwas über {0}."
 
-#: muse/muse.py:691
+#: muse/muse.py:692
 msgid " [already mentioned]"
 msgstr " [bereits erwähnt]"
 
-#: muse/muse.py:949
+#: muse/muse.py:950
 msgid ""
 "We're having some technical difficulties in accessing our source for {0}. "
 "We'll try again later"
@@ -768,7 +780,7 @@ msgstr ""
 "Wir haben technische Schwierigkeiten beim Zugriff auf unsere Quelle für {0}."
 " Wir werden es später noch einmal versuchen"
 
-#: muse/muse.py:961
+#: muse/muse.py:962
 msgid ""
 "It seems our writer for {0} is unexpectedly away at the moment. Did we "
 "forget to pay his salary again?"
@@ -776,43 +788,43 @@ msgstr ""
 "Es scheint, dass unser Autor für {0} im Moment unerwartet abwesend ist. "
 "Haben wir wieder vergessen, sein Gehalt zu zahlen?"
 
-#: muse/muse.py:966
+#: muse/muse.py:967
 msgid ""
 "We've found problems with all of our {0} ideas. Please try again later."
 msgstr ""
 "Wir haben bei allen unseren {0} Ideen Probleme gefunden. Bitte versuchen Sie"
 " es später noch einmal."
 
-#: muse/muse.py:972
+#: muse/muse.py:973
 msgid "Something went wrong. We'll try to fix it soon."
 msgstr ""
 "Da ist etwas schief gelaufen. Wir werden versuchen, es bald zu beheben."
 
-#: muse/muse.py:1039
+#: muse/muse.py:1040
 msgid "Starting tracks:"
 msgstr "Anfangsspuren:"
 
-#: muse/muse_spot_profile.py:283
+#: muse/muse_spot_profile.py:289
 msgid "Talking about: "
 msgstr "Sprechen über: "
 
-#: muse/muse_spot_profile.py:292
+#: muse/muse_spot_profile.py:298
 msgid "No track"
 msgstr "Kein Titel"
 
-#: muse/muse_spot_profile.py:293
+#: muse/muse_spot_profile.py:299
 msgid "No previous track"
 msgstr "Kein vorheriger Titel"
 
-#: muse/muse_spot_profile.py:295
+#: muse/muse_spot_profile.py:301
 msgid "Speaking about prior track"
 msgstr "Apropos vorherige Titel"
 
-#: muse/muse_spot_profile.py:297
+#: muse/muse_spot_profile.py:303
 msgid "Speaking about upcoming track"
 msgstr "Über den kommenden Titel sprechen"
 
-#: muse/muse_spot_profile.py:299
+#: muse/muse_spot_profile.py:305
 msgid "Talking about something"
 msgstr "Über etwas sprechen"
 
@@ -1342,66 +1354,87 @@ msgstr "Komponist ändern: {0}"
 msgid "Modify Composer"
 msgstr "Komponist ändern"
 
-#: ui_qt/composers_window.py:93 ui_qt/library_window.py:101
+#: ui_qt/artists_window.py:83 ui_qt/composers_window.py:93
+#: ui_qt/forms_window.py:82 ui_qt/genres_window.py:82
+#: ui_qt/instruments_window.py:82 ui_qt/library_window.py:101
 #: ui_qt/personas_window.py:87
 msgid "Name"
 msgstr "Name"
 
-#: ui_qt/composers_window.py:103
+#: ui_qt/artists_window.py:90 ui_qt/composers_window.py:103
 msgid "Indicators"
 msgstr "Indikatoren"
 
-#: ui_qt/composers_window.py:114
+#: ui_qt/artists_window.py:101 ui_qt/composers_window.py:114
 msgid "Start Date"
 msgstr "Anfangsdatum"
 
-#: ui_qt/composers_window.py:122
+#: ui_qt/artists_window.py:109 ui_qt/composers_window.py:122
 msgid "End Date"
 msgstr "Enddatum"
 
+#: ui_qt/artists_window.py:118 ui_qt/artists_window.py:120
 #: ui_qt/composers_window.py:131 ui_qt/composers_window.py:133
 msgid "Dates are lifespan"
 msgstr "Daten sind Lebensdauer"
 
-#: ui_qt/composers_window.py:141
+#: ui_qt/artists_window.py:128 ui_qt/composers_window.py:141
 msgid "Dates uncertain"
 msgstr "Daten ungewiss"
 
-#: ui_qt/composers_window.py:143
+#: ui_qt/artists_window.py:130 ui_qt/composers_window.py:143
 msgid "Dates are uncertain"
 msgstr "Daten sind ungewiss"
 
-#: ui_qt/composers_window.py:150 utils/globals.py:559
+#: app_qt.py:251 ui_qt/artists_window.py:137 ui_qt/composers_window.py:150
+#: utils/globals.py:578
 msgid "Genres"
 msgstr "Genren"
 
-#: ui_qt/composers_window.py:161
+#: ui_qt/artists_window.py:159 ui_qt/composers_window.py:161
+#: ui_qt/forms_window.py:105 ui_qt/genres_window.py:105
+#: ui_qt/instruments_window.py:105
 msgid "Notes"
 msgstr "Anmerkungen"
 
-#: ui_qt/composers_window.py:162
+#: ui_qt/artists_window.py:160 ui_qt/composers_window.py:162
+#: ui_qt/forms_window.py:106 ui_qt/genres_window.py:106
+#: ui_qt/instruments_window.py:106
 msgid "Add Note"
 msgstr "Anmerkung hinzufügen"
 
-#: ui_qt/composers_window.py:177 ui_qt/playlist_window.py:1021
+#: ui_qt/artists_window.py:174 ui_qt/composers_window.py:177
+#: ui_qt/forms_window.py:120 ui_qt/genres_window.py:120
+#: ui_qt/instruments_window.py:120 ui_qt/playlist_window.py:1021
 msgid "Save"
 msgstr "Speichern"
 
+#: ui_qt/artists_window.py:178 ui_qt/artists_window.py:207
 #: ui_qt/composers_window.py:181 ui_qt/composers_window.py:210
-#: ui_qt/extensions_window.py:277 ui_qt/personas_window.py:110
+#: ui_qt/extensions_window.py:277 ui_qt/forms_window.py:124
+#: ui_qt/forms_window.py:153 ui_qt/genres_window.py:124
+#: ui_qt/genres_window.py:153 ui_qt/instruments_window.py:124
+#: ui_qt/instruments_window.py:153 ui_qt/personas_window.py:110
 #: ui_qt/playlist_window.py:120 ui_qt/playlist_window.py:346
 #: ui_qt/schedules_window.py:270
 msgid "Delete"
 msgstr "Löschen"
 
-#: ui_qt/composers_window.py:222
+#: ui_qt/artists_window.py:219 ui_qt/composers_window.py:222
+#: ui_qt/forms_window.py:165 ui_qt/genres_window.py:165
+#: ui_qt/instruments_window.py:165
 msgid "New note"
 msgstr "Neue Notiz"
 
-#: ui_qt/composers_window.py:271 ui_qt/personas_window.py:436
-#: ui_qt/personas_window.py:445 ui_qt/personas_window.py:454
-#: ui_qt/personas_window.py:463 ui_qt/personas_window.py:497
-#: ui_qt/track_details_window.py:362 ui_qt/track_details_window.py:386
+#: ui_qt/artists_window.py:234 ui_qt/artists_window.py:275
+#: ui_qt/artists_window.py:292 ui_qt/composers_window.py:271
+#: ui_qt/forms_window.py:196 ui_qt/forms_window.py:213
+#: ui_qt/genres_window.py:196 ui_qt/genres_window.py:213
+#: ui_qt/instruments_window.py:196 ui_qt/instruments_window.py:213
+#: ui_qt/personas_window.py:436 ui_qt/personas_window.py:445
+#: ui_qt/personas_window.py:454 ui_qt/personas_window.py:463
+#: ui_qt/personas_window.py:497 ui_qt/track_details_window.py:362
+#: ui_qt/track_details_window.py:386
 msgid "Validation Error"
 msgstr "Validierungsfehler"
 
@@ -1417,7 +1450,9 @@ msgstr "Speichern des Komponisten fehlgeschlagen:"
 msgid "Delete composer"
 msgstr "Löschen Komponist"
 
-#: ui_qt/composers_window.py:312
+#: ui_qt/artists_window.py:324 ui_qt/composers_window.py:312
+#: ui_qt/forms_window.py:244 ui_qt/genres_window.py:244
+#: ui_qt/instruments_window.py:244
 msgid "Are you sure you want to delete {0}? This action cannot be undone."
 msgstr ""
 "Sind Sie sicher, dass Sie {0} löschen möchten? Diese Aktion kann nicht "
@@ -1502,7 +1537,8 @@ msgstr "Suche nach Komponisten"
 msgid "Search Composer"
 msgstr "Suche Composer"
 
-#: ui_qt/composers_window.py:614 ui_qt/search_window.py:253
+#: ui_qt/artists_window.py:428 ui_qt/composers_window.py:614
+#: ui_qt/genres_window.py:337 ui_qt/search_window.py:253
 msgid "Search Genre"
 msgstr "Genre suchen"
 
@@ -1538,13 +1574,17 @@ msgstr "Massenimport"
 msgid "Quality Check"
 msgstr "Qualität überprüfen"
 
-#: ui_qt/composers_window.py:703 ui_qt/search_window.py:319
+#: ui_qt/artists_window.py:470 ui_qt/composers_window.py:703
+#: ui_qt/forms_window.py:375 ui_qt/genres_window.py:377
+#: ui_qt/instruments_window.py:379 ui_qt/search_window.py:319
 msgid "No recent searches found."
 msgstr "Es wurden keine aktuellen Suchanfragen gefunden."
 
-#: ui_qt/composers_window.py:871 ui_qt/extensions_window.py:261
-#: ui_qt/favorites_window.py:416 ui_qt/history_window.py:211
-#: ui_qt/history_window.py:283 ui_qt/search_window.py:726
+#: ui_qt/artists_window.py:579 ui_qt/composers_window.py:871
+#: ui_qt/extensions_window.py:261 ui_qt/favorites_window.py:416
+#: ui_qt/forms_window.py:481 ui_qt/genres_window.py:483
+#: ui_qt/history_window.py:211 ui_qt/history_window.py:283
+#: ui_qt/instruments_window.py:485 ui_qt/search_window.py:726
 msgid "Details"
 msgstr "Einzelheiten"
 
@@ -1793,9 +1833,9 @@ msgid ""
 "When sorting by a group (composer, artist, album, etc.), stop playback after"
 " reaching either limit. Set to 0 to disable."
 msgstr ""
-"Beim Sortieren nach einer Gruppe (Komponist, Künstler, Album usw.) "
-"stoppt die Wiedergabe nach Erreichen eines der Limits. Setzen Sie 0, "
-"um zu deaktivieren."
+"Beim Sortieren nach einer Gruppe (Komponist, Künstler, Album usw.) stoppt "
+"die Wiedergabe nach Erreichen eines der Limits. Setzen Sie 0, um zu "
+"deaktivieren."
 
 #: ui_qt/configuration_window.py:426
 msgid "Max tracks per group:"
@@ -1980,8 +2020,8 @@ msgid ""
 "Reject the pending extension \"{0}\" before it downloads? It will not be "
 "suggested again."
 msgstr ""
-"Die ausstehende Erweiterung „{0}\" vor dem Herunterladen ablehnen? Sie "
-"wird nicht erneut vorgeschlagen."
+"Die ausstehende Erweiterung „{0}\" vor dem Herunterladen ablehnen? Sie wird "
+"nicht erneut vorgeschlagen."
 
 #: ui_qt/extensions_window.py:440
 msgid "Extension Details"
@@ -2126,19 +2166,19 @@ msgstr "z. B. RJ"
 msgid "Library View"
 msgstr "Bibliotheksansicht"
 
-#: ui_qt/lastfm_window.py:83 utils/globals.py:555
+#: ui_qt/lastfm_window.py:83 utils/globals.py:574
 msgid "Tracks"
 msgstr "Titel"
 
-#: ui_qt/lastfm_window.py:83 ui_qt/lastfm_window.py:116
-#: ui_qt/lastfm_window.py:283 ui_qt/lastfm_window.py:358
-#: ui_qt/lastfm_window.py:414 utils/globals.py:556
+#: ui_qt/artists_window.py:148 ui_qt/lastfm_window.py:83
+#: ui_qt/lastfm_window.py:116 ui_qt/lastfm_window.py:283
+#: ui_qt/lastfm_window.py:358 ui_qt/lastfm_window.py:414 utils/globals.py:575
 msgid "Albums"
 msgstr "Alben"
 
-#: ui_qt/lastfm_window.py:83 ui_qt/lastfm_window.py:114
+#: app_qt.py:252 ui_qt/lastfm_window.py:83 ui_qt/lastfm_window.py:114
 #: ui_qt/lastfm_window.py:287 ui_qt/lastfm_window.py:348
-#: ui_qt/lastfm_window.py:411 utils/globals.py:557
+#: ui_qt/lastfm_window.py:411 utils/globals.py:576
 msgid "Artists"
 msgstr "Künstler"
 
@@ -2195,8 +2235,10 @@ msgid ""
 "Library counts: artists={2}, albums={3}, tracks={4}\n"
 "Showing page {5}/{6} ({7} total in this view)."
 msgstr ""
-"Benutzer: {0}\nProfil: {1}\nBibliothekszählungen: Künstler={2}, "
-"Alben={3}, Titel={4}\nSeite {5}/{6} ({7} gesamt in dieser Ansicht)."
+"Benutzer: {0}\n"
+"Profil: {1}\n"
+"Bibliothekszählungen: Künstler={2}, Alben={3}, Titel={4}\n"
+"Seite {5}/{6} ({7} gesamt in dieser Ansicht)."
 
 #: ui_qt/lastfm_window.py:230
 msgid "Loaded first page."
@@ -2239,15 +2281,21 @@ msgid ""
 "MusicBrainz enrichment:\n"
 "{2}"
 msgstr ""
-"{0} Einträge gespeichert.\n\nLast.fm-Daten:\n{1}\n\nMusicBrainz-Anreicherun"
-"g:\n{2}"
+"{0} Einträge gespeichert.\n"
+"\n"
+"Last.fm-Daten:\n"
+"{1}\n"
+"\n"
+"MusicBrainz-Anreicherung:\n"
+"{2}"
 
 #: ui_qt/lastfm_window.py:471
 msgid ""
 "Saved {0} unique entries to:\n"
 "{1}"
 msgstr ""
-"{0} eindeutige Einträge gespeichert unter:\n{1}"
+"{0} eindeutige Einträge gespeichert unter:\n"
+"{1}"
 
 #: ui_qt/lastfm_window.py:472
 msgid "Last.fm Download Complete"
@@ -2266,8 +2314,8 @@ msgstr "Keine zwischengespeicherten Daten"
 msgid ""
 "Export the library first so the tracks are cached, then run enrichment."
 msgstr ""
-"Exportieren Sie zuerst die Bibliothek, damit die Titel "
-"zwischengespeichert werden, und führen Sie dann die Anreicherung aus."
+"Exportieren Sie zuerst die Bibliothek, damit die Titel zwischengespeichert "
+"werden, und führen Sie dann die Anreicherung aus."
 
 #: ui_qt/lastfm_window.py:658
 msgid "Enriching from MusicBrainz…"
@@ -2396,8 +2444,8 @@ msgstr "Beobachtungseintrag hinzufügen"
 #: ui_qt/network_media_window.py:166 ui_qt/network_media_window.py:519
 msgid "No station selected — use Search tab or enter UUID below."
 msgstr ""
-"Kein Sender ausgewählt — verwenden Sie die Registerkarte Suche oder "
-"geben Sie unten eine UUID ein."
+"Kein Sender ausgewählt — verwenden Sie die Registerkarte Suche oder geben "
+"Sie unten eine UUID ein."
 
 #: ui_qt/network_media_window.py:172
 msgid "Station UUID:"
@@ -2506,8 +2554,8 @@ msgstr "Keine Sender gefunden."
 #: ui_qt/network_media_window.py:406
 msgid "No saved stations yet. Click ★ on a search result to save one."
 msgstr ""
-"Noch keine gespeicherten Sender. Klicken Sie ★ bei einem "
-"Suchergebnis, um einen zu speichern."
+"Noch keine gespeicherten Sender. Klicken Sie ★ bei einem Suchergebnis, um "
+"einen zu speichern."
 
 #: ui_qt/network_media_window.py:478
 msgid "Selected: "
@@ -2518,8 +2566,8 @@ msgid ""
 "No watch entries yet. Search for a station and click Watch, or enter a UUID "
 "above."
 msgstr ""
-"Noch keine Beobachtungseinträge. Suchen Sie einen Sender und klicken "
-"Sie Beobachten, oder geben Sie oben eine UUID ein."
+"Noch keine Beobachtungseinträge. Suchen Sie einen Sender und klicken Sie "
+"Beobachten, oder geben Sie oben eine UUID ein."
 
 #: ui_qt/network_media_window.py:535
 msgid "Label"
@@ -2634,8 +2682,8 @@ msgid ""
 " one code rotates between them. \"*\" allows any of them."
 msgstr ""
 "Welche der aktuellen „Language Learning\"-Sprachen des Hörers (siehe "
-"Konfiguration) diese Persona lehren darf. Eine Persona mit mehr als "
-"einem Code wechselt zwischen ihnen. „*\" erlaubt alle."
+"Konfiguration) diese Persona lehren darf. Eine Persona mit mehr als einem "
+"Code wechselt zwischen ihnen. „*\" erlaubt alle."
 
 #: ui_qt/personas_window.py:211
 msgid "Characteristics:"
@@ -2667,9 +2715,9 @@ msgid ""
 "persona only. Topics with no override use the normal "
 "prompts/<language>/<topic>.txt file."
 msgstr ""
-"Optional: Ersetzen Sie den gemeinsamen Prompt-Text für ein bestimmtes "
-"Thema nur für diese Persona. Themen ohne Überschreibung verwenden die "
-"normale Datei prompts/<language>/<topic>.txt."
+"Optional: Ersetzen Sie den gemeinsamen Prompt-Text für ein bestimmtes Thema "
+"nur für diese Persona. Themen ohne Überschreibung verwenden die normale "
+"Datei prompts/<language>/<topic>.txt."
 
 #: ui_qt/personas_window.py:251
 msgid "Topic:"
@@ -2883,8 +2931,7 @@ msgid ""
 msgstr ""
 "Konvertieren '{0}' in eine explizite Titelliste?\n"
 "\n"
-"Dies wird die aktuelle {1} Quelle beenden und durch eine feste Liste von "
-"Titeln ersetzen. Dies kann nicht rückgängig gemacht werden."
+"Dies wird die aktuelle {1} Quelle beenden und durch eine feste Liste von Titeln ersetzen. Dies kann nicht rückgängig gemacht werden."
 
 #: ui_qt/playlist_window.py:334
 msgid "Playlist \"{0}\" frozen to {1} tracks."
@@ -2996,7 +3043,7 @@ msgid "Album Artist"
 msgstr "Albumkünstler"
 
 #: ui_qt/rename_confirmation_window.py:90 ui_qt/track_details_window.py:107
-#: utils/globals.py:148 utils/globals.py:335 utils/globals.py:403
+#: utils/globals.py:152 utils/globals.py:348 utils/globals.py:420
 msgid "Genre"
 msgstr "Genre"
 
@@ -3020,14 +3067,10 @@ msgstr "Discs gesamt"
 msgid "Musical Form"
 msgstr "Musikalische Form"
 
-#: ui_qt/rename_confirmation_window.py:97 utils/globals.py:152
-#: utils/globals.py:337 utils/globals.py:405
+#: ui_qt/rename_confirmation_window.py:97 utils/globals.py:156
+#: utils/globals.py:350 utils/globals.py:422
 msgid "Instrument"
 msgstr "Musikinstrument"
-
-#: utils/globals.py:153 utils/globals.py:338 utils/globals.py:407
-msgid "Catalogue"
-msgstr "Katalog"
 
 #: ui_qt/rename_confirmation_window.py:98 ui_qt/track_details_window.py:151
 msgid "Lyrics"
@@ -3179,15 +3222,15 @@ msgstr "Sortieren nach"
 msgid "Search Album"
 msgstr "Suche Album"
 
-#: ui_qt/search_window.py:233
+#: ui_qt/artists_window.py:420 ui_qt/search_window.py:233
 msgid "Search Artist"
 msgstr "Suche Künstler"
 
-#: ui_qt/search_window.py:263
+#: ui_qt/instruments_window.py:339 ui_qt/search_window.py:263
 msgid "Search Instrument"
 msgstr "Suchgerät"
 
-#: ui_qt/search_window.py:273
+#: ui_qt/forms_window.py:335 ui_qt/search_window.py:273
 msgid "Search Form"
 msgstr "Suchformular"
 
@@ -3210,8 +3253,8 @@ msgstr "(Kein Titel ausgewählt)"
 #: ui_qt/search_window.py:366 ui_qt/search_window.py:720
 msgid "Won't be played: matches playlist exclusion filter \"{0}\"."
 msgstr ""
-"Wird nicht abgespielt: entspricht dem Ausschlussfilter der "
-"Wiedergabeliste „{0}\"."
+"Wird nicht abgespielt: entspricht dem Ausschlussfilter der Wiedergabeliste "
+"„{0}\"."
 
 #: ui_qt/search_window.py:479
 msgid "Please wait, overwriting cache and searching..."
@@ -3496,8 +3539,8 @@ msgid ""
 "Permanently deletes the file from disk and removes it from all caches. This "
 "cannot be undone."
 msgstr ""
-"Löscht die Datei dauerhaft von der Festplatte und entfernt sie aus "
-"allen Caches. Dies kann nicht rückgängig gemacht werden."
+"Löscht die Datei dauerhaft von der Festplatte und entfernt sie aus allen "
+"Caches. Dies kann nicht rückgängig gemacht werden."
 
 #: ui_qt/track_details_window.py:252
 msgid "Delete Track"
@@ -3547,8 +3590,8 @@ msgid ""
 "This track is currently playing. Modifying it may interrupt playback. "
 "Proceed?"
 msgstr ""
-"Dieser Titel wird gerade abgespielt. Eine Änderung kann die "
-"Wiedergabe unterbrechen. Fortfahren?"
+"Dieser Titel wird gerade abgespielt. Eine Änderung kann die Wiedergabe "
+"unterbrechen. Fortfahren?"
 
 #: ui_qt/track_details_window.py:590
 msgid ""
@@ -3558,8 +3601,11 @@ msgid ""
 "\n"
 "This cannot be undone."
 msgstr ""
-"Diese Datei dauerhaft von der Festplatte löschen?\n\n{0}\n\nDies kann "
-"nicht rückgängig gemacht werden."
+"Diese Datei dauerhaft von der Festplatte löschen?\n"
+"\n"
+"{0}\n"
+"\n"
+"Dies kann nicht rückgängig gemacht werden."
 
 #: ui_qt/track_details_window.py:603
 msgid "Track deleted: {}"
@@ -4047,183 +4093,175 @@ msgstr "Aktuelles Gerät: {0}"
 msgid "Please switch to the expected device manually if needed."
 msgstr "Bitte wechseln Sie bei Bedarf manuell zum gewünschten Gerät."
 
-#: utils/globals.py:150 utils/globals.py:336 utils/globals.py:404
+#: utils/globals.py:154 utils/globals.py:349 utils/globals.py:421
 msgid "Form"
 msgstr "Form"
 
-#: utils/globals.py:228 utils/globals.py:406
+#: utils/globals.py:237 utils/globals.py:423
 msgid "Random"
 msgstr "Zufällig"
 
-#: utils/globals.py:229
+#: utils/globals.py:238
 msgid "Sequence"
 msgstr "Sequenz"
 
-#: utils/globals.py:230
+#: utils/globals.py:239
 msgid "Album Shuffle"
 msgstr "Album-Mischung"
 
-#: utils/globals.py:231
+#: utils/globals.py:240
 msgid "Artist Shuffle"
 msgstr "Künstler-Mischung"
 
-#: utils/globals.py:232
+#: utils/globals.py:241
 msgid "Composer Shuffle"
 msgstr "Komponisten-Mischung"
 
-#: utils/globals.py:233
+#: utils/globals.py:242
 msgid "Genre Shuffle"
 msgstr "Genre-Mischung"
 
-#: utils/globals.py:234
+#: utils/globals.py:243
 msgid "Form Shuffle"
 msgstr "Form-Mischung"
 
-#: utils/globals.py:235
+#: utils/globals.py:244
 msgid "Instrument Shuffle"
 msgstr "Instrumenten-Mischung"
 
-#: utils/globals.py:236
-msgid "Catalogue Shuffle"
-msgstr "Katalog-Mischung"
-
-#: utils/globals.py:291
+#: utils/globals.py:302
 msgid "All Music"
 msgstr "Alle Musik"
 
-#: utils/globals.py:292
+#: utils/globals.py:303
 msgid "Playlist Config"
 msgstr "Wiedergabeliste-Konfiguration"
 
-#: utils/globals.py:454
+#: utils/globals.py:471
 msgid "weather"
 msgstr "Wetter"
 
-#: utils/globals.py:456
+#: utils/globals.py:473
 msgid "news"
 msgstr "Nachrichten"
 
-#: utils/globals.py:460
+#: utils/globals.py:477
 msgid "joke"
 msgstr "Scherz"
 
-#: utils/globals.py:462
+#: utils/globals.py:479
 msgid "fact"
 msgstr "Tatsache"
 
-#: utils/globals.py:464
+#: utils/globals.py:481
 msgid "fable"
 msgstr "Fabel"
 
-#: utils/globals.py:466
+#: utils/globals.py:483
 msgid "truth and lie"
 msgstr "Wahrheit und Lüge"
 
-#: utils/globals.py:468
+#: utils/globals.py:485
 msgid "aphorism"
 msgstr "Aphorismus"
 
-#: utils/globals.py:470
+#: utils/globals.py:487
 msgid "poem"
 msgstr "Gedicht"
 
-#: utils/globals.py:472
+#: utils/globals.py:489
 msgid "quote"
 msgstr "Zitat"
 
-#: utils/globals.py:474
+#: utils/globals.py:491
 msgid "tongue twister"
 msgstr "Zungenbrecher"
 
-#: utils/globals.py:476
+#: utils/globals.py:493
 msgid "motivation"
 msgstr "Motivation"
 
-#: utils/globals.py:478
+#: utils/globals.py:495
 msgid "calendar"
 msgstr "Kalender"
 
-#: utils/globals.py:480
+#: utils/globals.py:497
 msgid "more about the next track"
 msgstr "mehr über den nächsten Track"
 
-#: utils/globals.py:482
+#: utils/globals.py:499
 msgid "more about the last track"
 msgstr "mehr über den letzten Track"
 
-#: utils/globals.py:484
+#: utils/globals.py:501
 msgid "more about our playlist"
 msgstr "mehr über unsere Playlist"
 
-#: utils/globals.py:486
+#: utils/globals.py:503
 msgid "random wiki article"
 msgstr "zufälliger Wiki-Artikel"
 
-#: utils/globals.py:488
+#: utils/globals.py:505
 msgid "funny story"
 msgstr "lustige Geschichte"
 
-#: utils/globals.py:490
+#: utils/globals.py:507
 msgid "language learning"
 msgstr "Sprachenlernen"
 
-#: utils/globals.py:560
+#: app_qt.py:250 utils/globals.py:579
 msgid "Forms"
 msgstr "Formen"
 
-#: utils/globals.py:561
+#: app_qt.py:253 utils/globals.py:580
 msgid "Instruments"
 msgstr "Instrumente"
 
-#: utils/globals.py:562
-msgid "Catalogues"
-msgstr "Kataloge"
-
-#: utils/globals.py:606
+#: utils/globals.py:628
 msgid "Remove word/phrase (only the blacklisted part)"
 msgstr "Wort/Satz entfernen (nur den auf der schwarzen Liste stehenden Teil)"
 
-#: utils/globals.py:607
+#: utils/globals.py:629
 msgid "Remove entire tag (if any part matches)"
 msgstr "Gesamte Stichwort entfernen (wenn ein Teil übereinstimmt)"
 
-#: utils/globals.py:608
+#: utils/globals.py:630
 msgid "Fail prompt (block generation)"
 msgstr "Fehlermeldung (alle Generationen sperren)"
 
-#: utils/globals.py:609
+#: utils/globals.py:631
 msgid "Log only (do not remove, just log)"
 msgstr "Nur protokollieren (nicht entfernen, nur protokollieren)"
 
-#: utils/globals.py:639
+#: utils/globals.py:661
 msgid "Male"
 msgstr "Mann"
 
-#: utils/globals.py:640
+#: utils/globals.py:662
 msgid "Female"
 msgstr "Weiblich"
 
-#: utils/globals.py:686 utils/globals.py:708
+#: utils/globals.py:708 utils/globals.py:730
 msgid "Introduction"
 msgstr "Einführung"
 
-#: utils/globals.py:688 utils/globals.py:709
+#: utils/globals.py:710 utils/globals.py:731
 msgid "Re-introduction"
 msgstr "Wiedereinführung"
 
-#: utils/globals.py:690 utils/globals.py:710
+#: utils/globals.py:712 utils/globals.py:732
 msgid "No introduction"
 msgstr "Keine Einführung"
 
-#: utils/globals.py:755
+#: utils/globals.py:777
 msgid "Run Search"
 msgstr "Suche ausführen"
 
-#: utils/globals.py:756
+#: utils/globals.py:778
 msgid "View Library"
 msgstr "Bibliothek ansehen"
 
-#: utils/globals.py:757
+#: utils/globals.py:779
 msgid "View History"
 msgstr "Geschichte ansehen"
 
@@ -4231,47 +4269,47 @@ msgstr "Geschichte ansehen"
 msgid "Edit Composers"
 msgstr "Komponisten bearbeiten"
 
-#: utils/globals.py:759
+#: utils/globals.py:781
 msgid "Edit Personas"
 msgstr "Persönlichkeiten bearbeiten"
 
-#: utils/globals.py:760
+#: utils/globals.py:782
 msgid "Edit Schedules"
 msgstr "Zeitpläne bearbeiten"
 
-#: utils/globals.py:761
+#: utils/globals.py:783
 msgid "Edit Extensions"
 msgstr "Erweiterungen bearbeiten"
 
-#: utils/globals.py:762
+#: utils/globals.py:784
 msgid "Edit Playlists"
 msgstr "Wiedergabelisten bearbeiten"
 
-#: utils/globals.py:763
+#: utils/globals.py:785
 msgid "Edit Favorites"
 msgstr "Favoriten bearbeiten"
 
-#: utils/globals.py:764
+#: utils/globals.py:786
 msgid "Edit Blacklist"
 msgstr "Schwarze Liste bearbeiten"
 
-#: utils/globals.py:765
+#: utils/globals.py:787
 msgid "Reveal Blacklist Concepts"
 msgstr "Konzepte für die Schwarze Liste aufdecken"
 
-#: utils/globals.py:766
+#: utils/globals.py:788
 msgid "Delete Media"
 msgstr "Medien löschen"
 
-#: utils/globals.py:767
+#: utils/globals.py:789
 msgid "Edit Configuration"
 msgstr "Konfiguration bearbeiten"
 
-#: utils/globals.py:768
+#: utils/globals.py:790
 msgid "Start Application"
 msgstr "Anwendung starten"
 
-#: utils/globals.py:769
+#: utils/globals.py:791
 msgid "Access Password Administration"
 msgstr "Zugang Kennwortverwaltung"
 
@@ -4334,3 +4372,269 @@ msgstr "Monate"
 #: utils/translations.py:85
 msgid "years"
 msgstr "Jahre"
+
+#: utils/globals.py:158 utils/globals.py:351
+msgid "Catalogue"
+msgstr "Katalog"
+
+#: utils/globals.py:245
+msgid "Catalogue Shuffle"
+msgstr "Katalog-Mischung"
+
+#: utils/globals.py:581
+msgid "Catalogues"
+msgstr "Kataloge"
+
+#: library_data/artist.py:54
+msgid "Artist name cannot be empty"
+msgstr "Künstlername darf nicht leer sein"
+
+#: library_data/artist.py:133
+msgid "Artist: {0}, Genre: {1}"
+msgstr "Künstler: {0}, Genre: {1}"
+
+#: library_data/artist.py:135
+msgid "Artist: {0}"
+msgstr "Künstler: {0}"
+
+#: library_data/artist.py:138
+msgid "All Artists"
+msgstr "Alle Künstler"
+
+#: library_data/artist.py:267 library_data/artist.py:335
+msgid "Invalid artist data"
+msgstr "Ungültige Künstlerinformationen"
+
+#: library_data/artist.py:282 ui_qt/artists_window.py:293
+msgid "An artist named \"{0}\" already exists"
+msgstr "Ein Künstler namens \"{0}\" existiert bereits"
+
+#: library_data/artist.py:342
+msgid "Artist not found"
+msgstr "Künstler nicht gefunden"
+
+#: library_data/form.py:37
+msgid "Form name cannot be empty"
+msgstr "Formularname darf nicht leer sein"
+
+#: library_data/form.py:97
+msgid "Form: {0}"
+msgstr "Formular: {0}"
+
+#: library_data/form.py:98
+msgid "All Forms"
+msgstr "Alle Formulare"
+
+#: library_data/form.py:197 library_data/form.py:248
+msgid "Invalid form data"
+msgstr "Ungültige Formulardaten"
+
+#: library_data/form.py:210 ui_qt/forms_window.py:214
+msgid "A form named \"{0}\" already exists"
+msgstr "Ein Formular mit dem Namen \"{0}\" existiert bereits"
+
+#: library_data/form.py:255
+msgid "Form not found"
+msgstr "Formular nicht gefunden"
+
+#: library_data/genre.py:37
+msgid "Genre name cannot be empty"
+msgstr "Genre-Name darf nicht leer sein"
+
+#: library_data/genre.py:99
+msgid "All Genres"
+msgstr "Alle Genres"
+
+#: library_data/genre.py:199 library_data/genre.py:250
+msgid "Invalid genre data"
+msgstr "Ungültige Genre-Daten"
+
+#: library_data/genre.py:212 ui_qt/genres_window.py:214
+msgid "A genre named \"{0}\" already exists"
+msgstr "Ein Genre mit dem Namen \"{0}\" existiert bereits"
+
+#: library_data/genre.py:257
+msgid "Genre not found"
+msgstr "Genre nicht gefunden"
+
+#: library_data/instrument.py:38
+msgid "Instrument name cannot be empty"
+msgstr "Instrumentname darf nicht leer sein"
+
+#: library_data/instrument.py:99
+msgid "Instrument: {0}"
+msgstr "Instrument: {0}"
+
+#: library_data/instrument.py:100
+msgid "All Instruments"
+msgstr "Alle Instrumente"
+
+#: library_data/instrument.py:200 library_data/instrument.py:251
+msgid "Invalid instrument data"
+msgstr "Ungültige Instrumentendaten"
+
+#: library_data/instrument.py:213 ui_qt/instruments_window.py:214
+msgid "An instrument named \"{0}\" already exists"
+msgstr "Ein Instrument mit dem Namen «{0}» existiert bereits"
+
+#: library_data/instrument.py:258
+msgid "Instrument not found"
+msgstr "Instrument nicht gefunden"
+
+#: ui_qt/artists_window.py:46 ui_qt/artists_window.py:438
+msgid "New Artist"
+msgstr "Neuer Künstler"
+
+#: ui_qt/artists_window.py:48
+msgid "Modify Artist: {0}"
+msgstr "Künstler ändern: {0}"
+
+#: ui_qt/artists_window.py:79
+msgid "Modify Artist"
+msgstr "Künstler bearbeiten"
+
+#: ui_qt/artists_window.py:314
+msgid "Failed to save artist:"
+msgstr "Speichern des Künstlers fehlgeschlagen:"
+
+#: ui_qt/artists_window.py:322
+msgid "Delete artist"
+msgstr "Künstler löschen"
+
+#: ui_qt/artists_window.py:339
+msgid "Failed to delete artist:"
+msgstr "Löschen des Künstlers fehlgeschlagen:"
+
+#: ui_qt/artists_window.py:393 ui_qt/artists_window.py:515
+#: ui_qt/artists_window.py:558
+msgid "Artist Search"
+msgstr "Künstlersuche"
+
+#: ui_qt/artists_window.py:393
+msgid "Search Artists"
+msgstr "Künstler suchen"
+
+#: ui_qt/artists_window.py:442 ui_qt/forms_window.py:350
+#: ui_qt/genres_window.py:352 ui_qt/instruments_window.py:354
+msgid "List All"
+msgstr "Alle auflisten"
+
+#: ui_qt/forms_window.py:45 ui_qt/forms_window.py:346
+msgid "New Form"
+msgstr "Neues Formular"
+
+#: ui_qt/forms_window.py:47
+msgid "Modify Form: {0}"
+msgstr "Formular ändern: {0}"
+
+#: ui_qt/forms_window.py:78
+msgid "Modify Form"
+msgstr "Formular ändern"
+
+#: ui_qt/forms_window.py:90 ui_qt/genres_window.py:90
+#: ui_qt/instruments_window.py:90
+msgid "Transliterations"
+msgstr "Transliterationen"
+
+#: ui_qt/forms_window.py:94
+msgid "colon-separated, e.g. sonata:sonate:suonata"
+msgstr "durch Doppelpunkte getrennt, z. B. sonata:sonate:suonata"
+
+#: ui_qt/forms_window.py:234
+msgid "Failed to save form:"
+msgstr "Fehler beim Speichern des Formulars:"
+
+#: ui_qt/forms_window.py:242
+msgid "Delete form"
+msgstr "Formular löschen"
+
+#: ui_qt/forms_window.py:257
+msgid "Failed to delete form:"
+msgstr "Löschen des Formulars fehlgeschlagen:"
+
+#: ui_qt/forms_window.py:310 ui_qt/forms_window.py:419
+#: ui_qt/forms_window.py:460
+msgid "Form Search"
+msgstr "Formularsuche"
+
+#: ui_qt/forms_window.py:310
+msgid "Search Forms"
+msgstr "Suchformulare"
+
+#: ui_qt/genres_window.py:45 ui_qt/genres_window.py:348
+msgid "New Genre"
+msgstr "Neues Genre"
+
+#: ui_qt/genres_window.py:47
+msgid "Modify Genre: {0}"
+msgstr "Genre ändern: {0}"
+
+#: ui_qt/genres_window.py:78
+msgid "Modify Genre"
+msgstr "Genre ändern"
+
+#: ui_qt/genres_window.py:94
+msgid "colon-separated, e.g. baroque:barock:barocco"
+msgstr "Durch Doppelpunkte getrennt, z. B. baroque:barock:barocco"
+
+#: ui_qt/genres_window.py:234
+msgid "Failed to save genre:"
+msgstr "Fehler beim Speichern des Genres:"
+
+#: ui_qt/genres_window.py:242
+msgid "Delete genre"
+msgstr "Genre löschen"
+
+#: ui_qt/genres_window.py:257
+msgid "Failed to delete genre:"
+msgstr "Fehler beim Löschen des Genres:"
+
+#: ui_qt/genres_window.py:310 ui_qt/genres_window.py:421
+#: ui_qt/genres_window.py:462
+msgid "Genre Search"
+msgstr "Genre-Suche"
+
+#: ui_qt/genres_window.py:310
+msgid "Search Genres"
+msgstr "Genres suchen"
+
+#: ui_qt/instruments_window.py:45 ui_qt/instruments_window.py:350
+msgid "New Instrument"
+msgstr "Neues Instrument"
+
+#: ui_qt/instruments_window.py:47
+msgid "Modify Instrument: {0}"
+msgstr "Instrument ändern: {0}"
+
+#: ui_qt/instruments_window.py:78
+msgid "Modify Instrument"
+msgstr "Instrument ändern"
+
+#: ui_qt/instruments_window.py:94
+msgid "colon-separated, e.g. accordion:accordina:accordéon"
+msgstr "Durch Doppelpunkte getrennt, z. B. accordion:accordina:accordéon"
+
+#: ui_qt/instruments_window.py:234
+msgid "Failed to save instrument:"
+msgstr "Instrument speichern fehlgeschlagen:"
+
+#: ui_qt/instruments_window.py:242
+msgid "Delete instrument"
+msgstr "Instrument löschen"
+
+#: ui_qt/instruments_window.py:259
+msgid "Failed to delete instrument:"
+msgstr "Instrument konnte nicht gelöscht werden:"
+
+#: ui_qt/instruments_window.py:312 ui_qt/instruments_window.py:423
+#: ui_qt/instruments_window.py:464
+msgid "Instrument Search"
+msgstr "Instrumentensuche"
+
+#: ui_qt/instruments_window.py:312
+msgid "Search Instruments"
+msgstr "Instrumente suchen"
+
+#: utils/globals.py:780
+msgid "Edit Library Vocabulary"
+msgstr "Bibliotheksvokabular bearbeiten"

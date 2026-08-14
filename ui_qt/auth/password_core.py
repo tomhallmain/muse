@@ -35,11 +35,11 @@ class SecurityConfig:
     DEFAULT_SHOW_SECURITY_ADVICE = True  # Show security advice when no password is configured
 
     # Renamed/merged ProtectedActions values, old cache key -> current enum.
-    # A user's existing preference (protected or not) is carried over to the
-    # new key on load rather than silently resetting to the new key's
-    # default; the old key is then dropped. edit_composers -> merged into
-    # EDIT_LIBRARY_VOCABULARY along with Forms/Genres/Artists (see
-    # docs/property-config-windows.md, "Protected action consolidation").
+    # Composers/Forms/Genres/Artists windows used to each have (or, briefly,
+    # did have) their own protected action; all merged into
+    # EDIT_LIBRARY_VOCABULARY. A user's existing preference (protected or
+    # not) is carried over to the new key on load rather than silently
+    # resetting to the new key's default; the old key is then dropped.
     LEGACY_ACTION_KEYS = {
         "edit_composers": ProtectedActions.EDIT_LIBRARY_VOCABULARY,
         "edit_forms": ProtectedActions.EDIT_LIBRARY_VOCABULARY,

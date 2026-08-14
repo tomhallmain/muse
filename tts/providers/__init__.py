@@ -4,8 +4,6 @@ TTS provider abstraction layer.
 BaseTTSProvider is the interface every synthesis backend must implement.
 TTSProviderType enumerates supported backends.
 get_provider() is the factory used by TextToSpeechRunner.
-
-See docs/tts-provider-abstraction.md for the full implementation plan.
 """
 
 from __future__ import annotations
