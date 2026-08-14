@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Dict, List, Optional, Tuple
 import copy
 import glob
 import json
@@ -44,6 +45,12 @@ class LibraryDataSearch:
         self.instrument = instrument.lower()
         self.form = form.lower()
         self.catalogue = catalogue.lower()
+        # Comma-separated terms per field ("-" prefix = must be absent), split
+        # once here rather than per track in test(), which runs per-track.
+        self._field_terms: Dict[str, Tuple[List[str], List[str]]] = {
+            name: self._parse_terms(getattr(self, name))
+            for name in ("all", "title", "album", "artist", "composer", "genre", "instrument", "form", "catalogue")
+        }
         self.stored_results_count = stored_results_count
         self.selected_track_path = selected_track_path
         self.max_results = max_results
@@ -80,22 +87,64 @@ class LibraryDataSearch:
         self.selected_track_path = str(track.filepath)
         logger.info(f"Set selected track path on {self}: {self.selected_track_path}")
 
+    @staticmethod
+    def _parse_terms(raw: str) -> Tuple[List[str], List[str]]:
+        """Split "a, -b, c" into (["a", "c"], ["b"]). Terms reduced to "" by stripping the "-" are dropped."""
+        positive: List[str] = []
+        negative: List[str] = []
+        for part in raw.split(","):
+            part = part.strip()
+            if not part:
+                continue
+            if part[0] == "-":
+                part = part[1:].strip()
+                if part:
+                    negative.append(part)
+            else:
+                positive.append(part)
+        return positive, negative
+
+    @staticmethod
+    def _terms_match(track_value: str, positive_terms: List[str], negative_terms: List[str]) -> bool:
+        for term in positive_terms:
+            if term not in track_value:
+                return False
+        for term in negative_terms:
+            if term in track_value:
+                return False
+        return True
+
+    @staticmethod
+    def _any_field_contains(term: str, fields: List[Optional[str]]) -> bool:
+        for field in fields:
+            if field is not None and term in field:
+                return True
+        return False
+
     def test(self, audio_track):
         # Check if we've collected enough results for this page (max_results + 1 to detect if there are more)
         if len(self.results) > self.max_results:
             return None
-        
+
         # Track total matches (including skipped ones)
         is_match = False
-        
+
         # NOTE - don't use _get_searchable_track_attr here because would be slower
         if len(self.all) > 0:
-            for field in [audio_track.searchable_title, audio_track.searchable_artist,
-                          audio_track.searchable_composer, audio_track.searchable_album,
-                          audio_track.searchable_genre, audio_track.get_instrument(), audio_track.get_form()]:
-                if field is not None and self.all in field:
-                    is_match = True
+            positive_terms, negative_terms = self._field_terms["all"]
+            fields = [audio_track.searchable_title, audio_track.searchable_artist,
+                      audio_track.searchable_composer, audio_track.searchable_album,
+                      audio_track.searchable_genre, audio_track.get_instrument(), audio_track.get_form()]
+            is_match = True
+            for term in positive_terms:
+                if not self._any_field_contains(term, fields):
+                    is_match = False
                     break
+            if is_match:
+                for term in negative_terms:
+                    if self._any_field_contains(term, fields):
+                        is_match = False
+                        break
         else:
             attrs_to_get = []
             if len(self.title) > 0:
@@ -123,11 +172,11 @@ class LibraryDataSearch:
                 if track_value is None or track_value.strip() == "":
                     is_match = False
                     break
-                search_value = self.__dict__[search_attr]
-                if search_value not in track_value:
+                positive_terms, negative_terms = self._field_terms[search_attr]
+                if not self._terms_match(track_value, positive_terms, negative_terms):
                     is_match = False
                     break
-        
+
         if is_match:
             self.total_matches_count += 1
             
@@ -260,22 +309,26 @@ class LibraryDataSearch:
         if not isinstance(value, LibraryDataSearch):
             return False
         for key in self.__dict__.keys():
-            if key not in ("results", "stored_results_count", "selected_track_path") and getattr(value, key) != getattr(self, key):
+            if key not in ("results", "stored_results_count", "selected_track_path", "_field_terms") and getattr(value, key) != getattr(self, key):
                 return False
         return True
+
+    # Derived from the other fields, not independent state -- excluded here
+    # the same way results/stored_results_count/total_matches_count/offset are.
+    _NON_IDENTITY_KEYS = ("results", "stored_results_count", "total_matches_count", "offset", "_field_terms")
 
     def __eq__(self, value: object) -> bool:
         if not isinstance(value, LibraryDataSearch):
             return False
         for key in self.__dict__.keys():
-            if key not in ("results", "stored_results_count", "total_matches_count", "offset") and getattr(value, key) != getattr(self, key):
+            if key not in self._NON_IDENTITY_KEYS and getattr(value, key) != getattr(self, key):
                 return False
         return True
 
     def __hash__(self):
         hash = 0
         for key in self.__dict__.keys():
-            if key not in ("results", "stored_results_count", "total_matches_count", "offset"):
+            if key not in self._NON_IDENTITY_KEYS:
                 hash += getattr(self, key).__hash__()
         return hash
 
