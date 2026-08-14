@@ -1,0 +1,12 @@
+Score how well each candidate result matches the intended target of the search query QUERY. For each candidate, assign a relevance score between 0.0 (irrelevant) and 1.0 (exact match). Only return the JSON object, do not return anything else. Example response for a different query and candidates:
+
+{
+    "scores": {
+        "0": 0.92,
+        "1": 0.15,
+        "2": 0.63
+    }
+}
+
+Candidates:
+CANDIDATES

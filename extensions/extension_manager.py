@@ -43,8 +43,11 @@ class ExtensionManager:
     extension_thread: Optional[Any] = None
 
     # Candidate currently selected and waiting out its pre-download delay, if any.
-    # Dict shape: {"id": str, "title": str, "rejected": bool}
+    # Dict shape: {"id": str, "title": str, "rejected": bool, "raw": dict,
+    # "attr": Optional[TrackAttribute], "search_query": str}
     pending_candidate: Optional[Dict[str, Any]] = None
+    # Persisted rejection records; rejected_ids is a derived O(1) lookup set.
+    rejected_extensions: List[Dict[str, Any]] = []
     # IDs (LibraryExtender `.w`) the user has explicitly rejected before download;
     # excluded from future selection via _bad_option/_is_rejected.
     rejected_ids: set = set()
@@ -59,13 +62,42 @@ class ExtensionManager:
         except KeyError:
             ExtensionManager.strategy = ExtensionStrategy.RANDOM
             logger.warning(f"Invalid strategy '{strategy_name}' found in cache, defaulting to RANDOM")
-        ExtensionManager.rejected_ids = set(app_info_cache.get("rejected_extension_ids", []))
+        ExtensionManager.rejected_extensions = list(app_info_cache.get("rejected_extensions", []))
+        if ExtensionManager._migrate_legacy_rejected_ids():
+            # Persist so this doesn't get re-migrated on every future load.
+            ExtensionManager.store_extensions()
+        ExtensionManager._recompute_rejected_ids()
+
+    @staticmethod
+    def _migrate_legacy_rejected_ids() -> bool:
+        """Wrap bare IDs from the old rejected_extension_ids key into placeholder records. Returns whether anything changed."""
+        legacy_ids = app_info_cache.get("rejected_extension_ids", [])
+        if not legacy_ids:
+            return False
+        existing_ids = {r["id"] for r in ExtensionManager.rejected_extensions}
+        migrated = False
+        for old_id in legacy_ids:
+            if old_id not in existing_ids:
+                ExtensionManager.rejected_extensions.append({
+                    "id": old_id,
+                    "snippet": {"title": ""},
+                    "date": "",
+                    "track_attr": "",
+                    "search_query": "",
+                })
+                existing_ids.add(old_id)
+                migrated = True
+        return migrated
+
+    @staticmethod
+    def _recompute_rejected_ids() -> None:
+        ExtensionManager.rejected_ids = {r["id"] for r in ExtensionManager.rejected_extensions}
 
     @staticmethod
     def store_extensions() -> None:
         app_info_cache.set("extensions", list(ExtensionManager.extensions))
         app_info_cache.set("extension_strategy", ExtensionManager.strategy.name)
-        app_info_cache.set("rejected_extension_ids", list(ExtensionManager.rejected_ids))
+        app_info_cache.set("rejected_extensions", list(ExtensionManager.rejected_extensions))
 
     @staticmethod
     def reject_pending_candidate() -> bool:
@@ -81,8 +113,23 @@ class ExtensionManager:
         pending = ExtensionManager.pending_candidate
         if pending is None:
             return False
-        ExtensionManager.rejected_ids.add(pending["id"])
+        obj = dict(pending["raw"])
+        obj["date"] = datetime.datetime.now().isoformat()
+        obj["track_attr"] = pending["attr"].name if pending["attr"] is not None else "<unknown>"
+        obj["search_query"] = pending["search_query"]
+        ExtensionManager.rejected_extensions.append(obj)
+        ExtensionManager._recompute_rejected_ids()
         pending["rejected"] = True
+        ExtensionManager.store_extensions()
+        return True
+
+    @staticmethod
+    def remove_rejection(rejection: Dict[str, Any]) -> bool:
+        """Remove a rejection record, making its candidate eligible again. Returns True if found."""
+        if rejection not in ExtensionManager.rejected_extensions:
+            return False
+        ExtensionManager.rejected_extensions.remove(rejection)
+        ExtensionManager._recompute_rejected_ids()
         ExtensionManager.store_extensions()
         return True
 
@@ -309,7 +356,9 @@ class ExtensionManager:
             for i in a:
                 i.n = SoupUtils.clean_html(i.n)
                 i.d = SoupUtils.clean_html(i.d)
-                i.m = self._m(q, i.n)
+            scores = self._llm_score_options(q, a) if self.llm.get_failure_count() == 0 else None
+            for idx, i in enumerate(a):
+                i.m = self._m(q, i.n, llm_score=(scores.get(idx) if scores else None))
                 logger.info(f"Extension option: {i.n} {i.x()}")
             opts = []
             shuffled = a.copy()
@@ -443,7 +492,14 @@ class ExtensionManager:
 
     def _delayed(self, b, attr: Optional[TrackAttribute], s: str, b1=None, sleep: bool = True, entity: Optional[Any] = None) -> None:
         if sleep:
-            ExtensionManager.pending_candidate = {"id": b.w, "title": b.n, "rejected": False}
+            ExtensionManager.pending_candidate = {
+                "id": b.w,
+                "title": b.n,
+                "rejected": False,
+                "raw": dict(b.u),
+                "attr": attr,
+                "search_query": s,
+            }
             time_seconds = self.get_extension_sleep_time(1000, 2000)
             check_cadence = 150
             while time_seconds > 0:
@@ -585,7 +641,31 @@ class ExtensionManager:
         penalty += min(0.12, 0.04 * len(standalone))
         return min(penalty, 0.25)
 
-    def _m(self, q: str, t: str) -> Dict[str, float]:
+    def _llm_score_options(self, q: str, a: List[Any]) -> Optional[Dict[int, float]]:
+        """Score all candidates 0.0-1.0 via one LLM call. Never raises; returns None on any failure, so callers fall back to mechanical `_m()` weighting."""
+        try:
+            prompt = self.prompter.get_prompt("score_search_results")
+            prompt = prompt.replace("QUERY", q)
+            candidates_text = "\n".join(f"{idx}: {cand.n}" for idx, cand in enumerate(a))
+            prompt = prompt.replace("CANDIDATES", candidates_text)
+            result = self.llm.generate_json_get_value(prompt, "scores")
+            if result is None or not isinstance(result.response, dict) or len(result.response) != len(a):
+                return None
+            scores: Dict[int, float] = {}
+            for key, value in result.response.items():
+                idx = int(key)
+                if isinstance(value, bool) or not isinstance(value, (int, float)):
+                    return None
+                score = float(value)
+                if idx not in range(len(a)) or not (0.0 <= score <= 1.0):
+                    return None
+                scores[idx] = score
+            return scores if len(scores) == len(a) else None
+        except (LLMResponseException, ValueError, TypeError) as e:
+            logger.warning(f"LLM scoring of search results failed, falling back to mechanical quality only: {e}")
+            return None
+
+    def _m(self, q: str, t: str, llm_score: Optional[float] = None) -> Dict[str, float]:
         q_lower = q.lower()
         t_lower = t.lower()
         
@@ -609,11 +689,20 @@ class ExtensionManager:
         metrics['string_similarity'] = 1.0 - (l_dist / max_len) if max_len > 0 else 0.0
         
         # 4. Overall quality score (weighted combination)
-        base = (
-            metrics['substring_match'] * 0.5 +      # Most important
-            metrics['word_overlap'] * 0.3 +         # Important
-            metrics['string_similarity'] * 0.2      # Less important
-        )
+        if llm_score is not None:
+            metrics['llm_score'] = llm_score
+            base = (
+                metrics['substring_match'] * 0.35 +
+                metrics['word_overlap'] * 0.25 +
+                metrics['string_similarity'] * 0.15 +
+                llm_score * 0.25
+            )
+        else:
+            base = (
+                metrics['substring_match'] * 0.5 +      # Most important
+                metrics['word_overlap'] * 0.3 +         # Important
+                metrics['string_similarity'] * 0.2      # Less important
+            )
         metrics["presentation_penalty"] = ExtensionManager._j(t)
         metrics["overall_quality"] = max(0.0, min(1.0, base - metrics["presentation_penalty"]))
         

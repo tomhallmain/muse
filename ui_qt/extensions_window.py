@@ -92,6 +92,10 @@ class ExtensionsWindow(SmartWindow):
         self.reject_pending_btn.clicked.connect(self._reject_pending_candidate)
         sidebar_layout.addWidget(self.reject_pending_btn)
 
+        self.view_rejected_btn = QPushButton(_("View Rejected"), sidebar)
+        self.view_rejected_btn.clicked.connect(self._open_rejected_extensions_window)
+        sidebar_layout.addWidget(self.view_rejected_btn)
+
         sidebar_layout.addWidget(QLabel(_("Strategy"), sidebar))
         self.strategy_combo = QComboBox(sidebar)
         self.strategy_combo.addItems(ExtensionStrategy.get_translated_names())
@@ -112,6 +116,8 @@ class ExtensionsWindow(SmartWindow):
         sidebar_layout.addWidget(self.total_extensions_label)
         self.avg_duration_label = QLabel(sidebar)
         sidebar_layout.addWidget(self.avg_duration_label)
+        self.rejected_count_label = QLabel(sidebar)
+        sidebar_layout.addWidget(self.rejected_count_label)
 
         main_layout.addWidget(sidebar)
 
@@ -298,6 +304,9 @@ class ExtensionsWindow(SmartWindow):
             )
         else:
             self.avg_duration_label.setText(_("Average Duration: N/A"))
+        self.rejected_count_label.setText(
+            _("Rejected: {0}").format(len(ExtensionManager.rejected_extensions))
+        )
 
     def _on_strategy_change(self, text):
         try:
@@ -428,6 +437,151 @@ class ExtensionsWindow(SmartWindow):
         if res:
             ExtensionManager.reject_pending_candidate()
             self._update_pending_display()
+            self._update_statistics()
+
+    def _open_rejected_extensions_window(self):
+        RejectedExtensionsWindow(self, self.app_actions)
+
+
+class RejectedExtensionsWindow(SmartWindow):
+    """Window to display and manage rejected extension candidates."""
+
+    def __init__(self, master, app_actions):
+        super().__init__(
+            persistent_parent=master,
+            position_parent=master,
+            title=_("Rejected Extensions"),
+            geometry="1000x600",
+            offset_x=50,
+            offset_y=50,
+        )
+        self.master = master
+        self.app_actions = app_actions
+        self.has_closed = False
+
+        self.setStyleSheet(AppStyle.get_stylesheet())
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(5, 5, 5, 5)
+
+        self.scroll = QScrollArea(self)
+        self.scroll.setWidgetResizable(True)
+        self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.content_widget = QWidget(self.scroll)
+        self.content_layout = QGridLayout(self.content_widget)
+        self.content_layout.setContentsMargins(5, 5, 5, 5)
+        self.scroll.setWidget(self.content_widget)
+        layout.addWidget(self.scroll, 1)
+
+        self.date_labels = []
+        self.title_labels = []
+        self.attribute_labels = []
+        self.query_labels = []
+        self.delete_buttons = []
+
+        self._refresh_rejected_list()
+        self.show()
+
+    def _clear_rejected_widgets(self):
+        while self.content_layout.count():
+            child = self.content_layout.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
+        self.date_labels.clear()
+        self.title_labels.clear()
+        self.attribute_labels.clear()
+        self.query_labels.clear()
+        self.delete_buttons.clear()
+
+    def _refresh_rejected_list(self):
+        self._clear_rejected_widgets()
+
+        if len(ExtensionManager.rejected_extensions) == 0:
+            lbl = QLabel(_("No rejected extensions."), self.content_widget)
+            self.content_layout.addWidget(lbl, 0, 0)
+            self.title_labels.append(lbl)
+            return
+
+        header_style = "font-weight: bold;"
+        self.content_layout.addWidget(
+            QLabel(_("Date"), self.content_widget, styleSheet=header_style), 0, 0
+        )
+        self.content_layout.addWidget(
+            QLabel(_("Title"), self.content_widget, styleSheet=header_style), 0, 1
+        )
+        self.content_layout.addWidget(
+            QLabel(_("Attribute"), self.content_widget, styleSheet=header_style), 0, 2
+        )
+        self.content_layout.addWidget(
+            QLabel(_("Search Query"), self.content_widget, styleSheet=header_style), 0, 3
+        )
+        self.content_layout.addWidget(
+            QLabel(_("Actions"), self.content_widget, styleSheet=header_style), 0, 4
+        )
+
+        rejected = sorted(
+            ExtensionManager.rejected_extensions,
+            key=lambda x: x.get("date", ""),
+            reverse=True,
+        )
+
+        for i, rejection in enumerate(rejected):
+            row = i + 1
+
+            date_str = ""
+            try:
+                date_val = rejection.get("date", "")
+                if date_val:
+                    date_str = datetime.fromisoformat(date_val).strftime("%Y-%m-%d")
+            except Exception:
+                pass
+
+            date_label = QLabel(date_str, self.content_widget)
+            self.content_layout.addWidget(date_label, row, 0)
+            self.date_labels.append(date_label)
+
+            title_label = QLabel(
+                rejection.get("snippet", {}).get("title", ""), self.content_widget
+            )
+            title_label.setWordWrap(True)
+            title_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+            self.content_layout.addWidget(title_label, row, 1)
+            self.title_labels.append(title_label)
+
+            attribute_label = QLabel(rejection.get("track_attr", ""), self.content_widget)
+            self.content_layout.addWidget(attribute_label, row, 2)
+            self.attribute_labels.append(attribute_label)
+
+            query_label = QLabel(rejection.get("search_query", ""), self.content_widget)
+            query_label.setWordWrap(True)
+            query_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+            self.content_layout.addWidget(query_label, row, 3)
+            self.query_labels.append(query_label)
+
+            delete_btn = QPushButton(_("Delete"), self.content_widget)
+            delete_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+            self.content_layout.addWidget(delete_btn, row, 4)
+            self.delete_buttons.append(delete_btn)
+            delete_btn.clicked.connect(
+                lambda checked=False, r=rejection: self._delete_rejection(r)
+            )
+
+    @require_password(ProtectedActions.EDIT_EXTENSIONS)
+    def _delete_rejection(self, rejection):
+        res = self.app_actions.alert(
+            _("Confirm Delete"),
+            _("Remove this rejection? This will allow it to be suggested again."),
+            kind="askokcancel",
+            master=self,
+        )
+        if res and ExtensionManager.remove_rejection(rejection):
+            self._refresh_rejected_list()
+            if ExtensionsWindow.top_level is not None:
+                ExtensionsWindow.top_level._update_statistics()
+
+    def closeEvent(self, event):
+        self.has_closed = True
+        event.accept()
 
 
 class ExtensionDetailsWindow(SmartWindow):

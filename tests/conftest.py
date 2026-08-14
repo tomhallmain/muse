@@ -236,6 +236,7 @@ def _patch_app_info_cache_singleton(monkeypatch, cache_instance) -> None:
         "ui_qt.genres_window",
         "ui_qt.artists_window",
         "ui_qt.instruments_window",
+        "extensions.extension_manager",
     ):
         try:
             module = importlib.import_module(module_name)
