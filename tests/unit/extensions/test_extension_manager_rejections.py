@@ -202,6 +202,57 @@ class TestRemoveRejection:
 
 
 @pytest.mark.unit
+class TestRepairCorruptedRejectedIds:
+    # Regression coverage for a persisted-cache record whose "id" was left as
+    # the nested {kind, videoId} object by the now-fixed reject_pending_candidate
+    # bug -- load_extensions() used to crash on this with "unhashable type: dict".
+    def test_nested_dict_id_is_flattened_on_load(self, monkeypatch):
+        from extensions.library_extender import q23
+
+        cache = _FakeCache({
+            "rejected_extensions": [{
+                "id": {"kind": "youtube#video", q23: "vid-corrupt"},
+                "snippet": {"title": "Corrupted Title"},
+                "date": "2024-01-01T00:00:00",
+                "track_attr": "ARTIST",
+                "search_query": "q",
+            }],
+        })
+        monkeypatch.setattr(extension_manager_mod, "app_info_cache", cache)
+
+        ExtensionManager.load_extensions()
+
+        assert ExtensionManager.rejected_extensions[0]["id"] == "vid-corrupt"
+        assert ExtensionManager.rejected_ids == {"vid-corrupt"}
+
+    def test_repair_is_persisted(self, monkeypatch):
+        from extensions.library_extender import q23
+
+        cache = _FakeCache({
+            "rejected_extensions": [{
+                "id": {"kind": "youtube#video", q23: "vid-corrupt"},
+                "snippet": {"title": "Corrupted Title"},
+            }],
+        })
+        monkeypatch.setattr(extension_manager_mod, "app_info_cache", cache)
+
+        ExtensionManager.load_extensions()
+
+        stored = cache.get("rejected_extensions")
+        assert stored[0]["id"] == "vid-corrupt"
+
+    def test_uncorrupted_cache_is_left_untouched(self, monkeypatch):
+        cache = _FakeCache({
+            "rejected_extensions": [{"id": "clean-id", "snippet": {"title": "T"}}],
+        })
+        monkeypatch.setattr(extension_manager_mod, "app_info_cache", cache)
+
+        ExtensionManager.load_extensions()
+
+        assert ExtensionManager.rejected_ids == {"clean-id"}
+
+
+@pytest.mark.unit
 class TestLegacyRejectedIdsMigration:
     def test_bare_ids_wrapped_into_placeholder_records(self, monkeypatch):
         monkeypatch.setattr(

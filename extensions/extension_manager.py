@@ -64,10 +64,23 @@ class ExtensionManager:
             ExtensionManager.strategy = ExtensionStrategy.RANDOM
             logger.warning(f"Invalid strategy '{strategy_name}' found in cache, defaulting to RANDOM")
         ExtensionManager.rejected_extensions = list(app_info_cache.get("rejected_extensions", []))
-        if ExtensionManager._migrate_legacy_rejected_ids():
+        repaired = ExtensionManager._repair_corrupted_rejected_ids()
+        migrated = ExtensionManager._migrate_legacy_rejected_ids()
+        if migrated or repaired:
             # Persist so this doesn't get re-migrated on every future load.
             ExtensionManager.store_extensions()
         ExtensionManager._recompute_rejected_ids()
+
+    @staticmethod
+    def _repair_corrupted_rejected_ids() -> bool:
+        from extensions.library_extender import q23
+        repaired = False
+        for r in ExtensionManager.rejected_extensions:
+            id_val = r.get("id")
+            if isinstance(id_val, dict):
+                r["id"] = id_val.get(q23) or str(id_val)
+                repaired = True
+        return repaired
 
     @staticmethod
     def _migrate_legacy_rejected_ids() -> bool:
