@@ -39,6 +39,20 @@ def _seed_rejection(id_="rej-1", title="Rejected Title"):
     ExtensionManager._recompute_rejected_ids()
 
 
+def _seed_extension(id_="ext-1", title="Extension Title", filename=""):
+    from extensions.library_extender import q20, q23
+
+    ExtensionManager.extensions = [{
+        q20: {"kind": "youtube#video", q23: id_},
+        "snippet": {"title": title},
+        "filename": filename,
+        "date": "2024-01-01T00:00:00",
+        "track_attr": "ARTIST",
+        "search_query": "some query",
+        "failed": False,
+    }]
+
+
 @pytest.mark.ui
 class TestExtensionsWindow:
     def test_opens(self, qapp, qt_master, mock_app_actions, fixture_library_data):
@@ -77,6 +91,42 @@ class TestExtensionsWindow:
         ]
         assert len(opened) == 1
         opened[0].close()
+        win.close()
+
+    def test_delete_extension_also_rejects_it(
+        self, qapp, qt_master, mock_app_actions, fixture_library_data
+    ):
+        from ui_qt.extensions_window import ExtensionsWindow
+
+        _seed_extension(id_="ext-to-delete")
+        win = ExtensionsWindow(qt_master, mock_app_actions, fixture_library_data)
+        process_events_for(0.2)
+        win.app_actions.alert = lambda *args, **kwargs: True
+
+        QTest.mouseClick(win.delete_buttons[0], Qt.MouseButton.LeftButton)
+        process_events_for(0.2)
+
+        assert ExtensionManager.extensions == []
+        assert len(ExtensionManager.rejected_extensions) == 1
+        assert "ext-to-delete" in ExtensionManager.rejected_ids
+        win.close()
+
+    def test_declining_delete_confirmation_keeps_extension_unrejected(
+        self, qapp, qt_master, mock_app_actions, fixture_library_data
+    ):
+        from ui_qt.extensions_window import ExtensionsWindow
+
+        _seed_extension(id_="ext-to-keep")
+        win = ExtensionsWindow(qt_master, mock_app_actions, fixture_library_data)
+        process_events_for(0.2)
+        win.app_actions.alert = lambda *args, **kwargs: False
+
+        QTest.mouseClick(win.delete_buttons[0], Qt.MouseButton.LeftButton)
+        process_events_for(0.2)
+
+        assert len(ExtensionManager.extensions) == 1
+        assert ExtensionManager.rejected_extensions == []
+        assert "ext-to-keep" not in ExtensionManager.rejected_ids
         win.close()
 
 

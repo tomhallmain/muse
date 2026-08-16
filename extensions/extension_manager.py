@@ -114,12 +114,27 @@ class ExtensionManager:
         if pending is None:
             return False
         obj = dict(pending["raw"])
+        obj["id"] = pending["id"]
         obj["date"] = datetime.datetime.now().isoformat()
         obj["track_attr"] = pending["attr"].name if pending["attr"] is not None else "<unknown>"
         obj["search_query"] = pending["search_query"]
         ExtensionManager.rejected_extensions.append(obj)
         ExtensionManager._recompute_rejected_ids()
         pending["rejected"] = True
+        ExtensionManager.store_extensions()
+        return True
+
+    @staticmethod
+    def reject_extension(extension: Dict[str, Any]) -> bool:
+        from extensions.library_extender import q20, q23
+        id_val = extension.get(q20, {}).get(q23)
+        if not id_val or id_val in ExtensionManager.rejected_ids:
+            return False
+        obj = dict(extension)
+        obj["id"] = id_val
+        obj["date"] = datetime.datetime.now().isoformat()
+        ExtensionManager.rejected_extensions.append(obj)
+        ExtensionManager._recompute_rejected_ids()
         ExtensionManager.store_extensions()
         return True
 

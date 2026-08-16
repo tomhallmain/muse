@@ -99,6 +99,83 @@ class TestRejectPendingCandidate:
         assert stored is not None
         assert stored[0]["id"] == "abc123"
 
+    def test_nested_raw_id_does_not_crash_and_is_flattened(self):
+        # Regression test: `raw` is the unmodified search-result item, whose "id"
+        # field is a nested {kind, videoId} object, not a plain string. Rejecting
+        # a candidate used to leak that nested dict into rejected_extensions,
+        # crashing _recompute_rejected_ids with TypeError: unhashable type: 'dict'.
+        ExtensionManager.pending_candidate = {
+            "id": "video-42",
+            "title": "Nested Id Track",
+            "rejected": False,
+            "raw": {
+                "id": {"kind": "youtube#video", "videoId": "video-42"},
+                "snippet": {"title": "Nested Id Track"},
+            },
+            "attr": TrackAttribute.ARTIST,
+            "search_query": "some query",
+        }
+
+        assert ExtensionManager.reject_pending_candidate() is True
+
+        record = ExtensionManager.rejected_extensions[0]
+        assert record["id"] == "video-42"
+        assert "video-42" in ExtensionManager.rejected_ids
+
+
+@pytest.mark.unit
+class TestRejectExtension:
+    def test_adds_rejection_record_from_extension(self):
+        from extensions.library_extender import q20, q23
+
+        extension = {
+            q20: {"kind": "youtube#video", q23: "vid-1"},
+            "snippet": {"title": "Some Title"},
+            "filename": "/music/some_title.mp3",
+            "track_attr": "ARTIST",
+            "search_query": "some query",
+            "date": "2024-01-01T00:00:00",
+        }
+
+        assert ExtensionManager.reject_extension(extension) is True
+
+        assert len(ExtensionManager.rejected_extensions) == 1
+        record = ExtensionManager.rejected_extensions[0]
+        assert record["id"] == "vid-1"
+        assert "vid-1" in ExtensionManager.rejected_ids
+
+    def test_is_rejected_excludes_candidate_after_deletion(self):
+        from extensions.library_extender import q20, q23
+
+        extension = {q20: {q23: "vid-2"}, "snippet": {"title": "T"}}
+        ExtensionManager.reject_extension(extension)
+
+        candidate = SimpleNamespaceLike(w="vid-2", n="T")
+        assert ExtensionManager._is_rejected(None, candidate) is True
+
+    def test_missing_id_is_a_no_op(self):
+        assert ExtensionManager.reject_extension({"snippet": {"title": "No Id"}}) is False
+        assert ExtensionManager.rejected_extensions == []
+
+    def test_already_rejected_id_is_not_duplicated(self):
+        from extensions.library_extender import q20, q23
+
+        extension = {q20: {q23: "vid-dup"}, "snippet": {"title": "T"}}
+        ExtensionManager.reject_extension(extension)
+
+        assert ExtensionManager.reject_extension(extension) is False
+        assert len(ExtensionManager.rejected_extensions) == 1
+
+    def test_persists_via_store_extensions(self):
+        from extensions.library_extender import q20, q23
+
+        extension = {q20: {q23: "vid-3"}, "snippet": {"title": "T"}}
+        ExtensionManager.reject_extension(extension)
+
+        stored = extension_manager_mod.app_info_cache.get("rejected_extensions")
+        assert stored is not None
+        assert stored[0]["id"] == "vid-3"
+
 
 @pytest.mark.unit
 class TestRemoveRejection:

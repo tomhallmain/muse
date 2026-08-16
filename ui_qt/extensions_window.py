@@ -368,6 +368,7 @@ class ExtensionsWindow(SmartWindow):
                 delete_extension_file(filepath)
             if extension in ExtensionManager.extensions:
                 ExtensionManager.extensions.remove(extension)
+                ExtensionManager.reject_extension(extension)
                 ExtensionManager.store_extensions()
                 self._refresh_extension_list()
 
