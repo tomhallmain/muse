@@ -3,6 +3,7 @@ import os
 import random
 import re
 import subprocess
+import time
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 
 from extensions.llm import LLM, LLMResponseException
@@ -12,7 +13,7 @@ from muse.playback_config_master import PlaybackConfigMaster
 from muse.prompter import Prompter
 from utils.app_info_cache import app_info_cache
 from utils.config import config
-from utils.globals import TrackAttribute, ExtensionStrategy
+from utils.globals import TrackAttribute, ExtensionStrategy, MediaFileType
 from utils.job_queue import JobQueue
 from utils.logging_setup import get_logger
 from utils.utils import Utils
@@ -603,9 +604,9 @@ class ExtensionManager:
                 _e = line[len(e + e1):]
             if line.startswith(f + e1):
                 _f = line[len(f + e1):]
-        if _f is None or not os.path.exists(_f):
+        if _f is None or not self._exists_with_retry(_f):
             logger.warning("F was not found" if _f is None else "F was found but invalid: " + _f)
-            if _e is None or not os.path.exists(_e):
+            if _e is None or not self._exists_with_retry(_e):
                 logger.warning("E was not found" if _e is None else "E was found but invalid: " + _e)
                 close_match = self.check_dir_for_close_match(_e)
                 if close_match is not None:
@@ -631,6 +632,17 @@ class ExtensionManager:
             except Exception as e:
                 logger.error(f"Failed to rename file to remove emoji: {e}")
         return _f, b
+
+    @staticmethod
+    def _exists_with_retry(path: Optional[str], attempts: int = 5, delay_seconds: float = 0.5) -> bool:
+        if not path:
+            return False
+        for attempt in range(attempts):
+            if os.path.exists(path):
+                return True
+            if attempt < attempts - 1:
+                time.sleep(delay_seconds)
+        return False
 
     @staticmethod
     def _j(title: str) -> float:
@@ -754,6 +766,8 @@ class ExtensionManager:
             return None
         _dir = os.path.abspath(config.directories[0])
         for f in os.listdir(_dir):
+            if not MediaFileType.is_media_filetype(f):
+                continue
             filepath = os.path.join(_dir, f)
             if os.path.isfile(filepath) and Utils.is_similar_strings(filepath, t, True):
                 logger.info(f"Found close match: {f}")
