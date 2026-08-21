@@ -52,6 +52,7 @@ from lib.debounce_qt import QtDebouncer
 from lib.qt_alert import qt_alert
 from lib.media_keys import MediaKeyHandler
 from utils.app_info_cache import app_info_cache
+from utils.spinning_record import SpinningRecordVideos
 from utils import (
     config,
     FFmpegHandler,
@@ -1305,6 +1306,16 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
 
     def _do_update_album_artwork(self, image_filepath):
         self._cached_media_frame_handle = self.media_frame.get_media_frame_handle() if hasattr(self.media_frame, "get_media_frame_handle") else None
+        if SpinningRecordVideos.is_spinning_record_video(image_filepath):
+            # Play it directly rather than through show_image(), which routes videos
+            # by the show_videos_in_main_window setting -- that governs video files
+            # from the library, not artwork standing in for a missing album image.
+            try:
+                if self.media_frame.show_video(image_filepath, loop=True):
+                    return
+            except Exception as e:
+                logger.warning(f"Could not play spinning record video {image_filepath}: {e}")
+            image_filepath = SpinningRecordVideos.source_image_for(image_filepath)
         self.media_frame.show_image(image_filepath if image_filepath else None)
 
     def _cache_media_frame_handle(self):

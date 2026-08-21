@@ -25,9 +25,12 @@ from PySide6.QtGui import QImage, QPixmap, QImageReader, QPainter, QCursor
 from ui_qt.app_style import AppStyle
 from ui_qt.media_controls_overlay import MediaControlsOverlay
 from utils.config import config
+from utils.logging_setup import get_logger
 from utils.translations import I18N
 
 _ = I18N._
+
+logger = get_logger(__name__)
 
 # Optional: Pillow for formats Qt may not support (HEIC, AVIF, etc.)
 try:
@@ -91,6 +94,7 @@ class MediaFrame(QFrame):
     play_pause_requested = Signal()
     volume_requested = Signal(int)
     mute_requested = Signal()
+    _video_ended = Signal()
 
     def __init__(self, parent=None, fill_canvas=False):
         super().__init__(parent)
@@ -109,6 +113,7 @@ class MediaFrame(QFrame):
         self._image = None  # QImage or PIL Image when loaded
         self._video_ui = None  # VideoUI when showing video
         self._current_pixmap = None  # keep reference
+        self._loop_video_path = None  # set while a video is playing on repeat
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -140,6 +145,10 @@ class MediaFrame(QFrame):
             self.vlc_media_player.video_set_mouse_input(False)
             self.vlc_media_player.video_set_key_input(False)
             self.vlc_media = None
+            self._video_ended.connect(self._restart_looped_video)
+            self.vlc_media_player.event_manager().event_attach(
+                vlc.EventType.MediaPlayerEndReached, self._on_vlc_end_reached
+            )
         else:
             self.vlc_instance = None
             self.vlc_media_player = None
@@ -284,23 +293,49 @@ class MediaFrame(QFrame):
         self.imscale = 1.0
         self._show_image_in_view(self.path)
 
-    def show_video(self, path):
-        """Play video in this frame (VLC embeds via winId())."""
+    def show_video(self, path, loop=False):
+        """Play video in this frame (VLC embeds via winId()).
+
+        With loop set, the file repeats until something else is shown.
+        Returns whether playback was started.
+        """
         if not _VLC_AVAILABLE or not self.vlc_media_player:
-            return
+            return False
         path_lower = (path or "").lower()
         if not any(path_lower.endswith(ext) for ext in self._video_types()):
-            return
+            return False
         self.clear()
         self._video_ui = VideoUI(path)
         self.path = path
         self.ensure_video_frame()
         self.vlc_media = self.vlc_instance.media_new(path)
+        if loop:
+            # Some VLC builds ignore this option, so _restart_looped_video covers
+            # the case where playback ends anyway.
+            self.vlc_media.add_option("input-repeat=65535")
+        self._loop_video_path = path if loop else None
         self.vlc_media_player.set_media(self.vlc_media)
         if self.vlc_media_player.play() == -1:
+            self._loop_video_path = None
             raise Exception("Failed to play video")
         self._graphics_view.hide()
         self._placeholder_label.hide()
+        return True
+
+    def _on_vlc_end_reached(self, event):
+        """Runs on VLC's event thread, which must not call back into VLC."""
+        if self._loop_video_path is not None:
+            self._video_ended.emit()
+
+    def _restart_looped_video(self):
+        """Play the file again, for VLC builds that ignore the repeat option."""
+        path = self._loop_video_path
+        if path is None:
+            return
+        try:
+            self.show_video(path, loop=True)
+        except Exception as e:
+            logger.warning(f"Could not restart looped video {path}: {e}")
 
     def ensure_video_frame(self):
         """Set the window id for VLC video output."""
@@ -330,6 +365,7 @@ class MediaFrame(QFrame):
         self.video_stop()
 
     def video_stop(self):
+        self._loop_video_path = None
         if _VLC_AVAILABLE and self.vlc_media_player:
             self.vlc_media_player.stop()
         self._video_ui = None
@@ -352,6 +388,7 @@ class MediaFrame(QFrame):
     def clear(self):
         if isinstance(self._video_ui, VideoUI):
             self.video_stop()
+        self._loop_video_path = None
         self._video_ui = None
         self._scene.clear()
         self._pixmap_item = QGraphicsPixmapItem()

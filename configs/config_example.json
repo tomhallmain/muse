@@ -30,6 +30,7 @@
     "instruments_file": "instruments_example.json",
     "enable_dynamic_volume": true,
     "play_videos_in_separate_window": false,
+    "spinning_record_videos": true,
     "playlist_recently_played_check_count": 1000,
     "enable_long_track_splitting": false,
     "long_track_splitting_time_cutoff_minutes": 20,

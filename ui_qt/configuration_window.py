@@ -184,11 +184,15 @@ class ConfigurationWindow(SmartWindow):
         self.add_config_checkbox(
             frame, layout, "play_videos_in_separate_window", _("Play Videos in Separate Window"), 0
         )
-        self.add_config_entry(
-            frame, layout, "playlist_recently_played_check_count", _("Recently Played Check Count"), 1
+        self.add_config_checkbox(
+            frame, layout, "spinning_record_videos",
+            _("Show a Spinning Record Video When a Track Has No Album Art"), 1,
         )
-        self.add_config_entry(frame, layout, "max_search_results", _("Max Search Results"), 2)
-        self.add_config_entry(frame, layout, "max_recent_searches", _("Max Recent Searches"), 3)
+        self.add_config_entry(
+            frame, layout, "playlist_recently_played_check_count", _("Recently Played Check Count"), 2
+        )
+        self.add_config_entry(frame, layout, "max_search_results", _("Max Search Results"), 3)
+        self.add_config_entry(frame, layout, "max_recent_searches", _("Max Recent Searches"), 4)
 
         tab_layout = QVBoxLayout(self.audio_tab)
         tab_layout.setContentsMargins(0, 0, 0, 0)

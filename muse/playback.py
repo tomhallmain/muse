@@ -17,6 +17,7 @@ from muse.schedules_manager import ScheduledShutdownException
 from utils.config import config
 from utils.globals import Globals, PlaylistSortType, TrackResult
 from utils.logging_setup import get_logger
+from utils.spinning_record import SpinningRecordVideos
 from utils.utils import Utils
 from utils.translations import I18N
 
@@ -579,7 +580,9 @@ class Playback:
         if self.ui_callbacks.update_album_artwork is not None:
             album_artwork = self.track.get_album_artwork()
             if album_artwork is None and not self.track.get_is_video():
-                album_artwork = self._get_random_image_asset(filename_filter="record")
+                album_artwork = SpinningRecordVideos.get_random_record_video()
+                if album_artwork is None:
+                    album_artwork = self._get_random_image_asset(filename_filter="record")
             self.ui_callbacks.update_album_artwork(image_filepath=album_artwork)
 
     def update_ui_art_for_muse(self) -> None:
