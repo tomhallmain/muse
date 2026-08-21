@@ -49,8 +49,8 @@ def _discover_genre_dirs(base_dir: str) -> dict:
             for entry in os.scandir(base_dir):
                 if entry.is_dir() and entry.name[0].isupper() and not entry.name.startswith("_"):
                     result[entry.name.lower()] = entry.path
-        except OSError:
-            pass
+        except OSError as e:
+            logger.warning("Could not scan %s for genre dirs: %s", base_dir, e)
     return result
 
 
@@ -81,8 +81,8 @@ def _genre_from_filesystem(entity_name: str, genre_dirs: dict) -> Optional[str]:
             for entry in os.scandir(path):
                 if entry.is_dir() and entry.name.lower() == entity_lower:
                     return path
-        except OSError:
-            pass
+        except OSError as e:
+            logger.debug("Could not scan genre dir %s: %s", path, e)
     return None
 
 
@@ -254,11 +254,17 @@ def file_extension(
     """
     from library_data.media_track import MediaTrack
 
+    if not f or not os.path.exists(f):
+        logger.warning("Auto-filing skipped: source file missing at %s", f)
+        return None
+
     if not config.directories:
         logger.warning("Auto-filing skipped: no directories configured")
         return None
 
     base_dir = config.directories[0]
+    if not os.path.isdir(base_dir):
+        logger.warning("Auto-filing base directory does not exist: %s", base_dir)
     genre_dirs = _discover_genre_dirs(base_dir)
     genre_dir = _infer_genre_dir(attr, entity_name, entity_obj, track_title, genre_dirs, llm)
 
@@ -284,8 +290,8 @@ def file_extension(
             new_path = os.path.join(target_dir, f"{stem} {counter}{ext}")
             counter += 1
         os.rename(f, new_path)
-        logger.info("Auto-filed extension to: %s", new_path)
+        logger.info("Auto-filed extension: %s -> %s", f, new_path)
         return new_path
     except Exception as e:
-        logger.error("Auto-filing move failed: %s", e)
+        logger.error("Auto-filing move failed (%s -> %s): %s", f, target_dir, e, exc_info=True)
         return None

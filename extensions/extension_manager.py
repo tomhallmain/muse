@@ -670,11 +670,17 @@ class ExtensionManager:
                         logger.error(f"Failed to rename: {e}")
 
             # Auto-file into genre/artist/album subdirectory
-            if config.auto_file_extensions and f:
+            if not config.auto_file_extensions:
+                logger.info("Auto-filing skipped: auto_file_extensions is disabled")
+            elif not f:
+                logger.warning("Auto-filing skipped: no downloaded file path was produced")
+            else:
                 from extensions.extension_filer import file_extension
                 filed = file_extension(f, attr, _name, entity, b.n, llm=self.llm)
                 if filed:
                     f = filed
+                else:
+                    logger.warning("Auto-filing returned no path; file remains at %s", f)
 
             self._append(b, f, attr, s)
             PlaybackConfigMaster.assign_extension(f)

@@ -485,10 +485,20 @@ class Playlist:
                     # pre-refactor path where grouping order was non-deterministic.
                     all_attrs_list = list(attr_set)
                     random.shuffle(all_attrs_list)
-                if is_callable_attr:
-                    self.sorted_tracks.sort(key=lambda t: (all_attrs_list.index(getattr(t, grouping_attr_getter_name)()), t.filepath))
+                if self.sort_config.randomize_within_group:
+                    # One value per track, assigned up front: drawing inside the key
+                    # function would not give a stable ordering.
+                    within_group_order = {t.filepath: random.random() for t in self.sorted_tracks}
+
+                    def tie_break(t):
+                        return within_group_order[t.filepath]
                 else:
-                    self.sorted_tracks.sort(key=lambda t: (all_attrs_list.index(getattr(t, grouping_attr_getter_name)), t.filepath))
+                    def tie_break(t):
+                        return t.filepath
+                if is_callable_attr:
+                    self.sorted_tracks.sort(key=lambda t: (all_attrs_list.index(getattr(t, grouping_attr_getter_name)()), tie_break(t)))
+                else:
+                    self.sorted_tracks.sort(key=lambda t: (all_attrs_list.index(getattr(t, grouping_attr_getter_name)), tie_break(t)))
             if not self.sort_config.skip_memory_shuffle:
                 history_type = self.sort_type.grouping_list_name_mapping()
                 self.shuffle_with_memory_for_attr(

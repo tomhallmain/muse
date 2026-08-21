@@ -15,6 +15,10 @@ class SortConfig:
     skip_random_start: bool = False
     check_count_override: Optional[int] = None
     check_entire_playlist: bool = False
+    # Order tracks randomly inside each group instead of by filepath. Filepath
+    # order keeps the movements of a work adjacent and in sequence, so enabling
+    # this scatters them.
+    randomize_within_group: bool = False
 
     # ------------------------------------------------------------------
     # Serialisation
@@ -30,6 +34,8 @@ class SortConfig:
             data["check_count_override"] = self.check_count_override
         if self.check_entire_playlist:
             data["check_entire_playlist"] = True
+        if self.randomize_within_group:
+            data["randomize_within_group"] = True
         return data
 
     @staticmethod
@@ -39,6 +45,7 @@ class SortConfig:
             skip_random_start=bool(data.get("skip_random_start", False)),
             check_count_override=data.get("check_count_override"),
             check_entire_playlist=bool(data.get("check_entire_playlist", False)),
+            randomize_within_group=bool(data.get("randomize_within_group", False)),
         )
 
     # ------------------------------------------------------------------
@@ -71,16 +78,15 @@ class SortConfig:
     # ------------------------------------------------------------------
 
     def __eq__(self, other: object) -> bool:
+        # Compared over fields() rather than a hand-written list: is_default()
+        # is built on this, and a field left out of it would report a configured
+        # SortConfig as the default one and so never get persisted.
         if not isinstance(other, SortConfig):
             return False
-        return (self.skip_memory_shuffle == other.skip_memory_shuffle
-                and self.skip_random_start == other.skip_random_start
-                and self.check_count_override == other.check_count_override
-                and self.check_entire_playlist == other.check_entire_playlist)
+        return all(getattr(self, f.name) == getattr(other, f.name) for f in fields(SortConfig))
 
     def __hash__(self) -> int:
-        return hash((self.skip_memory_shuffle, self.skip_random_start,
-                      self.check_count_override, self.check_entire_playlist))
+        return hash(tuple(getattr(self, f.name) for f in fields(SortConfig)))
 
     def __repr__(self) -> str:
         parts = []
@@ -92,6 +98,8 @@ class SortConfig:
             parts.append(f"cc={self.check_count_override}")
         if self.check_entire_playlist:
             parts.append("scour")
+        if self.randomize_within_group:
+            parts.append("rand_in_group")
         return f"SortConfig({', '.join(parts)})" if parts else "SortConfig()"
 
 

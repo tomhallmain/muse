@@ -73,3 +73,38 @@ class TestSortConfig:
 
     def test_default_sort_config_constant_is_default(self):
         assert DEFAULT_SORT_CONFIG == SortConfig()
+
+    def test_to_dict_includes_randomize_within_group(self):
+        assert SortConfig(randomize_within_group=True).to_dict() == {"randomize_within_group": True}
+
+    def test_from_dict_round_trips_randomize_within_group(self):
+        sc = SortConfig.from_dict({"randomize_within_group": True})
+        assert sc.randomize_within_group is True
+        assert sc.to_dict() == {"randomize_within_group": True}
+
+    def test_is_default_false_when_only_randomize_within_group_set(self):
+        """Regression: __eq__ backs is_default(), and playback_state only persists a
+        SortConfig that is not default. A field missing from __eq__ would make this
+        setting silently unsaveable."""
+        assert not SortConfig(randomize_within_group=True).is_default()
+        assert SortConfig(randomize_within_group=True) != DEFAULT_SORT_CONFIG
+
+    def test_hash_differs_when_randomize_within_group_differs(self):
+        assert hash(SortConfig(randomize_within_group=True)) != hash(SortConfig())
+
+    def test_repr_shows_randomize_within_group(self):
+        assert "rand_in_group" in repr(SortConfig(randomize_within_group=True))
+        assert "rand_in_group" not in repr(SortConfig())
+
+    def test_merge_randomize_within_group_override_wins(self):
+        merged = SortConfig().merge(SortConfig(randomize_within_group=True))
+        assert merged.randomize_within_group is True
+
+    def test_every_field_participates_in_equality(self):
+        """Guards the whole class of bug above for fields added later."""
+        from dataclasses import fields
+        for f in fields(SortConfig):
+            other_value = 1 if f.name == "check_count_override" else True
+            assert SortConfig(**{f.name: other_value}) != DEFAULT_SORT_CONFIG, (
+                f"{f.name} is not compared by __eq__, so is_default() would ignore it"
+            )

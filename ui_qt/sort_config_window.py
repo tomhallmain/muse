@@ -78,6 +78,15 @@ class SortConfigWindow(QDialog):
         self._check_entire_check.setChecked(self._source.check_entire_playlist)
         layout.addWidget(self._check_entire_check)
 
+        self._randomize_within_group_check = QCheckBox(_("Randomize tracks within each group"), self)
+        self._randomize_within_group_check.setToolTip(
+            _("Play a group's tracks in random order instead of file order. "
+              "File order keeps the movements of a work together and in sequence, "
+              "so this will separate them.")
+        )
+        self._randomize_within_group_check.setChecked(self._source.randomize_within_group)
+        layout.addWidget(self._randomize_within_group_check)
+
         # Check count override
         cc_row = QHBoxLayout()
         self._cc_enabled_check = QCheckBox(_("Check count override:"), self)
@@ -121,6 +130,7 @@ class SortConfigWindow(QDialog):
                 self._cc_spin.value() if self._cc_enabled_check.isChecked() else None
             ),
             check_entire_playlist=self._check_entire_check.isChecked(),
+            randomize_within_group=self._randomize_within_group_check.isChecked(),
         )
         self.accept()
 

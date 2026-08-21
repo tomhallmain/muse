@@ -1,5 +1,6 @@
 import pytest
 from muse import Playlist
+from muse.sort_config import SortConfig
 from tests.conftest import MockDataCallbacks, MockMediaTrack
 from utils.globals import PlaylistSortType
 
@@ -374,3 +375,45 @@ class TestPlaylistSorting:
         assert PlaylistSortType.get_from_translation(translation) == PlaylistSortType.MAIN_ARTIST_SHUFFLE
         assert PlaylistSortType.MAIN_ARTIST_SHUFFLE.get_grouping_readable_name()
         assert PlaylistSortType.MAIN_ARTIST_SHUFFLE.is_grouping_type()
+
+    def _one_group_tracks(self):
+        """Six tracks sharing an artist, so the whole playlist is a single group
+        and sorted_tracks is exactly the within-group order."""
+        def _track(filepath):
+            return MockMediaTrack(
+                filepath=filepath, title=filepath, album="Album", artist="One Artist",
+                composer="Composer", _genre="Classical", _form="Symphony",
+                _instrument="Orchestra", _catalogue="Album")
+        return [_track(f"g{i}.mp3") for i in range(1, 7)]
+
+    def _within_group_order(self, tracks, sort_config):
+        playlist = Playlist(
+            tracks=[t.filepath for t in tracks],
+            _type=PlaylistSortType.ARTIST_SHUFFLE,
+            data_callbacks=MockDataCallbacks(tracks),
+            sort_config=sort_config,
+        )
+        return tuple(t.filepath for t in playlist.sorted_tracks)
+
+    def test_within_group_order_follows_file_order_by_default(self):
+        tracks = self._one_group_tracks()
+        # random start and memory shuffle would rotate/reorder the list, hiding
+        # the tie-break under test
+        cfg = SortConfig(skip_random_start=True, skip_memory_shuffle=True)
+        expected = tuple(sorted(t.filepath for t in tracks))
+
+        orders = {self._within_group_order(tracks, cfg) for _ in range(3)}
+
+        assert orders == {expected}
+
+    def test_randomize_within_group_varies_the_order(self):
+        tracks = self._one_group_tracks()
+        cfg = SortConfig(skip_random_start=True, skip_memory_shuffle=True,
+                         randomize_within_group=True)
+
+        orders = {self._within_group_order(tracks, cfg) for _ in range(6)}
+
+        assert len(orders) > 1, "within-group order did not vary across runs"
+        every_filepath = sorted(t.filepath for t in tracks)
+        for order in orders:
+            assert sorted(order) == every_filepath, "randomizing lost or duplicated a track"
