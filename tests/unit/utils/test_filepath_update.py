@@ -719,3 +719,143 @@ class TestPlaylistDescriptorsFileDelete:
 
         raw = app_info_cache.get("playlist_descriptors", {})
         assert raw["list_a"]["track_filepaths"] == [P_TRACK_NEW]
+
+
+# ---------------------------------------------------------------------------
+# Directory delete — removes a whole subtree rather than one path
+# ---------------------------------------------------------------------------
+
+class TestPathIsUnder:
+    def test_directory_itself_counts_as_under(self):
+        from utils.path_move import path_is_under
+        assert path_is_under(P_ALBUM, P_ALBUM)
+
+    def test_descendant_is_under(self):
+        from utils.path_move import path_is_under
+        assert path_is_under(P_ALBUM, P_TRACK)
+
+    def test_sibling_is_not_under(self):
+        from utils.path_move import path_is_under
+        assert not path_is_under(P_ALBUM, P_TRACK_XDIR)
+
+    def test_prefix_sharing_sibling_is_not_under(self):
+        """"/music/Artist/Album2" must not be treated as inside "/music/Artist/Album"."""
+        from utils.path_move import path_is_under
+        assert not path_is_under(P_ALBUM, P_ALBUM2)
+
+
+class TestDbDirectoryDelete:
+    def test_deletes_tracks_under_directory(self, isolated_db):
+        conn = isolated_db
+        conn.execute("INSERT INTO media_tracks VALUES (?,?,?,?,?,?)",
+                     (P_TRACK, P_ALBUM, "t", "a", "al", 1.0))
+        conn.execute("INSERT INTO media_tracks VALUES (?,?,?,?,?,?)",
+                     (P_TRACK_XDIR, P_ALBUM2, "t2", "a", "al", 1.0))
+        conn.commit()
+
+        from utils.filepath_update import _db_directory_delete
+        _db_directory_delete(P_ALBUM)
+
+        remaining = {r["filepath"] for r in conn.execute("SELECT filepath FROM media_tracks")}
+        assert remaining == {P_TRACK_XDIR}
+
+    def test_removes_directory_rows_in_subtree(self, isolated_db):
+        conn = isolated_db
+        conn.execute("INSERT INTO directories VALUES (?, ?, ?)", (P_ALBUM, json.dumps([P_TRACK]), 1.0))
+        conn.execute("INSERT INTO directories VALUES (?, ?, ?)", (P_ALBUM2, "[]", 1.0))
+        conn.commit()
+
+        from utils.filepath_update import _db_dir_rows_delete
+        _db_dir_rows_delete(P_ALBUM)
+
+        assert _all_paths(conn) == {P_ALBUM2}
+
+    def test_prunes_deleted_files_from_parent_row(self, isolated_db):
+        """The artist row lists tracks from several albums; only the deleted one goes."""
+        conn = isolated_db
+        conn.execute(
+            "INSERT INTO directories VALUES (?, ?, ?)",
+            (P_ARTIST, json.dumps([P_TRACK, P_TRACK_XDIR]), 1.0),
+        )
+        conn.commit()
+
+        from utils.filepath_update import _db_dir_rows_delete
+        _db_dir_rows_delete(P_ALBUM)
+
+        assert _dir_files(conn, P_ARTIST) == [P_TRACK_XDIR]
+
+
+class TestLibDirectoryDelete:
+    def test_purges_tracks_and_directory_caches(self):
+        from library_data.library_data import LibraryData
+        from utils.filepath_update import _lib_directory_delete
+
+        class _T:
+            def __init__(self, filepath):
+                self.filepath = filepath
+
+        kept = _T(P_TRACK_XDIR)
+        LibraryData.MEDIA_TRACK_CACHE = {P_TRACK: _T(P_TRACK), P_TRACK_XDIR: kept}
+        LibraryData.all_tracks = [_T(P_TRACK), kept]
+        LibraryData.DIRECTORIES_CACHE = {
+            P_ALBUM: [P_TRACK],
+            P_ARTIST: [P_TRACK, P_TRACK_XDIR],
+        }
+
+        _lib_directory_delete(P_ALBUM)
+
+        assert P_TRACK not in LibraryData.MEDIA_TRACK_CACHE
+        assert P_TRACK_XDIR in LibraryData.MEDIA_TRACK_CACHE
+        assert [t.filepath for t in LibraryData.all_tracks] == [P_TRACK_XDIR]
+        assert P_ALBUM not in LibraryData.DIRECTORIES_CACHE
+        assert LibraryData.DIRECTORIES_CACHE[P_ARTIST] == [P_TRACK_XDIR]
+
+
+class TestSessionDirectoryDelete:
+    def test_clears_current_track_and_prunes_resolved(self):
+        from utils.app_info_cache import app_info_cache
+        from utils.filepath_update import _session_directory_delete
+
+        app_info_cache.set("last_playback_session", {
+            "current_track_filepath": P_TRACK,
+            "resolved_tracks": [P_TRACK, P_TRACK_XDIR],
+            "descriptor": {"track_filepaths": [P_TRACK, P_TRACK_XDIR],
+                           "source_directories": [P_ALBUM, P_ALBUM2]},
+        })
+
+        _session_directory_delete(P_ALBUM)
+
+        session = app_info_cache.get("last_playback_session")
+        assert session["current_track_filepath"] == ""
+        assert session["resolved_tracks"] == [P_TRACK_XDIR]
+        assert session["descriptor"]["track_filepaths"] == [P_TRACK_XDIR]
+        assert session["descriptor"]["source_directories"] == [P_ALBUM2]
+
+
+class TestFavoritesDirectoryDelete:
+    def test_removes_favorites_under_directory(self):
+        from utils.app_info_cache import app_info_cache
+        from utils.filepath_update import _favorites_directory_delete
+
+        app_info_cache.set("favorites", [{"filepath": P_TRACK}, {"filepath": P_TRACK_XDIR}])
+
+        _favorites_directory_delete(P_ALBUM)
+
+        assert app_info_cache.get("favorites") == [{"filepath": P_TRACK_XDIR}]
+
+
+class TestPlaylistDescriptorsDirectoryDelete:
+    def test_prunes_track_filepaths_and_source_directories(self):
+        from utils.app_info_cache import app_info_cache
+        from utils.filepath_update import _playlist_descriptors_directory_delete
+
+        app_info_cache.set("playlist_descriptors", {"list_a": {
+            "track_filepaths": [P_TRACK, P_TRACK_XDIR],
+            "source_directories": [P_ALBUM, P_ALBUM2],
+        }})
+
+        _playlist_descriptors_directory_delete(P_ALBUM)
+
+        desc = app_info_cache.get("playlist_descriptors")["list_a"]
+        assert desc["track_filepaths"] == [P_TRACK_XDIR]
+        assert desc["source_directories"] == [P_ALBUM2]

@@ -783,7 +783,7 @@ class SearchWindow(SmartWindow):
         return get_exclusion_match(track.filepath)
 
     def open_details(self, track):
-        pass
+        self.app_actions.open_track_details(track)
 
     def run_play_callback(self, track, library_data_search=None):
         if track is None or track.is_invalid():

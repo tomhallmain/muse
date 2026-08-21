@@ -1,4 +1,11 @@
-"""Sanity checks for the generated audio fixture library."""
+"""Sanity checks for the generated audio fixture library.
+
+NOT COLLECTED. ``norecursedirs`` in pytest.ini excludes every directory whose
+basename is ``fixtures``, at any depth, so nothing in here runs. The pattern
+cannot be narrowed -- ``tests/fixtures/`` (generated MP3s, not tests) has to
+stay excluded -- so collecting these would mean renaming this directory.
+Adding tests here will not get them run.
+"""
 
 import pytest
 from tests.fixtures.audio_fixtures import (

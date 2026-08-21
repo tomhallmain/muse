@@ -19,7 +19,10 @@ pytest -m "not ui"
 
 ## Conventions
 
-- `@pytest.mark.ui` on every test module (applied via `conftest.py` `pytestmark`).
+- The `ui` marker is applied automatically to everything under `tests/ui/` by
+  `pytest_collection_modifyitems` in the root `tests/conftest.py`. Marking a
+  module explicitly is optional; a marker in a conftest would have no effect,
+  since pytest reads `pytestmark` only at module and class scope.
 - Inject `audio_library_callbacks`; do not depend on production pickles.
 - Volume to 0 before any playback; use `qt_test_helpers.process_events_for`.
 - Prefer constructing a single window with mocked `LibraryData` callbacks before full `MuseAppQt` boot.

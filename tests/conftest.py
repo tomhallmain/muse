@@ -212,68 +212,36 @@ def _patch_db_connection_singleton(monkeypatch, conn) -> None:
             monkeypatch.setattr(module, "get_connection", lambda c=conn: c)
 
 
-def _patch_app_info_cache_singleton(monkeypatch, cache_instance) -> None:
-    """Patch the app_info_cache singleton everywhere tests may hold a reference.
+def repoint_singleton_bindings(monkeypatch, attr_name, old_obj, new_obj) -> None:
+    """Repoint every module-level binding of *old_obj* to *new_obj*.
 
-    ``utils/__init__.py`` does ``from utils.app_info_cache import app_info_cache``,
-    which binds the instance onto the ``utils`` package as ``utils.app_info_cache``.
-    That shadows the real submodule, so ``import utils.app_info_cache as x`` returns
-    the singleton, not the module — never use ``x.AppInfoCache()`` in that case.
+    A module doing ``from utils.config import config`` at import time holds its
+    own reference to the singleton, so patching the source module alone leaves
+    that binding stale and the module keeps reading the un-isolated instance --
+    which is never reset between tests, so its values leak into whatever runs
+    next. That surfaces as a test passing for the wrong reason, not as an error.
+
+    Sweeping sys.modules replaces the per-module list this used to need, which
+    silently went out of date whenever a module adopted the import style. The
+    identity check touches only bindings to the exact old object, and modules
+    imported later reach the new object through the already-patched source
+    module. Test modules are swept too, so a module-level import in a test file
+    no longer writes to a different object than the code under test reads.
+
+    Two things it cannot reach: a reference copied onto an instance attribute
+    (``self.config = config``), which needs its owner rebuilt; and a module
+    imported for the first time *during* a test, which binds that test's
+    instance -- monkeypatch never set that binding, so it survives teardown and
+    later sweeps no longer recognise it. The second only bites a module reached
+    exclusively by a lazy import; anything a test module imports at the top is
+    already in sys.modules before the first sweep runs.
     """
-    import utils
-
-    cache_module = importlib.import_module("utils.app_info_cache")
-    monkeypatch.setattr(cache_module, "app_info_cache", cache_instance)
-    monkeypatch.setattr(utils, "app_info_cache", cache_instance)
-
-    for module_name in (
-        "muse.playlist",
-        "library_data.library_data",
-        "muse.prompter",
-        "muse.schedules_manager",
-        "ui_qt.configuration_window",
-        "ui_qt.forms_window",
-        "ui_qt.genres_window",
-        "ui_qt.artists_window",
-        "ui_qt.instruments_window",
-        "extensions.extension_manager",
-    ):
+    for module in list(sys.modules.values()):
         try:
-            module = importlib.import_module(module_name)
+            if getattr(module, attr_name, None) is old_obj:
+                monkeypatch.setattr(module, attr_name, new_obj)
         except Exception:
             continue
-        if hasattr(module, "app_info_cache"):
-            monkeypatch.setattr(module, "app_info_cache", cache_instance)
-
-
-def _patch_config_singleton(monkeypatch, config_instance) -> None:
-    """Patch the config singleton (same package shadowing issue as app_info_cache)."""
-    import utils
-
-    config_module = importlib.import_module("utils.config")
-    monkeypatch.setattr(config_module, "config", config_instance)
-    monkeypatch.setattr(utils, "config", config_instance)
-
-    for module_name in (
-        "muse.playlist",
-        "muse.muse",
-        "muse.playback",
-        "muse.dj_persona",
-        "library_data.library_data",
-        # composer.py still reads from a JSON file via config.composers_file, so
-        # it must see the isolated config instance to avoid reading the real file.
-        "library_data.composer",
-        "ui_qt.configuration_window",
-        # app_qt does `from utils import config` at import time, so the module-level
-        # name must be patched separately — otherwise get_args() reads real directories.
-        "app_qt",
-    ):
-        try:
-            module = importlib.import_module(module_name)
-        except Exception:
-            continue
-        if hasattr(module, "config"):
-            monkeypatch.setattr(module, "config", config_instance)
 
 
 def _patch_muse_memory_singleton(monkeypatch, memory_instance) -> None:
@@ -324,12 +292,16 @@ def isolated_singletons(tmp_path, monkeypatch):
     isolated_db_conn = _make_isolated_db_conn()
     _patch_db_connection_singleton(monkeypatch, isolated_db_conn)
 
-    from utils.app_info_cache import AppInfoCache
-
-    new_cache = AppInfoCache()
-    _patch_app_info_cache_singleton(monkeypatch, new_cache)
+    # importlib rather than `import utils.app_info_cache as x`: utils/__init__.py
+    # binds the *instance* onto the package under that same name, so the plain
+    # import statement hands back the singleton instead of the module.
+    cache_module = importlib.import_module("utils.app_info_cache")
+    old_cache = cache_module.app_info_cache
+    new_cache = cache_module.AppInfoCache()
+    repoint_singleton_bindings(monkeypatch, "app_info_cache", old_cache, new_cache)
 
     config_module = importlib.import_module("utils.config")
+    old_config = config_module.config
     config_instance = config_module.Config()
     # Resolve composers_file to an absolute path so ComposersData() (which still
     # reads from JSON, not the DB) opens the right file regardless of CWD.
@@ -338,7 +310,7 @@ def isolated_singletons(tmp_path, monkeypatch):
     )
     if os.path.isfile(_composers_example):
         config_instance.composers_file = _composers_example
-    _patch_config_singleton(monkeypatch, config_instance)
+    repoint_singleton_bindings(monkeypatch, "config", old_config, config_instance)
     # Rebuild composers_data so it reads from the isolated example file rather
     # than whatever the module-level singleton loaded at import time.
     try:
@@ -412,6 +384,20 @@ def isolated_singletons(tmp_path, monkeypatch):
     yield
 
     isolated_db_conn.close()
+
+
+@pytest.fixture
+def app_info_cache(isolated_singletons):
+    """The isolated app_info_cache singleton for this test.
+
+    ``repoint_singleton_bindings`` also fixes up a module-level import in a test
+    file, so this is not the only way to reach the isolated instance -- but it
+    states the dependency instead of relying on the sweep, and it stays correct
+    for the cases the sweep documents as out of reach.
+    """
+    from utils.app_info_cache import app_info_cache as isolated_instance
+
+    return isolated_instance
 
 
 @pytest.fixture(autouse=True)
@@ -575,3 +561,26 @@ def pytest_sessionfinish(session, exitstatus):
     from tts.output_cleanup import cleanup_default_output_directory
 
     cleanup_default_output_directory()
+
+
+# Directory name under tests/ == the marker every test beneath it carries.
+LAYER_MARKERS = ("unit", "integration", "ui")
+
+
+def pytest_collection_modifyitems(items):
+    """Apply the layer marker (unit / integration / ui) to every test by location.
+
+    pytest reads ``pytestmark`` only at module and class scope, so a marker
+    cannot be declared once per directory in a conftest.  Without this hook the
+    documented ``-m unit`` / ``-m integration`` / ``-m ui`` selections quietly
+    run only the modules that happen to decorate themselves, which is easy to
+    get wrong when adding a file and impossible to notice from the output.
+    """
+    tests_root = Path(__file__).parent
+    for item in items:
+        try:
+            parts = Path(str(item.path)).relative_to(tests_root).parts
+        except ValueError:
+            continue
+        if parts and parts[0] in LAYER_MARKERS:
+            item.add_marker(getattr(pytest.mark, parts[0]))

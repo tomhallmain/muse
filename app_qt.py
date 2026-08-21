@@ -159,6 +159,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
             "set_playback_master_strategy": self.set_playback_master_strategy,
             "skip_to_track": self.skip_to_track,
             "delete_track": self.delete_track,
+            "delete_album": self.delete_album,
             "seek_in_track": self.seek_in_track,
             "set_media_volume": self.set_media_volume,
             "get_media_volume": self.get_media_volume,
@@ -1059,25 +1060,43 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         if self.current_run.is_started:
             self.current_run.skip_to_track(filepath)
 
+    def _skip_playback_if_doomed(self, is_doomed) -> None:
+        """Advance past the current track when it is about to be deleted, so the
+        player never tries to read a file that no longer exists."""
+        current = self.get_current_track()
+        if current is None or not is_doomed(getattr(current, "filepath", "") or ""):
+            return
+        if self.current_run and self.current_run.is_started:
+            self.current_run.next()
+
+    def _purge_from_active_playlist(self, is_doomed) -> None:
+        """Drop deleted tracks from the running playlist so their slots are never revisited."""
+        try:
+            playlist = (
+                self.current_run.get_playback()._playback_config.get_list()
+                if self.current_run and not self.current_run.is_complete
+                else None
+            )
+            if playlist:
+                for t in list(playlist.sorted_tracks):
+                    if is_doomed(t.filepath):
+                        playlist.sorted_tracks.remove(t)
+        except Exception:
+            pass
+
+    @require_password(ProtectedActions.DELETE_MEDIA)
     def delete_track(self, filepath: str) -> bool:
         """Delete a track file from disk and purge it from every cache.
-
-        If the track is currently playing, playback is skipped first so the
-        player never tries to read the deleted file.  The active playlist's
-        sorted_tracks list is also pruned so the slot is never revisited.
 
         Returns True on success, False if the file could not be removed.
         """
         import os as _os
         from utils.filepath_update import propagate_file_delete
 
-        current = self.get_current_track()
-        is_current = (
-            current is not None
-            and _os.path.normpath(getattr(current, "filepath", "")) == _os.path.normpath(filepath)
-        )
-        if is_current and self.current_run and self.current_run.is_started:
-            self.current_run.next()
+        def is_doomed(path: str) -> bool:
+            return _os.path.normpath(path) == _os.path.normpath(filepath)
+
+        self._skip_playback_if_doomed(is_doomed)
 
         try:
             _os.remove(filepath)
@@ -1086,22 +1105,46 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
             return False
 
         propagate_file_delete(filepath)
+        self._purge_from_active_playlist(is_doomed)
+        return True
+
+    @require_password(ProtectedActions.DELETE_MEDIA)
+    def delete_album(self, album_dir: str) -> bool:
+        """Delete an album folder and everything inside it, then purge every cache.
+
+        An album is its containing folder, matching how renaming an album folder
+        already works, so any non-audio files sitting in it (cover art, logs) go
+        with it.  Returns True on success, False if the folder could not be removed.
+        """
+        import shutil
+        from utils.filepath_update import propagate_directory_delete
+        from utils.path_move import path_is_under
+
+        # A track sitting directly in a library root would make that root the
+        # "album folder"; deleting it would take the whole library with it.
+        for root in config.directories:
+            if path_is_under(album_dir, root):
+                self.alert(
+                    _("Delete Failed"),
+                    _("This folder is a library directory, or contains one, "
+                      "so it cannot be deleted here."),
+                    kind="error",
+                )
+                return False
+
+        def is_doomed(path: str) -> bool:
+            return path_is_under(album_dir, path)
+
+        self._skip_playback_if_doomed(is_doomed)
 
         try:
-            playlist = (
-                self.current_run.get_playback()._playback_config.get_list()
-                if self.current_run and not self.current_run.is_complete
-                else None
-            )
-            if playlist:
-                fp_norm = _os.path.normpath(filepath)
-                for t in list(playlist.sorted_tracks):
-                    if _os.path.normpath(t.filepath) == fp_norm:
-                        playlist.sorted_tracks.remove(t)
-                        break
-        except Exception:
-            pass
+            shutil.rmtree(album_dir)
+        except OSError as exc:
+            self.alert(_("Delete Failed"), str(exc), kind="error")
+            return False
 
+        propagate_directory_delete(album_dir)
+        self._purge_from_active_playlist(is_doomed)
         return True
 
     def seek_in_track(self, position_ms):

@@ -36,6 +36,13 @@ def paths_equivalent(path_a: str, path_b: str) -> bool:
     return normcase_path(path_a) == normcase_path(path_b)
 
 
+def path_is_under(dir_path: str, path: str) -> bool:
+    """True when *path* is *dir_path* itself or sits anywhere beneath it."""
+    dir_c = normcase_path(dir_path)
+    path_c = normcase_path(path)
+    return path_c == dir_c or path_c.startswith(dir_c + os.sep)
+
+
 def destination_occupied(src: str, dst: str) -> bool:
     """True if *dst* exists and is not the same location as *src*."""
     if not os.path.lexists(dst):

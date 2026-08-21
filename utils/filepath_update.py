@@ -32,8 +32,9 @@ Caches covered
 │ app_info_cache: recent_desc     │ same fields per recent entry │ load/patch/store │
 └─────────────────────────────────┴──────────────────────────────┴──────────────────┘
 
-propagate_file_delete covers the same set of stores, removing every reference to the
-deleted path rather than remapping it.
+propagate_file_delete and propagate_directory_delete cover the same set of stores,
+removing every reference to the deleted path -- or to the whole subtree, for a
+directory -- rather than remapping it.
 """
 
 from __future__ import annotations
@@ -86,6 +87,12 @@ def _remap_under(old_dir: str, new_dir: str, path: str) -> str:
     return new_n if rel == "." else os.path.join(new_n, rel)
 
 
+def _is_under(dir_path: str, path: str) -> bool:
+    from utils.path_move import path_is_under
+
+    return path_is_under(dir_path, path)
+
+
 def _guarded(label: str, fn: Callable) -> None:
     """Call *fn* and log any exception as a warning rather than raising."""
     try:
@@ -128,6 +135,21 @@ def propagate_file_delete(filepath: str) -> None:
     _guarded("PlaybackSession",      lambda: _session_file_delete(filepath))
     _guarded("Favorites",            lambda: _favorites_file_delete(filepath))
     _guarded("PlaylistDescriptors",  lambda: _playlist_descriptors_file_delete(filepath))
+
+
+def propagate_directory_delete(dir_path: str) -> None:
+    """Remove every reference to *dir_path* and its descendants from all caches.
+
+    Called after the directory itself has been removed from disk, so it drops
+    whole subtrees rather than one path at a time.
+    """
+    _guarded("db:media_tracks",      lambda: _db_directory_delete(dir_path))
+    _guarded("db:directories",       lambda: _db_dir_rows_delete(dir_path))
+    _guarded("LibraryData",          lambda: _lib_directory_delete(dir_path))
+    _guarded("Playlist.history",     lambda: _playlist_directory_delete(dir_path))
+    _guarded("PlaybackSession",      lambda: _session_directory_delete(dir_path))
+    _guarded("Favorites",            lambda: _favorites_directory_delete(dir_path))
+    _guarded("PlaylistDescriptors",  lambda: _playlist_descriptors_directory_delete(dir_path))
 
 
 # ---------------------------------------------------------------------------
@@ -702,6 +724,170 @@ def _playlist_descriptors_file_delete(filepath: str) -> None:
     recents = app_info_cache.get(RECENT_DESCRIPTORS_KEY, []) or []
     if isinstance(recents, list):
         changed = any(_remove_from_desc(d) for d in recents if isinstance(d, dict))
+        if changed:
+            app_info_cache.set(RECENT_DESCRIPTORS_KEY, recents)
+            app_info_cache.store()
+
+
+# ---------------------------------------------------------------------------
+# Delete helpers — remove all references to a deleted directory subtree
+# ---------------------------------------------------------------------------
+
+def _db_directory_delete(dir_path: str) -> None:
+    from utils.db import get_connection
+    conn = get_connection()
+    rows = conn.execute("SELECT filepath FROM media_tracks").fetchall()
+    doomed = [row["filepath"] for row in rows if _is_under(dir_path, row["filepath"])]
+    if doomed:
+        conn.executemany(
+            "DELETE FROM media_tracks WHERE filepath=?", [(f,) for f in doomed]
+        )
+        conn.commit()
+
+
+def _db_dir_rows_delete(dir_path: str) -> None:
+    """Drop directories rows for the subtree, and prune its files from the parent row."""
+    from utils.db import get_connection
+    conn = get_connection()
+    rows = conn.execute("SELECT path, files FROM directories").fetchall()
+    changed = False
+    for row in rows:
+        if _is_under(dir_path, row["path"]):
+            conn.execute("DELETE FROM directories WHERE path=?", (row["path"],))
+            changed = True
+            continue
+        try:
+            files: list = json.loads(row["files"] or "[]")
+        except json.JSONDecodeError:
+            continue
+        updated = [f for f in files if not _is_under(dir_path, f)]
+        if updated != files:
+            conn.execute(
+                "UPDATE directories SET files=? WHERE path=?",
+                (json.dumps(updated), row["path"]),
+            )
+            changed = True
+    if changed:
+        conn.commit()
+
+
+def _lib_directory_delete(dir_path: str) -> None:
+    from library_data.library_data import LibraryData
+
+    for filepath in list(LibraryData.MEDIA_TRACK_CACHE):
+        if _is_under(dir_path, filepath):
+            LibraryData.MEDIA_TRACK_CACHE.pop(filepath, None)
+
+    LibraryData.all_tracks = [
+        t for t in LibraryData.all_tracks if not _is_under(dir_path, t.filepath)
+    ]
+
+    for cached_dir in list(LibraryData.DIRECTORIES_CACHE):
+        if _is_under(dir_path, cached_dir):
+            LibraryData.DIRECTORIES_CACHE.pop(cached_dir, None)
+        else:
+            LibraryData.DIRECTORIES_CACHE[cached_dir] = [
+                f for f in LibraryData.DIRECTORIES_CACHE[cached_dir]
+                if not _is_under(dir_path, f)
+            ]
+
+
+def _playlist_directory_delete(dir_path: str) -> None:
+    from muse.playlist import Playlist
+    from utils.globals import HistoryType
+    from utils.app_info_cache import app_info_cache
+    key = HistoryType.TRACKS.value
+
+    Playlist.recently_played_filepaths = [
+        f for f in Playlist.recently_played_filepaths if not _is_under(dir_path, f)
+    ]
+    cached = app_info_cache.get(key, [])
+    updated = [f for f in cached if not _is_under(dir_path, f)]
+    if updated != cached:
+        app_info_cache.set(key, updated)
+        app_info_cache.store()
+
+
+def _session_directory_delete(dir_path: str) -> None:
+    from muse.playback_session import LAST_SESSION_KEY
+    from utils.app_info_cache import app_info_cache
+
+    session = app_info_cache.get(LAST_SESSION_KEY)
+    if not isinstance(session, dict):
+        return
+
+    changed = False
+    current = session.get("current_track_filepath", "")
+    if current and _is_under(dir_path, current):
+        session["current_track_filepath"] = ""
+        changed = True
+
+    tracks = session.get("resolved_tracks", [])
+    updated = [t for t in tracks if not _is_under(dir_path, t)]
+    if updated != tracks:
+        session["resolved_tracks"] = updated
+        changed = True
+
+    desc = session.get("descriptor")
+    if isinstance(desc, dict):
+        if _prune_descriptor_directory(desc, dir_path):
+            changed = True
+
+    if changed:
+        app_info_cache.set(LAST_SESSION_KEY, session)
+        app_info_cache.store()
+
+
+def _favorites_directory_delete(dir_path: str) -> None:
+    from utils.app_info_cache import app_info_cache
+    favs = app_info_cache.get("favorites", [])
+    if not isinstance(favs, list):
+        return
+    updated = [
+        f for f in favs
+        if not (isinstance(f, dict) and f.get("filepath")
+                and _is_under(dir_path, f.get("filepath", "")))
+    ]
+    if len(updated) != len(favs):
+        app_info_cache.set("favorites", updated)
+        app_info_cache.store()
+
+
+def _prune_descriptor_directory(data: dict, dir_path: str) -> bool:
+    """Drop the subtree from a descriptor's track_filepaths and source_directories."""
+    changed = False
+    for field in ("track_filepaths", "source_directories"):
+        values = data.get(field)
+        if not isinstance(values, list):
+            continue
+        updated = [v for v in values if not _is_under(dir_path, v)]
+        if updated != values:
+            data[field] = updated
+            changed = True
+    return changed
+
+
+def _playlist_descriptors_directory_delete(dir_path: str) -> None:
+    from muse.playlist_descriptor import PLAYLIST_DESCRIPTORS_CACHE_KEY
+    from muse.playback_session import RECENT_DESCRIPTORS_KEY
+    from utils.app_info_cache import app_info_cache
+
+    raw = app_info_cache.get(PLAYLIST_DESCRIPTORS_CACHE_KEY, {})
+    if isinstance(raw, dict):
+        changed = any(
+            _prune_descriptor_directory(v, dir_path)
+            for v in raw.values() if isinstance(v, dict)
+        )
+        if changed:
+            app_info_cache.set(PLAYLIST_DESCRIPTORS_CACHE_KEY, raw)
+            app_info_cache.store()
+
+    recents = app_info_cache.get(RECENT_DESCRIPTORS_KEY, []) or []
+    if isinstance(recents, list):
+        changed = any(
+            _prune_descriptor_directory(d, dir_path)
+            for d in recents if isinstance(d, dict)
+        )
         if changed:
             app_info_cache.set(RECENT_DESCRIPTORS_KEY, recents)
             app_info_cache.store()

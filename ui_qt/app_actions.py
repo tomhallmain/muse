@@ -37,6 +37,7 @@ class AppActions:
         "set_playback_master_strategy",
         "skip_to_track",
         "delete_track",
+        "delete_album",
         "seek_in_track",
         "set_media_volume",
         "get_media_volume",

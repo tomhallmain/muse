@@ -1,7 +1,8 @@
 """
 Qt / PySide6 test harness.
 
-Env bootstrap lives in ``tests/conftest.py`` (not duplicated here).
+Env bootstrap lives in ``tests/conftest.py`` (not duplicated here), which also
+applies the ``ui`` marker to everything in this tree.
 See ``tests/docs/DATA_CACHE_ISOLATION.md`` for metadata JSON and cache isolation.
 """
 
@@ -20,9 +21,6 @@ from tests.utils.ui_window_helpers import (
     make_qt_master,
     seed_library_data_from_tracks,
 )
-
-pytestmark = pytest.mark.ui
-
 
 @pytest.fixture(scope="session")
 def qapp():

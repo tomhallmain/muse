@@ -2,9 +2,6 @@
 Integration test layer.
 
 Isolation env vars are set in ``tests/conftest.py`` (always loaded for paths
-under ``tests/``). This file only applies the integration marker.
+under ``tests/``), which also applies the ``integration`` marker to everything
+in this tree via ``pytest_collection_modifyitems``.
 """
-
-import pytest
-
-pytestmark = pytest.mark.integration

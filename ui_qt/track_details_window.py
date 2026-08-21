@@ -257,6 +257,32 @@ class TrackDetailsWindow(SmartWindow):
         layout.addWidget(delete_group, row, 0, 1, 2)
         row += 1
 
+        # ── Delete album folder ───────────────────────────────────────
+        delete_album_group = QGroupBox(_("Delete Album Folder"), form_widget)
+        dag_layout = QVBoxLayout(delete_album_group)
+
+        delete_album_warning = QLabel(
+            _("Permanently deletes this folder and everything inside it, including "
+              "any cover art or other files. This cannot be undone."),
+            delete_album_group,
+        )
+        delete_album_warning.setWordWrap(True)
+        delete_album_warning.setStyleSheet("color: #cc4444; font-size: 10px;")
+        dag_layout.addWidget(delete_album_warning)
+
+        self._delete_album_target_label = QLabel(album_dir, delete_album_group)
+        self._delete_album_target_label.setWordWrap(True)
+        self._delete_album_target_label.setStyleSheet("color: grey; font-size: 10px;")
+        dag_layout.addWidget(self._delete_album_target_label)
+
+        delete_album_btn = QPushButton(_("Delete Album"), delete_album_group)
+        delete_album_btn.setStyleSheet("QPushButton { color: #cc4444; }")
+        delete_album_btn.clicked.connect(self._confirm_delete_album)
+        dag_layout.addWidget(delete_album_btn)
+
+        layout.addWidget(delete_album_group, row, 0, 1, 2)
+        row += 1
+
         self.show()
 
     # ------------------------------------------------------------------
@@ -564,16 +590,23 @@ class TrackDetailsWindow(SmartWindow):
         """
         if not self._is_current_track():
             return True
-        msg = QMessageBox(self)
-        msg.setWindowTitle(_("Currently Playing"))
-        msg.setText(
+        return self._ask_confirmation(
+            _("Currently Playing"),
             _("This track is currently playing. "
-              "Modifying it may interrupt playback. Proceed?")
+              "Modifying it may interrupt playback. Proceed?"),
         )
+
+    def _ask_confirmation(self, title: str, text: str, warn: bool = False) -> bool:
+        """Show a Yes/No dialog defaulting to No. True when the user confirms."""
+        msg = QMessageBox(self)
+        msg.setWindowTitle(title)
+        msg.setText(text)
         msg.setStandardButtons(
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
         )
         msg.setDefaultButton(QMessageBox.StandardButton.No)
+        if warn:
+            msg.setIcon(QMessageBox.Icon.Warning)
         return msg.exec() == QMessageBox.StandardButton.Yes
 
     # ------------------------------------------------------------------
@@ -584,23 +617,42 @@ class TrackDetailsWindow(SmartWindow):
         track = TrackDetailsWindow.AUDIO_TRACK
         if not track:
             return
-        msg = QMessageBox(self)
-        msg.setWindowTitle(_("Confirm Delete"))
-        msg.setText(
+        confirmed = self._ask_confirmation(
+            _("Confirm Delete"),
             _("Permanently delete this file from disk?\n\n{0}\n\n"
-              "This cannot be undone.").format(track.filepath)
+              "This cannot be undone.").format(track.filepath),
+            warn=True,
         )
-        msg.setStandardButtons(
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
-        )
-        msg.setDefaultButton(QMessageBox.StandardButton.No)
-        msg.setIcon(QMessageBox.Icon.Warning)
-        if msg.exec() != QMessageBox.StandardButton.Yes:
+        if not confirmed:
             return
 
         ok = self.app_actions.delete_track(track.filepath)
         if ok:
             self.app_actions.toast(_("Track deleted: {}").format(track.filepath))
+            self.close()
+
+    def _confirm_delete_album(self) -> None:
+        track = TrackDetailsWindow.AUDIO_TRACK
+        if not track:
+            return
+        album_dir = os.path.dirname(track.filepath)
+        try:
+            file_count = sum(len(files) for _root, _dirs, files in os.walk(album_dir))
+        except OSError:
+            file_count = 0
+
+        confirmed = self._ask_confirmation(
+            _("Confirm Delete"),
+            _("Permanently delete this folder and the {0} file(s) inside it?\n\n{1}\n\n"
+              "This cannot be undone.").format(file_count, album_dir),
+            warn=True,
+        )
+        if not confirmed:
+            return
+
+        ok = self.app_actions.delete_album(album_dir)
+        if ok:
+            self.app_actions.toast(_("Album deleted: {}").format(album_dir))
             self.close()
 
     # ------------------------------------------------------------------
