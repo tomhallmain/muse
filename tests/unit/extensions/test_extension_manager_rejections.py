@@ -100,16 +100,18 @@ class TestRejectPendingCandidate:
         assert stored[0]["id"] == "abc123"
 
     def test_nested_raw_id_does_not_crash_and_is_flattened(self):
-        # Regression test: `raw` is the unmodified search-result item, whose "id"
-        # field is a nested {kind, videoId} object, not a plain string. Rejecting
-        # a candidate used to leak that nested dict into rejected_extensions,
-        # crashing _recompute_rejected_ids with TypeError: unhashable type: 'dict'.
+        # Regression test: `raw` is the unmodified search-result item, whose id
+        # field is a nested object, not a plain string. Rejecting a candidate
+        # used to leak that nested dict into rejected_extensions, crashing
+        # _recompute_rejected_ids with TypeError: unhashable type: 'dict'.
+        from extensions.library_extender import q27, q28, q29
+
         ExtensionManager.pending_candidate = {
-            "id": "video-42",
+            "id": "item-42",
             "title": "Nested Id Track",
             "rejected": False,
             "raw": {
-                "id": {"kind": "youtube#video", "videoId": "video-42"},
+                "id": {q27: q28, q29: "item-42"},
                 "snippet": {"title": "Nested Id Track"},
             },
             "attr": TrackAttribute.ARTIST,
@@ -119,17 +121,17 @@ class TestRejectPendingCandidate:
         assert ExtensionManager.reject_pending_candidate() is True
 
         record = ExtensionManager.rejected_extensions[0]
-        assert record["id"] == "video-42"
-        assert "video-42" in ExtensionManager.rejected_ids
+        assert record["id"] == "item-42"
+        assert "item-42" in ExtensionManager.rejected_ids
 
 
 @pytest.mark.unit
 class TestRejectExtension:
     def test_adds_rejection_record_from_extension(self):
-        from extensions.library_extender import q20, q23
+        from extensions.library_extender import q20, q23, q27, q28
 
         extension = {
-            q20: {"kind": "youtube#video", q23: "vid-1"},
+            q20: {q27: q28, q23: "vid-1"},
             "snippet": {"title": "Some Title"},
             "filename": "/music/some_title.mp3",
             "track_attr": "ARTIST",
@@ -204,14 +206,14 @@ class TestRemoveRejection:
 @pytest.mark.unit
 class TestRepairCorruptedRejectedIds:
     # Regression coverage for a persisted-cache record whose "id" was left as
-    # the nested {kind, videoId} object by the now-fixed reject_pending_candidate
-    # bug -- load_extensions() used to crash on this with "unhashable type: dict".
+    # the nested id object by the now-fixed reject_pending_candidate bug --
+    # load_extensions() used to crash on this with "unhashable type: dict".
     def test_nested_dict_id_is_flattened_on_load(self, monkeypatch):
-        from extensions.library_extender import q23
+        from extensions.library_extender import q23, q27, q28
 
         cache = _FakeCache({
             "rejected_extensions": [{
-                "id": {"kind": "youtube#video", q23: "vid-corrupt"},
+                "id": {q27: q28, q23: "vid-corrupt"},
                 "snippet": {"title": "Corrupted Title"},
                 "date": "2024-01-01T00:00:00",
                 "track_attr": "ARTIST",
@@ -226,11 +228,11 @@ class TestRepairCorruptedRejectedIds:
         assert ExtensionManager.rejected_ids == {"vid-corrupt"}
 
     def test_repair_is_persisted(self, monkeypatch):
-        from extensions.library_extender import q23
+        from extensions.library_extender import q23, q27, q28
 
         cache = _FakeCache({
             "rejected_extensions": [{
-                "id": {"kind": "youtube#video", q23: "vid-corrupt"},
+                "id": {q27: q28, q23: "vid-corrupt"},
                 "snippet": {"title": "Corrupted Title"},
             }],
         })

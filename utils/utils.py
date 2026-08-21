@@ -86,9 +86,7 @@ class Utils:
         return os.path.join(Utils.get_assets_dir(), filename)
 
     @staticmethod
-    def long_sleep(seconds=0, extra_message=None, total=None, print_cadence=1):
-        if seconds <= 0:
-            return
+    def _sleep_message(seconds, extra_message=None, total=None, print_cadence=1):
         matches_print_cadence = total is not None and print_cadence is not None and total % print_cadence == 0
         if matches_print_cadence:
             if print_cadence >= 60:
@@ -110,8 +108,27 @@ class Utils:
                     message += f" ({total} remaining in total)"
             if extra_message is not None:
                 message += f" - {extra_message}"
+            return message
+        return None
+
+    @staticmethod
+    def long_sleep(seconds=0, extra_message=None, total=None, print_cadence=1):
+        if seconds <= 0:
+            return
+        message = Utils._sleep_message(seconds, extra_message, total, print_cadence)
+        if message is not None:
             logger.info(message)
         time.sleep(seconds)
+
+    @staticmethod
+    def long_wait(stop_event, seconds=0, extra_message=None, total=None, print_cadence=1):
+        # long_sleep that a stop_event can cut short. Returns True if it was.
+        if seconds <= 0:
+            return stop_event.is_set()
+        message = Utils._sleep_message(seconds, extra_message, total, print_cadence)
+        if message is not None:
+            logger.info(message)
+        return stop_event.wait(seconds)
 
     @staticmethod
     def extract_substring(text, pattern):
@@ -540,9 +557,9 @@ class Utils:
 
         The date portion (weeks/days) and time portion (hours/minutes/
         seconds) are parsed independently around the "T" separator, rather
-        than requiring a literal "PT" substring: some APIs (e.g. YouTube,
-        for a live broadcast with no fixed duration yet) report a date-only
-        duration with no time portion at all, e.g. "P0D" or "P0".
+        than requiring a literal "PT" substring: some media APIs, for a live
+        broadcast with no fixed duration yet, report a date-only duration
+        with no time portion at all, e.g. "P0D" or "P0".
         """
         original_isostring = str(isostring)
         if not original_isostring.startswith("P"):

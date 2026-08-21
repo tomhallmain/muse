@@ -40,10 +40,10 @@ def _seed_rejection(id_="rej-1", title="Rejected Title"):
 
 
 def _seed_extension(id_="ext-1", title="Extension Title", filename=""):
-    from extensions.library_extender import q20, q23
+    from extensions.library_extender import q20, q23, q27, q28
 
     ExtensionManager.extensions = [{
-        q20: {"kind": "youtube#video", q23: id_},
+        q20: {q27: q28, q23: id_},
         "snippet": {"title": title},
         "filename": filename,
         "date": "2024-01-01T00:00:00",

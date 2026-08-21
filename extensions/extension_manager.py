@@ -3,6 +3,7 @@ import os
 import random
 import re
 import subprocess
+import threading
 import time
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 
@@ -42,6 +43,14 @@ class ExtensionManager:
     # These were class constants that could only be changed by editing this file;
     # they now read from config, defaulting to the values that used to be here.
     extension_thread: Optional[Any] = None
+    extension_thread_started: bool = False
+
+    # Cancellation signal for the current generation of extension threads. Each
+    # thread captures it on entry and start_extensions_thread installs a
+    # replacement rather than clearing it, so a stopped thread stays stopped.
+    stop_event: threading.Event = threading.Event()
+    current_download_process: Optional[Any] = None
+    THREAD_JOIN_TIMEOUT_SECONDS: float = 5.0
 
     # Candidate currently selected and waiting out its pre-download delay, if any.
     # Dict shape: {"id": str, "title": str, "rejected": bool, "raw": dict,
@@ -192,34 +201,56 @@ class ExtensionManager:
         if ExtensionManager.extension_thread is not None and ExtensionManager.extension_thread.is_alive():
             logger.info('Extension thread already running')
             return
+        ExtensionManager.stop_event = threading.Event()
         ExtensionManager.extension_thread = Utils.start_thread(self._run_extensions, use_asyncio=False, args=(initial_sleep, voice))
         ExtensionManager.extension_thread_started = True
+
+    @staticmethod
+    def _terminate_download_process() -> bool:
+        process = ExtensionManager.current_download_process
+        if process is None or process.poll() is not None:
+            return False
+        logger.info("Terminating in-flight extension download")
+        try:
+            process.terminate()
+            try:
+                process.wait(timeout=ExtensionManager.THREAD_JOIN_TIMEOUT_SECONDS)
+            except subprocess.TimeoutExpired:
+                logger.warning("Download process ignored terminate; killing it")
+                process.kill()
+                process.wait(timeout=ExtensionManager.THREAD_JOIN_TIMEOUT_SECONDS)
+        except Exception as e:
+            logger.warning(f"Error terminating download process: {e}")
+            return False
+        finally:
+            ExtensionManager.current_download_process = None
+        return True
 
     def reset_extension(self, restart_thread: bool = True) -> None:
         """Reset the extension system, optionally restarting the thread."""
         try:
             ExtensionManager.EXTENSION_QUEUE.cancel()
+            ExtensionManager.stop_event.set()
+            self._terminate_download_process()
+            timeout = ExtensionManager.THREAD_JOIN_TIMEOUT_SECONDS
             closed_one_thread = False
-            
+
             # Clean up main extension thread
             if ExtensionManager.extension_thread is not None and ExtensionManager.extension_thread.is_alive():
-                # Set a flag to signal the thread to stop
-                ExtensionManager.extension_thread.should_stop = True
-                ExtensionManager.extension_thread.join(timeout=5.0)  # Wait up to 5 seconds
+                ExtensionManager.extension_thread.join(timeout=timeout)
                 if ExtensionManager.extension_thread.is_alive():
-                    logger.warning("Extension thread did not terminate gracefully")
-                    # Force cleanup of the thread
-                    ExtensionManager.extension_thread = None
+                    # Blocked in an uninterruptible call; its event stays set, so
+                    # it exits at its next checkpoint and starts no new work.
+                    logger.warning(f"Extension thread still blocked after {timeout}s")
                 closed_one_thread = True
-                
+            ExtensionManager.extension_thread = None
+
             # Clean up delayed threads
             for thread in ExtensionManager.DELAYED_THREADS:
                 if thread.is_alive():
-                    # Set a flag to signal the thread to stop
-                    thread.should_stop = True
-                    thread.join(timeout=5.0)  # Wait up to 5 seconds
+                    thread.join(timeout=timeout)
                     if thread.is_alive():
-                        logger.warning("Delayed thread did not terminate gracefully")
+                        logger.warning(f"Delayed thread still blocked after {timeout}s")
                     closed_one_thread = True
 
             ExtensionManager.DELAYED_THREADS = []
@@ -245,30 +276,40 @@ class ExtensionManager:
         return random.randint(min_value, max_value)
 
     def _run_extensions(self, initial_sleep: bool = True, voice: Optional[Any] = None) -> None:
+        stop_event = ExtensionManager.stop_event
         if initial_sleep:
             sleep_time_seconds = random.randint(200, 1200)
             check_cadence = 150
-            while sleep_time_seconds > 0:
+            while not stop_event.is_set() and sleep_time_seconds > 0:
                 sleep_time_seconds -= check_cadence
                 if sleep_time_seconds <= 0:
                     break
                 if self.ui_callbacks is not None:
                     self.ui_callbacks.update_extension_status(_("Extension thread waiting for {0} minutes").format(round(float(sleep_time_seconds) / 60)))
-                Utils.long_sleep(check_cadence, "extension: startup delay", total=sleep_time_seconds, print_cadence=180)
+                if Utils.long_wait(stop_event, check_cadence, "extension: startup delay", total=sleep_time_seconds, print_cadence=180):
+                    break
+            if stop_event.is_set():
+                logger.info("Extension thread stopped during startup delay")
+                return
             logger.info("Extension thread woke up")
-        while True:
+        while not stop_event.is_set():
             self._extend_by_random_attr(voice)
+            # Re-check: the call above does work the event cannot interrupt.
+            if stop_event.is_set():
+                break
             ExtensionManager.extension_thread_delayed_complete = False
             sleep_time_minutes = int(self.get_extension_sleep_time(
                 self.extension_wait_min * 60, self.extension_wait_expected_max * 60) / 60)
             check_cadence = 1
-            while sleep_time_minutes > 0:
+            while not stop_event.is_set() and sleep_time_minutes > 0:
                 sleep_time_minutes -= check_cadence
                 if sleep_time_minutes <= 0:
                     break
                 if ExtensionManager.extension_thread_delayed_complete and self.ui_callbacks is not None:
                     self.ui_callbacks.update_extension_status(_("Extension thread waiting for {0} minutes").format(sleep_time_minutes))
-                Utils.long_sleep(check_cadence * 60, "extension: idle between cycles", total=sleep_time_minutes * 60, print_cadence=180)
+                if Utils.long_wait(stop_event, check_cadence * 60, "extension: idle between cycles", total=sleep_time_minutes * 60, print_cadence=180):
+                    break
+        logger.info("Extension thread exiting")
 
     def _extend_by_random_attr(self, voice: Optional[Any] = None) -> None:
         extendible_attrs: Dict[TrackAttribute, Callable[[], str]] = {
@@ -300,6 +341,7 @@ class ExtensionManager:
         self.extend(value=value, attr=attr, strict=True)
 
     def _extend(self, value: str = "", attr: Optional[TrackAttribute] = None, strict: bool = False) -> None:
+        stop_event = ExtensionManager.stop_event
         try:
             if attr == TrackAttribute.TITLE:
                 self.extend_by_title(value, strict=strict)
@@ -325,7 +367,9 @@ class ExtensionManager:
         # Set up the next thread to run another extension
         next_job_args = self.EXTENSION_QUEUE.take()
         if next_job_args is not None:
-            Utils.long_sleep(300, "extension thread job wait")
+            if Utils.long_wait(stop_event, 300, "extension thread job wait"):
+                self.EXTENSION_QUEUE.job_running = False
+                return
             Utils.start_thread(self._extend, use_asyncio=False, args=next_job_args)
         else:
             self.EXTENSION_QUEUE.job_running = False
@@ -397,6 +441,9 @@ class ExtensionManager:
 
     def _simple(self, q: str, m: int = 6, depth: int = 0, attr: Optional[TrackAttribute] = None, strict: Optional[Union[str, 'Composer']] = None, entity: Optional[Any] = None) -> None:
         r = self.s(q, m)
+        if ExtensionManager.stop_event.is_set():
+            logger.info("Extension search discarded, stop requested")
+            return
         if r is not None and r.i():
             a = r.o()
             for i in a:
@@ -555,6 +602,7 @@ class ExtensionManager:
         ExtensionManager.DELAYED_THREADS.append(thread)
 
     def _delayed(self, b, attr: Optional[TrackAttribute], s: str, b1=None, sleep: bool = True, entity: Optional[Any] = None) -> None:
+        stop_event = ExtensionManager.stop_event
         if sleep:
             ExtensionManager.pending_candidate = {
                 "id": b.w,
@@ -567,7 +615,7 @@ class ExtensionManager:
             review_min, review_max = config.get_int_range("extension_pending_review_seconds", 1000, 2000)
             time_seconds = self.get_extension_sleep_time(review_min, review_max)
             check_cadence = 150
-            while time_seconds > 0:
+            while not stop_event.is_set() and time_seconds > 0:
                 if ExtensionManager.pending_candidate.get("rejected"):
                     break
                 time_seconds -= check_cadence
@@ -575,7 +623,14 @@ class ExtensionManager:
                     break
                 if self.ui_callbacks is not None:
                     self.ui_callbacks.update_extension_status(_("Extension \"{0}\" waiting for {1} minutes").format(SoupUtils.clean_html(b.n), round(float(time_seconds) / 60)))
-                Utils.long_sleep(check_cadence, f"extension: pre-download delay", total=time_seconds, print_cadence=180)
+                if Utils.long_wait(stop_event, check_cadence, f"extension: pre-download delay", total=time_seconds, print_cadence=180):
+                    break
+
+            if stop_event.is_set():
+                logger.info(f"Extension candidate abandoned, stop requested: {b.n}")
+                ExtensionManager.pending_candidate = None
+                ExtensionManager.extension_thread_delayed_complete = True
+                return
 
             if ExtensionManager.pending_candidate.get("rejected"):
                 logger.info(f"Extension candidate rejected before download: {b.n}")
@@ -643,7 +698,14 @@ class ExtensionManager:
         logger.warning(f"extending delayed: {a}")
         e = "[download]"
         p = subprocess.Popen(a, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-        o, __ = p.communicate()
+        ExtensionManager.current_download_process = p
+        try:
+            o, __ = p.communicate()
+        finally:
+            ExtensionManager.current_download_process = None
+        if ExtensionManager.stop_event.is_set():
+            logger.info("Extension download stopped")
+            raise Exception("Extension download stopped")
         f = "[ExtractAudio]"
         _e = None
         _f = None
