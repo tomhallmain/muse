@@ -99,13 +99,12 @@ class ConfigurationWindow(SmartWindow):
 
         self.add_config_entry(frame, layout, "foreground_color", _("Foreground Color"), 0)
         self.add_config_entry(frame, layout, "background_color", _("Background Color"), 1)
-        self.add_config_checkbox(frame, layout, "enable_dynamic_volume", _("Enable Dynamic Volume"), 4)
-        self.add_config_checkbox(frame, layout, "enable_library_extender", _("Enable Library Extender"), 5)
-        self.add_config_checkbox(frame, layout, "auto_file_extensions", _("Auto-File Extensions"), 6)
-        self.add_config_checkbox(frame, layout, "embed_extension_artwork", _("Embed Artwork for Extensions"), 6)
-        self.add_config_checkbox(frame, layout, "enable_long_track_splitting", _("Enable Long Track Splitting"), 6)
+        self.add_config_checkbox(frame, layout, "enable_dynamic_volume", _("Enable Dynamic Volume"), 2)
+        # The three extension checkboxes that used to sit here now live in the
+        # Extensions window's Extension Config, next to the rest of that feature.
+        self.add_config_checkbox(frame, layout, "enable_long_track_splitting", _("Enable Long Track Splitting"), 3)
         self.add_config_entry(
-            frame, layout, "long_track_splitting_time_cutoff_minutes", _("Long Track Cutoff (minutes)"), 7
+            frame, layout, "long_track_splitting_time_cutoff_minutes", _("Long Track Cutoff (minutes)"), 4
         )
 
         tab_layout = QVBoxLayout(self.general_tab)

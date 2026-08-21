@@ -39,8 +39,8 @@ class ExtensionManager:
     extension_thread_delayed_complete: bool = False
     EXTENSION_QUEUE: JobQueue = JobQueue("Extension queue")
     DELAYED_THREADS: List[Any] = []
-    max_extensions_length: int = 100000
-    minimum_allowed_duration_seconds: int = 120
+    # These were class constants that could only be changed by editing this file;
+    # they now read from config, defaulting to the values that used to be here.
     extension_thread: Optional[Any] = None
 
     # Candidate currently selected and waiting out its pre-download delay, if any.
@@ -108,7 +108,22 @@ class ExtensionManager:
         ExtensionManager.rejected_ids = {r["id"] for r in ExtensionManager.rejected_extensions}
 
     @staticmethod
+    def _trim_extension_history() -> None:
+        """Drop the oldest entries once the history passes its configured cap.
+
+        The cap was a declared-but-never-read constant, so the history grew
+        without bound. Entries are appended chronologically, so the oldest sit
+        at the front. A cap of 0 keeps everything.
+        """
+        max_length = config.get_int("extension_history_max_length", 100000)
+        excess = len(ExtensionManager.extensions) - max_length
+        if max_length > 0 and excess > 0:
+            del ExtensionManager.extensions[:excess]
+            logger.info(f"Trimmed {excess} oldest extension history entries (cap {max_length})")
+
+    @staticmethod
     def store_extensions() -> None:
+        ExtensionManager._trim_extension_history()
         app_info_cache.set("extensions", list(ExtensionManager.extensions))
         app_info_cache.set("extension_strategy", ExtensionManager.strategy.name)
         app_info_cache.set("rejected_extensions", list(ExtensionManager.rejected_extensions))
@@ -166,8 +181,9 @@ class ExtensionManager:
         from utils.config import config
         self.llm = LLM.from_config(config, state_key="extension_manager")
         self.prompter = Prompter()
-        self.extension_wait_min: int = 60
-        self.extension_wait_expected_max: int = 90
+        wait_min, wait_max = config.get_int_range("extension_cycle_wait_minutes", 60, 90)
+        self.extension_wait_min: int = wait_min
+        self.extension_wait_expected_max: int = wait_max
         self.ui_callbacks = ui_callbacks
         self.data_callbacks = data_callbacks
 
@@ -243,7 +259,8 @@ class ExtensionManager:
         while True:
             self._extend_by_random_attr(voice)
             ExtensionManager.extension_thread_delayed_complete = False
-            sleep_time_minutes = int(self.get_extension_sleep_time(3600, 5400) / 60)
+            sleep_time_minutes = int(self.get_extension_sleep_time(
+                self.extension_wait_min * 60, self.extension_wait_expected_max * 60) / 60)
             check_cadence = 1
             while sleep_time_minutes > 0:
                 sleep_time_minutes -= check_cadence
@@ -385,7 +402,11 @@ class ExtensionManager:
             for i in a:
                 i.n = SoupUtils.clean_html(i.n)
                 i.d = SoupUtils.clean_html(i.d)
-            scores = self._llm_score_options(q, a) if self.llm.get_failure_count() == 0 else None
+            score_with_llm = (
+                getattr(config, "extension_enable_llm_scoring", True)
+                and self.llm.get_failure_count() == 0
+            )
+            scores = self._llm_score_options(q, a) if score_with_llm else None
             for idx, i in enumerate(a):
                 i.m = self._m(q, i.n, llm_score=(scores.get(idx) if scores else None))
                 logger.info(f"Extension option: {i.n} {i.x()}")
@@ -421,15 +442,29 @@ class ExtensionManager:
                 logger.warning(f'No results found for "{q}"')
 
     def _bad_option(self, b, strict: bool = False, attr: Optional[TrackAttribute] = None) -> bool:
-        return (b is None or b.y
-                or b.xfgi(self.minimum_allowed_duration_seconds)
+        if b is None or b.y:
+            return True
+        min_seconds, max_seconds = config.get_int_range("extension_track_duration_seconds", 120, -1)
+        return (b.xfgi(min_seconds)
+                or b.xfgj(max_seconds)
                 or self.is_in_library(b)
                 or (strict and self._strict_test(b, attr, strict))
                 or self._is_blacklisted(b)
                 or self._is_rejected(b)
-                or (Utils.contains_emoji(b.n) and random.random() > 0.05)  # 95% chance to skip emoji titles
+                or self._is_skipped_emoji_title(b)
                 or self._is_compilation(b)
                 or self._not_music(b))
+
+    @staticmethod
+    def _is_skipped_emoji_title(b) -> bool:
+        """Emoji titles are skipped unless the user opts into keeping them.
+
+        This replaced a fixed 95% skip chance; a toggle is easier to reason
+        about, and off means the same thing the old rate almost always did.
+        """
+        if getattr(config, "extension_allow_emoji_titles", False):
+            return False
+        return Utils.contains_emoji(b.n)
 
     def _is_rejected(self, b) -> bool:
         if b.w in ExtensionManager.rejected_ids:
@@ -529,7 +564,8 @@ class ExtensionManager:
                 "attr": attr,
                 "search_query": s,
             }
-            time_seconds = self.get_extension_sleep_time(1000, 2000)
+            review_min, review_max = config.get_int_range("extension_pending_review_seconds", 1000, 2000)
+            time_seconds = self.get_extension_sleep_time(review_min, review_max)
             check_cadence = 150
             while time_seconds > 0:
                 if ExtensionManager.pending_candidate.get("rejected"):

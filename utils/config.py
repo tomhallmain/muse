@@ -113,6 +113,20 @@ class Config:
         self.long_track_splitting_time_cutoff_minutes = 20
         self.play_videos_in_separate_window = False
         self.spinning_record_videos = True
+
+        # Extension tunables. Defaults match the values these settings replaced,
+        # so exposing them changed no behaviour. Bounded ranges are one [min, max]
+        # key rather than two, to keep the key count down.
+        self.extension_cycle_wait_minutes = [60, 90]
+        # How long a candidate stays visible for rejection before it downloads.
+        self.extension_pending_review_seconds = [1000, 2000]
+        # Allowed track length. -1 as the maximum means no ceiling, matching how
+        # an unset duration is spelled elsewhere; 0 would read as a bound below
+        # the minimum.
+        self.extension_track_duration_seconds = [120, -1]
+        self.extension_allow_emoji_titles = False
+        self.extension_enable_llm_scoring = True
+        self.extension_history_max_length = 100000
         self.playlist_recently_played_check_count = 1000
         self.max_search_results = 200
         self.max_recent_searches = 200
@@ -162,6 +176,7 @@ class Config:
         self.set_values(int,
             "max_chunk_tokens",
             "long_track_splitting_time_cutoff_minutes",
+            "extension_history_max_length",
             "playlist_recently_played_check_count",
             "max_recent_searches",
             "max_search_results",
@@ -176,6 +191,9 @@ class Config:
             "dj_personas",
             "auto_file_extensions_genres",
             "muse_language_learning_languages",
+            "extension_cycle_wait_minutes",
+            "extension_pending_review_seconds",
+            "extension_track_duration_seconds",
         )
         self.set_values(bool,
             "enable_dynamic_volume",
@@ -185,6 +203,8 @@ class Config:
             "enable_long_track_splitting",
             "play_videos_in_separate_window",
             "spinning_record_videos",
+            "extension_allow_emoji_titles",
+            "extension_enable_llm_scoring",
             "dj_persona_refresh_context",
             "auto_fix_vlc_plugin_cache",
             "piper_auto_download",
@@ -246,6 +266,37 @@ class Config:
     def get_config_value(self, key):
         """Get a configuration value by key"""
         return getattr(self, key, None)
+
+    def get_int(self, key, default=0):
+        """Get an int config value, falling back to *default* if unusable.
+
+        Values saved from a settings window are stored as the widget's text and
+        stay strings until the next config reload, so readers that need a number
+        must convert rather than assume.
+        """
+        value = getattr(self, key, default)
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            logger.warning(f"Invalid value for {key}, using {default}: {value}")
+            return default
+
+    def get_int_range(self, key, default_min=0, default_max=0):
+        """Get a bounded range stored as a single ``[min, max]`` key.
+
+        Ranges are one key rather than a pair so the two halves cannot drift
+        apart in the config file. Returns the defaults for anything unusable --
+        a missing key, a wrong length, or non-numeric entries.
+        """
+        value = getattr(self, key, None)
+        try:
+            low, high = value
+            return int(low), int(high)
+        except (TypeError, ValueError):
+            logger.warning(
+                f"Invalid range for {key}, using [{default_min}, {default_max}]: {value}"
+            )
+            return default_min, default_max
 
     def set_config_value(self, key, value):
         """Set a configuration value by key"""

@@ -9,7 +9,11 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QHBoxLayout,
     QGridLayout,
+    QCheckBox,
+    QGroupBox,
     QLabel,
+    QLineEdit,
+    QListWidget,
     QPushButton,
     QComboBox,
     QScrollArea,
@@ -25,6 +29,7 @@ from extensions.library_extender import q20, q23
 from library_data.library_data import LibraryDataSearch
 from ui_qt.app_style import AppStyle
 from ui_qt.auth.password_utils import require_password
+from utils.config import config
 from utils.globals import ExtensionStrategy, ProtectedActions
 from utils.logging_setup import get_logger
 from utils.translations import I18N
@@ -95,6 +100,10 @@ class ExtensionsWindow(SmartWindow):
         self.view_rejected_btn = QPushButton(_("View Rejected"), sidebar)
         self.view_rejected_btn.clicked.connect(self._open_rejected_extensions_window)
         sidebar_layout.addWidget(self.view_rejected_btn)
+
+        self.extension_config_btn = QPushButton(_("Extension Config"), sidebar)
+        self.extension_config_btn.clicked.connect(self._open_extension_config_window)
+        sidebar_layout.addWidget(self.extension_config_btn)
 
         sidebar_layout.addWidget(QLabel(_("Strategy"), sidebar))
         self.strategy_combo = QComboBox(sidebar)
@@ -442,6 +451,210 @@ class ExtensionsWindow(SmartWindow):
 
     def _open_rejected_extensions_window(self):
         RejectedExtensionsWindow(self, self.app_actions)
+
+    def _open_extension_config_window(self):
+        ExtensionConfigWindow(self, self.app_actions)
+
+
+class ExtensionConfigWindow(SmartWindow):
+    """Settings that govern how extensions are found and downloaded.
+
+    Its own window rather than more sidebar rows: the sidebar already carries
+    thread status, the pending candidate, strategy and statistics, and these
+    add another dozen fields.
+    """
+
+    # (config key, label factory). Order is the order shown; the label is a
+    # callable so the text is translated when built, not at import time.
+    BOOL_FIELDS = (
+        ("enable_library_extender", lambda: _("Enable Library Extender")),
+        ("auto_file_extensions", lambda: _("Auto-File Extensions")),
+        ("embed_extension_artwork", lambda: _("Embed Artwork for Extensions")),
+        ("extension_allow_emoji_titles", lambda: _("Allow Emoji Titles")),
+        ("extension_enable_llm_scoring", lambda: _("Score Search Results with the LLM")),
+    )
+    # Bounded ranges: one config key holding [min, max], two entry boxes.
+    RANGE_FIELDS = (
+        ("extension_cycle_wait_minutes", lambda: _("Cycle Wait (minutes)"), (60, 90)),
+        ("extension_pending_review_seconds", lambda: _("Review Window (seconds)"), (1000, 2000)),
+        ("extension_track_duration_seconds",
+         lambda: _("Track Duration (seconds, maximum -1 for no limit)"), (120, -1)),
+    )
+    INT_FIELDS = (
+        ("extension_history_max_length", lambda: _("Extension History Limit (0 for no limit)")),
+    )
+
+    def __init__(self, master, app_actions):
+        super().__init__(
+            persistent_parent=master,
+            position_parent=master,
+            title=_("Extension Config"),
+            geometry="700x760",
+            offset_x=50,
+            offset_y=50,
+        )
+        self.master = master
+        self.app_actions = app_actions
+        self._checkboxes = {}
+        self._entries = {}
+        self._range_entries = {}
+
+        self.setStyleSheet(AppStyle.get_stylesheet())
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(10, 10, 10, 10)
+
+        scroll = QScrollArea(self)
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        content = QWidget()
+        content_layout = QVBoxLayout(content)
+        content_layout.setContentsMargins(0, 0, 0, 0)
+        content_layout.setSpacing(8)
+
+        content_layout.addWidget(self._build_toggles_group(content))
+        content_layout.addWidget(self._build_tunables_group(content))
+        content_layout.addWidget(self._build_genres_group(content))
+        content_layout.addStretch()
+        scroll.setWidget(content)
+        layout.addWidget(scroll, 1)
+
+        buttons = QWidget(self)
+        button_layout = QHBoxLayout(buttons)
+        button_layout.setContentsMargins(0, 0, 0, 0)
+        save_btn = QPushButton(_("Save"), buttons)
+        save_btn.clicked.connect(self._save)
+        button_layout.addWidget(save_btn)
+        close_btn = QPushButton(_("Close"), buttons)
+        close_btn.clicked.connect(self.close)
+        button_layout.addWidget(close_btn)
+        layout.addWidget(buttons)
+
+        self.show()
+
+    def _build_toggles_group(self, parent):
+        group = QGroupBox(_("Behavior"), parent)
+        group_layout = QVBoxLayout(group)
+        for key, label in ExtensionConfigWindow.BOOL_FIELDS:
+            checkbox = QCheckBox(label(), group)
+            checkbox.setChecked(bool(config.get_config_value(key)))
+            group_layout.addWidget(checkbox)
+            self._checkboxes[key] = checkbox
+        return group
+
+    def _build_tunables_group(self, parent):
+        group = QGroupBox(_("Timing and Limits"), parent)
+        group_layout = QGridLayout(group)
+        row = 0
+        for key, label, (default_min, default_max) in ExtensionConfigWindow.RANGE_FIELDS:
+            group_layout.addWidget(QLabel(label(), group), row, 0)
+            low, high = config.get_int_range(key, default_min, default_max)
+            min_entry = QLineEdit(str(low), group)
+            min_entry.setPlaceholderText(_("Min"))
+            min_entry.setMinimumWidth(90)
+            group_layout.addWidget(min_entry, row, 1)
+            max_entry = QLineEdit(str(high), group)
+            max_entry.setPlaceholderText(_("Max"))
+            max_entry.setMinimumWidth(90)
+            group_layout.addWidget(max_entry, row, 2)
+            self._range_entries[key] = (min_entry, max_entry)
+            row += 1
+        for key, label in ExtensionConfigWindow.INT_FIELDS:
+            group_layout.addWidget(QLabel(label(), group), row, 0)
+            entry = QLineEdit(str(config.get_int(key, 0)), group)
+            entry.setMinimumWidth(90)
+            group_layout.addWidget(entry, row, 1, 1, 2)
+            self._entries[key] = entry
+            row += 1
+        return group
+
+    def _build_genres_group(self, parent):
+        group = QGroupBox(_("Auto-File Genres"), parent)
+        group_layout = QVBoxLayout(group)
+
+        description = QLabel(
+            _("Genre folders auto-filing is allowed to use. Leave empty to let it "
+              "use every Title-Case folder it finds."),
+            group,
+        )
+        description.setWordWrap(True)
+        group_layout.addWidget(description)
+
+        self._genre_list = QListWidget(group)
+        for genre in config.auto_file_extensions_genres:
+            self._genre_list.addItem(str(genre))
+        group_layout.addWidget(self._genre_list)
+
+        add_row = QWidget(group)
+        add_layout = QHBoxLayout(add_row)
+        add_layout.setContentsMargins(0, 0, 0, 0)
+        self._genre_entry = QLineEdit(add_row)
+        self._genre_entry.setPlaceholderText(_("Genre folder name"))
+        add_layout.addWidget(self._genre_entry)
+        add_btn = QPushButton(_("Add"), add_row)
+        add_btn.clicked.connect(self._add_genre)
+        add_layout.addWidget(add_btn)
+        remove_btn = QPushButton(_("Remove Selected"), add_row)
+        remove_btn.clicked.connect(self._remove_genre)
+        add_layout.addWidget(remove_btn)
+        group_layout.addWidget(add_row)
+
+        return group
+
+    def _add_genre(self):
+        name = self._genre_entry.text().strip()
+        if not name:
+            return
+        existing = {self._genre_list.item(i).text() for i in range(self._genre_list.count())}
+        if name in existing:
+            return
+        self._genre_list.addItem(name)
+        self._genre_entry.clear()
+
+    def _remove_genre(self):
+        for item in self._genre_list.selectedItems():
+            self._genre_list.takeItem(self._genre_list.row(item))
+
+    def _genres(self):
+        return [self._genre_list.item(i).text() for i in range(self._genre_list.count())]
+
+    def _range_value(self, key, defaults):
+        """The [min, max] pair for *key*, as numbers rather than entry text.
+
+        Ranges are stored as a list, so unlike the plain int entries they cannot
+        be left as strings for the next config load to convert.
+        """
+        min_entry, max_entry = self._range_entries[key]
+        return [
+            ExtensionConfigWindow._as_int(min_entry.text(), defaults[0]),
+            ExtensionConfigWindow._as_int(max_entry.text(), defaults[1]),
+        ]
+
+    @staticmethod
+    def _as_int(text, default):
+        try:
+            return int(str(text).strip())
+        except (TypeError, ValueError):
+            return default
+
+    @require_password(ProtectedActions.EDIT_CONFIGURATION)
+    def _save(self):
+        try:
+            for key, checkbox in self._checkboxes.items():
+                config.set_config_value(key, checkbox.isChecked())
+            for key, entry in self._entries.items():
+                config.set_config_value(key, entry.text())
+            for key, _label, defaults in ExtensionConfigWindow.RANGE_FIELDS:
+                config.set_config_value(key, self._range_value(key, defaults))
+            config.set_config_value("auto_file_extensions_genres", self._genres())
+
+            if config.save_config():
+                self.app_actions.toast(_("Configuration saved successfully"))
+            else:
+                self.app_actions.alert(
+                    _("Error"), _("Failed to save configuration"), kind="error", master=self
+                )
+        except Exception as e:
+            self.app_actions.alert(_("Error"), str(e), kind="error", master=self)
 
 
 class RejectedExtensionsWindow(SmartWindow):

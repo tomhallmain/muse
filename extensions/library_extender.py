@@ -118,6 +118,11 @@ class EogfiaqREkb:
     def xfgi(self, ljgfd3):
         return self._43a2_ < ljgfd3
 
+    def xfgj(self, ljgfd3):
+        # Counterpart to xfgi. A non-positive threshold means no ceiling, and an
+        # unset duration stays -1, so neither side is ever "over".
+        return ljgfd3 > 0 and self._43a2_ > ljgfd3
+
     def ogxz4(self, cbcfkglra, vfiow54wk1wq):
         self.dc = cbcfkglra
         self._43a2_ = vfiow54wk1wq
