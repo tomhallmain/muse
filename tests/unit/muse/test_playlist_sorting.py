@@ -1,5 +1,6 @@
 import pytest
 from muse import Playlist
+from tests.conftest import MockDataCallbacks, MockMediaTrack
 from utils.globals import PlaylistSortType
 
 @pytest.mark.unit
@@ -16,6 +17,7 @@ class TestPlaylistSorting:
         self.original_forms = Playlist.recently_played_forms.copy()
         self.original_instruments = Playlist.recently_played_instruments.copy()
         self.original_catalogues = Playlist.recently_played_catalogues.copy()
+        self.original_main_artists = Playlist.recently_played_main_artists.copy()
 
         # Set up mock historical data
         Playlist.recently_played_filepaths = [
@@ -70,6 +72,7 @@ class TestPlaylistSorting:
         Playlist.recently_played_forms = self.original_forms
         Playlist.recently_played_instruments = self.original_instruments
         Playlist.recently_played_catalogues = self.original_catalogues
+        Playlist.recently_played_main_artists = self.original_main_artists
 
     def test_sequence_sort(self, mock_data_callbacks, mock_tracks):
         """Test sequential sorting (no randomization)."""
@@ -291,3 +294,83 @@ class TestPlaylistSorting:
         assert track.get_form() == Playlist.recently_played_forms[0]
         assert track.get_instrument() == Playlist.recently_played_instruments[0]
         assert track.get_catalogue() == Playlist.recently_played_catalogues[0]
+    def test_main_artist_list_not_updated_for_other_sort_types(self, mock_tracks):
+        """The main artist is only resolved for the grouping that uses it."""
+        Playlist.recently_played_main_artists = []
+        track = mock_tracks[0]
+
+        Playlist.update_recently_played_lists(track, sort_type=PlaylistSortType.ARTIST_SHUFFLE)
+        assert Playlist.recently_played_main_artists == []
+
+        Playlist.update_recently_played_lists(track)
+        assert Playlist.recently_played_main_artists == []
+
+        # the other lists still update regardless of sort type
+        assert track.artist == Playlist.recently_played_artists[0]
+
+    def test_main_artist_list_updated_for_main_artist_shuffle(self, mock_tracks):
+        Playlist.recently_played_main_artists = []
+        track = mock_tracks[0]
+
+        Playlist.update_recently_played_lists(track, sort_type=PlaylistSortType.MAIN_ARTIST_SHUFFLE)
+
+        assert Playlist.recently_played_main_artists[0] == track.get_main_artist()
+
+    def _resolved_artist_tracks(self):
+        """Tracks whose raw artist values differ but whose main artist matches.
+
+        This is the case the sort type exists for: grouping on the raw artist
+        field would scatter these across separate groups.
+        """
+        def _track(filepath, artist, main_artist, album):
+            return MockMediaTrack(
+                filepath=filepath, title=filepath, album=album, artist=artist,
+                composer="Composer", _genre="Classical", _form="Symphony",
+                _instrument="Orchestra", _catalogue=album, _main_artist=main_artist)
+
+        return [
+            _track("ma1.mp3", "Karajan; Berlin Philharmonic", "Karajan", "Album A"),
+            _track("ma2.mp3", "Berlin Philharmonic feat. Mutter", "Karajan", "Album B"),
+            _track("ma3.mp3", "Karajan & Vienna Philharmonic", "Karajan", "Album C"),
+            _track("ma4.mp3", "Gould; CBC Symphony", "Gould", "Album D"),
+            _track("ma5.mp3", "Gould, Toronto Symphony", "Gould", "Album E"),
+        ]
+
+    def test_main_artist_shuffle_groups_by_resolved_artist(self):
+        # Cleared so the memory shuffle cannot reorder groups unpredictably here;
+        # the autouse fixture restores it afterwards.
+        Playlist.recently_played_main_artists = []
+        tracks = self._resolved_artist_tracks()
+        playlist = Playlist(
+            tracks=[t.filepath for t in tracks],
+            _type=PlaylistSortType.MAIN_ARTIST_SHUFFLE,
+            data_callbacks=MockDataCallbacks(tracks),
+        )
+
+        assert len(playlist.sorted_tracks) == len(tracks)
+
+        # Every main artist must occupy one contiguous run, not several.
+        keys = [t.get_main_artist() for t in playlist.sorted_tracks]
+        run_starts = [k for i, k in enumerate(keys) if i == 0 or keys[i - 1] != k]
+        assert len(run_starts) == len(set(run_starts)), f"groups are not contiguous: {keys}"
+        assert set(keys) == {"Karajan", "Gould"}
+
+    def test_raw_artist_shuffle_would_not_group_these_tracks(self):
+        """Contrast case: the same tracks under ARTIST_SHUFFLE have five distinct
+        groups, which is the fragmentation this sort type exists to fix."""
+        tracks = self._resolved_artist_tracks()
+        assert len({t.artist for t in tracks}) == 5
+        assert len({t.get_main_artist() for t in tracks}) == 2
+
+    def test_main_artist_shuffle_uses_the_resolved_getter(self):
+        assert PlaylistSortType.MAIN_ARTIST_SHUFFLE.getter_name_mapping() == "get_main_artist"
+        # the existing type is untouched
+        assert PlaylistSortType.ARTIST_SHUFFLE.getter_name_mapping() == "artist"
+
+    def test_main_artist_shuffle_translation_round_trip(self):
+        """get_translation indexes positionally into get_translated_names, so a
+        missing entry would raise rather than merely read oddly."""
+        translation = PlaylistSortType.MAIN_ARTIST_SHUFFLE.get_translation()
+        assert PlaylistSortType.get_from_translation(translation) == PlaylistSortType.MAIN_ARTIST_SHUFFLE
+        assert PlaylistSortType.MAIN_ARTIST_SHUFFLE.get_grouping_readable_name()
+        assert PlaylistSortType.MAIN_ARTIST_SHUFFLE.is_grouping_type()

@@ -187,11 +187,15 @@ class ConfigurationWindow(SmartWindow):
             frame, layout, "spinning_record_videos",
             _("Show a Spinning Record Video When a Track Has No Album Art"), 1,
         )
-        self.add_config_entry(
-            frame, layout, "playlist_recently_played_check_count", _("Recently Played Check Count"), 2
+        self.add_config_checkbox(
+            frame, layout, "main_artist_prefers_last_segment",
+            _("Main Artist Shuffle: Use the Last Name in a Combined Credit"), 2,
         )
-        self.add_config_entry(frame, layout, "max_search_results", _("Max Search Results"), 3)
-        self.add_config_entry(frame, layout, "max_recent_searches", _("Max Recent Searches"), 4)
+        self.add_config_entry(
+            frame, layout, "playlist_recently_played_check_count", _("Recently Played Check Count"), 3
+        )
+        self.add_config_entry(frame, layout, "max_search_results", _("Max Search Results"), 4)
+        self.add_config_entry(frame, layout, "max_recent_searches", _("Max Recent Searches"), 5)
 
         tab_layout = QVBoxLayout(self.audio_tab)
         tab_layout.setContentsMargins(0, 0, 0, 0)

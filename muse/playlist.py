@@ -26,6 +26,9 @@ _TRACK_ATTR_TO_ENUM = {
     "artist":    TrackAttribute.ARTIST,
     "composer":  TrackAttribute.COMPOSER,
     "get_genre": TrackAttribute.GENRE,
+    # The resolved main artist is still an artist, so an artist favorite boosts
+    # this grouping exactly as it boosts ARTIST_SHUFFLE.
+    "get_main_artist": TrackAttribute.ARTIST,
 }
 
 # Maps track_attr getter name → field name on a track-title Favorite.
@@ -34,6 +37,7 @@ _TRACK_ATTR_TO_FAV_FIELD = {
     "album":    "album",
     "artist":   "artist",
     "composer": "composer",
+    "get_main_artist": "artist",
 }
 
 
@@ -115,6 +119,7 @@ class Playlist:
     recently_played_forms: List[str] = []
     recently_played_instruments: List[str] = []
     recently_played_catalogues: List[str] = []
+    recently_played_main_artists: List[str] = []
 
     @staticmethod
     def load_recently_played_lists() -> None:
@@ -151,6 +156,8 @@ class Playlist:
             recently_played_check_count = int(max(recently_played_check_count / 4, 1))
         elif sort_type == PlaylistSortType.ARTIST_SHUFFLE:
             recently_played_check_count = int(max(recently_played_check_count / 4, 1))
+        elif sort_type == PlaylistSortType.MAIN_ARTIST_SHUFFLE:
+            recently_played_check_count = int(max(recently_played_check_count / 4, 1))
         elif sort_type == PlaylistSortType.ALBUM_SHUFFLE:
             recently_played_check_count = int(max(recently_played_check_count / 2, 1))
         elif sort_type == PlaylistSortType.CATALOGUE_SHUFFLE:
@@ -158,7 +165,7 @@ class Playlist:
         return recently_played_check_count
 
     @staticmethod
-    def update_recently_played_lists(track: MediaTrack) -> None:
+    def update_recently_played_lists(track: MediaTrack, sort_type: Optional[PlaylistSortType] = None) -> None:
         Playlist.update_list(Playlist.recently_played_filepaths, track.filepath)
         Playlist.update_list(Playlist.recently_played_albums, track.album, sort_type=PlaylistSortType.ALBUM_SHUFFLE)
         Playlist.update_list(Playlist.recently_played_artists, track.artist, sort_type=PlaylistSortType.ARTIST_SHUFFLE)
@@ -167,6 +174,10 @@ class Playlist:
         Playlist.update_list(Playlist.recently_played_forms, track.get_form(), sort_type=PlaylistSortType.FORM_SHUFFLE)
         Playlist.update_list(Playlist.recently_played_instruments, track.get_instrument(), sort_type=PlaylistSortType.INSTRUMENT_SHUFFLE)
         Playlist.update_list(Playlist.recently_played_catalogues, track.get_catalogue(), sort_type=PlaylistSortType.CATALOGUE_SHUFFLE)
+        # Only derived when this grouping is the one in use, so a track is never
+        # resolved for a shuffle the listener is not running.
+        if sort_type == PlaylistSortType.MAIN_ARTIST_SHUFFLE:
+            Playlist.update_list(Playlist.recently_played_main_artists, track.get_main_artist(), sort_type=PlaylistSortType.MAIN_ARTIST_SHUFFLE)
 
     def __init__(self, tracks: List[str] = [], _type: PlaylistSortType = PlaylistSortType.SEQUENCE,
                  data_callbacks: Optional['LibraryDataCallbacks'] = None, start_track: Optional[MediaTrack] = None,
@@ -326,7 +337,7 @@ class Playlist:
                 old_grouping = previous_track_attr
                 new_grouping = next_track_attr
                 logger.info("")
-        Playlist.update_recently_played_lists(next_track)
+        Playlist.update_recently_played_lists(next_track, sort_type=self.sort_type)
         self.print_upcoming("next_track after")
         group_position = None
         group_total = None

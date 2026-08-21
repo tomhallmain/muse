@@ -112,6 +112,11 @@ class Config:
         self.long_track_splitting_time_cutoff_minutes = 20
         self.play_videos_in_separate_window = False
         self.spinning_record_videos = True
+        # Which segment of a combined artist tag ("Berlin Philharmonic; Karajan") is the
+        # main credit. False takes the first, matching pop convention; True takes the
+        # last, matching the classical convention of listing the ensemble before the
+        # soloist or conductor.
+        self.main_artist_prefers_last_segment = False
 
         # Extension tunables. Defaults match the values these settings replaced,
         # so exposing them changed no behaviour. Bounded ranges are one [min, max]
@@ -201,6 +206,7 @@ class Config:
             "enable_long_track_splitting",
             "play_videos_in_separate_window",
             "spinning_record_videos",
+            "main_artist_prefers_last_segment",
             "extension_allow_emoji_titles",
             "extension_enable_llm_scoring",
             "dj_persona_refresh_context",

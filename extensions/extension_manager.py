@@ -43,7 +43,6 @@ class ExtensionManager:
     # These were class constants that could only be changed by editing this file;
     # they now read from config, defaulting to the values that used to be here.
     extension_thread: Optional[Any] = None
-    extension_thread_started: bool = False
 
     # Cancellation signal for the current generation of extension threads. Each
     # thread captures it on entry and start_extensions_thread installs a
@@ -203,7 +202,6 @@ class ExtensionManager:
             return
         ExtensionManager.stop_event = threading.Event()
         ExtensionManager.extension_thread = Utils.start_thread(self._run_extensions, use_asyncio=False, args=(initial_sleep, voice))
-        ExtensionManager.extension_thread_started = True
 
     @staticmethod
     def _terminate_download_process() -> bool:
@@ -254,7 +252,6 @@ class ExtensionManager:
                     closed_one_thread = True
 
             ExtensionManager.DELAYED_THREADS = []
-            ExtensionManager.extension_thread_started = False
             if closed_one_thread:
                 logger.info("Reset extension thread.")
             if restart_thread:
@@ -264,7 +261,6 @@ class ExtensionManager:
             # Ensure we don't leave the system in an inconsistent state
             ExtensionManager.extension_thread = None
             ExtensionManager.DELAYED_THREADS = []
-            ExtensionManager.extension_thread_started = False
 
     def get_extension_sleep_time(self, min_value: int, max_value: int) -> int:
         current_track = PlaybackConfigMaster.get_playing_track()

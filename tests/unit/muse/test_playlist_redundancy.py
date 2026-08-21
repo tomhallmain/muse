@@ -141,6 +141,33 @@ class TestBuildInclusionChance:
         result = _build_inclusion_chance("album", 0.6)
         assert result == {"kind of blue": pytest.approx(0.3)}
 
+    def test_direct_tier_main_artist(self, monkeypatch):
+        """MAIN_ARTIST_SHUFFLE groups on get_main_artist, whose values are artist
+        names, so an artist favorite must boost it as it boosts ARTIST_SHUFFLE."""
+        import muse.playlist as pl_mod
+        pl_mod.app_info_cache.set("favorites", [_artist_fav("Herbert von Karajan")])
+
+        result = _build_inclusion_chance("get_main_artist", 0.8)
+        assert result == {"herbert von karajan": 0.8}
+
+    def test_implied_tier_main_artist_from_track_title_favorite(self, monkeypatch):
+        import muse.playlist as pl_mod
+        pl_mod.app_info_cache.set("favorites", [_title_fav("Any Title", artist="Glenn Gould")])
+
+        result = _build_inclusion_chance("get_main_artist", 0.5)
+        assert result == {"glenn gould": pytest.approx(0.25)}
+
+    def test_main_artist_getter_is_registered_in_both_attr_maps(self):
+        """Regression guard: these dicts are keyed by getter name, so omitting
+        get_main_artist makes the favorite boost a silent no-op for that sort
+        type rather than an error."""
+        from muse.playlist import _TRACK_ATTR_TO_ENUM, _TRACK_ATTR_TO_FAV_FIELD
+        from utils.globals import PlaylistSortType, TrackAttribute
+
+        getter = PlaylistSortType.MAIN_ARTIST_SHUFFLE.getter_name_mapping()
+        assert _TRACK_ATTR_TO_ENUM[getter] == TrackAttribute.ARTIST
+        assert _TRACK_ATTR_TO_FAV_FIELD[getter] == "artist"
+
 
 # ---------------------------------------------------------------------------
 # Resistance in scour_playlist

@@ -95,6 +95,7 @@ class PlaylistSortType(Enum):
     FORM_SHUFFLE = 'FORM_SHUFFLE'
     INSTRUMENT_SHUFFLE = 'INSTRUMENT_SHUFFLE'
     CATALOGUE_SHUFFLE = 'CATALOGUE_SHUFFLE'
+    MAIN_ARTIST_SHUFFLE = 'MAIN_ARTIST_SHUFFLE'
 
     def is_grouping_type(self):
         return self not in [PlaylistSortType.RANDOM, PlaylistSortType.SEQUENCE]
@@ -109,7 +110,8 @@ class PlaylistSortType(Enum):
             self.GENRE_SHUFFLE: 'get_genre',
             self.FORM_SHUFFLE: 'get_form',
             self.INSTRUMENT_SHUFFLE: 'get_instrument',
-            self.CATALOGUE_SHUFFLE: 'get_catalogue'
+            self.CATALOGUE_SHUFFLE: 'get_catalogue',
+            self.MAIN_ARTIST_SHUFFLE: 'get_main_artist'
         }[self]
 
     def grouping_list_name_mapping(self):
@@ -122,7 +124,8 @@ class PlaylistSortType(Enum):
             self.GENRE_SHUFFLE: HistoryType.GENRES,
             self.FORM_SHUFFLE: HistoryType.FORMS,
             self.INSTRUMENT_SHUFFLE: HistoryType.INSTRUMENTS,
-            self.CATALOGUE_SHUFFLE: HistoryType.CATALOGUES
+            self.CATALOGUE_SHUFFLE: HistoryType.CATALOGUES,
+            self.MAIN_ARTIST_SHUFFLE: HistoryType.MAIN_ARTISTS
         }[self]
 
     def get_translation(self):
@@ -135,7 +138,8 @@ class PlaylistSortType(Enum):
             PlaylistSortType.GENRE_SHUFFLE,
             PlaylistSortType.FORM_SHUFFLE,
             PlaylistSortType.INSTRUMENT_SHUFFLE,
-            PlaylistSortType.CATALOGUE_SHUFFLE
+            PlaylistSortType.CATALOGUE_SHUFFLE,
+            PlaylistSortType.MAIN_ARTIST_SHUFFLE
         ]
         return PlaylistSortType.get_translated_names()[types.index(self)]
 
@@ -156,6 +160,8 @@ class PlaylistSortType(Enum):
             return _("Instrument")
         if self == PlaylistSortType.CATALOGUE_SHUFFLE:
             return _("Catalogue")
+        if self == PlaylistSortType.MAIN_ARTIST_SHUFFLE:
+            return _("Main Artist")
         raise Exception(f"Unhandled sort type {self}")
 
     def get_scope_priority(self) -> int:
@@ -168,6 +174,9 @@ class PlaylistSortType(Enum):
             PlaylistSortType.GENRE_SHUFFLE: 7,
             PlaylistSortType.COMPOSER_SHUFFLE: 6,
             PlaylistSortType.ARTIST_SHUFFLE: 5,
+            # Same conceptual scope as ARTIST_SHUFFLE; it is not one of the fields
+            # get_largest_scope_from_search_fields ranks, so the tie is never consulted.
+            PlaylistSortType.MAIN_ARTIST_SHUFFLE: 5,
             PlaylistSortType.INSTRUMENT_SHUFFLE: 4,
             PlaylistSortType.FORM_SHUFFLE: 3,
             PlaylistSortType.CATALOGUE_SHUFFLE: 2,
@@ -243,6 +252,7 @@ class PlaylistSortType(Enum):
             _('Form Shuffle'),
             _('Instrument Shuffle'),
             _('Catalogue Shuffle'),
+            _('Main Artist Shuffle'),
         ]
 
     @staticmethod
@@ -256,7 +266,8 @@ class PlaylistSortType(Enum):
             PlaylistSortType.GENRE_SHUFFLE,
             PlaylistSortType.FORM_SHUFFLE,
             PlaylistSortType.INSTRUMENT_SHUFFLE,
-            PlaylistSortType.CATALOGUE_SHUFFLE
+            PlaylistSortType.CATALOGUE_SHUFFLE,
+            PlaylistSortType.MAIN_ARTIST_SHUFFLE
         ]
         try:
             return types[PlaylistSortType.get_translated_names().index(translation)]
@@ -554,6 +565,7 @@ class HistoryType(Enum):
     FORMS = "recently_played_forms"
     INSTRUMENTS = "recently_played_instruments"
     CATALOGUES = "recently_played_catalogues"
+    MAIN_ARTISTS = "recently_played_main_artists"
 
     def get_translation(self):
         types = [
@@ -565,6 +577,7 @@ class HistoryType(Enum):
             HistoryType.FORMS,
             HistoryType.INSTRUMENTS,
             HistoryType.CATALOGUES,
+            HistoryType.MAIN_ARTISTS,
         ]
         return HistoryType.get_translated_names()[types.index(self)]
 
@@ -579,6 +592,7 @@ class HistoryType(Enum):
             _('Forms'),
             _('Instruments'),
             _('Catalogues'),
+            _('Main Artists'),
         ]
 
     @staticmethod
@@ -592,6 +606,7 @@ class HistoryType(Enum):
             HistoryType.FORMS,
             HistoryType.INSTRUMENTS,
             HistoryType.CATALOGUES,
+            HistoryType.MAIN_ARTISTS,
         ]
         try:
             return types[HistoryType.get_translated_names().index(translation)]
@@ -608,7 +623,10 @@ class HistoryType(Enum):
             HistoryType.GENRES: TrackAttribute.GENRE,
             HistoryType.FORMS: TrackAttribute.FORM,
             HistoryType.INSTRUMENTS: TrackAttribute.INSTRUMENT,
-            HistoryType.CATALOGUES: TrackAttribute.CATALOGUE
+            HistoryType.CATALOGUES: TrackAttribute.CATALOGUE,
+            # No dedicated TrackAttribute: favouriting and search stay on the raw
+            # artist field, so a secondary credit remains findable.
+            HistoryType.MAIN_ARTISTS: TrackAttribute.ARTIST
         }[self]
 
 

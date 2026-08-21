@@ -32,7 +32,6 @@ def restore_class_state():
         ExtensionManager.DELAYED_THREADS,
         ExtensionManager.pending_candidate,
         ExtensionManager.current_download_process,
-        ExtensionManager.extension_thread_started,
         list(queue.pending_jobs),
         queue.job_running,
     )
@@ -47,7 +46,6 @@ def restore_class_state():
      ExtensionManager.DELAYED_THREADS,
      ExtensionManager.pending_candidate,
      ExtensionManager.current_download_process,
-     ExtensionManager.extension_thread_started,
      queue.pending_jobs,
      queue.job_running) = saved
 
@@ -192,7 +190,6 @@ class TestResetAndRestart:
 
         assert ExtensionManager.stop_event.is_set()
         assert ExtensionManager.extension_thread is None
-        assert ExtensionManager.extension_thread_started is False
 
 
 @pytest.mark.unit

@@ -32,6 +32,22 @@ logger = get_logger(__name__)
 _CATALOGUE_MARKER_RE = re.compile(r'\b(?:Volumes?|Volumen|Vols?\.?|Bd\.|Том)(?!\w)', re.IGNORECASE)
 _CATALOGUE_TRAILING_SEP_RE = re.compile(r'[\s:,\-–—]+$')
 
+# Markers after which everything is a secondary credit. Trailing (?!\w) rather than
+# \b so a marker ending in punctuation ("feat.") still matches before a space.
+_MAIN_ARTIST_FEATURING_RE = re.compile(r'\b(?:featuring|feat\.?|ft\.?|with)(?!\w)', re.IGNORECASE)
+# Top-level separators joining several credits into one tag value. "and" is
+# deliberately absent: it is far more often part of a single name ("X and His
+# Orchestra", "Gold And Black Aces") than a separator between two credits.
+_MAIN_ARTIST_SEPARATOR_RE = re.compile(r'\s*[;&/,]\s*')
+_MAIN_ARTIST_TRAILING_SEP_RE = re.compile(r'[\s:,;&/\-–—]+$')
+# A label/catalogue reference rather than a performer, e.g. "ZZGR: 2960118".
+_MAIN_ARTIST_CATALOGUE_REF_RE = re.compile(r':\s*\d')
+# albumartist values naming no single artist, so resolution falls through to artist.
+_ALBUMARTIST_PLACEHOLDERS = frozenset({"various artists", "various", "va", "unknown", "unknown artist"})
+# Matched as a substring, to catch "Various Artists - <label>". Only phrases safe to
+# match loosely belong here: "va" as a substring would strike "Ravel".
+_ALBUMARTIST_PLACEHOLDER_PHRASES = ("various artists",)
+
 # Optional third party imports
 try:
     import music_tag
@@ -303,6 +319,7 @@ class MediaTrack:
         self.form = None
         self.instrument = None
         self.catalogue = None
+        self.main_artist = None
 
         # Unused tags:
         # bitrate : 128000
@@ -391,6 +408,7 @@ class MediaTrack:
         track.form = row["form"]
         track.instrument = row["instrument"]
         track.catalogue = None  # not persisted; derived lazily by get_catalogue()
+        track.main_artist = None  # not persisted; derived lazily by get_main_artist()
         is_video = row["is_video"]
         track.is_video = bool(is_video) if is_video is not None else None
         track._is_extended = False
@@ -672,6 +690,63 @@ class MediaTrack:
         if self.catalogue is None:
             self.catalogue = MediaTrack._derive_catalogue(self.album) if self.album else ""
         return self.catalogue
+
+    @staticmethod
+    def _is_single_credit(value):
+        """Whether a value names one artist, rather than several joined together or
+        something that is not an artist at all. albumartist is only worth preferring
+        over artist when it is the curated single credit it is supposed to be -- in
+        real libraries it is often a combined credit, a compilation placeholder, or a
+        label catalogue reference."""
+        if not value:
+            return False
+        lowered = value.lower()
+        if lowered in _ALBUMARTIST_PLACEHOLDERS:
+            return False
+        if any(phrase in lowered for phrase in _ALBUMARTIST_PLACEHOLDER_PHRASES):
+            return False
+        if _MAIN_ARTIST_CATALOGUE_REF_RE.search(value):
+            return False
+        if _MAIN_ARTIST_FEATURING_RE.search(value):
+            return False
+        return len([seg for seg in _MAIN_ARTIST_SEPARATOR_RE.split(value) if seg.strip()]) == 1
+
+    @staticmethod
+    def _derive_main_artist(albumartist, artist, prefer_last_segment=False):
+        """Resolve one canonical "main" credit for grouping, from the albumartist and
+        artist tags. albumartist wins whenever it names a real artist, since taggers
+        curate it to a single clean credit; otherwise the artist tag is stripped of
+        featured credits and split on combining separators. Which segment of a combined
+        value is the main one has no universal answer -- pop convention lists the star
+        first, classical convention often lists the ensemble first and the soloist or
+        conductor last -- so prefer_last_segment decides rather than guessing. Falls back
+        to the artist string unchanged when nothing matches, so unrelated artists never
+        get bucketed together."""
+        if albumartist:
+            candidate = str(albumartist).strip()
+            if MediaTrack._is_single_credit(candidate):
+                return candidate
+        if not artist:
+            return artist
+        value = str(artist).strip()
+        if not value:
+            return artist
+        match = _MAIN_ARTIST_FEATURING_RE.search(value)
+        if match:
+            before = _MAIN_ARTIST_TRAILING_SEP_RE.sub('', value[:match.start()]).strip()
+            if before:
+                value = before
+        segments = [seg.strip() for seg in _MAIN_ARTIST_SEPARATOR_RE.split(value) if seg.strip()]
+        if len(segments) > 1:
+            return segments[-1] if prefer_last_segment else segments[0]
+        return value
+
+    def get_main_artist(self):
+        if self.main_artist is None:
+            self.main_artist = MediaTrack._derive_main_artist(
+                self.albumartist, self.artist,
+                prefer_last_segment=config.main_artist_prefers_last_segment) or ""
+        return self.main_artist
 
     def is_stream(self):
         return hasattr(self, "_is_stream") and self._is_stream

@@ -54,6 +54,7 @@ class MockMediaTrack:
     _catalogue: str
     _is_extended: bool = False
     _is_stream: bool = False
+    _main_artist: str = ""
 
     def get_genre(self):
         return self._genre
@@ -66,6 +67,9 @@ class MockMediaTrack:
 
     def get_catalogue(self):
         return self._catalogue
+
+    def get_main_artist(self):
+        return self._main_artist or self.artist
 
     def get_parent_filepath(self):
         return self.filepath
