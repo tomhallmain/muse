@@ -117,6 +117,9 @@ class Config:
         # last, matching the classical convention of listing the ensemble before the
         # soloist or conductor.
         self.main_artist_prefers_last_segment = False
+        # Propagate the best artwork on an album to its other tracks. This writes to
+        # the files in the library, so it is worth being deliberate about.
+        self.auto_fix_album_artwork = False
 
         # Extension tunables. Defaults match the values these settings replaced,
         # so exposing them changed no behaviour. Bounded ranges are one [min, max]
@@ -207,6 +210,7 @@ class Config:
             "play_videos_in_separate_window",
             "spinning_record_videos",
             "main_artist_prefers_last_segment",
+            "auto_fix_album_artwork",
             "extension_allow_emoji_titles",
             "extension_enable_llm_scoring",
             "dj_persona_refresh_context",

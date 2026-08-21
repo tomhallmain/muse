@@ -31,6 +31,7 @@
     "play_videos_in_separate_window": false,
     "spinning_record_videos": true,
     "main_artist_prefers_last_segment": false,
+    "auto_fix_album_artwork": false,
     "extension_cycle_wait_minutes": [60, 90],
     "extension_pending_review_seconds": [1000, 2000],
     "extension_track_duration_seconds": [120, -1],

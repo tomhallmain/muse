@@ -183,3 +183,53 @@ def test_from_db_row_track_does_not_crash_on_first_get_main_artist():
     track = MediaTrack.from_db_row(row)
     assert track.main_artist is None
     assert track.get_main_artist() == "Berlin Philharmonic"
+
+
+@pytest.mark.parametrize("data,expected", [
+    (b'\x89PNG\r\n\x1a\n' + b'rest', ".png"),
+    (b'RIFF' + b'\x00\x00\x00\x00' + b'WEBP' + b'rest', ".webp"),
+    (b'GIF89a' + b'rest', ".gif"),
+    (b'\xff\xd8\xff' + b'rest', ".jpg"),
+    (b'', ".jpg"),
+    (None, ".jpg"),
+])
+def test_artwork_extension(data, expected):
+    """The temp file was previously always named .jpg regardless of content."""
+    assert MediaTrack.artwork_extension(data) == expected
+
+
+def test_artwork_quality_of_nothing_is_zero():
+    assert MediaTrack.artwork_quality(None) == (0, 0)
+    assert MediaTrack.artwork_quality(b"") == (0, 0)
+
+
+def test_artwork_quality_falls_back_to_byte_length_when_undecodable():
+    data = b"not a decodable image"
+    assert MediaTrack.artwork_quality(data) == (0, len(data))
+
+
+def test_artwork_quality_uses_pixel_area_when_decodable():
+    pytest.importorskip("PIL")
+    import io
+    from PIL import Image
+
+    buf = io.BytesIO()
+    Image.new("RGB", (20, 10), (255, 0, 0)).save(buf, format="PNG")
+    data = buf.getvalue()
+
+    assert MediaTrack.artwork_quality(data) == (200, len(data))
+
+
+@pytest.mark.parametrize("candidate,existing,expected,note", [
+    ((1000 * 1000, 90000), (600 * 600, 40000), True, "600 -> 1000 is 2.78x area"),
+    ((600 * 600, 40000), (500 * 500, 30000), False, "500 -> 600 is only 1.44x area"),
+    ((1500 * 1500, 200000), (1400 * 1400, 190000), False, "1400 -> 1500 is 1.15x area"),
+    ((500 * 500, 30000), (0, 0), True, "receiving track has no artwork"),
+    ((500 * 500, 30000), (500 * 500, 30000), False, "identical artwork is never rewritten"),
+    ((0, 48000), (0, 30000), True, "no dimensions: 60% more bytes"),
+    ((0, 35000), (0, 30000), False, "no dimensions: only 17% more bytes"),
+    ((500 * 500, 48000), (0, 30000), True, "only one measurable: compare bytes"),
+    ((0, 0), (500 * 500, 30000), False, "nothing never replaces something"),
+])
+def test_artwork_is_improvement(candidate, existing, expected, note):
+    assert MediaTrack.artwork_is_improvement(candidate, existing) is expected, note

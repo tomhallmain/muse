@@ -540,3 +540,42 @@ class TestMainArtistPreferenceSetting:
         QApplication.processEvents()
 
         assert cfg_mod.config.get_config_value(self.KEY) is True
+
+
+# ---------------------------------------------------------------------------
+# Audio tab — album artwork propagation setting
+# ---------------------------------------------------------------------------
+
+@pytest.mark.ui
+class TestAutoFixAlbumArtworkSetting:
+    KEY = "auto_fix_album_artwork"
+
+    def test_checkbox_is_registered_and_reflects_config(self, qapp, qt_master, mock_app_actions):
+        cfg_mod = importlib.import_module("utils.config")
+        cfg_mod.config.set_config_value(self.KEY, False)
+
+        win = _open_window(qt_master, mock_app_actions)
+
+        assert self.KEY in win.config_vars, "setting has no widget, so it is only editable by hand"
+        widget, kind = win.config_vars[self.KEY]
+        assert kind == "checkbox"
+        assert widget.isChecked() is False
+
+    def test_defaults_to_off(self, qapp, qt_master, mock_app_actions):
+        """This one writes to files in the library, so it must be opt-in."""
+        cfg_mod = importlib.import_module("utils.config")
+        assert cfg_mod.Config().auto_fix_album_artwork is False
+
+    def test_toggling_the_checkbox_saves_the_preference(self, qapp, qt_master, mock_app_actions, monkeypatch):
+        cfg_mod = importlib.import_module("utils.config")
+        monkeypatch.setattr(cfg_mod.config, "save_config", lambda: True)
+        cfg_mod.config.set_config_value(self.KEY, False)
+
+        win = _open_window(qt_master, mock_app_actions)
+        widget, _kind = win.config_vars[self.KEY]
+        widget.setChecked(True)
+
+        win.save_config()
+        QApplication.processEvents()
+
+        assert cfg_mod.config.get_config_value(self.KEY) is True

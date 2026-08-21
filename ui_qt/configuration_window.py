@@ -191,11 +191,15 @@ class ConfigurationWindow(SmartWindow):
             frame, layout, "main_artist_prefers_last_segment",
             _("Main Artist Shuffle: Use the Last Name in a Combined Credit"), 2,
         )
-        self.add_config_entry(
-            frame, layout, "playlist_recently_played_check_count", _("Recently Played Check Count"), 3
+        self.add_config_checkbox(
+            frame, layout, "auto_fix_album_artwork",
+            _("Copy an Album's Best Artwork to Its Other Tracks"), 3,
         )
-        self.add_config_entry(frame, layout, "max_search_results", _("Max Search Results"), 4)
-        self.add_config_entry(frame, layout, "max_recent_searches", _("Max Recent Searches"), 5)
+        self.add_config_entry(
+            frame, layout, "playlist_recently_played_check_count", _("Recently Played Check Count"), 4
+        )
+        self.add_config_entry(frame, layout, "max_search_results", _("Max Search Results"), 5)
+        self.add_config_entry(frame, layout, "max_recent_searches", _("Max Recent Searches"), 6)
 
         tab_layout = QVBoxLayout(self.audio_tab)
         tab_layout.setContentsMargins(0, 0, 0, 0)

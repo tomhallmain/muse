@@ -361,6 +361,11 @@ class LibraryData:
     DIRECTORIES_CACHE = {}
     MEDIA_TRACK_CACHE = {}
     all_tracks = [] # this list should be contained within the values of MEDIA_TRACK_CACHE, but may not be equivalent to the values
+    # Albums scanned and found to have no artwork on any track. Without this an
+    # album that will never yield artwork is rescanned once for every track played
+    # from it. Kept in memory only, so artwork added outside the app is picked up
+    # on the next launch rather than needing this to be invalidated.
+    albums_without_artwork: set = set()
     get_tracks_lock = threading.Lock()
     CACHE_FILENAME = "app_media_track_cache"
     DIRECTORIES_CACHE_FILENAME = "app_directories_cache"
@@ -897,59 +902,48 @@ class LibraryData:
     # TODO hook up this method to the UI
     def ensure_album_artwork_consistency(self, track):
         """
-        Ensures that all tracks in an album have consistent artwork.
-        If the given track has valid artwork, it will be used as the reference.
-        If not, it will look for artwork from other tracks in the same album.
-        
+        Gives every track on the album the best artwork any of them holds.
+
+        Each albummate's embedded bytes are read rather than trusting its artwork
+        attribute, which stays None until a track has been read and so says nothing
+        about what the file contains. A track is only written when the best image is
+        an improvement on what it already has, so a track carrying a higher-quality
+        copy is never downgraded to a more compressed one.
+
         Args:
-            track (MediaTrack): The track to check and potentially update artwork for
-            
+            track (MediaTrack): A track on the album to bring into line
+
         Returns:
-            bool: True if artwork was updated, False otherwise
+            bool: True if any track was updated, False otherwise
         """
+        if not config.auto_fix_album_artwork:
+            return False
         if not track.album:
             return False
-            
-        # Get all tracks in the same album
-        album_tracks = []
-        for t in self.all_tracks:
-            if t.album == track.album:
-                album_tracks.append(t)
-                
+        if track.album in LibraryData.albums_without_artwork:
+            return False
+
+        album_tracks = [t for t in self.all_tracks if t.album == track.album]
         if len(album_tracks) < 2:
             return False
-            
-        # Check if current track has artwork
-        if track.artwork:
-            # This track has artwork, use it as reference
-            # Make a copy of the artwork bytes to avoid shared references
-            ref_artwork = bytes(track.artwork)
-            updated = False
-            
-            # Update other tracks that don't have artwork
-            for t in album_tracks:
-                if t != track and not t.artwork:
-                    try:
-                        # Update metadata with the artwork copy
-                        metadata = {'artwork': ref_artwork}
-                        if t.update_metadata(metadata):
-                            updated = True
-                    except Exception as e:
-                        logger.warning(f"Failed to update artwork for {t.title}: {str(e)}")
-            
-            return updated
-        else:
-            # Current track doesn't have artwork, look for it in other tracks
-            for t in album_tracks:
-                if t != track and t.artwork:
-                    try:
-                        # Make a copy of the artwork bytes before updating
-                        artwork_copy = bytes(t.artwork)
-                        metadata = {'artwork': artwork_copy}
-                        if track.update_metadata(metadata):
-                            return True
-                    except Exception as e:
-                        logger.warning(f"Failed to update artwork for {track.title}: {str(e)}")
-            
+
+        scored = [(t, MediaTrack.artwork_quality(t.load_embedded_artwork())) for t in album_tracks]
+        best_track, best_quality = max(scored, key=lambda pair: pair[1])
+
+        if best_quality == (0, 0):
+            LibraryData.albums_without_artwork.add(track.album)
             return False
+
+        # Copied so no two tracks end up sharing one mutable buffer.
+        reference = bytes(best_track.artwork)
+        updated = False
+        for t, quality in scored:
+            if t is best_track or not MediaTrack.artwork_is_improvement(best_quality, quality):
+                continue
+            try:
+                if t.update_metadata({'artwork': reference}):
+                    updated = True
+            except Exception as e:
+                logger.warning(f"Failed to update artwork for {t.title}: {str(e)}")
+        return updated
 

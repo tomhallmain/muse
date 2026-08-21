@@ -105,6 +105,10 @@ dict_keys(['tag_aliases', 'tag_map', 'resolvers', 'singular_keys', 'filename', '
 """
 
 class MediaTrack:
+    # artwork is skipped here so a library scan does not pull image bytes for every
+    # track. The consequence is that self.artwork stays None until something calls
+    # load_embedded_artwork(), so a track that has not been read cannot be treated
+    # as having no artwork in its file -- test the file, not the attribute.
     music_tag_ignored_tags = ['comment', 'isrc', 'lyrics', 'artwork']
     # Container formats not supported by music_tag/mutagen; routed directly to pymediainfo.
     _music_tag_unsupported_extensions = frozenset({'.webm', '.mkv'})
@@ -618,30 +622,90 @@ class MediaTrack:
             self.is_video = has_video_stream(self.filepath)
         return self.is_video
 
-    def get_album_artwork(self, filename="image"):
-        # music-tags libary may have already set this attribute
-        if self.artwork is None:
-            if self.get_is_video():
-                return None
-            # mutagen for special cases
-            try:
-                _file = File(self.filepath) # mutagen
-                for k, v in _file.tags.items():
-                    if type(v) == list and type(v[0]) == MP4Cover:
-                        self.artwork = bytes(v[0])
-                        logger.info("found artwork in MP4Cover mutagen tag type.")
-                        break
-                if self.artwork is None:
-                    self.artwork = _file.tags['APIC:'].data
-                    logger.info("found artwork by accessing APIC frame")
-            except Exception as e:
-                logger.warning(f"Album artwork not found: {e}")
+    def load_embedded_artwork(self):
+        """Read embedded artwork into self.artwork and return it, writing nothing.
+
+        Separate from get_album_artwork() so artwork can be inspected -- to compare
+        one track's against another's -- without leaving a temp file behind per call.
+        """
+        if self.artwork is not None:
+            return self.artwork
+        if self.get_is_video():
+            return None
+        # mutagen for special cases
+        try:
+            _file = File(self.filepath) # mutagen
+            for k, v in _file.tags.items():
+                if type(v) == list and type(v[0]) == MP4Cover:
+                    self.artwork = bytes(v[0])
+                    logger.info("found artwork in MP4Cover mutagen tag type.")
+                    break
             if self.artwork is None:
-                return None
+                self.artwork = _file.tags['APIC:'].data
+                logger.info("found artwork by accessing APIC frame")
+        except Exception as e:
+            logger.warning(f"Album artwork not found: {e}")
+        return self.artwork
+
+    @staticmethod
+    def artwork_extension(data):
+        """File extension matching the image bytes, by magic number."""
+        if not data:
+            return ".jpg"
+        if data[:8] == b'\x89PNG\r\n\x1a\n':
+            return ".png"
+        if data[:4] == b'RIFF' and data[8:12] == b'WEBP':
+            return ".webp"
+        if data[:3] == b'GIF':
+            return ".gif"
+        return ".jpg"
+
+    # How much better a candidate image must be before every other track on the
+    # album gets rewritten for it. Applied to pixel area, which grows with the
+    # square of the edge, so this is roughly a 26% gain per side: enough to admit
+    # 600x600 -> 1000x1000 while rejecting 500x500 -> 600x600.
+    ARTWORK_IMPROVEMENT_RATIO = 1.6
+
+    @staticmethod
+    def artwork_is_improvement(candidate, existing):
+        """Whether candidate artwork is enough better than existing to replace it.
+
+        Both arguments are artwork_quality() results. Compares pixel area when both
+        images could be measured, otherwise byte length.
+        """
+        candidate_area, candidate_bytes = candidate
+        existing_area, existing_bytes = existing
+        if existing_bytes == 0:
+            return candidate_bytes > 0
+        if candidate_area and existing_area:
+            return candidate_area >= existing_area * MediaTrack.ARTWORK_IMPROVEMENT_RATIO
+        return candidate_bytes >= existing_bytes * MediaTrack.ARTWORK_IMPROVEMENT_RATIO
+
+    @staticmethod
+    def artwork_quality(data):
+        """Sort key ranking artwork by pixel area, then byte length.
+
+        Pixel area needs Pillow; without it every image scores 0 there and the
+        comparison falls back to byte length, which tracks quality within a single
+        format but not across formats.
+        """
+        if not data:
+            return (0, 0)
+        try:
+            import io
+            from PIL import Image
+            with Image.open(io.BytesIO(data)) as img:
+                return (img.width * img.height, len(data))
+        except Exception:
+            return (0, len(data))
+
+    def get_album_artwork(self, filename="image"):
+        if self.load_embedded_artwork() is None:
+            return None
         try:
             # write artwork to new image
             if "." not in filename:
-                filename += ".jpg" # TODO figure out actual image format
+                filename += MediaTrack.artwork_extension(self.artwork)
             return TempDir.get().add_file(filename, file_content=self.artwork, write_flags='wb')
         except Exception as e:
             logger.error(f"Could not write album artwork to temp file: {e}")
