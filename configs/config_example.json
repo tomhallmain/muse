@@ -24,7 +24,6 @@
     "prompts_directory": "prompts",
     "tongue_twisters_dir": "",
     "artists_file": "artists_example.json",
-    "composers_file": "composers_example.json",
     "forms_file": "forms_example.json",
     "genres_file": "genres_example.json",
     "instruments_file": "instruments_example.json",

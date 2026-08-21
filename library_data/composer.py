@@ -5,7 +5,7 @@ import re
 import unicodedata
 
 from library_data.work import Work
-from utils.config import config
+from utils.db import get_connection, delim_to_list, list_to_delim
 from utils.name_ops import NameOps
 from utils.logging_setup import get_logger
 from utils.translations import I18N
@@ -46,7 +46,10 @@ class Composer:
         self.dates_are_lifespan = dates_are_lifespan
         self.dates_uncertain = dates_uncertain
         self.genres = genres
-        self.works = works
+        # Build a fresh list rather than aliasing the argument: add_work appends
+        # to self.works, so assigning the argument directly would mutate the list
+        # being iterated below (and the shared default) and never terminate.
+        self.works = []
         self.notes = notes
         self.date_added = date_added
 
@@ -342,9 +345,11 @@ class ComposersDataSearch:
                 self.results.append(composer)
                 return True
 
-        # Test name/indicator matches
+        # Test name/indicator matches. Leading boundary only: this is a search
+        # box, so "bach" should still find "Bachschmid". re.escape because
+        # indicators and queries contain regex metacharacters (`B.W.V.`, `Sr.`).
         if len(self.composer) > 0:
-            pattern = re.compile(f"(^|\\W){self.composer}") if strict else ""
+            pattern = re.compile(f"(^|\\W){re.escape(self.composer)}") if strict else ""
             for indicator in composer.indicators:
                 indicator_lower = indicator.lower()
                 if strict:
@@ -408,23 +413,61 @@ class ComposersDataSearch:
 
 class ComposersData:
     def __init__(self):
-        self._composers = {}
-        self._get_composers()
+        # Composer data is loaded on first access rather than here. Building the
+        # full set means a query plus several thousand object constructions, and
+        # plenty of code paths never read composer data at all.
+        self.__composers = None
+
+    @property
+    def _composers(self):
+        if self.__composers is None:
+            self._get_composers()
+        return self.__composers
 
     def _get_composers(self):
-        mtime = datetime.datetime.fromtimestamp(os.path.getmtime(config.composers_file))
-        with open(config.composers_file, 'r', encoding="utf-8") as f:
-            composers = json.load(f)
-        needs_migration = False
-        for name, composer_data in composers.items():
-            composer = Composer.from_json(composer_data)
+        composers = {}
+        rows = get_connection().execute(
+            "SELECT id, name, indicators, start_date, end_date, "
+            "dates_are_lifespan, dates_uncertain, genres, works, notes, date_added FROM composers"
+        ).fetchall()
+        needs_backfill = []
+        for row in rows:
+            composer = self._composer_from_row(row)
             if composer.date_added is None:
-                composer.date_added = mtime
-                needs_migration = True
-            self._composers[name] = composer
-        if needs_migration:
-            self._write_sorted_composers_to_file()
-            logger.info("Stored date_added for composer data where missing")
+                needs_backfill.append(composer)
+            composers[composer.name] = composer
+        self.__composers = composers
+        if needs_backfill:
+            now = datetime.datetime.now()
+            for composer in needs_backfill:
+                composer.date_added = now
+            self._persist_composers(needs_backfill)
+            logger.info("Backfilled date_added for %d composer(s) with no recorded value", len(needs_backfill))
+
+    @staticmethod
+    def _composer_from_row(row):
+        date_added = row["date_added"]
+        if isinstance(date_added, str):
+            try:
+                date_added = datetime.datetime.fromisoformat(date_added)
+            except ValueError:
+                date_added = None
+        return Composer(
+            id=row["id"],
+            name=row["name"],
+            indicators=delim_to_list(row["indicators"]),
+            start_date=row["start_date"] if row["start_date"] is not None else -1,
+            end_date=row["end_date"] if row["end_date"] is not None else -1,
+            dates_are_lifespan=bool(row["dates_are_lifespan"]),
+            dates_uncertain=bool(row["dates_uncertain"]),
+            genres=delim_to_list(row["genres"]),
+            works=delim_to_list(row["works"]),
+            notes=json.loads(row["notes"] or "{}"),
+            date_added=date_added,
+        )
+
+    def reload(self):
+        self.__composers = None
 
     def _get_next_available_id(self):
         """Find the next available ID in the composers collection.
@@ -450,74 +493,92 @@ class ComposersData:
         if composer.id is None:
             composer.id = self._get_next_available_id()
 
-    def _write_sorted_composers_to_file(self):
-        """Write the composers dictionary to file in sorted order.
-        
+    # name is the identity here; id is a surrogate no other table references.
+    # id is therefore never updated on conflict -- the stored row keeps its own,
+    # so an incoming record carrying an id another row already holds cannot fail
+    # the primary-key constraint. mbid is absent for the same reason in reverse:
+    # nothing populates it yet, so leaving it out preserves any external value.
+    _UPSERT_SQL = """
+        INSERT INTO composers (id, name, indicators, start_date, end_date,
+            dates_are_lifespan, dates_uncertain, genres, works, notes, date_added)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(name) DO UPDATE SET
+            indicators = excluded.indicators,
+            start_date = excluded.start_date,
+            end_date = excluded.end_date,
+            dates_are_lifespan = excluded.dates_are_lifespan,
+            dates_uncertain = excluded.dates_uncertain,
+            genres = excluded.genres,
+            works = excluded.works,
+            notes = excluded.notes,
+            date_added = excluded.date_added
+    """
+
+    @staticmethod
+    def _composer_to_row_params(composer):
+        date_added = composer.date_added
+        date_added_str = date_added.isoformat() if isinstance(date_added, datetime.datetime) else date_added
+        # composer.works may hold Work objects (composer.add_work) rather than plain names.
+        work_names = [getattr(w, "name", w) for w in composer.works]
+        return (
+            composer.id,
+            composer.name,
+            list_to_delim(composer.indicators),
+            composer.start_date,
+            composer.end_date,
+            int(bool(composer.dates_are_lifespan)),
+            int(bool(composer.dates_uncertain)),
+            list_to_delim(composer.genres),
+            list_to_delim(work_names),
+            json.dumps(composer.notes or {}),
+            date_added_str,
+        )
+
+    def _persist_composers(self, composers):
+        """Upsert one or more composers into the DB in a single transaction.
+
         Returns:
             tuple: (bool, str) - (success, error_message)
         """
         try:
-            # Convert composers to JSON format and sort by name
-            composers_json = {}
-            sorted_composers = sorted(self._composers.items(), 
-                                   key=lambda x: NameOps.get_name_sort_key(x[0]))
-            for name, comp in sorted_composers:
-                composers_json[name] = comp.to_json()
-            
-            # Write to file
-            with open(config.composers_file, 'w', encoding="utf-8") as f:
-                json.dump(composers_json, f, indent=4, ensure_ascii=True)
+            conn = get_connection()
+            conn.executemany(
+                ComposersData._UPSERT_SQL,
+                [ComposersData._composer_to_row_params(c) for c in composers],
+            )
+            conn.commit()
             return True, ""
-            
         except Exception as e:
             error_msg = str(e)
-            logger.error(f"Error writing composers file: {error_msg}")
+            logger.error(f"Error saving composers: {error_msg}")
+            try:
+                get_connection().rollback()
+            except Exception:
+                pass
             return False, error_msg
 
     def save_composer(self, composer):
-        """Save a composer to the JSON file.
-        
+        """Persist a composer to the database and update in-memory data.
+
         Args:
             composer: The Composer object to save
-            
+
         Returns:
             tuple: (bool, str) - (success, error_message)
         """
         if not composer or not composer.name:
             return False, _("Invalid composer data")
-            
-        # Create backup of current file
-        backup_file = config.composers_file + '.bak'
-        try:
-            import shutil
-            shutil.copy2(config.composers_file, backup_file)
-            
-            # Assign ID and date_added if needed (new composer)
-            self._assign_next_id(composer)
-            if composer.date_added is None:
-                composer.date_added = datetime.datetime.now()
 
-            # Update in-memory data
-            self._composers[composer.name] = composer
-            
-            # Write sorted composers to file
-            success, error_msg = self._write_sorted_composers_to_file()
-            if not success:
-                raise Exception(error_msg)
-                
-            # Remove backup if successful
-            import os
-            os.remove(backup_file)
-            return True, ""
-            
-        except Exception as e:
-            error_msg = str(e)
-            logger.error(f"Error saving composer: {error_msg}")
-            # Restore from backup if it exists
-            if os.path.exists(backup_file):
-                shutil.copy2(backup_file, config.composers_file)
-                os.remove(backup_file)
+        self._assign_next_id(composer)
+        if composer.date_added is None:
+            composer.date_added = datetime.datetime.now()
+
+        success, error_msg = self._persist_composers([composer])
+        if not success:
             return False, error_msg
+
+        self._composers[composer.name] = composer
+        return True, ""
 
     def add_composer_indicators(self, composer_name, indicators):
         """Add one or more indicators to an existing composer if not already present, then save.
@@ -535,49 +596,39 @@ class ComposersData:
         return self.save_composer(composer)
 
     def delete_composer(self, composer):
-        """Delete a composer from the JSON file.
-        
+        """Delete a composer from the database and in-memory data.
+
         Args:
             composer: The Composer object to delete
-            
+
         Returns:
             tuple: (bool, str) - (success, error_message)
         """
         if not composer or not composer.name:
             return False, _("Invalid composer data")
-            
-        # Create backup of current file
-        backup_file = config.composers_file + '.bak'
+
         try:
-            import shutil
-            shutil.copy2(config.composers_file, backup_file)
-            
-            # Remove from in-memory data
-            if composer.name in self._composers:
-                self._composers.pop(composer.name)
-            else:
+            conn = get_connection()
+            cur = conn.execute("DELETE FROM composers WHERE name = ?", (composer.name,))
+            conn.commit()
+            if cur.rowcount == 0 and composer.name not in self._composers:
                 return False, _("Composer not found")
-            
-            # Write sorted composers to file
-            success, error_msg = self._write_sorted_composers_to_file()
-            if not success:
-                raise Exception(error_msg)
-                
-            # Remove backup if successful
-            os.remove(backup_file)
+            self._composers.pop(composer.name, None)
             return True, ""
-            
         except Exception as e:
             error_msg = str(e)
             logger.error(f"Error deleting composer: {error_msg}")
-            # Restore from backup if it exists
-            if os.path.exists(backup_file):
-                shutil.copy2(backup_file, config.composers_file)
-                os.remove(backup_file)
+            try:
+                get_connection().rollback()
+            except Exception:
+                pass
             return False, error_msg
 
     def get_composer_names(self):
         return [composer.name for composer in self._composers.values()]
+
+    def get_all_composers(self):
+        return sorted(self._composers.values(), key=lambda c: NameOps.get_full_name_sort_key(c.name))
 
     def get_data(self, composer_name):
         if composer_name in self._composers:
@@ -589,15 +640,25 @@ class ComposersData:
         return None
 
     def get_composers(self, audio_track):
+        # Indicators must land on word boundaries: a plain substring test attaches
+        # "Bach" to Erbach and Bachschmid, and "Barth" to Bartholomäus. The `in`
+        # test gates the boundary check because this runs for every indicator
+        # against every track, and a miss then costs one C-level scan as before.
+        on_boundary = NameOps.contains_on_word_boundary
+        title = audio_track.title
+        album = audio_track.album
+        artist = audio_track.artist
+        track_composer = audio_track.composer
         matches = []
         for composer in self._composers.values():
             for value in composer.indicators:
-                if value in audio_track.title or \
-                        (audio_track.album is not None and value in audio_track.album) or \
-                        (audio_track.artist is not None and value in audio_track.artist):
+                if (value in title and on_boundary(title, value)) or \
+                        (album is not None and value in album and on_boundary(album, value)) or \
+                        (artist is not None and value in artist and on_boundary(artist, value)):
                     matches += [composer.name]
                     break
-                elif audio_track.composer is not None and value in audio_track.composer:
+                elif track_composer is not None and value in track_composer \
+                        and on_boundary(track_composer, value):
                     logger.info("Found composer match on " + audio_track.filepath)
                     matches += [composer.name]
                     break
@@ -728,6 +789,7 @@ class ComposersData:
         skipped = []       # exact indicator match → already in library
         auto_merged = []   # similarity >= AUTO_MERGE_THRESHOLD → treated as existing
         needs_review = []  # REVIEW_THRESHOLD <= similarity < AUTO_MERGE_THRESHOLD
+        modified_existing = []  # existing composers whose indicators grew via auto-merge
         import_time = datetime.datetime.now()
 
         for name in clean_names:
@@ -742,6 +804,8 @@ class ComposersData:
                 auto_merged.append((import_name, match.name, ratio))
                 if import_name not in match.indicators:
                     match.indicators.append(import_name)
+                    if match not in modified_existing:
+                        modified_existing.append(match)
 
             if best_match is not None and ratio >= ComposersData._IMPORT_AUTO_MERGE_THRESHOLD:
                 _try_auto_merge(best_match, name)
@@ -780,21 +844,9 @@ class ComposersData:
             self._composers[name] = composer
             added.append(composer)
 
-        if added or auto_merged:
-            import shutil
-            backup_file = config.composers_file + '.bak'
-            try:
-                shutil.copy2(config.composers_file, backup_file)
-                success, error_msg = self._write_sorted_composers_to_file()
-                if not success:
-                    raise Exception(error_msg)
-                os.remove(backup_file)
-            except Exception as e:
-                error_msg = str(e)
-                logger.error(f"Error in bulk import: {error_msg}")
-                if os.path.exists(backup_file):
-                    shutil.copy2(backup_file, config.composers_file)
-                    os.remove(backup_file)
+        if added or modified_existing:
+            success, error_msg = self._persist_composers(added + modified_existing)
+            if not success:
                 for composer in added:
                     self._composers.pop(composer.name, None)
                 return {

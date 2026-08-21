@@ -151,12 +151,19 @@ def _reset_playback_state() -> None:
 # DB isolation helpers
 # ---------------------------------------------------------------------------
 
-def _make_isolated_db_conn():
-    """Return a fresh in-memory SQLite connection seeded from example files.
+_db_template_conn = None
+
+
+def _get_db_template_conn():
+    """Build the seeded reference database once for the whole session.
 
     Uses the same schema as the real DB but skips the legacy-JSON migration
     and gzip-cache imports to avoid slow I/O and real-file dependencies.
     """
+    global _db_template_conn
+    if _db_template_conn is not None:
+        return _db_template_conn
+
     import sqlite3
 
     from utils.db import (
@@ -170,8 +177,6 @@ def _make_isolated_db_conn():
     )
 
     conn = sqlite3.connect(":memory:")
-    conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA foreign_keys=ON")
     _create_schema(conn)
     _seed_forms(conn)
     _seed_genres(conn)
@@ -180,6 +185,24 @@ def _make_isolated_db_conn():
     _seed_artists(conn)
     _set_meta(conn, "seeded", "1")
     conn.commit()
+    _db_template_conn = conn
+    return _db_template_conn
+
+
+def _make_isolated_db_conn():
+    """Return a fresh in-memory SQLite database, page-copied from the template.
+
+    Re-running the seed per test costs ~28ms (parsing a 2.5 MB composers JSON
+    and inserting several thousand rows); copying the already-seeded template
+    costs well under a millisecond. The copy is a fully independent database,
+    so per-test isolation is unchanged.
+    """
+    import sqlite3
+
+    conn = sqlite3.connect(":memory:")
+    _get_db_template_conn().backup(conn)
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA foreign_keys=ON")
     return conn
 
 
@@ -187,11 +210,11 @@ def _patch_db_connection_singleton(monkeypatch, conn) -> None:
     """Redirect get_connection() to *conn* for all known call sites.
 
     Patches the utils.db module (for callers that import inside functions)
-    and the four library_data modules that bind ``get_connection`` at module
+    and the five library_data modules that bind ``get_connection`` at module
     load time via a top-level ``from utils.db import get_connection``.
     When ``reload_metadata_singletons`` later creates fresh ArtistsData() /
-    FormsData() / GenresData() / InstrumentsData() instances those constructors
-    will use the isolated connection.
+    ComposersData() / FormsData() / GenresData() / InstrumentsData() instances
+    those constructors will use the isolated connection.
     """
     import utils.db as db_mod
 
@@ -200,6 +223,7 @@ def _patch_db_connection_singleton(monkeypatch, conn) -> None:
 
     for module_name in (
         "library_data.artist",
+        "library_data.composer",
         "library_data.form",
         "library_data.genre",
         "library_data.instrument",
@@ -303,16 +327,9 @@ def isolated_singletons(tmp_path, monkeypatch):
     config_module = importlib.import_module("utils.config")
     old_config = config_module.config
     config_instance = config_module.Config()
-    # Resolve composers_file to an absolute path so ComposersData() (which still
-    # reads from JSON, not the DB) opens the right file regardless of CWD.
-    _composers_example = os.path.join(
-        _project_root, "library_data", "data", "composers_example.json"
-    )
-    if os.path.isfile(_composers_example):
-        config_instance.composers_file = _composers_example
     repoint_singleton_bindings(monkeypatch, "config", old_config, config_instance)
-    # Rebuild composers_data so it reads from the isolated example file rather
-    # than whatever the module-level singleton loaded at import time.
+    # Rebuild composers_data (DB-backed; must use the isolated in-memory connection)
+    # rather than whatever the module-level singleton loaded at import time.
     try:
         import library_data.composer as _composer_mod
         monkeypatch.setattr(

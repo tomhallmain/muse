@@ -56,7 +56,6 @@ class Config:
         self.prompts_directory = Globals.DEFAULT_PROMPTS_DIRECTORY
         self.tongue_twisters_dir = None
         self.artists_file = "artists.json"
-        self.composers_file = "composers.json"
         self.forms_file = "forms.json"
         self.genres_file = "genres.json"
         self.instruments_file = "instruments.json"
@@ -153,7 +152,6 @@ class Config:
             "foreground_color",
             "background_color",
             "artists_file",
-            "composers_file",
             "forms_file",
             "genres_file",
             "instruments_file",
@@ -230,7 +228,6 @@ class Config:
             "zonos_reference_audio",
             "piper_model_path",
             "artists_file",
-            "composers_file",
             "forms_file",
             "genres_file",
             "instruments_file",

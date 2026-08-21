@@ -367,10 +367,18 @@ def _seed_instruments(conn: sqlite3.Connection) -> None:
 
 
 def _seed_composers(conn: sqlite3.Connection) -> None:
+    import datetime
+    import os
+
     path = _DATA_DIR / "composers_example.json"
     if not path.exists():
         logger.warning("composers_example.json not found, skipping")
         return
+    # The example file carries no date_added (it is stripped on export, since when
+    # a composer entered the seed set is not meaningful per-install). Fall back to
+    # the file's mtime so seeded rows are never NULL -- otherwise every subsequent
+    # ComposersData load would re-backfill the whole table.
+    mtime_iso = datetime.datetime.fromtimestamp(os.path.getmtime(str(path))).isoformat()
     with open(path, "r", encoding="utf-8") as f:
         data = json.load(f)
     rows = [
@@ -386,7 +394,7 @@ def _seed_composers(conn: sqlite3.Connection) -> None:
             list_to_delim(v.get("genres", [])),
             list_to_delim(v.get("works", [])),
             json.dumps(v.get("notes", {})),
-            v.get("date_added"),
+            v.get("date_added") or mtime_iso,
         )
         for v in data.values()
     ]

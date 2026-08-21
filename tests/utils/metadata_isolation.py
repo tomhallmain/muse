@@ -12,7 +12,6 @@ _EXAMPLE_DATA_DIR = _PROJECT_ROOT / "library_data" / "data"
 
 _METADATA_KEYS = (
     "artists_file",
-    "composers_file",
     "forms_file",
     "genres_file",
     "instruments_file",
@@ -20,7 +19,6 @@ _METADATA_KEYS = (
 
 _EXAMPLE_NAMES = {
     "artists_file": "artists_example.json",
-    "composers_file": "composers_example.json",
     "forms_file": "forms_example.json",
     "genres_file": "genres_example.json",
     "instruments_file": "instruments_example.json",
