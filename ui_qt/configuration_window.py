@@ -30,7 +30,7 @@ from muse.playlist import (
     TRACK_EXCLUSIONS_KEY,
     _DEFAULT_TRACK_EXCLUSIONS,
 )
-from muse.track_affinity import AFFINITY_OFF, AFFINITY_SIMILAR, AFFINITY_VARIED
+from muse.track_affinity import AFFINITY_OFF, AFFINITY_ON
 from ui_qt.app_style import AppStyle
 from ui_qt.auth.password_utils import require_password
 from utils.app_info_cache import app_info_cache
@@ -199,8 +199,7 @@ class ConfigurationWindow(SmartWindow):
         self.add_config_value_combo(
             frame, layout, "affinity_preference", _("Upcoming Track Ordering"), 4,
             [
-                (AFFINITY_SIMILAR, _("Prefer Similar")),
-                (AFFINITY_VARIED, _("Prefer Varied")),
+                (AFFINITY_ON, _("On")),
                 (AFFINITY_OFF, _("Off")),
             ],
         )

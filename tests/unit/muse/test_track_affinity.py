@@ -11,8 +11,7 @@ import pytest
 
 from muse.track_affinity import (
     AFFINITY_OFF,
-    AFFINITY_SIMILAR,
-    AFFINITY_VARIED,
+    AFFINITY_ON,
     DEFAULT_AFFINITY_PREFERENCE,
     DEFAULT_ATTRIBUTE_WEIGHTS,
     AffinityReference,
@@ -224,19 +223,21 @@ def _descriptor(search_query=None, allows_resort=True):
 @pytest.mark.unit
 class TestAffinityPreference:
     def test_recognised_values_are_returned(self, config):
-        for value in (AFFINITY_OFF, AFFINITY_SIMILAR, AFFINITY_VARIED):
+        for value in (AFFINITY_OFF, AFFINITY_ON):
             config.affinity_preference = value
             assert affinity_preference() == value
 
     def test_value_is_normalised(self, config):
-        config.affinity_preference = "  VARIED "
+        config.affinity_preference = "  ON "
 
-        assert affinity_preference() == AFFINITY_VARIED
+        assert affinity_preference() == AFFINITY_ON
 
     def test_unrecognised_value_falls_back_to_the_default(self, config):
         """An unset or stale config should still get the working behaviour rather
         than silently disabling the ordering."""
-        for value in ("", None, "nonsense", 7):
+        # "similar" and "varied" are the states this setting used to have, so a
+        # config written before the change lands on the working default.
+        for value in ("", None, "nonsense", 7, "similar", "varied"):
             config.affinity_preference = value
             assert affinity_preference() == DEFAULT_AFFINITY_PREFERENCE
 
@@ -253,19 +254,19 @@ class TestReferenceFor:
 
     def test_track_based_playlist_is_left_alone(self, config):
         """Every track was named, so the order is already the listener's decision."""
-        config.affinity_preference = AFFINITY_SIMILAR
+        config.affinity_preference = AFFINITY_ON
 
         assert reference_for(_descriptor(allows_resort=False), _Track(composer="Mozart")) is None
 
     def test_search_query_becomes_the_reference(self, config):
-        config.affinity_preference = AFFINITY_SIMILAR
+        config.affinity_preference = AFFINITY_ON
 
         reference = reference_for(_descriptor(search_query={"composer": "Mozart"}))
 
         assert reference.values["composer"] == {"mozart"}
 
     def test_start_track_becomes_the_reference(self, config):
-        config.affinity_preference = AFFINITY_SIMILAR
+        config.affinity_preference = AFFINITY_ON
 
         reference = reference_for(None, _Track(composer="Mozart", form="Symphony"))
 
@@ -273,7 +274,7 @@ class TestReferenceFor:
         assert reference.values["form"] == {"symphony"}
 
     def test_search_and_start_track_combine(self, config):
-        config.affinity_preference = AFFINITY_SIMILAR
+        config.affinity_preference = AFFINITY_ON
 
         reference = reference_for(_descriptor(search_query={"composer": "Haydn"}),
                                   _Track(composer="Mozart"))
@@ -281,7 +282,7 @@ class TestReferenceFor:
         assert reference.values["composer"] == {"haydn", "mozart"}
 
     def test_favorites_apply_only_when_nothing_more_specific_exists(self, config, monkeypatch):
-        config.affinity_preference = AFFINITY_SIMILAR
+        config.affinity_preference = AFFINITY_ON
         monkeypatch.setattr("muse.track_affinity.current_favorites_profile",
                             lambda: {"composer": ["Bach"]})
 
@@ -289,7 +290,7 @@ class TestReferenceFor:
 
     def test_favorites_do_not_dilute_a_search(self, config, monkeypatch):
         """A favorite outscoring what was actually searched for would be wrong."""
-        config.affinity_preference = AFFINITY_SIMILAR
+        config.affinity_preference = AFFINITY_ON
         monkeypatch.setattr("muse.track_affinity.current_favorites_profile",
                             lambda: {"composer": ["Bach"]})
 
@@ -298,7 +299,7 @@ class TestReferenceFor:
         assert reference.values["composer"] == {"mozart"}
 
     def test_nothing_to_go_on_gives_no_reference(self, config, monkeypatch):
-        config.affinity_preference = AFFINITY_SIMILAR
+        config.affinity_preference = AFFINITY_ON
         monkeypatch.setattr("muse.track_affinity.current_favorites_profile", lambda: {})
 
         assert reference_for(_descriptor()) is None
@@ -306,12 +307,12 @@ class TestReferenceFor:
 
     def test_a_broken_descriptor_does_not_raise(self, config):
         """Any failure must leave the playlist with the order it already had."""
-        config.affinity_preference = AFFINITY_SIMILAR
+        config.affinity_preference = AFFINITY_ON
 
         assert reference_for(SimpleNamespace()) is None
 
     def test_unreadable_favorites_do_not_raise(self, config, monkeypatch):
-        config.affinity_preference = AFFINITY_SIMILAR
+        config.affinity_preference = AFFINITY_ON
         monkeypatch.setattr("muse.track_affinity.current_favorites_profile",
                             lambda: (_ for _ in ()).throw(RuntimeError("cache gone")))
 

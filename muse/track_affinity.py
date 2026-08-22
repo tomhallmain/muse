@@ -12,11 +12,19 @@ composers are close to each other, which overlap cannot express. Both are
 optional and blended rather than substituted, so neither can override what the
 tags state as fact and either can be absent.
 
+The same score also runs in reverse. Measured against what has recently *played*
+rather than against what was asked for, it says what the listener has had enough
+of, and that pushes material back instead of pulling it forward. Attraction and
+repulsion are separate because only repulsion is safe to re-seed from what is
+playing: attraction would compound until the playlist narrowed to one composer,
+where repulsion decays as soon as the material stops.
+
 Everything is applied to a bounded window of upcoming tracks, never to the
 library, so nothing here needs precomputing or persisting.
 """
 
 import math
+import time
 from collections import Counter
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Set
@@ -54,18 +62,39 @@ DEFAULT_ATTRIBUTE_WEIGHTS: Dict[str, float] = {
 # A search field that is not one attribute but any of them.
 _ALL_FIELDS_KEY = "all"
 
-# How the listener likes upcoming tracks ordered. One preference for the whole
+# Whether upcoming tracks are ordered at all. One preference for the whole
 # application rather than per playlist: this is a matter of listening taste, not
-# a property of any particular playlist.
+# a property of any particular playlist. On or off, with no "prefer varied"
+# state -- inverting the intent reference would push away from what was searched
+# for, which is not what anyone asked for. Keeping things fresh is what
+# saturation below does, against what was heard.
 AFFINITY_OFF = "off"
-AFFINITY_SIMILAR = "similar"
-AFFINITY_VARIED = "varied"
-AFFINITY_PREFERENCES = (AFFINITY_OFF, AFFINITY_SIMILAR, AFFINITY_VARIED)
+AFFINITY_ON = "on"
+AFFINITY_PREFERENCES = (AFFINITY_OFF, AFFINITY_ON)
 
 # Active by default, so the ordering works without being configured first. An
 # unset or unrecognised value reads as this rather than as off, which also keeps
-# a config written before the setting existed on the working behaviour.
-DEFAULT_AFFINITY_PREFERENCE = AFFINITY_SIMILAR
+# a config written before the setting existed -- or holding one of the states
+# this replaced -- on the working behaviour.
+DEFAULT_AFFINITY_PREFERENCE = AFFINITY_ON
+
+# How hard fully-saturated material is pushed back, relative to the blended
+# attraction score it is subtracted from.
+SATURATION_WEIGHT = 0.5
+
+# Listening time at which a value counts as over-heard. Roughly one long track,
+# or a few ordinary ones, which is about when a listener would start to notice.
+SATURATION_SECONDS_THRESHOLD = 600
+
+# Saturation fades rather than latching: material heard an hour and a half ago
+# weighs half what it did.
+SATURATION_HALF_LIFE_SECONDS = 5400
+
+# Saturation reads the plain artist tag rather than the resolved main artist,
+# which is derived lazily and only for the shuffle that needs it. Recording every
+# track would force that work whatever the listener is playing; the containment
+# matching in _matches() still relates the two.
+_SATURATION_GETTERS: Dict[str, str] = dict(TRACK_VALUE_GETTERS, artist="artist")
 
 # How many upcoming tracks reordering may touch: roughly two to three hours of
 # listening, past which the order will have been re-evaluated anyway. A stand-in
@@ -113,15 +142,12 @@ def affinity_preference() -> str:
 
 
 def affinity_enabled() -> bool:
-    return affinity_preference() in (AFFINITY_SIMILAR, AFFINITY_VARIED)
+    return affinity_preference() == AFFINITY_ON
 
 
-def affinity_prefers_similar() -> bool:
-    return affinity_preference() == AFFINITY_SIMILAR
-
-
-def _track_value(track: Any, attribute: str) -> Optional[str]:
-    getter = TRACK_VALUE_GETTERS.get(attribute)
+def _track_value(track: Any, attribute: str,
+                 getters: Optional[Dict[str, str]] = None) -> Optional[str]:
+    getter = (getters or TRACK_VALUE_GETTERS).get(attribute)
     if getter is None:
         return None
     try:
@@ -207,6 +233,87 @@ class AffinityReference:
             for value in favorite_values:
                 reference.add(attribute, value)
         return reference
+
+
+def saturation_applies(descriptor: Any) -> bool:
+    """Whether recently-heard material should be pushed back for this playlist.
+
+    Only where the listener stated no preference: pressing play, or a playlist
+    sourced from directories. A search says what was wanted, and answering it
+    with less of that would be perverse. A track-based playlist is not reordered
+    at all.
+
+    No descriptor is the plain press-play case -- the attribute is only ever set
+    for a saved playlist -- and takes the same treatment as a directory one.
+    """
+    if descriptor is None:
+        return True
+    try:
+        return not (descriptor.is_track_based() or descriptor.is_search_based())
+    except Exception as e:
+        logger.warning(f"Could not read the playlist descriptor, leaving saturation off: {e}")
+        return False
+
+
+# attribute -> value -> [seconds heard, when last heard]. Process-wide: this is
+# what the listener has been hearing, not a property of any one playlist.
+_listening_log: Dict[str, Dict[str, List[float]]] = {}
+
+
+def clear_listening_log() -> None:
+    _listening_log.clear()
+
+
+def record_listening(track: Any, seconds: Optional[float] = None) -> None:
+    """Add a track's length to the running total for each of its attribute values.
+
+    Counted when the track starts rather than when it ends, so a skipped track
+    still counts in full. That errs towards freshness, which is the direction
+    this exists to serve.
+    """
+    try:
+        if seconds is None:
+            seconds = float(track.get_track_length() or 0.0)
+        if seconds <= 0:
+            return
+        now = time.time()
+        for attribute in _SATURATION_GETTERS:
+            value = _track_value(track, attribute, getters=_SATURATION_GETTERS)
+            if not value:
+                continue
+            entry = _listening_log.setdefault(attribute, {}).get(value)
+            if entry is None:
+                _listening_log[attribute][value] = [seconds, now]
+            else:
+                entry[0] = _decayed(entry[0], entry[1], now) + seconds
+                entry[1] = now
+    except Exception as e:
+        logger.warning(f"Could not record listening time: {e}")
+
+
+def _decayed(seconds: float, last_heard: float, now: float) -> float:
+    elapsed = max(0.0, now - last_heard)
+    if SATURATION_HALF_LIFE_SECONDS <= 0:
+        return seconds
+    return seconds * (0.5 ** (elapsed / SATURATION_HALF_LIFE_SECONDS))
+
+
+def saturation_reference() -> Optional[AffinityReference]:
+    """What the listener has had enough of, or None if nothing has crossed the line.
+
+    Only values past the threshold are included, which is what makes this a
+    threshold rather than a gradient: below it nothing is pushed anywhere, and a
+    mild repulsion is never applied to everything at once.
+    """
+    if not _listening_log:
+        return None
+    now = time.time()
+    reference = AffinityReference()
+    for attribute, values in _listening_log.items():
+        for value, (seconds, last_heard) in list(values.items()):
+            if _decayed(seconds, last_heard, now) >= SATURATION_SECONDS_THRESHOLD:
+                reference.add(attribute, value)
+    return None if reference.is_empty() else reference
 
 
 def affinity(track: Any, reference: Optional[AffinityReference],

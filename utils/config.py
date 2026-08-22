@@ -124,10 +124,11 @@ class Config:
         # Propagate the best artwork on an album to its other tracks. This writes to
         # the files in the library, so it is worth being deliberate about.
         self.auto_fix_album_artwork = False
-        # How upcoming tracks are ordered relative to what is already playing or
-        # was searched for: "similar" pulls related material earlier, "varied"
-        # pushes it later, "off" leaves the existing order alone.
-        self.affinity_preference = "similar"
+        # Whether upcoming tracks are reordered to sit better with what was
+        # searched for or is already playing. "off" leaves the existing order
+        # alone. There is no "prefer varied" state: keeping things fresh is done
+        # by pushing back what has been over-heard, not by inverting this.
+        self.affinity_preference = "on"
 
         # Extension tunables. Defaults match the values these settings replaced,
         # so exposing them changed no behaviour. Bounded ranges are one [min, max]

@@ -8,7 +8,11 @@ about the reordering alone.
 import pytest
 
 from muse import Playlist
-from muse.track_affinity import DEFAULT_AFFINITY_WINDOW, AffinityReference
+from muse.track_affinity import (
+    DEFAULT_AFFINITY_WINDOW,
+    SATURATION_WEIGHT,
+    AffinityReference,
+)
 from tests.conftest import MockMediaTrack
 from utils.globals import PlaylistSortType
 
@@ -28,11 +32,12 @@ def _track(index, composer):
 
 
 def _playlist(mock_data_callbacks, tracks, reference=None,
-              sort_type=PlaylistSortType.COMPOSER_SHUFFLE):
+              sort_type=PlaylistSortType.COMPOSER_SHUFFLE, saturation_enabled=False):
     # Built empty and filled afterwards: an empty playlist skips sort(), so the
     # group layout each case needs survives exactly as written.
     playlist = Playlist([], _type=sort_type, data_callbacks=mock_data_callbacks,
-                        affinity_reference=reference)
+                        affinity_reference=reference,
+                        saturation_enabled=saturation_enabled)
     playlist.sorted_tracks = list(tracks)
     return playlist
 
@@ -58,15 +63,15 @@ def _reference(composer):
 
 @pytest.fixture
 def affinity_on(monkeypatch):
-    """Enable affinity in "similar" mode without touching the user's config."""
+    """Turn ordering on without touching the user's config."""
     monkeypatch.setattr("muse.playlist.affinity_enabled", lambda: True)
-    monkeypatch.setattr("muse.playlist.affinity_prefers_similar", lambda: True)
 
 
-@pytest.fixture
-def affinity_varied(monkeypatch):
-    monkeypatch.setattr("muse.playlist.affinity_enabled", lambda: True)
-    monkeypatch.setattr("muse.playlist.affinity_prefers_similar", lambda: False)
+@pytest.fixture(autouse=True)
+def no_saturation(monkeypatch):
+    """Most cases are about attraction. Saturation is process-wide state, so it
+    is silenced here and turned on explicitly where it is the subject."""
+    monkeypatch.setattr("muse.playlist.saturation_reference", lambda: None)
 
 
 @pytest.mark.unit
@@ -130,13 +135,6 @@ class TestApplyAffinityOrdering:
         assert playlist.apply_affinity_ordering(_composer_of) is True
         assert [t.composer for t in playlist.sorted_tracks] == [
             "Composer2", "Composer2", "Composer0", "Composer0", "Composer1", "Composer1"]
-
-    def test_varied_pushes_the_matching_group_back(self, mock_data_callbacks, affinity_varied):
-        playlist = _playlist(mock_data_callbacks, _grouped([2, 2, 2]), _reference("Composer0"))
-
-        assert playlist.apply_affinity_ordering(_composer_of) is True
-        assert [t.composer for t in playlist.sorted_tracks] == [
-            "Composer1", "Composer1", "Composer2", "Composer2", "Composer0", "Composer0"]
 
     def test_groups_move_as_whole_units(self, mock_data_callbacks, affinity_on):
         """The grouping sort made each run contiguous; scoring must not break it."""
@@ -357,6 +355,73 @@ class TestRefreshLlmGroupScores:
         playlist = _playlist(mock_data_callbacks, _grouped([2] * 3), _reference("Composer0"))
 
         assert playlist.refresh_llm_group_scores() is False
+
+
+@pytest.mark.unit
+class TestSaturationOrdering:
+    """The long-track case: too much of one thing should push the next lot back."""
+
+    def _saturated(self, monkeypatch, composer):
+        reference = AffinityReference()
+        reference.add("composer", composer)
+        monkeypatch.setattr("muse.playlist.saturation_reference", lambda: reference)
+
+    def test_over_heard_material_is_pushed_back(self, mock_data_callbacks, affinity_on, monkeypatch):
+        self._saturated(monkeypatch, "Composer0")
+        playlist = _playlist(mock_data_callbacks, _grouped([2] * 3), saturation_enabled=True)
+
+        assert playlist.apply_affinity_ordering(_composer_of) is True
+        assert [t.composer for t in playlist.sorted_tracks[-2:]] == ["Composer0"] * 2
+
+    def test_it_orders_with_no_intent_reference_at_all(self, mock_data_callbacks, affinity_on, monkeypatch):
+        """Pressing play with no favorites gives nothing to be drawn towards, and
+        that listener is exactly who this is for."""
+        self._saturated(monkeypatch, "Composer0")
+        playlist = _playlist(mock_data_callbacks, _grouped([2] * 3), saturation_enabled=True)
+
+        assert playlist.affinity_reference is None
+        assert playlist.apply_affinity_ordering(_composer_of) is True
+
+    def test_a_search_playlist_is_not_repelled(self, mock_data_callbacks, affinity_on, monkeypatch):
+        """Answering "more Mozart" with less Mozart would be perverse."""
+        self._saturated(monkeypatch, "Composer0")
+        playlist = _playlist(mock_data_callbacks, _grouped([2] * 3), _reference("Composer0"),
+                             saturation_enabled=False)
+
+        playlist.apply_affinity_ordering(_composer_of)
+
+        assert [t.composer for t in playlist.sorted_tracks[:2]] == ["Composer0"] * 2
+
+    def test_attraction_and_repulsion_offset_each_other(self, mock_data_callbacks, affinity_on, monkeypatch):
+        """Sought *and* over-heard nets out below a group that is neither."""
+        self._saturated(monkeypatch, "Composer0")
+        playlist = _playlist(mock_data_callbacks, _grouped([2] * 2), _reference("Composer0"),
+                             saturation_enabled=True)
+
+        playlist.apply_affinity_ordering(_composer_of)
+
+        expected = 1.0 - SATURATION_WEIGHT
+        assert expected < 1.0
+        assert [t.composer for t in playlist.sorted_tracks[:2]] == (
+            ["Composer0"] * 2 if expected > 0.0 else ["Composer1"] * 2)
+
+    def test_nothing_over_heard_leaves_the_order_alone(self, mock_data_callbacks, affinity_on, monkeypatch):
+        monkeypatch.setattr("muse.playlist.saturation_reference", lambda: None)
+        playlist = _playlist(mock_data_callbacks, _grouped([2] * 3), saturation_enabled=True)
+        before = list(playlist.sorted_tracks)
+
+        assert playlist.apply_affinity_ordering(_composer_of) is False
+        assert playlist.sorted_tracks == before
+
+    def test_groups_still_move_as_whole_units(self, mock_data_callbacks, affinity_on, monkeypatch):
+        self._saturated(monkeypatch, "Composer1")
+        playlist = _playlist(mock_data_callbacks, _grouped([3, 1, 4]), saturation_enabled=True)
+
+        playlist.apply_affinity_ordering(_composer_of)
+
+        composers = [t.composer for t in playlist.sorted_tracks]
+        runs = [c for i, c in enumerate(composers) if i == 0 or composers[i - 1] != c]
+        assert len(runs) == len(set(runs))
 
 
 @pytest.mark.unit

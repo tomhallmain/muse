@@ -7,12 +7,14 @@ from muse.sort_config import SortConfig
 from muse.track_affinity import (
     DEFAULT_AFFINITY_WINDOW,
     AffinityReference,
+    SATURATION_WEIGHT,
     affinity,
     affinity_enabled,
-    affinity_prefers_similar,
     blend_affinity,
     embedding_group_scores,
     llm_group_scores,
+    record_listening,
+    saturation_reference,
 )
 from utils.app_info_cache import app_info_cache
 from utils.config import config
@@ -188,6 +190,10 @@ class Playlist:
         # resolved for a shuffle the listener is not running.
         if sort_type == PlaylistSortType.MAIN_ARTIST_SHUFFLE:
             Playlist.update_list(Playlist.recently_played_main_artists, track.get_main_artist(), sort_type=PlaylistSortType.MAIN_ARTIST_SHUFFLE)
+        # Separate from the lists above, which record only that something was
+        # heard. Saturation needs how long, so a single long track counts for as
+        # much as the several short ones it displaced.
+        record_listening(track)
 
     def __init__(self, tracks: List[str] = [], _type: PlaylistSortType = PlaylistSortType.SEQUENCE,
                  data_callbacks: Optional['LibraryDataCallbacks'] = None, start_track: Optional[MediaTrack] = None,
@@ -195,7 +201,8 @@ class Playlist:
                  sort_config: Optional[SortConfig] = None,
                  deterministic_group_order: bool = False,
                  direct_tracks: Optional[List[MediaTrack]] = None,
-                 affinity_reference: Optional['AffinityReference'] = None) -> None:
+                 affinity_reference: Optional['AffinityReference'] = None,
+                 saturation_enabled: bool = False) -> None:
         exclusions = app_info_cache.get(TRACK_EXCLUSIONS_KEY, _DEFAULT_TRACK_EXCLUSIONS)
         if exclusions:
             excluded = [t for t in tracks if any(_matches_exclusion(t, e) for e in exclusions)]
@@ -228,6 +235,10 @@ class Playlist:
         self.llm_affinity_scores: Dict[str, float] = {}
         # Same shape, from embedding similarity rather than the chat model.
         self.embedding_affinity_scores: Dict[str, float] = {}
+        # Whether over-heard material is pushed back. Off for a search, whose
+        # results are what the listener asked for; on where nothing was asked
+        # for beyond a sort type.
+        self.saturation_enabled: bool = saturation_enabled
         assert self.data_callbacks is not None and \
                 self.data_callbacks.get_track is not None and \
                 self.data_callbacks.get_all_tracks is not None
@@ -589,7 +600,13 @@ class Playlist:
         fully succeeded, so there is no partial state to unwind.
         """
         reference = self.affinity_reference
-        if group_of is None or reference is None or reference.is_empty() or not affinity_enabled():
+        if group_of is None or not affinity_enabled():
+            return False
+        saturation = saturation_reference() if self.saturation_enabled else None
+        # Either side can order on its own. Pressing play with no favorites gives
+        # nothing to be drawn towards, and that is precisely the listener who
+        # most needs over-heard material pushed back.
+        if (reference is None or reference.is_empty()) and saturation is None:
             return False
         start = max(0, start)
         if len(self.sorted_tracks) - start < 2:
@@ -607,17 +624,21 @@ class Playlist:
             if len(runs) < 2:
                 return False
 
-            prefer_similar = affinity_prefers_similar()
             scored = []
             for position, (value, tracks) in enumerate(runs):
                 best = max(affinity(t, reference) for t in tracks)
                 best = blend_affinity(best,
                                       self.llm_affinity_scores.get(value),
                                       self.embedding_affinity_scores.get(value))
+                if saturation is not None:
+                    # Any track in the group resembling over-heard material is
+                    # enough: the group moves as a unit either way.
+                    best -= SATURATION_WEIGHT * max(
+                        affinity(t, saturation) for t in tracks)
                 scored.append((best, position, tracks))
             # Original position breaks ties, so groups that match equally well keep
             # the order the grouping sort already gave them.
-            scored.sort(key=lambda s: (-s[0] if prefer_similar else s[0], s[1]))
+            scored.sort(key=lambda s: (-s[0], s[1]))
 
             reordered = []
             for _score, _position, tracks in scored:
