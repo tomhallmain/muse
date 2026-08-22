@@ -348,6 +348,11 @@ class PlaybackConfigMaster:
         """Master playlists run until all configs are exhausted."""
         return -1
 
+    @property
+    def data_callbacks(self) -> Optional[Any]:
+        cfg = self.current_playback_config
+        return cfg.data_callbacks if cfg else None
+
     def get_list(self) -> Optional[Playlist]:
         cfg = self.current_playback_config
         return cfg.get_list() if cfg else None
