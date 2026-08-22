@@ -32,6 +32,16 @@ _ = I18N._
 # Get logger for this module
 logger = get_logger(__name__)
 
+# Tunables for _favorites_prompt_section's "leaning" summary. An attribute
+# survives only if its total sits within this share of the listener's
+# most-favorited attribute; a surviving value needs at least this many
+# favorites to count as recurring rather than a one-off; at most this many
+# values are named per attribute.
+_LEANING_ATTRIBUTE_MIN_SHARE = 0.34
+_LEANING_MIN_VALUE_COUNT = 2
+_LEANING_MAX_VALUES = 2
+
+
 class Muse:
     SYSTEM_LANGUAGE_NAME_IN_ENGLISH = Utils.get_english_language_name(Utils.get_default_user_language())
     enable_preparation = config.muse_config[Globals.ConfigKeys.ENABLE_PREPARATION]
@@ -699,7 +709,11 @@ class Muse:
 
     @staticmethod
     def _favorites_prompt_section() -> str:
-        """What the listener favorites, as a prompt section. Empty if nothing is stored.
+        """What the listener leans toward, as a prompt section. Empty if nothing stands out.
+
+        A characterisation, not an inventory: only attributes the listener
+        actually favorites along survive, and only values that recur within
+        them, capped at two -- naming every favorite back would be dull.
 
         Appended in code rather than added as a placeholder so that every
         language's prompt file gets it without each one having to be edited.
@@ -707,14 +721,27 @@ class Muse:
         profile = current_favorites_profile()
         if not profile:
             return ""
+        max_total = max(attribute_favorites.total for attribute_favorites in profile.values())
+        if max_total <= 0:
+            return ""
+
         lines = []
-        for attribute, values in sorted(profile.items()):
+        for attribute, attribute_favorites in sorted(profile.items()):
+            if attribute_favorites.total < max_total * _LEANING_ATTRIBUTE_MIN_SHARE:
+                continue
+            leaning_values = [value for value, count in attribute_favorites.top
+                              if count >= _LEANING_MIN_VALUE_COUNT][:_LEANING_MAX_VALUES]
+            if not leaning_values:
+                continue
             try:
                 label = TrackAttribute(attribute).get_translation()
             except ValueError:
                 label = attribute
-            lines.append(f" - {label}: {', '.join(values)}")
-        return "\n\n" + _("What the listener has marked as a favorite:") + "\n" + "\n".join(lines)
+            lines.append(f" - {label}: {', '.join(leaning_values)}")
+
+        if not lines:
+            return ""
+        return "\n\n" + _("The listener tends to lean toward:") + "\n" + "\n".join(lines)
 
     def talk_about_random_wiki_article(self, spot_profile):
         article = None

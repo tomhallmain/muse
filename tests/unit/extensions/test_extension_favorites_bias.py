@@ -3,6 +3,7 @@
 import pytest
 
 from extensions.extension_manager import ExtensionManager
+from muse.track_affinity import AttributeFavorites
 from utils.globals import TrackAttribute
 
 
@@ -24,15 +25,20 @@ def _profile(monkeypatch, profile):
     monkeypatch.setattr("extensions.extension_manager.current_favorites_profile", lambda: profile)
 
 
+def _favorites(*values):
+    """AttributeFavorites for a set of equally-favorited values."""
+    return AttributeFavorites(top=[(v, 1) for v in values], total=len(values))
+
+
 @pytest.mark.unit
 class TestFavoredValue:
     def test_returns_a_favorite_for_the_attribute(self, monkeypatch, always_bias):
-        _profile(monkeypatch, {"composer": ["Mozart"]})
+        _profile(monkeypatch, {"composer": _favorites("Mozart")})
 
         assert _manager()._favored_value(TrackAttribute.COMPOSER) == "Mozart"
 
     def test_ignores_favorites_for_other_attributes(self, monkeypatch, always_bias):
-        _profile(monkeypatch, {"composer": ["Mozart"]})
+        _profile(monkeypatch, {"composer": _favorites("Mozart")})
 
         assert _manager()._favored_value(TrackAttribute.GENRE) is None
 
@@ -44,7 +50,7 @@ class TestFavoredValue:
     def test_the_bias_does_not_always_apply(self, monkeypatch, never_bias):
         """Always drawing from a handful of favored values would keep returning
         the same few and stop turning up anything new."""
-        _profile(monkeypatch, {"composer": ["Mozart"]})
+        _profile(monkeypatch, {"composer": _favorites("Mozart")})
 
         assert _manager()._favored_value(TrackAttribute.COMPOSER) is None
 

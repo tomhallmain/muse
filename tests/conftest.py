@@ -120,6 +120,7 @@ class MockArgs:
         self.directories = None
         self.overwrite = False
         self.track = None
+        self.search_query = None
         self.placeholder = False
         self.use_system_language_for_all_topics = False
 

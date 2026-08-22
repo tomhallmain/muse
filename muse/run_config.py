@@ -17,6 +17,7 @@ class RunConfig:
         self.long_track_splitting_time_cutoff_minutes = 20
         self.placeholder = placeholder
         self.track = None
+        self.search_query = None
         self.use_system_language_for_all_topics = False
         self.check_entire_playlist = False
 

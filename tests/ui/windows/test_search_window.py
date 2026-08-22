@@ -125,6 +125,63 @@ class TestSearchWindow:
             assert play_btn.toolTip() == ""
         win.close()
 
+    def test_build_query_dict_omits_empty_fields(
+        self, qapp, qt_master, mock_app_actions, fixture_library_data
+    ):
+        from ui_qt.search_window import SearchWindow
+
+        win = SearchWindow(qt_master, mock_app_actions, fixture_library_data)
+        win.composer_entry.setText("  Mozart  ")
+        win.genre_entry.setText("")
+
+        assert win._build_query_dict() == {"composer": "Mozart"}
+        win.close()
+
+    def test_smart_sort_unchecked_plays_with_no_search_query(
+        self, qapp, qt_master, mock_app_actions, fixture_library_data
+    ):
+        """Default behaviour: the search-window play falls back to the whole
+        library with no query carried along, exactly as before smart sort."""
+        from ui_qt.search_window import SearchWindow
+
+        calls = []
+        mock_app_actions._actions["start_play_callback"] = lambda **kwargs: calls.append(kwargs)
+
+        win = SearchWindow(qt_master, mock_app_actions, fixture_library_data)
+        process_events_for(0.1)
+        win.composer_entry.setText("beethoven")
+        win.library_data_search = LibraryDataSearch(composer="beethoven", max_results=5)
+        run_search_sync(win)
+        track = win.library_data_search.get_results()[0]
+
+        assert not win.smart_sort_check.isChecked()
+        win.run_play_callback(track)
+
+        assert len(calls) == 1
+        assert calls[0]["search_query"] is None
+        win.close()
+
+    def test_smart_sort_checked_carries_the_query_through(
+        self, qapp, qt_master, mock_app_actions, fixture_library_data
+    ):
+        from ui_qt.search_window import SearchWindow
+
+        calls = []
+        mock_app_actions._actions["start_play_callback"] = lambda **kwargs: calls.append(kwargs)
+
+        win = SearchWindow(qt_master, mock_app_actions, fixture_library_data)
+        process_events_for(0.1)
+        win.composer_entry.setText("beethoven")
+        win.smart_sort_check.setChecked(True)
+        win.library_data_search = LibraryDataSearch(composer="beethoven", max_results=5)
+        run_search_sync(win)
+        track = win.library_data_search.get_results()[0]
+
+        win.run_play_callback(track)
+
+        assert calls[0]["search_query"] == {"composer": "beethoven"}
+        win.close()
+
 
 @pytest.mark.ui
 class TestSearchResultDetailsButton:

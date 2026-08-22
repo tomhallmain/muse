@@ -108,6 +108,30 @@ class TestPlaybackConfig:
         assert PlaybackConfig.get_playing_config() is None
         assert PlaybackConfig.get_playing_track() is None
 
+    def test_search_query_defaults_to_none(self, mock_data_callbacks):
+        assert PlaybackConfig(data_callbacks=mock_data_callbacks).search_query is None
+
+    def test_search_query_is_read_from_args(self, mock_data_callbacks, mock_args):
+        """The search-window opt-in path has no PlaylistDescriptor, so this is
+        the only way its query reaches PlaybackConfig."""
+        mock_args.search_query = {"composer": "Mozart"}
+
+        config = PlaybackConfig(args=mock_args, data_callbacks=mock_data_callbacks)
+
+        assert config.search_query == {"composer": "Mozart"}
+
+    def test_search_query_reaches_the_playlist_s_affinity_reference(
+        self, mock_data_callbacks, mock_args, monkeypatch
+    ):
+        monkeypatch.setattr("muse.track_affinity.affinity_enabled", lambda: True)
+        mock_args.search_query = {"composer": "Mozart"}
+
+        config = PlaybackConfig(args=mock_args, data_callbacks=mock_data_callbacks, explicit_tracks=[])
+        reference = config.get_list().affinity_reference
+
+        assert reference is not None
+        assert reference.values["composer"] == {"mozart"}
+
 @pytest.mark.unit
 class TestPlaylist:
     def test_playlist_initialization(self, mock_data_callbacks):

@@ -315,7 +315,8 @@ class ExtensionManager:
         # returning to the same few and stop turning up anything new.
         if random.random() >= ExtensionManager.FAVORITE_BIAS_CHANCE:
             return None
-        values = current_favorites_profile().get(attr.value, [])
+        attribute_favorites = current_favorites_profile().get(attr.value)
+        values = attribute_favorites.names() if attribute_favorites else []
         return random.choice(values) if values else None
 
     def _extend_by_random_attr(self, voice: Optional[Any] = None) -> None:

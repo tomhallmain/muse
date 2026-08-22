@@ -27,7 +27,7 @@ import math
 import time
 from collections import Counter
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 from utils.globals import TrackAttribute
 from utils.logging_setup import get_logger
@@ -232,10 +232,10 @@ class AffinityReference:
         return reference
 
     @classmethod
-    def from_favorites_profile(cls, profile: Dict[str, List[str]]) -> 'AffinityReference':
+    def from_favorites_profile(cls, profile: Dict[str, 'AttributeFavorites']) -> 'AffinityReference':
         reference = cls()
-        for attribute, favorite_values in profile.items():
-            for value in favorite_values:
+        for attribute, attribute_favorites in profile.items():
+            for value in attribute_favorites.names():
                 reference.add(attribute, value)
         return reference
 
@@ -588,7 +588,8 @@ def embedding_group_scores(reference: Optional[AffinityReference], group_values:
     return scores or None
 
 
-def reference_for(descriptor: Any = None, start_track: Any = None) -> Optional[AffinityReference]:
+def reference_for(descriptor: Any = None, start_track: Any = None,
+                   search_query: Optional[Dict[str, Any]] = None) -> Optional[AffinityReference]:
     """The reference a playlist should be ordered against, or None for no reordering.
 
     Sources are tried in order of how specifically they state an intent. A search
@@ -596,6 +597,8 @@ def reference_for(descriptor: Any = None, start_track: Any = None) -> Optional[A
     standing preference and only apply when neither is present, since merging
     them into a search would let a favorite outscore what was actually searched
     for.
+
+    ``search_query`` covers callers with no descriptor to read one off of.
 
     Never raises: any failure here means the playlist keeps the order it already
     had, which is the behaviour from before this existed.
@@ -608,9 +611,10 @@ def reference_for(descriptor: Any = None, start_track: Any = None) -> Optional[A
             return None
 
         reference = AffinityReference()
-        search_query = getattr(descriptor, "search_query", None) if descriptor is not None else None
-        if search_query:
-            reference = reference.merge(AffinityReference.from_search_query(search_query))
+        descriptor_query = getattr(descriptor, "search_query", None) if descriptor is not None else None
+        for query in (descriptor_query, search_query):
+            if query:
+                reference = reference.merge(AffinityReference.from_search_query(query))
         if start_track is not None:
             reference = reference.merge(AffinityReference.from_track(start_track))
         if reference.is_empty():
@@ -621,7 +625,22 @@ def reference_for(descriptor: Any = None, start_track: Any = None) -> Optional[A
         return None
 
 
-def current_favorites_profile(top_n: int = 5) -> Dict[str, List[str]]:
+@dataclass
+class AttributeFavorites:
+    """One attribute's favorite values, commonest first, with enough to tell a
+    real leaning from a favorite spread thinly across many different values --
+    the top values alone cannot distinguish those, only their share of the
+    attribute's total can.
+    """
+
+    top: List[Tuple[str, int]] = field(default_factory=list)
+    total: int = 0
+
+    def names(self) -> List[str]:
+        return [value for value, _count in self.top]
+
+
+def current_favorites_profile(top_n: int = 5) -> Dict[str, AttributeFavorites]:
     """The stored favorites as a profile. Empty if they are unreadable."""
     try:
         from utils.app_info_cache import app_info_cache
@@ -631,7 +650,7 @@ def current_favorites_profile(top_n: int = 5) -> Dict[str, List[str]]:
         return {}
 
 
-def favorites_profile(raw_favorites: Optional[List[Any]], top_n: int = 5) -> Dict[str, List[str]]:
+def favorites_profile(raw_favorites: Optional[List[Any]], top_n: int = 5) -> Dict[str, AttributeFavorites]:
     """The listener's most-favorited values per attribute, commonest first.
 
     Small enough to hand to a prompt verbatim and usable directly as a reference,
@@ -661,6 +680,6 @@ def favorites_profile(raw_favorites: Optional[List[Any]], top_n: int = 5) -> Dic
             counters.setdefault(name, Counter())[value] += 1
 
     return {
-        name: [value for value, _count in counter.most_common(top_n)]
+        name: AttributeFavorites(top=counter.most_common(top_n), total=sum(counter.values()))
         for name, counter in counters.items()
     }

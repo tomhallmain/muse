@@ -15,6 +15,7 @@ from muse.track_affinity import (
     DEFAULT_AFFINITY_PREFERENCE,
     DEFAULT_ATTRIBUTE_WEIGHTS,
     AffinityReference,
+    AttributeFavorites,
     affinity,
     affinity_preference,
     favorites_profile,
@@ -171,13 +172,28 @@ class TestFavoritesProfile:
             _fav("composer", "Mozart"),
         ])
 
-        assert profile["composer"] == ["Mozart", "Haydn"]
+        assert profile["composer"].names() == ["Mozart", "Haydn"]
+
+    def test_top_retains_each_value_s_count(self):
+        profile = favorites_profile([
+            _fav("composer", "Mozart"),
+            _fav("composer", "Haydn"),
+            _fav("composer", "Mozart"),
+        ])
+
+        assert profile["composer"].top == [("Mozart", 2), ("Haydn", 1)]
+
+    def test_total_counts_every_value_not_just_the_top_n(self):
+        raw = [_fav("composer", name) for name in ("A", "B", "C", "D")]
+        profile = favorites_profile(raw, top_n=2)
+
+        assert profile["composer"].total == 4
 
     def test_caps_at_top_n(self):
         raw = [_fav("composer", name) for name in ("A", "B", "C", "D")]
         profile = favorites_profile(raw, top_n=2)
 
-        assert len(profile["composer"]) == 2
+        assert len(profile["composer"].top) == 2
 
     def test_skips_attributes_that_are_not_similarity_signals(self):
         """TITLE identifies one track rather than describing a kind of music."""
@@ -193,7 +209,8 @@ class TestFavoritesProfile:
             _fav("composer", "Mozart"),
         ])
 
-        assert profile == {"composer": ["Mozart"]}
+        assert profile.keys() == {"composer"}
+        assert profile["composer"].names() == ["Mozart"]
 
     def test_no_favorites_gives_an_empty_profile(self):
         assert favorites_profile(None) == {}
@@ -281,10 +298,27 @@ class TestReferenceFor:
 
         assert reference.values["composer"] == {"haydn", "mozart"}
 
+    def test_explicit_search_query_applies_with_no_descriptor(self, config):
+        """The search-window 'play with all music' path has no descriptor at
+        all, so the query is passed in directly rather than read off one."""
+        config.affinity_preference = AFFINITY_ON
+
+        reference = reference_for(None, search_query={"composer": "Mozart"})
+
+        assert reference.values["composer"] == {"mozart"}
+
+    def test_explicit_search_query_combines_with_the_descriptor_s_own(self, config):
+        config.affinity_preference = AFFINITY_ON
+
+        reference = reference_for(_descriptor(search_query={"composer": "Haydn"}),
+                                  search_query={"composer": "Mozart"})
+
+        assert reference.values["composer"] == {"haydn", "mozart"}
+
     def test_favorites_apply_only_when_nothing_more_specific_exists(self, config, monkeypatch):
         config.affinity_preference = AFFINITY_ON
         monkeypatch.setattr("muse.track_affinity.current_favorites_profile",
-                            lambda: {"composer": ["Bach"]})
+                            lambda: {"composer": AttributeFavorites(top=[("Bach", 1)], total=1)})
 
         assert reference_for(_descriptor()).values["composer"] == {"bach"}
 
@@ -292,7 +326,7 @@ class TestReferenceFor:
         """A favorite outscoring what was actually searched for would be wrong."""
         config.affinity_preference = AFFINITY_ON
         monkeypatch.setattr("muse.track_affinity.current_favorites_profile",
-                            lambda: {"composer": ["Bach"]})
+                            lambda: {"composer": AttributeFavorites(top=[("Bach", 1)], total=1)})
 
         reference = reference_for(_descriptor(search_query={"composer": "Mozart"}))
 

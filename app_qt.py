@@ -843,7 +843,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
             self._media_muted = True
         self.media_frame.set_volume_state(self.get_media_volume(), self.is_media_muted(), self._effective_volume)
 
-    def get_args(self, track=None):
+    def get_args(self, track=None, search_query=None):
         self.store_info_cache()
         self.set_delay()
         args = RunConfig()
@@ -859,6 +859,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         args.muse = self.muse_check.isChecked()
         args.extend = self.extend_check.isChecked()
         args.track = track
+        args.search_query = search_query
         args.enable_long_track_splitting = self.track_splitting_check.isChecked()
         args.use_system_language_for_all_topics = self.use_system_language_check.isChecked()
         # check_entire_playlist is now managed via SortConfig override on PlaybackStateManager
@@ -927,12 +928,13 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         self._refresh_transport_controls_ui()
         self._refresh_session_buttons()
 
-    def run(self, event=None, track=None, override_scheduled=False):
+    def run(self, event=None, track=None, override_scheduled=False, search_query=None):
         """Debounced entry point: schedules a single run after a short quiet period."""
-        self._run_debouncer.schedule(event=event, track=track, override_scheduled=override_scheduled)
+        self._run_debouncer.schedule(event=event, track=track, override_scheduled=override_scheduled,
+                                     search_query=search_query)
 
-    def _run_impl(self, event=None, track=None, override_scheduled=False):
-        args, args_copy = self.get_args(track=track)
+    def _run_impl(self, event=None, track=None, override_scheduled=False, search_query=None):
+        args, args_copy = self.get_args(track=track, search_query=search_query)
         self.update_playback_info(args.directories)
         try:
             from utils.audio_device_manager import AudioDeviceManager
@@ -975,7 +977,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
             Utils.start_thread(run_async, use_asyncio=False, args=[args, run_token])
 
     def start_playback(self, track=None, playlist_sort_type=None, overwrite=None,
-                        use_all_music=False):
+                        use_all_music=False, search_query=None):
         if use_all_music:
             self.set_playback_master_strategy(PlaybackMasterStrategy.ALL_MUSIC)
         if playlist_sort_type is not None:
@@ -983,7 +985,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         if overwrite is not None:
             self.overwrite_check.setChecked(overwrite)
         override_scheduled = self.current_run is not None and not self.current_run.is_placeholder()
-        self.run(track=track, override_scheduled=override_scheduled)
+        self.run(track=track, override_scheduled=override_scheduled, search_query=search_query)
 
     def _on_run_finished(self, next_args, run_token):
         """Slot: run finished (called on main thread). Hide cancel, destroy progress bar, optionally start next."""

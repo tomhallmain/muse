@@ -121,6 +121,9 @@ class PlaybackConfig:
         self.start_track: Optional[str] = args.track if args else None
         self.playing: bool = False
         self._explicit_tracks: Optional[List[str]] = explicit_tracks
+        # Set only when the listener opts in to smart sort from the search
+        # window; a saved search playlist carries its query on the descriptor.
+        self.search_query: Optional[Dict[str, Any]] = getattr(args, "search_query", None) if args else None
         self.loop: bool = False
         self.sort_config: SortConfig = SortConfig()
         self.playlist_descriptor: Optional[PlaylistDescriptor] = None
@@ -160,7 +163,8 @@ class PlaybackConfig:
                              deterministic_group_order=self.playlist_descriptor is not None,
                              affinity_reference=reference_for(
                                  descriptor=self.playlist_descriptor,
-                                 start_track=self.start_track),
+                                 start_track=self.start_track,
+                                 search_query=self.search_query),
                              saturation_enabled=saturation_applies(self.playlist_descriptor))
         return self.list
 

@@ -300,6 +300,14 @@ class SearchWindow(SmartWindow):
         inner_layout.addWidget(self.playlist_sort_combo, row, 2)
         row += 1
 
+        self.smart_sort_check = QCheckBox(_("Smart Sort with Search Results"), inner)
+        self.smart_sort_check.setChecked(False)
+        self.smart_sort_check.setToolTip(
+            _("After the chosen track, favour playing other tracks that match this search.")
+        )
+        inner_layout.addWidget(self.smart_sort_check, row, 0)
+        row += 1
+
         self._save_as_playlist_btn = QPushButton(_("Save as Playlist"), inner)
         self._save_as_playlist_btn.clicked.connect(self._save_search_as_playlist)
         inner_layout.addWidget(self._save_as_playlist_btn, row, 0)
@@ -798,12 +806,28 @@ class SearchWindow(SmartWindow):
             library_data_search, remove_searches_with_no_selected_filepath=True
         )
         playlist_sort_type = self.get_playlist_sort_type()
+        search_query = self._build_query_dict() if self.smart_sort_check.isChecked() else None
         self.app_actions.start_play_callback(
             track=track,
             playlist_sort_type=playlist_sort_type,
             overwrite=self.overwrite_cache_check.isChecked(),
             use_all_music=True,
+            search_query=search_query,
         )
+
+    def _build_query_dict(self):
+        """The current search field values as a query dict, empty fields omitted."""
+        query = {}
+        for field, entry in [
+            ("all", self.all_entry), ("title", self.title_entry),
+            ("album", self.album_entry), ("artist", self.artist_entry),
+            ("composer", self.composer_entry), ("genre", self.genre_entry),
+            ("instrument", self.instrument_entry), ("form", self.form_entry),
+        ]:
+            val = entry.text().strip()
+            if val:
+                query[field] = val
+        return query
 
     def _update_playlist_sort_dropdown(self):
         """Update the playlist sort dropdown to reflect the largest scope in the search fields."""
@@ -831,16 +855,7 @@ class SearchWindow(SmartWindow):
         from muse.playlist_descriptor import PlaylistDescriptor, PlaylistDescriptorStore
         from utils.app_info_cache import app_info_cache
 
-        query = {}
-        for field, entry in [
-            ("all", self.all_entry), ("title", self.title_entry),
-            ("album", self.album_entry), ("artist", self.artist_entry),
-            ("composer", self.composer_entry), ("genre", self.genre_entry),
-            ("instrument", self.instrument_entry), ("form", self.form_entry),
-        ]:
-            val = entry.text().strip()
-            if val:
-                query[field] = val
+        query = self._build_query_dict()
 
         if not query:
             self.app_actions.alert(

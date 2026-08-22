@@ -57,6 +57,35 @@ class TestAppShell:
         process_events_for(0.5)
         qapp.processEvents()
 
+    def test_start_playback_search_query_reaches_run_config(
+        self, qapp, fixture_library_data, audio_library_media_tracks, monkeypatch,
+    ):
+        """search_query has to survive four hops (start_playback -> run ->
+        the debouncer -> _run_impl -> get_args) before it lands on the
+        RunConfig that PlaybackConfig actually reads."""
+        from app_qt import MuseAppQt
+        from utils.utils import Utils
+
+        captured = {}
+        monkeypatch.setattr(
+            Utils, "start_thread",
+            staticmethod(lambda fn, use_asyncio=False, args=None: captured.setdefault("args", args[0])),
+        )
+
+        window = MuseAppQt()
+        window.show()
+        process_events_for(0.2)
+
+        window.start_playback(track=audio_library_media_tracks[0],
+                              search_query={"composer": "Mozart"})
+        process_events_for(0.6)
+
+        assert captured["args"].search_query == {"composer": "Mozart"}
+
+        window.close()
+        process_events_for(0.5)
+        qapp.processEvents()
+
     def test_playlist_has_all_library_tracks_after_play(
         self,
         qapp,
