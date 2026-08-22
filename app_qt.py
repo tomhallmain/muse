@@ -1419,6 +1419,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         """Set up local keyboard shortcuts for the main window."""
         self._bind("Space", self._toggle_play_pause)
         self._bind("Ctrl+D", self.toggle_debug, guarded=False)
+        self._bind("F11", self.toggle_fullscreen)
         self._bind("Escape", self._exit_fullscreen_via_escape, guarded=False)
 
     def _toggle_play_pause(self):

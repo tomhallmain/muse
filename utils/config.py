@@ -38,6 +38,10 @@ class Config:
     def __init__(self, config_path=None):
         self.dict = {}
         self.changed_values = set()  # Track which values have been modified
+        # Every key passed to set_values/set_directories/set_filepaths, i.e. the
+        # settings backed by the config file. Collected as they are registered so
+        # a new setting is picked up here without a second list to maintain.
+        self.known_keys = set()
         self.foreground_color = "white"
         self.background_color = "#2596BE"
         self.directories = []
@@ -324,8 +328,32 @@ class Config:
         """Clear the changed values tracking"""
         self.changed_values.clear()
 
+    def fill_missing_defaults(self):
+        """Add any known setting the config file is missing, at its default value.
+
+        A file written before a setting existed otherwise never gains it, leaving
+        the setting invisible and uneditable outside this class. Returns the keys
+        that were added.
+
+        Keys currently holding None are skipped: set_values() coerces by type on
+        load, so a null written here would read back as the string "None".
+        """
+        added = []
+        for key in sorted(self.known_keys):
+            if key in self.dict:
+                continue
+            value = getattr(self, key, None)
+            if value is None:
+                continue
+            self.dict[key] = value
+            added.append(key)
+        if added:
+            logger.info(f"Adding {len(added)} missing config keys at their defaults: {', '.join(added)}")
+        return added
+
     def save_config(self):
         """Save updated configuration to file"""
+        self.fill_missing_defaults()
         # Create temporary swap file path
         swap_path = os.path.join(Config.CONFIGS_DIR_LOC, f"config_swap_{int(time.time())}.json")
         
@@ -407,6 +435,7 @@ class Config:
         return None
 
     def set_directories(self, *directories):
+        self.known_keys.update(directories)
         for directory in directories:
             try:
                 setattr(self, directory, self.validate_and_set_directory(directory))
@@ -415,6 +444,7 @@ class Config:
                 logger.warning(f"Failed to set {directory} from config.json file. Ensure the key is set.")
 
     def set_filepaths(self, *filepaths):
+        self.known_keys.update(filepaths)
         for filepath in filepaths:
             try:
                 setattr(self, filepath, self.validate_and_set_filepath(filepath))
@@ -423,6 +453,7 @@ class Config:
                logger.warning(f"Failed to set {filepath} from config.json file. Ensure the key is set.")
 
     def set_values(self, type, *names):
+        self.known_keys.update(names)
         for name in names:
             if type:
                 try:
