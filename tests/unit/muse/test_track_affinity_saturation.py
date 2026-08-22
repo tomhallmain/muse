@@ -116,7 +116,7 @@ class TestListeningLog:
 
         # Push the entry far enough into the past that its weight halves twice.
         entry = module._listening_log["composer"]["mozart"]
-        entry[1] -= SATURATION_HALF_LIFE_SECONDS * 2
+        entry.last_heard -= SATURATION_HALF_LIFE_SECONDS * 2
 
         assert saturation_reference() is None
 

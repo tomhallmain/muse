@@ -90,6 +90,11 @@ SATURATION_SECONDS_THRESHOLD = 600
 # weighs half what it did.
 SATURATION_HALF_LIFE_SECONDS = 5400
 
+# A group resists being written off as recently played until a quarter of it, or
+# this many tracks, have been heard -- whichever comes first. See tracks_to_spend.
+COMPLETION_RATIO = 0.25
+COMPLETION_CAP = 4
+
 # Saturation reads the plain artist tag rather than the resolved main artist,
 # which is derived lazily and only for the shuffle that needs it. Recording every
 # track would force that work whatever the listener is playing; the containment
@@ -257,7 +262,21 @@ def saturation_applies(descriptor: Any) -> bool:
 
 # attribute -> value -> [seconds heard, when last heard]. Process-wide: this is
 # what the listener has been hearing, not a property of any one playlist.
-_listening_log: Dict[str, Dict[str, List[float]]] = {}
+@dataclass
+class _Heard:
+    """What one attribute value has absorbed: listening time and track count.
+
+    Both decay together. Seconds answer "has the listener had enough of this"
+    (saturation); plays answer "how much of this group have they got through"
+    (completion). One traversal feeds both.
+    """
+
+    seconds: float
+    plays: float
+    last_heard: float
+
+
+_listening_log: Dict[str, Dict[str, _Heard]] = {}
 
 
 def clear_listening_log() -> None:
@@ -265,7 +284,7 @@ def clear_listening_log() -> None:
 
 
 def record_listening(track: Any, seconds: Optional[float] = None) -> None:
-    """Add a track's length to the running total for each of its attribute values.
+    """Add a track's length and a play to the totals for each of its attribute values.
 
     Counted when the track starts rather than when it ends, so a skipped track
     still counts in full. That errs towards freshness, which is the direction
@@ -283,19 +302,53 @@ def record_listening(track: Any, seconds: Optional[float] = None) -> None:
                 continue
             entry = _listening_log.setdefault(attribute, {}).get(value)
             if entry is None:
-                _listening_log[attribute][value] = [seconds, now]
+                _listening_log[attribute][value] = _Heard(seconds, 1.0, now)
             else:
-                entry[0] = _decayed(entry[0], entry[1], now) + seconds
-                entry[1] = now
+                entry.seconds = _decayed(entry.seconds, entry.last_heard, now) + seconds
+                entry.plays = _decayed(entry.plays, entry.last_heard, now) + 1.0
+                entry.last_heard = now
     except Exception as e:
         logger.warning(f"Could not record listening time: {e}")
 
 
-def _decayed(seconds: float, last_heard: float, now: float) -> float:
+def _decayed(amount: float, last_heard: float, now: float) -> float:
     elapsed = max(0.0, now - last_heard)
     if SATURATION_HALF_LIFE_SECONDS <= 0:
-        return seconds
-    return seconds * (0.5 ** (elapsed / SATURATION_HALF_LIFE_SECONDS))
+        return amount
+    return amount * (0.5 ** (elapsed / SATURATION_HALF_LIFE_SECONDS))
+
+
+def plays_recorded(attribute: Optional[str], value: Optional[str]) -> float:
+    """How many tracks of *value* were heard recently, decayed. 0.0 if none were.
+
+    Fractional because it decays: half a play an hour and a half on means the
+    listener is halfway to having forgotten it, which is the point.
+    """
+    if not attribute or not value:
+        return 0.0
+    entry = _listening_log.get(attribute, {}).get(str(value).strip().lower())
+    if entry is None:
+        return 0.0
+    return _decayed(entry.plays, entry.last_heard, time.time())
+
+
+def tracks_to_spend(group_size: int) -> int:
+    """Tracks that must be heard before a group stops resisting demotion.
+
+    A bare ratio breaks at both ends of a real library. Two thirds of composers
+    here have a single track, where any ratio is moot; the largest album has 947,
+    where a quarter would be 237 plays and the group could never be spent at all.
+    The ratio governs the small end and the cap the large one.
+
+    Raising COMPLETION_CAP keeps albums eligible longer, at the cost of meeting
+    the same one repeatedly before it is finally set aside; lowering it towards 1
+    returns to the old behaviour of a single track spending a whole group.
+    Changing COMPLETION_RATIO only moves groups smaller than CAP / RATIO -- above
+    that the cap already binds.
+    """
+    if group_size <= 0:
+        return 1
+    return min(COMPLETION_CAP, max(1, math.ceil(COMPLETION_RATIO * group_size)))
 
 
 def saturation_reference() -> Optional[AffinityReference]:
@@ -310,8 +363,8 @@ def saturation_reference() -> Optional[AffinityReference]:
     now = time.time()
     reference = AffinityReference()
     for attribute, values in _listening_log.items():
-        for value, (seconds, last_heard) in list(values.items()):
-            if _decayed(seconds, last_heard, now) >= SATURATION_SECONDS_THRESHOLD:
+        for value, entry in list(values.items()):
+            if _decayed(entry.seconds, entry.last_heard, now) >= SATURATION_SECONDS_THRESHOLD:
                 reference.add(attribute, value)
     return None if reference.is_empty() else reference
 

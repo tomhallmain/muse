@@ -32,6 +32,7 @@ libary_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)))
 
 logger = get_logger(__name__)
 
+
 class LibraryDataSearch:
     def __init__(self, all="", title="", album="", artist="", composer="", genre="", instrument="", form="",
                  catalogue="",
@@ -366,6 +367,14 @@ class LibraryData:
     # from it. Kept in memory only, so artwork added outside the app is picked up
     # on the next launch rather than needing this to be invalidated.
     albums_without_artwork: set = set()
+    # column -> {value: track count}, filled in as values are asked for. Group
+    # sizes only change when the library is rescanned, so this lives for the
+    # session rather than being re-queried on every sort.
+    GROUP_SIZE_CACHE: dict = {}
+    # Grouping attributes that are stored rather than derived. The main artist
+    # and the catalogue are computed from other tags, so neither can be counted
+    # with a GROUP BY and callers fall back to their own totals.
+    GROUP_SIZE_COLUMNS = ("album", "artist", "composer", "genre", "form", "instrument")
     get_tracks_lock = threading.Lock()
     CACHE_FILENAME = "app_media_track_cache"
     DIRECTORIES_CACHE_FILENAME = "app_directories_cache"
@@ -490,6 +499,47 @@ class LibraryData:
         LibraryData.DIRECTORIES_CACHE = {}
         LibraryData._directory_cache_loaded = True
     
+    @staticmethod
+    def get_group_sizes(column: str, values) -> dict:
+        """How many library tracks carry each of *values* for *column*.
+
+        The library total, not the playlist's: a playlist holding one track of a
+        fifteen-track album should not read as having played the album through.
+
+        Returns what it could find; a value absent from the result has no answer
+        and the caller decides what that means. Never raises -- this refines a
+        decision that is already correct without it.
+        """
+        if column not in LibraryData.GROUP_SIZE_COLUMNS:
+            return {}
+        wanted = {v for v in values if v}
+        if not wanted:
+            return {}
+        cached = LibraryData.GROUP_SIZE_CACHE.setdefault(column, {})
+        missing = [v for v in wanted if v not in cached]
+        if missing:
+            try:
+                from utils.db import get_connection
+                # Chunked: SQLite caps host parameters per statement, and an
+                # overlap set can be larger than that cap on a big playlist.
+                for start in range(0, len(missing), 500):
+                    chunk = missing[start:start + 500]
+                    placeholders = ",".join("?" * len(chunk))
+                    rows = get_connection().execute(
+                        f"SELECT {column} AS value, COUNT(*) AS n FROM media_tracks "
+                        f"WHERE {column} IN ({placeholders}) GROUP BY {column}",
+                        chunk,
+                    ).fetchall()
+                    for row in rows:
+                        cached[row["value"]] = row["n"]
+                    # Values the library does not know are cached as unknown, so a
+                    # miss is not re-queried for every sort.
+                    for value in chunk:
+                        cached.setdefault(value, 0)
+            except Exception as e:
+                logger.warning(f"Could not read group sizes for {column}: {e}")
+        return {v: cached[v] for v in wanted if cached.get(v)}
+
     @staticmethod
     def load_media_track_cache():
         # Try loading from DB first

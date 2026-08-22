@@ -13,8 +13,10 @@ from muse.track_affinity import (
     blend_affinity,
     embedding_group_scores,
     llm_group_scores,
+    plays_recorded,
     record_listening,
     saturation_reference,
+    tracks_to_spend,
 )
 from utils.app_info_cache import app_info_cache
 from utils.config import config
@@ -41,6 +43,20 @@ _TRACK_ATTR_TO_ENUM = {
     # The resolved main artist is still an artist, so an artist favorite boosts
     # this grouping exactly as it boosts ARTIST_SHUFFLE.
     "get_main_artist": TrackAttribute.ARTIST,
+}
+
+# Grouping getter name -> (listening-log attribute, media_tracks column).
+# A grouping absent from this map has no comparable record to check completion
+# against and keeps today's behaviour: the resolved main artist and the catalogue
+# are derived from other tags, so neither is what the listening log stores nor
+# something a GROUP BY can count.
+_COMPLETION_ATTRS = {
+    "album":          ("album", "album"),
+    "artist":         ("artist", "artist"),
+    "composer":       ("composer", "composer"),
+    "get_genre":      ("genre", "genre"),
+    "get_form":       ("form", "form"),
+    "get_instrument": ("instrument", "instrument"),
 }
 
 # Maps track_attr getter name → field name on a track-title Favorite.
@@ -804,12 +820,76 @@ class Playlist:
 
         redundancy_score = float(app_info_cache.get(GROUP_REDUNDANCY_SCORE_KEY, 0.0))
         inclusion_chance = _build_inclusion_chance(track_attr, redundancy_score)
+        self._add_completion_exemptions(inclusion_chance, track_attr, overlap)
 
         use_scour = self.sort_config.check_entire_playlist or playlist_size <= 500
         if use_scour:
             return self.scour_playlist(track_attr, recently_played_attr_list, check_count, inclusion_chance)
         else:
             return self.reshuffle_tracks(track_attr, recently_played_attr_list, check_count, inclusion_chance)
+
+    def _group_sizes(self, track_attr: str, column: str, values) -> Dict[str, int]:
+        """Track count per value, from the library where it can be counted.
+
+        Falls back to this playlist's own totals for anything the library has no
+        answer for, which keeps a grouping the DB cannot count working rather
+        than silently exempting everything.
+        """
+        sizes: Dict[str, int] = {}
+        instance = getattr(self.data_callbacks, "instance", None)
+        if instance is not None and hasattr(instance, "get_group_sizes"):
+            try:
+                sizes = dict(instance.get_group_sizes(column, values))
+            except Exception as e:
+                logger.warning(f"Could not read library group sizes for {column}: {e}")
+        missing = {v for v in values if not sizes.get(v)}
+        if missing:
+            is_callable_attr = track_attr.startswith("get_")
+            for track in self.sorted_tracks:
+                raw = getattr(track, track_attr)
+                if is_callable_attr:
+                    raw = raw()
+                if raw in missing:
+                    sizes[raw] = sizes.get(raw, 0) + 1
+        return sizes
+
+    def _add_completion_exemptions(self, inclusion_chance: dict, track_attr: str, values) -> None:
+        """Exempt groups the listener has barely started from being demoted.
+
+        One track played marks its album, composer, genre and everything else as
+        recently played, whatever grouping was actually in force. That is right
+        for a single but wrong for a fifteen-track album, and the damage lands in
+        whichever sort is run next. A group stays eligible until enough of it has
+        actually been heard.
+
+        Merged into the favorites resistance map at certainty rather than as a
+        separate check, so the stronger of the two reasons to stay put wins.
+        """
+        attrs = _COMPLETION_ATTRS.get(track_attr)
+        if not attrs or not values:
+            return
+        log_attribute, column = attrs
+        try:
+            sizes = self._group_sizes(track_attr, column, values)
+            exempt = 0
+            for value in values:
+                size = sizes.get(value)
+                if not size:
+                    continue
+                # Decay leaves the count fractional, so a group played exactly
+                # enough lands a hair under its requirement and would resist for
+                # ever. The tolerance is far below one play.
+                if plays_recorded(log_attribute, value) + 1e-6 < tracks_to_spend(size):
+                    key = (value or "").lower()
+                    inclusion_chance[key] = max(inclusion_chance.get(key, 0.0), 1.0)
+                    exempt += 1
+            if exempt:
+                logger.info(
+                    f"{exempt} of {len(values)} recently-played {log_attribute}s are "
+                    f"barely started and stay eligible"
+                )
+        except Exception as e:
+            logger.warning(f"Could not apply completion exemptions for {track_attr}: {e}")
 
     def scour_playlist(self, track_attr, recently_played_attr_list, recently_played_check_count,
                        inclusion_chance=None):
