@@ -12,6 +12,7 @@ from extensions.library_extender import LibraryExtender
 from extensions.soup_utils import SoupUtils
 from muse.playback_config_master import PlaybackConfigMaster
 from muse.prompter import Prompter
+from muse.track_affinity import current_favorites_profile
 from utils.app_info_cache import app_info_cache
 from utils.config import config
 from utils.globals import TrackAttribute, ExtensionStrategy, MediaFileType
@@ -50,6 +51,7 @@ class ExtensionManager:
     stop_event: threading.Event = threading.Event()
     current_download_process: Optional[Any] = None
     THREAD_JOIN_TIMEOUT_SECONDS: float = 5.0
+    FAVORITE_BIAS_CHANCE: float = 0.5
 
     # Candidate currently selected and waiting out its pre-download delay, if any.
     # Dict shape: {"id": str, "title": str, "rejected": bool, "raw": dict,
@@ -307,6 +309,15 @@ class ExtensionManager:
                     break
         logger.info("Extension thread exiting")
 
+    def _favored_value(self, attr: TrackAttribute) -> Optional[str]:
+        # Bias new material toward what the listener favorites, but only part of
+        # the time -- always drawing from a handful of favored values would keep
+        # returning to the same few and stop turning up anything new.
+        if random.random() >= ExtensionManager.FAVORITE_BIAS_CHANCE:
+            return None
+        values = current_favorites_profile().get(attr.value, [])
+        return random.choice(values) if values else None
+
     def _extend_by_random_attr(self, voice: Optional[Any] = None) -> None:
         extendible_attrs: Dict[TrackAttribute, Callable[[], str]] = {
             TrackAttribute.ARTIST: lambda: random.choice(self.data_callbacks.instance.artists.get_artist_names()),
@@ -328,7 +339,7 @@ class ExtensionManager:
         if len(extendible_attrs) == 0:
             raise Exception("No extensible attributes found!")
         attr = random.choice(list(extendible_attrs.keys()))
-        value = extendible_attrs[attr]()
+        value = self._favored_value(attr) or extendible_attrs[attr]()
 
         logger.info(f'Extending by random {attr}: {value}')
         if voice is not None:

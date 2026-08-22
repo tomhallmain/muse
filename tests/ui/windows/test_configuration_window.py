@@ -579,3 +579,61 @@ class TestAutoFixAlbumArtworkSetting:
         QApplication.processEvents()
 
         assert cfg_mod.config.get_config_value(self.KEY) is True
+
+
+@pytest.mark.ui
+class TestAffinityPreferenceSetting:
+    KEY = "affinity_preference"
+
+    def test_combo_is_registered_and_reflects_config(self, qapp, qt_master, mock_app_actions):
+        from muse.track_affinity import AFFINITY_VARIED
+        cfg_mod = importlib.import_module("utils.config")
+        cfg_mod.config.set_config_value(self.KEY, AFFINITY_VARIED)
+
+        win = _open_window(qt_master, mock_app_actions)
+
+        assert self.KEY in win.config_vars, "setting has no widget, so it is only editable by hand"
+        widget, kind = win.config_vars[self.KEY]
+        assert kind == "combo_value"
+        assert widget.currentData() == AFFINITY_VARIED
+
+    def test_defaults_to_an_active_preference(self, qapp, qt_master, mock_app_actions):
+        """The ordering should work without being configured first."""
+        from muse.track_affinity import AFFINITY_OFF
+        cfg_mod = importlib.import_module("utils.config")
+        assert cfg_mod.Config().affinity_preference != AFFINITY_OFF
+
+    def test_stored_value_is_not_the_visible_label(self, qapp, qt_master, mock_app_actions):
+        """The labels are translated; the stored value must not vary by language."""
+        from muse.track_affinity import AFFINITY_PREFERENCES
+        win = _open_window(qt_master, mock_app_actions)
+        widget, _kind = win.config_vars[self.KEY]
+
+        values = [widget.itemData(i) for i in range(widget.count())]
+        assert sorted(values) == sorted(AFFINITY_PREFERENCES)
+        assert widget.currentData() != widget.currentText()
+
+    def test_selecting_a_preference_saves_its_value(self, qapp, qt_master, mock_app_actions, monkeypatch):
+        from muse.track_affinity import AFFINITY_OFF, AFFINITY_SIMILAR
+        cfg_mod = importlib.import_module("utils.config")
+        monkeypatch.setattr(cfg_mod.config, "save_config", lambda: True)
+        cfg_mod.config.set_config_value(self.KEY, AFFINITY_SIMILAR)
+
+        win = _open_window(qt_master, mock_app_actions)
+        widget, _kind = win.config_vars[self.KEY]
+        widget.setCurrentIndex(widget.findData(AFFINITY_OFF))
+
+        win.save_config()
+        QApplication.processEvents()
+
+        assert cfg_mod.config.get_config_value(self.KEY) == AFFINITY_OFF
+
+    def test_an_unrecognised_stored_value_falls_back_to_the_first_option(
+            self, qapp, qt_master, mock_app_actions):
+        cfg_mod = importlib.import_module("utils.config")
+        cfg_mod.config.set_config_value(self.KEY, "nonsense")
+
+        win = _open_window(qt_master, mock_app_actions)
+        widget, _kind = win.config_vars[self.KEY]
+
+        assert widget.currentIndex() == 0

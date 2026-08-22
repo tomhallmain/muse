@@ -70,6 +70,9 @@ class Playback:
         self._timer_volume_override = False
         self._timer_override_volume = 20
         self._exclusion_toast_shown = False
+        # One model scoring pass at a time: a run of rapid group skips would
+        # otherwise queue up a call per skip against one local model.
+        self._affinity_scoring_active = False
         # ICY metadata polling (live radio streams)
         self._icy_stop_event: Optional[threading.Event] = None
         self._icy_thread: Optional[threading.Thread] = None
@@ -96,6 +99,8 @@ class Playback:
         self.track = result.track
         self._track_result = result
         self._run_context.skip_grouping = False
+        if result.new_grouping is not None:
+            self._resort_upcoming_tracks()
         if not self._exclusion_toast_shown:
             self._exclusion_toast_shown = True
             playlist = self._playback_config.get_list()
@@ -110,6 +115,62 @@ class Playback:
             # TODO this seems a bit hacky and is probably not covering all cases.
             self.has_attempted_track_split = False
         return self.track is not None and not self.track.is_invalid()
+
+    def _resort_upcoming_tracks(self) -> None:
+        """Re-order the not-yet-played tracks after a grouping change.
+
+        A grouping change is both the point at which the ordering can usefully
+        differ and a natural rate limit, happening every few tracks rather than
+        continuously. Ordering is an enhancement to a playlist that is already
+        valid, so a failure here is logged and the existing order kept.
+
+        The attribute-based pass runs here and costs a dictionary comparison per
+        track. Asking the model to judge the same groups is a second pass, off
+        this thread, since it can take seconds and must never hold up a track.
+        """
+        try:
+            playlist = self._playback_config.get_list()
+            if playlist is None:
+                return
+            playlist.resort_upcoming()
+            if not self._affinity_scoring_active:
+                self._affinity_scoring_active = True
+                try:
+                    Utils.start_thread(self._score_and_resort_upcoming, use_asyncio=False,
+                                       args=[playlist])
+                except Exception:
+                    # The flag is cleared by the thread itself, so a thread that
+                    # never starts would otherwise disable scoring for the session.
+                    self._affinity_scoring_active = False
+                    raise
+        except Exception as e:
+            logger.warning(f"Could not resort upcoming tracks, keeping the existing order: {e}")
+
+    def _score_and_resort_upcoming(self, playlist) -> None:
+        """Ask the models to judge the upcoming groups, then order against them.
+
+        Both signals are gathered before reordering, so the window is rearranged
+        once rather than twice for one grouping change. Each is optional and
+        declines independently, so whichever answers still counts.
+
+        Reordering on return rather than on a captured window is deliberate: the
+        window is recomputed from wherever playback has reached by then, and the
+        scores are keyed by group value, so a slow answer is still a usable one.
+        """
+        try:
+            learned = False
+            for refresh in (playlist.refresh_llm_group_scores,
+                            playlist.refresh_embedding_group_scores):
+                try:
+                    learned = refresh() or learned
+                except Exception as e:
+                    logger.warning(f"An affinity signal failed and was skipped: {e}")
+            if learned:
+                playlist.resort_upcoming()
+        except Exception as e:
+            logger.warning(f"Model affinity scoring failed, keeping the existing order: {e}")
+        finally:
+            self._affinity_scoring_active = False
 
     def get_song_quality_info(self) -> None:
         # TODO: Get info like bit rate, mono vs stereo, possibly try to infer if it's AI or not

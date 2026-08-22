@@ -1,0 +1,14 @@
+Score how well each candidate belongs next to what the listener is currently listening to. The listener's current context is: REFERENCE
+
+Judge musical relatedness -- shared period, style, tradition, instrumentation, or a composer's or performer's circle -- not string similarity. A candidate that is closely related but not identical should score high. For each candidate, assign a score between 0.0 (unrelated) and 1.0 (very closely related). Only return the JSON object, do not return anything else. Example response for a different context and candidates:
+
+{
+    "scores": {
+        "0": 0.88,
+        "1": 0.20,
+        "2": 0.55
+    }
+}
+
+Candidates:
+CANDIDATES

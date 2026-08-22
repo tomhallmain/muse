@@ -1,9 +1,19 @@
 import random
 import re
-from typing import List, Optional, TYPE_CHECKING
+from typing import Dict, List, Optional, TYPE_CHECKING
 
 from library_data.media_track import MediaTrack
 from muse.sort_config import SortConfig
+from muse.track_affinity import (
+    DEFAULT_AFFINITY_WINDOW,
+    AffinityReference,
+    affinity,
+    affinity_enabled,
+    affinity_prefers_similar,
+    blend_affinity,
+    embedding_group_scores,
+    llm_group_scores,
+)
 from utils.app_info_cache import app_info_cache
 from utils.config import config
 from utils.globals import PlaylistSortType, HistoryType, TrackAttribute, TrackResult
@@ -184,7 +194,8 @@ class Playlist:
                  loop: bool = False,
                  sort_config: Optional[SortConfig] = None,
                  deterministic_group_order: bool = False,
-                 direct_tracks: Optional[List[MediaTrack]] = None) -> None:
+                 direct_tracks: Optional[List[MediaTrack]] = None,
+                 affinity_reference: Optional['AffinityReference'] = None) -> None:
         exclusions = app_info_cache.get(TRACK_EXCLUSIONS_KEY, _DEFAULT_TRACK_EXCLUSIONS)
         if exclusions:
             excluded = [t for t in tracks if any(_matches_exclusion(t, e) for e in exclusions)]
@@ -207,6 +218,16 @@ class Playlist:
         self.loop: bool = loop
         self.sort_config: SortConfig = sort_config or SortConfig()
         self.deterministic_group_order: bool = deterministic_group_order
+        # What upcoming tracks are scored against. None means the caller decided
+        # this playlist should not be reordered -- a track-based playlist, for
+        # instance, whose order the listener chose explicitly.
+        self.affinity_reference: Optional['AffinityReference'] = affinity_reference
+        # Group value -> model relatedness score. Accumulated across resorts and
+        # keyed by value, so a score stays usable once the window has moved past
+        # the group it was asked about.
+        self.llm_affinity_scores: Dict[str, float] = {}
+        # Same shape, from embedding similarity rather than the chat model.
+        self.embedding_affinity_scores: Dict[str, float] = {}
         assert self.data_callbacks is not None and \
                 self.data_callbacks.get_track is not None and \
                 self.data_callbacks.get_all_tracks is not None
@@ -499,6 +520,10 @@ class Playlist:
                     self.sorted_tracks.sort(key=lambda t: (all_attrs_list.index(getattr(t, grouping_attr_getter_name)()), tie_break(t)))
                 else:
                     self.sorted_tracks.sort(key=lambda t: (all_attrs_list.index(getattr(t, grouping_attr_getter_name)), tie_break(t)))
+
+                # Before the memory shuffle, so that reducing repetition still has
+                # the last word over pulling related material forward.
+                self.apply_affinity_ordering(self._group_of_getter())
             if not self.sort_config.skip_memory_shuffle:
                 history_type = self.sort_type.grouping_list_name_mapping()
                 self.shuffle_with_memory_for_attr(
@@ -508,6 +533,186 @@ class Playlist:
         if do_set_start_track:
             # The user specified a start track, it's not random
             self.set_start_track(grouping_attr_getter_name)
+
+    def _group_of_getter(self):
+        """A callable giving a track's grouping value, or None if there is no grouping.
+
+        SEQUENCE and RANDOM have no grouping attribute, so nothing that works in
+        terms of groups applies to them.
+        """
+        if self.sort_type in (PlaylistSortType.SEQUENCE, PlaylistSortType.RANDOM):
+            return None
+        name = self.sort_type.getter_name_mapping()
+        if not name:
+            return None
+        is_callable_attr = name.startswith("get_")
+
+        def group_of(track, _name=name, _callable=is_callable_attr):
+            value = getattr(track, _name)
+            return value() if _callable else value
+
+        return group_of
+
+    def _affinity_window_end(self, group_of, start: int = 0) -> int:
+        """Where the reorderable window ends, moved out to a group boundary.
+
+        Cutting a group in half would split material the grouping sort just put
+        together, so the window extends to take in the whole group it lands
+        inside. The exception is a group larger than the window itself: there is
+        no coherent run to preserve at that size, so the cut is made as-is.
+        """
+        total = len(self.sorted_tracks)
+        size = DEFAULT_AFFINITY_WINDOW
+        window = start + size
+        if size <= 0 or window >= total:
+            return total
+        boundary_value = group_of(self.sorted_tracks[window - 1])
+        end = window
+        while end < total and group_of(self.sorted_tracks[end]) == boundary_value:
+            end += 1
+        return window if end - window > size else end
+
+    def apply_affinity_ordering(self, group_of, start: int = 0) -> bool:
+        """Order a window of tracks by how well each group matches the reference.
+
+        *start* is where the window begins: 0 during the initial sort, and the
+        first not-yet-played track when resorting mid-playback, so that what has
+        already been heard is never moved.
+
+        Groups move as whole units. The grouping sort has already made each one
+        contiguous, and pulling individual tracks out of them would defeat the
+        sort type the listener chose.
+
+        Returns whether anything was reordered. This is an enhancement to an
+        order that is already valid, so any failure leaves that order untouched
+        rather than failing the sort. Nothing is mutated until the scoring has
+        fully succeeded, so there is no partial state to unwind.
+        """
+        reference = self.affinity_reference
+        if group_of is None or reference is None or reference.is_empty() or not affinity_enabled():
+            return False
+        start = max(0, start)
+        if len(self.sorted_tracks) - start < 2:
+            return False
+
+        try:
+            end = self._affinity_window_end(group_of, start=start)
+            runs: List[list] = []
+            for track in self.sorted_tracks[start:end]:
+                value = group_of(track)
+                if runs and runs[-1][0] == value:
+                    runs[-1][1].append(track)
+                else:
+                    runs.append([value, [track]])
+            if len(runs) < 2:
+                return False
+
+            prefer_similar = affinity_prefers_similar()
+            scored = []
+            for position, (value, tracks) in enumerate(runs):
+                best = max(affinity(t, reference) for t in tracks)
+                best = blend_affinity(best,
+                                      self.llm_affinity_scores.get(value),
+                                      self.embedding_affinity_scores.get(value))
+                scored.append((best, position, tracks))
+            # Original position breaks ties, so groups that match equally well keep
+            # the order the grouping sort already gave them.
+            scored.sort(key=lambda s: (-s[0] if prefer_similar else s[0], s[1]))
+
+            reordered = []
+            for _score, _position, tracks in scored:
+                reordered.extend(tracks)
+        except Exception as e:
+            logger.warning(f"Affinity ordering failed, keeping the existing order: {e}")
+            return False
+
+        self.sorted_tracks[start:end] = reordered
+        logger.info(f"Affinity ordering reordered {len(runs)} groups across tracks {start}-{end}")
+        return True
+
+    def resort_upcoming(self) -> bool:
+        """Re-order the not-yet-played window against the reference.
+
+        Called on a grouping change during playback, which is both the moment
+        the ordering can usefully change and a natural rate limit -- it happens
+        every few tracks rather than continuously.
+
+        The reference stays whatever the playlist was built with rather than
+        being re-seeded from the playing track. Re-seeding would compound:
+        each change would pull more of what just played forward until the
+        playlist narrowed to one group. What makes repeating this worthwhile is
+        that the window has moved on to tracks the initial sort never reached.
+
+        Returns whether anything moved, so a caller can refresh a view of the
+        playlist only when there is something new to show.
+        """
+        return self.apply_affinity_ordering(self._group_of_getter(),
+                                            start=self.current_track_index + 1)
+
+    def upcoming_group_values(self) -> List[str]:
+        """The distinct group values in the not-yet-played window, in playing order."""
+        group_of = self._group_of_getter()
+        if group_of is None:
+            return []
+        start = max(0, self.current_track_index + 1)
+        if start >= len(self.sorted_tracks):
+            return []
+        try:
+            end = self._affinity_window_end(group_of, start=start)
+            values = []
+            for track in self.sorted_tracks[start:end]:
+                value = group_of(track)
+                if value and value not in values:
+                    values.append(value)
+            return values
+        except Exception as e:
+            logger.warning(f"Could not read the upcoming group values: {e}")
+            return []
+
+    def group_attribute_name(self) -> str:
+        """The attribute this playlist groups by, as a plain word for a prompt.
+
+        The main-artist grouping is still an artist grouping as far as anything
+        judging relatedness is concerned.
+        """
+        name = self.sort_type.getter_name_mapping() or ""
+        if name.startswith("get_"):
+            name = name[4:]
+        return "artist" if name == "main_artist" else name
+
+    def _refresh_group_scores(self, known: Dict[str, float], score_fn, label: str) -> bool:
+        """Score whichever upcoming groups *known* has no entry for yet.
+
+        Only unscored groups are asked about, so a long playback session does not
+        re-pay for judgements it already has. Returns whether anything new was
+        learned; a decline leaves the existing ordering in place.
+        """
+        if self.affinity_reference is None or not affinity_enabled():
+            return False
+        unscored = [v for v in self.upcoming_group_values() if v not in known]
+        if not unscored:
+            return False
+        scores = score_fn(unscored)
+        if not scores:
+            return False
+        known.update(scores)
+        logger.info(f"Learned {label} affinity scores for {len(scores)} group(s)")
+        return True
+
+    def refresh_llm_group_scores(self) -> bool:
+        """Ask the chat model to judge how related the upcoming groups are."""
+        return self._refresh_group_scores(
+            self.llm_affinity_scores,
+            lambda values: llm_group_scores(self.affinity_reference, values),
+            "chat model")
+
+    def refresh_embedding_group_scores(self) -> bool:
+        """Measure the upcoming groups against the reference by embedding similarity."""
+        return self._refresh_group_scores(
+            self.embedding_affinity_scores,
+            lambda values: embedding_group_scores(self.affinity_reference, values,
+                                                  attribute=self.group_attribute_name()),
+            "embedding")
 
     def shuffle_with_memory_for_attr(self, track_attr: str, history_type: HistoryType,
                                      playlist_attr_set: Optional[set] = None):

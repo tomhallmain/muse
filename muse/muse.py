@@ -19,9 +19,10 @@ from muse.muse_memory import muse_memory
 from muse.schedules_manager import SchedulesManager, ScheduledShutdownException
 from muse.playback import Playback
 from muse.prompter import Prompter
+from muse.track_affinity import current_favorites_profile
 from muse.voice import Voice
 from utils.config import config
-from utils.globals import Topic, IntroType, Globals
+from utils.globals import Topic, IntroType, Globals, TrackAttribute
 from utils.logging_setup import get_logger
 from utils.translations import I18N, SUPPORTED_LANGUAGE_CODES
 from utils.utils import Utils
@@ -692,8 +693,28 @@ class Muse:
         already_mentioned = _(' [already mentioned]')
         prompt = prompt.format(PREVIOUS_TRACKS="\n".join([f" - {t.get_track_details()}{already_mentioned if was_spoken else ''}" for t, was_spoken in previous_tracks]),
                                UPCOMING_TRACKS="\n".join([f" - {t.get_track_details()}{already_mentioned if was_spoken else ''}" for t, was_spoken in upcoming_tracks]))
+        prompt += Muse._favorites_prompt_section()
         playlist_context = self.generate_text(prompt)
         self.say_at_some_point(playlist_context, spot_profile, Topic.PLAYLIST_CONTEXT)
+
+    @staticmethod
+    def _favorites_prompt_section() -> str:
+        """What the listener favorites, as a prompt section. Empty if nothing is stored.
+
+        Appended in code rather than added as a placeholder so that every
+        language's prompt file gets it without each one having to be edited.
+        """
+        profile = current_favorites_profile()
+        if not profile:
+            return ""
+        lines = []
+        for attribute, values in sorted(profile.items()):
+            try:
+                label = TrackAttribute(attribute).get_translation()
+            except ValueError:
+                label = attribute
+            lines.append(f" - {label}: {', '.join(values)}")
+        return "\n\n" + _("What the listener has marked as a favorite:") + "\n" + "\n".join(lines)
 
     def talk_about_random_wiki_article(self, spot_profile):
         article = None

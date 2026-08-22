@@ -30,6 +30,7 @@ from muse.playlist import (
     TRACK_EXCLUSIONS_KEY,
     _DEFAULT_TRACK_EXCLUSIONS,
 )
+from muse.track_affinity import AFFINITY_OFF, AFFINITY_SIMILAR, AFFINITY_VARIED
 from ui_qt.app_style import AppStyle
 from ui_qt.auth.password_utils import require_password
 from utils.app_info_cache import app_info_cache
@@ -195,11 +196,19 @@ class ConfigurationWindow(SmartWindow):
             frame, layout, "auto_fix_album_artwork",
             _("Copy an Album's Best Artwork to Its Other Tracks"), 3,
         )
-        self.add_config_entry(
-            frame, layout, "playlist_recently_played_check_count", _("Recently Played Check Count"), 4
+        self.add_config_value_combo(
+            frame, layout, "affinity_preference", _("Upcoming Track Ordering"), 4,
+            [
+                (AFFINITY_SIMILAR, _("Prefer Similar")),
+                (AFFINITY_VARIED, _("Prefer Varied")),
+                (AFFINITY_OFF, _("Off")),
+            ],
         )
-        self.add_config_entry(frame, layout, "max_search_results", _("Max Search Results"), 5)
-        self.add_config_entry(frame, layout, "max_recent_searches", _("Max Recent Searches"), 6)
+        self.add_config_entry(
+            frame, layout, "playlist_recently_played_check_count", _("Recently Played Check Count"), 5
+        )
+        self.add_config_entry(frame, layout, "max_search_results", _("Max Search Results"), 6)
+        self.add_config_entry(frame, layout, "max_recent_searches", _("Max Recent Searches"), 7)
 
         tab_layout = QVBoxLayout(self.audio_tab)
         tab_layout.setContentsMargins(0, 0, 0, 0)
@@ -544,6 +553,24 @@ class ConfigurationWindow(SmartWindow):
         layout.addWidget(row_widget, row, 1, Qt.AlignmentFlag.AlignLeft)
         self.config_vars[key] = (entry, "entry")
 
+    def add_config_value_combo(self, parent, layout, key, label_text, row, options):
+        """A combo whose labels are translated but whose stored values are not.
+
+        *options* is a list of ``(value, label)`` pairs. The value travels as item
+        data rather than as the visible text, so what gets written to the config
+        stays the same whatever language the window is displayed in.
+        """
+        label = QLabel(label_text, parent)
+        layout.addWidget(label, row, 0, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+
+        combo = QComboBox(parent)
+        for value, option_label in options:
+            combo.addItem(option_label, value)
+        index = combo.findData(config.get_config_value(key))
+        combo.setCurrentIndex(index if index >= 0 else 0)
+        layout.addWidget(combo, row, 1, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+        self.config_vars[key] = (combo, "combo_value")
+
     def add_config_checkbox(self, parent, layout, key, label_text, row):
         checkbox = QCheckBox(label_text, parent)
         val = config.get_config_value(key)
@@ -588,6 +615,8 @@ class ConfigurationWindow(SmartWindow):
                     config.set_config_value(key, widget.isChecked())
                 elif kind == "combo":
                     config.set_config_value(key, widget.currentText())
+                elif kind == "combo_value":
+                    config.set_config_value(key, widget.currentData())
                 else:
                     config.set_config_value(key, widget.text())
 

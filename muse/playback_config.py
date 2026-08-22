@@ -6,6 +6,7 @@ from library_data.media_track import MediaTrack
 from muse.playlist import Playlist
 from muse.playlist_descriptor import PlaylistDescriptor
 from muse.sort_config import SortConfig
+from muse.track_affinity import reference_for
 from utils.globals import PlaylistSortType, TrackResult
 from utils.logging_setup import get_logger
 
@@ -156,7 +157,10 @@ class PlaybackConfig:
                              start_track=self.start_track,
                              loop=self.loop,
                              sort_config=self.sort_config,
-                             deterministic_group_order=self.playlist_descriptor is not None)
+                             deterministic_group_order=self.playlist_descriptor is not None,
+                             affinity_reference=reference_for(
+                                 descriptor=self.playlist_descriptor,
+                                 start_track=self.start_track))
         return self.list
 
     def set_playing(self, playing: bool = True) -> None:

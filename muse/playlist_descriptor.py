@@ -65,6 +65,15 @@ class PlaylistDescriptor:
     def is_track_based(self) -> bool:
         return self.track_filepaths is not None and len(self.track_filepaths) > 0
 
+    def allows_resort(self) -> bool:
+        """Whether affinity reordering may touch this playlist.
+
+        A track-based playlist names every track, so its order is a decision the
+        listener already made. A search or directory names an intent instead,
+        leaving the ordering open.
+        """
+        return not self.is_track_based()
+
     def get_source_description(self) -> str:
         """Return a human-readable summary of the track source."""
         if self.is_search_based():
