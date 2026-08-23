@@ -571,6 +571,7 @@ class Playback:
             self.ensure_video_frame()
         if self.track and self.track.is_stream():
             self._start_icy_thread(self.track.filepath)
+        self._start_album_artwork_consistency()
         self.update_ui()
 
     def ensure_video_frame(self) -> None:
@@ -639,32 +640,49 @@ class Playback:
         if self.ui_callbacks.update_favorite_status is not None:
             self.ui_callbacks.update_favorite_status(self.track)
         if self.ui_callbacks.update_album_artwork is not None:
+            # Display only. The consistency pass that may supply this track's
+            # artwork runs in register_new_song, before this point.
             album_artwork = self.track.get_album_artwork()
-            if album_artwork is None and not self.track.get_is_video():
-                # An albummate may carry artwork this track is missing. The image to
-                # show depends on the result, so this one cannot be deferred.
-                if self._ensure_album_artwork(self.track):
-                    album_artwork = self.track.get_album_artwork()
-            elif album_artwork is not None:
-                # Only other tracks stand to change, so writing files here would
-                # stall playback for no visible benefit.
-                Utils.start_thread(self._ensure_album_artwork, use_asyncio=False, args=(self.track,))
             if album_artwork is None and not self.track.get_is_video():
                 album_artwork = SpinningRecordVideos.get_random_record_video()
                 if album_artwork is None:
                     album_artwork = self._get_random_image_asset(filename_filter="record")
             self.ui_callbacks.update_album_artwork(image_filepath=album_artwork)
 
+    def _start_album_artwork_consistency(self) -> None:
+        """Bring the album's artwork into line for the track about to play.
+
+        Started here rather than from update_ui() so it runs exactly once per
+        track: update_ui() runs twice for the same track when Muse speaks, and a
+        second start would put two threads through one album's files at once.
+        """
+        if self.track is None:
+            return
+        if self.track.load_embedded_artwork() is None:
+            if not self.track.get_is_video():
+                # An albummate may carry artwork this track is missing, and the
+                # image update_ui() then shows depends on the result, so this one
+                # cannot be deferred.
+                self._ensure_album_artwork(self.track)
+        else:
+            # Only other tracks stand to change, so writing files here would
+            # stall playback for no visible benefit.
+            Utils.start_thread(self._ensure_album_artwork, use_asyncio=False, args=(self.track,))
+
     def _ensure_album_artwork(self, track) -> bool:
-        data_callbacks = self._playback_config.data_callbacks
-        library_data = getattr(data_callbacks, "instance", None) if data_callbacks is not None else None
-        if library_data is None:
-            return False
+        logger.info(f"Starting album artwork consistency check, requested by track: {track.filepath}")
         try:
-            return library_data.ensure_album_artwork_consistency(track)
-        except Exception as e:
-            logger.warning(f"Album artwork consistency check failed: {e}")
-            return False
+            data_callbacks = self._playback_config.data_callbacks
+            library_data = getattr(data_callbacks, "instance", None) if data_callbacks is not None else None
+            if library_data is None:
+                return False
+            try:
+                return library_data.ensure_album_artwork_consistency(track)
+            except Exception as e:
+                logger.warning(f"Album artwork consistency check failed: {e}")
+                return False
+        finally:
+            logger.info(f"Finished album artwork consistency check, requested by track: {track.filepath}")
 
     def update_ui_art_for_muse(self) -> None:
         if self.ui_callbacks.update_album_artwork is not None:

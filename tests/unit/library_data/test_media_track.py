@@ -1,5 +1,7 @@
 """Unit tests for catalogue and main-artist derivation on library_data.media_track.MediaTrack."""
 
+import types
+
 import pytest
 
 from library_data.media_track import MediaTrack
@@ -54,6 +56,7 @@ def test_from_db_row_track_does_not_crash_on_first_get_catalogue():
         "artist": "Some Artist",
         "albumartist": None,
         "album": "Some Album Vol. 4",
+        "album_from_metadata": 1,
         "composer": None,
         "tracknumber": None,
         "totaltracks": None,
@@ -164,6 +167,7 @@ def test_from_db_row_track_does_not_crash_on_first_get_main_artist():
         "artist": "Berlin Philharmonic; Herbert von Karajan",
         "albumartist": None,
         "album": "Some Album",
+        "album_from_metadata": 1,
         "composer": None,
         "tracknumber": None,
         "totaltracks": None,
@@ -233,3 +237,94 @@ def test_artwork_quality_uses_pixel_area_when_decodable():
 ])
 def test_artwork_is_improvement(candidate, existing, expected, note):
     assert MediaTrack.artwork_is_improvement(candidate, existing) is expected, note
+
+
+# ---------------------------------------------------------------------------
+# load_embedded_artwork
+# ---------------------------------------------------------------------------
+
+class _FakeArtwork:
+    def __init__(self, data):
+        self.data = data
+
+
+class _FakeArtworkItem:
+    def __init__(self, data):
+        self.first = _FakeArtwork(data) if data else None
+
+
+class _FakeMusicTagFile:
+    def __init__(self, data):
+        self._data = data
+
+    def __getitem__(self, key):
+        return _FakeArtworkItem(self._data if key == "artwork" else None)
+
+
+class _FakePicture:
+    """Stands in for a mutagen ID3 APIC frame. Type 3 is the front cover."""
+
+    def __init__(self, data, picture_type=0):
+        self.data = data
+        self.type = picture_type
+
+
+class _FakeMutagenFile:
+    def __init__(self, tags):
+        self.tags = tags
+
+
+def _reader_track(monkeypatch, music_tag_data=None, tags=None, music_tag_available=True):
+    """A MediaTrack whose two artwork readers are replaced by fakes."""
+    import library_data.media_track as media_track_mod
+    monkeypatch.setattr(media_track_mod, "MUSIC_TAG_AVAILABLE", music_tag_available)
+    monkeypatch.setattr(
+        media_track_mod, "music_tag",
+        types.SimpleNamespace(load_file=lambda path: _FakeMusicTagFile(music_tag_data)),
+        raising=False)
+    monkeypatch.setattr(
+        media_track_mod, "File",
+        lambda path: _FakeMutagenFile({} if tags is None else tags),
+        raising=False)
+    track = MediaTrack.__new__(MediaTrack)
+    track.filepath = "/music/artist/album/track.mp3"
+    track.artwork = None
+    track.is_video = False
+    return track
+
+
+@pytest.mark.unit
+class TestLoadEmbeddedArtwork:
+    def test_music_tag_is_read_first(self, monkeypatch):
+        track = _reader_track(monkeypatch, music_tag_data=b"from-music-tag",
+                              tags={"APIC:0": _FakePicture(b"from-mutagen")})
+        assert track.load_embedded_artwork() == b"from-music-tag"
+
+    def test_falls_back_to_mutagen_when_music_tag_finds_nothing(self, monkeypatch):
+        track = _reader_track(monkeypatch, music_tag_data=None,
+                              tags={"APIC:0": _FakePicture(b"from-mutagen")})
+        assert track.load_embedded_artwork() == b"from-mutagen"
+
+    def test_described_picture_frame_is_found(self, monkeypatch):
+        """Regression: ID3 keys a picture frame by 'APIC:' plus its description, so
+        matching the bare key found only a frame described by the empty string --
+        missing both the index descriptions music_tag writes and a tagger's own."""
+        track = _reader_track(monkeypatch, music_tag_available=False,
+                              tags={"APIC:0": _FakePicture(b"described")})
+        assert track.load_embedded_artwork() == b"described"
+
+    def test_front_cover_is_preferred_among_several_pictures(self, monkeypatch):
+        track = _reader_track(monkeypatch, music_tag_available=False, tags={
+            "APIC:back": _FakePicture(b"back", picture_type=4),
+            "APIC:front": _FakePicture(b"front", picture_type=3),
+        })
+        assert track.load_embedded_artwork() == b"front"
+
+    def test_none_when_no_tag_carries_a_picture(self, monkeypatch):
+        track = _reader_track(monkeypatch, tags={"TIT2": object()})
+        assert track.load_embedded_artwork() is None
+
+    def test_cached_artwork_is_not_re_read(self, monkeypatch):
+        track = _reader_track(monkeypatch, music_tag_data=b"from-file")
+        track.artwork = b"cached"
+        assert track.load_embedded_artwork() == b"cached"

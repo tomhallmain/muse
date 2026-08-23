@@ -5,24 +5,32 @@ decodable images, so artwork_quality() falls back to length and the tests behave
 the same whether or not Pillow is installed.
 """
 
+import os
+
 import pytest
 
 from library_data.library_data import LibraryData
 from library_data.media_track import MediaTrack
 from utils.config import config
 
+# 4x the bytes of LARGE, so a track scored with it always wins
+HUGE = b"x" * 20000
 # 5x the bytes of SMALL, comfortably past ARTWORK_IMPROVEMENT_RATIO
 LARGE = b"x" * 5000
 SMALL = b"x" * 1000
 # only 1.2x SMALL, below the threshold
 MARGINAL = b"x" * 1200
 
+DIR = "/music/Some Artist/Album"
+
 
 class _FakeTrack:
-    def __init__(self, title, album, artwork=None):
+    def __init__(self, title, album, artwork=None, album_from_metadata=True, directory=DIR):
         self.title = title
         self.album = album
         self.artwork = artwork
+        self.album_from_metadata = album_from_metadata
+        self.filepath = os.path.join(directory, f"{title}.flac")
         self.write_count = 0
 
     def load_embedded_artwork(self):
@@ -32,6 +40,11 @@ class _FakeTrack:
         self.artwork = metadata.get("artwork")
         self.write_count += 1
         return True
+
+
+def _memo_key(track):
+    """The (album, directory) pair ensure_album_artwork_consistency memoises under."""
+    return (track.album, os.path.dirname(os.path.abspath(track.filepath)))
 
 
 @pytest.fixture(autouse=True)
@@ -141,7 +154,7 @@ class TestArtlessAlbumMemo:
         library = _library([a, b])
 
         assert library.ensure_album_artwork_consistency(a) is False
-        assert "Album" in LibraryData.albums_without_artwork
+        assert _memo_key(a) in LibraryData.albums_without_artwork
 
         # A second pass must short-circuit rather than rescan; if it did not, the
         # album would be rescanned once for every track played from it.
@@ -156,4 +169,91 @@ class TestArtlessAlbumMemo:
 
         library.ensure_album_artwork_consistency(b)
 
-        assert "Album" not in LibraryData.albums_without_artwork
+        assert _memo_key(b) not in LibraryData.albums_without_artwork
+
+
+@pytest.mark.unit
+class TestAlbumMustBeMetadataDefined:
+    """A directory name is not an album. Tracks land in one folder because the
+    user put them there, which says nothing about what artwork they should share."""
+
+    def test_directory_derived_album_is_skipped(self):
+        a = _FakeTrack("a", "Unknown Album", LARGE, album_from_metadata=False)
+        b = _FakeTrack("b", "Unknown Album", None, album_from_metadata=False)
+        library = _library([a, b])
+
+        assert library.ensure_album_artwork_consistency(b) is False
+        assert b.artwork is None
+        assert b.write_count == 0
+        assert a.write_count == 0
+
+    def test_untagged_albummates_are_not_a_source(self):
+        """Tagged and untagged files can share a folder; only the tagged ones
+        belong to the album, so an untagged file's artwork is never propagated."""
+        tagged = _FakeTrack("tagged", "Album", SMALL)
+        other_tagged = _FakeTrack("other_tagged", "Album", LARGE)
+        untagged = _FakeTrack("untagged", "Album", HUGE, album_from_metadata=False)
+        library = _library([tagged, other_tagged, untagged])
+
+        assert library.ensure_album_artwork_consistency(tagged) is True
+
+        # HUGE would have won had the untagged file been scored.
+        assert tagged.artwork == LARGE
+        assert untagged.write_count == 0
+
+    def test_untagged_albummates_are_not_a_target(self):
+        best = _FakeTrack("best", "Album", LARGE)
+        tagged = _FakeTrack("tagged", "Album", SMALL)
+        untagged = _FakeTrack("untagged", "Album", SMALL, album_from_metadata=False)
+        library = _library([best, tagged, untagged])
+
+        library.ensure_album_artwork_consistency(tagged)
+
+        assert untagged.artwork == SMALL
+        assert untagged.write_count == 0
+
+
+@pytest.mark.unit
+class TestAlbumPathBoundaries:
+    """The same album name turns up in unrelated directories, under different
+    artists and on different disks. Those are different albums."""
+
+    C_DRIVE = "/c/audio/Unknown Artist/Unknown Album"
+    F_DRIVE = "/f/iTunes Music/Dad Bowman/Unknown Album"
+
+    def test_namesake_in_another_directory_is_not_an_albummate(self):
+        here = _FakeTrack("here", "Unknown Album", None, directory=self.C_DRIVE)
+        there_a = _FakeTrack("Side 1", "Unknown Album", LARGE, directory=self.F_DRIVE)
+        there_b = _FakeTrack("Side 1-1", "Unknown Album", SMALL, directory=self.F_DRIVE)
+        library = _library([here, there_a, there_b])
+
+        assert library.ensure_album_artwork_consistency(here) is False
+
+        assert here.artwork is None
+        assert there_a.write_count == 0
+        assert there_b.write_count == 0
+
+    def test_each_directory_is_brought_into_line_on_its_own(self):
+        there_a = _FakeTrack("Side 1", "Unknown Album", LARGE, directory=self.F_DRIVE)
+        there_b = _FakeTrack("Side 1-1", "Unknown Album", SMALL, directory=self.F_DRIVE)
+        elsewhere = _FakeTrack("elsewhere", "Unknown Album", SMALL, directory=self.C_DRIVE)
+        library = _library([there_a, there_b, elsewhere])
+
+        assert library.ensure_album_artwork_consistency(there_b) is True
+
+        assert there_b.artwork == LARGE
+        assert elsewhere.artwork == SMALL
+        assert elsewhere.write_count == 0
+
+    def test_artless_memo_does_not_suppress_a_namesake_elsewhere(self):
+        artless_a = _FakeTrack("artless_a", "Unknown Album", None, directory=self.C_DRIVE)
+        artless_b = _FakeTrack("artless_b", "Unknown Album", None, directory=self.C_DRIVE)
+        has_art = _FakeTrack("has_art", "Unknown Album", LARGE, directory=self.F_DRIVE)
+        needs_art = _FakeTrack("needs_art", "Unknown Album", None, directory=self.F_DRIVE)
+        library = _library([artless_a, artless_b, has_art, needs_art])
+
+        assert library.ensure_album_artwork_consistency(artless_a) is False
+        assert _memo_key(artless_a) in LibraryData.albums_without_artwork
+
+        assert library.ensure_album_artwork_consistency(needs_art) is True
+        assert needs_art.artwork == LARGE

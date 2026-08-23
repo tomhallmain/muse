@@ -112,6 +112,12 @@ class MediaTrack:
     music_tag_ignored_tags = ['comment', 'isrc', 'lyrics', 'artwork']
     # Container formats not supported by music_tag/mutagen; routed directly to pymediainfo.
     _music_tag_unsupported_extensions = frozenset({'.webm', '.mkv'})
+    # True only when the file's own tags supplied the album. __init__ otherwise
+    # seeds album from the containing directory's name, which is a folder the user
+    # happened to group files into rather than an album the files agree on.
+    # Class-level so a track restored from a cache written before this existed
+    # reads as directory-derived instead of raising.
+    album_from_metadata = False
     non_numeric_chars = re.compile(r"[^0-9\.\-]+")
     # Matches bracketed ID tags embedded in filenames, e.g. [FLAC], [2024], [Hi-Res].
     # These are stripped from the display title by clean_track_value() but should be
@@ -167,6 +173,7 @@ class MediaTrack:
                         self.artist = track.performer
                     if not self.album and hasattr(track, 'album') and track.album:
                         self.album = track.album
+                        self.album_from_metadata = True
                     if self.length == -1.0:
                         self.length = float(track.duration) / 1000  # Convert ms to seconds
                     
@@ -278,6 +285,8 @@ class MediaTrack:
                     value = music_tag_wrapper[k].first
                     if value is not None:
                         setattr(self, k, value)
+                        if k == "album" and str(value).strip() != "":
+                            self.album_from_metadata = True
                 except Exception as e:
                     failure_count += 1
                     if k == 'year':
@@ -306,6 +315,7 @@ class MediaTrack:
         self.tracktitle = None
         self.artist = None
         self.album = None
+        self.album_from_metadata = False
         self.albumartist = None
         self.composer = None
         self.tracknumber = -1
@@ -396,6 +406,7 @@ class MediaTrack:
         track.artist = row["artist"]
         track.albumartist = row["albumartist"]
         track.album = row["album"]
+        track.album_from_metadata = bool(row["album_from_metadata"])
         track.composer = row["composer"]
         track.tracknumber = row["tracknumber"] if row["tracknumber"] is not None else -1
         track.totaltracks = row["totaltracks"] if row["totaltracks"] is not None else -1
@@ -448,6 +459,7 @@ class MediaTrack:
             "artist": self.artist,
             "albumartist": self.albumartist,
             "album": self.album,
+            "album_from_metadata": 1 if self.album_from_metadata else 0,
             "composer": self.composer,
             "tracknumber": _int_or_none(self.tracknumber),
             "totaltracks": _int_or_none(self.totaltracks),
@@ -627,11 +639,26 @@ class MediaTrack:
 
         Separate from get_album_artwork() so artwork can be inspected -- to compare
         one track's against another's -- without leaving a temp file behind per call.
+
+        Read through music_tag first, the library update_metadata writes with, so
+        artwork this app embeds can be read back. In the mutagen fallback an ID3
+        picture frame is keyed by "APIC:" plus its description, so matching the bare
+        key finds only a frame described by the empty string -- not the indexed
+        descriptions music_tag writes, nor whatever another tagger chose.
         """
         if self.artwork is not None:
             return self.artwork
         if self.get_is_video():
             return None
+        if MUSIC_TAG_AVAILABLE:
+            try:
+                item = music_tag.load_file(self.filepath)["artwork"]
+                data = getattr(item.first, "data", None) if item is not None else None
+                if data:
+                    self.artwork = bytes(data)
+                    return self.artwork
+            except Exception as e:
+                logger.warning(f"Album artwork not found via music_tag: {e}")
         # mutagen for special cases
         try:
             _file = File(self.filepath) # mutagen
@@ -641,8 +668,13 @@ class MediaTrack:
                     logger.info("found artwork in MP4Cover mutagen tag type.")
                     break
             if self.artwork is None:
-                self.artwork = _file.tags['APIC:'].data
-                logger.info("found artwork by accessing APIC frame")
+                pictures = [v for k, v in _file.tags.items()
+                            if str(k).startswith("APIC") and getattr(v, "data", None)]
+                if pictures:
+                    # Prefer the front cover where a file carries several pictures.
+                    front = next((p for p in pictures if getattr(p, "type", None) == 3), None)
+                    self.artwork = bytes((front if front is not None else pictures[0]).data)
+                    logger.info("found artwork by accessing APIC frame")
         except Exception as e:
             logger.warning(f"Album artwork not found: {e}")
         return self.artwork

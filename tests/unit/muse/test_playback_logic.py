@@ -404,3 +404,87 @@ class TestUpdateUi:
         playback.track = mock_track
         playback.ui_callbacks = None
         playback.update_ui()   # must not raise
+
+
+# ---------------------------------------------------------------------------
+# _start_album_artwork_consistency
+# ---------------------------------------------------------------------------
+
+@pytest.mark.unit
+class TestStartAlbumArtworkConsistency:
+    """The album artwork consistency pass must start once, from the point a
+    track is about to play.
+
+    It was previously kicked off from update_ui(), which runs twice for the same
+    track when Muse speaks, so a single track could put two threads through one
+    album's files at the same time.
+    """
+
+    @pytest.fixture
+    def spy(self, playback, monkeypatch):
+        """Records synchronous runs and spawned threads separately."""
+        import muse.playback as playback_mod
+        sync = MagicMock(return_value=False)
+        threads = MagicMock()
+        monkeypatch.setattr(playback, "_ensure_album_artwork", sync)
+        monkeypatch.setattr(playback_mod.Utils, "start_thread", threads)
+        return sync, threads
+
+    def test_update_ui_does_not_start_it(self, playback, mock_track, spy):
+        sync, threads = spy
+        mock_track.is_stream.return_value = False
+        mock_track.get_album_artwork.return_value = "/art/cover.jpg"
+        ui = MagicMock()
+        # Not under test here, and reaching them would need a spot profile.
+        ui.update_spot_profile_topics_text = None
+        ui.update_upcoming_group_callback = None
+        ui.update_current_group_callback = None
+        playback.track = mock_track
+        playback.ui_callbacks = ui
+
+        playback.update_ui()
+        playback.update_ui()
+
+        sync.assert_not_called()
+        threads.assert_not_called()
+
+    def test_track_without_artwork_runs_synchronously(self, playback, mock_track, spy):
+        """The image update_ui() shows depends on the result, so it cannot wait."""
+        sync, threads = spy
+        mock_track.load_embedded_artwork.return_value = None
+        playback.track = mock_track
+
+        playback._start_album_artwork_consistency()
+
+        sync.assert_called_once_with(mock_track)
+        threads.assert_not_called()
+
+    def test_track_with_artwork_is_deferred_to_a_thread(self, playback, mock_track, spy):
+        sync, threads = spy
+        mock_track.load_embedded_artwork.return_value = b"art"
+        playback.track = mock_track
+
+        playback._start_album_artwork_consistency()
+
+        sync.assert_not_called()
+        threads.assert_called_once_with(sync, use_asyncio=False, args=(mock_track,))
+
+    def test_video_without_artwork_is_left_alone(self, playback, mock_track, spy):
+        sync, threads = spy
+        mock_track.load_embedded_artwork.return_value = None
+        mock_track.get_is_video.return_value = True
+        playback.track = mock_track
+
+        playback._start_album_artwork_consistency()
+
+        sync.assert_not_called()
+        threads.assert_not_called()
+
+    def test_no_track_is_a_noop(self, playback, spy):
+        sync, threads = spy
+        playback.track = None
+
+        playback._start_album_artwork_consistency()
+
+        sync.assert_not_called()
+        threads.assert_not_called()

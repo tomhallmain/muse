@@ -362,10 +362,13 @@ class LibraryData:
     DIRECTORIES_CACHE = {}
     MEDIA_TRACK_CACHE = {}
     all_tracks = [] # this list should be contained within the values of MEDIA_TRACK_CACHE, but may not be equivalent to the values
-    # Albums scanned and found to have no artwork on any track. Without this an
-    # album that will never yield artwork is rescanned once for every track played
-    # from it. Kept in memory only, so artwork added outside the app is picked up
-    # on the next launch rather than needing this to be invalidated.
+    # (album, directory) pairs scanned and found to have no artwork on any track.
+    # Without this an album that will never yield artwork is rescanned once for
+    # every track played from it. Keyed by directory as well as name because the
+    # same album name occurs in unrelated directories, and one artless directory
+    # must not suppress a namesake elsewhere. Kept in memory only, so artwork
+    # added outside the app is picked up on the next launch rather than needing
+    # this to be invalidated.
     albums_without_artwork: set = set()
     # column -> {value: track count}, filled in as values are asked for. Group
     # sizes only change when the library is rescanned, so this lives for the
@@ -954,6 +957,14 @@ class LibraryData:
         """
         Gives every track on the album the best artwork any of them holds.
 
+        An album counts only where the files themselves agree on one: a track whose
+        album was seeded from its directory name is left alone, as are directory-named
+        albummates of a properly tagged track, since a folder the user assembled by
+        hand says nothing about what artwork its files should share. Albummates are
+        further confined to the requesting track's own directory -- the same album
+        name turns up in unrelated directories, under different artists and on
+        different disks, and those are different albums.
+
         Each albummate's embedded bytes are read rather than trusting its artwork
         attribute, which stays None until a track has been read and so says nothing
         about what the file contains. A track is only written when the best image is
@@ -970,10 +981,19 @@ class LibraryData:
             return False
         if not track.album:
             return False
-        if track.album in LibraryData.albums_without_artwork:
+        if not track.album_from_metadata:
             return False
 
-        album_tracks = [t for t in self.all_tracks if t.album == track.album]
+        album_dir = os.path.dirname(os.path.abspath(track.filepath))
+        memo_key = (track.album, album_dir)
+        if memo_key in LibraryData.albums_without_artwork:
+            return False
+
+        # Album name first so the path comparison only runs on the few tracks that
+        # share the name.
+        album_tracks = [t for t in self.all_tracks
+                        if t.album == track.album and t.album_from_metadata
+                        and os.path.dirname(os.path.abspath(t.filepath)) == album_dir]
         if len(album_tracks) < 2:
             return False
 
@@ -981,7 +1001,7 @@ class LibraryData:
         best_track, best_quality = max(scored, key=lambda pair: pair[1])
 
         if best_quality == (0, 0):
-            LibraryData.albums_without_artwork.add(track.album)
+            LibraryData.albums_without_artwork.add(memo_key)
             return False
 
         # Copied so no two tracks end up sharing one mutable buffer.

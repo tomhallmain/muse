@@ -124,6 +124,7 @@ CREATE TABLE IF NOT EXISTS media_tracks (
     artist           TEXT,
     albumartist      TEXT,
     album            TEXT,
+    album_from_metadata INTEGER NOT NULL DEFAULT 0,
     composer         TEXT,
     tracknumber      INTEGER,
     totaltracks      INTEGER,
@@ -227,6 +228,7 @@ def get_connection() -> sqlite3.Connection:
             conn.execute("PRAGMA foreign_keys=ON")
             _create_schema(conn)
             _migrate_instruments_columns(conn)
+            _migrate_media_tracks_columns(conn)
             _seed_if_needed(conn)
             _migrate_gzip_caches(conn)
             _connection = conn
@@ -275,6 +277,25 @@ def _migrate_instruments_columns(conn: sqlite3.Connection) -> None:
     if "notes" not in existing_columns:
         conn.execute(
             "ALTER TABLE instruments ADD COLUMN notes TEXT NOT NULL DEFAULT '{}'"
+        )
+    conn.commit()
+
+
+def _migrate_media_tracks_columns(conn: sqlite3.Connection) -> None:
+    """Add the album_from_metadata column to a pre-existing media_tracks table.
+
+    Same reasoning as _migrate_instruments_columns: CREATE TABLE IF NOT EXISTS
+    leaves an existing table alone. Rows written before the column existed
+    default to 0, since whether a row's album came from the file's tags or from
+    its directory name cannot be recovered without re-reading the files -- they
+    stay directory-derived until a library rescan fills the flag in.
+    """
+    existing_columns = {
+        row[1] for row in conn.execute("PRAGMA table_info(media_tracks)").fetchall()
+    }
+    if "album_from_metadata" not in existing_columns:
+        conn.execute(
+            "ALTER TABLE media_tracks ADD COLUMN album_from_metadata INTEGER NOT NULL DEFAULT 0"
         )
     conn.commit()
 
