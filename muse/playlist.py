@@ -723,10 +723,17 @@ class Playlist:
         Only unscored groups are asked about, so a long playback session does not
         re-pay for judgements it already has. Returns whether anything new was
         learned; a decline leaves the existing ordering in place.
+
+        A window holding only one group -- because that group overshoots it --
+        has nothing to rank against, and apply_affinity_ordering already bails
+        on it (len(runs) < 2), so scoring it would be a wasted model call.
         """
         if self.affinity_reference is None or not affinity_enabled():
             return False
-        unscored = [v for v in self.upcoming_group_values() if v not in known]
+        values = self.upcoming_group_values()
+        if len(values) < 2:
+            return False
+        unscored = [v for v in values if v not in known]
         if not unscored:
             return False
         scores = score_fn(unscored)

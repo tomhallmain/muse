@@ -356,6 +356,21 @@ class TestRefreshLlmGroupScores:
 
         assert playlist.refresh_llm_group_scores() is False
 
+    def test_a_single_group_overshooting_the_window_makes_no_call(
+        self, mock_data_callbacks, affinity_on, monkeypatch
+    ):
+        """A group larger than the window leaves only itself in the window --
+        nothing to rank it against, and apply_affinity_ordering would bail on
+        it anyway (len(runs) < 2), so asking the model is pure waste."""
+        def _fail(*_a, **_k):
+            raise AssertionError("should not have been called")
+
+        monkeypatch.setattr("muse.playlist.llm_group_scores", _fail)
+        playlist = _playlist(mock_data_callbacks, _grouped([DEFAULT_AFFINITY_WINDOW + 5]),
+                             _reference("Composer0"))
+
+        assert playlist.refresh_llm_group_scores() is False
+
 
 @pytest.mark.unit
 class TestSaturationOrdering:
@@ -469,7 +484,7 @@ class TestRefreshEmbeddingGroupScores:
             return {v: 0.4 for v in values}
 
         monkeypatch.setattr("muse.playlist.embedding_group_scores", _scores)
-        playlist = _playlist(mock_data_callbacks, _grouped([2]), _reference("Composer0"))
+        playlist = _playlist(mock_data_callbacks, _grouped([2, 2]), _reference("Composer0"))
         playlist.refresh_embedding_group_scores()
 
         assert seen["attribute"] == "composer"
@@ -495,6 +510,18 @@ class TestRefreshEmbeddingGroupScores:
         playlist.refresh_embedding_group_scores()
 
         assert asked == [["Composer1", "Composer2"]]
+
+    def test_a_single_group_overshooting_the_window_makes_no_call(
+        self, mock_data_callbacks, affinity_on, monkeypatch
+    ):
+        def _fail(*_a, **_k):
+            raise AssertionError("should not have been called")
+
+        monkeypatch.setattr("muse.playlist.embedding_group_scores", _fail)
+        playlist = _playlist(mock_data_callbacks, _grouped([DEFAULT_AFFINITY_WINDOW + 5]),
+                             _reference("Composer0"))
+
+        assert playlist.refresh_embedding_group_scores() is False
 
 
 @pytest.mark.unit
