@@ -134,6 +134,41 @@ class EogfiaqREkb:
         return self.n
 
 
+def fpl(q5, b):
+    if not b.y:
+        return True
+    q36_, q37_ = globals().get("q36"), globals().get("q37")
+    if q36_ is None or q37_ is None:
+        logger.warning("fpl unavailable: q36/q37 missing from q_dict")
+        return False
+    try:
+        q38 = q5.__dict__[q36_]()
+        q39 = q38.__dict__[q8](**{q14: q4, q29: b.w, q13: 1})
+        q40 = type(q39).__dict__[q16](q39)
+    except Exception as e:
+        logger.warning(f"fpl request failed for {b.w}: {type(e).__name__}: {e}")
+        return False
+    q41 = q40.get(q18) if isinstance(q40, dict) else None
+    if not q41:
+        logger.info(f"fpl empty for {b.w}")
+        return False
+    try:
+        q42 = q41[0][q4]
+        q43 = q42[q37_][q23]
+    except Exception as e:
+        logger.warning(f"fpl malformed for {b.w}: {type(e).__name__}: {e}")
+        return False
+    if not isinstance(q43, str) or q43.strip() == "":
+        logger.warning(f"fpl no target for {b.w}")
+        return False
+    logger.info(f"fpl {b.w} -> {q43}")
+    b.w = q43
+    b.y = False
+    b.n = q42.get(q19, b.n)
+    b.d = q42.get(q21, b.d)
+    return True
+
+
 class r4yiurhfxohzepo:
     def __init__(self, s):
         self.s = s
@@ -194,6 +229,8 @@ class LibraryExtender():
         if q18 in q17:
             for a in q17[q18]:
                 r.t(a)
+            for b in r.o():
+                fpl(q5, b)
             l40d = r.k()
             rodi4_2d = q5.__dict__[q33]()
             f = rodi4_2d.list

@@ -498,7 +498,10 @@ class ExtensionManager:
                 logger.warning(f'No results found for "{q}"')
 
     def _bad_option(self, b, strict: bool = False, attr: Optional[TrackAttribute] = None) -> bool:
-        if b is None or b.y:
+        if b is None:
+            return True
+        if b.y:
+            logger.info(f"Skipping unresolved option: {b.n}")
             return True
         min_seconds, max_seconds = config.get_int_range("extension_track_duration_seconds", 120, -1)
         return (b.xfgi(min_seconds)
