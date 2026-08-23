@@ -270,7 +270,8 @@ class ExtensionManager:
             length = int(current_track.get_track_length())
             min_value += length
             max_value += length
-            logger.info("Increased extension sleep time for long track, new range: {0}min-{1}min".format(min_value/60, max_value/60))
+            logger.info(f"Increased extension sleep time for long track, "
+                        f"new range: {min_value/60:.1f}min-{max_value/60:.1f}min")
         return random.randint(min_value, max_value)
 
     def _run_extensions(self, initial_sleep: bool = True, voice: Optional[Any] = None) -> None:

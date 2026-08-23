@@ -590,3 +590,102 @@ class TestRandomImageAsset:
         self._capture_patterns(monkeypatch, [])
 
         assert playback._get_random_image_asset(filename_filter="nothing_matches") is None
+
+
+# ---------------------------------------------------------------------------
+# Spot profiles across a skip
+# ---------------------------------------------------------------------------
+
+def _spot_profile(track, previous_track=None, prepared=True, says_something=True,
+                  preparation_time=100.0, overwritten_time=None):
+    """A MuseSpotProfile with only the fields this behaviour reads."""
+    from muse.muse_spot_profile import MuseSpotProfile
+    profile = MuseSpotProfile.__new__(MuseSpotProfile)
+    profile.track = track
+    profile.previous_track = previous_track
+    profile.is_prepared = prepared
+    profile.preparation_time = preparation_time
+    profile.track_overwritten_time = overwritten_time
+    profile.skip_previous_track_remark = False
+    profile.is_going_to_say_something = lambda: says_something
+    return profile
+
+
+@pytest.mark.unit
+class TestNeedsRepreparation:
+    def test_not_needed_when_the_track_was_never_overwritten(self):
+        assert _spot_profile("t").needs_repreparation() is False
+
+    def test_needed_when_the_track_was_overwritten_after_preparing(self):
+        """The listener skipped once the spot had already been built for another track."""
+        profile = _spot_profile("t", preparation_time=100.0, overwritten_time=200.0)
+
+        assert profile.needs_repreparation() is True
+
+    def test_needed_when_the_track_was_overwritten_while_still_preparing(self):
+        profile = _spot_profile("t", prepared=False, overwritten_time=200.0)
+
+        assert profile.needs_repreparation() is True
+
+    def test_not_needed_when_the_spot_was_going_to_stay_quiet(self):
+        """Nothing was written about the skipped track, so there is nothing to redo."""
+        profile = _spot_profile("t", says_something=False, overwritten_time=200.0)
+
+        assert profile.needs_repreparation() is False
+
+
+@pytest.mark.unit
+class TestSpotProfileLookup:
+    def test_an_exact_track_match_is_returned_untouched(self, playback):
+        wanted = _spot_profile("track-b", previous_track="track-a")
+        playback.muse_spot_profiles = [_spot_profile("other", previous_track="w"), wanted]
+        playback.track = "track-b"
+        playback.previous_track = "track-a"
+
+        assert playback.get_spot_profile() is wanted
+        assert wanted.track_overwritten_time is None
+
+    def test_a_spot_for_another_track_is_retargeted_and_stamped(self, playback):
+        """After a skip the track that came up is not the one prepared for, so the
+        spot is pointed at it and marked as overwritten for needs_repreparation."""
+        prepared_for_expected = _spot_profile("expected", previous_track="track-a")
+        playback.muse_spot_profiles = [prepared_for_expected]
+        playback.track = "actual"
+        playback.previous_track = "track-a"
+
+        assert playback.get_spot_profile() is prepared_for_expected
+        assert prepared_for_expected.track == "actual"
+        assert prepared_for_expected.track_overwritten_time is not None
+        assert prepared_for_expected.needs_repreparation() is True
+
+    def test_no_usable_spot_raises(self, playback):
+        playback.muse_spot_profiles = [_spot_profile("other", previous_track="someone-else")]
+        playback.track = "actual"
+        playback.previous_track = "track-a"
+
+        with pytest.raises(Exception):
+            playback.get_spot_profile()
+
+
+@pytest.mark.unit
+class TestRepreparingAfterASkip:
+    def test_the_overwritten_spot_is_replaced_rather_than_shadowed(self, playback, monkeypatch):
+        """prepare_muse appends a profile for the same track and get_spot_profile
+        returns the earliest match, so without dropping the stale one the listener
+        still hears the spot written for the track they skipped away from."""
+        stale = _spot_profile("actual", previous_track="track-a", overwritten_time=200.0)
+        fresh = _spot_profile("actual", previous_track="track-a")
+        playback.muse_spot_profiles = [stale]
+        playback.track = "actual"
+        playback.previous_track = "track-a"
+
+        def fake_prepare_muse(delayed_prep=False):
+            playback.muse_spot_profiles.append(fresh)
+            return 3
+
+        monkeypatch.setattr(playback, "prepare_muse", fake_prepare_muse)
+
+        assert playback._reprepare_spot_profile() == 3
+
+        assert stale not in playback.muse_spot_profiles
+        assert playback.get_spot_profile() is fresh

@@ -193,6 +193,19 @@ class Playback:
                 return profile
         raise Exception(f"No spot profile found for track: {track}")
 
+    def _reprepare_spot_profile(self) -> int:
+        """Rebuild the spot for a track the listener skipped away from.
+
+        The overwritten profile is dropped first. prepare_muse appends a profile
+        carrying the same track, and get_spot_profile returns the earliest match,
+        so leaving the old one in the list would keep handing back the spot written
+        for the track that was skipped, and repreparing would change nothing.
+
+        Returns the seconds the repreparation took, to come off the delay.
+        """
+        self.muse_spot_profiles.remove(self.get_spot_profile())
+        return self.prepare_muse(delayed_prep=True)
+
     def _is_track_at_end(self) -> bool:
         """Return True when VLC has finished the current track."""
         assert self.vlc_media_player is not None
@@ -282,8 +295,7 @@ class Playback:
                     logger.info("Spot profile track was overwritten and will be reprepared.")
                     # self.muse.cancel_preparation()
                     # self.spot_profile.reset()
-                    seconds_passed = self.prepare_muse(delayed_prep=True)
-                    self.remaining_delay_seconds -= seconds_passed
+                    self.remaining_delay_seconds -= self._reprepare_spot_profile()
                 # TODO edge case when extension track has been assigned after the preparation for the previously expected upcoming track
                 # TODO enable muse to be cancelled when user clicks Next
                 # The user may have requested to skip the last track since the muse profile was created
