@@ -255,6 +255,10 @@ class ComposerDetailsWindow(SmartWindow):
             genres=[
                 g.strip() for g in self.genres_edit.text().split(":") if g.strip()
             ],
+            # No Works-editing UI here yet -- carry the existing works through
+            # unchanged rather than defaulting to [], which would make every
+            # unrelated edit (e.g. indicators) look like it also cleared them.
+            works=self.composer.works,
         )
         temp_composer.notes = {}
         for i in range(len(self.note_key_edits)):

@@ -60,6 +60,20 @@ CREATE TABLE IF NOT EXISTS composers (
 );
 CREATE INDEX IF NOT EXISTS idx_composers_name ON composers(name);
 
+-- composers.works above is superseded by this table and no longer written to
+-- (kept in place rather than dropped -- see library_data/works_data.py).
+CREATE TABLE IF NOT EXISTS works (
+    id                     INTEGER PRIMARY KEY AUTOINCREMENT,
+    composer_id            INTEGER NOT NULL REFERENCES composers(id) ON DELETE CASCADE,
+    name                   TEXT    NOT NULL,
+    catalogue_number       TEXT,
+    date                   TEXT,
+    source                 TEXT,
+    matched_track_filepath TEXT REFERENCES media_tracks(filepath) ON DELETE SET NULL,
+    UNIQUE(composer_id, name)
+);
+CREATE INDEX IF NOT EXISTS idx_works_composer_id ON works(composer_id);
+
 CREATE TABLE IF NOT EXISTS artists (
     id                  INTEGER,
     name                TEXT    NOT NULL UNIQUE,
@@ -392,7 +406,6 @@ def _seed_composers(conn: sqlite3.Connection) -> None:
             1 if v.get("dates_are_lifespan", True) else 0,
             1 if v.get("dates_uncertain", False) else 0,
             list_to_delim(v.get("genres", [])),
-            list_to_delim(v.get("works", [])),
             json.dumps(v.get("notes", {})),
             v.get("date_added") or mtime_iso,
         )
@@ -401,8 +414,8 @@ def _seed_composers(conn: sqlite3.Connection) -> None:
     conn.executemany(
         """INSERT OR IGNORE INTO composers
            (id, name, mbid, indicators, start_date, end_date,
-            dates_are_lifespan, dates_uncertain, genres, works, notes, date_added)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            dates_are_lifespan, dates_uncertain, genres, notes, date_added)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         rows,
     )
     logger.debug("Seeded %d composers", len(rows))
@@ -553,7 +566,6 @@ def _migrate_legacy_composers(conn: sqlite3.Connection) -> None:
             1 if v.get("dates_are_lifespan", True) else 0,
             1 if v.get("dates_uncertain", False) else 0,
             list_to_delim(v.get("genres", [])),
-            list_to_delim(v.get("works", [])),
             json.dumps(v.get("notes", {})),
             v.get("date_added") or mtime_iso,
         )
@@ -562,8 +574,8 @@ def _migrate_legacy_composers(conn: sqlite3.Connection) -> None:
     conn.executemany(
         """INSERT OR IGNORE INTO composers
            (id, name, mbid, indicators, start_date, end_date,
-            dates_are_lifespan, dates_uncertain, genres, works, notes, date_added)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            dates_are_lifespan, dates_uncertain, genres, notes, date_added)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         rows,
     )
     conn.commit()

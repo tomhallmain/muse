@@ -5,6 +5,7 @@ import re
 import unicodedata
 
 from library_data.work import Work
+from library_data.works_data import works_data
 from utils.db import get_connection, delim_to_list, list_to_delim
 from utils.name_ops import NameOps
 from utils.logging_setup import get_logger
@@ -46,15 +47,10 @@ class Composer:
         self.dates_are_lifespan = dates_are_lifespan
         self.dates_uncertain = dates_uncertain
         self.genres = genres
-        # Build a fresh list rather than aliasing the argument: add_work appends
-        # to self.works, so assigning the argument directly would mutate the list
-        # being iterated below (and the shared default) and never terminate.
-        self.works = []
+        # A fresh list rather than aliasing the argument, matching indicators/genres.
+        self.works = list(works)
         self.notes = notes
         self.date_added = date_added
-
-        for work in works:
-            self.add_work(work)
 
     def validate(self):
         """Validate the composer data and fix common issues.
@@ -134,7 +130,7 @@ class Composer:
         return True, "", fixes
 
     def add_work(self, work):
-        self.works.append(Work(work, self))
+        self.works.append(Work(work, self.name))
 
     def new_note(self, key="New Note", value=""):
         """Add a new note, ensuring the key is unique by adding a number suffix if needed.
@@ -165,7 +161,7 @@ class Composer:
             'dates_are_lifespan': self.dates_are_lifespan,
             'dates_uncertain': self.dates_uncertain,
             'genres': self.genres,
-            'works': self.works,
+            'works': [w.to_dict() for w in self.works],
             'notes': self.notes,
             'date_added': self.date_added.isoformat() if isinstance(self.date_added, datetime.datetime) else None,
         }
@@ -187,7 +183,7 @@ class Composer:
             dates_are_lifespan=data.get('dates_are_lifespan', True),
             dates_uncertain=data.get('dates_uncertain', False),
             genres=data.get('genres', []),
-            works=data.get('works', []),
+            works=[Work.from_dict(w) for w in data.get('works', []) if isinstance(w, dict)],
             notes=data.get('notes', {}),
             date_added=date_added,
         )
@@ -428,7 +424,7 @@ class ComposersData:
         composers = {}
         rows = get_connection().execute(
             "SELECT id, name, indicators, start_date, end_date, "
-            "dates_are_lifespan, dates_uncertain, genres, works, notes, date_added FROM composers"
+            "dates_are_lifespan, dates_uncertain, genres, notes, date_added FROM composers"
         ).fetchall()
         needs_backfill = []
         for row in rows:
@@ -461,7 +457,7 @@ class ComposersData:
             dates_are_lifespan=bool(row["dates_are_lifespan"]),
             dates_uncertain=bool(row["dates_uncertain"]),
             genres=delim_to_list(row["genres"]),
-            works=delim_to_list(row["works"]),
+            works=works_data.get_works_for_composer(row["id"]),
             notes=json.loads(row["notes"] or "{}"),
             date_added=date_added,
         )
@@ -500,8 +496,8 @@ class ComposersData:
     # nothing populates it yet, so leaving it out preserves any external value.
     _UPSERT_SQL = """
         INSERT INTO composers (id, name, indicators, start_date, end_date,
-            dates_are_lifespan, dates_uncertain, genres, works, notes, date_added)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            dates_are_lifespan, dates_uncertain, genres, notes, date_added)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(name) DO UPDATE SET
             indicators = excluded.indicators,
             start_date = excluded.start_date,
@@ -509,7 +505,6 @@ class ComposersData:
             dates_are_lifespan = excluded.dates_are_lifespan,
             dates_uncertain = excluded.dates_uncertain,
             genres = excluded.genres,
-            works = excluded.works,
             notes = excluded.notes,
             date_added = excluded.date_added
     """
@@ -518,8 +513,6 @@ class ComposersData:
     def _composer_to_row_params(composer):
         date_added = composer.date_added
         date_added_str = date_added.isoformat() if isinstance(date_added, datetime.datetime) else date_added
-        # composer.works may hold Work objects (composer.add_work) rather than plain names.
-        work_names = [getattr(w, "name", w) for w in composer.works]
         return (
             composer.id,
             composer.name,
@@ -529,7 +522,6 @@ class ComposersData:
             int(bool(composer.dates_are_lifespan)),
             int(bool(composer.dates_uncertain)),
             list_to_delim(composer.genres),
-            list_to_delim(work_names),
             json.dumps(composer.notes or {}),
             date_added_str,
         )
@@ -577,6 +569,9 @@ class ComposersData:
         if not success:
             return False, error_msg
 
+        if composer.works:
+            works_data.save_works(composer.id, composer.works)
+
         self._composers[composer.name] = composer
         return True, ""
 
@@ -614,6 +609,7 @@ class ComposersData:
             if cur.rowcount == 0 and composer.name not in self._composers:
                 return False, _("Composer not found")
             self._composers.pop(composer.name, None)
+            works_data.reload()  # composer.id's works were cascade-deleted with the row
             return True, ""
         except Exception as e:
             error_msg = str(e)

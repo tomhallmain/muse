@@ -232,6 +232,7 @@ def _patch_db_connection_singleton(monkeypatch, conn) -> None:
         "library_data.form",
         "library_data.genre",
         "library_data.instrument",
+        "library_data.works_data",
     ):
         try:
             module = importlib.import_module(module_name)
@@ -340,6 +341,16 @@ def isolated_singletons(tmp_path, monkeypatch):
         monkeypatch.setattr(
             _composer_mod, "composers_data", _composer_mod.ComposersData()
         )
+    except Exception:
+        pass
+    # Same for works_data (DB-backed; must use the isolated in-memory connection).
+    # composer.py holds its own `from library_data.works_data import works_data`
+    # binding, so the source module alone isn't enough -- sweep like config/cache.
+    try:
+        import library_data.works_data as _works_mod
+        old_works_data = _works_mod.works_data
+        new_works_data = _works_mod.WorksData()
+        repoint_singleton_bindings(monkeypatch, "works_data", old_works_data, new_works_data)
     except Exception:
         pass
     # Same for forms_data (DB-backed; must use the isolated in-memory connection).
