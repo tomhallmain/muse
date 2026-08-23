@@ -6,16 +6,16 @@ long as the track plays.  Clips are therefore encoded once per asset, cached on
 disk between runs, and never re-encoded per track -- encoding a clip as long as the
 track itself would cost minutes of CPU for every song.
 
-Encoding still happens off the playback thread: a track that finds no cached clip
-gets the still image and triggers one background encode, so the cache fills in over
-the first several tracks without ever delaying playback.
+The whole set is encoded in one pass the first time a track needs it, holding up
+that one track. Encoding a clip per track instead would spread the same one-time
+cost over as many songs as there are record assets, leaving the first couple of
+dozen tracks cycling the one or two clips that happened to be ready.
 """
 
 import os
 import subprocess
-import threading
 from random import choice
-from typing import List, Optional
+from typing import Callable, List, Optional
 
 from utils.config import config
 from utils.ffmpeg_handler import FFmpegHandler
@@ -47,34 +47,70 @@ class SpinningRecordVideos:
         ("libx264", ".mp4", ("-crf", "23", "-preset", "veryfast")),
         ("libxvid", ".avi", ("-qscale:v", "3")),
     )
+    # Used when the asset's own background colour cannot be sampled.
+    DEFAULT_FILL_COLOR = "0x000000"
     # Bump when the encode parameters change so clips from an older version are discarded.
-    CACHE_SIGNATURE = "1|720px|10s|30fps"
+    CACHE_SIGNATURE = "2|720px|10s|30fps|asset-background-fill"
 
-    _lock = threading.Lock()
-    _generating: Optional[str] = None
     _encoder_index = 0
     _cache_dir: Optional[str] = None
     _warned_no_ffmpeg = False
+    _last_video: Optional[str] = None
+    _clips_ensured = False
 
     # ── Selection ────────────────────────────────────────────────────────────
 
     @classmethod
-    def get_random_record_video(cls) -> Optional[str]:
+    def get_random_record_video(cls, notify: Optional[Callable[[int], None]] = None) -> Optional[str]:
         """Return a cached clip to show for a track with no album art, or None.
 
-        None means the caller should use a still record image instead: either the
-        feature is off, or no clip has been encoded yet.
+        Encodes any clips still missing first, which blocks. None means the caller
+        should use a still record image instead: either the feature is off, or
+        nothing could be encoded.
         """
         if not cls.enabled():
             return None
-        assets = cls.record_assets()
-        ready = [asset for asset in assets if cls.cached_video(asset) is not None]
-        missing = [asset for asset in assets if cls.cached_video(asset) is None]
-        if missing:
-            cls._start_background_generation(choice(missing))
-        if len(ready) == 0:
+        cls.ensure_clips(notify=notify)
+        videos = [video for video in (cls.cached_video(asset) for asset in cls.record_assets())
+                  if video is not None]
+        if len(videos) == 0:
             return None
-        return cls.cached_video(choice(ready))
+        # Avoid handing back the clip that just played.
+        unplayed = [video for video in videos if video != cls._last_video]
+        cls._last_video = choice(unplayed or videos)
+        return cls._last_video
+
+    @classmethod
+    def ensure_clips(cls, notify: Optional[Callable[[int], None]] = None) -> None:
+        """Encode every asset that has no clip yet, blocking until they are done.
+
+        Runs at most once per session: an asset no encoder can handle would otherwise
+        be retried, and block again, on every later track that finds no album art.
+
+        notify, when given, is called with the number of clips about to be encoded,
+        so the caller can tell the user why playback is waiting.
+        """
+        if cls._clips_ensured:
+            return
+        missing = [asset for asset in cls.record_assets() if cls.cached_video(asset) is None]
+        if len(missing) == 0:
+            cls._clips_ensured = True
+            return
+        if notify is not None:
+            try:
+                notify(len(missing))
+            except Exception as e:
+                logger.warning(f"Could not announce spinning record encoding: {e}")
+        logger.info(f"Encoding {len(missing)} spinning record clip(s); playback waits for this once.")
+        encoded = 0
+        for asset_path in missing:
+            try:
+                if cls.generate(asset_path) is not None:
+                    encoded += 1
+            except Exception as e:
+                logger.warning(f"Failed to generate spinning record video for {asset_path}: {e}")
+        cls._clips_ensured = True
+        logger.info(f"Encoded {encoded} of {len(missing)} spinning record clip(s).")
 
     @classmethod
     def enabled(cls) -> bool:
@@ -159,31 +195,13 @@ class SpinningRecordVideos:
     # ── Encoding ─────────────────────────────────────────────────────────────
 
     @classmethod
-    def _start_background_generation(cls, asset_path: str) -> None:
-        """Encode one missing clip off the playback thread, one at a time."""
-        with cls._lock:
-            if cls._generating is not None:
-                return
-            cls._generating = asset_path
-        threading.Thread(target=cls._generate_and_release, args=(asset_path,), daemon=True).start()
-
-    @classmethod
-    def _generate_and_release(cls, asset_path: str) -> None:
-        try:
-            cls.generate(asset_path)
-        except Exception as e:
-            logger.warning(f"Failed to generate spinning record video for {asset_path}: {e}")
-        finally:
-            with cls._lock:
-                cls._generating = None
-
-    @classmethod
     def generate(cls, asset_path: str) -> Optional[str]:
         """Encode the looping clip for one record asset. Returns its cached path."""
         existing = cls.cached_video(asset_path)
         if existing is not None:
             return existing
         basename = os.path.basename(asset_path)
+        fill_color = cls.background_color(asset_path)
         for index in range(cls._encoder_index, len(cls.ENCODERS)):
             encoder, extension, quality_args = cls.ENCODERS[index]
             output_path = os.path.join(cls.cache_dir(), basename + extension)
@@ -191,7 +209,7 @@ class SpinningRecordVideos:
             # clip that later runs would treat as cached.
             partial_path = os.path.join(cls.cache_dir(), basename + cls.PARTIAL_MARKER + extension)
             logger.info(f"Generating spinning record video with {encoder}: {basename}")
-            if cls._run_ffmpeg(cls.ffmpeg_args(asset_path, partial_path, encoder, quality_args)):
+            if cls._run_ffmpeg(cls.ffmpeg_args(asset_path, partial_path, encoder, quality_args, fill_color)):
                 os.replace(partial_path, output_path)
                 cls._encoder_index = index
                 return output_path
@@ -200,7 +218,39 @@ class SpinningRecordVideos:
         return None
 
     @classmethod
-    def ffmpeg_args(cls, image_path: str, output_path: str, encoder: str, quality_args) -> List[str]:
+    def background_color(cls, image_path: str) -> str:
+        """The asset's own corner colour, as an ffmpeg hex literal.
+
+        Rotation empties the frame's corners, and filling them with anything but the
+        asset's own background makes the whole square read as turning instead of just
+        the record. The record assets are opaque and each carries its own backdrop,
+        from near-white to near-black, so one fixed colour cannot suit them.
+
+        Sampled through ffmpeg rather than an image library: this feature already
+        requires ffmpeg, and it reads every asset format without a further dependency.
+        """
+        args = [
+            "ffmpeg", "-hide_banner", "-loglevel", "error",
+            "-i", image_path,
+            # Same centred square the clip is built from, then average its top-left
+            # corner patch down to the single pixel whose colour is wanted.
+            "-vf", "crop='min(iw,ih)':'min(iw,ih)',crop=iw/16:ih/16:0:0,scale=1:1:flags=area",
+            "-frames:v", "1", "-f", "rawvideo", "-pix_fmt", "rgb24", "-",
+        ]
+        try:
+            finished = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=60)
+            if finished.returncode == 0 and len(finished.stdout) >= 3:
+                red, green, blue = finished.stdout[0], finished.stdout[1], finished.stdout[2]
+                return f"0x{red:02x}{green:02x}{blue:02x}"
+            logger.warning(f"Could not sample the background colour of {os.path.basename(image_path)}: "
+                           f"{(finished.stderr or b'').decode(errors='replace').strip()[-200:]}")
+        except Exception as e:
+            logger.warning(f"Could not sample the background colour of {image_path}: {e}")
+        return cls.DEFAULT_FILL_COLOR
+
+    @classmethod
+    def ffmpeg_args(cls, image_path: str, output_path: str, encoder: str, quality_args,
+                    fill_color: Optional[str] = None) -> List[str]:
         # crop defaults to centred, and rotate's output defaults to its input size,
         # so cropping square up front keeps the turning record framed and leaves only
         # the corners for fillcolor. Sides are rounded down to an even number because
@@ -209,7 +259,7 @@ class SpinningRecordVideos:
         video_filter = ",".join([
             "crop='min(iw,ih)':'min(iw,ih)'",
             f"scale=w='{even_side.format('iw')}':h='{even_side.format('ih')}'",
-            f"rotate=angle='2*PI*t/{cls.CLIP_SECONDS}':fillcolor=0x000000",
+            f"rotate=angle='2*PI*t/{cls.CLIP_SECONDS}':fillcolor={fill_color or cls.DEFAULT_FILL_COLOR}",
         ])
         return [
             "ffmpeg", "-hide_banner", "-loglevel", "error", "-y",

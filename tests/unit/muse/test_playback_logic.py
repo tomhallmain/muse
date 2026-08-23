@@ -488,3 +488,105 @@ class TestStartAlbumArtworkConsistency:
 
         sync.assert_not_called()
         threads.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# delay
+# ---------------------------------------------------------------------------
+
+@pytest.mark.unit
+class TestDelayHoldsTheSpinningRecord:
+    """Nothing is playing through the wait between tracks, so a record still
+    turning there says otherwise."""
+
+    def _ready_to_wait(self, playback, seconds=0):
+        playback.has_played_first_track = True
+        playback.last_track_failed = False
+        playback.remaining_delay_seconds = seconds
+        playback.ui_callbacks = MagicMock()
+        return playback.ui_callbacks.set_album_artwork_video_paused
+
+    def test_video_is_paused_for_the_wait_and_resumed_after(self, playback):
+        paused = self._ready_to_wait(playback)
+
+        playback.delay()
+
+        assert [call.args[0] for call in paused.call_args_list] == [True, False]
+
+    def test_video_is_resumed_even_when_the_wait_raises(self, playback, monkeypatch):
+        paused = self._ready_to_wait(playback, seconds=10)
+
+        def _boom(_seconds):
+            raise KeyboardInterrupt
+
+        import muse.playback as playback_mod
+        monkeypatch.setattr(playback_mod.time, "sleep", _boom)
+
+        with pytest.raises(KeyboardInterrupt):
+            playback.delay()
+
+        assert [call.args[0] for call in paused.call_args_list] == [True, False]
+
+    def test_nothing_is_touched_before_the_first_track(self, playback):
+        paused = self._ready_to_wait(playback)
+        playback.has_played_first_track = False
+
+        playback.delay()
+
+        paused.assert_not_called()
+
+    def test_a_missing_callback_is_tolerated(self, playback):
+        """ui_callbacks is None wherever playback runs without a UI."""
+        playback.has_played_first_track = True
+        playback.last_track_failed = False
+        playback.remaining_delay_seconds = 0
+        playback.ui_callbacks = None
+
+        playback.delay()   # must not raise
+
+
+# ---------------------------------------------------------------------------
+# _get_random_image_asset
+# ---------------------------------------------------------------------------
+
+@pytest.mark.unit
+class TestRandomImageAsset:
+    def _capture_patterns(self, monkeypatch, filenames):
+        """Record the patterns handed to the asset lookup, and control its result."""
+        import muse.playback as playback_mod
+        captured = []
+
+        def fake_get_assets_filenames(filename_filter=None):
+            captured.append(filename_filter)
+            return list(filenames)
+
+        monkeypatch.setattr(playback_mod.Utils, "get_assets_filenames", fake_get_assets_filenames)
+        return captured
+
+    def test_a_string_filter_is_one_pattern_not_one_per_character(self, playback, monkeypatch):
+        """Iterating "record" makes r/e/c/o/d each a pattern of its own, matching any
+        asset that merely starts with one of those letters."""
+        captured = self._capture_patterns(monkeypatch, ["record1_.png"])
+
+        playback._get_random_image_asset(filename_filter="record")
+
+        assert captured == [[r"record.*\.(png|jpg|jpeg)$"]]
+
+    def test_a_list_filter_keeps_one_pattern_per_entry(self, playback, monkeypatch):
+        captured = self._capture_patterns(monkeypatch, ["muse__1_.png"])
+
+        playback._get_random_image_asset(filename_filter=["muse__", "muse_m"])
+
+        assert captured == [[r"muse__.*\.(png|jpg|jpeg)$", r"muse_m.*\.(png|jpg|jpeg)$"]]
+
+    def test_jpg_assets_are_still_eligible(self, playback, monkeypatch):
+        """Two of the record assets are jpg; restricting to png would drop them."""
+        self._capture_patterns(monkeypatch, ["record19_.jpg"])
+
+        assert playback._get_random_image_asset(filename_filter="record").endswith("record19_.jpg")
+
+    def test_no_match_returns_none_rather_than_raising(self, playback, monkeypatch):
+        """randint(0, -1) on an empty result would raise instead."""
+        self._capture_patterns(monkeypatch, [])
+
+        assert playback._get_random_image_asset(filename_filter="nothing_matches") is None

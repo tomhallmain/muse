@@ -88,6 +88,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
     _sig_progress = Signal(int, float, float)
     _sig_extension_status = Signal(str)
     _sig_album_artwork = Signal(str)
+    _sig_artwork_video_paused = Signal(bool)
     _sig_dj_persona = Signal(str)
     _sig_favorite_status = Signal(object)
     _sig_run_finished = Signal(object, object)
@@ -142,6 +143,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
             "update_progress_callback": self.update_progress_bar,
             "update_extension_status": self.update_label_extension_status,
             "update_album_artwork": self.update_album_artwork,
+            "set_album_artwork_video_paused": self.set_album_artwork_video_paused,
             "get_media_frame_handle": self.get_media_frame_handle,
             "start_play_callback": self.start_playback,
             "shutdown_callback": self._request_shutdown,
@@ -184,6 +186,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         self._sig_progress.connect(self._do_update_progress_bar)
         self._sig_extension_status.connect(self._do_update_label_extension_status)
         self._sig_album_artwork.connect(self._do_update_album_artwork)
+        self._sig_artwork_video_paused.connect(self._do_set_album_artwork_video_paused)
         self._sig_dj_persona.connect(self._do_update_dj_persona_callback)
         self._sig_favorite_status.connect(self._do_update_favorite_status)
         self._sig_run_finished.connect(self._on_run_finished)
@@ -1362,6 +1365,15 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
                 logger.warning(f"Could not play spinning record video {image_filepath}: {e}")
             image_filepath = SpinningRecordVideos.source_image_for(image_filepath)
         self.media_frame.show_image(image_filepath if image_filepath else None)
+
+    def set_album_artwork_video_paused(self, paused=True):
+        self._sig_artwork_video_paused.emit(bool(paused))
+
+    def _do_set_album_artwork_video_paused(self, paused):
+        try:
+            self.media_frame.set_video_paused(paused)
+        except Exception as e:
+            logger.warning(f"Could not {'pause' if paused else 'resume'} the artwork video: {e}")
 
     def _cache_media_frame_handle(self):
         """Update cached window handle for VLC (must run on main thread)."""

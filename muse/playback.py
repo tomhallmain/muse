@@ -644,7 +644,8 @@ class Playback:
             # artwork runs in register_new_song, before this point.
             album_artwork = self.track.get_album_artwork()
             if album_artwork is None and not self.track.get_is_video():
-                album_artwork = SpinningRecordVideos.get_random_record_video()
+                album_artwork = SpinningRecordVideos.get_random_record_video(
+                    notify=self._notify_encoding_record_clips)
                 if album_artwork is None:
                     album_artwork = self._get_random_image_asset(filename_filter="record")
             self.ui_callbacks.update_album_artwork(image_filepath=album_artwork)
@@ -704,11 +705,30 @@ class Playback:
         # TODO add silence artwork
         pass
 
-    def _get_random_image_asset(self, filename_filter: list[str] = ["record"]) -> str:
-        for filter in filename_filter:
-            if not filter.endswith(".png"):
-                filter += ".*\\.png"
-        filenames = Utils.get_assets_filenames(filename_filter=filename_filter)
+    def _notify_encoding_record_clips(self, count: int) -> None:
+        """Say why the first track without album art is waiting on ffmpeg."""
+        toast = getattr(self.ui_callbacks, "toast", None)
+        if toast is None:
+            return
+        try:
+            toast(_("Preparing {0} spinning record animations. This is done once and "
+                    "may take a few minutes.").format(count))
+        except Exception as e:
+            logger.warning(f"Could not announce spinning record encoding: {e}")
+
+    def _get_random_image_asset(self, filename_filter="record") -> Optional[str]:
+        """A random image asset whose filename starts with one of the given patterns.
+
+        A bare string counts as one pattern: iterating it would make every character
+        a pattern of its own, matching any asset merely starting with one of those
+        letters. The extension is matched too, so only images are returned.
+        """
+        patterns = [filename_filter] if isinstance(filename_filter, str) else list(filename_filter)
+        patterns = [pattern + r".*\.(png|jpg|jpeg)$" for pattern in patterns]
+        filenames = Utils.get_assets_filenames(filename_filter=patterns)
+        if len(filenames) == 0:
+            logger.warning(f"No image asset matched {patterns}")
+            return None
         return Utils.get_asset(filenames[randint(0, len(filenames)-1)])
 
     def increment_count(self) -> bool:
@@ -721,11 +741,26 @@ class Playback:
             if self.remaining_delay_seconds > 4 and self.ui_callbacks is not None:
                 self.ui_callbacks.update_next_up_callback(_("Sleeping for seconds") + ": " + str(int(self.remaining_delay_seconds)), no_title=True)
                 # TODO set track text to "Upcoming track"
-            delay_timer = 0
-            while not self._run_context.skip_delay and delay_timer < self.remaining_delay_seconds:
-                time.sleep(0.5)
-                delay_timer += 0.5
-            self._run_context.skip_delay = False
+            # Nothing is playing through the wait, so a record still turning would
+            # say otherwise.
+            self._set_artwork_video_paused(True)
+            try:
+                delay_timer = 0
+                while not self._run_context.skip_delay and delay_timer < self.remaining_delay_seconds:
+                    time.sleep(0.5)
+                    delay_timer += 0.5
+                self._run_context.skip_delay = False
+            finally:
+                self._set_artwork_video_paused(False)
+
+    def _set_artwork_video_paused(self, paused: bool) -> None:
+        callback = getattr(self.ui_callbacks, "set_album_artwork_video_paused", None)
+        if callback is None:
+            return
+        try:
+            callback(paused)
+        except Exception as e:
+            logger.debug(f"Could not {'pause' if paused else 'resume'} the artwork video: {e}")
 
     def set_volume(self) -> None:
         # Check if timer volume override is active

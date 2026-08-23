@@ -374,6 +374,19 @@ class MediaFrame(QFrame):
         if _VLC_AVAILABLE and self.vlc_media_player:
             self.vlc_media_player.pause()
 
+    def set_video_paused(self, paused):
+        """Hold a playing video on its current frame, or let it run on again.
+
+        set_pause is used rather than video_pause(), which toggles: this is called
+        from playback state changes that may repeat, and a toggle would resume the
+        very thing it was asked to hold.
+        """
+        if not _VLC_AVAILABLE or not self.vlc_media_player:
+            return
+        if not isinstance(self._video_ui, VideoUI):
+            return
+        self.vlc_media_player.set_pause(1 if paused else 0)
+
     def video_take_screenshot(self):
         if _VLC_AVAILABLE and self.vlc_media_player:
             try:

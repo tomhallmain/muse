@@ -20,6 +20,7 @@ class AppActions:
         "update_progress_callback",
         "update_extension_status",
         "update_album_artwork",
+        "set_album_artwork_video_paused",
         "get_media_frame_handle",
         "shutdown_callback",
         "toast",
