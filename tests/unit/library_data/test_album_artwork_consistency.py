@@ -5,6 +5,7 @@ decodable images, so artwork_quality() falls back to length and the tests behave
 the same whether or not Pillow is installed.
 """
 
+import logging
 import os
 
 import pytest
@@ -45,6 +46,19 @@ class _FakeTrack:
 def _memo_key(track):
     """The (album, directory) pair ensure_album_artwork_consistency memoises under."""
     return (track.album, os.path.dirname(os.path.abspath(track.filepath)))
+
+
+@pytest.fixture
+def library_logs(caplog, monkeypatch):
+    """Capture this module's log records.
+
+    get_logger sets propagate=False, so records never reach the root logger that
+    caplog attaches its handler to; propagation is turned back on for the test.
+    """
+    logger = logging.getLogger("muse.library_data.library_data")
+    monkeypatch.setattr(logger, "propagate", True)
+    caplog.set_level(logging.INFO, logger=logger.name)
+    return caplog
 
 
 @pytest.fixture(autouse=True)
@@ -170,6 +184,67 @@ class TestArtlessAlbumMemo:
         library.ensure_album_artwork_consistency(b)
 
         assert _memo_key(b) not in LibraryData.albums_without_artwork
+
+
+@pytest.mark.unit
+class TestLogsSayWhatHappened:
+    """A skipped check must say it was skipped and why, rather than announcing a
+    start and a finish around work it never did."""
+
+    def test_a_skip_gives_its_reason_and_claims_no_start(self, library_logs):
+        a = _FakeTrack("a", "Unknown Album", LARGE, album_from_metadata=False)
+        b = _FakeTrack("b", "Unknown Album", None, album_from_metadata=False)
+        library = _library([a, b])
+
+        library.ensure_album_artwork_consistency(b)
+
+        assert "skipped" in library_logs.text
+        assert "directory name" in library_logs.text
+        assert "Starting album artwork consistency" not in library_logs.text
+        assert "finished" not in library_logs.text
+
+    def test_a_lone_track_says_nothing_else_shares_the_album(self, library_logs):
+        a = _FakeTrack("a", "Album", LARGE)
+        library = _library([a])
+
+        library.ensure_album_artwork_consistency(a)
+
+        assert "skipped" in library_logs.text
+        assert "nothing else in" in library_logs.text
+
+    def test_a_write_is_reported_with_its_count_and_source(self, library_logs):
+        best = _FakeTrack("best", "Album", LARGE)
+        poor = _FakeTrack("poor", "Album", SMALL)
+        library = _library([best, poor])
+
+        library.ensure_album_artwork_consistency(poor)
+
+        assert "Starting album artwork consistency" in library_logs.text
+        assert "wrote" in library_logs.text and "'best'" in library_logs.text
+        assert "onto 1 of 1 albummates" in library_logs.text
+
+    def test_doing_nothing_is_reported_as_doing_nothing(self, library_logs):
+        a = _FakeTrack("a", "Album", LARGE)
+        b = _FakeTrack("b", "Album", LARGE)
+        library = _library([a, b])
+
+        library.ensure_album_artwork_consistency(a)
+
+        assert "nothing was changed" in library_logs.text
+
+    def test_an_artless_album_says_so_and_says_it_will_not_re_read(self, library_logs):
+        a = _FakeTrack("a", "Album", None)
+        b = _FakeTrack("b", "Album", None)
+        library = _library([a, b])
+
+        library.ensure_album_artwork_consistency(a)
+
+        assert "none of the 2 tracks carries any artwork" in library_logs.text
+
+    def test_long_track_lists_are_cut_short(self):
+        """One album ran to hundreds of tracks, which is not a log line."""
+        assert LibraryData._few(["a", "b"]) == "a, b"
+        assert LibraryData._few([str(n) for n in range(9)]) == "0, 1, 2, 3, 4 and 4 more"
 
 
 @pytest.mark.unit

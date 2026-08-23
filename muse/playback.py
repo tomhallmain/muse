@@ -671,19 +671,18 @@ class Playback:
             Utils.start_thread(self._ensure_album_artwork, use_asyncio=False, args=(self.track,))
 
     def _ensure_album_artwork(self, track) -> bool:
-        logger.info(f"Starting album artwork consistency check, requested by track: {track.filepath}")
+        # What happened, and why, is logged by ensure_album_artwork_consistency:
+        # only it knows which of its conditions the track fell out on.
+        data_callbacks = self._playback_config.data_callbacks
+        library_data = getattr(data_callbacks, "instance", None) if data_callbacks is not None else None
+        if library_data is None:
+            logger.debug(f"Album artwork consistency skipped for {track.filepath}: no library data")
+            return False
         try:
-            data_callbacks = self._playback_config.data_callbacks
-            library_data = getattr(data_callbacks, "instance", None) if data_callbacks is not None else None
-            if library_data is None:
-                return False
-            try:
-                return library_data.ensure_album_artwork_consistency(track)
-            except Exception as e:
-                logger.warning(f"Album artwork consistency check failed: {e}")
-                return False
-        finally:
-            logger.info(f"Finished album artwork consistency check, requested by track: {track.filepath}")
+            return library_data.ensure_album_artwork_consistency(track)
+        except Exception as e:
+            logger.warning(f"Album artwork consistency check failed for {track.filepath}: {e}")
+            return False
 
     def update_ui_art_for_muse(self) -> None:
         if self.ui_callbacks.update_album_artwork is not None:

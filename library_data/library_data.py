@@ -977,16 +977,24 @@ class LibraryData:
         Returns:
             bool: True if any track was updated, False otherwise
         """
+        skipped = f"Album artwork consistency skipped for {track.filepath}"
         if not config.auto_fix_album_artwork:
+            # Debug alone: a feature switched off should not narrate itself once a track.
+            logger.debug(f"{skipped}: the feature is off")
             return False
         if not track.album:
+            logger.info(f"{skipped}: the track has no album")
             return False
         if not track.album_from_metadata:
+            logger.info(f"{skipped}: the album '{track.album}' came from the directory "
+                        f"name rather than the file's own tags")
             return False
 
         album_dir = os.path.dirname(os.path.abspath(track.filepath))
         memo_key = (track.album, album_dir)
         if memo_key in LibraryData.albums_without_artwork:
+            logger.info(f"{skipped}: nothing in '{track.album}' was found to carry "
+                        f"artwork earlier this run")
             return False
 
         # Album name first so the path comparison only runs on the few tracks that
@@ -995,25 +1003,54 @@ class LibraryData:
                         if t.album == track.album and t.album_from_metadata
                         and os.path.dirname(os.path.abspath(t.filepath)) == album_dir]
         if len(album_tracks) < 2:
+            logger.info(f"{skipped}: nothing else in {album_dir} is tagged with the "
+                        f"album '{track.album}'")
             return False
+
+        finished = f"Album artwork consistency check finished for {track.filepath}"
+        logger.info(f"Starting album artwork consistency check for {track.filepath}: "
+                    f"{len(album_tracks)} tracks tagged '{track.album}' in {album_dir}")
 
         scored = [(t, MediaTrack.artwork_quality(t.load_embedded_artwork())) for t in album_tracks]
         best_track, best_quality = max(scored, key=lambda pair: pair[1])
 
         if best_quality == (0, 0):
             LibraryData.albums_without_artwork.add(memo_key)
+            logger.info(f"{finished}: none of the {len(album_tracks)} tracks carries any "
+                        f"artwork, so '{track.album}' will not be read again this run")
             return False
 
         # Copied so no two tracks end up sharing one mutable buffer.
         reference = bytes(best_track.artwork)
-        updated = False
+        updated, failed = [], []
         for t, quality in scored:
             if t is best_track or not MediaTrack.artwork_is_improvement(best_quality, quality):
                 continue
             try:
                 if t.update_metadata({'artwork': reference}):
-                    updated = True
+                    updated.append(t.title)
+                else:
+                    failed.append(t.title)
             except Exception as e:
                 logger.warning(f"Failed to update artwork for {t.title}: {str(e)}")
-        return updated
+                failed.append(t.title)
+
+        if len(updated) > 0:
+            logger.info(f"{finished}: wrote {len(reference)} bytes of artwork from "
+                        f"'{best_track.title}' onto {len(updated)} of "
+                        f"{len(album_tracks) - 1} albummates: {LibraryData._few(updated)}")
+        else:
+            logger.info(f"{finished}: nothing was changed, every track already carries "
+                        f"artwork as good as '{best_track.title}'")
+        if len(failed) > 0:
+            logger.warning(f"Album artwork could not be written to {len(failed)} track(s): "
+                           f"{LibraryData._few(failed)}")
+        return len(updated) > 0
+
+    @staticmethod
+    def _few(titles, limit=5):
+        """Track titles for a log line, cut short -- one album can run to hundreds."""
+        if len(titles) <= limit:
+            return ", ".join(titles)
+        return ", ".join(titles[:limit]) + f" and {len(titles) - limit} more"
 

@@ -658,7 +658,9 @@ class MediaTrack:
                     self.artwork = bytes(data)
                     return self.artwork
             except Exception as e:
-                logger.warning(f"Album artwork not found via music_tag: {e}")
+                # A file with no picture raises here, which is ordinary rather than a
+                # fault; the mutagen fallback below warns if it fails too.
+                logger.debug(f"Album artwork not found via music_tag: {e}")
         # mutagen for special cases
         try:
             _file = File(self.filepath) # mutagen
