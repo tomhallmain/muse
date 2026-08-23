@@ -93,14 +93,18 @@ class PositionData:
         }
 
     @staticmethod
-    def from_master(master):
-        """Create PositionData from a PySide6 window"""
+    def from_master(master, geometry=None):
+        """Create PositionData from a PySide6 window.
+
+        Pass an explicit ``geometry`` (a QRect) to use instead of the
+        window's current one.
+        """
         from PySide6.QtWidgets import QWidget
-        
+
         if not isinstance(master, QWidget):
             raise TypeError(f"Expected QWidget, got {type(master)}")
-        
-        geometry = master.geometry()
+
+        geometry = geometry if geometry is not None else master.geometry()
         return PositionData(x=geometry.x(), y=geometry.y(), width=geometry.width(), height=geometry.height())
 
     @staticmethod

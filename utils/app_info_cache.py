@@ -153,9 +153,13 @@ class AppInfoCache:
                 return default_val
             return self._cache[AppInfoCache.INFO_KEY][key]
 
-    def set_display_position(self, master):
-        """Store the main window's display position and size."""
-        self.set("display_position", PositionData.from_master(master).to_dict())
+    def set_display_position(self, master, geometry=None):
+        """Store the main window's display position and size.
+
+        Pass ``geometry`` to save that instead of the window's current one --
+        e.g. its last known non-maximized geometry.
+        """
+        self.set("display_position", PositionData.from_master(master, geometry=geometry).to_dict())
 
     def set_virtual_screen_info(self, master):
         """Store the virtual screen information."""

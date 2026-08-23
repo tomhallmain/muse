@@ -698,10 +698,27 @@ class SmartMainWindow(QMainWindow):
             **kwargs: Additional arguments passed to QMainWindow constructor
         """
         super().__init__(parent, **kwargs)
-        
+
         self._restore_geometry = restore_geometry
         self._geometry_restored = False
-    
+        # Last geometry observed while not maximized/minimized -- see closeEvent.
+        self._normal_geometry = None
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self._track_normal_geometry()
+
+    def moveEvent(self, event):
+        super().moveEvent(event)
+        self._track_normal_geometry()
+
+    def _track_normal_geometry(self):
+        """Remember the window's geometry whenever it isn't maximized or
+        minimized, so a maximize-then-close cycle has something other than
+        the screen-filling maximized geometry to save (see closeEvent)."""
+        if not self.isMaximized() and not self.isMinimized():
+            self._normal_geometry = self.geometry()
+
     def restore_window_geometry(self):
         """
         Restore window geometry from app_info_cache.
@@ -777,10 +794,14 @@ class SmartMainWindow(QMainWindow):
         if self._restore_geometry:
             try:
                 from utils.app_info_cache import app_info_cache
-                
-                # Save window position using app_info_cache
-                app_info_cache.set_display_position(self)
-                
+
+                # If closed while maximized, save the pre-maximize geometry
+                # instead of the current screen-filling one -- otherwise the
+                # next launch restores into a "normal" window sized like a
+                # maximized one, and the real preferred size is gone for good.
+                geometry = self._normal_geometry if self.isMaximized() else None
+                app_info_cache.set_display_position(self, geometry=geometry)
+
                 # Also save virtual screen info for multi-display validation
                 try:
                     app_info_cache.set_virtual_screen_info(self)
