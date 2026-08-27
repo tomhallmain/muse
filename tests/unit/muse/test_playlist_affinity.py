@@ -258,6 +258,46 @@ class TestResortUpcoming:
         assert playlist.resort_upcoming() is False
         assert playlist.sorted_tracks == before
 
+    def test_the_rest_of_the_playing_group_is_not_moved(self, mock_data_callbacks, affinity_on):
+        """Playing the first track of a group must not let the remaining ones be
+        reordered behind another group -- playback would leave the group part-way
+        through."""
+        playlist = _playlist(mock_data_callbacks, _grouped([3] * 4), _reference("Composer3"))
+        # Index 0 is the first of three Composer0 tracks, so indexes 1 and 2 are
+        # the rest of the group now playing.
+        playlist.current_track_index = 0
+
+        assert playlist.resort_upcoming() is True
+        assert [t.composer for t in playlist.sorted_tracks[:3]] == ["Composer0"] * 3
+        # Everything after the playing group still orders against the reference.
+        assert [t.composer for t in playlist.sorted_tracks[3:6]] == ["Composer3"] * 3
+
+    def test_saturated_playing_group_still_finishes(self, mock_data_callbacks,
+                                                    affinity_on, monkeypatch):
+        """Skipping counts a track's full length, so the group being skipped
+        through is the first to read as over-heard. It must still not be broken
+        up underneath the listener."""
+        monkeypatch.setattr("muse.playlist.saturation_reference",
+                            lambda: _reference("Composer0"))
+        playlist = _playlist(mock_data_callbacks, _grouped([3] * 4), _reference("Composer0"),
+                             saturation_enabled=True)
+        playlist.current_track_index = 0
+
+        playlist.resort_upcoming()
+
+        assert [t.composer for t in playlist.sorted_tracks[:3]] == ["Composer0"] * 3
+
+    def test_a_group_running_to_the_end_leaves_nothing_to_reorder(self, mock_data_callbacks,
+                                                                  affinity_on):
+        """The playing group is excluded, so a playlist ending inside it has an
+        empty window rather than a negative one."""
+        playlist = _playlist(mock_data_callbacks, _grouped([2, 4]), _reference("Composer0"))
+        playlist.current_track_index = 2
+        before = list(playlist.sorted_tracks)
+
+        assert playlist.resort_upcoming() is False
+        assert playlist.sorted_tracks == before
+
 
 @pytest.mark.unit
 class TestUpcomingGroupValues:

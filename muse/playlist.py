@@ -599,6 +599,31 @@ class Playlist:
             end += 1
         return window if end - window > size else end
 
+    def _current_group_end(self, group_of, start: int) -> int:
+        """Where the group holding the playing track ends, as a resort start.
+
+        The playing track sits at *start* - 1. Reordering from *start* leaves
+        the rest of its group as an ordinary unit in the sort, free to be moved
+        behind another group -- so playback leaves the group part-way through,
+        having split what the grouping sort just put together.
+
+        Saturation makes that the expected outcome rather than an edge case: the
+        playing group is the one whose listening time was just recorded, so it
+        is the first to cross the over-heard threshold, and it is then the one
+        unit in the window carrying the full repulsion penalty.
+
+        The window end is moved to a group boundary for the same reason; this is
+        the same rule applied to the other edge.
+        """
+        total = len(self.sorted_tracks)
+        if start <= 0 or start >= total:
+            return start
+        current_value = group_of(self.sorted_tracks[start - 1])
+        end = start
+        while end < total and group_of(self.sorted_tracks[end]) == current_value:
+            end += 1
+        return end
+
     def apply_affinity_ordering(self, group_of, start: int = 0) -> bool:
         """Order a window of tracks by how well each group matches the reference.
 
@@ -682,9 +707,21 @@ class Playlist:
 
         Returns whether anything moved, so a caller can refresh a view of the
         playlist only when there is something new to show.
+
+        The group currently playing is left out of the window entirely. It is
+        already the listener's present context, and moving its remainder is what
+        would make playback jump out of it mid-group.
         """
-        return self.apply_affinity_ordering(self._group_of_getter(),
-                                            start=self.current_track_index + 1)
+        group_of = self._group_of_getter()
+        if group_of is None:
+            return False
+        start = max(0, self.current_track_index + 1)
+        try:
+            start = self._current_group_end(group_of, start)
+        except Exception as e:
+            logger.warning(f"Could not find the end of the playing group, keeping the existing order: {e}")
+            return False
+        return self.apply_affinity_ordering(group_of, start=start)
 
     def upcoming_group_values(self) -> List[str]:
         """The distinct group values in the not-yet-played window, in playing order."""
