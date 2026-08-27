@@ -479,7 +479,7 @@ class ExtensionConfigWindow(SmartWindow):
         ("extension_cycle_wait_minutes", lambda: _("Cycle Wait (minutes)"), (60, 90)),
         ("extension_pending_review_seconds", lambda: _("Review Window (seconds)"), (1000, 2000)),
         ("extension_track_duration_seconds",
-         lambda: _("Track Duration (seconds, maximum -1 for no limit)"), (120, -1)),
+         lambda: _("Track Duration (seconds, maximum -1 for no limit)"), (120, 10800)),
     )
     INT_FIELDS = (
         ("extension_history_max_length", lambda: _("Extension History Limit (0 for no limit)")),

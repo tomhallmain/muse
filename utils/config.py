@@ -138,8 +138,8 @@ class Config:
         self.extension_pending_review_seconds = [1000, 2000]
         # Allowed track length. -1 as the maximum means no ceiling, matching how
         # an unset duration is spelled elsewhere; 0 would read as a bound below
-        # the minimum.
-        self.extension_track_duration_seconds = [120, -1]
+        # the minimum. Default maximum is 3 hours.
+        self.extension_track_duration_seconds = [120, 10800]
         self.extension_allow_emoji_titles = False
         self.extension_enable_llm_scoring = True
         self.extension_enable_embedding_scoring = True

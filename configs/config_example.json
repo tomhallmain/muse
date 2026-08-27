@@ -35,7 +35,7 @@
     "affinity_preference": "on",
     "extension_cycle_wait_minutes": [60, 90],
     "extension_pending_review_seconds": [1000, 2000],
-    "extension_track_duration_seconds": [120, -1],
+    "extension_track_duration_seconds": [120, 10800],
     "extension_allow_emoji_titles": false,
     "extension_enable_llm_scoring": true,
     "extension_enable_embedding_scoring": true,

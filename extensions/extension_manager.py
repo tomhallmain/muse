@@ -506,7 +506,7 @@ class ExtensionManager:
         if b.y:
             logger.info(f"Skipping unresolved option: {b.n}")
             return True
-        min_seconds, max_seconds = config.get_int_range("extension_track_duration_seconds", 120, -1)
+        min_seconds, max_seconds = config.get_int_range("extension_track_duration_seconds", 120, 10800)
         return (b.xfgi(min_seconds)
                 or b.xfgj(max_seconds)
                 or self.is_in_library(b)
