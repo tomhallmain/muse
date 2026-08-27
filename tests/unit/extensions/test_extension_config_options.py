@@ -224,6 +224,57 @@ class TestLlmScoringToggle:
 
 
 @pytest.mark.unit
+class TestEmbeddingScoringToggle:
+    def _run_simple(self, manager, monkeypatch, candidates):
+        result = SimpleNamespace(i=lambda: True, o=lambda: candidates)
+        manager.s = lambda q, m: result
+        manager.data_callbacks = None
+        # Stop right after the scoring decision.
+        monkeypatch.setattr(ExtensionManager, "_bad_option",
+                            lambda self, b, strict=None, attr=None: True)
+        with pytest.raises(Exception):
+            manager._simple("query", depth=99)
+
+    def test_skipped_when_disabled(self, monkeypatch):
+        monkeypatch.setattr(config, "extension_enable_embedding_scoring", False, raising=False)
+        manager = _manager()
+        manager._llm_score_options = lambda q, a: None
+        called = []
+        manager._embedding_score_options = lambda q, a: called.append(q)
+
+        self._run_simple(manager, monkeypatch, [_Candidate()])
+
+        assert called == []
+
+    def test_runs_when_enabled(self, monkeypatch):
+        monkeypatch.setattr(config, "extension_enable_embedding_scoring", True, raising=False)
+        manager = _manager()
+        manager._llm_score_options = lambda q, a: None
+        called = []
+        manager._embedding_score_options = lambda q, a: called.append(q) or None
+
+        self._run_simple(manager, monkeypatch, [_Candidate()])
+
+        assert called == ["query"]
+
+    def test_runs_independently_of_llm_failure_state(self, monkeypatch):
+        """Embeddings run locally via sentence-transformers, not through Ollama,
+        so a failing chat model must not silence this signal too."""
+        monkeypatch.setattr(config, "extension_enable_embedding_scoring", True, raising=False)
+        monkeypatch.setattr(config, "extension_enable_llm_scoring", True, raising=False)
+        llm = MagicMock()
+        llm.get_failure_count.return_value = 3
+        manager = _manager(llm)
+        manager._llm_score_options = lambda q, a: None
+        called = []
+        manager._embedding_score_options = lambda q, a: called.append(q) or None
+
+        self._run_simple(manager, monkeypatch, [_Candidate()])
+
+        assert called == ["query"]
+
+
+@pytest.mark.unit
 class TestExtensionHistoryCap:
     def test_oldest_entries_dropped_past_the_cap(self, monkeypatch):
         """The cap used to be declared but never read, so history grew forever."""

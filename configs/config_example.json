@@ -38,6 +38,7 @@
     "extension_track_duration_seconds": [120, -1],
     "extension_allow_emoji_titles": false,
     "extension_enable_llm_scoring": true,
+    "extension_enable_embedding_scoring": true,
     "extension_history_max_length": 100000,
     "playlist_recently_played_check_count": 1000,
     "enable_long_track_splitting": false,

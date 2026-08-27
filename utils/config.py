@@ -142,6 +142,7 @@ class Config:
         self.extension_track_duration_seconds = [120, -1]
         self.extension_allow_emoji_titles = False
         self.extension_enable_llm_scoring = True
+        self.extension_enable_embedding_scoring = True
         self.extension_history_max_length = 100000
         self.playlist_recently_played_check_count = 1000
         self.max_search_results = 200
@@ -223,6 +224,7 @@ class Config:
             "auto_fix_album_artwork",
             "extension_allow_emoji_titles",
             "extension_enable_llm_scoring",
+            "extension_enable_embedding_scoring",
             "dj_persona_refresh_context",
             "auto_fix_vlc_plugin_cache",
             "piper_auto_download",

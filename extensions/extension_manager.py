@@ -12,7 +12,7 @@ from extensions.library_extender import LibraryExtender
 from extensions.soup_utils import SoupUtils
 from muse.playback_config_master import PlaybackConfigMaster
 from muse.prompter import Prompter
-from muse.track_affinity import current_favorites_profile
+from muse.track_affinity import cosine_similarity, current_favorites_profile, embed_texts
 from utils.app_info_cache import app_info_cache
 from utils.config import config
 from utils.globals import TrackAttribute, ExtensionStrategy, MediaFileType
@@ -463,8 +463,11 @@ class ExtensionManager:
                 and self.llm.get_failure_count() == 0
             )
             scores = self._llm_score_options(q, a) if score_with_llm else None
+            score_with_embedding = getattr(config, "extension_enable_embedding_scoring", True)
+            embedding_scores = self._embedding_score_options(q, a) if score_with_embedding else None
             for idx, i in enumerate(a):
-                i.m = self._m(q, i.n, llm_score=(scores.get(idx) if scores else None))
+                i.m = self._m(q, i.n, llm_score=(scores.get(idx) if scores else None),
+                              embedding_score=(embedding_scores.get(idx) if embedding_scores else None))
                 logger.info(f"Extension option: {i.n} {i.x()}")
             opts = []
             shuffled = a.copy()
@@ -821,7 +824,33 @@ class ExtensionManager:
             logger.warning(f"LLM scoring of search results failed, falling back to mechanical quality only: {e}")
             return None
 
-    def _m(self, q: str, t: str, llm_score: Optional[float] = None) -> Dict[str, float]:
+    def _embedding_score_options(self, q: str, a: List[Any]) -> Optional[Dict[int, float]]:
+        """Score all candidates 0.0-1.0 by embedding similarity to the query.
+
+        Runs locally via sentence-transformers rather than through Ollama, so it
+        fails independently of the chat-model scoring above. Never raises;
+        returns None when the embedding model is unavailable or gives an
+        unusable result, so callers fall back to mechanical `_m()` weighting.
+        """
+        try:
+            texts = [q] + [cand.n for cand in a]
+            vectors = embed_texts(texts)
+        except Exception as e:
+            logger.warning(f"Embedding scoring of search results failed, falling back to mechanical quality only: {e}")
+            return None
+        if not vectors or len(vectors) != len(texts):
+            return None
+        scores: Dict[int, float] = {}
+        for idx, vector in enumerate(vectors[1:]):
+            similarity = cosine_similarity(vectors[0], vector)
+            if similarity is None:
+                return None
+            # Opposed vectors carry no more meaning here than unrelated ones.
+            scores[idx] = max(0.0, min(1.0, similarity))
+        return scores
+
+    def _m(self, q: str, t: str, llm_score: Optional[float] = None,
+           embedding_score: Optional[float] = None) -> Dict[str, float]:
         q_lower = q.lower()
         t_lower = t.lower()
         
@@ -844,14 +873,35 @@ class ExtensionManager:
         max_len = max(len(q), len(t))
         metrics['string_similarity'] = 1.0 - (l_dist / max_len) if max_len > 0 else 0.0
         
-        # 4. Overall quality score (weighted combination)
+        # 4. Overall quality score (weighted combination). Each optional model
+        # signal is a minority slice of the total weight, never the whole of
+        # it, and embedding_score gets a smaller slice than llm_score: it is
+        # the weaker judge of relevance, but fails independently of the LLM.
         if llm_score is not None:
             metrics['llm_score'] = llm_score
+        if embedding_score is not None:
+            metrics['embedding_score'] = embedding_score
+        if llm_score is not None and embedding_score is not None:
+            base = (
+                metrics['substring_match'] * 0.30 +
+                metrics['word_overlap'] * 0.20 +
+                metrics['string_similarity'] * 0.10 +
+                llm_score * 0.25 +
+                embedding_score * 0.15
+            )
+        elif llm_score is not None:
             base = (
                 metrics['substring_match'] * 0.35 +
                 metrics['word_overlap'] * 0.25 +
                 metrics['string_similarity'] * 0.15 +
                 llm_score * 0.25
+            )
+        elif embedding_score is not None:
+            base = (
+                metrics['substring_match'] * 0.40 +
+                metrics['word_overlap'] * 0.25 +
+                metrics['string_similarity'] * 0.15 +
+                embedding_score * 0.20
             )
         else:
             base = (

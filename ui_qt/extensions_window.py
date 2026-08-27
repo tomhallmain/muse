@@ -472,6 +472,7 @@ class ExtensionConfigWindow(SmartWindow):
         ("embed_extension_artwork", lambda: _("Embed Artwork for Extensions")),
         ("extension_allow_emoji_titles", lambda: _("Allow Emoji Titles")),
         ("extension_enable_llm_scoring", lambda: _("Score Search Results with the LLM")),
+        ("extension_enable_embedding_scoring", lambda: _("Score Search Results with Text Embeddings")),
     )
     # Bounded ranges: one config key holding [min, max], two entry boxes.
     RANGE_FIELDS = (
