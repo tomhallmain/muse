@@ -441,6 +441,9 @@ class MediaFrame(QFrame):
 
     def set_playback_paused(self, paused: bool):
         self._controls_overlay.set_paused(paused)
+        # A record still turning through a pause would say something is playing.
+        # The frame runs its own player, so holding it leaves the audio alone.
+        self.set_video_paused(paused)
 
     def set_volume_state(self, volume: int, muted: bool, effective_volume: int | None = None):
         self._controls_overlay.set_volume_state(volume, muted, effective_volume)
