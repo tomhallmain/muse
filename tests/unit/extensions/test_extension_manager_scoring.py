@@ -16,8 +16,8 @@ def _manager(llm=None):
     return manager
 
 
-def _candidate(title):
-    return SimpleNamespace(n=title)
+def _candidate(title, detail="", seconds=None):
+    return SimpleNamespace(n=title, d=detail, xfgk=lambda: seconds)
 
 
 def _llm_returning(response):
@@ -50,7 +50,64 @@ class TestMWithLlmScore:
 
 
 @pytest.mark.unit
+class TestCandidateBlock:
+    def test_all_three_fields_are_labelled_and_numbered(self):
+        block = ExtensionManager._c(2, _candidate("A Title", detail="A Detail", seconds=272.0))
+        assert block.splitlines() == ["2:", "title: A Title", "duration: 4:32",
+                                      "description: A Detail"]
+
+    def test_an_unset_runtime_leaves_the_line_out(self):
+        block = ExtensionManager._c(0, _candidate("A Title", detail="A Detail"))
+        assert block.splitlines() == ["0:", "title: A Title", "description: A Detail"]
+
+    def test_an_empty_detail_leaves_the_line_out(self):
+        block = ExtensionManager._c(0, _candidate("A Title", seconds=272.0))
+        assert block.splitlines() == ["0:", "title: A Title", "duration: 4:32"]
+
+    def test_a_blank_detail_leaves_the_line_out(self):
+        block = ExtensionManager._c(0, _candidate("A Title", detail="   \n  "))
+        assert block.splitlines() == ["0:", "title: A Title"]
+
+    def test_breaks_in_the_detail_are_collapsed(self):
+        """The reply is keyed on the block numbering, so a detail that kept its
+        own breaks would read as further numbered blocks."""
+        block = ExtensionManager._c(3, _candidate("A Title", detail="one\ntwo\r\nthree"))
+        assert block.splitlines() == ["3:", "title: A Title", "description: one two three"]
+
+    def test_a_long_detail_is_capped(self):
+        detail = "x" * (ExtensionManager.D_CAP + 50)
+        block = ExtensionManager._c(0, _candidate("A Title", detail=detail))
+        assert block.splitlines()[-1] == "description: " + "x" * ExtensionManager.D_CAP + "..."
+
+    def test_a_short_detail_is_left_whole(self):
+        block = ExtensionManager._c(0, _candidate("A Title", detail="short"))
+        assert block.splitlines()[-1] == "description: short"
+
+    def test_an_hour_plus_runtime_carries_its_hours(self):
+        """The case the runtime is there for: a whole-record upload the title
+        alone would pass off as a single piece."""
+        block = ExtensionManager._c(0, _candidate("A Title", seconds=11400.0))
+        assert "duration: 3:10:00" in block
+
+
+@pytest.mark.unit
 class TestLlmScoreOptions:
+    def test_the_prompt_carries_every_field(self):
+        llm = _llm_returning({"0": 0.5})
+        manager = _manager(llm=llm)
+        manager._llm_score_options("q", [_candidate("A Title", detail="A Detail", seconds=272.0)])
+        prompt = llm.generate_json_get_value.call_args[0][0]
+        assert "title: A Title" in prompt
+        assert "description: A Detail" in prompt
+        assert "duration: 4:32" in prompt
+
+    def test_blocks_are_separated_by_a_blank_line(self):
+        llm = _llm_returning({"0": 0.5, "1": 0.5})
+        manager = _manager(llm=llm)
+        manager._llm_score_options("q", [_candidate("First"), _candidate("Second")])
+        prompt = llm.generate_json_get_value.call_args[0][0]
+        assert "title: First\n\n1:\ntitle: Second" in prompt
+
     def test_valid_response_returns_int_keyed_scores(self):
         manager = _manager(llm=_llm_returning({"0": 0.9, "1": 0.1}))
         scores = manager._llm_score_options("q", [_candidate("a"), _candidate("b")])

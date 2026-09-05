@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: APPLICATION 1.0\n"
 "Report-Msgid-Bugs-To: Translator Name <translator@example.com>\n"
-"POT-Creation-Date: 2026-08-25 10:35-0400\n"
-"PO-Revision-Date: 2026-08-25 10:35-0400\n"
+"POT-Creation-Date: 2026-08-31 18:09-0400\n"
+"PO-Revision-Date: 2026-08-31 18:09-0400\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -145,7 +145,7 @@ msgstr ""
 msgid "DJ"
 msgstr ""
 
-#: app_qt.py:350 ui_qt/extensions_window.py:184 ui_qt/extensions_window.py:724 ui_qt/rename_confirmation_window.py:85
+#: app_qt.py:350 ui_qt/extensions_window.py:184 ui_qt/extensions_window.py:725 ui_qt/rename_confirmation_window.py:85
 #: ui_qt/track_details_window.py:91 utils/globals.py:355
 msgid "Title"
 msgstr ""
@@ -311,8 +311,8 @@ msgstr ""
 #: ui_qt/auth/password_admin_window.py:131 ui_qt/auth/password_admin_window.py:544 ui_qt/auth/password_dialog.py:284
 #: ui_qt/blacklist_window.py:187 ui_qt/composers_window.py:305 ui_qt/composers_window.py:330 ui_qt/composers_window.py:459
 #: ui_qt/composers_window.py:530 ui_qt/composers_window.py:925 ui_qt/configuration_window.py:643
-#: ui_qt/configuration_window.py:646 ui_qt/extensions_window.py:408 ui_qt/extensions_window.py:654
-#: ui_qt/extensions_window.py:657 ui_qt/favorites_window.py:583 ui_qt/forms_window.py:233 ui_qt/forms_window.py:256
+#: ui_qt/configuration_window.py:646 ui_qt/extensions_window.py:408 ui_qt/extensions_window.py:655
+#: ui_qt/extensions_window.py:658 ui_qt/favorites_window.py:583 ui_qt/forms_window.py:233 ui_qt/forms_window.py:256
 #: ui_qt/genres_window.py:233 ui_qt/genres_window.py:256 ui_qt/instruments_window.py:233 ui_qt/instruments_window.py:258
 #: ui_qt/personas_window.py:424 ui_qt/personas_window.py:517 ui_qt/personas_window.py:531 ui_qt/personas_window.py:539
 #: ui_qt/personas_window.py:573 ui_qt/playlist_window.py:315 ui_qt/playlist_window.py:338 ui_qt/playlist_window.py:373
@@ -469,19 +469,19 @@ msgstr ""
 msgid "Extension failed for {0} with value '{1}': {2}"
 msgstr ""
 
-#: extensions/extension_manager.py:637
+#: extensions/extension_manager.py:640
 msgid "Extension \"{0}\" waiting for {1} minutes"
 msgstr ""
 
-#: extensions/extension_manager.py:650
+#: extensions/extension_manager.py:653
 msgid "Extension \"{0}\" rejected"
 msgstr ""
 
-#: extensions/extension_manager.py:657
+#: extensions/extension_manager.py:660
 msgid "Fetching extension \"{0}\""
 msgstr ""
 
-#: extensions/extension_manager.py:704
+#: extensions/extension_manager.py:707
 msgid "Extension \"{0}\" ready"
 msgstr ""
 
@@ -952,12 +952,12 @@ msgstr ""
 msgid "Rejected: {0}"
 msgstr ""
 
-#: tests/ui/windows/test_extensions_window.py:90 ui_qt/extensions_window.py:667
+#: tests/ui/windows/test_extensions_window.py:90 ui_qt/extensions_window.py:668
 msgid "Rejected Extensions"
 msgstr ""
 
 #: tests/ui/windows/test_extensions_window.py:142 tests/ui/windows/test_extensions_window.py:174
-#: ui_qt/extensions_window.py:714
+#: ui_qt/extensions_window.py:715
 msgid "No rejected extensions."
 msgstr ""
 
@@ -1053,13 +1053,13 @@ msgstr ""
 msgid "Add Note"
 msgstr ""
 
-#: ui_qt/artists_window.py:174 ui_qt/composers_window.py:177 ui_qt/extensions_window.py:524 ui_qt/forms_window.py:120
+#: ui_qt/artists_window.py:174 ui_qt/composers_window.py:177 ui_qt/extensions_window.py:525 ui_qt/forms_window.py:120
 #: ui_qt/genres_window.py:120 ui_qt/instruments_window.py:120 ui_qt/playlist_window.py:1021
 msgid "Save"
 msgstr ""
 
 #: ui_qt/artists_window.py:178 ui_qt/artists_window.py:207 ui_qt/composers_window.py:181 ui_qt/composers_window.py:210
-#: ui_qt/extensions_window.py:292 ui_qt/extensions_window.py:775 ui_qt/forms_window.py:124 ui_qt/forms_window.py:153
+#: ui_qt/extensions_window.py:292 ui_qt/extensions_window.py:776 ui_qt/forms_window.py:124 ui_qt/forms_window.py:153
 #: ui_qt/genres_window.py:124 ui_qt/genres_window.py:153 ui_qt/instruments_window.py:124 ui_qt/instruments_window.py:153
 #: ui_qt/personas_window.py:110 ui_qt/playlist_window.py:120 ui_qt/playlist_window.py:346 ui_qt/schedules_window.py:270
 msgid "Delete"
@@ -1173,7 +1173,7 @@ msgid "Test Day/Night Switch"
 msgstr ""
 
 #: ui_qt/audio_device_window.py:179 ui_qt/auth/password_admin_window.py:355 ui_qt/composers_window.py:444
-#: ui_qt/extensions_window.py:527 ui_qt/extensions_window.py:894 ui_qt/favorites_window.py:676
+#: ui_qt/extensions_window.py:528 ui_qt/extensions_window.py:895 ui_qt/favorites_window.py:676
 msgid "Close"
 msgstr ""
 
@@ -1726,11 +1726,11 @@ msgstr ""
 msgid "Level (e.g. beginner, intermediate)"
 msgstr ""
 
-#: ui_qt/configuration_window.py:153 ui_qt/configuration_window.py:424 ui_qt/extensions_window.py:593
+#: ui_qt/configuration_window.py:153 ui_qt/configuration_window.py:424 ui_qt/extensions_window.py:594
 msgid "Add"
 msgstr ""
 
-#: ui_qt/configuration_window.py:156 ui_qt/configuration_window.py:427 ui_qt/extensions_window.py:596
+#: ui_qt/configuration_window.py:156 ui_qt/configuration_window.py:427 ui_qt/extensions_window.py:597
 msgid "Remove Selected"
 msgstr ""
 
@@ -1939,11 +1939,11 @@ msgid ""
 "Any unsaved changes will be lost."
 msgstr ""
 
-#: ui_qt/configuration_window.py:640 ui_qt/extensions_window.py:651
+#: ui_qt/configuration_window.py:640 ui_qt/extensions_window.py:652
 msgid "Configuration saved successfully"
 msgstr ""
 
-#: ui_qt/configuration_window.py:643 ui_qt/extensions_window.py:654
+#: ui_qt/configuration_window.py:643 ui_qt/extensions_window.py:655
 msgid "Failed to save configuration"
 msgstr ""
 
@@ -1979,7 +1979,7 @@ msgstr ""
 msgid "View Rejected"
 msgstr ""
 
-#: ui_qt/extensions_window.py:104 ui_qt/extensions_window.py:491
+#: ui_qt/extensions_window.py:104 ui_qt/extensions_window.py:492
 msgid "Extension Config"
 msgstr ""
 
@@ -1995,7 +1995,7 @@ msgstr ""
 msgid "Statistics"
 msgstr ""
 
-#: ui_qt/extensions_window.py:178 ui_qt/extensions_window.py:721
+#: ui_qt/extensions_window.py:178 ui_qt/extensions_window.py:722
 msgid "Date"
 msgstr ""
 
@@ -2007,11 +2007,11 @@ msgstr ""
 msgid "Duration"
 msgstr ""
 
-#: ui_qt/extensions_window.py:193 ui_qt/extensions_window.py:727
+#: ui_qt/extensions_window.py:193 ui_qt/extensions_window.py:728
 msgid "Attribute"
 msgstr ""
 
-#: ui_qt/extensions_window.py:196 ui_qt/extensions_window.py:730 ui_qt/playlist_window.py:967
+#: ui_qt/extensions_window.py:196 ui_qt/extensions_window.py:731 ui_qt/playlist_window.py:967
 msgid "Search Query"
 msgstr ""
 
@@ -2019,11 +2019,11 @@ msgstr ""
 msgid "Status"
 msgstr ""
 
-#: ui_qt/extensions_window.py:202 ui_qt/extensions_window.py:733
+#: ui_qt/extensions_window.py:202 ui_qt/extensions_window.py:734
 msgid "Actions"
 msgstr ""
 
-#: ui_qt/extensions_window.py:216 ui_qt/extensions_window.py:838 ui_qt/extensions_window.py:845
+#: ui_qt/extensions_window.py:216 ui_qt/extensions_window.py:839 ui_qt/extensions_window.py:846
 msgid "N/A"
 msgstr ""
 
@@ -2047,7 +2047,7 @@ msgstr ""
 msgid "Are you sure you want to clear all extension history?"
 msgstr ""
 
-#: ui_qt/extensions_window.py:368 ui_qt/extensions_window.py:786 ui_qt/personas_window.py:407
+#: ui_qt/extensions_window.py:368 ui_qt/extensions_window.py:787 ui_qt/personas_window.py:407
 #: ui_qt/track_details_window.py:621 ui_qt/track_details_window.py:645
 msgid "Confirm Delete"
 msgstr ""
@@ -2112,95 +2112,99 @@ msgstr ""
 msgid "Score Search Results with the LLM"
 msgstr ""
 
-#: ui_qt/extensions_window.py:478
-msgid "Cycle Wait (minutes)"
+#: ui_qt/extensions_window.py:475
+msgid "Score Search Results with Text Embeddings"
 msgstr ""
 
 #: ui_qt/extensions_window.py:479
+msgid "Cycle Wait (minutes)"
+msgstr ""
+
+#: ui_qt/extensions_window.py:480
 msgid "Review Window (seconds)"
 msgstr ""
 
-#: ui_qt/extensions_window.py:481
+#: ui_qt/extensions_window.py:482
 msgid "Track Duration (seconds, maximum -1 for no limit)"
 msgstr ""
 
-#: ui_qt/extensions_window.py:484
+#: ui_qt/extensions_window.py:485
 msgid "Extension History Limit (0 for no limit)"
 msgstr ""
 
-#: ui_qt/extensions_window.py:535
+#: ui_qt/extensions_window.py:536
 msgid "Behavior"
 msgstr ""
 
-#: ui_qt/extensions_window.py:545
+#: ui_qt/extensions_window.py:546
 msgid "Timing and Limits"
 msgstr ""
 
-#: ui_qt/extensions_window.py:552
+#: ui_qt/extensions_window.py:553
 msgid "Min"
 msgstr ""
 
-#: ui_qt/extensions_window.py:556
+#: ui_qt/extensions_window.py:557
 msgid "Max"
 msgstr ""
 
-#: ui_qt/extensions_window.py:571
+#: ui_qt/extensions_window.py:572
 msgid "Auto-File Genres"
 msgstr ""
 
-#: ui_qt/extensions_window.py:575
+#: ui_qt/extensions_window.py:576
 msgid "Genre folders auto-filing is allowed to use. Leave empty to let it use every Title-Case folder it finds."
 msgstr ""
 
-#: ui_qt/extensions_window.py:591
+#: ui_qt/extensions_window.py:592
 msgid "Genre folder name"
 msgstr ""
 
-#: ui_qt/extensions_window.py:787
+#: ui_qt/extensions_window.py:788
 msgid "Remove this rejection? This will allow it to be suggested again."
 msgstr ""
 
-#: ui_qt/extensions_window.py:808
+#: ui_qt/extensions_window.py:809
 msgid "Extension Details"
 msgstr ""
 
-#: ui_qt/extensions_window.py:831
+#: ui_qt/extensions_window.py:832
 msgid "Published:"
 msgstr ""
 
-#: ui_qt/extensions_window.py:842
+#: ui_qt/extensions_window.py:843
 msgid "Duration:"
 msgstr ""
 
-#: ui_qt/extensions_window.py:850
+#: ui_qt/extensions_window.py:851
 msgid "Strategy:"
 msgstr ""
 
-#: ui_qt/extensions_window.py:856
+#: ui_qt/extensions_window.py:857
 msgid "Attribute:"
 msgstr ""
 
-#: ui_qt/extensions_window.py:862
+#: ui_qt/extensions_window.py:863
 msgid "Search Query:"
 msgstr ""
 
-#: ui_qt/extensions_window.py:868
+#: ui_qt/extensions_window.py:869
 msgid "Status:"
 msgstr ""
 
-#: ui_qt/extensions_window.py:870
+#: ui_qt/extensions_window.py:871
 msgid "Failed"
 msgstr ""
 
-#: ui_qt/extensions_window.py:870
+#: ui_qt/extensions_window.py:871
 msgid "Success"
 msgstr ""
 
-#: ui_qt/extensions_window.py:875
+#: ui_qt/extensions_window.py:876
 msgid "Description:"
 msgstr ""
 
-#: ui_qt/extensions_window.py:883
+#: ui_qt/extensions_window.py:884
 msgid "File:"
 msgstr ""
 

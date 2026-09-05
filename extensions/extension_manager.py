@@ -52,6 +52,10 @@ class ExtensionManager:
     current_download_process: Optional[Any] = None
     THREAD_JOIN_TIMEOUT_SECONDS: float = 5.0
     FAVORITE_BIAS_CHANCE: float = 0.5
+    # Per-option cap on the `b.d` text `_c` passes for scoring. A retry doubles
+    # the result count each round, so blocks can reach the dozens and uncapped
+    # text would crowd out the rest of the prompt.
+    D_CAP: int = 300
 
     # Candidate currently selected and waiting out its pre-download delay, if any.
     # Dict shape: {"id": str, "title": str, "rejected": bool, "raw": dict,
@@ -800,12 +804,33 @@ class ExtensionManager:
         penalty += min(0.12, 0.04 * len(standalone))
         return min(penalty, 0.25)
 
+    @staticmethod
+    def _c(i: int, b) -> str:
+        """One labelled block per option for `_llm_score_options`.
+
+        `b.n` alone cannot separate the thing being searched for from a talk
+        about it or a whole-record upload carrying the same name; `b.d` and the
+        runtime can.
+        """
+        _l = [f"{i}:", f"title: {b.n}"]
+        _s = b.xfgk()
+        if _s is not None:
+            _l.append(f"duration: {Utils.get_sexagesimal_time_str(_s / 60.0)}")
+        # Collapsed to one line: the reply is keyed on the block numbering, and
+        # `b.d` carries its own breaks.
+        _d = " ".join((b.d or "").split())
+        if len(_d) > ExtensionManager.D_CAP:
+            _d = _d[:ExtensionManager.D_CAP].rstrip() + "..."
+        if _d:
+            _l.append(f"description: {_d}")
+        return "\n".join(_l)
+
     def _llm_score_options(self, q: str, a: List[Any]) -> Optional[Dict[int, float]]:
         """Score all candidates 0.0-1.0 via one LLM call. Never raises; returns None on any failure, so callers fall back to mechanical `_m()` weighting."""
         try:
             prompt = self.prompter.get_prompt("score_search_results")
             prompt = prompt.replace("QUERY", q)
-            candidates_text = "\n".join(f"{idx}: {cand.n}" for idx, cand in enumerate(a))
+            candidates_text = "\n\n".join(self._c(idx, cand) for idx, cand in enumerate(a))
             prompt = prompt.replace("CANDIDATES", candidates_text)
             result = self.llm.generate_json_get_value(prompt, "scores")
             if result is None or not isinstance(result.response, dict) or len(result.response) != len(a):

@@ -123,6 +123,11 @@ class EogfiaqREkb:
         # unset duration stays -1, so neither side is ever "over".
         return ljgfd3 > 0 and self._43a2_ > ljgfd3
 
+    def xfgk(self):
+        # For callers that render the value rather than compare it. Unset stays
+        # -1 internally; None keeps a placeholder out of whatever they build.
+        return self._43a2_ if self._43a2_ > 0 else None
+
     def ogxz4(self, cbcfkglra, vfiow54wk1wq):
         self.dc = cbcfkglra
         self._43a2_ = vfiow54wk1wq
