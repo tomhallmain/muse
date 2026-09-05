@@ -60,6 +60,10 @@ Muse is a media player with an integrated voice synthesizer attached to an LLM. 
 - In your virtual environment, run `python app_qt.py` to start the application (Qt/PySide6 UI). On Windows you can use `start.bat`, which launches the Qt version.
 - Keyboard media keys (previous, play/pause, next) are supported when the optional `pynput` dependency is installed. With `pynput`, media keys work globally (even when the window doesn't have focus).
 
+The keys encrypting the cache are backed up automatically to an external drive
+(set `MUSE_KEY_BACKUP_DIR` to choose where). Run `python scripts/key_material.py`
+to check that backup's state, or `backup` to take one by hand.
+
 
 ## Directory Structure
 

@@ -433,16 +433,35 @@ def app_info_cache(isolated_singletons):
     return isolated_instance
 
 
+def _reset_key_material() -> None:
+    """Drop key material carried between tests.
+
+    The encryptor caches the key store and passphrase per (service, app) for the
+    life of the process, so material written by one test would answer another's
+    read. The substitute keyring is emptied for the same reason: each test gets
+    a fresh cache directory, and a passphrase left behind from an earlier one
+    reads as "keys existed here once".
+    """
+    try:
+        from utils.encryptor import clear_key_store_cache
+        clear_key_store_cache()
+    except ImportError:
+        pass  # predates the consolidated key store
+    _bootstrap_mod.clear_fake_keyring()
+
+
 @pytest.fixture(autouse=True)
 def reset_app_globals():
     """Reset mutable class-level state between tests."""
     _reset_playback_state()
     _reset_library_caches()
     _reset_playlist_history()
+    _reset_key_material()
     yield
     _reset_playback_state()
     _reset_library_caches()
     _reset_playlist_history()
+    _reset_key_material()
 
 
 @pytest.fixture
