@@ -117,7 +117,7 @@ class TTSWindow(SmartWindow):
         provider_row = QHBoxLayout()
         provider_row.addWidget(QLabel(_("Provider:"), options_group))
         self.provider_combo = QComboBox(options_group)
-        for label, _ in _PROVIDERS:
+        for label, _unused in _PROVIDERS:
             self.provider_combo.addItem(label)
         current_label = _TYPE_TO_LABEL.get(self._provider, _("Coqui"))
         self.provider_combo.setCurrentText(current_label)
@@ -342,7 +342,7 @@ class TTSWindow(SmartWindow):
     # ------------------------------------------------------------------
 
     def _browse_file(self):
-        filepath, _ = QFileDialog.getOpenFileName(
+        filepath, _unused = QFileDialog.getOpenFileName(
             self, _("Select Text File"), "",
             _("Text files") + " (*.txt);;" + _("All files") + " (*.*)",
         )
@@ -350,7 +350,7 @@ class TTSWindow(SmartWindow):
             self.file_edit.setText(filepath)
 
     def _browse_voice_file(self):
-        filepath, _ = QFileDialog.getOpenFileName(
+        filepath, _unused = QFileDialog.getOpenFileName(
             self, _("Select Reference Audio"), "",
             _("Audio files") + " (*.wav *.mp3 *.flac);;" + _("All files") + " (*.*)",
         )
@@ -361,7 +361,7 @@ class TTSWindow(SmartWindow):
             self._save_provider_and_voice()
 
     def _browse_piper_model(self):
-        filepath, _ = QFileDialog.getOpenFileName(
+        filepath, _unused = QFileDialog.getOpenFileName(
             self, _("Select Piper Model"), "",
             _("ONNX models") + " (*.onnx);;" + _("All files") + " (*.*)",
         )
