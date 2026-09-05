@@ -337,8 +337,15 @@ class MuseMemory:
                                        get_previous_spot_profile_callback=self.get_previous_session_spot_profile,
                                        get_upcoming_tracks_callback=get_upcoming_tracks_callback,
                                        can_speak=can_speak)
-        self.update_all_spot_profiles(spot_profile)
-        self.update_current_session_spot_profiles(spot_profile)
+        # A session that will never speak has nothing worth remembering. Registering
+        # its profiles would push genuine spoken history out of the persisted list
+        # into snapshots, and lengthen the get_spot_index() walk for every later spot.
+        # Playback still needs the profile itself, so it is built either way.
+        if can_speak:
+            self.update_all_spot_profiles(spot_profile)
+            self.update_current_session_spot_profiles(spot_profile)
+        else:
+            logger.debug("Not registering spot profile in memory: Muse is not active")
         return spot_profile
 
 

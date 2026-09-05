@@ -71,6 +71,11 @@ class TestSpotOrderingThroughPlayback:
         muse.prepare = MagicMock(side_effect=lambda sp: setattr(sp, "is_prepared", True))
         muse.check_schedules = MagicMock()
         muse.voice.finish_speaking = MagicMock()
+        # Without a TTS runner this stays False, and MuseMemory then keeps the
+        # profiles out of the session list, leaving every spot at index 0. The
+        # sequence driven below is the one Playback reaches only behind
+        # has_muse(), which requires a voice that can speak.
+        muse.voice.can_speak = True
         muse.memory.get_persona_manager().allow_mock_personas = True
 
         # PlaybackConfig expects filepath strings; Playlist resolves them to
