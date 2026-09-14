@@ -44,6 +44,7 @@
     "enable_long_track_splitting": false,
     "long_track_splitting_time_cutoff_minutes": 20,
     "max_search_results": 200,
+    "search_enable_embedding_ranking": true,
     "max_recent_searches": 200,
     "foreground_color": "white",
     "background_color": "#2596BE",

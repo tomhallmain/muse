@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, NamedTuple, Optional, Tuple
 import copy
 import glob
 import json
@@ -33,6 +33,34 @@ libary_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)))
 logger = get_logger(__name__)
 
 
+# Share of the blended result score that the embedding signal carries. The
+# lexical tiers are 0, 1 and 2, so normalised a tier step is worth
+# 0.5 * (1 - weight) while the embedding can move a result by at most the weight
+# itself. At 1/3 or above a tier-2 hit could overtake a tier-0 one; 0.3 keeps the
+# step (0.35) wider than the span (0.30), so the tier hierarchy always holds and
+# the embedding only orders results within a tier.
+SEARCH_EMBEDDING_WEIGHT = 0.3
+
+# What an "all" free-text query is compared against, since it has no field of
+# its own. These four identify a particular recording; genre, instrument and
+# form are matched by the search too, but describe a category the track belongs
+# to rather than the track, so they are left out of the comparison text.
+SEARCH_EMBEDDING_ALL_ATTRS = ("searchable_title", "searchable_artist",
+                              "searchable_composer", "searchable_album")
+
+
+class _EmbeddingRanking(NamedTuple):
+    """Similarity per result filepath, with what it was computed from.
+
+    Field and query are kept so a later sort can tell whether the scores still
+    belong to what it is sorting; the filepath keys say which results they cover.
+    """
+
+    field: str
+    query: str
+    scores: Dict[str, float]
+
+
 class LibraryDataSearch:
     def __init__(self, all="", title="", album="", artist="", composer="", genre="", instrument="", form="",
                  catalogue="",
@@ -60,6 +88,7 @@ class LibraryDataSearch:
 
         self.results = []
         self.total_matches_count = 0  # Total matches found (including skipped ones)
+        self._embedding_ranking: Optional[_EmbeddingRanking] = None
 
     def is_valid(self):
         all_fields_empty = True
@@ -197,32 +226,155 @@ class LibraryDataSearch:
     def sort_results_by(self, attr=None):
         if len(self.results) == 0 or (attr is not None and attr.strip() == ""):
             return
-        search_field = None
-        if attr is None:
-            for _attr in ["title", "album", "artist", "composer", "genre", "instrument", "form", "catalogue"]:
-                if len(getattr(self, _attr)) > 0:
-                    search_field = _attr
-                    attr = self._get_searchable_track_attr(_attr)
-                    break
-            if attr is None:
-                logger.info("No sortable attribute in search query.")
-                return
-        else:
-            search_field = attr
-            attr = self._get_searchable_track_attr(attr)
+        search_field, track_attr = self._resolve_sort_field(attr)
+        if search_field is None:
+            logger.info("No sortable attribute in search query.")
+            return
+        embedding_scores = self._usable_embedding_scores(search_field)
 
-        search_value = getattr(self, search_field, "") if search_field else ""
-        is_callable = callable(getattr(self.results[0], attr))
+        if track_attr is None:
+            # The "all" field has no single track value to compare, so similarity
+            # is the only ordering it can have. Without it these results keep the
+            # order the library was scanned in.
+            if embedding_scores is None:
+                logger.info("No embedding scores for the all-field search, leaving the scan order.")
+                return
+            self.results.sort(key=lambda track: (-embedding_scores.get(str(track.filepath), 0.0),
+                                                 track.filepath))
+            return
+
+        search_value = getattr(self, search_field, "")
+        is_callable = callable(getattr(self.results[0], track_attr))
 
         def _sort_key(track):
-            val = getattr(track, attr)
+            val = getattr(track, track_attr)
             if is_callable:
                 val = val()
             val_str = val if val is not None else ""
             relevance = self._match_relevance(val_str, search_value)
+            if embedding_scores is not None:
+                similarity = embedding_scores.get(str(track.filepath), 0.0)
+                relevance = ((relevance / 2.0) * (1.0 - SEARCH_EMBEDDING_WEIGHT)
+                             + (1.0 - similarity) * SEARCH_EMBEDDING_WEIGHT)
             return (relevance, val_str, track.filepath)
 
         self.results.sort(key=_sort_key)
+
+    def _resolve_sort_field(self, attr=None) -> Tuple[Optional[str], Optional[str]]:
+        """The (search field, track attribute) a sort should use.
+
+        The track attribute is None for the "all" field, which no single track
+        value corresponds to. Named fields resolve first, so "all" is only
+        reached when none of them is populated.
+        """
+        if attr is not None:
+            return attr, self._get_searchable_track_attr(attr)
+        for _attr in ["title", "album", "artist", "composer", "genre", "instrument", "form", "catalogue"]:
+            if len(getattr(self, _attr)) > 0:
+                return _attr, self._get_searchable_track_attr(_attr)
+        if len(self.all) > 0:
+            return "all", None
+        return None, None
+
+    def compute_embedding_scores(self, attr=None) -> bool:
+        """Score every result by embedding similarity to the query, 0.0 to 1.0.
+
+        The first call loads the embedding model, which pulls in torch, so this
+        belongs on the background thread that ran the search and never on the UI
+        thread. Never raises: on any failure the scores stay unset and sorting
+        falls back to the lexical tiers alone. Nothing is persisted -- the
+        vectors are built for this result set and discarded.
+        """
+        if not getattr(config, "search_enable_embedding_ranking", True):
+            return False
+        if len(self.results) == 0:
+            return False
+        try:
+            search_field, track_attr = self._resolve_sort_field(attr)
+            if search_field is None:
+                return False
+            query_text = self._embedding_query_text(search_field)
+            if not query_text:
+                return False
+            scores: Dict[str, float] = {}
+            texts: List[str] = []
+            scored_paths: List[str] = []
+            for track in list(self.results):
+                filepath = str(track.filepath)
+                text = self._embedding_track_text(track, search_field, track_attr)
+                if text:
+                    texts.append(text)
+                    scored_paths.append(filepath)
+                else:
+                    # Nothing to compare against, but still recorded, so the
+                    # scores cover the whole result set they are bound to.
+                    scores[filepath] = 0.0
+            if not texts:
+                return False
+            from muse.track_affinity import cosine_similarity, embed_texts
+            vectors = embed_texts([query_text] + texts)
+            if not vectors or len(vectors) != len(texts) + 1:
+                return False
+            for filepath, vector in zip(scored_paths, vectors[1:]):
+                similarity = cosine_similarity(vectors[0], vector)
+                if similarity is None:
+                    return False
+                # Opposed vectors carry no more meaning here than unrelated ones.
+                scores[filepath] = max(0.0, min(1.0, similarity))
+        except Exception as e:
+            logger.warning(f"Embedding ranking of search results failed, keeping the lexical order: {e}")
+            return False
+        self._embedding_ranking = _EmbeddingRanking(search_field, query_text, scores)
+        return True
+
+    def _usable_embedding_scores(self, search_field: str) -> Optional[Dict[str, float]]:
+        """The embedding scores if they still belong to what is being sorted.
+
+        They do when they were computed for this field and this query text and
+        cover every current result. A column switch, an edited query or a "Load
+        more" page breaks one of those, and applying a score to the wrong result
+        is worse than sorting without one.
+        """
+        ranking = self._embedding_ranking
+        if ranking is None or ranking.field != search_field:
+            return None
+        if ranking.query != self._embedding_query_text(search_field):
+            return None
+        for track in self.results:
+            if str(track.filepath) not in ranking.scores:
+                return None
+        return ranking.scores
+
+    def _embedding_query_text(self, search_field: str) -> str:
+        """The query as the text to embed, or "" if there is nothing to embed.
+
+        Only the positive terms: negative ones have already excluded their tracks
+        from the result set, so they cannot affect ordering within it.
+        """
+        positive, _negative = self._field_terms.get(search_field, ([], []))
+        query = ", ".join(positive)
+        if not query:
+            return ""
+        return query if search_field == "all" else f"{search_field}: {query}"
+
+    def _embedding_track_text(self, track, search_field: str, track_attr: Optional[str]) -> str:
+        """One result as the text to embed, or "" if it has nothing to compare.
+
+        Named fields are labelled the same way the query is, so "sonata" as a
+        form and "sonata" in a title are not read as the same thing.
+        """
+        if track_attr is None:
+            values = []
+            for name in SEARCH_EMBEDDING_ALL_ATTRS:
+                value = getattr(track, name, None)
+                if value and str(value).strip():
+                    values.append(str(value).strip())
+            return ", ".join(values)
+        value = getattr(track, track_attr, None)
+        if callable(value):
+            value = value()
+        value = str(value).strip() if value else ""
+        return f"{search_field}: {value}" if value else ""
 
     @staticmethod
     def _match_relevance(value: str, query: str) -> int:
@@ -310,13 +462,15 @@ class LibraryDataSearch:
         if not isinstance(value, LibraryDataSearch):
             return False
         for key in self.__dict__.keys():
-            if key not in ("results", "stored_results_count", "selected_track_path", "_field_terms") and getattr(value, key) != getattr(self, key):
+            if key not in ("results", "stored_results_count", "selected_track_path", "_field_terms",
+                           "_embedding_ranking") and getattr(value, key) != getattr(self, key):
                 return False
         return True
 
     # Derived from the other fields, not independent state -- excluded here
     # the same way results/stored_results_count/total_matches_count/offset are.
-    _NON_IDENTITY_KEYS = ("results", "stored_results_count", "total_matches_count", "offset", "_field_terms")
+    _NON_IDENTITY_KEYS = ("results", "stored_results_count", "total_matches_count", "offset", "_field_terms",
+                          "_embedding_ranking")
 
     def __eq__(self, value: object) -> bool:
         if not isinstance(value, LibraryDataSearch):

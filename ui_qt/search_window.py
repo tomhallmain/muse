@@ -503,6 +503,16 @@ class SearchWindow(SmartWindow):
         self.title_list.append(self.searching_label)
 
         def search_complete(_search_results):
+            # Still on the search thread. Merging the earlier pages and scoring
+            # the results both have to be finished before the UI is told to
+            # sort and draw them, and the embedding pass in particular must not
+            # run on the UI thread -- its first call loads the model.
+            if existing_results:
+                self.library_data_search.results = (
+                    existing_results + self.library_data_search.results
+                )
+                self.library_data_search.set_stored_results_count()
+            self.library_data_search.compute_embedding_scores()
             self._search_complete.emit()
 
         def update_status(status_text):
@@ -516,11 +526,6 @@ class SearchWindow(SmartWindow):
                     completion_callback=search_complete,
                     search_status_callback=update_status,
                 )
-                if existing_results:
-                    self.library_data_search.results = (
-                        existing_results + self.library_data_search.results
-                    )
-                    self.library_data_search.set_stored_results_count()
             except Exception as e:
                 logger.error("Error in search thread: %s", e)
                 self._search_error.emit(str(e))

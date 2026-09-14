@@ -147,6 +147,11 @@ class Config:
         self.playlist_recently_played_check_count = 1000
         self.max_search_results = 200
         self.max_recent_searches = 200
+        # Blend a text-embedding similarity into the search window's result
+        # ordering. Off means the purely lexical order, which is also what an
+        # absent sentence-transformers package leaves. Worth turning off where
+        # the first search of a session should not pay for loading torch.
+        self.search_enable_embedding_ranking = True
 
         self.server_port = 6000
         self.server_password = "<PASSWORD>"
@@ -225,6 +230,7 @@ class Config:
             "extension_allow_emoji_titles",
             "extension_enable_llm_scoring",
             "extension_enable_embedding_scoring",
+            "search_enable_embedding_ranking",
             "dj_persona_refresh_context",
             "auto_fix_vlc_plugin_cache",
             "piper_auto_download",
