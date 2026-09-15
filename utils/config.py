@@ -152,6 +152,25 @@ class Config:
         # absent sentence-transformers package leaves. Worth turning off where
         # the first search of a session should not pay for loading torch.
         self.search_enable_embedding_ranking = True
+        # Return tracks whose field value reads as close to the query even where
+        # it does not contain it literally. Unlike the ranking above, this needs
+        # a vector per track, built once in the background and kept on disk.
+        self.search_enable_semantic_recall = True
+        # Fields worth a vector per track. Title, artist and album carry values
+        # distinct enough per track to be worth one; the remaining fields are
+        # short controlled vocabulary, where far fewer distinct values cover the
+        # library and the index is mostly duplication.
+        self.search_semantic_fields = ["title", "artist", "album"]
+        self.search_semantic_top_k = 25
+        # A candidate is kept while it stays within this much of the best
+        # candidate for the same query. Relative because the cosine scale shifts
+        # from query to query, so one fixed threshold is either too tight or too
+        # loose depending on what was typed.
+        self.search_semantic_relative_floor = 0.15
+        # The sanity gate under that margin, not the working cutoff: without it a
+        # query with no neighbours at all still returns its least-bad ones, every
+        # score being within the margin of a bad best score.
+        self.search_semantic_min_score = 0.25
 
         self.server_port = 6000
         self.server_password = "<PASSWORD>"
@@ -202,6 +221,7 @@ class Config:
             "playlist_recently_played_check_count",
             "max_recent_searches",
             "max_search_results",
+            "search_semantic_top_k",
             "radio_watchlist_cooldown_minutes",
             "radio_watchlist_max_stations",
         )
@@ -216,6 +236,11 @@ class Config:
             "extension_cycle_wait_minutes",
             "extension_pending_review_seconds",
             "extension_track_duration_seconds",
+            "search_semantic_fields",
+        )
+        self.set_values(float,
+            "search_semantic_relative_floor",
+            "search_semantic_min_score",
         )
         self.set_values(bool,
             "enable_dynamic_volume",
@@ -231,6 +256,7 @@ class Config:
             "extension_enable_llm_scoring",
             "extension_enable_embedding_scoring",
             "search_enable_embedding_ranking",
+            "search_enable_semantic_recall",
             "dj_persona_refresh_context",
             "auto_fix_vlc_plugin_cache",
             "piper_auto_download",

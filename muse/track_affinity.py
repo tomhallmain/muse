@@ -515,6 +515,15 @@ def _get_embedder() -> Any:
     return _embedder
 
 
+def embedding_model() -> Any:
+    """The loaded model itself, or None if it cannot be had.
+
+    For callers encoding in bulk, which want the model's own batching and its
+    numpy output rather than the per-call list conversion embed_texts() does.
+    """
+    return _get_embedder()
+
+
 def embed_texts(texts: List[str]) -> Optional[List[List[float]]]:
     """Vectors for *texts*, or None if the model is unavailable or fails."""
     model = _get_embedder()

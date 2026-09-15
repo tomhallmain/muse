@@ -525,6 +525,7 @@ class SearchWindow(SmartWindow):
                     overwrite=overwrite,
                     completion_callback=search_complete,
                     search_status_callback=update_status,
+                    semantic_recall=True,
                 )
             except Exception as e:
                 logger.error("Error in search thread: %s", e)

@@ -18,6 +18,9 @@ from library_data.genre import genre_data
 from library_data.instrument import instruments_data
 from library_data.library_data_callbacks import LibraryDataCallbacks
 from library_data.media_track import MediaTrack
+from library_data.track_embedding_store import (
+    get_store, reset_store, semantic_fields, semantic_recall_enabled, track_text,
+)
 from utils.app_info_cache import app_info_cache
 from utils.cache_paths import resolve_cache_file
 from utils.config import config
@@ -345,14 +348,18 @@ class LibraryDataSearch:
                 return None
         return ranking.scores
 
-    def _embedding_query_text(self, search_field: str) -> str:
-        """The query as the text to embed, or "" if there is nothing to embed.
+    def semantic_query_text(self, search_field: str) -> str:
+        """The query's positive terms as plain text, or "" if it has none.
 
-        Only the positive terms: negative ones have already excluded their tracks
-        from the result set, so they cannot affect ordering within it.
+        Only the positive terms: negative ones state what must be absent, which
+        no similarity comparison can express.
         """
         positive, _negative = self._field_terms.get(search_field, ([], []))
-        query = ", ".join(positive)
+        return ", ".join(positive)
+
+    def _embedding_query_text(self, search_field: str) -> str:
+        """The query as the text to embed for ranking, or "" if there is none."""
+        query = self.semantic_query_text(search_field)
         if not query:
             return ""
         return query if search_field == "all" else f"{search_field}: {query}"
@@ -393,7 +400,8 @@ class LibraryDataSearch:
             return 1
         return 2
 
-    def _get_searchable_track_attr(self, search_attr) -> str:
+    @staticmethod
+    def _get_searchable_track_attr(search_attr) -> str:
         if search_attr == "title":
             return "searchable_title"
         elif search_attr == "album":
@@ -790,6 +798,7 @@ class LibraryData:
             # Clear caches when overwriting to force fresh reads
             LibraryData.MEDIA_TRACK_CACHE = {}
             LibraryData.DIRECTORIES_CACHE = {}
+            reset_store()
             if app_actions is not None:
                 app_actions.update_extension_status(_("Updating tracks"))
         with LibraryData.get_tracks_lock:
@@ -854,7 +863,8 @@ class LibraryData:
         )
         self.extension_manager = ExtensionManager(self.app_actions, self.data_callbacks)
 
-    def do_search(self, library_data_search, overwrite=False, completion_callback=None, search_status_callback=None):
+    def do_search(self, library_data_search, overwrite=False, completion_callback=None,
+                  search_status_callback=None, semantic_recall=False):
         if not isinstance(library_data_search, LibraryDataSearch):
             raise TypeError('Library data search must be of type LibraryDataSearch')
         if not library_data_search.is_valid():
@@ -883,6 +893,14 @@ class LibraryData:
             if library_data_search.test(audio_track) is None:
                 break
 
+        if semantic_recall:
+            # Index progress goes to the main window's status, not the search's
+            # own label: the build outlives the search that started it, and that
+            # label is destroyed as soon as the results are drawn.
+            build_status_callback = getattr(self.app_actions, "update_extension_status", None) \
+                if self.app_actions is not None else None
+            self._add_semantic_results(library_data_search, all_tracks, build_status_callback)
+
         library_data_search.set_stored_results_count()
         
         # Call the completion callback if provided
@@ -893,6 +911,59 @@ class LibraryData:
                 logger.error(f"Error in search callback: {e}")
                 
         return library_data_search
+
+    @staticmethod
+    def _add_semantic_results(library_data_search, all_tracks, build_status_callback=None):
+        """Append tracks the substring filter rejected but whose field value reads
+        as close to the query.
+
+        Additive only, and only on the first page: a later page would duplicate
+        what the first one added or reshuffle it. Never raises -- a failure here
+        leaves the literal results exactly as they were.
+
+        Negative terms are re-applied to what comes back. They state what must be
+        absent, which the similarity comparison cannot express, so without this a
+        "-requiem" would exclude requiems from the literal pass and let them back
+        in through this one.
+        """
+        if not semantic_recall_enabled() or library_data_search.offset > 0:
+            return
+        try:
+            search_field, track_attr = library_data_search._resolve_sort_field()
+            if search_field is None or track_attr is None:
+                return
+            if search_field not in semantic_fields():
+                return
+            query_text = library_data_search.semantic_query_text(search_field)
+            if not query_text:
+                return
+            store = get_store()
+            store.ensure_built(search_field, all_tracks, track_attr,
+                               status_callback=build_status_callback)
+            matches = store.query(search_field, query_text)
+            if not matches:
+                return
+            _positive, negative_terms = library_data_search._field_terms.get(search_field, ([], []))
+            known = {str(track.filepath) for track in library_data_search.results}
+            tracks_by_path = {str(track.filepath): track for track in all_tracks}
+            added = 0
+            for filepath, _score in matches:
+                if filepath in known:
+                    continue
+                track = tracks_by_path.get(filepath)
+                if track is None:
+                    continue
+                value = track_text(track, track_attr)
+                if any(term in value for term in negative_terms):
+                    continue
+                library_data_search.results.append(track)
+                known.add(filepath)
+                added += 1
+            if added > 0:
+                logger.info(f"Added {added} tracks by {search_field} similarity "
+                            f"that the literal search did not match")
+        except Exception as e:
+            logger.warning(f"Semantic recall failed, the search stays literal: {e}")
 
     def resolve_track(self, media_track):
         # Find any highly similar tracks in the library to this track.
