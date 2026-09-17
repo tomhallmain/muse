@@ -236,6 +236,10 @@ class PlaybackConfigMaster:
             track.set_is_extended()
             self.next_track_override = None
             PlaybackConfigMaster.ready_for_extension = True
+            # An override does not come from any playlist, so nothing below
+            # records it as played. Only the filepath is noted -- see
+            # note_track_played for why the attribute histories are not.
+            Playlist.note_track_played(track)
             return TrackResult(track)
 
         if not any(self._active_mask):

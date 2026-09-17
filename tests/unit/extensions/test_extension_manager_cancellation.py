@@ -31,7 +31,7 @@ def restore_class_state():
         ExtensionManager.extension_thread,
         ExtensionManager.DELAYED_THREADS,
         ExtensionManager.pending_candidate,
-        ExtensionManager.current_download_process,
+        ExtensionManager.current_dl_process,
         list(queue.pending_jobs),
         queue.job_running,
     )
@@ -39,13 +39,13 @@ def restore_class_state():
     ExtensionManager.extension_thread = None
     ExtensionManager.DELAYED_THREADS = []
     ExtensionManager.pending_candidate = None
-    ExtensionManager.current_download_process = None
+    ExtensionManager.current_dl_process = None
     yield
     (ExtensionManager.stop_event,
      ExtensionManager.extension_thread,
      ExtensionManager.DELAYED_THREADS,
      ExtensionManager.pending_candidate,
-     ExtensionManager.current_download_process,
+     ExtensionManager.current_dl_process,
      queue.pending_jobs,
      queue.job_running) = saved
 
@@ -197,12 +197,12 @@ class TestDownloadProcessTermination:
     def test_in_flight_download_is_terminated(self):
         process = MagicMock()
         process.poll.return_value = None
-        ExtensionManager.current_download_process = process
+        ExtensionManager.current_dl_process = process
 
-        assert ExtensionManager._terminate_download_process() is True
+        assert ExtensionManager._terminate_dl_process() is True
 
         process.terminate.assert_called_once()
-        assert ExtensionManager.current_download_process is None
+        assert ExtensionManager.current_dl_process is None
 
     def test_killed_when_terminate_is_ignored(self):
         import subprocess
@@ -210,21 +210,21 @@ class TestDownloadProcessTermination:
         process = MagicMock()
         process.poll.return_value = None
         process.wait.side_effect = [subprocess.TimeoutExpired(cmd="extension download", timeout=5.0), None]
-        ExtensionManager.current_download_process = process
+        ExtensionManager.current_dl_process = process
 
-        assert ExtensionManager._terminate_download_process() is True
+        assert ExtensionManager._terminate_dl_process() is True
 
         process.terminate.assert_called_once()
         process.kill.assert_called_once()
 
     def test_no_process_is_a_no_op(self):
-        ExtensionManager.current_download_process = None
-        assert ExtensionManager._terminate_download_process() is False
+        ExtensionManager.current_dl_process = None
+        assert ExtensionManager._terminate_dl_process() is False
 
     def test_already_exited_process_is_left_alone(self):
         process = MagicMock()
         process.poll.return_value = 0
-        ExtensionManager.current_download_process = process
+        ExtensionManager.current_dl_process = process
 
-        assert ExtensionManager._terminate_download_process() is False
+        assert ExtensionManager._terminate_dl_process() is False
         process.terminate.assert_not_called()

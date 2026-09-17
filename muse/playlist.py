@@ -211,6 +211,18 @@ class Playlist:
         # much as the several short ones it displaced.
         record_listening(track)
 
+    @staticmethod
+    def note_track_played(track: MediaTrack) -> None:
+        """Record only that this filepath played, leaving the attribute histories alone.
+
+        For material whose tags cannot be trusted to steer them. A freshly
+        downloaded extension carries whatever the source tagged it with and
+        whatever auto-filing made of that, so feeding its album, artist or
+        composer into the memory shuffles would steer them by values that may
+        be wrong. The filepath is exact either way.
+        """
+        Playlist.update_list(Playlist.recently_played_filepaths, track.filepath)
+
     def __init__(self, tracks: List[str] = [], _type: PlaylistSortType = PlaylistSortType.SEQUENCE,
                  data_callbacks: Optional['LibraryDataCallbacks'] = None, start_track: Optional[MediaTrack] = None,
                  loop: bool = False,

@@ -27,29 +27,23 @@ if TYPE_CHECKING:
 
 _ = I18N._
 
-# Get logger for this module
 logger = get_logger(__name__)
 
 class ExtensionManager:
-    # This class should hold a short history of library extensions
-    # with convenience methods for filing them into the right
-    # directories, querying them, showing in UI, removing, etc.
-    # Each new extension should be registered here
-
+    
     extensions: List[Dict[str, Any]] = []
     strategy: ExtensionStrategy = ExtensionStrategy.RANDOM
     extension_thread_delayed_complete: bool = False
     EXTENSION_QUEUE: JobQueue = JobQueue("Extension queue")
     DELAYED_THREADS: List[Any] = []
-    # These were class constants that could only be changed by editing this file;
-    # they now read from config, defaulting to the values that used to be here.
+    
     extension_thread: Optional[Any] = None
 
     # Cancellation signal for the current generation of extension threads. Each
     # thread captures it on entry and start_extensions_thread installs a
     # replacement rather than clearing it, so a stopped thread stays stopped.
     stop_event: threading.Event = threading.Event()
-    current_download_process: Optional[Any] = None
+    current_dl_process: Optional[Any] = None
     THREAD_JOIN_TIMEOUT_SECONDS: float = 5.0
     FAVORITE_BIAS_CHANCE: float = 0.5
     # Per-option cap on the `b.d` text `_c` passes for scoring. A retry doubles
@@ -57,15 +51,13 @@ class ExtensionManager:
     # text would crowd out the rest of the prompt.
     D_CAP: int = 300
 
-    # Candidate currently selected and waiting out its pre-download delay, if any.
+    # Candidate currently selected and waiting out its pre-dl delay, if any.
     # Dict shape: {"id": str, "title": str, "rejected": bool, "raw": dict,
     # "attr": Optional[TrackAttribute], "search_query": str}
     pending_candidate: Optional[Dict[str, Any]] = None
-    # Persisted rejection records; rejected_ids is a derived O(1) lookup set.
     rejected_extensions: List[Dict[str, Any]] = []
-    # IDs (LibraryExtender `.w`) the user has explicitly rejected before download;
-    # excluded from future selection via _bad_option/_is_rejected.
     rejected_ids: set = set()
+    dl_ids: set = set()
 
     @staticmethod
     def load_extensions() -> None:
@@ -84,6 +76,7 @@ class ExtensionManager:
             # Persist so this doesn't get re-migrated on every future load.
             ExtensionManager.store_extensions()
         ExtensionManager._recompute_rejected_ids()
+        ExtensionManager._recompute_dl_ids()
 
     @staticmethod
     def _repair_corrupted_rejected_ids() -> bool:
@@ -122,6 +115,46 @@ class ExtensionManager:
         ExtensionManager.rejected_ids = {r["id"] for r in ExtensionManager.rejected_extensions}
 
     @staticmethod
+    def _extension_id(record: Dict[str, Any]) -> Optional[str]:
+        """The candidate ID behind a stored record, or None if it cannot be read.
+
+        Records written since the ID became explicit carry it directly. Older
+        ones hold only the raw candidate payload, which is where the rejection
+        paths read it from too, so the history stays usable without a migration.
+        """
+        id_val = record.get("id")
+        if isinstance(id_val, str) and id_val.strip():
+            return id_val.strip()
+        from extensions.library_extender import q20, q23
+        nested = record.get(q20)
+        if isinstance(nested, dict):
+            value = nested.get(q23)
+            if isinstance(value, str) and value.strip():
+                return value.strip()
+        return None
+
+    @staticmethod
+    def _was_dl(record: Dict[str, Any]) -> bool:
+        """Whether a history record stands for a file that actually arrived.
+
+        A failed attempt left nothing behind, so its candidate stays eligible:
+        a dl that failed once may well succeed later, and excluding it for
+        good would spend a whole extension cycle's worth of nothing.
+        """
+        return not record.get("failed") and bool(record.get("filename"))
+
+    @staticmethod
+    def _recompute_dl_ids() -> None:
+        ids = set()
+        for record in ExtensionManager.extensions:
+            if not ExtensionManager._was_dl(record):
+                continue
+            id_val = ExtensionManager._extension_id(record)
+            if id_val:
+                ids.add(id_val)
+        ExtensionManager.dl_ids = ids
+
+    @staticmethod
     def _trim_extension_history() -> None:
         """Drop the oldest entries once the history passes its configured cap.
 
@@ -133,6 +166,9 @@ class ExtensionManager:
         excess = len(ExtensionManager.extensions) - max_length
         if max_length > 0 and excess > 0:
             del ExtensionManager.extensions[:excess]
+            # The dropped entries' IDs go with them, so a candidate old enough
+            # to have fallen out of the history becomes eligible again.
+            ExtensionManager._recompute_dl_ids()
             logger.info(f"Trimmed {excess} oldest extension history entries (cap {max_length})")
 
     @staticmethod
@@ -144,10 +180,10 @@ class ExtensionManager:
 
     @staticmethod
     def reject_pending_candidate() -> bool:
-        """Reject the extension candidate currently waiting to be downloaded.
+        """Reject the extension candidate currently waiting to be dled.
 
         Marks it excluded from future selection and signals the waiting
-        ``_delayed`` thread to skip the download. Does not start a new
+        ``_delayed`` thread to skip the dl. Does not start a new
         extension job -- the regular recurring extension cycle already
         picks up the next candidate on its own schedule.
 
@@ -210,24 +246,24 @@ class ExtensionManager:
         ExtensionManager.extension_thread = Utils.start_thread(self._run_extensions, use_asyncio=False, args=(initial_sleep, voice))
 
     @staticmethod
-    def _terminate_download_process() -> bool:
-        process = ExtensionManager.current_download_process
+    def _terminate_dl_process() -> bool:
+        process = ExtensionManager.current_dl_process
         if process is None or process.poll() is not None:
             return False
-        logger.info("Terminating in-flight extension download")
+        logger.info("Terminating in-flight extension dl")
         try:
             process.terminate()
             try:
                 process.wait(timeout=ExtensionManager.THREAD_JOIN_TIMEOUT_SECONDS)
             except subprocess.TimeoutExpired:
-                logger.warning("Download process ignored terminate; killing it")
+                logger.warning("dl process ignored terminate; killing it")
                 process.kill()
                 process.wait(timeout=ExtensionManager.THREAD_JOIN_TIMEOUT_SECONDS)
         except Exception as e:
-            logger.warning(f"Error terminating download process: {e}")
+            logger.warning(f"Error terminating dl process: {e}")
             return False
         finally:
-            ExtensionManager.current_download_process = None
+            ExtensionManager.current_dl_process = None
         return True
 
     def reset_extension(self, restart_thread: bool = True) -> None:
@@ -235,7 +271,7 @@ class ExtensionManager:
         try:
             ExtensionManager.EXTENSION_QUEUE.cancel()
             ExtensionManager.stop_event.set()
-            self._terminate_download_process()
+            self._terminate_dl_process()
             timeout = ExtensionManager.THREAD_JOIN_TIMEOUT_SECONDS
             closed_one_thread = False
 
@@ -513,6 +549,7 @@ class ExtensionManager:
         min_seconds, max_seconds = config.get_int_range("extension_track_duration_seconds", 120, 10800)
         return (b.xfgi(min_seconds)
                 or b.xfgj(max_seconds)
+                or self._already_dled(b)
                 or self.is_in_library(b)
                 or (strict and self._strict_test(b, attr, strict))
                 or self._is_blacklisted(b)
@@ -535,6 +572,22 @@ class ExtensionManager:
     def _is_rejected(self, b) -> bool:
         if b.w in ExtensionManager.rejected_ids:
             logger.info(f"Skipping previously-rejected candidate: {b.n}")
+            return True
+        return False
+
+    def _already_dled(self, b) -> bool:
+        """Whether this candidate has been dled before.
+
+        is_in_library() below asks the same question of the library, but can
+        only answer it once the track cache has been refreshed since the
+        dl. The history records the dl itself, so something fetched
+        minutes ago is caught here whatever state that cache is in. Checked
+        first because it is a set lookup against a search over every track.
+        """
+        if not b.w or not b.w.strip():
+            return False
+        if b.w.strip() in ExtensionManager.dl_ids:
+            logger.info(f"Skipping previously-dled candidate: {b.n}")
             return True
         return False
 
@@ -642,7 +695,7 @@ class ExtensionManager:
                     break
                 if self.ui_callbacks is not None:
                     self.ui_callbacks.update_extension_status(_("Extension \"{0}\" waiting for {1} minutes").format(SoupUtils.clean_html(b.n), round(float(time_seconds) / 60)))
-                if Utils.long_wait(stop_event, check_cadence, f"extension: pre-download delay", total=time_seconds, print_cadence=180):
+                if Utils.long_wait(stop_event, check_cadence, f"extension: pre-dl delay", total=time_seconds, print_cadence=180):
                     break
 
             if stop_event.is_set():
@@ -652,7 +705,7 @@ class ExtensionManager:
                 return
 
             if ExtensionManager.pending_candidate.get("rejected"):
-                logger.info(f"Extension candidate rejected before download: {b.n}")
+                logger.info(f"Extension candidate rejected before dl: {b.n}")
                 if self.ui_callbacks is not None:
                     self.ui_callbacks.update_extension_status(_("Extension \"{0}\" rejected").format(SoupUtils.clean_html(b.n)))
                 ExtensionManager.pending_candidate = None
@@ -696,7 +749,7 @@ class ExtensionManager:
             if not config.auto_file_extensions:
                 logger.info("Auto-filing skipped: auto_file_extensions is disabled")
             elif not f:
-                logger.warning("Auto-filing skipped: no downloaded file path was produced")
+                logger.warning("Auto-filing skipped: no dled file path was produced")
             else:
                 from extensions.extension_filer import file_extension
                 filed = file_extension(f, attr, _name, entity, b.n, llm=self.llm)
@@ -723,11 +776,11 @@ class ExtensionManager:
         logger.warning(f"extending delayed: {a}")
         e = "[download]"
         p = subprocess.Popen(a, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-        ExtensionManager.current_download_process = p
+        ExtensionManager.current_dl_process = p
         try:
             o, __ = p.communicate()
         finally:
-            ExtensionManager.current_download_process = None
+            ExtensionManager.current_dl_process = None
         if ExtensionManager.stop_event.is_set():
             logger.info("Extension download stopped")
             raise Exception("Extension download stopped")
@@ -744,7 +797,7 @@ class ExtensionManager:
             logger.warning("F was not found" if _f is None else "F was found but invalid: " + _f)
             if _e is None or not self._exists_with_retry(_e):
                 logger.warning("E was not found" if _e is None else "E was found but invalid: " + _e)
-                close_match = self.check_dir_for_close_match(_e)
+                close_match = self.check_dir_for_close_match(_f if _f else _e)
                 if close_match is not None:
                     _f = close_match
                 elif b1 is not None:
@@ -941,6 +994,7 @@ class ExtensionManager:
 
     def _append(self, b, f: Optional[str], attr: Optional[TrackAttribute], s: str, exception: Optional[str] = None):
         obj = dict(b.u)
+        obj["id"] = b.w
         obj["filename"] = f
         obj["date"] = datetime.datetime.now().isoformat()
         obj["strategy"] = ExtensionManager.strategy.name
@@ -964,16 +1018,23 @@ class ExtensionManager:
         obj["failed"] = exception is not None
         obj["exception"] = exception
         ExtensionManager.extensions.append(obj)
+        if ExtensionManager._was_dl(obj):
+            id_val = ExtensionManager._extension_id(obj)
+            if id_val:
+                ExtensionManager.dl_ids.add(id_val)
 
     def check_dir_for_close_match(self, t: Optional[str]) -> Optional[str]:
         if t is None or t.strip() == "":
+            return None
+        _t = os.path.splitext(os.path.basename(t))[0]
+        if _t.strip() == "":
             return None
         _dir = os.path.abspath(config.directories[0])
         for f in os.listdir(_dir):
             if not MediaFileType.is_media_filetype(f):
                 continue
             filepath = os.path.join(_dir, f)
-            if os.path.isfile(filepath) and Utils.is_similar_strings(filepath, t, True):
+            if os.path.isfile(filepath) and Utils.is_similar_strings(os.path.splitext(f)[0], _t, True):
                 logger.info(f"Found close match: {f}")
                 return filepath
         return None
@@ -983,7 +1044,7 @@ class ExtensionManager:
         return LibraryExtender.isyMOLB_(q, m=x)
 
     @staticmethod
-    def get_extension_detailsfor_track(media_track: Optional['MediaTrack'] = None) -> Optional[Dict[str, Any]]:
+    def get_extension_details_for_track(media_track: Optional['MediaTrack'] = None) -> Optional[Dict[str, Any]]:
         if media_track is None:
             return None
         try:
