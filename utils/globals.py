@@ -465,6 +465,7 @@ class Topic(Enum):
     WEATHER = "weather"
     NEWS = "news"
     HACKERNEWS = "hackernews"
+    REDDIT = "reddit"
     MASTODON = "mastodon"
     JOKE = "joke"
     FACT = "fact"
@@ -490,8 +491,10 @@ class Topic(Enum):
             return _("news")
         elif self == Topic.HACKERNEWS:
             return "hacker news"
+        elif self == Topic.REDDIT:
+            return "Reddit"
         elif self == Topic.MASTODON:
-            return _("what people are posting")
+            return "Mastodon"
         elif self == Topic.JOKE:
             return _("joke")
         elif self == Topic.FACT:
@@ -537,12 +540,11 @@ class Topic(Enum):
         from the check on the LLM's output.
 
         The exemption keeps a prompt that names a blacklisted subject from
-        looping until it raises. It is withheld for a topic whose prompt
-        carries unedited third-party text, where the exempted region would be
-        that text and a term arriving in it would become a term the DJ is
-        allowed to say.
+        looping until it raises. It is withheld for a social source, where the
+        exempted region would be the fetched posts and a term arriving in one
+        would become a term the DJ is allowed to say.
         """
-        return self is not Topic.MASTODON
+        return self not in Topic.social_sources()
 
     @staticmethod
     def excluded_for_stream() -> list:
@@ -556,14 +558,20 @@ class Topic(Enum):
         Selection keeps them apart so the DJ does not run several of these
         segments in a row.
         """
-        topics = [Topic.WEATHER, Topic.NEWS, Topic.HACKERNEWS, Topic.MASTODON]
+        topics = [Topic.WEATHER, Topic.NEWS, Topic.HACKERNEWS] + Topic.social_sources()
         return [topic for topic in topics if topic is not excluding]
 
     @staticmethod
     def fetched_sources() -> list:
         """Current-events topics whose content comes from an external fetch, so
         a repeat inside the minimum window would re-read the same items."""
-        return [Topic.NEWS, Topic.HACKERNEWS, Topic.MASTODON]
+        return [Topic.NEWS, Topic.HACKERNEWS] + Topic.social_sources()
+
+    @staticmethod
+    def social_sources() -> list:
+        """Topics whose payload is unedited text written by strangers, filtered
+        by extensions/social_filter.py before it reaches a prompt."""
+        return [Topic.REDDIT, Topic.MASTODON]
 
     @staticmethod
     def from_value(value):

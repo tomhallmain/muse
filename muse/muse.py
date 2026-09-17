@@ -7,8 +7,10 @@ from typing import Optional, List, Callable
 
 from extensions.hacker_news_souper import HackerNewsSouper
 from extensions.mastodon_api import MastodonAPI
+from extensions.reddit_api import RedditAPI
 from extensions.news_api import NewsAPI
 from extensions.open_weather import OpenWeatherAPI
+from extensions.social_filter import SocialSourceUnusable
 from extensions.soup_utils import WebConnectionException
 from extensions.wiki_opensearch_api import WikiOpenSearchAPI
 from extensions.llm import LLM, LLMResponseException, LLMResult
@@ -84,6 +86,7 @@ class Muse:
         self.open_weather_api = OpenWeatherAPI()
         self.news_api = NewsAPI()
         self.hacker_news_souper = HackerNewsSouper()
+        self.reddit_api = RedditAPI()
         self.mastodon_api = MastodonAPI()
         self.prompter = Prompter()
         self.has_started_prep = False
@@ -464,31 +467,32 @@ class Muse:
     def get_topic(self, previous_track, excluded_topics=[]):
         excluded_topics = list(excluded_topics)
         
-        # Add randomness to the time thresholds
-        weather_hours = random.uniform(20, 28)  # 20-28 hours for weather prioritization
-        news_hours = random.uniform(72, 96)    # 3-4 days for news prioritization
-        hackernews_hours = random.uniform(72, 96)  # 3-4 days for hackernews prioritization
-        mastodon_hours = random.uniform(72, 96)    # 3-4 days for mastodon prioritization
+        # Add randomness to the time thresholds. Weather is a daily forecast;
+        # a fetched source has nothing new to say for days at a time.
+        current_events_hours = [(Topic.WEATHER, random.uniform(20, 28))]
+        current_events_hours += [(source, random.uniform(72, 96))
+                                 for source in Topic.fetched_sources()]
         playlist_context_hours = random.uniform(0, 4) 
         min_repeat_hours = random.uniform(12, 16)   # 12-16 hours minimum repeat
-        
-        if Prompter.over_n_hours_since_last(Topic.WEATHER, n_hours=weather_hours) and not self.memory.is_recent_topics(Topic.current_events(excluding=Topic.WEATHER), n=3):
-            topic = Topic.WEATHER
-        elif Prompter.over_n_hours_since_last(Topic.NEWS, n_hours=news_hours) and not self.memory.is_recent_topics(Topic.current_events(excluding=Topic.NEWS), n=3):
-            topic = Topic.NEWS
-        elif Prompter.over_n_hours_since_last(Topic.HACKERNEWS, n_hours=hackernews_hours) and not self.memory.is_recent_topics(Topic.current_events(excluding=Topic.HACKERNEWS), n=3):
-            topic = Topic.HACKERNEWS
-        elif Prompter.over_n_hours_since_last(Topic.MASTODON, n_hours=mastodon_hours) and not self.memory.is_recent_topics(Topic.current_events(excluding=Topic.MASTODON), n=3):
-            topic = Topic.MASTODON
-        elif (Prompter.over_n_hours_since_last(Topic.PLAYLIST_CONTEXT, n_hours=playlist_context_hours) 
-                and not self.memory.is_recent_topics(Topic.current_events(), n=1)
-                and not self.memory.is_recent_topics([Topic.PLAYLIST_CONTEXT], n=5)):
-            topic = Topic.PLAYLIST_CONTEXT
-        else:
-            # Add randomness to topic selection by occasionally skipping the oldest topic
-            if random.random() < 0.3:  # 30% chance to not pick the oldest topic
-                excluded_topics.append(Prompter.get_oldest_topic(excluded_topics=excluded_topics))
-            topic = Prompter.get_oldest_topic(excluded_topics=excluded_topics)
+
+        topic = None
+        for candidate, candidate_hours in current_events_hours:
+            if (Prompter.over_n_hours_since_last(candidate, n_hours=candidate_hours)
+                    and not self.memory.is_recent_topics(
+                        Topic.current_events(excluding=candidate), n=3)):
+                topic = candidate
+                break
+
+        if topic is None:
+            if (Prompter.over_n_hours_since_last(Topic.PLAYLIST_CONTEXT, n_hours=playlist_context_hours)
+                    and not self.memory.is_recent_topics(Topic.current_events(), n=1)
+                    and not self.memory.is_recent_topics([Topic.PLAYLIST_CONTEXT], n=5)):
+                topic = Topic.PLAYLIST_CONTEXT
+            else:
+                # Add randomness to topic selection by occasionally skipping the oldest topic
+                if random.random() < 0.3:  # 30% chance to not pick the oldest topic
+                    excluded_topics.append(Prompter.get_oldest_topic(excluded_topics=excluded_topics))
+                topic = Prompter.get_oldest_topic(excluded_topics=excluded_topics)
 
         if topic not in excluded_topics:
             if topic in Topic.fetched_sources() and Prompter.under_n_hours_since_last(topic, n_hours=min_repeat_hours):
@@ -618,6 +622,8 @@ class Muse:
     def talk_about_news(self, topic=None, spot_profile=None):
         if topic == Topic.HACKERNEWS:
             news = self.hacker_news_souper.get_news(total=15)
+        elif topic == Topic.REDDIT:
+            news = self.reddit_api.get_news()
         elif topic == Topic.MASTODON:
             news = self.mastodon_api.get_news()
         else:
@@ -1013,6 +1019,12 @@ class Muse:
             logger.error(e)
             self.say_at_some_point(_("We're having some technical difficulties in accessing our source for {0}. We'll try again later").format(topic),
                                    spot_profile, None)
+            return False
+        except SocialSourceUnusable as e:
+            # A filtered feed with nothing usable left is a normal outcome, not
+            # a fault. Saying anything here would advertise the filtering, so
+            # the topic is recorded as failed and rotation moves on.
+            logger.info(e)
             return False
         except LLMResponseException as e:
             logger.error(e)

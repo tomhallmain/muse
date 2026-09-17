@@ -13,7 +13,7 @@ from utils.globals import Topic
 class TestCurrentEvents:
     def test_every_outward_looking_topic_is_included(self):
         assert set(Topic.current_events()) == {
-            Topic.WEATHER, Topic.NEWS, Topic.HACKERNEWS, Topic.MASTODON,
+            Topic.WEATHER, Topic.NEWS, Topic.HACKERNEWS, Topic.REDDIT, Topic.MASTODON,
         }
 
     def test_excluding_drops_only_that_topic(self):
@@ -41,9 +41,19 @@ class TestFetchedSources:
 
 
 @pytest.mark.unit
+class TestSocialSources:
+    def test_the_social_sources_are_reddit_and_mastodon(self):
+        assert set(Topic.social_sources()) == {Topic.REDDIT, Topic.MASTODON}
+
+    def test_every_social_source_is_a_fetched_source(self):
+        assert set(Topic.social_sources()) <= set(Topic.fetched_sources())
+
+
+@pytest.mark.unit
 class TestExemptsPromptViolations:
-    def test_a_social_payload_is_not_exempted(self):
-        assert Topic.MASTODON.exempts_prompt_violations() is False
+    def test_no_social_payload_is_exempted(self):
+        for topic in Topic.social_sources():
+            assert topic.exempts_prompt_violations() is False
 
     def test_a_topic_with_no_fetched_text_is_exempted(self):
         assert Topic.JOKE.exempts_prompt_violations() is True

@@ -70,6 +70,18 @@ class Config:
         self.lastfm_api_key = None
         self.library_extender_key = None
         self.news_api_source_trustworthiness = {}
+        # Reddit top submissions. The subreddit list is the whole source
+        # allowlist for the topic: an open firehose cannot be filtered into
+        # safety by keyword matching, so r/all is never read. Credentials are
+        # optional -- without them the public listing is used instead.
+        self.reddit_client_id = None
+        self.reddit_client_secret = None
+        self.reddit_subreddits = [
+            "askhistorians", "classicalmusic", "musictheory", "cooking",
+            "woodworking", "gardening", "birding", "cartography",
+        ]
+        self.reddit_min_score = 50
+        self.reddit_max_age_hours = 24
         # Mastodon trending posts. The instance is the whole source allowlist
         # for the topic, so it is also what a blacklisted source name matches.
         self.mastodon_instance = "mastodon.social"
@@ -214,6 +226,8 @@ class Config:
             "news_api_key",
             "lastfm_api_key",
             "library_extender_key",
+            "reddit_client_id",
+            "reddit_client_secret",
             "mastodon_instance",
             "llm_model_name",
             "tts_provider",
@@ -236,6 +250,8 @@ class Config:
             "search_semantic_top_k",
             "radio_watchlist_cooldown_minutes",
             "radio_watchlist_max_stations",
+            "reddit_min_score",
+            "reddit_max_age_hours",
             "mastodon_min_score",
             "mastodon_max_age_hours",
             "social_min_surviving_items",
@@ -253,6 +269,7 @@ class Config:
             "extension_track_duration_seconds",
             "search_semantic_fields",
             "mastodon_languages",
+            "reddit_subreddits",
         )
         self.set_values(float,
             "search_semantic_relative_floor",

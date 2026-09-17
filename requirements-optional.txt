@@ -47,3 +47,11 @@ piper-tts
 # Requires espeak-ng on PATH; GPU recommended (6 GB+ VRAM).
 # Also: pip install torch torchaudio  (if not already installed for Coqui)
 git+https://github.com/Zyphra/Zonos.git
+
+# ── DJ topic sources ────────────────────────────────────────────────────────
+
+# PRAW: Reddit API client for the REDDIT topic (BSD 2-Clause). Needs a free
+# "script" app registered at https://www.reddit.com/prefs/apps; set
+# reddit_client_id and reddit_client_secret in config.json. Without it the
+# public /top.json listing is used, which Reddit rate-limits more harshly.
+praw
