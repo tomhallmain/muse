@@ -39,11 +39,17 @@ def _seed_rejection(id_="rej-1", title="Rejected Title"):
     ExtensionManager._recompute_rejected_ids()
 
 
-def _seed_extension(id_="ext-1", title="Extension Title", filename=""):
-    from extensions.library_extender import q20, q23, q27, q28
+def _seed_extension(id_="ext-1", title="Extension Title", filename="", nested_id=False):
+    # _append writes the ID as a plain string; only records predating that
+    # carry the raw candidate payload's nested id object.
+    if nested_id:
+        from extensions.library_extender import q20, q23, q27, q28
+        id_field = {q20: {q27: q28, q23: id_}}
+    else:
+        id_field = {"id": id_}
 
     ExtensionManager.extensions = [{
-        q20: {q27: q28, q23: id_},
+        **id_field,
         "snippet": {"title": title},
         "filename": filename,
         "date": "2024-01-01T00:00:00",
@@ -109,6 +115,22 @@ class TestExtensionsWindow:
         assert ExtensionManager.extensions == []
         assert len(ExtensionManager.rejected_extensions) == 1
         assert "ext-to-delete" in ExtensionManager.rejected_ids
+        win.close()
+
+    def test_delete_rejects_a_legacy_nested_id_extension(
+        self, qapp, qt_master, mock_app_actions, fixture_library_data
+    ):
+        from ui_qt.extensions_window import ExtensionsWindow
+
+        _seed_extension(id_="ext-legacy", nested_id=True)
+        win = ExtensionsWindow(qt_master, mock_app_actions, fixture_library_data)
+        process_events_for(0.2)
+        win.app_actions.alert = lambda *args, **kwargs: True
+
+        QTest.mouseClick(win.delete_buttons[0], Qt.MouseButton.LeftButton)
+        process_events_for(0.2)
+
+        assert "ext-legacy" in ExtensionManager.rejected_ids
         win.close()
 
     def test_declining_delete_confirmation_keeps_extension_unrejected(

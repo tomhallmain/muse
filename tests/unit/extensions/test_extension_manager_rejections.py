@@ -127,7 +127,24 @@ class TestRejectPendingCandidate:
 
 @pytest.mark.unit
 class TestRejectExtension:
-    def test_adds_rejection_record_from_extension(self):
+    def test_adds_rejection_record_from_history_shape(self):
+        extension = {
+            "id": "vid-1",
+            "snippet": {"title": "Some Title"},
+            "filename": "/music/some_title.mp3",
+            "track_attr": "ARTIST",
+            "search_query": "some query",
+            "date": "2024-01-01T00:00:00",
+        }
+
+        assert ExtensionManager.reject_extension(extension) is True
+
+        assert len(ExtensionManager.rejected_extensions) == 1
+        record = ExtensionManager.rejected_extensions[0]
+        assert record["id"] == "vid-1"
+        assert "vid-1" in ExtensionManager.rejected_ids
+
+    def test_adds_rejection_record_from_legacy_nested_id(self):
         from extensions.library_extender import q20, q23, q27, q28
 
         extension = {

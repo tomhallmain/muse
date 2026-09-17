@@ -115,7 +115,7 @@ class ExtensionManager:
         ExtensionManager.rejected_ids = {r["id"] for r in ExtensionManager.rejected_extensions}
 
     @staticmethod
-    def _extension_id(record: Dict[str, Any]) -> Optional[str]:
+    def extension_id(record: Dict[str, Any]) -> Optional[str]:
         """The candidate ID behind a stored record, or None if it cannot be read.
 
         Records written since the ID became explicit carry it directly. Older
@@ -149,7 +149,7 @@ class ExtensionManager:
         for record in ExtensionManager.extensions:
             if not ExtensionManager._was_dl(record):
                 continue
-            id_val = ExtensionManager._extension_id(record)
+            id_val = ExtensionManager.extension_id(record)
             if id_val:
                 ids.add(id_val)
         ExtensionManager.dl_ids = ids
@@ -205,8 +205,7 @@ class ExtensionManager:
 
     @staticmethod
     def reject_extension(extension: Dict[str, Any]) -> bool:
-        from extensions.library_extender import q20, q23
-        id_val = extension.get(q20, {}).get(q23)
+        id_val = ExtensionManager.extension_id(extension)
         if not id_val or id_val in ExtensionManager.rejected_ids:
             return False
         obj = dict(extension)
@@ -1019,7 +1018,7 @@ class ExtensionManager:
         obj["exception"] = exception
         ExtensionManager.extensions.append(obj)
         if ExtensionManager._was_dl(obj):
-            id_val = ExtensionManager._extension_id(obj)
+            id_val = ExtensionManager.extension_id(obj)
             if id_val:
                 ExtensionManager.dl_ids.add(id_val)
 

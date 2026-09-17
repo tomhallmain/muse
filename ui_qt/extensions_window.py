@@ -25,7 +25,6 @@ from PySide6.QtCore import Qt
 
 from lib.multi_display_qt import SmartWindow
 from extensions.extension_manager import ExtensionManager
-from extensions.library_extender import q20, q23
 from library_data.library_data import LibraryDataSearch
 from ui_qt.app_style import AppStyle
 from ui_qt.auth.password_utils import require_password
@@ -383,7 +382,7 @@ class ExtensionsWindow(SmartWindow):
 
     def _play_extension(self, extension):
         try:
-            id_val = extension.get(q20, {}).get(q23, None)
+            id_val = ExtensionManager.extension_id(extension)
             original_filename = os.path.splitext(
                 os.path.basename(extension.get("filename", ""))
             )[0]
