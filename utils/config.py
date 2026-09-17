@@ -82,6 +82,19 @@ class Config:
         ]
         self.reddit_min_score = 50
         self.reddit_max_age_hours = 24
+        # Bluesky feed generators, by AT-URI. The feed list is the whole source
+        # allowlist for the topic. Credentials are optional: without them the
+        # public AppView is read, which needs no account. Verify the default
+        # feed URI resolves before relying on it -- an unknown feed fails the
+        # topic with a message naming this setting.
+        self.bluesky_feeds = [
+            "at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.feed.generator/whats-hot",
+        ]
+        self.bluesky_handle = None
+        self.bluesky_app_password = None
+        self.bluesky_languages = ["en"]
+        self.bluesky_min_score = 100
+        self.bluesky_max_age_hours = 24
         # Mastodon trending posts. The instance is the whole source allowlist
         # for the topic, so it is also what a blacklisted source name matches.
         self.mastodon_instance = "mastodon.social"
@@ -228,6 +241,8 @@ class Config:
             "library_extender_key",
             "reddit_client_id",
             "reddit_client_secret",
+            "bluesky_handle",
+            "bluesky_app_password",
             "mastodon_instance",
             "llm_model_name",
             "tts_provider",
@@ -252,6 +267,8 @@ class Config:
             "radio_watchlist_max_stations",
             "reddit_min_score",
             "reddit_max_age_hours",
+            "bluesky_min_score",
+            "bluesky_max_age_hours",
             "mastodon_min_score",
             "mastodon_max_age_hours",
             "social_min_surviving_items",
@@ -270,6 +287,8 @@ class Config:
             "search_semantic_fields",
             "mastodon_languages",
             "reddit_subreddits",
+            "bluesky_feeds",
+            "bluesky_languages",
         )
         self.set_values(float,
             "search_semantic_relative_floor",

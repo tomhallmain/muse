@@ -1,5 +1,4 @@
-"""Content gates shared by every social source (Mastodon, and Reddit/Bluesky
-when they are added).
+"""Content gates shared by every social source: Reddit, Bluesky and Mastodon.
 
 An item is anything carrying these attributes:
 
@@ -16,6 +15,7 @@ stranger, so there is no surrounding context to fall back on if part of it is
 objectionable.
 """
 
+import datetime
 from typing import List, Optional
 
 from library_data.blacklist import Blacklist
@@ -33,6 +33,25 @@ class SocialSourceUnusable(Exception):
     attention to the filtering. This fails the topic quietly and rotation moves
     on.
     """
+
+
+def iso_age_hours(timestamp) -> float:
+    """Hours since an ISO 8601 timestamp.
+
+    An unreadable or absent one reads as infinitely old, so the age gate drops
+    the item rather than letting it through unchecked.
+    """
+    if not timestamp:
+        return float("inf")
+    try:
+        stamp = datetime.datetime.fromisoformat(str(timestamp).replace("Z", "+00:00"))
+    except ValueError:
+        logger.warning(f"Unreadable timestamp: {timestamp}")
+        return float("inf")
+    if stamp.tzinfo is None:
+        stamp = stamp.replace(tzinfo=datetime.timezone.utc)
+    now = datetime.datetime.now(datetime.timezone.utc)
+    return max(0.0, (now - stamp).total_seconds() / 3600.0)
 
 
 def source_is_blacklisted(name: str) -> bool:

@@ -8,7 +8,6 @@ Uses requests directly rather than Mastodon.py: the whole client is one
 unauthenticated GET, and requests is already a dependency.
 """
 
-import datetime
 import html
 import re
 from typing import List
@@ -19,6 +18,7 @@ from extensions.social_filter import (
     SocialSourceUnusable,
     assemble_payload,
     filter_items,
+    iso_age_hours,
     source_is_blacklisted,
 )
 from extensions.soup_utils import WebConnectionException
@@ -63,7 +63,7 @@ class MastodonItem:
         self.title = visible_text(status.get("content", ""))
         self.score = int(status.get("reblogs_count") or 0) + int(status.get("favourites_count") or 0)
         self.language = status.get("language") or ""
-        self.age_hours = self._age_hours(status.get("created_at"))
+        self.age_hours = iso_age_hours(status.get("created_at"))
         # A content warning is the author saying the post needs one, so it is
         # treated the same as the instance's own sensitive flag.
         self.sensitive = bool(status.get("sensitive")) or bool((status.get("spoiler_text") or "").strip())
@@ -73,22 +73,6 @@ class MastodonItem:
             status.get("spoiler_text") or "",
             " ".join(tag.get("name", "") for tag in status.get("tags") or []),
         ])
-
-    @staticmethod
-    def _age_hours(created_at) -> float:
-        """Hours since posting. An unreadable timestamp reads as ancient, so the
-        age gate drops the item rather than letting it through unchecked."""
-        if not created_at:
-            return float("inf")
-        try:
-            stamp = datetime.datetime.fromisoformat(str(created_at).replace("Z", "+00:00"))
-        except ValueError:
-            logger.warning(f"Unparseable Mastodon timestamp: {created_at}")
-            return float("inf")
-        now = datetime.datetime.now(datetime.timezone.utc)
-        if stamp.tzinfo is None:
-            stamp = stamp.replace(tzinfo=datetime.timezone.utc)
-        return (now - stamp).total_seconds() / 3600.0
 
     def _age_str(self) -> str:
         if self.age_hours < 2:

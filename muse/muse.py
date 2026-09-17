@@ -6,6 +6,7 @@ import traceback
 from typing import Optional, List, Callable
 
 from extensions.hacker_news_souper import HackerNewsSouper
+from extensions.bluesky_api import BlueskyAPI
 from extensions.mastodon_api import MastodonAPI
 from extensions.reddit_api import RedditAPI
 from extensions.news_api import NewsAPI
@@ -87,6 +88,7 @@ class Muse:
         self.news_api = NewsAPI()
         self.hacker_news_souper = HackerNewsSouper()
         self.reddit_api = RedditAPI()
+        self.bluesky_api = BlueskyAPI()
         self.mastodon_api = MastodonAPI()
         self.prompter = Prompter()
         self.has_started_prep = False
@@ -624,6 +626,8 @@ class Muse:
             news = self.hacker_news_souper.get_news(total=15)
         elif topic == Topic.REDDIT:
             news = self.reddit_api.get_news()
+        elif topic == Topic.BLUESKY:
+            news = self.bluesky_api.get_news()
         elif topic == Topic.MASTODON:
             news = self.mastodon_api.get_news()
         else:

@@ -13,7 +13,8 @@ from utils.globals import Topic
 class TestCurrentEvents:
     def test_every_outward_looking_topic_is_included(self):
         assert set(Topic.current_events()) == {
-            Topic.WEATHER, Topic.NEWS, Topic.HACKERNEWS, Topic.REDDIT, Topic.MASTODON,
+            Topic.WEATHER, Topic.NEWS, Topic.HACKERNEWS,
+            Topic.REDDIT, Topic.BLUESKY, Topic.MASTODON,
         }
 
     def test_excluding_drops_only_that_topic(self):
@@ -42,8 +43,8 @@ class TestFetchedSources:
 
 @pytest.mark.unit
 class TestSocialSources:
-    def test_the_social_sources_are_reddit_and_mastodon(self):
-        assert set(Topic.social_sources()) == {Topic.REDDIT, Topic.MASTODON}
+    def test_the_social_sources_are_the_three_networks(self):
+        assert set(Topic.social_sources()) == {Topic.REDDIT, Topic.BLUESKY, Topic.MASTODON}
 
     def test_every_social_source_is_a_fetched_source(self):
         assert set(Topic.social_sources()) <= set(Topic.fetched_sources())

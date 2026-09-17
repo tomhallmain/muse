@@ -466,6 +466,7 @@ class Topic(Enum):
     NEWS = "news"
     HACKERNEWS = "hackernews"
     REDDIT = "reddit"
+    BLUESKY = "bluesky"
     MASTODON = "mastodon"
     JOKE = "joke"
     FACT = "fact"
@@ -493,6 +494,8 @@ class Topic(Enum):
             return "hacker news"
         elif self == Topic.REDDIT:
             return "Reddit"
+        elif self == Topic.BLUESKY:
+            return "Bluesky"
         elif self == Topic.MASTODON:
             return "Mastodon"
         elif self == Topic.JOKE:
@@ -571,7 +574,7 @@ class Topic(Enum):
     def social_sources() -> list:
         """Topics whose payload is unedited text written by strangers, filtered
         by extensions/social_filter.py before it reaches a prompt."""
-        return [Topic.REDDIT, Topic.MASTODON]
+        return [Topic.REDDIT, Topic.BLUESKY, Topic.MASTODON]
 
     @staticmethod
     def from_value(value):
