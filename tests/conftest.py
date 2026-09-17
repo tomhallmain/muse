@@ -458,6 +458,52 @@ def _reset_key_material() -> None:
 
 
 @pytest.fixture(autouse=True)
+def no_network(request):
+    """Turn an accidental real network call into a failure.
+
+    Applies everywhere except tests marked ``api``, which exist to make live
+    calls. Every other test stubs its own transport; this catches the case
+    where a stub stops matching the code it stands in for and the call falls
+    through to the real host instead -- silently passing while hitting a
+    third-party service.
+
+    Patched at the three transports this project uses. A test patching a
+    higher-level name (``requests.get``, a module's ``urlopen``, the
+    ``HTTPConnection`` class itself) still works: its patch sits in front of
+    this one and restores to it.
+    """
+    if request.node.get_closest_marker("api"):
+        return
+
+    def blocked(*_args, **_kwargs):
+        raise AssertionError(
+            "A test attempted a real network call. Stub the transport, or move "
+            "the test to tests/api/ where live calls are expected."
+        )
+
+    import http.client
+    import urllib.request
+
+    patches = [
+        (urllib.request, "urlopen"),
+        (http.client.HTTPConnection, "connect"),
+        (http.client.HTTPSConnection, "connect"),
+    ]
+    try:
+        import requests.sessions
+        patches.append((requests.sessions.Session, "request"))
+    except ImportError:
+        pass
+
+    originals = [(obj, name, getattr(obj, name)) for obj, name in patches]
+    for obj, name in patches:
+        setattr(obj, name, blocked)
+    yield
+    for obj, name, original in originals:
+        setattr(obj, name, original)
+
+
+@pytest.fixture(autouse=True)
 def reset_app_globals():
     """Reset mutable class-level state between tests."""
     _reset_playback_state()
