@@ -70,6 +70,17 @@ class Config:
         self.lastfm_api_key = None
         self.library_extender_key = None
         self.news_api_source_trustworthiness = {}
+        # Mastodon trending posts. The instance is the whole source allowlist
+        # for the topic, so it is also what a blacklisted source name matches.
+        self.mastodon_instance = "mastodon.social"
+        # Trending feeds are multilingual; a post with no language set is kept.
+        self.mastodon_languages = ["en"]
+        self.mastodon_min_score = 5
+        self.mastodon_max_age_hours = 24
+        # Shared by every social source. A set that lost more than the ratio to
+        # filtering is a biased remnant, so the topic is abandoned instead.
+        self.social_min_surviving_items = 3
+        self.social_max_rejection_ratio = 0.4
         # List of {"language_code": str, "level": str} the listener is currently learning.
         self.muse_language_learning_languages = []
         self.debug = False
@@ -203,6 +214,7 @@ class Config:
             "news_api_key",
             "lastfm_api_key",
             "library_extender_key",
+            "mastodon_instance",
             "llm_model_name",
             "tts_provider",
             "kokoro_model",
@@ -224,6 +236,9 @@ class Config:
             "search_semantic_top_k",
             "radio_watchlist_cooldown_minutes",
             "radio_watchlist_max_stations",
+            "mastodon_min_score",
+            "mastodon_max_age_hours",
+            "social_min_surviving_items",
         )
         self.set_values(list,
             "directories",
@@ -237,10 +252,12 @@ class Config:
             "extension_pending_review_seconds",
             "extension_track_duration_seconds",
             "search_semantic_fields",
+            "mastodon_languages",
         )
         self.set_values(float,
             "search_semantic_relative_floor",
             "search_semantic_min_score",
+            "social_max_rejection_ratio",
         )
         self.set_values(bool,
             "enable_dynamic_volume",

@@ -350,5 +350,11 @@
     "radio_watchlist_enabled": false,
     "radio_watchlist_cooldown_minutes": 30,
     "radio_watchlist_max_stations": 10,
+    "mastodon_instance": "mastodon.social",
+    "mastodon_languages": ["en"],
+    "mastodon_min_score": 5,
+    "mastodon_max_age_hours": 24,
+    "social_min_surviving_items": 3,
+    "social_max_rejection_ratio": 0.4,
     "library_extender_key": "<KEY>"
 }

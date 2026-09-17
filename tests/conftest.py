@@ -623,11 +623,11 @@ def pytest_sessionfinish(session, exitstatus):
 
 
 # Directory name under tests/ == the marker every test beneath it carries.
-LAYER_MARKERS = ("unit", "integration", "ui")
+LAYER_MARKERS = ("unit", "integration", "ui", "api")
 
 
 def pytest_collection_modifyitems(items):
-    """Apply the layer marker (unit / integration / ui) to every test by location.
+    """Apply the layer marker (unit / integration / ui / api) to every test by location.
 
     pytest reads ``pytestmark`` only at module and class scope, so a marker
     cannot be declared once per directory in a conftest.  Without this hook the

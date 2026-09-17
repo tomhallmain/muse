@@ -465,6 +465,7 @@ class Topic(Enum):
     WEATHER = "weather"
     NEWS = "news"
     HACKERNEWS = "hackernews"
+    MASTODON = "mastodon"
     JOKE = "joke"
     FACT = "fact"
     FABLE = "fable"
@@ -489,6 +490,8 @@ class Topic(Enum):
             return _("news")
         elif self == Topic.HACKERNEWS:
             return "hacker news"
+        elif self == Topic.MASTODON:
+            return _("what people are posting")
         elif self == Topic.JOKE:
             return _("joke")
         elif self == Topic.FACT:
@@ -529,10 +532,38 @@ class Topic(Enum):
             return "news"
         return str(self.value)
 
+    def exempts_prompt_violations(self) -> bool:
+        """Whether blacklist hits found in this topic's prompt may be exempted
+        from the check on the LLM's output.
+
+        The exemption keeps a prompt that names a blacklisted subject from
+        looping until it raises. It is withheld for a topic whose prompt
+        carries unedited third-party text, where the exempted region would be
+        that text and a term arriving in it would become a term the DJ is
+        allowed to say.
+        """
+        return self is not Topic.MASTODON
+
     @staticmethod
     def excluded_for_stream() -> list:
         """Topics that require local-library context and must not be used for live streams."""
         return [Topic.TRACK_CONTEXT_PRIOR, Topic.TRACK_CONTEXT_POST, Topic.PLAYLIST_CONTEXT]
+
+    @staticmethod
+    def current_events(excluding=None) -> list:
+        """Topics that report on the outside world, optionally without one of them.
+
+        Selection keeps them apart so the DJ does not run several of these
+        segments in a row.
+        """
+        topics = [Topic.WEATHER, Topic.NEWS, Topic.HACKERNEWS, Topic.MASTODON]
+        return [topic for topic in topics if topic is not excluding]
+
+    @staticmethod
+    def fetched_sources() -> list:
+        """Current-events topics whose content comes from an external fetch, so
+        a repeat inside the minimum window would re-read the same items."""
+        return [Topic.NEWS, Topic.HACKERNEWS, Topic.MASTODON]
 
     @staticmethod
     def from_value(value):

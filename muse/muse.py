@@ -6,6 +6,7 @@ import traceback
 from typing import Optional, List, Callable
 
 from extensions.hacker_news_souper import HackerNewsSouper
+from extensions.mastodon_api import MastodonAPI
 from extensions.news_api import NewsAPI
 from extensions.open_weather import OpenWeatherAPI
 from extensions.soup_utils import WebConnectionException
@@ -83,6 +84,7 @@ class Muse:
         self.open_weather_api = OpenWeatherAPI()
         self.news_api = NewsAPI()
         self.hacker_news_souper = HackerNewsSouper()
+        self.mastodon_api = MastodonAPI()
         self.prompter = Prompter()
         self.has_started_prep = False
         self.preparation_id = None # TODO pass a prep ID along with the speech request so things can be deleted before spoke if necessary.
@@ -466,17 +468,20 @@ class Muse:
         weather_hours = random.uniform(20, 28)  # 20-28 hours for weather prioritization
         news_hours = random.uniform(72, 96)    # 3-4 days for news prioritization
         hackernews_hours = random.uniform(72, 96)  # 3-4 days for hackernews prioritization
+        mastodon_hours = random.uniform(72, 96)    # 3-4 days for mastodon prioritization
         playlist_context_hours = random.uniform(0, 4) 
         min_repeat_hours = random.uniform(12, 16)   # 12-16 hours minimum repeat
         
-        if Prompter.over_n_hours_since_last(Topic.WEATHER, n_hours=weather_hours) and not self.memory.is_recent_topics([Topic.NEWS, Topic.HACKERNEWS], n=3):
+        if Prompter.over_n_hours_since_last(Topic.WEATHER, n_hours=weather_hours) and not self.memory.is_recent_topics(Topic.current_events(excluding=Topic.WEATHER), n=3):
             topic = Topic.WEATHER
-        elif Prompter.over_n_hours_since_last(Topic.NEWS, n_hours=news_hours) and not self.memory.is_recent_topics([Topic.WEATHER, Topic.HACKERNEWS], n=3):
+        elif Prompter.over_n_hours_since_last(Topic.NEWS, n_hours=news_hours) and not self.memory.is_recent_topics(Topic.current_events(excluding=Topic.NEWS), n=3):
             topic = Topic.NEWS
-        elif Prompter.over_n_hours_since_last(Topic.HACKERNEWS, n_hours=hackernews_hours) and not self.memory.is_recent_topics([Topic.WEATHER, Topic.NEWS], n=3):
+        elif Prompter.over_n_hours_since_last(Topic.HACKERNEWS, n_hours=hackernews_hours) and not self.memory.is_recent_topics(Topic.current_events(excluding=Topic.HACKERNEWS), n=3):
             topic = Topic.HACKERNEWS
+        elif Prompter.over_n_hours_since_last(Topic.MASTODON, n_hours=mastodon_hours) and not self.memory.is_recent_topics(Topic.current_events(excluding=Topic.MASTODON), n=3):
+            topic = Topic.MASTODON
         elif (Prompter.over_n_hours_since_last(Topic.PLAYLIST_CONTEXT, n_hours=playlist_context_hours) 
-                and not self.memory.is_recent_topics([Topic.WEATHER, Topic.NEWS, Topic.HACKERNEWS], n=1)
+                and not self.memory.is_recent_topics(Topic.current_events(), n=1)
                 and not self.memory.is_recent_topics([Topic.PLAYLIST_CONTEXT], n=5)):
             topic = Topic.PLAYLIST_CONTEXT
         else:
@@ -486,7 +491,7 @@ class Muse:
             topic = Prompter.get_oldest_topic(excluded_topics=excluded_topics)
 
         if topic not in excluded_topics:
-            if topic in [Topic.HACKERNEWS, Topic.NEWS] and Prompter.under_n_hours_since_last(topic, n_hours=min_repeat_hours):
+            if topic in Topic.fetched_sources() and Prompter.under_n_hours_since_last(topic, n_hours=min_repeat_hours):
                 excluded_topics.append(topic)
             if previous_track is None and topic == Topic.TRACK_CONTEXT_POST:
                 excluded_topics.append(topic)
@@ -547,7 +552,7 @@ class Muse:
         if topic == Topic.WEATHER:
             func = self.talk_about_weather
             args = [config.open_weather_city, spot_profile]
-        elif topic in [Topic.NEWS, Topic.HACKERNEWS]:
+        elif topic in Topic.fetched_sources():
             func = self.talk_about_news
             args = [topic, spot_profile]
         elif topic == Topic.JOKE:
@@ -613,10 +618,13 @@ class Muse:
     def talk_about_news(self, topic=None, spot_profile=None):
         if topic == Topic.HACKERNEWS:
             news = self.hacker_news_souper.get_news(total=15)
+        elif topic == Topic.MASTODON:
+            news = self.mastodon_api.get_news()
         else:
             news = self.news_api.get_news(topic=topic)
         news_summary = self.generate_text(
-            self.get_prompt(topic) + "\n\n" + str(news))
+            self.get_prompt(topic) + "\n\n" + str(news),
+            exempt_prompt_violations=topic.exempts_prompt_violations())
         self.say_at_some_point(news_summary, spot_profile, topic)
 
     def tell_a_joke(self, spot_profile):
@@ -911,7 +919,8 @@ class Muse:
             logger.info(f"Failed to translate prompt for topic {topic} into language {language_code} with error: {e}")
         return prompt
 
-    def generate_text(self, prompt, json_key=None, include_time_context=True, interrupt_on_skip=True):
+    def generate_text(self, prompt, json_key=None, include_time_context=True, interrupt_on_skip=True,
+                      exempt_prompt_violations=True):
         """Generate text using the current DJ persona's context."""
         # Get the current persona's context and system prompt
         context, system_prompt = self.memory.get_persona_manager().get_context_and_system_prompt()
@@ -940,7 +949,14 @@ class Muse:
         if variant_part_marker in prompt_text_to_test:
             prompt_text_to_test = prompt_text_to_test[prompt_text_to_test.index(variant_part_marker):]
             prompt_text_to_test = prompt_text_to_test[prompt_text_to_test.index("\n") + 1:]
-        blacklisted_items_in_prompt = list(Blacklist.find_blacklisted_items(prompt_text_to_test).keys())
+        # Violations the prompt itself introduced are exempt from the check on
+        # the output, or a prompt naming a blacklisted subject would loop until
+        # it raised. Callers whose prompt carries untrusted fetched text pass
+        # False, since there the exempted region is that text.
+        blacklisted_items_in_prompt = (
+            list(Blacklist.find_blacklisted_items(prompt_text_to_test).keys())
+            if exempt_prompt_violations else []
+        )
         
         # Use the context and system prompt in the LLM call
         # NOTE excluding context for now because it's being deprecated for some reason.
