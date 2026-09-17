@@ -126,11 +126,18 @@ class MockArgs:
 
 
 def _reset_library_caches() -> None:
+    """Drop LibraryData's session-lifetime class state: it outlives a test, so
+    one test's leftovers answer the next test's read. Tests seed their own."""
     import library_data.library_data as library_data
 
     library_data.LibraryData.DIRECTORIES_CACHE = {}
     library_data.LibraryData.MEDIA_TRACK_CACHE = {}
+    library_data.LibraryData.all_tracks = []
     library_data.LibraryData._directory_cache_loaded = False
+    library_data.LibraryData.GROUP_SIZE_CACHE = {}
+    # Artwork consistency memos: a recorded album is skipped for the session.
+    library_data.LibraryData.albums_checked = {}
+    library_data.LibraryData.albums_without_artwork = set()
 
 
 def _reset_playlist_history() -> None:

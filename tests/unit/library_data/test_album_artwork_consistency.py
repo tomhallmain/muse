@@ -26,26 +26,36 @@ DIR = "/music/Some Artist/Album"
 
 
 class _FakeTrack:
-    def __init__(self, title, album, artwork=None, album_from_metadata=True, directory=DIR):
+    def __init__(self, title, album, artwork=None, album_from_metadata=True, directory=DIR,
+                 write_succeeds=True):
         self.title = title
         self.album = album
         self.artwork = artwork
         self.album_from_metadata = album_from_metadata
         self.filepath = os.path.join(directory, f"{title}.flac")
         self.write_count = 0
+        self.read_count = 0
+        self.write_succeeds = write_succeeds
 
     def load_embedded_artwork(self):
+        self.read_count += 1
         return self.artwork
 
     def update_metadata(self, metadata):
-        self.artwork = metadata.get("artwork")
         self.write_count += 1
+        if not self.write_succeeds:
+            return False
+        self.artwork = metadata.get("artwork")
         return True
 
 
 def _memo_key(track):
     """The (album, directory) pair ensure_album_artwork_consistency memoises under."""
     return (track.album, os.path.dirname(os.path.abspath(track.filepath)))
+
+
+def _reads(*tracks):
+    return sum(t.read_count for t in tracks)
 
 
 @pytest.fixture
@@ -63,12 +73,8 @@ def library_logs(caplog, monkeypatch):
 
 @pytest.fixture(autouse=True)
 def artwork_enabled(monkeypatch):
+    """Turn the feature on; _reset_library_caches clears the class state."""
     monkeypatch.setattr(config, "auto_fix_album_artwork", True)
-    saved = LibraryData.all_tracks
-    LibraryData.albums_without_artwork = set()
-    yield
-    LibraryData.all_tracks = saved
-    LibraryData.albums_without_artwork = set()
 
 
 def _library(tracks):
@@ -184,6 +190,124 @@ class TestArtlessAlbumMemo:
         library.ensure_album_artwork_consistency(b)
 
         assert _memo_key(b) not in LibraryData.albums_without_artwork
+
+
+@pytest.mark.unit
+class TestCheckedAlbumMemo:
+    """A finished pass leaves the album consistent, so repeating it reads every
+    albummate's artwork to find nothing to write."""
+
+    def test_a_finished_pass_is_not_repeated(self):
+        a = _FakeTrack("a", "Album", LARGE)
+        b = _FakeTrack("b", "Album", None)
+        library = _library([a, b])
+
+        assert library.ensure_album_artwork_consistency(b) is True
+        reads = _reads(a, b)
+
+        assert library.ensure_album_artwork_consistency(a) is False
+        assert _reads(a, b) == reads
+
+    def test_an_album_already_in_line_is_recorded_too(self):
+        a = _FakeTrack("a", "Album", LARGE)
+        b = _FakeTrack("b", "Album", LARGE)
+        library = _library([a, b])
+
+        assert library.ensure_album_artwork_consistency(a) is False
+        reads = _reads(a, b)
+
+        assert library.ensure_album_artwork_consistency(b) is False
+        assert _reads(a, b) == reads
+
+    def test_one_short_string_is_stored_per_album(self):
+        a = _FakeTrack("a", "Album", LARGE)
+        b = _FakeTrack("b", "Album", None)
+        library = _library([a, b])
+
+        library.ensure_album_artwork_consistency(b)
+
+        assert list(LibraryData.albums_checked) == [_memo_key(a)]
+        fingerprint = LibraryData.albums_checked[_memo_key(a)]
+        assert isinstance(fingerprint, str)
+        assert len(fingerprint) == LibraryData.ALBUM_FINGERPRINT_LENGTH
+
+    def test_a_track_added_to_the_album_runs_the_check_again(self):
+        a = _FakeTrack("a", "Album", LARGE)
+        b = _FakeTrack("b", "Album", None)
+        library = _library([a, b])
+        library.ensure_album_artwork_consistency(b)
+        reads = _reads(a, b)
+
+        late = _FakeTrack("late", "Album", None)
+        LibraryData.all_tracks = [a, b, late]
+
+        assert library.ensure_album_artwork_consistency(late) is True
+        assert late.artwork == LARGE
+        assert _reads(a, b) > reads
+
+    def test_a_track_removed_from_the_album_runs_the_check_again(self):
+        """The fingerprint is an equality test: a smaller set is a different set."""
+        a = _FakeTrack("a", "Album", LARGE)
+        b = _FakeTrack("b", "Album", None)
+        c = _FakeTrack("c", "Album", None)
+        library = _library([a, b, c])
+        library.ensure_album_artwork_consistency(b)
+        reads = _reads(a, b)
+
+        LibraryData.all_tracks = [a, b]
+
+        assert library.ensure_album_artwork_consistency(b) is False
+        assert _reads(a, b) > reads
+
+    def test_a_failed_write_leaves_the_album_unrecorded(self):
+        a = _FakeTrack("a", "Album", LARGE)
+        b = _FakeTrack("b", "Album", None, write_succeeds=False)
+        library = _library([a, b])
+
+        assert library.ensure_album_artwork_consistency(b) is False
+        assert _memo_key(b) not in LibraryData.albums_checked
+
+        b.write_succeeds = True
+        assert library.ensure_album_artwork_consistency(a) is True
+        assert b.artwork == LARGE
+
+    def test_a_changed_improvement_ratio_runs_the_check_again(self, monkeypatch):
+        a = _FakeTrack("a", "Album", MARGINAL)
+        b = _FakeTrack("b", "Album", SMALL)
+        library = _library([a, b])
+
+        assert library.ensure_album_artwork_consistency(b) is False
+        reads = _reads(a, b)
+
+        monkeypatch.setattr(MediaTrack, "ARTWORK_IMPROVEMENT_RATIO", 1.1)
+
+        assert library.ensure_album_artwork_consistency(b) is True
+        assert b.artwork == MARGINAL
+        assert _reads(a, b) > reads
+
+    def test_the_skip_says_nothing_once_a_track(self, library_logs):
+        a = _FakeTrack("a", "Album", LARGE)
+        b = _FakeTrack("b", "Album", None)
+        library = _library([a, b])
+        library.ensure_album_artwork_consistency(b)
+        library_logs.clear()
+
+        library.ensure_album_artwork_consistency(a)
+
+        assert library_logs.records == []
+
+    def test_the_memo_does_not_suppress_a_namesake_elsewhere(self):
+        other_dir = "/f/iTunes Music/Dad Bowman/Album"
+        a = _FakeTrack("a", "Album", LARGE)
+        b = _FakeTrack("b", "Album", None)
+        there_a = _FakeTrack("there_a", "Album", LARGE, directory=other_dir)
+        there_b = _FakeTrack("there_b", "Album", None, directory=other_dir)
+        library = _library([a, b, there_a, there_b])
+
+        assert library.ensure_album_artwork_consistency(b) is True
+
+        assert library.ensure_album_artwork_consistency(there_b) is True
+        assert there_b.artwork == LARGE
 
 
 @pytest.mark.unit

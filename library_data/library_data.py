@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Dict, List, NamedTuple, Optional, Tuple
 import copy
 import glob
+import hashlib
 import json
 import os
 import pickle
@@ -532,6 +533,14 @@ class LibraryData:
     # added outside the app is picked up on the next launch rather than needing
     # this to be invalidated.
     albums_without_artwork: set = set()
+    # (album, directory) -> membership fingerprint of a finished consistency
+    # pass. A match means every albummate already holds the best image the set
+    # has; a track added or removed changes it and the pass runs again. In
+    # memory only, as for albums_without_artwork.
+    albums_checked: dict = {}
+    # Digest characters kept per album, rather than the filepaths themselves.
+    # 64 bits makes a collision -- a check wrongly skipped -- negligible.
+    ALBUM_FINGERPRINT_LENGTH = 16
     # column -> {value: track count}, filled in as values are asked for. Group
     # sizes only change when the library is rescanned, so this lives for the
     # session rather than being re-queried on every sort.
@@ -798,6 +807,9 @@ class LibraryData:
             # Clear caches when overwriting to force fresh reads
             LibraryData.MEDIA_TRACK_CACHE = {}
             LibraryData.DIRECTORIES_CACHE = {}
+            # Neither memo looks again on its own at artwork gained outside the app.
+            LibraryData.albums_checked = {}
+            LibraryData.albums_without_artwork = set()
             reset_store()
             if app_actions is not None:
                 app_actions.update_extension_status(_("Updating tracks"))
@@ -1232,6 +1244,13 @@ class LibraryData:
                         f"album '{track.album}'")
             return False
 
+        fingerprint = LibraryData._album_fingerprint(album_tracks)
+        if LibraryData.albums_checked.get(memo_key) == fingerprint:
+            # Debug alone: nothing left to do should not narrate itself once a track.
+            logger.debug(f"{skipped}: '{track.album}' was brought into line over "
+                         f"these {len(album_tracks)} tracks earlier this run")
+            return False
+
         finished = f"Album artwork consistency check finished for {track.filepath}"
         logger.info(f"Starting album artwork consistency check for {track.filepath}: "
                     f"{len(album_tracks)} tracks tagged '{track.album}' in {album_dir}")
@@ -1270,7 +1289,19 @@ class LibraryData:
         if len(failed) > 0:
             logger.warning(f"Album artwork could not be written to {len(failed)} track(s): "
                            f"{LibraryData._few(failed)}")
+        else:
+            # A failed write is left unrecorded so a later track retries it.
+            LibraryData.albums_checked[memo_key] = fingerprint
         return len(updated) > 0
+
+    @staticmethod
+    def _album_fingerprint(album_tracks) -> str:
+        """Digest of an album's membership, with the improvement ratio so a
+        change to the rule re-runs the albums it was applied to."""
+        parts = sorted(os.path.abspath(t.filepath) for t in album_tracks)
+        parts.append(f"ratio={MediaTrack.ARTWORK_IMPROVEMENT_RATIO}")
+        digest = hashlib.sha256("\n".join(parts).encode("utf-8")).hexdigest()
+        return digest[:LibraryData.ALBUM_FINGERPRINT_LENGTH]
 
     @staticmethod
     def _few(titles, limit=5):
