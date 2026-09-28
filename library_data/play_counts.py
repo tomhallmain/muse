@@ -87,6 +87,17 @@ def get_play_info(filepath: str) -> Optional[PlayInfo]:
     return PlayInfo(row["play_count"], _parse_time(row["first_played"]), _parse_time(row["last_played"]))
 
 
+def get_all_play_info() -> Dict[str, PlayInfo]:
+    """Every counted file's count and first/last play times, by filepath."""
+    rows = get_connection().execute(
+        "SELECT key, play_count, first_played, last_played FROM track_plays WHERE kind = ?", (FILE,)
+    ).fetchall()
+    return {
+        row["key"]: PlayInfo(row["play_count"], _parse_time(row["first_played"]), _parse_time(row["last_played"]))
+        for row in rows
+    }
+
+
 def get_play_counts() -> Dict[str, int]:
     """Every counted file's play count, by filepath."""
     rows = get_connection().execute(

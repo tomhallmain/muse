@@ -87,6 +87,16 @@ class TestRecordPlay:
     def test_an_uncounted_file_has_no_info(self):
         assert play_counts.get_play_info("/m/never.mp3") is None
 
+    def test_bulk_info_carries_counts_and_times(self):
+        play_counts.record_play(_track("/m/a.mp3"), when=T1)
+        play_counts.record_play(_track("/m/a.mp3"), when=T2)
+        play_counts.record_play(_track("/m/b.mp3"), when=T3)
+        info = play_counts.get_all_play_info()
+        assert {k: (v.play_count, v.first_played, v.last_played) for k, v in info.items()} == {
+            "/m/a.mp3": (2, T1, T2),
+            "/m/b.mp3": (1, T3, T3),
+        }
+
     def test_bulk_counts(self):
         play_counts.record_play(_track("/m/a.mp3"))
         play_counts.record_play(_track("/m/a.mp3"))
