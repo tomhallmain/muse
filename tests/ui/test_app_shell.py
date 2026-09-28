@@ -86,6 +86,47 @@ class TestAppShell:
         process_events_for(0.5)
         qapp.processEvents()
 
+    def test_start_playback_from_a_worker_thread_runs_on_the_ui_thread(
+        self, qapp, fixture_library_data, audio_library_media_tracks, monkeypatch,
+    ):
+        """The radio watch-list calls start_play_callback from its poll threads;
+        the call has to be re-delivered on the UI thread and still arrive."""
+        import threading
+
+        from app_qt import MuseAppQt
+        from utils.utils import Utils
+
+        captured = {}
+        monkeypatch.setattr(
+            Utils, "start_thread",
+            staticmethod(lambda fn, use_asyncio=False, args=None: captured.setdefault("args", args[0])),
+        )
+
+        window = MuseAppQt()
+        window.show()
+        process_events_for(0.2)
+
+        seen_threads = []
+        original_run = window.run
+
+        def recording_run(*a, **kw):
+            seen_threads.append(threading.current_thread() is threading.main_thread())
+            return original_run(*a, **kw)
+
+        monkeypatch.setattr(window, "run", recording_run)
+        worker = threading.Thread(target=lambda: window.start_playback(
+            track=audio_library_media_tracks[0], search_query={"composer": "Mozart"}))
+        worker.start()
+        worker.join(2.0)
+        process_events_for(0.8)
+
+        assert seen_threads == [True]
+        assert captured["args"].search_query == {"composer": "Mozart"}
+
+        window.close()
+        process_events_for(0.5)
+        qapp.processEvents()
+
     def test_playlist_has_all_library_tracks_after_play(
         self,
         qapp,

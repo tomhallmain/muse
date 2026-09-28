@@ -4,7 +4,7 @@ import json
 from utils.globals import Globals, PlaylistSortType, PlaybackMasterStrategy
 
 class RunnerAppConfig:
-    # Stored keys whose attribute has since been renamed: {stored key: attribute}.
+    # Saved keys that load into an attribute of a different name: {saved key: attribute}.
     RENAMED_KEYS = {"overwrite": "rescan"}
 
     def __init__(self):

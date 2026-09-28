@@ -274,3 +274,109 @@ def test_max_stations_cap():
     assert len(started_uuids) <= 2, (
         f"Expected at most 2 threads, started {len(started_uuids)}"
     )
+
+
+# ── "novel" mode ──────────────────────────────────────────────────────────────
+
+def _ensure_novelty_module():
+    """The novel path imports muse.radio_novelty; load it the same way as the watchlist."""
+    if "muse.radio_novelty" in sys.modules:
+        return sys.modules["muse.radio_novelty"]
+    spec = importlib.util.spec_from_file_location(
+        "muse.radio_novelty", _ROOT / "muse" / "radio_novelty.py"
+    )
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules["muse.radio_novelty"] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def test_novel_entry_is_active_without_criteria():
+    entry = WatchEntry(label="New", station_uuid="u", mode=wl.MODE_NOVEL)
+    assert entry.is_active() is True
+
+
+def test_novel_entry_never_matches():
+    entry = WatchEntry(label="New", station_uuid="u", mode=wl.MODE_NOVEL, match_artist="bach")
+    assert entry.matches("Bach", "Suite") is False
+
+
+def test_stored_entry_without_mode_loads_as_match():
+    entry = WatchEntry.from_dict({"label": "L", "station_uuid": "u", "match_artist": "x"})
+    assert entry.mode == wl.MODE_MATCH
+    assert entry.classical == "auto"
+    assert entry.novelty == {}
+
+
+class _FakeEvaluator:
+    def __init__(self, result):
+        self.result = result
+        self.calls = []
+
+    def evaluate(self, entry, station, artist, title):
+        self.calls.append((entry, station, artist, title))
+        return self.result
+
+
+def _novel_service(result):
+    _ensure_novelty_module()
+    svc = _make_service()
+    svc._novelty = _FakeEvaluator(result)
+    svc._stations["uuid1"] = {"name": "Radio One", "tags": "classical"}
+    svc._switch_to_station = MagicMock()
+    return svc
+
+
+def test_novel_suggestion_reaches_the_ui_and_never_switches():
+    suggestion = MagicMock(signals=["new_artist"])
+    svc = _novel_service(suggestion)
+    entry = WatchEntry(label="New", station_uuid="uuid1", mode=wl.MODE_NOVEL)
+
+    svc._on_title_change("uuid1", [entry], "Band", "Song")
+
+    svc._app_actions.radio_station_title_changed.assert_called_once_with("uuid1")
+    svc._app_actions.show_radio_suggestion.assert_called_once_with(suggestion)
+    svc._switch_to_station.assert_not_called()
+    _entry, station, artist, title = svc._novelty.calls[0]
+    assert (station.name, station.tags, artist, title) == ("Radio One", "classical", "Band", "Song")
+
+
+def test_no_suggestion_is_shown_when_nothing_is_novel():
+    svc = _novel_service(None)
+    entry = WatchEntry(label="New", station_uuid="uuid1", mode=wl.MODE_NOVEL)
+    svc._on_title_change("uuid1", [entry], "Band", "Song")
+    svc._app_actions.radio_station_title_changed.assert_called_once_with("uuid1")
+    svc._app_actions.show_radio_suggestion.assert_not_called()
+
+
+def test_no_suggestion_while_already_on_the_station():
+    svc = _novel_service(MagicMock(signals=[]))
+    current = MagicMock()
+    current.station_uuid = "uuid1"
+    svc._app_actions.get_current_track.return_value = current
+    entry = WatchEntry(label="New", station_uuid="uuid1", mode=wl.MODE_NOVEL)
+    svc._on_title_change("uuid1", [entry], "Band", "Song")
+    svc._app_actions.show_radio_suggestion.assert_not_called()
+
+
+def test_disabled_novel_entry_is_ignored():
+    svc = _novel_service(MagicMock(signals=[]))
+    entry = WatchEntry(label="New", station_uuid="uuid1", mode=wl.MODE_NOVEL, enabled=False)
+    svc._on_title_change("uuid1", [entry], "Band", "Song")
+    assert svc._novelty.calls == []
+
+
+def test_switch_to_suggestion_plays_the_station_off_the_calling_thread():
+    svc = _make_service()
+    played = []
+    done = threading.Event()
+
+    def fake_play(uuid, name, artist, title):
+        played.append((uuid, name, artist, title, threading.current_thread() is threading.main_thread()))
+        done.set()
+
+    svc._play_station = fake_play
+    suggestion = MagicMock(station_uuid="uuid1", station_name="Radio One", artist="Band", title="Song")
+    svc.switch_to_suggestion(suggestion)
+    assert done.wait(2.0)
+    assert played == [("uuid1", "Radio One", "Band", "Song", False)]

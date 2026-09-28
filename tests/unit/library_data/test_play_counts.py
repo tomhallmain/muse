@@ -173,3 +173,33 @@ class TestPropagation:
         play_counts.record_play(_track(old))
         filepath_update.propagate_file_rename(old, new)
         assert play_counts.get_play_counts() == {new: 1}
+
+
+@pytest.mark.unit
+class TestStreamTitles:
+    def test_the_key_ignores_case_accents_and_punctuation(self):
+        assert play_counts.stream_key("Fauré", "Élégie, Op. 24") == play_counts.stream_key("FAURE", "elegie op 24")
+
+    def test_no_title_means_no_key(self):
+        assert play_counts.stream_key("Some Artist", "  ") is None
+
+    def test_a_title_without_artist_is_keyed_by_title(self):
+        assert play_counts.stream_key("", "Only A Title") == "only a title"
+
+    def test_a_recorded_title_is_heard(self):
+        assert not play_counts.is_stream_title_heard("Band", "Song")
+        play_counts.record_stream_title("Band", "Song", "Radio Example", when=T1)
+        assert play_counts.is_stream_title_heard("band", "SONG")
+
+    def test_repeats_count_and_keep_the_station(self):
+        play_counts.record_stream_title("Band", "Song", "Radio A", when=T1)
+        play_counts.record_stream_title("Band", "Song", "Radio B", when=T2)
+        row = play_counts.get_connection().execute(
+            "SELECT * FROM track_plays WHERE kind = ?", (play_counts.STREAM,)
+        ).fetchone()
+        assert (row["play_count"], row["album"], row["first_played"]) == (2, "Radio B", T1.isoformat())
+
+    def test_stream_titles_are_not_file_counts(self):
+        play_counts.record_stream_title("Band", "Song", "Radio A")
+        assert play_counts.get_play_counts() == {}
+        assert play_counts.file_keys() == []

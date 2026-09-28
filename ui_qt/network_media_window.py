@@ -19,12 +19,15 @@ from PySide6.QtWidgets import (
     QFrame,
     QTabWidget,
     QCheckBox,
+    QComboBox,
 )
 from PySide6.QtCore import Qt, QTimer, Signal
 
 from lib.multi_display_qt import SmartWindow
 from ui_qt.app_style import AppStyle
-from muse.radio_watchlist import WatchEntry, load_entries, save_entries, watchlist_service
+from muse.radio_watchlist import (
+    MODE_MATCH, MODE_NOVEL, WatchEntry, load_entries, save_entries, watchlist_service,
+)
 from utils.app_info_cache import app_info_cache
 from utils.translations import I18N
 from utils.logging_setup import get_logger
@@ -32,6 +35,14 @@ from utils.utils import Utils
 
 _ = I18N._
 logger = get_logger(__name__)
+
+
+def _mode_options():
+    return [(MODE_MATCH, _("Match criteria")), (MODE_NOVEL, _("Discover new tracks"))]
+
+
+def _classical_options():
+    return [("auto", _("Detect")), ("yes", _("Yes")), ("no", _("No"))]
 
 _FAVOURITES_CACHE_KEY = "radio_favourites"
 
@@ -176,6 +187,34 @@ class NetworkMediaWindow(SmartWindow):
         uuid_row.addWidget(self._watch_uuid_entry, 1)
         add_layout.addLayout(uuid_row)
 
+        # Mode
+        mode_row = QHBoxLayout()
+        mode_row.addWidget(QLabel(_("Mode:")))
+        self._watch_mode_combo = QComboBox()
+        for value, text in _mode_options():
+            self._watch_mode_combo.addItem(text, value)
+        self._watch_mode_combo.setToolTip(_(
+            "Match criteria: switch to the station when its title matches.\n"
+            "Discover new tracks: suggest titles new to you, without switching."
+        ))
+        self._watch_mode_combo.currentIndexChanged.connect(self._on_watch_mode_changed)
+        mode_row.addWidget(self._watch_mode_combo, 1)
+        add_layout.addLayout(mode_row)
+
+        # Classical station (discovery only)
+        self._watch_classical_row = QWidget()
+        classical_layout = QHBoxLayout(self._watch_classical_row)
+        classical_layout.setContentsMargins(0, 0, 0, 0)
+        classical_layout.addWidget(QLabel(_("Classical station:")))
+        self._watch_classical_combo = QComboBox()
+        for value, text in _classical_options():
+            self._watch_classical_combo.addItem(text, value)
+        self._watch_classical_combo.setToolTip(_(
+            "On a classical station a new performer counts for less than a new composer."
+        ))
+        classical_layout.addWidget(self._watch_classical_combo, 1)
+        add_layout.addWidget(self._watch_classical_row)
+
         # Label
         label_row = QHBoxLayout()
         label_row.addWidget(QLabel(_("Label:")))
@@ -184,7 +223,10 @@ class NetworkMediaWindow(SmartWindow):
         label_row.addWidget(self._watch_label_entry, 1)
         add_layout.addLayout(label_row)
 
-        # Match fields
+        # Match fields (match mode only)
+        self._watch_match_rows = QWidget()
+        match_layout = QVBoxLayout(self._watch_match_rows)
+        match_layout.setContentsMargins(0, 0, 0, 0)
         for attr, placeholder in [
             ("_watch_artist_entry", _("ICY artist contains (e.g. Bach)")),
             ("_watch_title_entry", _("ICY title contains (e.g. Suite)")),
@@ -201,7 +243,9 @@ class NetworkMediaWindow(SmartWindow):
             entry.setPlaceholderText(placeholder)
             setattr(self, attr, entry)
             row.addWidget(entry, 1)
-            add_layout.addLayout(row)
+            match_layout.addLayout(row)
+        add_layout.addWidget(self._watch_match_rows)
+        self._on_watch_mode_changed()
 
         btn_row = QHBoxLayout()
         add_btn = QPushButton(_("Add Entry"))
@@ -222,7 +266,7 @@ class NetworkMediaWindow(SmartWindow):
         self._watch_results_layout = QGridLayout(self._watch_results_widget)
         self._watch_results_layout.setColumnStretch(0, 2)  # label
         self._watch_results_layout.setColumnStretch(1, 2)  # station
-        self._watch_results_layout.setColumnStretch(2, 3)  # match criteria
+        self._watch_results_layout.setColumnStretch(2, 3)  # mode / match criteria
         self._watch_scroll.setWidget(self._watch_results_widget)
         watch_layout.addWidget(self._watch_scroll, 1)
 
@@ -487,19 +531,28 @@ class NetworkMediaWindow(SmartWindow):
         if not self._watch_station_name or self._watch_station_name == self._watch_uuid_entry.text():
             self._watch_station_name = text.strip()
 
+    def _on_watch_mode_changed(self, _index: int = 0) -> None:
+        novel = self._watch_mode_combo.currentData() == MODE_NOVEL
+        self._watch_match_rows.setVisible(not novel)
+        self._watch_classical_row.setVisible(novel)
+
     def _add_watch_entry(self) -> None:
         uuid = self._watch_station_uuid.strip() or self._watch_uuid_entry.text().strip()
         label = self._watch_label_entry.text().strip()
         if not uuid or not label:
             return
+        mode = self._watch_mode_combo.currentData()
+        novel = mode == MODE_NOVEL
         entry = WatchEntry(
             label=label,
             station_uuid=uuid,
             station_name=self._watch_station_name or uuid,
-            match_artist=self._watch_artist_entry.text().strip(),
-            match_title=self._watch_title_entry.text().strip(),
-            match_any=self._watch_any_entry.text().strip(),
+            match_artist="" if novel else self._watch_artist_entry.text().strip(),
+            match_title="" if novel else self._watch_title_entry.text().strip(),
+            match_any="" if novel else self._watch_any_entry.text().strip(),
             enabled=True,
+            mode=mode,
+            classical=self._watch_classical_combo.currentData() if novel else "auto",
         )
         entries = load_entries()
         entries.append(entry)
@@ -515,6 +568,8 @@ class NetworkMediaWindow(SmartWindow):
         self._watch_artist_entry.clear()
         self._watch_title_entry.clear()
         self._watch_any_entry.clear()
+        self._watch_mode_combo.setCurrentIndex(0)
+        self._watch_classical_combo.setCurrentIndex(0)
         self._watch_selected_label.setText(
             _("No station selected — use Search tab or enter UUID below.")
         )
@@ -532,7 +587,7 @@ class NetworkMediaWindow(SmartWindow):
             return
 
         # Header row
-        for col, text in enumerate([_("Label"), _("Station"), _("Match criteria"), _("On"), ""]):
+        for col, text in enumerate([_("Label"), _("Station"), _("Mode"), _("On"), ""]):
             h = QLabel(f"<b>{text}</b>")
             self._watch_results_layout.addWidget(h, 0, col)
             self._watch_row_widgets.append(h)
@@ -548,14 +603,19 @@ class NetworkMediaWindow(SmartWindow):
             self._watch_results_layout.addWidget(station_lbl, i, 1)
             self._watch_row_widgets.append(station_lbl)
 
-            criteria_parts = []
-            if entry.match_any:
-                criteria_parts.append(f"any: {entry.match_any}")
-            if entry.match_artist:
-                criteria_parts.append(f"artist: {entry.match_artist}")
-            if entry.match_title:
-                criteria_parts.append(f"title: {entry.match_title}")
-            criteria_lbl = QLabel(" | ".join(criteria_parts) or _("(no criteria)"))
+            if entry.mode == MODE_NOVEL:
+                classical = dict(_classical_options()).get(entry.classical, entry.classical)
+                criteria_text = _("Discover new tracks (classical: {0})").format(classical)
+            else:
+                criteria_parts = []
+                if entry.match_any:
+                    criteria_parts.append(_("any: {0}").format(entry.match_any))
+                if entry.match_artist:
+                    criteria_parts.append(_("artist: {0}").format(entry.match_artist))
+                if entry.match_title:
+                    criteria_parts.append(_("title: {0}").format(entry.match_title))
+                criteria_text = " | ".join(criteria_parts) or _("(no criteria)")
+            criteria_lbl = QLabel(criteria_text)
             criteria_lbl.setWordWrap(True)
             self._watch_results_layout.addWidget(criteria_lbl, i, 2)
             self._watch_row_widgets.append(criteria_lbl)

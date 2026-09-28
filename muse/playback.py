@@ -33,6 +33,9 @@ INSTANCE = vlc.Instance("verbose=-2")
 logger = get_logger(__name__)
 
 class Playback:
+    # Guards taking _icy_current_title, which the ICY thread (on a title
+    # change) and the playback thread (on stop) can both do.
+    _ICY_TITLE_LOCK = threading.Lock()
 
     @staticmethod
     def new_playback(override_dir: Optional[str] = None, data_callbacks: Optional[Any] = None) -> 'Playback':
@@ -77,6 +80,8 @@ class Playback:
         # ICY metadata polling (live radio streams)
         self._icy_stop_event: Optional[threading.Event] = None
         self._icy_thread: Optional[threading.Thread] = None
+        # (artist, title, monotonic start) of the stream title now playing.
+        self._icy_current_title: Optional[tuple] = None
 
     def has_muse(self) -> bool:
         return self._run and self._run.args.muse and self.muse is not None and self.muse.voice.can_speak
@@ -254,18 +259,42 @@ class Playback:
     def _record_play_if_heard(self, listened_seconds: float) -> None:
         """Count the current track as played if enough of it was heard. Never raises.
 
-        Streams have no length to take a fraction of. Parts of a split track
-        are skipped, since their paths are not the library file's.
+        A stream has no length to take a fraction of; stopping one records the
+        title that was playing instead. Parts of a split track are skipped,
+        since their paths are not the library file's.
         """
         try:
             track = self.track
-            if (track is None or self.last_track_failed
-                    or getattr(track, "_is_stream", False) or getattr(track, "parent_filepath", None)):
+            if track is not None and getattr(track, "_is_stream", False):
+                self._record_stream_title_if_heard()
+                return
+            if track is None or self.last_track_failed or getattr(track, "parent_filepath", None):
                 return
             if play_counts.counts_as_play(listened_seconds, track.get_track_length()):
                 play_counts.record_play(track)
         except Exception as e:
             logger.warning(f"Could not record play count: {e}")
+
+    def _record_stream_title_if_heard(self) -> None:
+        """Record the stream title that was playing if it played long enough. Never raises.
+
+        A stream title has no length to take a fraction of, so the test is a
+        fixed minimum. It is wall-clock time since the title arrived, so a pause
+        in the middle counts towards it.
+        """
+        with Playback._ICY_TITLE_LOCK:
+            current = getattr(self, "_icy_current_title", None)
+            self._icy_current_title = None
+        if current is None:
+            return
+        artist, title, started = current
+        try:
+            if time.monotonic() - started < config.radio_heard_min_seconds:
+                return
+            station_name = getattr(self.track, "album", None) if self.track is not None else None
+            play_counts.record_stream_title(artist, title, station_name)
+        except Exception as e:
+            logger.warning(f"Could not record heard stream title: {e}")
 
     def get_track_length(self, track: Optional['MediaTrack'] = None) -> float:
         if track is None:
@@ -558,6 +587,7 @@ class Playback:
     def _start_icy_thread(self, url: str) -> None:
         """Start ICY metadata polling for *url* in a background daemon thread."""
         self._stop_icy_thread()
+        self._icy_current_title = None
         stop = threading.Event()
         self._icy_stop_event = stop
 
@@ -585,6 +615,9 @@ class Playback:
         changed = track.update_from_icy(artist, title)
         if not changed:
             return
+        self._record_stream_title_if_heard()
+        with Playback._ICY_TITLE_LOCK:
+            self._icy_current_title = (artist, title, time.monotonic())
         if self.ui_callbacks is not None and self.ui_callbacks.track_details_callback is not None:
             self.ui_callbacks.track_details_callback(track)
         if self.has_muse() and self.muse_spot_profiles:

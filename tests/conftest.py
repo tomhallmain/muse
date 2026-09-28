@@ -211,7 +211,9 @@ def _make_isolated_db_conn():
     """
     import sqlite3
 
-    conn = sqlite3.connect(":memory:")
+    # Worker threads (the library window's loader, the radio poll threads) share
+    # this connection, as they share the real one opened in utils/db.py.
+    conn = sqlite3.connect(":memory:", check_same_thread=False)
     _get_db_template_conn().backup(conn)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys=ON")

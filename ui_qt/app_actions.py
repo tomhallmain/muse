@@ -44,6 +44,9 @@ class AppActions:
         "get_media_volume",
         "toggle_media_mute",
         "is_media_muted",
+        # Radio watch-list "novel" entries; both are called from poll threads.
+        "show_radio_suggestion",
+        "radio_station_title_changed",
     ])
 
     def __init__(self, actions: Dict[str, Callable[..., Any]], master: Optional[object] = None):

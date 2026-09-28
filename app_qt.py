@@ -7,6 +7,7 @@ import os
 import signal
 import sys
 import time
+import threading
 import traceback
 from typing import Optional
 
@@ -94,6 +95,9 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
     _sig_run_finished = Signal(object, object)
     _sig_shutdown = Signal()
     _sig_toast = Signal(str)
+    _sig_start_playback = Signal(object)
+    _sig_radio_suggestion = Signal(object)
+    _sig_radio_title_changed = Signal(str)
 
     def __init__(self):
         # Initialize SmartMainWindow with geometry persistence enabled
@@ -168,6 +172,8 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
             "toggle_media_mute": self.toggle_media_mute,
             "is_media_muted": self.is_media_muted,
             "update_effective_volume": self.update_effective_volume,
+            "show_radio_suggestion": self._sig_radio_suggestion.emit,
+            "radio_station_title_changed": self._sig_radio_title_changed.emit,
         }, self)
 
         self._build_menus()
@@ -192,6 +198,9 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         self._sig_run_finished.connect(self._on_run_finished)
         self._sig_shutdown.connect(self.on_closing)
         self._sig_toast.connect(self._do_toast)
+        self._sig_start_playback.connect(lambda kwargs: self.start_playback(**kwargs))
+        self._sig_radio_suggestion.connect(self._do_show_radio_suggestion)
+        self._sig_radio_title_changed.connect(self._do_radio_title_changed)
 
         # Connect media frame overlay signals
         self.media_frame.seek_requested.connect(self.seek_in_track)
@@ -981,6 +990,15 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
 
     def start_playback(self, track=None, playlist_sort_type=None, rescan=None,
                         use_all_music=False, search_query=None):
+        # Reached through app_actions from worker threads too (the radio
+        # watch-list polls on its own threads), and this sets widget state, so
+        # such calls are re-delivered on the UI thread.
+        if threading.current_thread() is not threading.main_thread():
+            self._sig_start_playback.emit(dict(
+                track=track, playlist_sort_type=playlist_sort_type, rescan=rescan,
+                use_all_music=use_all_music, search_query=search_query,
+            ))
+            return
         if use_all_music:
             self.set_playback_master_strategy(PlaybackMasterStrategy.ALL_MUSIC)
         if playlist_sort_type is not None:
@@ -1600,6 +1618,14 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
     def toast(self, message):
         logger.info("Toast: %s", message)
         self._sig_toast.emit(message)
+
+    def _do_show_radio_suggestion(self, suggestion):
+        from ui_qt.radio_suggestion_window import RadioSuggestionWindow
+        RadioSuggestionWindow.show_suggestion(self, self.app_actions, suggestion)
+
+    def _do_radio_title_changed(self, station_uuid):
+        from ui_qt.radio_suggestion_window import RadioSuggestionWindow
+        RadioSuggestionWindow.station_title_changed(station_uuid)
 
     def _do_toast(self, message):
         msg = QMessageBox(self)

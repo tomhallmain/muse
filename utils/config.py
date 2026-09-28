@@ -220,6 +220,21 @@ class Config:
         self.radio_watchlist_enabled = False
         self.radio_watchlist_cooldown_minutes = 30
         self.radio_watchlist_max_stations = 10
+        # A stream title counts as heard once it has played this long.
+        self.radio_heard_min_seconds = 60
+        # Discovery ("novel" watch entries). The suggestion cooldown is the
+        # minimum gap between any two suggestions, across all stations.
+        self.radio_novelty_warmup_minutes = 60
+        self.radio_novelty_suggestion_cooldown_minutes = 10
+        self.radio_novelty_seen_titles_per_station = 2000
+        self.radio_novelty_non_track_patterns = [
+            "werbung", "nachrichten", "news", "advert", "commercial",
+            "jingle", "station id", "http", "www.",
+        ]
+        self.radio_novelty_classical_tags = [
+            "classical", "klassik", "klassisch", "classique", "clasica", "clasico",
+            "classica", "baroque", "barock", "opera", "oper", "symphonic", "chamber",
+        ]
 
         self.config_path = config_path
         if self.config_path is None:
@@ -271,6 +286,10 @@ class Config:
             "search_semantic_top_k",
             "radio_watchlist_cooldown_minutes",
             "radio_watchlist_max_stations",
+            "radio_heard_min_seconds",
+            "radio_novelty_warmup_minutes",
+            "radio_novelty_suggestion_cooldown_minutes",
+            "radio_novelty_seen_titles_per_station",
             "reddit_min_score",
             "reddit_max_age_hours",
             "bluesky_min_score",
@@ -295,6 +314,8 @@ class Config:
             "reddit_subreddits",
             "bluesky_feeds",
             "bluesky_languages",
+            "radio_novelty_non_track_patterns",
+            "radio_novelty_classical_tags",
         )
         self.set_values(float,
             "play_count_threshold_ratio",

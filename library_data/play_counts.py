@@ -1,12 +1,15 @@
 """Per-track play counts, kept apart from the track cache.
 
 A play is recorded when enough of a track was actually heard (counts_as_play).
-Rows are keyed by (kind, key): library files use kind FILE and their filepath.
+Rows are keyed by (kind, key): library files use kind FILE and their filepath;
+titles heard on a radio stream use kind STREAM and stream_key(artist, title).
 Each row also keeps the artist, album, title and track number seen at its
 latest play, so a row whose path no longer exists can be matched back by tags.
 """
 
 import datetime
+import re
+import unicodedata
 from dataclasses import dataclass
 from typing import Any, Dict, Iterable, List, Optional
 
@@ -17,6 +20,7 @@ from utils.logging_setup import get_logger
 logger = get_logger(__name__)
 
 FILE = "file"
+STREAM = "stream"
 
 _SNAPSHOT_COLUMNS = ("artist", "album", "title", "tracknumber")
 
@@ -65,6 +69,57 @@ def record_play(track: Any, when: Optional[datetime.datetime] = None) -> None:
          getattr(track, "album", None), getattr(track, "title", None), tracknumber),
     )
     conn.commit()
+
+
+def fold(text: Optional[str]) -> str:
+    """Lowercase, accents removed, punctuation and runs of space reduced to one space."""
+    decomposed = unicodedata.normalize("NFKD", text or "")
+    stripped = "".join(c for c in decomposed if not unicodedata.combining(c))
+    return re.sub(r"[\W_]+", " ", stripped.casefold()).strip()
+
+
+def stream_key(artist: Optional[str], title: Optional[str]) -> Optional[str]:
+    """The key a stream title is recorded under, or None if there is no title.
+
+    Folded so that the same track sent with different case, accents or
+    punctuation by different stations is one key.
+    """
+    title_folded = fold(title)
+    if not title_folded:
+        return None
+    artist_folded = fold(artist)
+    return f"{artist_folded} - {title_folded}" if artist_folded else title_folded
+
+
+def record_stream_title(artist: Optional[str], title: Optional[str], station_name: Optional[str] = None,
+                        when: Optional[datetime.datetime] = None) -> None:
+    """Add one play for a title heard on a stream; the station goes in the album column."""
+    key = stream_key(artist, title)
+    if key is None:
+        return
+    stamp = (when or datetime.datetime.now()).isoformat()
+    conn = get_connection()
+    conn.execute(
+        "INSERT INTO track_plays (kind, key, play_count, first_played, last_played, "
+        "artist, album, title, tracknumber) VALUES (?, ?, 1, ?, ?, ?, ?, ?, NULL) "
+        "ON CONFLICT(kind, key) DO UPDATE SET "
+        "play_count = play_count + 1, "
+        "first_played = COALESCE(first_played, excluded.first_played), "
+        "last_played = excluded.last_played, "
+        "artist = excluded.artist, album = excluded.album, title = excluded.title",
+        (STREAM, key, stamp, stamp, artist or None, station_name or None, title),
+    )
+    conn.commit()
+
+
+def is_stream_title_heard(artist: Optional[str], title: Optional[str]) -> bool:
+    key = stream_key(artist, title)
+    if key is None:
+        return False
+    row = get_connection().execute(
+        "SELECT 1 FROM track_plays WHERE kind = ? AND key = ?", (STREAM, key)
+    ).fetchone()
+    return row is not None
 
 
 def _parse_time(value: Optional[str]) -> Optional[datetime.datetime]:

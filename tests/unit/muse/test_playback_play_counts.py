@@ -65,3 +65,58 @@ class TestRecordPlayIfHeard:
             raise RuntimeError("db locked")
         monkeypatch.setattr(playback_module.play_counts, "record_play", fail)
         _playback(_track())._record_play_if_heard(1000.0)
+
+
+class _StreamTrack:
+    _is_stream = True
+    parent_filepath = None
+    album = "Radio Example"
+
+    def is_stream(self):
+        return True
+
+    def update_from_icy(self, artist, title):
+        return True
+
+
+@pytest.fixture
+def heard(monkeypatch):
+    calls = []
+    monkeypatch.setattr(playback_module.play_counts, "record_stream_title",
+                        lambda artist, title, station: calls.append((artist, title, station)))
+    monkeypatch.setattr(playback_module.config, "radio_heard_min_seconds", 60, raising=False)
+    return calls
+
+
+def _stream_playback():
+    playback = _playback(_StreamTrack())
+    playback.ui_callbacks = None
+    playback._run = None
+    playback._icy_current_title = None
+    return playback
+
+
+@pytest.mark.unit
+class TestStreamTitleHeard:
+    def test_a_title_that_played_long_enough_is_recorded_on_the_next_change(self, heard):
+        import time as time_module
+        playback = _stream_playback()
+        playback._on_icy_title_change("Band", "First")
+        playback._icy_current_title = ("Band", "First", time_module.monotonic() - 61)
+        playback._on_icy_title_change("Band", "Second")
+        assert heard == [("Band", "First", "Radio Example")]
+
+    def test_a_title_changed_away_from_quickly_is_not_recorded(self, heard):
+        playback = _stream_playback()
+        playback._on_icy_title_change("Band", "First")
+        playback._on_icy_title_change("Band", "Second")
+        assert heard == []
+
+    def test_stopping_the_stream_records_the_title_playing(self, heard):
+        import time as time_module
+        playback = _stream_playback()
+        playback._icy_current_title = ("Band", "Last", time_module.monotonic() - 61)
+        playback._record_play_if_heard(0.0)
+        assert heard == [("Band", "Last", "Radio Example")]
+        playback._record_play_if_heard(0.0)
+        assert len(heard) == 1
