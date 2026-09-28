@@ -7,10 +7,13 @@ from tests.utils.qt_test_helpers import process_events_for
 
 @pytest.fixture(autouse=True)
 def empty_watchlist():
-    from muse.radio_watchlist import save_entries
+    """An empty list, and no evaluator left over from another test's cache."""
+    from muse.radio_watchlist import save_entries, watchlist_service
     save_entries([])
+    watchlist_service._novelty = None
     yield
     save_entries([])
+    watchlist_service._novelty = None
 
 
 def _window(qt_master, mock_app_actions):
@@ -56,4 +59,23 @@ class TestWatchlistDiscovery:
         entry = entries[0]
         assert (entry.mode, entry.classical, entry.match_artist) == (MODE_NOVEL, "yes", "")
         assert entry.is_active()
+        window.close()
+
+    def test_suppressed_suggestions_are_counted_and_can_be_cleared(
+        self, qapp, qt_master, mock_app_actions, monkeypatch
+    ):
+        from muse.radio_watchlist import watchlist_service
+        from utils.translations import I18N
+
+        state = {"count": 2}
+        monkeypatch.setattr(watchlist_service, "suppressed_count", lambda: state["count"])
+        monkeypatch.setattr(watchlist_service, "clear_suppressed", lambda: state.update(count=0))
+
+        window = _window(qt_master, mock_app_actions)
+        assert window._suppressed_label.text() == I18N._("Suggestions not to repeat: {0}").format(2)
+        assert window._clear_suppressed_btn.isEnabled()
+
+        window._clear_suppressed_btn.click()
+        assert window._suppressed_label.text() == I18N._("Suggestions not to repeat: {0}").format(0)
+        assert not window._clear_suppressed_btn.isEnabled()
         window.close()

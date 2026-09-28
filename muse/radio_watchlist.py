@@ -300,6 +300,16 @@ class WatchlistService:
             daemon=True,
         ).start()
 
+    def suppress_suggestion(self, suggestion: Any) -> None:
+        """Never suggest this title (or, for a suggestion without one, this artist) again."""
+        self._get_novelty().suppress(suggestion)
+
+    def suppressed_count(self) -> int:
+        return self._get_novelty().suppressed_count()
+
+    def clear_suppressed(self) -> None:
+        self._get_novelty().clear_suppressed()
+
     def _is_already_playing(self, uuid: str) -> bool:
         try:
             if self._app_actions is not None:

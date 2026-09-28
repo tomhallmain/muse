@@ -279,6 +279,14 @@ class NetworkMediaWindow(SmartWindow):
         reload_btn.clicked.connect(self._reload_watch_service)
         svc_row.addWidget(reload_btn)
         svc_row.addStretch()
+        self._suppressed_label = QLabel()
+        svc_row.addWidget(self._suppressed_label)
+        self._clear_suppressed_btn = QPushButton(_("Clear"))
+        self._clear_suppressed_btn.setToolTip(
+            _("Allow every suggestion marked \"Don't Suggest Again\" to be suggested again")
+        )
+        self._clear_suppressed_btn.clicked.connect(self._clear_suppressed)
+        svc_row.addWidget(self._clear_suppressed_btn)
         watch_layout.addLayout(svc_row)
 
         # Watch form state
@@ -286,6 +294,10 @@ class NetworkMediaWindow(SmartWindow):
         self._watch_station_name: str = ""
 
         self._tabs.addTab(watch_widget, _("Watch-list"))
+        self._watch_tab_index = self._tabs.indexOf(watch_widget)
+        self._tabs.currentChanged.connect(
+            lambda index: self._refresh_suppressed() if index == self._watch_tab_index else None
+        )
 
         # ── Manual URL entry (bottom, always visible) ─────────────────────────
         url_frame = QFrame()
@@ -308,6 +320,7 @@ class NetworkMediaWindow(SmartWindow):
         self.show()
         QTimer.singleShot(0, self._populate_saved)
         QTimer.singleShot(0, self._populate_watchlist)
+        QTimer.singleShot(0, self._refresh_suppressed)
 
     # ── Internal helpers ──────────────────────────────────────────────────────
 
@@ -653,6 +666,19 @@ class NetworkMediaWindow(SmartWindow):
 
     def _reload_watch_service(self) -> None:
         watchlist_service.reload()
+
+    def _refresh_suppressed(self) -> None:
+        try:
+            count = watchlist_service.suppressed_count()
+        except Exception as e:
+            logger.warning("Could not read suppressed radio suggestions: %s", e)
+            count = 0
+        self._suppressed_label.setText(_("Suggestions not to repeat: {0}").format(count))
+        self._clear_suppressed_btn.setEnabled(count > 0)
+
+    def _clear_suppressed(self) -> None:
+        watchlist_service.clear_suppressed()
+        self._refresh_suppressed()
 
     # ── Window lifecycle ──────────────────────────────────────────────────────
 

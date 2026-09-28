@@ -1,3 +1,4 @@
+import re
 import unicodedata
 
 
@@ -33,6 +34,14 @@ class NameOps:
         "XIX",
         "XX"
     ]
+
+    @staticmethod
+    def fold(text):
+        """Text reduced for matching: lowercase, accents removed, punctuation
+        and runs of space turned into one space."""
+        decomposed = unicodedata.normalize("NFKD", text or "")
+        stripped = "".join(c for c in decomposed if not unicodedata.combining(c))
+        return re.sub(r"[\W_]+", " ", stripped.casefold()).strip()
 
     @staticmethod
     def get_name_sort_key(full_name):

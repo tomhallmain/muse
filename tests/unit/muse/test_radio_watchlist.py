@@ -380,3 +380,18 @@ def test_switch_to_suggestion_plays_the_station_off_the_calling_thread():
     svc.switch_to_suggestion(suggestion)
     assert done.wait(2.0)
     assert played == [("uuid1", "Radio One", "Band", "Song", False)]
+
+
+def test_suppression_goes_to_the_evaluator():
+    svc = _make_service()
+    evaluator = MagicMock()
+    evaluator.suppressed_count.return_value = 4
+    svc._novelty = evaluator
+    suggestion = MagicMock()
+
+    svc.suppress_suggestion(suggestion)
+    assert svc.suppressed_count() == 4
+    svc.clear_suppressed()
+
+    evaluator.suppress.assert_called_once_with(suggestion)
+    evaluator.clear_suppressed.assert_called_once_with()

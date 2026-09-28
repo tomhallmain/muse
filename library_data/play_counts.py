@@ -8,14 +8,13 @@ latest play, so a row whose path no longer exists can be matched back by tags.
 """
 
 import datetime
-import re
-import unicodedata
 from dataclasses import dataclass
 from typing import Any, Dict, Iterable, List, Optional
 
 from utils.config import config
 from utils.db import get_connection
 from utils.logging_setup import get_logger
+from utils.name_ops import NameOps
 
 logger = get_logger(__name__)
 
@@ -71,23 +70,16 @@ def record_play(track: Any, when: Optional[datetime.datetime] = None) -> None:
     conn.commit()
 
 
-def fold(text: Optional[str]) -> str:
-    """Lowercase, accents removed, punctuation and runs of space reduced to one space."""
-    decomposed = unicodedata.normalize("NFKD", text or "")
-    stripped = "".join(c for c in decomposed if not unicodedata.combining(c))
-    return re.sub(r"[\W_]+", " ", stripped.casefold()).strip()
-
-
 def stream_key(artist: Optional[str], title: Optional[str]) -> Optional[str]:
     """The key a stream title is recorded under, or None if there is no title.
 
     Folded so that the same track sent with different case, accents or
     punctuation by different stations is one key.
     """
-    title_folded = fold(title)
+    title_folded = NameOps.fold(title)
     if not title_folded:
         return None
-    artist_folded = fold(artist)
+    artist_folded = NameOps.fold(artist)
     return f"{artist_folded} - {title_folded}" if artist_folded else title_folded
 
 

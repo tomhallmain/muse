@@ -6,11 +6,15 @@ from types import SimpleNamespace
 import pytest
 
 from muse import radio_novelty
+from library_data.work import Work
 from muse.radio_novelty import (
+    SIGNAL_AFFINITY,
     SIGNAL_ARTIST,
     SIGNAL_COMPOSER,
     SIGNAL_STATION,
     SIGNAL_TITLE,
+    SIGNAL_WORK,
+    AffinityScorer,
     LibraryIndex,
     NoveltyEvaluator,
     StationInfo,
@@ -32,6 +36,18 @@ LIBRARY_TRACKS = [
 ]
 KNOWN_COMPOSERS = {"bach": "Johann Sebastian Bach", "beethoven": "Ludwig van Beethoven",
                    "lajtha": "László Lajtha"}
+
+
+WORKS = {
+    "Johann Sebastian Bach": [
+        Work("Cello Suite No. 1", "Johann Sebastian Bach", catalogue_number="BWV 1007"),
+        Work("Cello Suite No. 2", "Johann Sebastian Bach", catalogue_number="BWV 1008"),
+    ],
+}
+
+
+def _works_for(composer_name):
+    return WORKS.get(composer_name, [])
 
 
 def _infer(artist, title):
@@ -78,12 +94,13 @@ def cfg(monkeypatch):
 
 @pytest.fixture
 def make(cfg):
-    def build(heard=(), tracks=None, cache=None, clock=None):
-        library = LibraryIndex(lambda: tracks if tracks is not None else LIBRARY_TRACKS, _infer)
+    def build(heard=(), tracks=None, cache=None, clock=None, affinity=None):
+        library = LibraryIndex(lambda: tracks if tracks is not None else LIBRARY_TRACKS, _infer, _works_for)
         heard_keys = set(heard)
         evaluator = NoveltyEvaluator(
             library, lambda artist, title: (artist, title) in heard_keys,
             cache=cache if cache is not None else _Cache(), clock=clock or _Clock(),
+            affinity=affinity,
         )
         return evaluator
     return build
@@ -271,3 +288,164 @@ class TestLibraryIndex:
     def test_split_artists(self):
         assert radio_novelty.split_artists("Beyoncé ft. Jay-Z & Someone") == ["beyonce", "jay z", "someone"]
         assert radio_novelty.split_artists("Featherstonehaugh") == ["featherstonehaugh"]
+
+
+@pytest.mark.unit
+class TestWorks:
+    def test_a_known_work_spelled_differently_is_not_new(self, make):
+        """The library's "Cello Suite No. 1" is BWV 1007 under another title."""
+        assert make().evaluate(_entry(classical="yes"), CLASSICAL_STATION,
+                               "Yo-Yo Ma", "Bach: Suite for Cello BWV 1007 - Prelude") is None
+
+    def test_an_unowned_work_by_a_known_composer_is_a_new_work(self, make):
+        suggestion = make().evaluate(_entry(classical="yes"), CLASSICAL_STATION,
+                                     "Pieter Wispelwey", "Bach: Suite BWV 1008 - Allemande")
+        assert suggestion is not None
+        assert SIGNAL_WORK in suggestion.signals and SIGNAL_TITLE not in suggestion.signals
+        assert suggestion.work_name == "Cello Suite No. 2"
+
+    def test_a_linked_work_counts_as_owned(self, make):
+        WORKS["Johann Sebastian Bach"][1].matched_track_filepath = "/m/suite2.flac"
+        try:
+            assert make().evaluate(_entry(classical="yes"), CLASSICAL_STATION,
+                                   "Pieter Wispelwey", "Bach: BWV 1008") is None
+        finally:
+            WORKS["Johann Sebastian Bach"][1].matched_track_filepath = None
+
+    def test_a_title_matching_no_work_falls_back_to_the_title_signal(self, make):
+        suggestion = make().evaluate(_entry(classical="no"), STATION, "Someone", "Bach Remixed")
+        assert suggestion is not None and SIGNAL_TITLE in suggestion.signals
+
+
+class _Affinity:
+    def __init__(self, value):
+        self.value = value
+        self.texts = []
+
+    def __call__(self, text):
+        self.texts.append(text)
+        return self.value
+
+
+@pytest.mark.unit
+class TestAffinitySignal:
+    def test_it_can_tip_a_weak_suggestion_over_the_threshold(self, make):
+        affinity = _Affinity(0.8)
+        suggestion = make(affinity=affinity).evaluate(
+            _entry(classical="yes"), CLASSICAL_STATION, "Unknown Quartet", "")
+        assert suggestion is not None
+        assert suggestion.signals == [SIGNAL_ARTIST, SIGNAL_AFFINITY]
+        assert suggestion.score == pytest.approx(0.3 + 0.8)
+        assert affinity.texts == ["artist: Unknown Quartet"]
+
+    def test_a_low_score_leaves_it_under(self, make):
+        assert make(affinity=_Affinity(0.5)).evaluate(
+            _entry(classical="yes"), CLASSICAL_STATION, "Unknown Quartet", "") is None
+
+    def test_it_is_not_consulted_when_the_threshold_is_already_met(self, make):
+        affinity = _Affinity(1.0)
+        make(affinity=affinity).evaluate(_entry(), STATION, "New Band", "New Song")
+        assert affinity.texts == []
+
+    def test_it_is_not_consulted_when_it_could_not_reach_the_threshold(self, make):
+        affinity = _Affinity(1.0)
+        entry = _entry(classical="yes", weights={SIGNAL_AFFINITY: 0.2})
+        make(affinity=affinity).evaluate(entry, CLASSICAL_STATION, "Unknown Quartet", "")
+        assert affinity.texts == []
+
+    def test_no_score_means_no_signal(self, make):
+        assert make(affinity=_Affinity(None)).evaluate(
+            _entry(classical="yes"), CLASSICAL_STATION, "Unknown Quartet", "") is None
+
+
+def _vectors(mapping):
+    return lambda texts: [mapping[t] for t in texts]
+
+
+def _dot(a, b):
+    return sum(x * y for x, y in zip(a, b))
+
+
+@pytest.mark.unit
+class TestAffinityScorer:
+    def test_close_to_favorites_and_unlike_the_most_played_scores_high(self):
+        scorer = AffinityScorer(lambda: "favorites", lambda: "most played",
+                                _vectors({"favorites": [1, 0], "most played": [0, 1], "candidate": [1, 0]}),
+                                _dot)
+        assert scorer("candidate") == pytest.approx(1.0)
+
+    def test_familiar_material_is_discounted(self):
+        scorer = AffinityScorer(lambda: "favorites", lambda: "most played",
+                                _vectors({"favorites": [1, 0], "most played": [1, 0], "candidate": [1, 0]}),
+                                _dot)
+        assert scorer("candidate") == pytest.approx(0.0)
+
+    def test_no_favorites_means_no_score(self):
+        scorer = AffinityScorer(lambda: "", lambda: "most played", _vectors({}), _dot)
+        assert scorer("candidate") is None
+
+    def test_turned_off_means_no_score(self):
+        scorer = AffinityScorer(lambda: "favorites", lambda: "", _vectors({"favorites": [1]}), _dot,
+                                enabled=lambda: False)
+        assert scorer("candidate") is None
+
+    def test_references_are_reused_until_stale(self):
+        calls = []
+        clock = _Clock(0.0)
+
+        def relevance():
+            calls.append(1)
+            return "favorites"
+
+        scorer = AffinityScorer(relevance, lambda: "", _vectors({"favorites": [1], "candidate": [1]}), _dot,
+                                clock=clock)
+        scorer("candidate")
+        scorer("candidate")
+        assert len(calls) == 1
+        clock.now += AffinityScorer.REFRESH_SECONDS
+        scorer("candidate")
+        assert len(calls) == 2
+
+    def test_a_failure_gives_no_score(self):
+        def broken(texts):
+            raise RuntimeError("model")
+        assert AffinityScorer(lambda: "favorites", lambda: "", broken, _dot)("candidate") is None
+
+
+@pytest.mark.unit
+class TestSuppression:
+    def _suggest(self, evaluator, artist="New Band", title="Hit"):
+        return evaluator.evaluate(_entry(), STATION, artist, title)
+
+    def test_a_suppressed_title_is_never_suggested_again(self, make):
+        clock = _Clock()
+        evaluator = make(clock=clock)
+        evaluator.suppress(self._suggest(evaluator))
+        clock.now += 24 * 3600
+        assert self._suggest(evaluator) is None
+        assert evaluator.evaluate(_entry(), CLASSICAL_STATION, "New Band", "Hit") is None
+
+    def test_suppression_is_by_title_not_artist(self, make):
+        evaluator = make()
+        evaluator.suppress(self._suggest(evaluator))
+        assert self._suggest(evaluator, title="Another Hit") is not None
+
+    def test_a_title_less_suggestion_suppresses_the_artist(self, make):
+        clock = _Clock()
+        evaluator = make(clock=clock)
+        evaluator.suppress(self._suggest(evaluator, artist="Solo Artist", title=""))
+        clock.now += 24 * 3600
+        assert self._suggest(evaluator, artist="Solo Artist", title="") is None
+
+    def test_suppression_survives_a_new_evaluator_and_can_be_cleared(self, make):
+        cache, clock = _Cache(), _Clock()
+        first = make(cache=cache, clock=clock)
+        first.suppress(self._suggest(first))
+        restarted = make(cache=cache, clock=clock)
+        assert restarted.suppressed_count() == 1
+        assert self._suggest(restarted) is None
+        restarted.clear_suppressed()
+        clock.now += 3600
+        assert restarted.suppressed_count() == 0
+        assert make(cache=cache, clock=clock).suppressed_count() == 0
+        assert self._suggest(restarted) is not None

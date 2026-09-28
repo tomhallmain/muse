@@ -84,3 +84,28 @@ class TestRadioSuggestionWindow:
 
         assert [r.suggestion.station_uuid for r in window._rows.values()] == ["st-2"]
         assert RadioSuggestionWindow.top_level is window
+
+    def test_dont_suggest_again_suppresses_and_removes(self, qapp, qt_master, mock_app_actions, monkeypatch):
+        from muse.radio_watchlist import watchlist_service
+        from ui_qt.radio_suggestion_window import RadioSuggestionWindow
+
+        suppressed = []
+        monkeypatch.setattr(watchlist_service, "suppress_suggestion", suppressed.append)
+        suggestion = _suggestion()
+        RadioSuggestionWindow.show_suggestion(qt_master, mock_app_actions, suggestion)
+        next(iter(RadioSuggestionWindow.top_level._rows.values())).widgets[3].click()
+        process_events_for(0.2)
+
+        assert suppressed == [suggestion]
+        assert RadioSuggestionWindow.top_level is None
+
+    def test_a_new_work_is_named_and_affinity_is_described(self, qapp, qt_master, mock_app_actions):
+        from muse.radio_novelty import Suggestion
+        from ui_qt.radio_suggestion_window import RadioSuggestionWindow
+
+        suggestion = Suggestion("st-1", "Radio Example", "Performer", "Bach: BWV 1008", "k",
+                                ["new_work", "close_to_taste"], 1.4, work_name="Cello Suite No. 2")
+        RadioSuggestionWindow.show_suggestion(qt_master, mock_app_actions, suggestion)
+        text = next(iter(RadioSuggestionWindow.top_level._rows.values())).widgets[0].text()
+        assert _("new work: {0}").format("Cello Suite No. 2") in text
+        assert _("close to your taste") in text

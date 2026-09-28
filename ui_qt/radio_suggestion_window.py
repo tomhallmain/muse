@@ -17,10 +17,12 @@ from PySide6.QtCore import Qt
 
 from lib.multi_display_qt import SmartWindow
 from muse.radio_novelty import (
+    SIGNAL_AFFINITY,
     SIGNAL_ARTIST,
     SIGNAL_COMPOSER,
     SIGNAL_STATION,
     SIGNAL_TITLE,
+    SIGNAL_WORK,
 )
 from ui_qt.app_style import AppStyle
 from utils.logging_setup import get_logger
@@ -30,12 +32,16 @@ _ = I18N._
 logger = get_logger(__name__)
 
 
-def signal_description(signal: str) -> str:
+def signal_description(signal: str, suggestion=None) -> str:
+    if signal == SIGNAL_WORK and suggestion is not None and suggestion.work_name:
+        return _("new work: {0}").format(suggestion.work_name)
     return {
         SIGNAL_TITLE: _("new title"),
         SIGNAL_COMPOSER: _("new composer"),
         SIGNAL_ARTIST: _("new artist"),
         SIGNAL_STATION: _("new to this station"),
+        SIGNAL_WORK: _("new work by a known composer"),
+        SIGNAL_AFFINITY: _("close to your taste"),
     }.get(signal, signal)
 
 
@@ -104,7 +110,7 @@ class RadioSuggestionWindow(SmartWindow):
             f"<b>{heading}</b><br>"
             + _("On {0}: {1}").format(
                 suggestion.station_name,
-                ", ".join(signal_description(s) for s in suggestion.signals),
+                ", ".join(signal_description(s, suggestion) for s in suggestion.signals),
             ),
             self._list_widget,
         )
@@ -121,7 +127,17 @@ class RadioSuggestionWindow(SmartWindow):
         dismiss_btn.clicked.connect(lambda _checked=False, r=row: self._remove(r))
         self._grid.addWidget(dismiss_btn, row, 2)
 
-        self._rows[row] = _SuggestionRow(suggestion, [text_lbl, switch_btn, dismiss_btn], switch_btn)
+        never_btn = QPushButton(_("Don't Suggest Again"), self._list_widget)
+        never_btn.setToolTip(
+            _("Never suggest this title again, from any station")
+            if suggestion.title else
+            _("Never suggest this artist again, from any station")
+        )
+        never_btn.clicked.connect(lambda _checked=False, r=row: self._never_again(r))
+        self._grid.addWidget(never_btn, row, 3)
+
+        self._rows[row] = _SuggestionRow(
+            suggestion, [text_lbl, switch_btn, dismiss_btn, never_btn], switch_btn)
 
     def mark_station_moved_on(self, station_uuid: str) -> None:
         for entry in self._rows.values():
@@ -135,6 +151,14 @@ class RadioSuggestionWindow(SmartWindow):
             return
         from muse.radio_watchlist import watchlist_service
         watchlist_service.switch_to_suggestion(entry.suggestion)
+        self._remove(row)
+
+    def _never_again(self, row: int) -> None:
+        entry = self._rows.get(row)
+        if entry is None:
+            return
+        from muse.radio_watchlist import watchlist_service
+        watchlist_service.suppress_suggestion(entry.suggestion)
         self._remove(row)
 
     def _remove(self, row: int) -> None:
