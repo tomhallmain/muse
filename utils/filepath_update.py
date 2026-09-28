@@ -22,6 +22,7 @@ Caches covered
 │ DB: media_tracks                │ parent_filepath              │ UPDATE … = ?     │
 │ DB: directories.path            │ path (PK)                    │ re-key all under │
 │ DB: directories.files           │ JSON array of filepaths      │ _remap_under     │
+│ DB: track_plays                 │ key (kind 'file')            │ rekey + merge    │
 │ LibraryData.MEDIA_TRACK_CACHE   │ {filepath: MediaTrack}       │ re-key dict      │
 │ LibraryData.DIRECTORIES_CACHE   │ {dir: [filepath, …]}         │ re-key + rewrite │
 │ LibraryData.all_tracks          │ flat list of MediaTrack objs │ update .filepath │
@@ -114,6 +115,7 @@ def propagate_file_rename(old_path: str, new_path: str) -> None:
     _guarded("PlaybackSession",      lambda: _session_file(old_path, new_path))
     _guarded("Favorites",            lambda: _favorites_file(old_path, new_path))
     _guarded("PlaylistDescriptors",  lambda: _playlist_descriptors_file(old_path, new_path))
+    _guarded("db:track_plays",       lambda: _plays_file(old_path, new_path))
 
 
 def propagate_directory_rename(old_dir: str, new_dir: str) -> None:
@@ -124,6 +126,7 @@ def propagate_directory_rename(old_dir: str, new_dir: str) -> None:
     _guarded("PlaybackSession",      lambda: _session_directory(old_dir, new_dir))
     _guarded("Favorites",            lambda: _favorites_directory(old_dir, new_dir))
     _guarded("PlaylistDescriptors",  lambda: _playlist_descriptors_directory(old_dir, new_dir))
+    _guarded("db:track_plays",       lambda: _plays_directory(old_dir, new_dir))
 
 
 def propagate_file_delete(filepath: str) -> None:
@@ -135,6 +138,7 @@ def propagate_file_delete(filepath: str) -> None:
     _guarded("PlaybackSession",      lambda: _session_file_delete(filepath))
     _guarded("Favorites",            lambda: _favorites_file_delete(filepath))
     _guarded("PlaylistDescriptors",  lambda: _playlist_descriptors_file_delete(filepath))
+    _guarded("db:track_plays",       lambda: _plays_file_delete(filepath))
 
 
 def propagate_directory_delete(dir_path: str) -> None:
@@ -150,6 +154,43 @@ def propagate_directory_delete(dir_path: str) -> None:
     _guarded("PlaybackSession",      lambda: _session_directory_delete(dir_path))
     _guarded("Favorites",            lambda: _favorites_directory_delete(dir_path))
     _guarded("PlaylistDescriptors",  lambda: _playlist_descriptors_directory_delete(dir_path))
+    _guarded("db:track_plays",       lambda: _plays_directory_delete(dir_path))
+
+
+# ---------------------------------------------------------------------------
+# Play counts
+# ---------------------------------------------------------------------------
+# Keys are remapped with _remap_under, as _lib_directory remaps
+# MediaTrack.filepath, so they keep matching the paths playback records under.
+# _db_directory's SQL replace() writes '/' separators, which on Windows would
+# not match.
+
+def _plays_file(old_path: str, new_path: str) -> None:
+    from library_data import play_counts
+    play_counts.rekey_files({old_path: new_path})
+
+
+def _plays_directory(old_dir: str, new_dir: str) -> None:
+    from library_data import play_counts
+    mapping = {}
+    for key in play_counts.file_keys():
+        remapped = _remap_under(old_dir, new_dir, key)
+        if remapped != key:
+            mapping[key] = remapped
+    if mapping:
+        play_counts.rekey_files(mapping)
+
+
+def _plays_file_delete(filepath: str) -> None:
+    from library_data import play_counts
+    play_counts.delete_files([filepath])
+
+
+def _plays_directory_delete(dir_path: str) -> None:
+    from library_data import play_counts
+    doomed = [key for key in play_counts.file_keys() if _is_under(dir_path, key)]
+    if doomed:
+        play_counts.delete_files(doomed)
 
 
 # ---------------------------------------------------------------------------

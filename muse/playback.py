@@ -10,6 +10,7 @@ ensure_vlc_plugin_cache_if_stale()
 import vlc
 from typing import TYPE_CHECKING, Any, Callable, Optional
 
+from library_data import play_counts
 from library_data.media_track import MediaTrack
 from muse.playback_config import PlaybackConfig
 from muse.run_context import RunContext
@@ -240,11 +241,31 @@ class Playback:
             self.register_new_song()
             self.vlc_media_player.play()
             time.sleep(0.5)
+            listened_seconds = 0.0
             while self._should_continue_track_wait():
                 time.sleep(0.5)
+                if self.vlc_media_player.is_playing():
+                    listened_seconds += 0.5
+            self._record_play_if_heard(listened_seconds)
             self.vlc_media_player.stop()
         else:
             raise Exception("No tracks in playlist")
+
+    def _record_play_if_heard(self, listened_seconds: float) -> None:
+        """Count the current track as played if enough of it was heard. Never raises.
+
+        Streams have no length to take a fraction of. Parts of a split track
+        are skipped, since their paths are not the library file's.
+        """
+        try:
+            track = self.track
+            if (track is None or self.last_track_failed
+                    or getattr(track, "_is_stream", False) or getattr(track, "parent_filepath", None)):
+                return
+            if play_counts.counts_as_play(listened_seconds, track.get_track_length()):
+                play_counts.record_play(track)
+        except Exception as e:
+            logger.warning(f"Could not record play count: {e}")
 
     def get_track_length(self, track: Optional['MediaTrack'] = None) -> float:
         if track is None:
@@ -343,9 +364,13 @@ class Playback:
                 cumulative_sleep_seconds += _VLC_POLL_INTERVAL
             if not self.vlc_media_player.is_playing():
                 self.last_track_failed = True
+            # Time actually heard, which pauses and seeking forward do not add to.
+            listened_seconds = 0.0
             while self._should_continue_track_wait():
                 time.sleep(0.5)
                 cumulative_sleep_seconds += 0.5
+                if self.vlc_media_player.is_playing():
+                    listened_seconds += 0.5
                 seconds_remaining = self.update_progress()
                 if self.has_muse() and seconds_remaining >= 0 and \
                         self.get_muse().ready_to_prepare(cumulative_sleep_seconds, seconds_remaining):
@@ -357,6 +382,7 @@ class Playback:
                     self._stream_profile_building = True
                     Utils.start_thread(self._rebuild_stream_spot_profile, use_asyncio=False)
 
+            self._record_play_if_heard(listened_seconds)
             self.vlc_media_player.stop()
             self.has_played_first_track = True
             if self.increment_count():

@@ -117,6 +117,25 @@ CREATE TABLE IF NOT EXISTS data_fixes_applied (
     detail     TEXT NOT NULL DEFAULT ''
 );
 
+-- ─── Play counts ────────────────────────────────────────────────────────────
+-- Written only by library_data/play_counts.py, so rewriting media_tracks from
+-- the in-memory tracks never touches it. kind 'file' is keyed by filepath; the
+-- tag snapshot from the latest play lets a row be re-attached by tags after its
+-- path is lost.
+
+CREATE TABLE IF NOT EXISTS track_plays (
+    kind         TEXT    NOT NULL,
+    key          TEXT    NOT NULL,
+    play_count   INTEGER NOT NULL DEFAULT 0,
+    first_played TEXT,
+    last_played  TEXT,
+    artist       TEXT,
+    album        TEXT,
+    title        TEXT,
+    tracknumber  INTEGER,
+    PRIMARY KEY (kind, key)
+);
+
 -- ─── Directory and media-track caches ───────────────────────────────────────
 -- Replaces app_directories_cache (pickle) and app_media_track_cache (pickle).
 

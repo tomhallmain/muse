@@ -41,6 +41,8 @@
     "extension_enable_embedding_scoring": true,
     "extension_history_max_length": 100000,
     "playlist_recently_played_check_count": 1000,
+    "play_count_threshold_ratio": 0.5,
+    "play_count_threshold_cap_seconds": 0,
     "enable_long_track_splitting": false,
     "long_track_splitting_time_cutoff_minutes": 20,
     "max_search_results": 200,

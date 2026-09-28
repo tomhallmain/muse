@@ -177,6 +177,12 @@ class TrackDetailsWindow(SmartWindow):
         layout.addWidget(self._duration_label, row, 0, 1, 2)
         row += 1
 
+        # Play count (read-only)
+        self._plays_label = QLabel(form_widget)
+        self._set_plays_label(audio_track)
+        layout.addWidget(self._plays_label, row, 0, 1, 2)
+        row += 1
+
         # ── Rename track file ─────────────────────────────────────────
         rename_file_group = QGroupBox(_("Rename Track File"), form_widget)
         rfg_layout = QGridLayout(rename_file_group)
@@ -306,6 +312,28 @@ class TrackDetailsWindow(SmartWindow):
             self._duration_label.setText(_("Duration: ") + f"{int(duration // 60)}:{int(duration % 60):02d}")
         self._duration_label.setVisible(duration > 0)
 
+    def _set_plays_label(self, track) -> None:
+        """Show the track's play count; hidden for streams or if it cannot be read."""
+        if getattr(track, "_is_stream", False):
+            self._plays_label.setVisible(False)
+            return
+        from library_data import play_counts
+        try:
+            info = play_counts.get_play_info(track.filepath)
+        except Exception as e:
+            from utils.logging_setup import get_logger
+            get_logger(__name__).warning("Could not read play count for %s: %s", track.filepath, e)
+            self._plays_label.setVisible(False)
+            return
+        if info is None:
+            text = _("Plays: {0}").format(0)
+        elif info.last_played is None:
+            text = _("Plays: {0}").format(info.play_count)
+        else:
+            text = _("Plays: {0} (last: {1})").format(info.play_count, info.last_played.date().isoformat())
+        self._plays_label.setText(text)
+        self._plays_label.setVisible(True)
+
     def _populate_fields(self, track) -> None:
         """Set every field shown for the track from its current values."""
         self.title_edit.setText(track.title or "")
@@ -324,6 +352,7 @@ class TrackDetailsWindow(SmartWindow):
         self.lyrics_edit.setPlainText(getattr(track, "lyrics", None) or "")
         self.comments_edit.setPlainText(getattr(track, "comment", None) or "")
         self._set_duration_label(track)
+        self._set_plays_label(track)
         self._refresh_path_ui()
 
     def _reload_from_file(self) -> None:

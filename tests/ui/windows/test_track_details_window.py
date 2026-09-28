@@ -50,3 +50,32 @@ class TestTrackDetailsWindow:
         assert track.title == from_file
         assert win.title_edit.text() == (from_file or "")
         win.close()
+
+    def test_plays_line_shows_the_recorded_count(
+        self, qapp, qt_master, mock_app_actions, audio_library_media_tracks
+    ):
+        import datetime
+
+        from library_data import play_counts
+        from ui_qt.track_details_window import TrackDetailsWindow
+
+        track = audio_library_media_tracks[0]
+        play_counts.record_play(track, when=datetime.datetime(2026, 9, 28, 10, 0))
+        play_counts.record_play(track, when=datetime.datetime(2026, 9, 29, 10, 0))
+        win = TrackDetailsWindow(qt_master, mock_app_actions, track)
+        process_events_for(0.3)
+
+        from utils.translations import I18N
+        assert win._plays_label.text() == I18N._("Plays: {0} (last: {1})").format(2, "2026-09-29")
+        win.close()
+
+    def test_plays_line_shows_zero_for_an_unplayed_track(
+        self, qapp, qt_master, mock_app_actions, audio_library_media_tracks
+    ):
+        from ui_qt.track_details_window import TrackDetailsWindow
+        from utils.translations import I18N
+
+        win = TrackDetailsWindow(qt_master, mock_app_actions, audio_library_media_tracks[0])
+        process_events_for(0.3)
+        assert win._plays_label.text() == I18N._("Plays: {0}").format(0)
+        win.close()

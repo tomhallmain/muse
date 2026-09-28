@@ -181,6 +181,11 @@ class Config:
         self.extension_enable_embedding_scoring = True
         self.extension_history_max_length = 100000
         self.playlist_recently_played_check_count = 1000
+        # A track counts as played once this fraction of its length has been
+        # heard. If the cap is above 0, hearing that many seconds is always
+        # enough, however long the track.
+        self.play_count_threshold_ratio = 0.5
+        self.play_count_threshold_cap_seconds = 0
         self.max_search_results = 200
         self.max_recent_searches = 200
         # Blend a text-embedding similarity into the search window's result
@@ -260,6 +265,7 @@ class Config:
             "long_track_splitting_time_cutoff_minutes",
             "extension_history_max_length",
             "playlist_recently_played_check_count",
+            "play_count_threshold_cap_seconds",
             "max_recent_searches",
             "max_search_results",
             "search_semantic_top_k",
@@ -291,6 +297,7 @@ class Config:
             "bluesky_languages",
         )
         self.set_values(float,
+            "play_count_threshold_ratio",
             "search_semantic_relative_floor",
             "search_semantic_min_score",
             "social_max_rejection_ratio",

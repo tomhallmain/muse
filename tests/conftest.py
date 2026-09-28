@@ -237,6 +237,7 @@ def _patch_db_connection_singleton(monkeypatch, conn) -> None:
         "library_data.artist",
         "library_data.composer",
         "library_data.data_fixes",
+        "library_data.play_counts",
         "library_data.form",
         "library_data.genre",
         "library_data.instrument",
