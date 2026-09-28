@@ -41,6 +41,7 @@ Muse is a media player with an integrated voice synthesizer attached to an LLM. 
 - `playlist_recently_played_check_count` - As each track is played, the attributes are stored in lists of recently-played attributes. Set this to a higher value to reduce the chance that you hear recently-played tracks after a random sort has been applied.
 - `enable_long_track_splitting`, `long_track_splitting_time_cutoff_minutes` - If playing tracks randomly, usually we don't want to dive into a long track. Muse will attempt to detect individual portions of long tracks to play rather than play the entire track to keep things fresh.
 - `enable_library_extender`, `library_extender_key` - Enables the library extender feature, which periodically searches for and downloads new tracks to extend the library. Requires an API key.
+- `radio_watchlist_enabled` - Turns on watching of the radio stations in the Internet Radio watch-list (off by default). See [Radio discovery](#radio-discovery).
 - `auto_file_extensions` - Automatically move downloaded extension tracks into a genre/artist/album subdirectory structure under the first configured directory.
 - `auto_file_extensions_genres` - List of genre directory names to use as filing targets for auto-filed extensions. If empty, all Title-Case subdirectories of the root directory are treated as candidates.
 - `muse_language_learning_languages` - List of `{"language_code": ..., "level": ...}` you are currently learning; Muse will teach one at random each time the topic comes up (so you can learn several languages at once). The persona speaking picks only among the ones its `can_teach_languages` allows (see `dj_personas`). Replaces the older single `muse_language_learning_language`/`muse_language_learning_language_level` fields, which are still read once to migrate existing configs. Note that Coqui models don't support many languages.
@@ -63,6 +64,17 @@ Muse is a media player with an integrated voice synthesizer attached to an LLM. 
 The keys encrypting the cache are backed up automatically to an external drive
 (set `MUSE_KEY_BACKUP_DIR` to choose where). Run `python scripts/key_material.py`
 to check that backup's state, or `backup` to take one by hand.
+
+
+## Radio discovery
+
+Muse can watch radio stations in the background and suggest tracks that are new to you.
+
+1. Set `radio_watchlist_enabled` to `true` in `configs/config.json` and restart Muse.
+2. Open View > Internet Radio, search for a station and click Watch. On the Watch-list tab, set Mode to "Discover new tracks" and click Add Entry. Entries added while Muse is running start after "Reload Watch Service".
+3. New tracks appear in a "New on the Radio" window with Switch, Dismiss and Don't Suggest Again. Playback never switches on its own.
+
+Each watched station is streamed in the background, so watch only a few (`radio_watchlist_max_stations` caps it). The `radio_novelty_*` settings tune what counts as new.
 
 
 ## Testing

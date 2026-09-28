@@ -258,7 +258,7 @@ class TestCooldownsAndPersistence:
         assert restarted.evaluate(entry, STATION, "Queen", "Old Song") is None
         assert restarted.evaluate(entry, STATION, "Queen", "Fresh Song") is not None
 
-    def test_nothing_is_suggested_before_the_library_has_loaded(self, make):
+    def test_nothing_is_suggested_from_an_empty_library(self, make):
         assert make(tracks=[]).evaluate(_entry(), STATION, "New Band", "Hit") is None
 
     def test_evaluate_never_raises(self, make):

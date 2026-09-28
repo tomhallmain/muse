@@ -382,7 +382,7 @@ class NoveltyEvaluator:
     def _evaluate(self, entry: Any, station: StationInfo, artist: str, title: str) -> Optional[Suggestion]:
         if self.is_non_track(artist, title, station.name):
             return None
-        # Until the library has loaded, everything would look new.
+        # With nothing in the library, everything would look new.
         if self._library.is_empty():
             return None
         key = _stream_key(artist, title) or f"artist: {_fold(artist)}"
@@ -597,7 +597,9 @@ def build_evaluator() -> NoveltyEvaluator:
         composer = composers_data.get_data(composer_name)
         return list(getattr(composer, "works", None) or [])
 
-    library = LibraryIndex(lambda: LibraryData.all_tracks, infer, works_for)
+    # get_all_tracks rather than the all_tracks list itself: playback reads tracks
+    # one at a time and never fills that list, so it can still be empty here.
+    library = LibraryIndex(LibraryData.get_all_tracks, infer, works_for)
     affinity = AffinityScorer(_favorites_description, _most_played_description,
                               embed_texts, cosine_similarity, enabled=affinity_enabled)
     return NoveltyEvaluator(library, play_counts.is_stream_title_heard, cache=app_info_cache,
