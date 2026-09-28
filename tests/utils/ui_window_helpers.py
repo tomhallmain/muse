@@ -95,12 +95,12 @@ def build_fixture_playback_master(
     return master, pc
 
 
-def run_search_sync(search_win, overwrite: bool = False) -> int:
+def run_search_sync(search_win, rescan: bool = False) -> int:
     """Run search on the UI thread (bypass worker) and refresh widgets."""
     assert search_win.library_data_search is not None
     search_win.library_data.do_search(
         search_win.library_data_search,
-        overwrite=overwrite,
+        rescan=rescan,
     )
     search_win._update_ui_after_search()
     search_win._refresh_widgets()

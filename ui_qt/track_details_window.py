@@ -66,10 +66,17 @@ class TrackDetailsWindow(SmartWindow):
 
         row = 0
 
-        # ── Update button ─────────────────────────────────────────────
+        # ── Update / reload buttons ───────────────────────────────────
+        button_row = QHBoxLayout()
         self.update_btn = QPushButton(_("Update"), self)
         self.update_btn.clicked.connect(self._open_confirmation)
-        layout.addWidget(self.update_btn, row, 0, 1, 2)
+        button_row.addWidget(self.update_btn)
+        self.reload_btn = QPushButton(_("Reload from File"), self)
+        self.reload_btn.setToolTip(_("Discard the cached details for this track and read them again from its file."))
+        self.reload_btn.clicked.connect(self._reload_from_file)
+        self.reload_btn.setEnabled(not getattr(audio_track, "_is_stream", False))
+        button_row.addWidget(self.reload_btn)
+        layout.addLayout(button_row, row, 0, 1, 2)
         row += 1
 
         # ── Live filepath preview ─────────────────────────────────────
@@ -117,12 +124,12 @@ class TrackDetailsWindow(SmartWindow):
         track_row.addWidget(QLabel(_("Track Number"), form_widget))
         self.tracknumber_edit = QLineEdit(form_widget)
         self.tracknumber_edit.setMaximumWidth(60)
-        self.tracknumber_edit.setText(str(audio_track.tracknumber) if audio_track.tracknumber > 0 else "")
+        self.tracknumber_edit.setText(self._count_text(audio_track.tracknumber))
         track_row.addWidget(self.tracknumber_edit)
         track_row.addWidget(QLabel(_("of"), form_widget))
         self.totaltracks_edit = QLineEdit(form_widget)
         self.totaltracks_edit.setMaximumWidth(60)
-        self.totaltracks_edit.setText(str(audio_track.totaltracks) if audio_track.totaltracks > 0 else "")
+        self.totaltracks_edit.setText(self._count_text(audio_track.totaltracks))
         track_row.addWidget(self.totaltracks_edit)
         track_row.addStretch()
         layout.addLayout(track_row, row, 0, 1, 2)
@@ -132,12 +139,12 @@ class TrackDetailsWindow(SmartWindow):
         disc_row.addWidget(QLabel(_("Disc Number"), form_widget))
         self.discnumber_edit = QLineEdit(form_widget)
         self.discnumber_edit.setMaximumWidth(60)
-        self.discnumber_edit.setText(str(audio_track.discnumber) if audio_track.discnumber > 0 else "")
+        self.discnumber_edit.setText(self._count_text(audio_track.discnumber))
         disc_row.addWidget(self.discnumber_edit)
         disc_row.addWidget(QLabel(_("of"), form_widget))
         self.totaldiscs_edit = QLineEdit(form_widget)
         self.totaldiscs_edit.setMaximumWidth(60)
-        self.totaldiscs_edit.setText(str(audio_track.totaldiscs) if audio_track.totaldiscs > 0 else "")
+        self.totaldiscs_edit.setText(self._count_text(audio_track.totaldiscs))
         disc_row.addWidget(self.totaldiscs_edit)
         disc_row.addStretch()
         layout.addLayout(disc_row, row, 0, 1, 2)
@@ -165,11 +172,10 @@ class TrackDetailsWindow(SmartWindow):
         row += 1
 
         # Duration (read-only)
-        duration = audio_track.get_track_length()
-        if duration > 0:
-            duration_text = f"{int(duration // 60)}:{int(duration % 60):02d}"
-            layout.addWidget(QLabel(_("Duration: ") + duration_text, form_widget), row, 0, 1, 2)
-            row += 1
+        self._duration_label = QLabel(form_widget)
+        self._set_duration_label(audio_track)
+        layout.addWidget(self._duration_label, row, 0, 1, 2)
+        row += 1
 
         # ── Rename track file ─────────────────────────────────────────
         rename_file_group = QGroupBox(_("Rename Track File"), form_widget)
@@ -288,6 +294,56 @@ class TrackDetailsWindow(SmartWindow):
     # ------------------------------------------------------------------
     # Helpers
     # ------------------------------------------------------------------
+
+    @staticmethod
+    def _count_text(value) -> str:
+        """A track/disc count for display; unset counts are -1 or None."""
+        return str(value) if value and value > 0 else ""
+
+    def _set_duration_label(self, track) -> None:
+        duration = track.get_track_length()
+        if duration > 0:
+            self._duration_label.setText(_("Duration: ") + f"{int(duration // 60)}:{int(duration % 60):02d}")
+        self._duration_label.setVisible(duration > 0)
+
+    def _populate_fields(self, track) -> None:
+        """Set every field shown for the track from its current values."""
+        self.title_edit.setText(track.title or "")
+        self.album_edit.setText(track.album or "")
+        self.artist_edit.setText(track.artist or "")
+        self.albumartist_edit.setText(track.albumartist or "")
+        self.composer_edit.setText(track.composer or "")
+        self.genre_edit.setText(track.genre or "")
+        self.year_edit.setText(str(track.year) if track.year else "")
+        self.tracknumber_edit.setText(self._count_text(track.tracknumber))
+        self.totaltracks_edit.setText(self._count_text(track.totaltracks))
+        self.discnumber_edit.setText(self._count_text(track.discnumber))
+        self.totaldiscs_edit.setText(self._count_text(track.totaldiscs))
+        self.form_edit.setText(track.get_form() or "")
+        self.instrument_edit.setText(track.get_instrument() or "")
+        self.lyrics_edit.setPlainText(getattr(track, "lyrics", None) or "")
+        self.comments_edit.setPlainText(getattr(track, "comment", None) or "")
+        self._set_duration_label(track)
+        self._refresh_path_ui()
+
+    def _reload_from_file(self) -> None:
+        """Replace the track's cached details with what its file holds now."""
+        track = TrackDetailsWindow.AUDIO_TRACK
+        if not track:
+            return
+        from library_data.library_data import LibraryData
+        try:
+            LibraryData.reload_track(track)
+        except FileNotFoundError:
+            self.app_actions.alert(
+                _("Reload from File"), _("The file for this track could not be found."),
+                kind="error", master=self,
+            )
+            return
+        except Exception as e:
+            self.app_actions.alert(_("Reload from File"), str(e), kind="error", master=self)
+            return
+        self._populate_fields(track)
 
     def _add_label_and_entry(self, layout, attr_name, label_text, initial_value, row):
         layout.addWidget(QLabel(label_text, layout.parentWidget()), row, 0)

@@ -4,6 +4,9 @@ import json
 from utils.globals import Globals, PlaylistSortType, PlaybackMasterStrategy
 
 class RunnerAppConfig:
+    # Stored keys whose attribute has since been renamed: {stored key: attribute}.
+    RENAMED_KEYS = {"overwrite": "rescan"}
+
     def __init__(self):
         self.workflow_type = PlaylistSortType.RANDOM.name
         self.playback_master_strategy = PlaybackMasterStrategy.ALL_MUSIC.get_translation()
@@ -11,7 +14,7 @@ class RunnerAppConfig:
         self.delay_time_seconds = "5"
         self.volume = 60.0
         self.directory = "ALL_MUSIC"
-        self.overwrite = True
+        self.rescan = True
         self.muse = True
         self.extend = True
         self.enable_dynamic_volume = True
@@ -27,8 +30,9 @@ class RunnerAppConfig:
     def from_dict(_dict):
         app_config = RunnerAppConfig()
         for key in _dict:
-            if hasattr(app_config, key):
-                setattr(app_config, key, _dict[key])
+            attr = RunnerAppConfig.RENAMED_KEYS.get(key, key)
+            if hasattr(app_config, attr):
+                setattr(app_config, attr, _dict[key])
             else:
                 raise Exception("Invalid property: " + str(key))
         return app_config

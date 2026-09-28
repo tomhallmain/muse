@@ -477,9 +477,9 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         sidebar_layout.addWidget(self.favorites_btn, row, 1, 1, 2)
         row += 1
 
-        self.overwrite_check = QCheckBox(_("Overwrite"))
-        self.overwrite_check.setChecked(self.runner_app_config.overwrite)
-        sidebar_layout.addWidget(self.overwrite_check, row, 0, 1, 3)
+        self.rescan_check = QCheckBox(_("Rescan Library"))
+        self.rescan_check.setChecked(self.runner_app_config.rescan)
+        sidebar_layout.addWidget(self.rescan_check, row, 0, 1, 3)
         row += 1
 
         self.muse_check = QCheckBox(_("Muse"))
@@ -836,7 +836,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
             return
         self.sort_type_combo.setCurrentText(PlaylistSortType[self.runner_app_config.workflow_type].get_translation())
         self.delay_combo.setCurrentText(str(self.runner_app_config.delay_time_seconds))
-        self.overwrite_check.setChecked(self.runner_app_config.overwrite)
+        self.rescan_check.setChecked(self.runner_app_config.rescan)
         self.muse_check.setChecked(self.runner_app_config.muse)
         self.volume_slider.setValue(int(self.runner_app_config.volume))
         if int(self.runner_app_config.volume) > 0:
@@ -854,11 +854,11 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         args.playback_master_strategy = PlaybackMasterStrategy.get_from_translation(self.playlist_strategy_combo.currentText())
         args.total = -1
         args.is_all_tracks, args.directories = self.get_directories()
-        args.overwrite = self.overwrite_check.isChecked()
-        # Uncheck "Overwrite" after reading the value so that subsequent runs
-        # do not unintentionally overwrite the cache again.
-        if args.overwrite:
-            self.overwrite_check.setChecked(False)
+        args.rescan = self.rescan_check.isChecked()
+        # Uncheck "Rescan Library" after reading the value so that subsequent
+        # runs do not rescan again.
+        if args.rescan:
+            self.rescan_check.setChecked(False)
         args.muse = self.muse_check.isChecked()
         args.extend = self.extend_check.isChecked()
         args.track = track
@@ -979,14 +979,14 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
             self.job_queue.job_running = True
             Utils.start_thread(run_async, use_asyncio=False, args=[args, run_token])
 
-    def start_playback(self, track=None, playlist_sort_type=None, overwrite=None,
+    def start_playback(self, track=None, playlist_sort_type=None, rescan=None,
                         use_all_music=False, search_query=None):
         if use_all_music:
             self.set_playback_master_strategy(PlaybackMasterStrategy.ALL_MUSIC)
         if playlist_sort_type is not None:
             self.sort_type_combo.setCurrentText(playlist_sort_type.get_translation())
-        if overwrite is not None:
-            self.overwrite_check.setChecked(overwrite)
+        if rescan is not None:
+            self.rescan_check.setChecked(rescan)
         override_scheduled = self.current_run is not None and not self.current_run.is_placeholder()
         self.run(track=track, override_scheduled=override_scheduled, search_query=search_query)
 

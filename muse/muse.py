@@ -869,11 +869,11 @@ class Muse:
         language_response = self.generate_text(prompt, include_time_context=False)
         self.say_at_some_point(language_response, spot_profile, Topic.LANGUAGE_LEARNING)
 
-    def start_extensions_thread(self, initial_sleep=True, overwrite_cache=False):
+    def start_extensions_thread(self, initial_sleep=True, rescan=False):
         voice = self.voice if self.args.muse and self.voice.can_speak else None
         self.get_library_data().start_extensions_thread(
             initial_sleep=initial_sleep,
-            overwrite_cache=overwrite_cache,
+            rescan=rescan,
             voice=voice,
         )
 

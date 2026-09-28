@@ -76,7 +76,7 @@ class PlaybackConfig:
             playlist_sort_type=playlist_descriptor.sort_type,
             directories=playlist_descriptor.source_directories or [],
             total=-1,
-            overwrite=False,
+            rescan=False,
             enable_dynamic_volume=playback_overrides.get('enable_dynamic_volume', True),
             enable_long_track_splitting=playback_overrides.get('enable_long_track_splitting', False),
             long_track_splitting_time_cutoff_minutes=playback_overrides.get('long_track_splitting_time_cutoff_minutes', 20),
@@ -111,7 +111,7 @@ class PlaybackConfig:
         self.total: int = int(args.total) if args else -1
         self.type: PlaylistSortType = args.playlist_sort_type if args else PlaylistSortType.RANDOM
         self.directories: List[str] = args.directories if args else ([override_dir] if override_dir else [])
-        self.overwrite: bool = args.overwrite if args else False
+        self.rescan: bool = args.rescan if args else False
         self.enable_dynamic_volume: bool = args.enable_dynamic_volume if args else True
         self.enable_long_track_splitting: bool = args.enable_long_track_splitting if args else False
         self.long_track_splitting_time_cutoff_minutes: int = args.long_track_splitting_time_cutoff_minutes if args else 20
@@ -155,7 +155,7 @@ class PlaybackConfig:
         if self._explicit_tracks is not None:
             track_list = self._explicit_tracks
         else:
-            track_list = self.data_callbacks.get_all_filepaths(self.directories, self.overwrite)
+            track_list = self.data_callbacks.get_all_filepaths(self.directories, self.rescan)
         self.list = Playlist(track_list, self.type, data_callbacks=self.data_callbacks,
                              start_track=self.start_track,
                              loop=self.loop,
@@ -219,7 +219,7 @@ class PlaybackConfig:
             return False
 
         return self.type == other.type and self.directories == other.directories \
-            and self.overwrite == other.overwrite and self.enable_dynamic_volume == other.enable_dynamic_volume \
+            and self.rescan == other.rescan and self.enable_dynamic_volume == other.enable_dynamic_volume \
             and self.enable_long_track_splitting == other.enable_long_track_splitting \
             and self.long_track_splitting_time_cutoff_minutes == other.long_track_splitting_time_cutoff_minutes \
             and self.long_track_splitting_play_all == other.long_track_splitting_play_all \
@@ -227,7 +227,7 @@ class PlaybackConfig:
             and self.sort_config == other.sort_config
 
     def __hash__(self) -> int:
-        return hash((self.type, tuple(self.directories), self.overwrite, self.enable_dynamic_volume,
+        return hash((self.type, tuple(self.directories), self.rescan, self.enable_dynamic_volume,
                      self.enable_long_track_splitting, self.long_track_splitting_time_cutoff_minutes,
                      self.long_track_splitting_play_all, self.start_track, self.sort_config))
 

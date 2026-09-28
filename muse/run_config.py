@@ -9,7 +9,7 @@ class RunConfig:
         self.total = -1
         self.is_all_tracks = False
         self.directories = self.get("directories")
-        self.overwrite = False
+        self.rescan = False
         self.muse = True
         self.extend = True
         self.enable_dynamic_volume = True

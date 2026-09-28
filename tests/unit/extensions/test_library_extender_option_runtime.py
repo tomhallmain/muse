@@ -15,17 +15,17 @@ def _option(**extra):
 
 @pytest.mark.unit
 class TestH:
-    def test_read_when_its_key_is_known(self, monkeypatch):
-        monkeypatch.setattr(library_extender, "q44", "k_h", raising=False)
+    def test_read_from_the_result(self, monkeypatch):
+        monkeypatch.setattr(library_extender, "q44", "k_h")
         assert _option(k_h="A Source").h == "A Source"
 
-    def test_empty_when_its_key_is_unknown(self, monkeypatch):
-        monkeypatch.delattr(library_extender, "q44", raising=False)
-        assert _option(k_h="A Source").h == ""
-
     def test_empty_when_absent_from_the_result(self, monkeypatch):
-        monkeypatch.setattr(library_extender, "q44", "k_h", raising=False)
+        monkeypatch.setattr(library_extender, "q44", "k_h")
         assert _option().h == ""
+
+    def test_empty_when_null_in_the_result(self, monkeypatch):
+        monkeypatch.setattr(library_extender, "q44", "k_h")
+        assert _option(k_h=None).h == ""
 
 
 @pytest.mark.unit

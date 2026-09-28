@@ -184,7 +184,7 @@ class PlaylistDescriptor:
         query_dict["offset"] = 0
 
         search = LibraryDataSearch(**query_dict)
-        library_data.do_search(search, overwrite=False)
+        library_data.do_search(search, rescan=False)
         filepaths = [track.filepath for track in search.get_results()]
         logger.info(
             f"PlaylistDescriptor '{self.name}': search resolved {len(filepaths)} tracks"

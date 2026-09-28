@@ -104,7 +104,7 @@ class Run:
         # Handle extension thread based on extension setting
         if config.enable_library_extender:
             if self.args.extend:
-                self.muse.start_extensions_thread(initial_sleep=True, overwrite_cache=self.args.overwrite)
+                self.muse.start_extensions_thread(initial_sleep=True, rescan=self.args.rescan)
             else:
                 # Close and don't restart extension thread if it's running and extension is disabled
                 self.get_library_data().reset_extension(restart_thread=False)

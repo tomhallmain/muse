@@ -337,8 +337,8 @@ def build_fixture_callbacks():
         def get_all_tracks(self):
             return tracks
 
-        def get_all_filepaths(self, directories, overwrite=False):
-            del directories, overwrite
+        def get_all_filepaths(self, directories, rescan=False):
+            del directories, rescan
             return list(by_path.keys())
 
         def identify_compilation_name(self, track, all_tracks=None):

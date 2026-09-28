@@ -2061,7 +2061,7 @@ msgid "No original filename or id found in extension data"
 msgstr ""
 
 #: ui_qt/extensions_window.py:404 ui_qt/favorites_window.py:579
-msgid "Tip: If you've recently added or moved files, try checking 'Overwrite Cache' in the search options."
+msgid "Tip: If you've recently added or moved files, try checking 'Rescan Library' in the search options."
 msgstr ""
 
 #: ui_qt/extensions_window.py:413
@@ -3391,7 +3391,7 @@ msgid "Search Album"
 msgstr ""
 
 #: ui_qt/search_window.py:293
-msgid "Overwrite Cache"
+msgid "Rescan Library"
 msgstr ""
 
 #: ui_qt/search_window.py:303
@@ -3419,7 +3419,7 @@ msgid "Won't be played: matches playlist exclusion filter \"{0}\"."
 msgstr ""
 
 #: ui_qt/search_window.py:497
-msgid "Please wait, overwriting cache and searching..."
+msgid "Please wait, rescanning library and searching..."
 msgstr ""
 
 #: ui_qt/search_window.py:499
@@ -3431,7 +3431,7 @@ msgid "No results found."
 msgstr ""
 
 #: ui_qt/search_window.py:603
-msgid "Tip: If you've recently added or moved files, try checking 'Overwrite Cache' in the search options below."
+msgid "Tip: If you've recently added or moved files, try checking 'Rescan Library' in the search options below."
 msgstr ""
 
 #: ui_qt/search_window.py:635

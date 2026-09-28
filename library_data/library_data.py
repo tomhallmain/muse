@@ -768,8 +768,8 @@ class LibraryData:
             logger.warning(f"Error recording library refresh time: {e}")
 
     @staticmethod
-    def get_directory_files(directory, overwrite=False):
-        if directory not in LibraryData.DIRECTORIES_CACHE or overwrite:
+    def get_directory_files(directory, rescan=False):
+        if directory not in LibraryData.DIRECTORIES_CACHE or rescan:
             files = glob.glob(os.path.join(directory, "**/*"), recursive = True)
             LibraryData.DIRECTORIES_CACHE[directory] = files
         else:
@@ -783,11 +783,11 @@ class LibraryData:
         return list(files)
 
     @staticmethod
-    def get_all_filepaths(directories, overwrite=False):
+    def get_all_filepaths(directories, rescan=False):
         l = []
         total_media_files_count = 0
         for directory in directories:
-            for f in LibraryData.get_directory_files(directory, overwrite=overwrite):
+            for f in LibraryData.get_directory_files(directory, rescan=rescan):
                 if MediaFileType.is_media_filetype(f):
                     l += [os.path.join(directory, f)]
                     total_media_files_count += 1
@@ -798,14 +798,19 @@ class LibraryData:
         return l
 
     @staticmethod
-    def get_all_tracks(overwrite=False, app_actions=None, search_status_callback=None):
+    def get_all_tracks(rescan=False, app_actions=None, search_status_callback=None):
+        """The library's tracks, built once and then reused.
+
+        `rescan` re-lists the library directories to pick up added and removed
+        files. Details already cached for a file still present are kept; only
+        files new to the cache are read, so a file changed in place keeps its
+        cached details until reload_track re-reads it.
+        """
         # The app_actions.update_extension_status callback is used to update the status on the main window
         # while the search_status_callback is used to update the status on the search window.
         # If both are provided, both will be called for progress updates.
         any_callback = search_status_callback or (app_actions and app_actions.update_extension_status)
-        if overwrite:
-            # Clear caches when overwriting to force fresh reads
-            LibraryData.MEDIA_TRACK_CACHE = {}
+        if rescan:
             LibraryData.DIRECTORIES_CACHE = {}
             # Neither memo looks again on its own at artwork gained outside the app.
             LibraryData.albums_checked = {}
@@ -814,13 +819,12 @@ class LibraryData:
             if app_actions is not None:
                 app_actions.update_extension_status(_("Updating tracks"))
         with LibraryData.get_tracks_lock:
-            if len(LibraryData.all_tracks) == 0 or overwrite:
+            if len(LibraryData.all_tracks) == 0 or rescan:
                 all_directories = config.get_all_directories()
-                all_filepaths = LibraryData.get_all_filepaths(all_directories, overwrite=overwrite)
+                all_filepaths = LibraryData.get_all_filepaths(all_directories, rescan=rescan)
                 total_files = len(all_filepaths)
                 
-                # Clear existing tracks if overwriting
-                if overwrite:
+                if rescan:
                     LibraryData.all_tracks = []
                 
                 # Process files with progress updates
@@ -846,6 +850,16 @@ class LibraryData:
                 # Record the library refresh time in app_info_cache
                 LibraryData._record_library_refresh_time()
             return LibraryData.all_tracks
+
+    @staticmethod
+    def reload_track(track):
+        """Re-read one track from its file, for a file changed since it was cached."""
+        track.reload_from_file()
+        cached = LibraryData.MEDIA_TRACK_CACHE.get(track.filepath)
+        if cached is not None and cached is not track:
+            cached.reload_from_file()
+        # Lets the next semantic search re-encode this track's changed text.
+        reset_store()
 
     @staticmethod
     def get_track(filepath):
@@ -875,7 +889,7 @@ class LibraryData:
         )
         self.extension_manager = ExtensionManager(self.app_actions, self.data_callbacks)
 
-    def do_search(self, library_data_search, overwrite=False, completion_callback=None,
+    def do_search(self, library_data_search, rescan=False, completion_callback=None,
                   search_status_callback=None, semantic_recall=False):
         if not isinstance(library_data_search, LibraryDataSearch):
             raise TypeError('Library data search must be of type LibraryDataSearch')
@@ -886,7 +900,7 @@ class LibraryData:
         logger.info(f"Searching for tracks matching query {library_data_search}")
 
         # Get all tracks first to ensure cache is up to date
-        all_tracks = LibraryData.get_all_tracks(overwrite=overwrite, search_status_callback=search_status_callback)
+        all_tracks = LibraryData.get_all_tracks(rescan=rescan, search_status_callback=search_status_callback)
         total_files = len(all_tracks)
 
         if search_status_callback:
@@ -984,11 +998,11 @@ class LibraryData:
         # most complete information (album art, lyrics, audio quality, etc).
         pass # TODO
 
-    def start_extensions_thread(self, initial_sleep=True, overwrite_cache=False, voice=None):
+    def start_extensions_thread(self, initial_sleep=True, rescan=False, voice=None):
         if LibraryData.extension_thread_started:
             return
-        LibraryData.get_all_tracks(overwrite=overwrite_cache, app_actions=self.app_actions)
-        self.extension_manager.start_extensions_thread(initial_sleep, overwrite_cache, voice)
+        LibraryData.get_all_tracks(rescan=rescan, app_actions=self.app_actions)
+        self.extension_manager.start_extensions_thread(initial_sleep, voice=voice)
 
     def reset_extension(self, restart_thread=True):
         self.extension_manager.reset_extension(restart_thread=restart_thread)
@@ -998,7 +1012,7 @@ class LibraryData:
         self.do_search(search)
         return len(search.results) > 0
 
-    def find_track_by_id(self, track_id, overwrite=False):
+    def find_track_by_id(self, track_id, rescan=False):
         """
         Attempt to find a track by its ID in the title.
         Returns the track if found, None otherwise.
@@ -1007,7 +1021,7 @@ class LibraryData:
             return None
             
         logger.info(f"Attempting to find track by ID: {track_id}")
-        all_tracks = LibraryData.get_all_tracks(overwrite=overwrite)
+        all_tracks = LibraryData.get_all_tracks(rescan=rescan)
         for track in all_tracks:
             if track_id in track.title:  # Check in original title, not searchable_title
                 logger.info(f"Found track by ID: '{track.title}'")
@@ -1015,14 +1029,14 @@ class LibraryData:
         logger.info("No track found by ID")
         return None
 
-    def find_track_by_fuzzy_title(self, title, overwrite=False, max_results=-1):
+    def find_track_by_fuzzy_title(self, title, rescan=False, max_results=-1):
         """
         Attempt to find tracks using fuzzy matching on the title.
         Returns a list of matching tracks, up to max_results (or all if max_results is -1).
         
         Args:
             title: The title to search for
-            overwrite: Whether to overwrite the cache when searching
+            rescan: Whether to re-list the library directories before searching
             max_results: Maximum number of results to return (-1 for all matches)
         """
         if not title or len(title) < 12:
@@ -1030,7 +1044,7 @@ class LibraryData:
             
         logger.info(f"No exact match found for '{title}', attempting fuzzy match...")
         # Get all tracks and try fuzzy matching
-        all_tracks = LibraryData.get_all_tracks(overwrite=overwrite)
+        all_tracks = LibraryData.get_all_tracks(rescan=rescan)
         
         # Collect distances for debugging and matching
         distances = []

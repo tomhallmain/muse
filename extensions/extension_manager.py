@@ -236,7 +236,7 @@ class ExtensionManager:
         self.ui_callbacks = ui_callbacks
         self.data_callbacks = data_callbacks
 
-    def start_extensions_thread(self, initial_sleep: bool = True, overwrite_cache: bool = False, voice: Optional[Any] = None) -> None:
+    def start_extensions_thread(self, initial_sleep: bool = True, voice: Optional[Any] = None) -> None:
         logger.info('Starting extensions thread')
         if ExtensionManager.extension_thread is not None and ExtensionManager.extension_thread.is_alive():
             logger.info('Extension thread already running')

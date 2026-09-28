@@ -59,7 +59,7 @@ sw_search = LibraryDataSearch(
     max_results=100_000,
     offset=0,
 )
-library_data.do_search(sw_search, overwrite=False)
+library_data.do_search(sw_search, rescan=False)
 print(f"  Raw results: {len(sw_search.get_results())} tracks")
 
 # sort_results_by() with no args now auto-detects "composer" → searchable_composer

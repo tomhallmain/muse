@@ -73,6 +73,7 @@ for ___q, ___v in q_dict.items():
 q1 = __import__(q1)
 q0 = q1.__dict__[q0]
 q29 = q28 + "Id"
+q44 = q40 + "Title"
 
 
 class EogfiaqREkb:
@@ -87,9 +88,7 @@ class EogfiaqREkb:
         q22 = a[q4]
         self.n = q22[q19]
         self.d = q22[q21]
-        # q44 is optional in q_dict; without it `h` stays empty and nothing reads it.
-        q44_ = globals().get("q44")
-        self.h = (q22.get(q44_) if q44_ else None) or ""
+        self.h = q22.get(q44) or ""
         self.dc = None
         self.m = {
             "substring_match": 0.0,

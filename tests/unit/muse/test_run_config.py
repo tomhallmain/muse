@@ -13,7 +13,7 @@ class TestRunConfig:
         rc = RunConfig()
         assert rc.total == -1
         assert rc.directories is None
-        assert rc.overwrite is False
+        assert rc.rescan is False
 
     def test_get_with_dict_args(self):
         rc = RunConfig(args={"directories": ["/music"]})

@@ -400,7 +400,7 @@ class ExtensionsWindow(SmartWindow):
             error_msg = str(e)
             if "No matching tracks found" in error_msg:
                 error_msg += "\n\n" + _(
-                    "Tip: If you've recently added or moved files, try checking 'Overwrite Cache' in the search options."
+                    "Tip: If you've recently added or moved files, try checking 'Rescan Library' in the search options."
                 )
             logger.error("Error playing extension: %s", error_msg)
             self.app_actions.alert(

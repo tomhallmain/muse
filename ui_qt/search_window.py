@@ -99,17 +99,17 @@ class SearchWindow(SmartWindow):
         app_info_cache.set("recent_searches", json_searches)
 
     @staticmethod
-    def find_track(library_data, library_data_search, save_to_recent=False, overwrite=False):
+    def find_track(library_data, library_data_search, save_to_recent=False, rescan=False):
         """Search for a track and play it if found."""
         try:
             if library_data_search.id:
                 track = library_data.find_track_by_id(
-                    library_data_search.id, overwrite=overwrite
+                    library_data_search.id, rescan=rescan
                 )
                 if track:
                     return track
                 logger.info("No track found by ID, falling back to search")
-            library_data.do_search(library_data_search, overwrite=False)
+            library_data.do_search(library_data_search, rescan=False)
             results = library_data_search.get_results()
             if results:
                 if save_to_recent:
@@ -117,7 +117,7 @@ class SearchWindow(SmartWindow):
                     SearchWindow.update_recent_searches(library_data_search)
             elif library_data_search.title:
                 matches = library_data.find_track_by_fuzzy_title(
-                    library_data_search.title, overwrite=False, max_results=1
+                    library_data_search.title, rescan=False, max_results=1
                 )
                 if matches:
                     results = matches
@@ -290,9 +290,9 @@ class SearchWindow(SmartWindow):
         inner_layout.addWidget(self.sort_by_form_btn, row, 2)
         row += 1
 
-        self.overwrite_cache_check = QCheckBox(_("Overwrite Cache"), inner)
-        self.overwrite_cache_check.setChecked(False)
-        inner_layout.addWidget(self.overwrite_cache_check, row, 0)
+        self.rescan_check = QCheckBox(_("Rescan Library"), inner)
+        self.rescan_check.setChecked(False)
+        inner_layout.addWidget(self.rescan_check, row, 0)
         inner_layout.addWidget(QLabel(_("Playlist Sort"), inner), row, 1)
         self.playlist_sort_combo = QComboBox(inner)
         self.playlist_sort_combo.addItems(PlaylistSortType.get_translated_names())
@@ -395,7 +395,7 @@ class SearchWindow(SmartWindow):
             def make_search_handler(lib_search):
                 def handler():
                     self.load_stored_search(library_data_search=lib_search)
-                    self._do_search(overwrite=self.overwrite_cache_check.isChecked())
+                    self._do_search(rescan=self.rescan_check.isChecked())
                 return handler
 
             search_btn.clicked.connect(make_search_handler(search))
@@ -411,7 +411,7 @@ class SearchWindow(SmartWindow):
             def make_play_handler(lib_search, tr):
                 def handler():
                     self.load_stored_search(library_data_search=lib_search)
-                    self._do_search(overwrite=False)
+                    self._do_search(rescan=False)
                     t = tr
                     if t is None:
                         logger.info(
@@ -449,7 +449,7 @@ class SearchWindow(SmartWindow):
         genre = self.genre_entry.text().strip()
         instrument = self.instrument_entry.text().strip()
         form = self.form_entry.text().strip()
-        overwrite = self.overwrite_cache_check.isChecked()
+        rescan = self.rescan_check.isChecked()
         self.current_offset = 0
         self.filter_entry.clear()
         self._update_playlist_sort_dropdown()
@@ -465,7 +465,7 @@ class SearchWindow(SmartWindow):
             max_results=SearchWindow.INITIAL_MAX_RESULTS,
             offset=0,
         )
-        self._do_search(overwrite=overwrite)
+        self._do_search(rescan=rescan)
 
     def load_stored_search(self, library_data_search):
         assert library_data_search is not None
@@ -481,12 +481,12 @@ class SearchWindow(SmartWindow):
         self._update_playlist_sort_dropdown()
 
     @require_password(ProtectedActions.RUN_SEARCH)
-    def _do_search(self, overwrite=False):
+    def _do_search(self, rescan=False):
         assert self.library_data_search is not None
         self.library_data_search.offset = self.current_offset
 
         existing_results = []
-        if self.current_offset > 0 and not overwrite:
+        if self.current_offset > 0 and not rescan:
             existing_results = self.library_data_search.results.copy()
 
         self.library_data_search.total_matches_count = 0
@@ -494,8 +494,8 @@ class SearchWindow(SmartWindow):
 
         self._refresh_widgets(add_results=False)
         self.searching_label = QLabel(
-            _("Please wait, overwriting cache and searching...")
-            if overwrite
+            _("Please wait, rescanning library and searching...")
+            if rescan
             else _("Searching..."),
             self.results_widget,
         )
@@ -522,7 +522,7 @@ class SearchWindow(SmartWindow):
             try:
                 self.library_data.do_search(
                     self.library_data_search,
-                    overwrite=overwrite,
+                    rescan=rescan,
                     completion_callback=search_complete,
                     search_status_callback=update_status,
                     semantic_recall=True,
@@ -536,10 +536,10 @@ class SearchWindow(SmartWindow):
     def _update_ui_after_search(self):
         SearchWindow.update_recent_searches(self.library_data_search)
         self.filter_entry.show()
-        # Uncheck "Overwrite cache" after search completes so that playing a result
-        # does not unintentionally overwrite the cache again.
-        if self.overwrite_cache_check.isChecked():
-            self.overwrite_cache_check.setChecked(False)
+        # Uncheck "Rescan Library" after search completes so that playing a result
+        # does not rescan again.
+        if self.rescan_check.isChecked():
+            self.rescan_check.setChecked(False)
         self._refresh_widgets()
 
     def _show_search_error(self, error_msg):
@@ -606,7 +606,7 @@ class SearchWindow(SmartWindow):
             # Add cache reminder
             cache_reminder = QLabel(
                 _(
-                    "Tip: If you've recently added or moved files, try checking 'Overwrite Cache' in the search options below."
+                    "Tip: If you've recently added or moved files, try checking 'Rescan Library' in the search options below."
                 ),
                 self.results_widget,
             )
@@ -816,7 +816,7 @@ class SearchWindow(SmartWindow):
         self.app_actions.start_play_callback(
             track=track,
             playlist_sort_type=playlist_sort_type,
-            overwrite=self.overwrite_cache_check.isChecked(),
+            rescan=self.rescan_check.isChecked(),
             use_all_music=True,
             search_query=search_query,
         )
@@ -957,7 +957,7 @@ class SearchWindow(SmartWindow):
         page_result_count = current_results - self.current_offset
         if page_result_count > page_size:
             self.current_offset += page_size
-            self._do_search(overwrite=False)
+            self._do_search(rescan=False)
         else:
             logger.info("Reached end of results")
 

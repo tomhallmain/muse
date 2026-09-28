@@ -20,7 +20,7 @@ def analyze_album_covers():
     library = LibraryData()
     
     # Get all tracks
-    all_tracks = library.get_all_tracks(overwrite=False)
+    all_tracks = library.get_all_tracks(rescan=False)
     
     # Group tracks by album
     albums = defaultdict(list)

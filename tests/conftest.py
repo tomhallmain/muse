@@ -103,7 +103,7 @@ class MockDataCallbacks:
     def get_all_tracks(self) -> List[dict]:
         return self.tracks
 
-    def get_all_filepaths(self, directories: List[str], overwrite: bool = False) -> List[str]:
+    def get_all_filepaths(self, directories: List[str], rescan: bool = False) -> List[str]:
         return [str(Path(__file__).parent / "fixtures" / "sample_100KB.mp3")]
 
 
@@ -118,7 +118,7 @@ class MockArgs:
         self.total = -1
         self.playlist_sort_type = PlaylistSortType.RANDOM
         self.directories = None
-        self.overwrite = False
+        self.rescan = False
         self.track = None
         self.search_query = None
         self.placeholder = False

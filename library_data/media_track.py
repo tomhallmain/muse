@@ -901,6 +901,22 @@ class MediaTrack:
     def __hash__(self):
         return hash(self.filepath)
 
+    def reload_from_file(self):
+        """Re-read this track from its file, in place.
+
+        Everything holding this object (the track cache, the library list, a
+        playlist) sees the new values. Values derived from the file, such as
+        volume and compilation name, are cleared and recomputed on next use; the
+        session's extension flag is kept.
+        """
+        if getattr(self, "_is_stream", False) or not self.filepath or not os.path.isfile(self.filepath):
+            raise FileNotFoundError(self.filepath)
+        fresh = MediaTrack(self.filepath, self.parent_filepath)
+        is_extended = getattr(self, "_is_extended", False)
+        self.__dict__.clear()
+        self.__dict__.update(fresh.__dict__)
+        self._is_extended = is_extended
+
     def update_metadata(self, metadata):
         """
         Update the track's metadata using music_tag library.

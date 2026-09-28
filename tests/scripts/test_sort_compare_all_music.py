@@ -57,7 +57,7 @@ def main():
         total=-1,
         playlist_sort_type=PlaylistSortType.ALBUM_SHUFFLE,
         directories=directories,
-        overwrite=False,
+        rescan=False,
         enable_dynamic_volume=True,
         enable_long_track_splitting=False,
         long_track_splitting_time_cutoff_minutes=20,
