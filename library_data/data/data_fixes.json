@@ -1,0 +1,11 @@
+[
+    {
+        "id": "2026-09-28-lajtha-surname-indicator",
+        "date": "2026-09-28",
+        "reason": "Uploads misspell the forename (\"Lázsló Lajtha\"), failing the composer check; the surname alone is unambiguous.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "László Lajtha",
+        "value": "Lajtha"
+    }
+]

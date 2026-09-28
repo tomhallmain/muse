@@ -4,6 +4,7 @@ import os
 import re
 import unicodedata
 
+from library_data import data_fixes
 from library_data.work import Work
 from library_data.works_data import works_data
 from utils.db import get_connection, delim_to_list, list_to_delim
@@ -439,6 +440,23 @@ class ComposersData:
                 composer.date_added = now
             self._persist_composers(needs_backfill)
             logger.info("Backfilled date_added for %d composer(s) with no recorded value", len(needs_backfill))
+        data_fixes.apply_pending("composers", self._apply_data_fix)
+
+    def _apply_data_fix(self, fix):
+        """Apply one composers entry from the data fix list; see data_fixes.apply_pending."""
+        if fix.get("op") != "add_indicator":
+            raise ValueError(f"Unsupported composers data fix op: {fix.get('op')}")
+        name, value = fix["name"], fix["value"]
+        detail = f'indicator "{value}" on "{name}"'
+        composer = self._composers.get(name)
+        if composer is None:
+            return data_fixes.TARGET_MISSING, detail
+        if value in composer.indicators:
+            return data_fixes.ALREADY_PRESENT, detail
+        success, error_msg = self.add_composer_indicators(name, [value])
+        if not success:
+            raise RuntimeError(error_msg)
+        return data_fixes.APPLIED, detail
 
     @staticmethod
     def _composer_from_row(row):

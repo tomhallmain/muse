@@ -497,6 +497,7 @@ class ExtensionManager:
             for i in a:
                 i.n = SoupUtils.clean_html(i.n)
                 i.d = SoupUtils.clean_html(i.d)
+                i.h = SoupUtils.clean_html(i.h)
             score_with_llm = (
                 getattr(config, "extension_enable_llm_scoring", True)
                 and self.llm.get_failure_count() == 0
@@ -604,6 +605,7 @@ class ExtensionManager:
                     return False
             if "biography" in b.n.lower() or "biography" in b.d.lower():
                 return False
+            logger.info(f"Skipping option with no indicator of {strict.name}: {b.n}")
             return True
         return strict.strip().lower() in b.n.lower() or strict.strip().lower() in b.d.lower()
 
@@ -616,6 +618,10 @@ class ExtensionManager:
         item = Blacklist.get_violation_item(b.d)
         if item is not None:
             logger.warning(f"Blacklisted: {item.string}\n{b.d}")
+            return True
+        item = Blacklist.get_violation_item(b.h) if b.h else None
+        if item is not None:
+            logger.warning(f"Blacklisted: {item.string} ({b.h}: {b.n})")
             return True
         return False
 
@@ -861,20 +867,23 @@ class ExtensionManager:
         """One labelled block per option for `_llm_score_options`.
 
         `b.n` alone cannot separate the thing being searched for from a talk
-        about it or a whole-record upload carrying the same name; `b.d` and the
-        runtime can.
+        about it or a whole-record upload carrying the same name; `b.h`, `b.d`
+        and the runtime can.
         """
+        from extensions.library_extender import q21, q32, q40
         _l = [f"{i}:", f"title: {b.n}"]
+        if b.h:
+            _l.append(f"{q40}: {b.h}")
         _s = b.xfgk()
         if _s is not None:
-            _l.append(f"duration: {Utils.get_sexagesimal_time_str(_s / 60.0)}")
+            _l.append(f"{q32}: {Utils.get_sexagesimal_time_str(_s / 60.0)}")
         # Collapsed to one line: the reply is keyed on the block numbering, and
         # `b.d` carries its own breaks.
         _d = " ".join((b.d or "").split())
         if len(_d) > ExtensionManager.D_CAP:
             _d = _d[:ExtensionManager.D_CAP].rstrip() + "..."
         if _d:
-            _l.append(f"description: {_d}")
+            _l.append(f"{q21}: {_d}")
         return "\n".join(_l)
 
     def _llm_score_options(self, q: str, a: List[Any]) -> Optional[Dict[int, float]]:

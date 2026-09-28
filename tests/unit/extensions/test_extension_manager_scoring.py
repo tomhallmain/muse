@@ -16,8 +16,8 @@ def _manager(llm=None):
     return manager
 
 
-def _candidate(title, detail="", seconds=None):
-    return SimpleNamespace(n=title, d=detail, xfgk=lambda: seconds)
+def _candidate(title, detail="", seconds=None, chl=""):
+    return SimpleNamespace(n=title, d=detail, h=chl, xfgk=lambda: seconds)
 
 
 def _llm_returning(response):
@@ -83,6 +83,16 @@ class TestCandidateBlock:
         block = ExtensionManager._c(0, _candidate("A Title", detail="short"))
         assert block.splitlines()[-1] == "description: short"
 
+    def test_a_chl_follows_the_title(self):
+        block = ExtensionManager._c(1, _candidate("A Title", detail="A Detail", seconds=272.0,
+                                                  chl="A Channel"))
+        assert block.splitlines() == ["1:", "title: A Title", "channel: A Channel",
+                                      "duration: 4:32", "description: A Detail"]
+
+    def test_an_empty_chl_leaves_the_line_out(self):
+        block = ExtensionManager._c(0, _candidate("A Title", chl=""))
+        assert block.splitlines() == ["0:", "title: A Title"]
+
     def test_an_hour_plus_runtime_carries_its_hours(self):
         """The case the runtime is there for: a whole-record upload the title
         alone would pass off as a single piece."""
@@ -95,9 +105,11 @@ class TestLlmScoreOptions:
     def test_the_prompt_carries_every_field(self):
         llm = _llm_returning({"0": 0.5})
         manager = _manager(llm=llm)
-        manager._llm_score_options("q", [_candidate("A Title", detail="A Detail", seconds=272.0)])
+        manager._llm_score_options("q", [_candidate("A Title", detail="A Detail", seconds=272.0,
+                                                    chl="A Channel")])
         prompt = llm.generate_json_get_value.call_args[0][0]
         assert "title: A Title" in prompt
+        assert "channel: A Channel" in prompt
         assert "description: A Detail" in prompt
         assert "duration: 4:32" in prompt
 

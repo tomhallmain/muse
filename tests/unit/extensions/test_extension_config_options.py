@@ -33,6 +33,7 @@ class _Candidate:
     def __init__(self, title="Some Track", duration=300.0):
         self.n = title
         self.d = ""
+        self.h = ""
         self.y = False
         self.w = "id-1"
         self.u = {}
@@ -303,3 +304,37 @@ class TestExtensionHistoryCap:
         ExtensionManager._trim_extension_history()
 
         assert len(ExtensionManager.extensions) == 6
+
+
+@pytest.mark.unit
+class TestBlacklistedSource:
+    """`h` is tested against the blacklist alongside `n` and `d`."""
+
+    @staticmethod
+    def _blacklisting(monkeypatch, text):
+        from library_data.blacklist import Blacklist
+        item = SimpleNamespace(string=text)
+        monkeypatch.setattr(Blacklist, "get_violation_item",
+                            staticmethod(lambda s, item_type=None: item if s == text else None))
+
+    def test_a_blacklisted_h_is_rejected(self, monkeypatch):
+        self._blacklisting(monkeypatch, "Some Source")
+        candidate = _Candidate()
+        candidate.h = "Some Source"
+        assert _manager()._is_blacklisted(candidate)
+
+    def test_an_unlisted_h_is_kept(self, monkeypatch):
+        self._blacklisting(monkeypatch, "Some Source")
+        candidate = _Candidate()
+        candidate.h = "Other Source"
+        assert not _manager()._is_blacklisted(candidate)
+
+    def test_an_empty_h_is_not_checked(self, monkeypatch):
+        from library_data.blacklist import Blacklist
+        checked = []
+        monkeypatch.setattr(Blacklist, "get_violation_item",
+                            staticmethod(lambda s, item_type=None: checked.append(s)))
+        candidate = _Candidate(title="A Title")
+        candidate.d = "A Detail"
+        _manager()._is_blacklisted(candidate)
+        assert checked == ["A Title", "A Detail"]

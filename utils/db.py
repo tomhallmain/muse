@@ -107,6 +107,16 @@ CREATE TABLE IF NOT EXISTS instruments (
     notes            TEXT NOT NULL DEFAULT '{}'
 );
 
+-- ─── Reference-data corrections ──────────────────────────────────────────────
+-- One row per entry of library_data/data/data_fixes.json this database has run.
+
+CREATE TABLE IF NOT EXISTS data_fixes_applied (
+    id         TEXT PRIMARY KEY,
+    applied_at TEXT NOT NULL,
+    outcome    TEXT NOT NULL,
+    detail     TEXT NOT NULL DEFAULT ''
+);
+
 -- ─── Directory and media-track caches ───────────────────────────────────────
 -- Replaces app_directories_cache (pickle) and app_media_track_cache (pickle).
 

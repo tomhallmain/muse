@@ -87,6 +87,9 @@ class EogfiaqREkb:
         q22 = a[q4]
         self.n = q22[q19]
         self.d = q22[q21]
+        # q44 is optional in q_dict; without it `h` stays empty and nothing reads it.
+        q44_ = globals().get("q44")
+        self.h = (q22.get(q44_) if q44_ else None) or ""
         self.dc = None
         self.m = {
             "substring_match": 0.0,

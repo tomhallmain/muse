@@ -222,7 +222,7 @@ def _patch_db_connection_singleton(monkeypatch, conn) -> None:
     """Redirect get_connection() to *conn* for all known call sites.
 
     Patches the utils.db module (for callers that import inside functions)
-    and the five library_data modules that bind ``get_connection`` at module
+    and the library_data modules that bind ``get_connection`` at module
     load time via a top-level ``from utils.db import get_connection``.
     When ``reload_metadata_singletons`` later creates fresh ArtistsData() /
     ComposersData() / FormsData() / GenresData() / InstrumentsData() instances
@@ -236,6 +236,7 @@ def _patch_db_connection_singleton(monkeypatch, conn) -> None:
     for module_name in (
         "library_data.artist",
         "library_data.composer",
+        "library_data.data_fixes",
         "library_data.form",
         "library_data.genre",
         "library_data.instrument",
