@@ -208,6 +208,10 @@ class ConfigurationWindow(SmartWindow):
         )
         self.add_config_entry(frame, layout, "max_search_results", _("Max Search Results"), 6)
         self.add_config_entry(frame, layout, "max_recent_searches", _("Max Recent Searches"), 7)
+        self.add_config_checkbox(
+            frame, layout, "search_enable_embedding_ranking",
+            _("Rank Search Results with Text Embeddings"), 8,
+        )
 
         tab_layout = QVBoxLayout(self.audio_tab)
         tab_layout.setContentsMargins(0, 0, 0, 0)
