@@ -32,7 +32,6 @@ class RunContext:
     skip_delay: bool = False
     skip_grouping: bool = False
     is_paused: bool = False
-    is_cancelled: bool = False
     shutdown_after_track: bool = False
     seek_target_filepath: Optional[str] = None
     
@@ -59,7 +58,6 @@ class RunContext:
             self.is_paused = True
         elif action == UserAction.CANCEL:
             logger.info("Cancelling playback.")
-            self.is_cancelled = True
             self.is_paused = False
             self.skip_track = True
             self.skip_grouping = False

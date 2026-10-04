@@ -28,7 +28,7 @@ from muse.playlist import (
     GROUP_MAX_MINUTES_KEY,
     GROUP_MAX_TRACKS_KEY,
     TRACK_EXCLUSIONS_KEY,
-    _DEFAULT_TRACK_EXCLUSIONS,
+    DEFAULT_TRACK_EXCLUSIONS,
 )
 from muse.track_affinity import AFFINITY_OFF, AFFINITY_ON
 from ui_qt.app_style import AppStyle
@@ -410,7 +410,7 @@ class ConfigurationWindow(SmartWindow):
         group_layout.addWidget(desc)
 
         self._exclusions_list = QListWidget(group)
-        for entry in app_info_cache.get(TRACK_EXCLUSIONS_KEY, _DEFAULT_TRACK_EXCLUSIONS):
+        for entry in app_info_cache.get(TRACK_EXCLUSIONS_KEY, DEFAULT_TRACK_EXCLUSIONS):
             self._exclusions_list.addItem(entry)
         group_layout.addWidget(self._exclusions_list)
 

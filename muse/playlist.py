@@ -26,7 +26,7 @@ from utils.logging_setup import get_logger
 logger = get_logger(__name__)
 
 TRACK_EXCLUSIONS_KEY = "playlist_track_exclusions"
-_DEFAULT_TRACK_EXCLUSIONS = ["TTS"]
+DEFAULT_TRACK_EXCLUSIONS = ["TTS"]
 
 GROUP_MAX_TRACKS_KEY = "playlist_group_max_tracks"
 GROUP_MAX_MINUTES_KEY = "playlist_group_max_minutes"
@@ -128,7 +128,7 @@ def get_exclusion_match(filepath: str) -> Optional[str]:
     before a pick that the playlist builder would otherwise silently drop) can
     check a track without reaching into the exclusion-matching internals.
     """
-    exclusions = app_info_cache.get(TRACK_EXCLUSIONS_KEY, _DEFAULT_TRACK_EXCLUSIONS)
+    exclusions = app_info_cache.get(TRACK_EXCLUSIONS_KEY, DEFAULT_TRACK_EXCLUSIONS)
     for exclusion in exclusions or []:
         if _matches_exclusion(filepath, exclusion):
             return exclusion
@@ -231,7 +231,7 @@ class Playlist:
                  direct_tracks: Optional[List[MediaTrack]] = None,
                  affinity_reference: Optional['AffinityReference'] = None,
                  saturation_enabled: bool = False) -> None:
-        exclusions = app_info_cache.get(TRACK_EXCLUSIONS_KEY, _DEFAULT_TRACK_EXCLUSIONS)
+        exclusions = app_info_cache.get(TRACK_EXCLUSIONS_KEY, DEFAULT_TRACK_EXCLUSIONS)
         if exclusions:
             excluded = [t for t in tracks if any(_matches_exclusion(t, e) for e in exclusions)]
             if excluded:

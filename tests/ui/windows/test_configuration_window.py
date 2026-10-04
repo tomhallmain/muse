@@ -18,7 +18,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication
 
-from muse.playlist import TRACK_EXCLUSIONS_KEY, _DEFAULT_TRACK_EXCLUSIONS
+from muse.playlist import TRACK_EXCLUSIONS_KEY, DEFAULT_TRACK_EXCLUSIONS
 from tests.utils.qt_test_helpers import process_events_for
 from utils.translations import I18N
 
@@ -79,12 +79,20 @@ class TestPlaylistOptionsTabLoading:
 
     def test_default_exclusions_loaded_on_open(self, qapp, qt_master, mock_app_actions):
         from utils.app_info_cache import app_info_cache
-        app_info_cache.set(TRACK_EXCLUSIONS_KEY, list(_DEFAULT_TRACK_EXCLUSIONS))
+        app_info_cache.set(TRACK_EXCLUSIONS_KEY, list(DEFAULT_TRACK_EXCLUSIONS))
         win = _open_window(qt_master, mock_app_actions)
         _switch_to_playlist_options(win)
         items = [win._exclusions_list.item(i).text()
                  for i in range(win._exclusions_list.count())]
-        assert items == list(_DEFAULT_TRACK_EXCLUSIONS)
+        assert items == list(DEFAULT_TRACK_EXCLUSIONS)
+        _close_clean(win)
+
+    def test_default_exclusions_shown_when_none_saved(self, qapp, qt_master, mock_app_actions):
+        win = _open_window(qt_master, mock_app_actions)
+        _switch_to_playlist_options(win)
+        items = [win._exclusions_list.item(i).text()
+                 for i in range(win._exclusions_list.count())]
+        assert items == list(DEFAULT_TRACK_EXCLUSIONS)
         _close_clean(win)
 
     def test_custom_exclusions_loaded_on_open(self, qapp, qt_master, mock_app_actions):

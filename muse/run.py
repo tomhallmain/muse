@@ -1,8 +1,7 @@
-import argparse
 from copy import deepcopy
 import time
 import traceback
-from typing import Optional, Any
+from typing import TYPE_CHECKING, Optional, Any
 
 from utils.globals import PlaybackMasterStrategy
 
@@ -15,7 +14,6 @@ from muse.playback_state import PlaybackStateManager
 from muse.run_config import RunConfig
 from muse.run_context import RunContext, UserAction
 from muse.schedules_manager import ScheduledShutdownException
-from ui_qt.app_actions import AppActions
 from utils.config import config
 from utils.ffmpeg_handler import FFmpegHandler
 from utils.logging_setup import get_logger
@@ -23,18 +21,21 @@ from utils.temp_dir import TempDir
 from utils.translations import I18N
 from utils.utils import Utils
 
+if TYPE_CHECKING:
+    from ui_qt.app_actions import AppActions
+
 _ = I18N._
 logger = get_logger(__name__)
 
 
 class Run:
-    def __init__(self, args: RunConfig, app_actions: Optional[AppActions] = None) -> None:
+    def __init__(self, args: RunConfig, app_actions: Optional['AppActions'] = None) -> None:
         self.id: str = str(time.time())
         self.is_started: bool = False
         self.is_complete: bool = False
         self.args: RunConfig = args
         self.last_config: Optional[PlaybackConfigMaster] = None
-        self.app_actions: Optional[AppActions] = app_actions
+        self.app_actions: Optional['AppActions'] = app_actions
         self.library_data: Optional[LibraryData] = None if args.placeholder else LibraryData(app_actions)
         self._run_context: RunContext = RunContext()
         self.muse: Muse = Muse(self.args, self.library_data, self._run_context, ui_callbacks=app_actions)
@@ -118,19 +119,18 @@ class Run:
             self.is_started = True
             # Set the current config in the state manager
             PlaybackStateManager.set_active_config(playback_config)
-            self.get_playback().run()
-            FFmpegHandler.cleanup_cache()
-            TempDir.cleanup()
+            try:
+                self.get_playback().run()
+            finally:
+                # Ahead of the handlers below, as shutdown_callback can end the process.
+                FFmpegHandler.cleanup_cache()
+                TempDir.cleanup()
         except ScheduledShutdownException as e:
-            FFmpegHandler.cleanup_cache()
-            TempDir.cleanup()
             if self.app_actions is not None:
                 logger.warning(f"\n{'='*50}\nSCHEDULED SHUTDOWN: {str(e)}\n{'='*50}\n")
                 print("Shutting down main thread! Good-bye.")
                 self.app_actions.shutdown_callback()
         except Exception as e:
-            FFmpegHandler.cleanup_cache()
-            TempDir.cleanup()
             self.get_library_data().reset_extension()
             raise e
         finally:
@@ -210,16 +210,3 @@ class Run:
             bool: True if a CANCEL action exists in the run context, False otherwise
         """
         return self._run_context.was_cancelled()
-
-
-def main(args: RunConfig) -> None:
-    run = Run(args)
-    run.execute()
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-a", "--auto-run", action="store_true")
-    parser.add_argument("-t", "--total", type=int, default=100)
-    args = parser.parse_args()
-    main(RunConfig(args))
