@@ -12,6 +12,8 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Dict, List
 
+from utils.app_paths import IS_BUILD
+
 
 class TTSProviderType(str, Enum):
     COQUI   = "coqui"
@@ -80,6 +82,9 @@ def get_provider(tts_config: Any) -> BaseTTSProvider:
     from utils.config import config as app_config
 
     provider_type = getattr(tts_config, "provider", TTSProviderType.COQUI)
+    if IS_BUILD:
+        # A compiled build contains Coqui only.
+        provider_type = TTSProviderType.COQUI
 
     # tts_config.voice is a per-invocation override (e.g. a persona's voice_name).
     # When set it takes precedence over the app-level config for the active provider.

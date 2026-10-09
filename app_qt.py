@@ -3,6 +3,7 @@ Muse application UI using PySide6 (Qt for Python).
 Full UI is ported to ui_qt; this is the main window and entry point.
 """
 from copy import deepcopy
+import logging
 import os
 import signal
 import sys
@@ -33,7 +34,7 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QSizePolicy,
 )
-from PySide6.QtCore import Qt, QTimer, Signal
+from PySide6.QtCore import Qt, QTimer, Signal, QtMsgType, qInstallMessageHandler
 from PySide6.QtGui import QIcon, QShortcut, QKeySequence, QKeyEvent
 
 from ui_qt.custom_title_bar import FramelessWindowMixin, WindowResizeHandler
@@ -53,6 +54,7 @@ from lib.debounce_qt import QtDebouncer
 from lib.qt_alert import qt_alert
 from lib.media_keys import MediaKeyHandler
 from utils.app_info_cache import app_info_cache
+from utils.app_paths import resource_path
 from utils.spinning_record import SpinningRecordVideos
 from utils import (
     config,
@@ -106,8 +108,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         self.setup_frameless_window(title=_(" Muse "), corner_radius=10)
         self.setWindowTitle(_(" Muse "))
         # Set icon in the custom title bar
-        assets = os.path.join(os.path.dirname(os.path.realpath(__file__)), "assets")
-        icon_path = os.path.join(assets, "icon.png")
+        icon_path = resource_path("assets", "icon.png")
         if os.path.isfile(icon_path):
             title_bar = self.get_title_bar()
             if title_bar:
@@ -1775,13 +1776,63 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
             self.handle_error(str(e), title=_("Password Admin Window Error"))
 
 
+_QT_MSG_LOG_LEVELS = {
+    QtMsgType.QtDebugMsg: logging.DEBUG,
+    QtMsgType.QtInfoMsg: logging.INFO,
+    QtMsgType.QtWarningMsg: logging.WARNING,
+    QtMsgType.QtCriticalMsg: logging.ERROR,
+    QtMsgType.QtFatalMsg: logging.CRITICAL,
+}
+
+
+def _log_qt_message(msg_type, context, message):
+    logger.log(_QT_MSG_LOG_LEVELS.get(msg_type, logging.WARNING), "Qt: %s", message)
+
+
+def _route_qt_messages_to_logger():
+    """Send Qt's own warnings and errors through the app logger.
+
+    Qt's default handler writes byte strings to the C-level stderr. A Nuitka
+    build with --windows-console-mode=attach puts that stream in wide-character
+    (_O_U8TEXT) mode, and the C runtime aborts the process (0xc0000409 in
+    ucrtbase.dll) on a byte write to it, so any Qt warning would kill the app.
+    """
+    qInstallMessageHandler(_log_qt_message)
+
+
+def _smoke_test(expect_oqs: bool = False) -> int:
+    """Check that a build can start, without opening a window. Returns an exit code."""
+    from PySide6.QtGui import QImageReader
+    from utils.smoke_test import SmokeTest
+
+    smoke = SmokeTest()
+    smoke.run_all(expect_oqs=expect_oqs)
+
+    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+    _route_qt_messages_to_logger()
+    qt_app = QApplication([])
+    reader = QImageReader(resource_path("assets", "icon.png"))
+    can_read = reader.canRead()
+    smoke.check("app icon (PNG image plugin)", can_read, "" if can_read else reader.errorString())
+    qt_app.quit()
+    return smoke.result()
+
+
 def main():
+    if "--smoke-test" in sys.argv[1:]:
+        try:
+            exit_code = _smoke_test(expect_oqs="--expect-oqs" in sys.argv[1:])
+        except Exception:
+            # An error in a check must fail the smoke test, not end it with status 0.
+            traceback.print_exc()
+            exit_code = 1
+        sys.exit(exit_code)
+    _route_qt_messages_to_logger()
     app = QApplication(sys.argv)
     app.setApplicationName("Muse")
     # Set application-level icon (used for taskbar, Alt+Tab, etc.)
     # Note: The title bar icon is set separately in MuseAppQt.__init__
-    assets = os.path.join(os.path.dirname(os.path.realpath(__file__)), "assets")
-    icon_path = os.path.join(assets, "icon.png")
+    icon_path = resource_path("assets", "icon.png")
     if os.path.isfile(icon_path):
         app.setWindowIcon(QIcon(icon_path))
     window = MuseAppQt()

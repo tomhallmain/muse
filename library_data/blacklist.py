@@ -6,6 +6,7 @@ from typing import Optional
 
 from utils.globals import AppInfo, BlacklistItemType, BlacklistMode
 from utils.encryptor import symmetric_encrypt_data_to_file, symmetric_decrypt_data_from_file
+from utils.app_paths import resource_path
 from utils.logging_setup import get_logger
 from utils.translations import I18N
 from utils.utils import Utils
@@ -340,7 +341,7 @@ class BlacklistItem:
 
 class Blacklist:
     TAG_BLACKLIST: list[BlacklistItem] = []
-    DEFAULT_BLACKLIST_FILE_LOC = os.path.join(os.path.dirname(__file__), "data", "blacklist_default.enc")
+    DEFAULT_BLACKLIST_FILE_LOC = resource_path("library_data", "data", "blacklist_default.enc")
     _version_cache = None  # In-memory cache for get_version(); invalidated when blacklist changes
 
     blacklist_mode = BlacklistMode.REMOVE_ENTIRE_TAG

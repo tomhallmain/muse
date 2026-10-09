@@ -17,6 +17,7 @@ from typing import Any, Dict, Iterator, List, Optional, Sequence, Union
 import requests
 
 from utils.config import config
+from utils.app_paths import configs_dir
 from utils.logging_setup import get_logger
 
 logger = get_logger(__name__)
@@ -499,7 +500,7 @@ class LastFmReadAPI:
                 time.sleep(page_delay_seconds)
 
 
-_LASTFM_CACHE_FILE = Path(__file__).resolve().parent.parent / "configs" / "lastfm_cache.json.gz"
+_LASTFM_CACHE_FILE = Path(configs_dir()) / "lastfm_cache.json.gz"
 _lastfm_cache_instance: Optional[LastFmLibraryCache] = None
 
 

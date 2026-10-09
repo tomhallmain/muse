@@ -10,11 +10,11 @@ app_media_track_cache*
 app_directories_cache*
 app_track_embeddings*
 configs/*
-!configs/config_example.json
 extensions/library_ext_q_dict.json
 library_data/data/*
 !library_data/data/artists_example.json
 !library_data/data/blacklist_default.enc
+!library_data/data/config_example.json
 !library_data/data/composers_example.json
 !library_data/data/data_fixes.json
 !library_data/data/forms_example.json
@@ -30,3 +30,8 @@ tts_output/*
 tests/fixtures/audio_library/
 !tests/fixtures/manifest.json
 scripts/i18n_fixes.json
+
+# build_exe.py
+.venv-build/
+build/
+dist/

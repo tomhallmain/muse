@@ -51,6 +51,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import requests
 
+from utils.app_paths import configs_dir
 from utils.logging_setup import get_logger
 
 logger = get_logger(__name__)
@@ -58,7 +59,7 @@ logger = get_logger(__name__)
 API_ROOT = "https://musicbrainz.org/ws/2/"
 DEFAULT_USER_AGENT = "tomhallmain-Muse-App/1.0"
 
-_CACHE_FILE = Path(__file__).resolve().parent.parent / "configs" / "musicbrainz_cache.json.gz"
+_CACHE_FILE = Path(configs_dir()) / "musicbrainz_cache.json.gz"
 MIN_REQUEST_INTERVAL = 1.05  # MusicBrainz rate limit: 1 req/sec unauthenticated
 
 # Relation types that represent composition credit on a Work.

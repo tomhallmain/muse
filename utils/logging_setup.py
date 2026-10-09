@@ -1,10 +1,9 @@
 import logging
-import os
-import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import List
 
+from utils.app_paths import logs_dir
 from utils.custom_formatter import CustomFormatter
 
 def _cleanup_old_logs(log_dir: Path, logger: logging.Logger) -> None:
@@ -63,10 +62,8 @@ def get_logger(module_name: str) -> logging.Logger:
     ch.setFormatter(CustomFormatter())
     logger.addHandler(ch)
 
-    # Create log file in ApplicationData
-    appdata_dir: str = os.getenv('APPDATA') if sys.platform == 'win32' else os.path.expanduser('~/.local/share')
-    log_dir: Path = Path(appdata_dir) / 'muse' / 'logs'
-    log_dir.mkdir(parents=True, exist_ok=True)
+    # Create log file in the app data dir
+    log_dir: Path = Path(logs_dir())
 
     # Clean up old logs before creating new one
     _cleanup_old_logs(log_dir, logger)

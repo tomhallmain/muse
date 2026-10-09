@@ -2,13 +2,13 @@
 SQLite persistence layer for Muse.
 
 Single entry point: get_connection() returns the process-wide singleton
-connection to configs/muse_library.db.  The schema is created and seed data
+connection to muse_library.db in the user configs dir.  The schema is created and seed data
 is imported automatically on the first call; subsequent calls return the
 already-open connection.
 
 Seeding order (one-time, on fresh DB):
   1. *_example.json files  → canonical seed data for each table
-  2. live *.json files      → INSERT OR IGNORE (picks up user edits not yet
+  2. legacy user *.json     → INSERT OR IGNORE (picks up user edits not yet
                               in the example files; legacy files are preserved)
   3. gzip caches            → lastfm_cache.json.gz and musicbrainz_cache.json.gz
                               migrated once, then superseded by direct SQLite writes
@@ -24,12 +24,15 @@ import threading
 from pathlib import Path
 from typing import List, Optional
 
+from utils.app_paths import configs_dir, resource_path, user_library_data_dir
+
 logger = logging.getLogger(__name__)
 
-DB_PATH = Path(__file__).resolve().parent.parent / "configs" / "muse_library.db"
-_DATA_DIR = Path(__file__).resolve().parent.parent / "library_data" / "data"
-_GZIP_LFM = Path(__file__).resolve().parent.parent / "configs" / "lastfm_cache.json.gz"
-_GZIP_MB = Path(__file__).resolve().parent.parent / "configs" / "musicbrainz_cache.json.gz"
+DB_PATH = Path(configs_dir()) / "muse_library.db"
+_EXAMPLE_DATA_DIR = Path(resource_path("library_data", "data"))
+_USER_DATA_DIR = Path(user_library_data_dir())
+_GZIP_LFM = Path(configs_dir()) / "lastfm_cache.json.gz"
+_GZIP_MB = Path(configs_dir()) / "musicbrainz_cache.json.gz"
 
 DELIM = "; "
 
@@ -363,7 +366,7 @@ def _seed_if_needed(conn: sqlite3.Connection) -> None:
 
 
 def _seed_forms(conn: sqlite3.Connection) -> None:
-    path = _DATA_DIR / "forms_example.json"
+    path = _EXAMPLE_DATA_DIR / "forms_example.json"
     if not path.exists():
         logger.warning("forms_example.json not found, skipping")
         return
@@ -381,7 +384,7 @@ def _seed_forms(conn: sqlite3.Connection) -> None:
 
 
 def _seed_genres(conn: sqlite3.Connection) -> None:
-    path = _DATA_DIR / "genres_example.json"
+    path = _EXAMPLE_DATA_DIR / "genres_example.json"
     if not path.exists():
         logger.warning("genres_example.json not found, skipping")
         return
@@ -416,7 +419,7 @@ def _instrument_rows_from_json(data) -> list:
 
 
 def _seed_instruments(conn: sqlite3.Connection) -> None:
-    path = _DATA_DIR / "instruments_example.json"
+    path = _EXAMPLE_DATA_DIR / "instruments_example.json"
     if not path.exists():
         logger.warning("instruments_example.json not found, skipping")
         return
@@ -434,7 +437,7 @@ def _seed_composers(conn: sqlite3.Connection) -> None:
     import datetime
     import os
 
-    path = _DATA_DIR / "composers_example.json"
+    path = _EXAMPLE_DATA_DIR / "composers_example.json"
     if not path.exists():
         logger.warning("composers_example.json not found, skipping")
         return
@@ -472,7 +475,7 @@ def _seed_composers(conn: sqlite3.Connection) -> None:
 
 
 def _seed_artists(conn: sqlite3.Connection) -> None:
-    path = _DATA_DIR / "artists_example.json"
+    path = _EXAMPLE_DATA_DIR / "artists_example.json"
     if not path.exists():
         logger.warning("artists_example.json not found, skipping")
         return
@@ -504,7 +507,7 @@ def _seed_artists(conn: sqlite3.Connection) -> None:
 
 
 def _seed_blacklist(conn: sqlite3.Connection) -> None:
-    path = _DATA_DIR / "blacklist.json"
+    path = _USER_DATA_DIR / "blacklist.json"
     if not path.exists():
         return
     with open(path, "r", encoding="utf-8") as f:
@@ -518,7 +521,7 @@ def _seed_blacklist(conn: sqlite3.Connection) -> None:
 
 
 def _seed_blacklist_music(conn: sqlite3.Connection) -> None:
-    path = _DATA_DIR / "blacklist_music.json"
+    path = _USER_DATA_DIR / "blacklist_music.json"
     if not path.exists():
         return
     with open(path, "r", encoding="utf-8") as f:
@@ -548,7 +551,7 @@ def _migrate_legacy_json(conn: sqlite3.Connection) -> None:
 
 
 def _migrate_legacy_forms(conn: sqlite3.Connection) -> None:
-    path = _DATA_DIR / "forms.json"
+    path = _USER_DATA_DIR / "forms.json"
     if not path.exists():
         return
     with open(path, "r", encoding="utf-8") as f:
@@ -565,7 +568,7 @@ def _migrate_legacy_forms(conn: sqlite3.Connection) -> None:
 
 
 def _migrate_legacy_genres(conn: sqlite3.Connection) -> None:
-    path = _DATA_DIR / "genres.json"
+    path = _USER_DATA_DIR / "genres.json"
     if not path.exists():
         return
     with open(path, "r", encoding="utf-8") as f:
@@ -582,7 +585,7 @@ def _migrate_legacy_genres(conn: sqlite3.Connection) -> None:
 
 
 def _migrate_legacy_instruments(conn: sqlite3.Connection) -> None:
-    path = _DATA_DIR / "instruments.json"
+    path = _USER_DATA_DIR / "instruments.json"
     if not path.exists():
         return
     with open(path, "r", encoding="utf-8") as f:
@@ -599,7 +602,7 @@ def _migrate_legacy_composers(conn: sqlite3.Connection) -> None:
     import datetime
     import os
 
-    path = _DATA_DIR / "composers.json"
+    path = _USER_DATA_DIR / "composers.json"
     if not path.exists():
         return
     mtime_iso = datetime.datetime.fromtimestamp(os.path.getmtime(str(path))).isoformat()
@@ -633,7 +636,7 @@ def _migrate_legacy_composers(conn: sqlite3.Connection) -> None:
 
 
 def _migrate_legacy_artists(conn: sqlite3.Connection) -> None:
-    path = _DATA_DIR / "artists.json"
+    path = _USER_DATA_DIR / "artists.json"
     if not path.exists():
         return
     with open(path, "r", encoding="utf-8") as f:

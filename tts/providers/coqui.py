@@ -14,6 +14,7 @@ from typing import Any, Dict, List, Optional
 
 from tts.providers import BaseTTSProvider
 from tts.speakers import speakers as COQUI_SPEAKERS
+from utils.app_paths import IS_BUILD
 from utils.config import config
 from utils.logging_setup import get_logger
 from utils.utils import Utils
@@ -39,20 +40,31 @@ class CoquiTTSProvider(BaseTTSProvider):
     # ------------------------------------------------------------------
 
     def is_available(self) -> bool:
-        """Return True if the TTS package can be imported from coqui_tts_location."""
+        """Return True if the TTS package can be imported (bundled, or from coqui_tts_location)."""
         try:
-            location = config.coqui_tts_location
-            if location and location not in sys.path:
-                sys.path.insert(0, location)
+            self.prepare_import()
             import importlib.util
             return importlib.util.find_spec("TTS") is not None
         except Exception:
             return False
 
-    def load(self) -> None:
+    @staticmethod
+    def prepare_import() -> None:
+        """Make ``import TTS`` work: in a compiled build, which contains the TTS
+        package, librosa needs the numba stand-ins and inflect a pass-through
+        ``typechecked``; a checkout imports TTS from the Coqui checkout named
+        in the config."""
+        if IS_BUILD:
+            from tts.providers import numba_fallback, typeguard_fallback
+            numba_fallback.install()
+            typeguard_fallback.install()
+            return
         location = config.coqui_tts_location
         if location and location not in sys.path:
             sys.path.insert(0, location)
+
+    def load(self) -> None:
+        self.prepare_import()
         try:
             from TTS.api import TTS
             self._TTS = TTS

@@ -13,6 +13,7 @@ import traceback
 import unicodedata
 import subprocess
 
+from utils.app_paths import resource_path
 from utils.logging_setup import get_logger
 
 # Get logger for this module
@@ -79,7 +80,7 @@ class Utils:
 
     @staticmethod
     def get_assets_dir():
-        return os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets"))
+        return resource_path("assets")
 
     @staticmethod
     def get_asset(filename):
@@ -392,7 +393,7 @@ class Utils:
     def play_sound(sound="success"):
         if sys.platform != 'win32':
             return
-        sound = os.path.join(os.path.dirname(os.path.dirname(__file__)), "lib", "sounds", sound + ".wav")
+        sound = resource_path("lib", "sounds", sound + ".wav")
         import winsound
         winsound.PlaySound(sound, winsound.SND_ASYNC)
 

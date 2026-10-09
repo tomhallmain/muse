@@ -41,9 +41,7 @@ from utils.logging_setup import get_logger
 
 logger = get_logger(__name__)
 
-WIKI_DIR = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "library_data", "wiki"
-)
+WIKI_DIR = WikiCompilationData.SAVE_LOCATION
 
 # Anchored, conservative: no match leaves catalogue_number as None rather than guessing.
 _CATALOGUE_RE = re.compile(

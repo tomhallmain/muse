@@ -25,6 +25,7 @@ from lib.multi_display_qt import SmartWindow
 from muse.voice import Voice
 from tts.providers import TTSProviderType
 from ui_qt.app_style import AppStyle
+from utils.app_paths import IS_BUILD
 from utils.config import config
 from utils.translations import I18N
 from utils.utils import Utils
@@ -40,6 +41,9 @@ _PROVIDERS = [
     (_("Piper"),   TTSProviderType.PIPER),
     (_("Zonos"),   TTSProviderType.ZONOS),
 ]
+if IS_BUILD:
+    # A compiled build contains Coqui only.
+    _PROVIDERS = _PROVIDERS[:1]
 _LABEL_TO_TYPE = {label: ptype for label, ptype in _PROVIDERS}
 _TYPE_TO_LABEL = {ptype: label for label, ptype in _PROVIDERS}
 
@@ -78,6 +82,8 @@ class TTSWindow(SmartWindow):
                 (getattr(config, "tts_provider", "coqui") or "coqui").lower()
             )
         except ValueError:
+            self._provider = TTSProviderType.COQUI
+        if self._provider not in _TYPE_TO_LABEL:
             self._provider = TTSProviderType.COQUI
 
         self._voice_name = self._default_voice_for(self._provider)

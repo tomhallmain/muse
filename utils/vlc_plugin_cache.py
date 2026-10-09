@@ -6,8 +6,7 @@ is newer than ``plugins.dat``, the cache is stale.
 
 **Windows:** ``vlc-cache-gen.exe`` must run with administrator rights when VLC is under
 ``Program Files``. This module never runs the tool in-process; it records that the cache is
-stale and the Qt UI may prompt the user, then start ``scripts/vlc_cache_fixer.py`` in a
-separate process (that script triggers UAC and runs the generator).
+stale and the Qt UI may prompt the user, then start the generator through the UAC prompt.
 
 **macOS / Linux:** Regeneration runs automatically via ``vlc-cache-gen`` when stale (may
 still fail under system paths without sufficient privileges; see logs).
@@ -23,7 +22,6 @@ import os
 import platform
 import shutil
 import subprocess
-import sys
 import threading
 from pathlib import Path
 from typing import Optional, Tuple
@@ -197,14 +195,9 @@ def _config_allows_fix() -> bool:
 _ensure_ran = False
 _ensure_lock = threading.Lock()
 
-# Windows: stale cache detected; Qt may prompt once per session to run scripts/vlc_cache_fixer.py
+# Windows: stale cache detected; Qt may prompt once per session to run vlc-cache-gen elevated
 _windows_stale_cache_needs_prompt: bool = False
 _windows_stale_cache_dialog_shown: bool = False
-
-
-def get_vlc_cache_fixer_script_path() -> Path:
-    """Path to ``scripts/vlc_cache_fixer.py`` (repo root relative to this package)."""
-    return Path(__file__).resolve().parent.parent / "scripts" / "vlc_cache_fixer.py"
 
 
 def should_show_windows_stale_cache_dialog() -> bool:
@@ -222,22 +215,31 @@ def mark_windows_stale_cache_dialog_shown() -> None:
 
 
 def launch_windows_vlc_cache_fixer() -> bool:
-    """Start ``scripts/vlc_cache_fixer.py`` in a new process (UAC elevation happens inside that script on Windows)."""
-    script = get_vlc_cache_fixer_script_path()
-    if not script.is_file():
-        logger.error("VLC cache fixer script not found: %s", script)
+    """Start ``vlc-cache-gen.exe`` on the plugins dir with administrator rights (UAC prompt).
+
+    Runs the VLC tool directly so it works the same from a source checkout and a
+    compiled build, where there is no Python interpreter to run a script with.
+    """
+    vlc_bin, plugins_dir = find_vlc_paths()
+    if not vlc_bin or not plugins_dir:
+        logger.error("VLC installation not found; cannot regenerate the plugin cache.")
         return False
+    cache_gen = vlc_bin / "vlc-cache-gen.exe"
     try:
-        subprocess.Popen(
-            [sys.executable, str(script)],
-            cwd=str(script.resolve().parent.parent),
-            close_fds=sys.platform != "win32",
+        import ctypes
+
+        # Values above 32 mean the process was started; the user may still decline UAC.
+        result = ctypes.windll.shell32.ShellExecuteW(
+            None, "runas", str(cache_gen), f'"{plugins_dir}"', str(vlc_bin), 1
         )
-        logger.info("Started VLC cache fixer: %s", script)
-        return True
-    except OSError as e:
-        logger.error("Failed to start VLC cache fixer: %s", e)
+    except Exception as e:
+        logger.error("Failed to start VLC cache generator: %s", e)
         return False
+    if result <= 32:
+        logger.error("Failed to start VLC cache generator %s (ShellExecute returned %s)", cache_gen, result)
+        return False
+    logger.info("Started VLC cache generator: %s %s", cache_gen, plugins_dir)
+    return True
 
 
 def ensure_vlc_plugin_cache_if_stale() -> None:
@@ -269,8 +271,8 @@ def ensure_vlc_plugin_cache_if_stale() -> None:
             system = platform.system()
             if system == "Windows":
                 logger.info(
-                    "VLC plugin cache appears stale (%s). The app may prompt to run the "
-                    "elevated cache fixer (scripts/vlc_cache_fixer.py).",
+                    "VLC plugin cache appears stale (%s). The app may prompt to run "
+                    "vlc-cache-gen with administrator rights.",
                     plugins_dir,
                 )
                 if _config_allows_fix():

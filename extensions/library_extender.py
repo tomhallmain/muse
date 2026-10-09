@@ -5,13 +5,13 @@ from utils import app_info_cache, Utils
 from utils.config import config
 from utils.encryptor import symmetric_decrypt_data_from_file
 from utils.globals import AppInfo
+from utils.app_paths import cache_dir, resource_path
 from utils.logging_setup import get_logger
 
 logger = get_logger(__name__)
 
-_EXT_DIR = os.path.dirname(os.path.abspath(__file__))
-Q_DICT_FILE_LOC = os.path.join(_EXT_DIR, "library_ext_q_dict.enc")
-Q_DICT_CACHE_LOC = os.path.join(_EXT_DIR, "library_ext_q_dict.json")
+Q_DICT_FILE_LOC = resource_path("extensions", "library_ext_q_dict.enc")
+Q_DICT_CACHE_LOC = os.path.join(cache_dir(), "library_ext_q_dict.json")
 
 
 def _load_q_dict():

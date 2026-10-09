@@ -3,6 +3,7 @@ import os
 import sys
 import time
 
+from utils.app_paths import configs_dir, resource_path, user_library_data_dir
 from utils.globals import Globals, Topic
 from utils.utils import Utils
 from utils.logging_setup import get_logger
@@ -10,29 +11,24 @@ from utils.logging_setup import get_logger
 # Get logger for this module
 logger = get_logger(__name__)
 
-root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-configs_dir = os.path.join(root_dir, "configs")
-library_data_dir = os.path.join(root_dir, "library_data", "data")
+CONFIG_EXAMPLE_PATH = resource_path("library_data", "data", "config_example.json")
 
 
 class Config:
-    CONFIGS_DIR_LOC = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "configs")
+    CONFIGS_DIR_LOC = configs_dir()
 
     @staticmethod
     def resolve_config_path():
         """Resolve the active config file path, preferring config.json."""
-        configs_dir = os.environ.get("MUSE_CONFIGS_DIR") or Config.CONFIGS_DIR_LOC
-        configs = [f.path for f in os.scandir(configs_dir) if f.is_file() and f.path.endswith(".json")]
+        configs = [f.path for f in os.scandir(configs_dir()) if f.is_file() and f.path.endswith(".json")]
         config_path = None
         for candidate in configs:
-            basename = os.path.basename(candidate)
-            if basename == "config.json":
+            if os.path.basename(candidate) == "config.json":
                 config_path = candidate
                 break
-            if basename != "config_example.json":
-                config_path = candidate
+            config_path = candidate
         if config_path is None:
-            config_path = os.path.join(Config.CONFIGS_DIR_LOC, "config_example.json")
+            config_path = CONFIG_EXAMPLE_PATH
         return config_path
 
     def __init__(self, config_path=None):
@@ -57,7 +53,7 @@ class Config:
             Globals.ConfigKeys.MIN_SECONDS_BETWEEN_SPOTS: 500,
         }
         self.save_tts_output_topics = [Topic.LANGUAGE_LEARNING.value, Topic.POEM.value, Topic.RANDOM_WIKI_ARTICLE.value, Topic.APHORISM.value]
-        self.prompts_directory = Globals.DEFAULT_PROMPTS_DIRECTORY
+        self.prompts_directory = resource_path(Globals.DEFAULT_PROMPTS_DIRECTORY)
         self.tongue_twisters_dir = None
         self.artists_file = "artists.json"
         self.forms_file = "forms.json"
@@ -512,8 +508,7 @@ class Config:
     def create_from_example(self):
         """Create a new config.json from config_example.json"""
         try:
-            example_path = os.path.join(Config.CONFIGS_DIR_LOC, "config_example.json")
-            with open(example_path, 'r', encoding='utf-8') as f:
+            with open(CONFIG_EXAMPLE_PATH, 'r', encoding='utf-8') as f:
                 self.dict = json.load(f)
             self.config_path = os.path.join(Config.CONFIGS_DIR_LOC, "config.json")
             return self.save_config()
@@ -532,6 +527,9 @@ class Config:
                 loc = loc.strip().replace("{HOME}", os.path.expanduser("~"))
             if not sys.platform == "win32" and "\\" in loc:
                 loc = loc.replace("\\", "/")
+            if not os.path.isdir(loc) and not os.path.isabs(loc) and os.path.isdir(resource_path(loc)):
+                # A relative default such as "prompts" names a bundled dir.
+                loc = resource_path(loc)
             if not os.path.isdir(loc):
                 raise Exception(f"Invalid location provided for {key}: {loc}")
             return loc
@@ -543,13 +541,12 @@ class Config:
             if "{HOME}" in filepath:
                 filepath = filepath.strip().replace("{HOME}", os.path.expanduser("~"))
             elif not os.path.isfile(filepath):
-                try_path = os.path.join(configs_dir, filepath)
-                if os.path.isfile(try_path):
-                    filepath = try_path
-                else:
-                    try_path = os.path.join(library_data_dir, filepath)
+                # User files first, then the bundled templates (*_example.json).
+                for base in (configs_dir(), user_library_data_dir(), resource_path("library_data", "data")):
+                    try_path = os.path.join(base, filepath)
                     if os.path.isfile(try_path):
                         filepath = try_path
+                        break
             if not os.path.isfile(filepath):
                 raise Exception(f"Invalid location provided for {key}: {filepath}")
             return filepath

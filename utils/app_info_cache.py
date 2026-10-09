@@ -5,7 +5,7 @@ import shutil
 import threading
 
 from lib.position_data_qt import PositionData
-from utils.cache_paths import muse_cache_dir
+from utils.app_paths import cache_dir
 from utils.encryptor import encrypt_data_to_file, decrypt_data_from_file
 from utils.globals import AppInfo
 from utils.logging_setup import get_logger
@@ -15,8 +15,6 @@ logger = get_logger(__name__)
 
 
 class AppInfoCache:
-    CACHE_LOC = os.path.join(os.path.dirname(os.path.abspath(os.path.dirname(__file__))), "app_info_cache.enc")
-    JSON_LOC = os.path.join(os.path.dirname(os.path.abspath(os.path.dirname(__file__))), "app_info_cache.json")
     INFO_KEY = "info"
     HISTORY_KEY = "history"
     DIRECTORIES_KEY = "directories"
@@ -27,13 +25,8 @@ class AppInfoCache:
     def __init__(self):
         self._lock = threading.RLock()
         self._cache = {AppInfoCache.INFO_KEY: {}, AppInfoCache.HISTORY_KEY: [], AppInfoCache.DIRECTORIES_KEY: {}}
-        _override = muse_cache_dir()
-        self._cache_loc = (
-            os.path.join(_override, "app_info_cache.enc") if _override else self.CACHE_LOC
-        )
-        self._json_loc = (
-            os.path.join(_override, "app_info_cache.json") if _override else self.JSON_LOC
-        )
+        self._cache_loc = os.path.join(cache_dir(), "app_info_cache.enc")
+        self._json_loc = os.path.join(cache_dir(), "app_info_cache.json")
         self.load()
         self.validate()
 

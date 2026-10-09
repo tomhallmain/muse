@@ -19,6 +19,7 @@ from typing import Callable, List, Optional
 
 from utils.config import config
 from utils.ffmpeg_handler import FFmpegHandler
+from utils.app_paths import cache_dir
 from utils.logging_setup import get_logger
 from utils.utils import Utils
 
@@ -29,7 +30,6 @@ class SpinningRecordVideos:
     """Cache of looping record-rotation clips built from the ``record*`` assets."""
 
     RECORD_ASSET_PATTERN = "record"
-    # Clips live beside the record images they are made from, under assets/.
     CACHE_DIRNAME = "spinning_record_videos"
     SIGNATURE_FILENAME = "signature.txt"
     PARTIAL_MARKER = ".part"
@@ -134,7 +134,7 @@ class SpinningRecordVideos:
     def cache_dir(cls) -> str:
         if cls._cache_dir is not None:
             return cls._cache_dir
-        path = os.path.join(Utils.get_assets_dir(), cls.CACHE_DIRNAME)
+        path = os.path.join(cache_dir(), cls.CACHE_DIRNAME)
         try:
             os.makedirs(path, exist_ok=True)
             cls._discard_stale_clips(path)

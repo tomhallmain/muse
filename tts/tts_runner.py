@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 import os
 import subprocess
+import sys
 import threading
 import time
 from typing import Optional, Callable
@@ -14,6 +15,7 @@ from tts.providers import BaseTTSProvider, TTSProviderType, get_provider
 from tts.chunker import Chunker
 from utils.config import config
 from utils.job_queue import JobQueue
+from utils.app_paths import resource_path, tts_output_dir
 from utils.logging_setup import get_logger
 from utils.utils import Utils
 from utils.vlc_plugin_cache import ensure_vlc_plugin_cache_if_stale
@@ -137,8 +139,8 @@ class TTSSpeakInvocation:
 class TextToSpeechRunner:
     QUEUES = [] # TODO multiple named queues
     VLC_MEDIA_PLAYER = vlc.MediaPlayer()
-    output_directory = os.path.join(os.path.dirname(os.path.dirname(__file__)), "tts_output")
-    lib_sounds = os.path.join(os.path.dirname(os.path.dirname(__file__)), "lib", "sounds")
+    output_directory = tts_output_dir()
+    lib_sounds = resource_path("lib", "sounds")
 
     def __init__(self, config: TTSConfig):
         self.config = config
@@ -446,7 +448,7 @@ def main(model, text):
     try:
         runner.speak(text)
     except KeyboardInterrupt:
-        exit()
+        sys.exit()
     while True:
         try:
             runner.speak(input())

@@ -1,0 +1,6 @@
+# Build dependencies for build_exe.py, installed into .venv-build.
+-r requirements.txt
+nuitka
+zstandard
+# Global media keys on macOS/Linux (lib/media_keys.py); Windows uses Qt's.
+pynput; sys_platform != "win32"

@@ -1,6 +1,7 @@
 import datetime
 import traceback
 
+from utils.app_paths import IS_BUILD
 from utils.config import config as app_config
 from utils.logging_setup import get_logger
 
@@ -20,7 +21,8 @@ except Exception as e:
 
 def _resolve_provider() -> "TTSProviderType":
     """Read the active TTS provider from config, defaulting to Coqui."""
-    provider_str = getattr(app_config, "tts_provider", "coqui") or "coqui"
+    # A compiled build contains Coqui only.
+    provider_str = "coqui" if IS_BUILD else (getattr(app_config, "tts_provider", "coqui") or "coqui")
     try:
         return TTSProviderType(provider_str.lower())
     except (ValueError, NameError):

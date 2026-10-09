@@ -402,9 +402,6 @@ class DJPersonaManager:
             }
         ]
         
-        # Create the configs directory if it doesn't exist
-        Path("configs").mkdir(exist_ok=True)
-
         # Load the default personas
         for persona_data in default_personas:
             persona = DJPersona.from_dict(persona_data)

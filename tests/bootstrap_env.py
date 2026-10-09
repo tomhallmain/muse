@@ -96,29 +96,36 @@ def _pin_key_backup_dir() -> None:
 
 
 def apply() -> None:
-    global _applied, _cleanup_tmp
-    # Before the guard below: a caller that set MUSE_CACHE_DIR itself skips the
-    # rest of this function, and the substitution has to happen regardless.
+    global _applied
+    # The temp dirs come before the keyring substitution: installing it imports
+    # the ``utils`` package, whose config and app info cache singletons resolve
+    # their paths -- and would move legacy repo files into the real app data
+    # dir -- as they load.
+    if not _applied:
+        _redirect_user_data()
     _install_fake_keyring()
-    if _applied or os.environ.get("MUSE_CACHE_DIR"):
-        _pin_key_backup_dir()
-        _applied = True
+    _pin_key_backup_dir()
+    _applied = True
+
+
+def _redirect_user_data() -> None:
+    """Point every per-user location at one temp dir; a value the caller set wins."""
+    global _cleanup_tmp
+    if all(os.environ.get(v) for v in ("MUSE_APP_DATA_DIR", "MUSE_CACHE_DIR", "MUSE_CONFIGS_DIR")):
         return
-
-    project_root = Path(__file__).resolve().parent.parent
-    config_example = project_root / "configs" / "config_example.json"
-
     _cleanup_tmp = tempfile.mkdtemp(prefix="muse_tests_")
-    os.environ["MUSE_CACHE_DIR"] = os.path.join(_cleanup_tmp, "cache")
-    os.environ["MUSE_CONFIGS_DIR"] = os.path.join(_cleanup_tmp, "configs")
+    atexit.register(shutil.rmtree, _cleanup_tmp, True)
+    # The app data root covers what has no override of its own (logs, tts_output).
+    os.environ.setdefault("MUSE_APP_DATA_DIR", _cleanup_tmp)
+    os.environ.setdefault("MUSE_CACHE_DIR", os.path.join(_cleanup_tmp, "cache"))
+    os.environ.setdefault("MUSE_CONFIGS_DIR", os.path.join(_cleanup_tmp, "configs"))
     os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
     os.makedirs(os.environ["MUSE_CACHE_DIR"], exist_ok=True)
     os.makedirs(os.environ["MUSE_CONFIGS_DIR"], exist_ok=True)
-    if config_example.is_file():
-        shutil.copy(config_example, os.path.join(os.environ["MUSE_CONFIGS_DIR"], "config.json"))
-    _pin_key_backup_dir()
-    atexit.register(shutil.rmtree, _cleanup_tmp, True)
-    _applied = True
+    config_path = os.path.join(os.environ["MUSE_CONFIGS_DIR"], "config.json")
+    config_example = Path(project_root()) / "library_data" / "data" / "config_example.json"
+    if config_example.is_file() and not os.path.exists(config_path):
+        shutil.copy(config_example, config_path)
 
 
 def project_root() -> str:

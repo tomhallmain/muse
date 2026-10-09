@@ -36,8 +36,18 @@ DEFAULT_THRESHOLDS = (0.10, 0.20, 0.25, 0.33, 0.50)
 
 SIZE_BUCKETS = ((1, 1), (2, 4), (5, 12), (13, 30), (31, 10**9))
 
+# The app's configs dir (utils/app_paths.py), resolved here without importing it.
 DEFAULT_DB = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "configs", "muse_library.db")
+    os.environ.get("MUSE_CONFIGS_DIR")
+    or os.path.join(
+        os.environ.get("MUSE_APP_DATA_DIR")
+        or os.path.join(
+            os.environ.get("APPDATA") or os.path.expanduser(r"~\AppData\Roaming")
+            if sys.platform == "win32"
+            else os.path.expanduser("~/.local/share"),
+            "muse"),
+        "configs"),
+    "muse_library.db")
 
 
 def percentile(values, fraction):

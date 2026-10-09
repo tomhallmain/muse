@@ -34,6 +34,7 @@ from muse.track_affinity import AFFINITY_OFF, AFFINITY_ON
 from ui_qt.app_style import AppStyle
 from ui_qt.auth.password_utils import require_password
 from utils.app_info_cache import app_info_cache
+from utils.app_paths import IS_BUILD
 from utils.config import config
 from utils.globals import ProtectedActions
 from utils.translations import I18N, SUPPORTED_LANGUAGE_CODES
@@ -250,13 +251,17 @@ class ConfigurationWindow(SmartWindow):
             Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
         )
         self._provider_combo = QComboBox(common_frame)
-        for value in ("coqui", "kokoro", "f5tts", "maskgct", "piper", "zonos"):
+        # A compiled build contains Coqui only. The config file is shared with
+        # source checkouts, so the build leaves the saved provider untouched.
+        providers = ("coqui",) if IS_BUILD else ("coqui", "kokoro", "f5tts", "maskgct", "piper", "zonos")
+        for value in providers:
             self._provider_combo.addItem(value)
-        current = getattr(config, "tts_provider", "coqui") or "coqui"
+        current = "coqui" if IS_BUILD else (getattr(config, "tts_provider", "coqui") or "coqui")
         self._provider_combo.setCurrentText(current)
         self._provider_combo.currentTextChanged.connect(self._on_tts_provider_changed)
         common_layout.addWidget(self._provider_combo, 0, 1, Qt.AlignmentFlag.AlignLeft)
-        self.config_vars["tts_provider"] = (self._provider_combo, "combo")
+        if not IS_BUILD:
+            self.config_vars["tts_provider"] = (self._provider_combo, "combo")
 
         self.add_config_entry(common_frame, common_layout, "llm_model_name", _("LLM Model Name"), 1)
         self.add_config_checkbox(
@@ -274,10 +279,13 @@ class ConfigurationWindow(SmartWindow):
         # ── Coqui section ─────────────────────────────────────────────
         self._coqui_section = QGroupBox(_("Coqui TTS"), content)
         coqui_layout = QGridLayout(self._coqui_section)
-        self.add_config_entry(
-            self._coqui_section, coqui_layout,
-            "coqui_tts_location", _("TTS Library Path"), 0,
-        )
+        if IS_BUILD:
+            coqui_layout.addWidget(QLabel(_("Included in this build."), self._coqui_section), 0, 0)
+        else:
+            self.add_config_entry(
+                self._coqui_section, coqui_layout,
+                "coqui_tts_location", _("TTS Library Path"), 0,
+            )
         main_layout.addWidget(self._coqui_section)
 
         # ── Kokoro section ────────────────────────────────────────────

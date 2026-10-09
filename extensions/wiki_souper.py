@@ -9,6 +9,7 @@ import pandas as pd
 
 from extensions.soup_utils import SoupUtils
 from utils import Utils
+from utils.app_paths import cache_dir
 from utils.logging_setup import get_logger
 
 logger = get_logger(__name__)
@@ -147,7 +148,7 @@ class WikiSection():
 
 
 class WikiCompilationData:
-    SAVE_LOCATION = os.path.join(os.path.dirname(os.path.dirname(__file__)), "library_data", "wiki")
+    SAVE_LOCATION = os.path.join(cache_dir(), "wiki")
 
     def __init__(self, url, has_tables):
         self._url = url

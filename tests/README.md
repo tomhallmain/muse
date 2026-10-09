@@ -40,7 +40,7 @@ Cache file overrides use `MUSE_CACHE_DIR` via `utils/cache_paths.py`. Config ove
 | Area | Isolated? | Notes |
 |------|-----------|--------|
 | `app_info_cache` | Yes | Per-test temp dir |
-| `config.json` | Yes | Copied from `configs/config_example.json` |
+| `config.json` | Yes | Copied from `library_data/data/config_example.json` |
 | `muse_memory` | Yes | Fresh instance per test |
 | `app_media_track_cache` / `app_directories_cache` | Yes | Paths under `MUSE_CACHE_DIR`; in-memory reset |
 | Playlist recently-played lists | Yes | Reset via `HistoryType` |

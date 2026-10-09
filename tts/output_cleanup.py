@@ -2,6 +2,7 @@ import os
 import re
 from typing import Optional
 
+from utils.app_paths import tts_output_dir
 from utils.logging_setup import get_logger
 
 logger = get_logger(__name__)
@@ -56,7 +57,7 @@ def cleanup_orphaned_output_files(directory: str) -> int:
 
 
 def default_output_directory() -> str:
-    return os.path.join(os.path.dirname(os.path.dirname(__file__)), "tts_output")
+    return tts_output_dir()
 
 
 def cleanup_default_output_directory(directory: Optional[str] = None) -> int:

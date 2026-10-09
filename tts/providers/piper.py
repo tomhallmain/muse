@@ -41,6 +41,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 from tts.providers import BaseTTSProvider
+from utils.app_paths import configs_dir
 from utils.logging_setup import get_logger
 
 logger = get_logger(__name__)
@@ -57,6 +58,10 @@ _QUALITY_PREFERENCE = ("medium", "high", "low", "x_low")
 # ---------------------------------------------------------------------------
 # Voices-index helpers
 # ---------------------------------------------------------------------------
+
+def _default_voices_dir() -> Path:
+    return Path(configs_dir()) / "piper_voices"
+
 
 def _fetch_voices_index(cache_dir: Path) -> Dict[str, Any]:
     """Return the parsed voices.json, using a local cache if present."""
@@ -267,11 +272,7 @@ class PiperTTSProvider(BaseTTSProvider):
     def _cache_dir(self) -> Path:
         if self.voices_dir:
             return self.voices_dir
-        # Default: configs/piper_voices/ relative to the project root.
-        from utils.config import config as app_config
-        configs_dir = Path(getattr(app_config, "CONFIGS_DIR_LOC",
-                                   Path(__file__).resolve().parents[2] / "configs"))
-        return configs_dir / "piper_voices"
+        return _default_voices_dir()
 
     @staticmethod
     def list_available_voices(
@@ -282,9 +283,7 @@ class PiperTTSProvider(BaseTTSProvider):
 
         Useful for building UI pickers.  Fetches/caches the index the first time.
         """
-        cache_dir = voices_dir or (
-            Path(__file__).resolve().parents[2] / "configs" / "piper_voices"
-        )
+        cache_dir = voices_dir or _default_voices_dir()
         index = _fetch_voices_index(cache_dir)
         results = []
         for key, meta in index.items():

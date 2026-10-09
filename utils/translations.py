@@ -1,6 +1,7 @@
 import gettext
 import os
 
+from utils.app_paths import resource_path
 from utils.logging_setup import get_logger
 from utils.utils import Utils
 
@@ -11,7 +12,7 @@ _locale = Utils.get_default_user_language()
 SUPPORTED_LANGUAGE_CODES = ["en", "de", "es", "fr", "it", "pt", "ru"]
 
 class I18N:
-    localedir = os.path.join(os.path.dirname(os.path.abspath(os.path.dirname(__file__))), 'locale')
+    localedir = resource_path('locale')
     locale = _locale
     translate = gettext.translation('base', localedir, languages=[_locale])
 

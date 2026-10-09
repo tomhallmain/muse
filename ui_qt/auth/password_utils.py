@@ -4,6 +4,8 @@ This module provides the authentication flow logic and decorators.
 It imports from password_core.py and password_dialog.py to avoid circular dependencies.
 """
 
+import functools
+
 from ui_qt.auth.password_core import get_security_config, PasswordManager
 from ui_qt.auth.password_dialog import PasswordDialog
 from ui_qt.auth.password_session_manager import PasswordSessionManager
@@ -134,6 +136,7 @@ def require_password(
             pass
     """
     def decorator(func):
+        @functools.wraps(func)
         def wrapper(self, *args, **kwargs):
             # Get the master window from self if it exists
             master = getattr(self, 'master', None)

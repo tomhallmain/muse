@@ -27,6 +27,7 @@ from muse.track_affinity import current_favorites_profile
 from muse.voice import Voice
 from utils.config import config
 from utils.globals import Topic, IntroType, Globals, TrackAttribute
+from utils.app_paths import resource_path
 from utils.logging_setup import get_logger
 from utils.translations import I18N, SUPPORTED_LANGUAGE_CODES
 from utils.utils import Utils
@@ -832,7 +833,7 @@ class Muse:
     @classmethod
     def _get_random_word(cls) -> str:
         if not cls._dict_words:
-            dict_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tts", "dictionary_en.txt")
+            dict_path = resource_path("tts", "dictionary_en.txt")
             try:
                 with open(dict_path, encoding="utf-8") as f:
                     cls._dict_words = [w for w in (line.strip() for line in f) if 4 <= len(w) <= 12 and w.isalpha()]

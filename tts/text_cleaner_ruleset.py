@@ -3,6 +3,7 @@ import os
 import re
 
 from utils.config import config
+from utils.app_paths import resource_path
 from utils.logging_setup import get_logger
 from utils.translations import I18N
 
@@ -385,7 +386,7 @@ class TextCleanerRuleset:
         
         # Load English detection words from dictionary_en.txt in the tts directory
         self.english_detection_words = set()
-        dictionary_path = os.path.join(os.path.dirname(__file__), 'dictionary_en.txt')
+        dictionary_path = resource_path('tts', 'dictionary_en.txt')
         try:
             with open(dictionary_path, 'r', encoding='utf-8') as f:
                 self.english_detection_words = set(line.strip().lower() for line in f if line.strip())

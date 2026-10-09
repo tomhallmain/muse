@@ -9,6 +9,7 @@ from library_data.work import Work
 from library_data.works_data import works_data
 from utils.db import get_connection, delim_to_list, list_to_delim
 from utils.name_ops import NameOps
+from utils.app_paths import resource_path
 from utils.logging_setup import get_logger
 from utils.translations import I18N
 
@@ -27,7 +28,7 @@ _en_dictionary = None
 def _get_en_dictionary():
     global _en_dictionary
     if _en_dictionary is None:
-        dict_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'tts', 'dictionary_en.txt')
+        dict_path = resource_path('tts', 'dictionary_en.txt')
         try:
             with open(dict_path, 'r', encoding='utf-8') as f:
                 _en_dictionary = {line.strip().lower() for line in f if line.strip()}

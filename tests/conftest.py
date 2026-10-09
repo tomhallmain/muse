@@ -35,7 +35,7 @@ _bootstrap_mod = importlib.util.module_from_spec(_bootstrap_spec)
 _bootstrap_spec.loader.exec_module(_bootstrap_mod)
 _bootstrap_mod.apply()
 
-_config_example_src = os.path.join(_project_root, "configs", "config_example.json")
+_config_example_src = os.path.join(_project_root, "library_data", "data", "config_example.json")
 
 from utils.globals import HistoryType, PlaylistSortType
 

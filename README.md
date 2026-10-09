@@ -7,7 +7,7 @@ Muse is a media player with an integrated voice synthesizer attached to an LLM. 
 
 - Download Coqui-TTS source from https://github.com/coqui-ai/TTS
 - Install Coqui-TTS using `pip install -e.`
-- Set `coqui_tts_location` in config.json in configs folder to the path of Coqui-TTS source.
+- Set `coqui_tts_location` in config.json to the path of Coqui-TTS source (see [User data](#user-data) for where config.json lives).
 - Download and install Ollama following the instructions at https://github.com/ollama/ollama
 - Ensure Ollama is operational and serving with `ollama serve`
 - In a virtual environment, run `pip install -r requirements.txt` on this directory.
@@ -33,9 +33,9 @@ Muse is a media player with an integrated voice synthesizer attached to an LLM. 
     - `chance_speak_before_track` - Set the chance that Muse will speak before each track identifying the upcoming song or other media.
     - `topic_discussion_chance_factor` - Base probability (0-1) for the DJ to discuss topics between songs. This chance increases over time if the DJ hasn't spoken recently, up to the base rate after 15 minutes of silence.
     - `min_seconds_between_spots` - Minimum time between DJ spots to prevent too frequent interruptions.
-- `save_tts_output_topics` - Set the topics to retain MP3 files for in the `tts_ouput` directory.
+- `save_tts_output_topics` - Set the topics to retain MP3 files for in the `tts_output` directory (see [User data](#user-data)).
 - `news_api_source_trustworthiness` - Set the trustworthiness of news sources from News API.
-- `artists_file`, `composers_file`, `forms_file`, `genres_file`, `instruments_file` - Modify these and place your desired file in the `library_data/data` directory following the formats in the example files found there.
+- `artists_file`, `composers_file`, `forms_file`, `genres_file`, `instruments_file` - Modify these and place your desired file in the `library_data` folder of your configs directory (see [User data](#user-data)), following the formats in the example files in `library_data/data` in this repository.
 - `enable_dynamic_volume` - Attempts to normalize track loudness by reducing or increasing the master volume above the base volume level.
 - `play_videos_in_separate_window` - If the track is a video, play it in a separate window from the main window
 - `playlist_recently_played_check_count` - As each track is played, the attributes are stored in lists of recently-played attributes. Set this to a higher value to reduce the chance that you hear recently-played tracks after a random sort has been applied.
@@ -56,6 +56,18 @@ Muse is a media player with an integrated voice synthesizer attached to an LLM. 
 - `dj_personas` - Configure different DJ personas with unique voices, tones, and characteristics. Each persona can have its own language settings, plus `can_teach_languages` (which of `muse_language_learning_languages` this persona is allowed to teach -- `"*"` for any, or specific codes) and `prompt_overrides` (persona-specific text for a given topic, replacing the shared `prompts/<lang>/<topic>.txt` file). The "voice_name" must match one of the Coqui speakers, see `tts/speakers.py` for the full list.
 
 
+## User data
+
+Muse keeps its settings, data and logs outside the source tree, in one folder: `%APPDATA%\muse\` on Windows and `~/.local/share/muse/` elsewhere, where Muse has always written its logs (set `MUSE_APP_DATA_DIR` to use another folder):
+
+- `configs/`: `config.json`, the library database, and your own library data files under `configs/library_data/`. A new install starts from `library_data/data/config_example.json`.
+- `cache/`: caches Muse can rebuild, such as the media track caches, DJ memory and downloaded wiki articles.
+- `tts_output/`: generated speech, including the recordings kept for `save_tts_output_topics`.
+- `logs/`: log files.
+
+Files that earlier versions kept in the repository (`configs/`, `library_data/data/`, the caches in the repository root, `tts_output/`) are moved there on first start; a file that already exists there is never overwritten.
+
+
 ## Usage
 
 - In your virtual environment, run `python app_qt.py` to start the application (Qt/PySide6 UI). On Windows you can use `start.bat`, which launches the Qt version.
@@ -70,11 +82,34 @@ to check that backup's state, or `backup` to take one by hand.
 
 Muse can watch radio stations in the background and suggest tracks that are new to you.
 
-1. Set `radio_watchlist_enabled` to `true` in `configs/config.json` and restart Muse.
+1. Set `radio_watchlist_enabled` to `true` in `config.json` and restart Muse.
 2. Open View > Internet Radio, search for a station and click Watch. On the Watch-list tab, set Mode to "Discover new tracks" and click Add Entry. Entries added while Muse is running start after "Reload Watch Service".
 3. New tracks appear in a "New on the Radio" window with Switch, Dismiss and Don't Suggest Again. Playback never switches on its own.
 
 Each watched station is streamed in the background, so watch only a few (`radio_watchlist_max_stations` caps it). The `radio_novelty_*` settings tune what counts as new.
+
+
+## Build
+
+`python build_exe.py` builds Muse into a single executable with [Nuitka](https://nuitka.net): `dist/Muse.exe` on Windows, `dist/Muse` on macOS and Linux. Build on each operating system you want an executable for; Nuitka does not cross-compile.
+
+Prerequisites:
+
+- Python with `venv` and `pip`. The script creates `.venv-build` from `requirements-build.txt` so nothing else in your environment is bundled; `--current-env` builds with the running interpreter instead.
+- A C compiler: Visual Studio Build Tools on Windows (or let Nuitka download MinGW), Xcode Command Line Tools on macOS, `gcc` on Linux.
+- A Coqui-TTS source checkout, which is compiled into the executable: pass `--coqui-path=<dir>`, or the build uses `coqui_tts_location` from your `config.json`.
+- VLC installed on the build machine. The build checks itself with `Muse --smoke-test` before finishing, which loads Muse's playback code and with it libvlc.
+- Several GB of free disk space: the executable contains PyTorch.
+
+Extra arguments are passed to Nuitka, e.g. `python build_exe.py --jobs=4`. `--with-oqs` adds quantum-safe key encapsulation from [liboqs](https://github.com/open-quantum-safe/liboqs-python): the build installs liboqs-python and bundles the liboqs library it loads. A build without OQS cannot read data that a source checkout with liboqs encrypted using OQS keys.
+
+What the executable includes and leaves out:
+
+- Coqui is the only TTS provider in the executable. Its models download on first use, as in a source checkout.
+- Install separately: VLC, ffmpeg (on `PATH`) and Ollama.
+- The executable shares its user data (see [User data](#user-data)) with a source checkout on the same machine and account.
+- The first start unpacks the executable to `unpacked\muse-<build time>` in the user data folder above. This takes a while and several GB for an executable of this size. Folders left by older builds can be deleted.
+- Started from a terminal on Windows, the executable prints its log there, but the terminal does not wait for it. Use `start /wait dist\Muse.exe` to make it wait.
 
 
 ## Testing
