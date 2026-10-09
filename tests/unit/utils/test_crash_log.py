@@ -15,6 +15,7 @@ def fault_log(monkeypatch, tmp_path):
     monkeypatch.setattr(crash_log, "_fault_log", None)
     calls = []
     monkeypatch.setattr(crash_log.faulthandler, "enable", lambda **kwargs: calls.append(kwargs))
+    monkeypatch.setattr(crash_log, "describe", lambda: "Muse 9.9 (test)")
     yield calls
     if crash_log._fault_log is not None:
         crash_log._fault_log.close()
@@ -40,6 +41,7 @@ class TestEnableFaultLog:
         assert len(lines) == 1
         assert lines[0].startswith("--- started ")
         assert f"pid {os.getpid()}" in lines[0]
+        assert lines[0].endswith("Muse 9.9 (test)")
 
     def test_second_call_reuses_the_open_file(self, fault_log):
         first = crash_log.enable_fault_log()

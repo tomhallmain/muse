@@ -56,6 +56,8 @@ from lib.media_keys import MediaKeyHandler
 from utils.app_info_cache import app_info_cache
 from utils.app_paths import resource_path
 from utils.crash_log import enable_fault_log
+from utils.unpack_cleanup import remove_stale_unpack_dirs
+from utils.version import describe as describe_version, source_drift
 from utils.spinning_record import SpinningRecordVideos
 from utils import (
     config,
@@ -1801,6 +1803,21 @@ def _route_qt_messages_to_logger():
     qInstallMessageHandler(_log_qt_message)
 
 
+def _log_source_drift():
+    """In a build, log whether the source checkout it was built from has changed since."""
+    try:
+        result = source_drift()
+    except Exception as e:
+        logger.error(f"Could not compare this build with its source checkout: {e}")
+        return
+    if result:
+        drifted, message = result
+        if drifted:
+            logger.warning(message)
+        else:
+            logger.info(message)
+
+
 def _smoke_test(expect_oqs: bool = False) -> int:
     """Check that a build can start, without opening a window. Returns an exit code."""
     from PySide6.QtGui import QImageReader
@@ -1828,6 +1845,7 @@ def main():
             traceback.print_exc()
             exit_code = 1
         sys.exit(exit_code)
+    logger.info(describe_version())
     try:
         enable_fault_log()
     except Exception as e:
@@ -1846,6 +1864,9 @@ def main():
     # Restore saved window geometry (handled by SmartMainWindow)
     window.restore_window_geometry()
     window.show()
+    threading.Thread(target=remove_stale_unpack_dirs, name="unpack-cleanup", daemon=True).start()
+    # Runs git, which can take a moment.
+    threading.Thread(target=_log_source_drift, name="source-drift", daemon=True).start()
 
     def graceful_shutdown(*args):
         logger.info("Caught signal, shutting down gracefully...")

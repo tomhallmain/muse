@@ -6,7 +6,7 @@ import threading
 
 from lib.position_data_qt import PositionData
 from utils.app_paths import cache_dir
-from utils.encryptor import encrypt_data_to_file, decrypt_data_from_file
+from utils.encryptor import encrypt_data_to_file, decrypt_data_from_file, stored_keys_need_unavailable_oqs
 from utils.globals import AppInfo
 from utils.logging_setup import get_logger
 from utils.runner_app_config import RunnerAppConfig
@@ -27,6 +27,12 @@ class AppInfoCache:
         self._cache = {AppInfoCache.INFO_KEY: {}, AppInfoCache.HISTORY_KEY: [], AppInfoCache.DIRECTORIES_KEY: {}}
         self._cache_loc = os.path.join(cache_dir(), "app_info_cache.enc")
         self._json_loc = os.path.join(cache_dir(), "app_info_cache.json")
+        # Plaintext saves while the encrypted cache cannot be read (quantum keys
+        # without OQS). load() never migrates this file into the encrypted
+        # cache: it holds only what was saved since then, and would replace
+        # the encrypted cache's contents. Kept for manual recovery.
+        self._no_oqs_json_loc = os.path.join(cache_dir(), "app_info_cache.no_oqs.json")
+        self._encrypted_cache_unreadable = False
         self.load()
         self.validate()
 
@@ -42,23 +48,39 @@ class AppInfoCache:
             except Exception as e:
                 raise Exception(f"Error compiling application cache: {e}")
 
-            try:
-                encrypt_data_to_file(
-                    cache_data,
-                    AppInfo.SERVICE_NAME,
-                    AppInfo.APP_IDENTIFIER,
-                    self._cache_loc,
-                )
-                return True  # Encryption successful
-            except Exception as e:
-                logger.error(f"Error encrypting cache: {e}")
+            if self._encrypted_cache_unreadable:
+                # Encrypting fails the same way loading did; go straight to the fallback.
+                json_loc = self._no_oqs_json_loc
+            else:
+                json_loc = self._json_loc
+                try:
+                    encrypt_data_to_file(
+                        cache_data,
+                        AppInfo.SERVICE_NAME,
+                        AppInfo.APP_IDENTIFIER,
+                        self._cache_loc,
+                    )
+                    self._remove_superseded_json()
+                    return True  # Encryption successful
+                except Exception as e:
+                    logger.error(f"Error encrypting cache: {e}")
 
             try:
-                with open(self._json_loc, "w", encoding="utf-8") as f:
+                with open(json_loc, "w", encoding="utf-8") as f:
                     json.dump(self._cache, f)
                 return False  # Encryption failed, but JSON fallback succeeded
             except Exception as e:
                 raise Exception(f"Error storing application cache: {e}")
+
+    def _remove_superseded_json(self):
+        """Delete the plaintext fallback once an encrypted save holds the same
+        data; left in place, load() would prefer it over newer encrypted saves."""
+        if os.path.exists(self._json_loc):
+            try:
+                os.remove(self._json_loc)
+                logger.info(f"Removed {self._json_loc}: superseded by the encrypted cache")
+            except OSError as e:
+                logger.error(f"Could not remove superseded {self._json_loc}: {e}")
 
     def _try_load_cache_from_file(self, path):
         """Attempt to load and decrypt the cache from the given file path. Raises on failure."""
@@ -78,7 +100,6 @@ class AppInfoCache:
                         self._cache = json.load(f)
                     if self.store():
                         logger.info(f"Migrated application cache from {self._json_loc} to encrypted store")
-                        os.remove(self._json_loc)
                     else:
                         logger.warning("Encrypted store of application cache failed; keeping JSON cache file")
                     return
@@ -108,9 +129,30 @@ class AppInfoCache:
                             logger.error(f"Failed to load cache from {path}: {e}")
                             continue
                 # If we get here, all attempts failed (but at least one file existed)
+                if stored_keys_need_unavailable_oqs(AppInfo.SERVICE_NAME, AppInfo.APP_IDENTIFIER):
+                    self._start_without_encrypted_cache()
+                    return
                 raise Exception(f"Failed to load cache from all locations: {cache_paths}")
             except FileNotFoundError:
                 pass
+
+    def _start_without_encrypted_cache(self):
+        """Continue from the last no-OQS session's saves, or from an empty cache,
+        leaving the encrypted cache and its backups untouched for a process
+        with OQS."""
+        self._encrypted_cache_unreadable = True
+        logger.warning(
+            f"{self._cache_loc} is encrypted with quantum (OQS) keys and this build has no OQS "
+            f"(build with --with-oqs to read it). Starting without it; it is left untouched, "
+            f"and this session's changes are saved to {self._no_oqs_json_loc} only."
+        )
+        if os.path.exists(self._no_oqs_json_loc):
+            try:
+                with open(self._no_oqs_json_loc, "r", encoding="utf-8") as f:
+                    self._cache = json.load(f)
+                logger.info(f"Loaded cache from {self._no_oqs_json_loc}")
+            except (OSError, ValueError) as e:
+                logger.error(f"Could not read {self._no_oqs_json_loc}, starting empty: {e}")
 
     def validate(self):
         with self._lock:

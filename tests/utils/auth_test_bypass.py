@@ -89,6 +89,10 @@ def install_password_bypass(monkeypatch) -> None:
         lambda: False,
     )
     monkeypatch.setattr(
+        "ui_qt.auth.password_core.PasswordManager.is_password_unreadable",
+        lambda: False,
+    )
+    monkeypatch.setattr(
         "ui_qt.auth.password_core.PasswordManager.verify_password",
         lambda password: False,
     )

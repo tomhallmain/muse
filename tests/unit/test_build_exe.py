@@ -7,12 +7,12 @@ import pytest
 
 import build_exe
 
-_OVERRIDES = ("MUSE_APP_DATA_DIR", "MUSE_CONFIGS_DIR", "MUSE_CACHE_DIR")
-
-
 @pytest.fixture
 def no_overrides(monkeypatch):
-    for var in _OVERRIDES:
+    """Unset the two overrides _user_config_path reads. It only computes a
+    path and checks it exists; MUSE_CACHE_DIR, which also places the key
+    store, stays set."""
+    for var in ("MUSE_APP_DATA_DIR", "MUSE_CONFIGS_DIR"):
         monkeypatch.delenv(var, raising=False)
 
 
@@ -42,15 +42,19 @@ class TestPopOption:
 @pytest.mark.unit
 class TestUserConfigPath:
     def test_configs_dir_override(self, monkeypatch, tmp_path, no_overrides):
-        (tmp_path / "config.json").write_text("{}", encoding="utf-8")
-        monkeypatch.setenv("MUSE_CONFIGS_DIR", str(tmp_path))
-        assert build_exe._user_config_path() == os.path.join(str(tmp_path), "config.json")
+        configs = tmp_path / "my_configs"
+        configs.mkdir()
+        (configs / "config.json").write_text("{}", encoding="utf-8")
+        monkeypatch.setenv("MUSE_CONFIGS_DIR", str(configs))
+        assert build_exe._user_config_path() == os.path.join(str(configs), "config.json")
 
     def test_app_data_dir_override(self, monkeypatch, tmp_path, no_overrides):
-        (tmp_path / "configs").mkdir()
-        (tmp_path / "configs" / "config.json").write_text("{}", encoding="utf-8")
-        monkeypatch.setenv("MUSE_APP_DATA_DIR", str(tmp_path))
-        assert build_exe._user_config_path() == os.path.join(str(tmp_path), "configs", "config.json")
+        # A subdir: the root conftest already creates tmp_path/configs.
+        app_data = tmp_path / "app_data"
+        (app_data / "configs").mkdir(parents=True)
+        (app_data / "configs" / "config.json").write_text("{}", encoding="utf-8")
+        monkeypatch.setenv("MUSE_APP_DATA_DIR", str(app_data))
+        assert build_exe._user_config_path() == os.path.join(str(app_data), "configs", "config.json")
 
     def test_windows_default_is_under_appdata(self, monkeypatch, tmp_path, no_overrides):
         configs = tmp_path / "Roaming" / "muse" / "configs"
@@ -117,3 +121,115 @@ class TestAssetsFiles:
             os.path.join("assets", "icon.png"),
             os.path.join("assets", "sub", "x.png"),
         ])
+
+
+@pytest.mark.unit
+class TestAppVersion:
+    def test_reads_the_version_file(self):
+        import re
+
+        assert re.fullmatch(r"\d+(\.\d+){0,3}", build_exe._app_version())
+
+    @pytest.mark.parametrize("bad", ["1.0.0-beta", "1.2.3.4.5", "v1", ""])
+    def test_rejects_what_windows_version_information_cannot_hold(self, monkeypatch, bad):
+        monkeypatch.setattr(build_exe.runpy, "run_path", lambda path: {"APP_VERSION": bad})
+        with pytest.raises(SystemExit):
+            build_exe._app_version()
+
+
+@pytest.mark.unit
+class TestLockHas:
+    @pytest.mark.parametrize("line", [
+        "liboqs-python==0.12.0",
+        "liboqs_python @ git+https://github.com/open-quantum-safe/liboqs-python.git@abc",
+        "LibOQS.Python>=0.12",
+    ])
+    def test_finds_a_pinned_distribution(self, tmp_path, line):
+        lock = tmp_path / "lock.txt"
+        lock.write_text(f"numpy==2.0.2\n{line}\n", encoding="utf-8")
+        assert build_exe._lock_has(str(lock), "liboqs-python")
+
+    def test_absent_distribution(self, tmp_path):
+        lock = tmp_path / "lock.txt"
+        lock.write_text("numpy==2.0.2\nliboqs==1.0\n", encoding="utf-8")
+        assert not build_exe._lock_has(str(lock), "liboqs-python")
+
+
+@pytest.mark.unit
+class TestTransformersVersionCheck:
+    def test_matching_release_is_quiet(self, capsys):
+        build_exe._check_transformers_version({"transformers": "4.45.2"})
+        assert capsys.readouterr().out == ""
+
+    def test_other_release_warns(self, capsys):
+        build_exe._check_transformers_version({"transformers": "4.46.0"})
+        assert "WARNING" in capsys.readouterr().out
+
+    def test_absent_transformers_is_quiet(self, capsys):
+        build_exe._check_transformers_version({"transformers": None})
+        assert capsys.readouterr().out == ""
+
+
+@pytest.mark.unit
+class TestGitCommit:
+    def _git(self, tmp_path, head):
+        git = tmp_path / ".git"
+        git.mkdir()
+        (git / "HEAD").write_text(head + "\n", encoding="utf-8")
+        return git
+
+    def test_detached_head(self, tmp_path):
+        self._git(tmp_path, "abc123")
+        assert build_exe._git_commit(str(tmp_path)) == "abc123"
+
+    def test_branch_ref_file(self, tmp_path):
+        git = self._git(tmp_path, "ref: refs/heads/dev")
+        (git / "refs" / "heads").mkdir(parents=True)
+        (git / "refs" / "heads" / "dev").write_text("def456\n", encoding="utf-8")
+        assert build_exe._git_commit(str(tmp_path)) == "def456"
+
+    def test_packed_ref(self, tmp_path):
+        git = self._git(tmp_path, "ref: refs/heads/main")
+        (git / "packed-refs").write_text(
+            "# pack-refs with: peeled fully-peeled sorted\n0a1b2c refs/heads/main\n", encoding="utf-8")
+        assert build_exe._git_commit(str(tmp_path)) == "0a1b2c"
+
+    def test_not_a_checkout(self, tmp_path):
+        assert build_exe._git_commit(str(tmp_path)) == ""
+
+
+@pytest.mark.unit
+class TestBuildInfo:
+    def test_environment_versions_come_from_the_interpreter(self):
+        import sys
+
+        environment = build_exe._environment_versions(sys.executable)
+        assert environment["python"] == sys.version.split()[0]
+        assert set(environment["packages"]) == set(build_exe.RECORDED_DISTRIBUTIONS)
+
+    def test_written_build_info(self, monkeypatch, tmp_path):
+        # Stubbed so the test runs no git in the real checkout.
+        monkeypatch.setattr(build_exe, "_version_module", lambda: {
+            "read_git_commit": lambda checkout: "",
+            "source_state": lambda repo: {"commit": "abc123", "changes": ""},
+        })
+        monkeypatch.setattr(build_exe, "BUILD_DIR", str(tmp_path))
+        monkeypatch.setattr(build_exe, "BUILD_INFO_PATH", str(tmp_path / "build_info.json"))
+        environment = {"python": "3.10.14", "packages": {"PySide6": "6.11.2", "torch": None}}
+        build_exe._write_build_info("1.2.3", "20261009-095251", environment, str(tmp_path / "coqui"))
+        info = json.loads((tmp_path / "build_info.json").read_text(encoding="utf-8"))
+        assert info == {
+            "version": "1.2.3",
+            "build_id": "20261009-095251",
+            "python": "3.10.14",
+            "packages": {"PySide6": "6.11.2"},
+            "coqui_commit": "unknown",
+            "source": {"repo": build_exe.REPO_ROOT, "commit": "abc123", "changes": ""},
+        }
+
+    def test_nuitka_args_carry_version_and_build_info(self):
+        args = build_exe._nuitka_args("Muse.exe", "1.2.3", "20261009-095251")
+        assert "--product-version=1.2.3" in args
+        assert "--file-version=1.2.3" in args
+        assert "--file-description=Muse media player, build 20261009-095251" in args
+        assert f"--include-data-files={build_exe.BUILD_INFO_PATH}=build_info.json" in args

@@ -290,6 +290,10 @@ def delete_key_store(service_name: str, app_identifier: str) -> None:
     clear_key_store_cache(service_name, app_identifier)
 
 
+class OQSUnavailableError(RuntimeError):
+    """The stored keys are quantum (OQS) keys, and this process has no OQS."""
+
+
 class KeyMaterialError(Exception):
     """Prior key material exists but could not be loaded.
 
@@ -1690,19 +1694,26 @@ def get_encryptor(service_name, app_identifier, use_global=False):
 def _get_encryptor_key(service_name, app_identifier):
     return service_name + ":::" + app_identifier
 
-def _determine_encryptor(service_name, app_identifier, override_stored_type=False):
-    # Stored key type, from the key store when present and otherwise from the
+def _stored_encryptor_type(service_name, app_identifier):
+    # From the key store when present and otherwise from the
     # pre-consolidation keychain item. Reading the item directly (rather than
     # migrating here) keeps migration in one place: it needs a concrete
-    # encryptor class, which is what this function is being called to pick.
+    # encryptor class, which _determine_encryptor is called to pick.
     store = read_key_store(service_name, app_identifier)
     if store is not None:
-        stored_type = store.get(ENCRYPTOR_TYPE_KEY)
-    else:
-        stored_type = keyring.get_password(
-            service_name,
-            namespaced_key(app_identifier, ENCRYPTOR_TYPE_KEY)
-        )
+        return store.get(ENCRYPTOR_TYPE_KEY)
+    return keyring.get_password(
+        service_name,
+        namespaced_key(app_identifier, ENCRYPTOR_TYPE_KEY)
+    )
+
+def stored_keys_need_unavailable_oqs(service_name, app_identifier) -> bool:
+    """True when the stored keys are quantum keys and OQS is not available, so
+    nothing encrypted with them can be read or written in this process."""
+    return KeyEncapsulation is None and _stored_encryptor_type(service_name, app_identifier) == "quantum"
+
+def _determine_encryptor(service_name, app_identifier, override_stored_type=False):
+    stored_type = _stored_encryptor_type(service_name, app_identifier)
 
     # Resolve encryptor based on stored type and current capabilities
     if not override_stored_type and stored_type == "quantum":
@@ -1710,7 +1721,7 @@ def _determine_encryptor(service_name, app_identifier, override_stored_type=Fals
             print("OQS available, using Quantum Encryptor")
             return PersonalQuantumEncryptor
         else:
-            raise RuntimeError("Warning: Quantum keys found but OQS unavailable. Switching to standard.")
+            raise OQSUnavailableError("Warning: Quantum keys found but OQS unavailable. Switching to standard.")
     elif not override_stored_type and stored_type == "standard":
         if KeyEncapsulation:
             print("OQS is available, but the stored type is using Standard Encryptor, consider migration.")

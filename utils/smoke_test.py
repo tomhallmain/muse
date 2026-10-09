@@ -26,6 +26,20 @@ _EXAMPLE_FILES = (
 )
 
 
+def _check_build_info() -> str:
+    """build_info.json is bundled and names this version; returns the startup log line."""
+    from utils.app_paths import IS_BUILD
+    from utils.version import APP_VERSION, BUILD_INFO_FILE, build_info, describe
+
+    info = build_info()
+    if IS_BUILD:
+        if not info:
+            raise FileNotFoundError(f"{BUILD_INFO_FILE} is not bundled")
+        if info.get("version") != APP_VERSION:
+            raise ValueError(f"{BUILD_INFO_FILE} names version {info.get('version')}, the app is {APP_VERSION}")
+    return describe()
+
+
 class SmokeTest:
     def __init__(self):
         self.failures = []
@@ -75,6 +89,7 @@ class SmokeTest:
         for name in _EXAMPLE_FILES:
             self.check(name, os.path.isfile(resource_path("library_data", "data", name)))
         self.check_call("fault log", enable_fault_log)
+        self.check_call("build info", _check_build_info)
 
     def check_data(self) -> None:
         """Encrypted bundled data decrypts, and the library DB is created and seeded."""

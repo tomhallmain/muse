@@ -101,14 +101,16 @@ Prerequisites:
 - VLC installed on the build machine. The build checks itself with `Muse --smoke-test` before finishing, which loads Muse's playback code and with it libvlc.
 - Several GB of free disk space: the executable contains PyTorch.
 
-Extra arguments are passed to Nuitka, e.g. `python build_exe.py --jobs=4`. `--with-oqs` adds quantum-safe key encapsulation from [liboqs](https://github.com/open-quantum-safe/liboqs-python): the build installs liboqs-python and bundles the liboqs library it loads. A build without OQS cannot read data that a source checkout with liboqs encrypted using OQS keys.
+Extra arguments are passed to Nuitka, e.g. `python build_exe.py --jobs=4`.
+
+The executable's version is `APP_VERSION` in `utils/version.py`. Each build records what it was built with in `build/nuitka/`: `build_info.json` (version, build time, Python, PySide6, Nuitka, torch and transformers versions, the Coqui checkout's commit, and the commit and uncommitted changes of the checkout it was built from), which the executable logs at startup, and `build-requirements.lock.txt`, the build environment's `pip freeze`. At startup the executable also compares itself with that checkout, if it still exists, and logs a warning when the checkout has moved on (with the number of commits, using `git` when it is on `PATH`) or its uncommitted changes differ. Keep the lock file of a build that works: `python build_exe.py --lock=<file>` installs the build environment from it to repeat that build. Packages installed in `.venv-build` that the file does not list stay installed; delete `.venv-build` first for an exact copy. `--with-oqs` adds quantum-safe key encapsulation from [liboqs](https://github.com/open-quantum-safe/liboqs-python): the build installs liboqs-python and bundles the liboqs library it loads. A build without OQS cannot read data that a source checkout with liboqs encrypted using OQS keys: it starts without that cache and leaves it untouched, saves its own changes to `app_info_cache.no_oqs.json` in the cache folder, and refuses password-protected actions.
 
 What the executable includes and leaves out:
 
 - Coqui is the only TTS provider in the executable. Its models download on first use, as in a source checkout.
 - Install separately: VLC, ffmpeg (on `PATH`) and Ollama.
 - The executable shares its user data (see [User data](#user-data)) with a source checkout on the same machine and account.
-- The first start unpacks the executable to `unpacked\muse-<build time>` in the user data folder above. This takes a while and several GB for an executable of this size. Folders left by older builds can be deleted.
+- The first start unpacks the executable to `unpacked\muse-<build time>` in the user data folder above. This takes a while and several GB for an executable of this size. Each start removes the folders of older builds that are not running.
 - Started from a terminal on Windows, the executable prints its log there, but the terminal does not wait for it. Use `start /wait dist\Muse.exe` to make it wait.
 
 

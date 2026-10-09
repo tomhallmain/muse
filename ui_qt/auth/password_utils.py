@@ -6,10 +6,14 @@ It imports from password_core.py and password_dialog.py to avoid circular depend
 
 import functools
 
+from lib.qt_alert import qt_alert
 from ui_qt.auth.password_core import get_security_config, PasswordManager
 from ui_qt.auth.password_dialog import PasswordDialog
 from ui_qt.auth.password_session_manager import PasswordSessionManager
 from utils.globals import ProtectedActions
+from utils.translations import I18N
+
+_ = I18N._
 
 
 
@@ -53,7 +57,24 @@ def check_password_required(
         bool: True if password was verified or not required, False if cancelled
     """
     config = get_security_config()
-    
+
+    # The password cannot be verified, so a protected action is refused rather
+    # than allowed without one.
+    if PasswordManager.is_password_unreadable() and (
+        _check_all_actions_protection(action_names, config) or not allow_unauthenticated
+    ):
+        qt_alert(
+            master,
+            _("Password Unavailable"),
+            _("The password is stored with quantum-safe (OQS) encryption, which this build "
+              "does not include, so protected actions are unavailable. Use a build made "
+              "with OQS support."),
+            kind="error",
+        )
+        if callback:
+            callback(False)
+        return False
+
     # Check if any of the actions require password protection
     if not _check_all_actions_protection(action_names, config):
         # No actions are protected, but check if we need to enforce authentication anyway

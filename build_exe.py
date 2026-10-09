@@ -27,9 +27,22 @@ bundles it. liboqs-python builds liboqs on first import if none is installed,
 which needs git, CMake and a C compiler; or point OQS_INSTALL_PATH at an
 existing install. Without the option the build has no OQS, and data encrypted
 with OQS keys cannot be read by it.
+
+The exe's version information comes from ``APP_VERSION`` in utils/version.py,
+with the build id (build time) in its description. Each build writes
+``build/nuitka/build_info.json`` (version, build id, Python and key package
+versions, the Coqui checkout's commit, and this checkout's path, commit and a
+fingerprint of its uncommitted changes), bundled so the app logs it at
+startup and compares itself with this checkout, and
+``build/nuitka/build-requirements.lock.txt``, the build venv's ``pip
+freeze``. ``--lock=<file>`` installs the build venv from such a file instead
+of requirements-build.txt, to repeat a known good build; packages already in
+the venv but absent from the file stay installed.
 """
 import json
 import os
+import re
+import runpy
 import shutil
 import subprocess
 import sys
@@ -44,6 +57,11 @@ ICON_PNG = os.path.join("assets", "icon.png")
 ICON_ICO = os.path.join(BUILD_DIR, "muse_icon.ico")
 EXE_BASE_NAME = "Muse"
 ENTRY = "app_qt.py"
+VERSION_FILE = os.path.join("utils", "version.py")
+BUILD_INFO_PATH = os.path.join(BUILD_DIR, "build_info.json")
+LOCK_PATH = os.path.join(BUILD_DIR, "build-requirements.lock.txt")
+# Versions the build log and build_info.json record.
+RECORDED_DISTRIBUTIONS = ("Nuitka", "PySide6", "torch", "transformers")
 
 # Shipped files, at the same relative paths utils.app_paths.resource_path()
 # resolves them under.
@@ -68,6 +86,20 @@ TRANSFORMERS_PROBED_DISTRIBUTIONS = (
     "jieba", "jinja2", "librosa", "pandas", "psutil", "pygments", "safetensors",
     "scipy", "soundfile", "spacy", "tokenizers", "torch", "torchaudio",
 )
+# The transformers release the list above was taken from.
+TRANSFORMERS_PROBED_VERSION = "4.45"
+# Prints {"python": ..., "packages": {name: version}} for the names in argv.
+_VERSIONS_PROBE = (
+    "import json, sys\n"
+    "from importlib.metadata import PackageNotFoundError, version\n"
+    "def get(name):\n"
+    "    try:\n"
+    "        return version(name)\n"
+    "    except PackageNotFoundError:\n"
+    "        return None\n"
+    "print(json.dumps({'python': sys.version.split()[0],\n"
+    "                  'packages': {n: get(n) for n in sys.argv[1:]}}))\n"
+)
 # Same source as requirements-optional.txt; not on PyPI.
 LIBOQS_PYTHON = "git+https://github.com/open-quantum-safe/liboqs-python.git"
 # Prints the path of the liboqs shared library liboqs-python loaded.
@@ -88,17 +120,99 @@ def _exe_name(base: str) -> str:
     return f"{base}.exe" if sys.platform == "win32" else base
 
 
-def _ensure_build_venv(extra_packages=()) -> str:
+def _ensure_build_venv(extra_packages=(), requirements=None) -> str:
+    """The build venv's interpreter, after installing *requirements*
+    (requirements-build.txt by default, or a lock file) and *extra_packages*."""
     python = _venv_python(VENV_DIR)
     if not os.path.exists(python):
         print(f"Creating build venv at {VENV_DIR}")
         venv.create(VENV_DIR, with_pip=True)
+    requirements = requirements or os.path.join(REPO_ROOT, "requirements-build.txt")
     subprocess.run(
-        [python, "-m", "pip", "install", "-q", "-r", os.path.join(REPO_ROOT, "requirements-build.txt"),
-         *extra_packages],
+        [python, "-m", "pip", "install", "-q", "-r", requirements, *extra_packages],
         check=True,
     )
     return python
+
+
+def _version_module() -> dict:
+    """utils/version.py's globals, loaded without importing the app."""
+    return runpy.run_path(os.path.join(REPO_ROOT, VERSION_FILE))
+
+
+def _app_version() -> str:
+    version = _version_module()["APP_VERSION"]
+    if not re.fullmatch(r"\d+(\.\d+){0,3}", version):
+        sys.exit(f"APP_VERSION {version!r} in {VERSION_FILE} must be up to four dot-separated numbers.")
+    return version
+
+
+def _canonical_name(name: str) -> str:
+    return re.sub(r"[-_.]+", "-", name).lower()
+
+
+def _lock_has(lock_path: str, distribution: str) -> bool:
+    """Whether the lock file pins *distribution* (``name==...`` or ``name @ url``)."""
+    with open(lock_path, "r", encoding="utf-8") as f:
+        for line in f:
+            name = re.split(r"[=@<>~!\s;\[]", line.strip(), maxsplit=1)[0]
+            if name and _canonical_name(name) == _canonical_name(distribution):
+                return True
+    return False
+
+
+def _write_lock_file(python: str) -> None:
+    freeze = subprocess.run([python, "-m", "pip", "freeze"], capture_output=True, text=True, check=True)
+    os.makedirs(BUILD_DIR, exist_ok=True)
+    with open(LOCK_PATH, "w", encoding="utf-8") as f:
+        f.write(freeze.stdout)
+    print(f"Build environment recorded in {LOCK_PATH}")
+
+
+def _environment_versions(python: str) -> dict:
+    probe = subprocess.run(
+        [python, "-c", _VERSIONS_PROBE, *RECORDED_DISTRIBUTIONS], capture_output=True, text=True, check=True,
+    )
+    return json.loads(probe.stdout.strip().splitlines()[-1])
+
+
+def _check_transformers_version(packages: dict) -> None:
+    installed = packages.get("transformers")
+    if installed and installed.split(".")[:2] != TRANSFORMERS_PROBED_VERSION.split("."):
+        print(
+            f"WARNING: transformers {installed} is installed, but TRANSFORMERS_PROBED_DISTRIBUTIONS "
+            f"was taken from transformers {TRANSFORMERS_PROBED_VERSION}. If the smoke test exits at a "
+            "package metadata lookup, update the list from transformers' _is_package_available calls."
+        )
+
+
+def _git_commit(checkout: str) -> str:
+    """The commit a git checkout has checked out, read from .git, or ""."""
+    return _version_module()["read_git_commit"](checkout)
+
+
+def _write_build_info(version: str, build_id: str, environment: dict, coqui_location: str) -> None:
+    """build_info.json, bundled at the resource root (utils/version.py reads it)."""
+    info = {
+        "version": version,
+        "build_id": build_id,
+        "python": environment["python"],
+        "packages": {name: v for name, v in environment["packages"].items() if v},
+        "coqui_commit": _git_commit(coqui_location) or "unknown",
+        # Lets the build compare itself with this checkout at startup.
+        "source": {"repo": REPO_ROOT, **_version_module()["source_state"](REPO_ROOT)},
+    }
+    os.makedirs(BUILD_DIR, exist_ok=True)
+    with open(BUILD_INFO_PATH, "w", encoding="utf-8") as f:
+        json.dump(info, f, indent=2)
+    print("Building " + ", ".join(
+        [f"Muse {version}", f"build {build_id}",
+         f"from {info['source']['commit'][:10] or 'unknown commit'}"
+         + (" with uncommitted changes" if info["source"]["changes"] else ""),
+         f"Python {info['python']}"]
+        + [f"{name} {v}" for name, v in sorted(info["packages"].items())]
+        + [f"Coqui {info['coqui_commit']}"]
+    ))
 
 
 def _user_config_path() -> str:
@@ -171,7 +285,7 @@ def _write_windows_icon(python: str) -> None:
     subprocess.run([python, "-c", script, os.path.join(REPO_ROOT, ICON_PNG), ICON_ICO], env=env, check=True)
 
 
-def _nuitka_args(exe_name: str) -> list:
+def _nuitka_args(exe_name: str, version: str, build_id: str) -> list:
     # The onefile exe unpacks its runtime to this folder. A fixed path (no
     # {PID}/{TIME}) makes Nuitka keep it between runs, so only the first run
     # pays the unpacking cost. The build id gives each build its own folder so
@@ -179,7 +293,6 @@ def _nuitka_args(exe_name: str) -> list:
     # unpacked/ are safe to delete. It sits in the app data dir
     # (utils/app_paths.py), spelled from {HOME} because Nuitka has no variable
     # for %APPDATA%; nothing the app writes goes under unpacked/.
-    build_id = time.strftime("%Y%m%d-%H%M%S")
     app_data_spec = "{HOME}/AppData/Roaming/muse" if sys.platform == "win32" else "{HOME}/.local/share/muse"
     args = [
         "--onefile",
@@ -188,6 +301,14 @@ def _nuitka_args(exe_name: str) -> list:
         f"--output-filename={exe_name}",
         # Lets Nuitka fetch build helpers (e.g. MinGW on Windows) without prompting.
         "--assume-yes-for-downloads",
+        # Version information; Windows shows it in the exe's properties and
+        # crash reports. The file version takes numbers only, so the build id
+        # goes in the description.
+        f"--product-name={EXE_BASE_NAME}",
+        f"--product-version={version}",
+        f"--file-version={version}",
+        f"--file-description=Muse media player, build {build_id}",
+        f"--include-data-files={BUILD_INFO_PATH}=build_info.json",
         "--enable-plugin=pyside6",
         # keyring finds its backends, including the OS one, through package
         # metadata entry points; without it encrypted saves cannot work.
@@ -295,20 +416,34 @@ if __name__ == "__main__":
     if with_oqs:
         args.remove("--with-oqs")
     coqui_location = _coqui_location(_pop_option(args, "--coqui-path"))
-    extra_packages = (LIBOQS_PYTHON,) if with_oqs else ()
+    lock = _pop_option(args, "--lock")
+    version = _app_version()
+    build_id = time.strftime("%Y%m%d-%H%M%S")
     exe_name = _exe_name(EXE_BASE_NAME)
     exe_path = os.path.join(REPO_ROOT, "dist", exe_name)
 
     if "--current-env" in args:
         args.remove("--current-env")
+        if lock:
+            sys.exit("--lock installs into the build venv; it cannot be combined with --current-env.")
         python = sys.executable
     else:
-        python = _ensure_build_venv(extra_packages)
+        if lock:
+            lock = os.path.abspath(lock)
+            if not os.path.isfile(lock):
+                sys.exit(f"--lock: {lock} not found.")
+        # A lock file from an OQS build already pins liboqs-python.
+        needs_liboqs = with_oqs and not (lock and _lock_has(lock, "liboqs-python"))
+        python = _ensure_build_venv((LIBOQS_PYTHON,) if needs_liboqs else (), requirements=lock)
 
+    _write_lock_file(python)
+    environment = _environment_versions(python)
+    _check_transformers_version(environment["packages"])
+    _write_build_info(version, build_id, environment, coqui_location)
     if sys.platform == "win32":
         _write_windows_icon(python)
     nuitka_args = [
-        *_nuitka_args(exe_name), *_oqs_args(python, with_oqs),
+        *_nuitka_args(exe_name, version, build_id), *_oqs_args(python, with_oqs),
         *args, os.path.join(REPO_ROOT, ENTRY),
     ]
     nuitka_env = dict(os.environ)

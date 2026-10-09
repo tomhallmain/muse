@@ -36,9 +36,11 @@ def fake_repo(tmp_path, monkeypatch, quiet_logger):
 
 
 @pytest.fixture
-def no_overrides(monkeypatch):
-    for var in _OVERRIDES:
-        monkeypatch.delenv(var, raising=False)
+def no_app_data_override(monkeypatch):
+    """Unset only MUSE_APP_DATA_DIR, for tests that compute the default path
+    and create nothing; the cache override, which also places the key store,
+    stays set."""
+    monkeypatch.delenv("MUSE_APP_DATA_DIR", raising=False)
 
 
 @pytest.mark.unit
@@ -47,19 +49,19 @@ class TestAppDataDir:
         monkeypatch.setenv("MUSE_APP_DATA_DIR", str(tmp_path))
         assert app_paths.app_data_dir() == str(tmp_path)
 
-    def test_windows_uses_appdata(self, monkeypatch, no_overrides):
+    def test_windows_uses_appdata(self, monkeypatch, no_app_data_override):
         monkeypatch.setattr(app_paths.sys, "platform", "win32")
         monkeypatch.setenv("APPDATA", os.path.join("X:", "Roaming"))
         assert app_paths.app_data_dir() == os.path.join("X:", "Roaming", "muse")
 
-    def test_windows_without_appdata_uses_home(self, monkeypatch, no_overrides):
+    def test_windows_without_appdata_uses_home(self, monkeypatch, no_app_data_override):
         monkeypatch.setattr(app_paths.sys, "platform", "win32")
         monkeypatch.delenv("APPDATA", raising=False)
         monkeypatch.setattr(app_paths.os.path, "expanduser", lambda p: p.replace("~", "HOME"))
         assert app_paths.app_data_dir() == os.path.join("HOME", "AppData", "Roaming", "muse")
 
     @pytest.mark.parametrize("platform", ["linux", "darwin"])
-    def test_other_platforms_use_local_share(self, monkeypatch, no_overrides, platform):
+    def test_other_platforms_use_local_share(self, monkeypatch, no_app_data_override, platform):
         monkeypatch.setattr(app_paths.sys, "platform", platform)
         monkeypatch.setattr(app_paths.os.path, "expanduser", lambda p: p.replace("~", "HOME"))
         assert app_paths.app_data_dir() == os.path.join("HOME", ".local", "share", "muse")
@@ -160,7 +162,7 @@ class TestMigrateCacheAndOutput:
         fake_repo("library_data/wiki/Bach.txt")
         fake_repo("assets/spinning_record_videos/clip.mp4")
         fake_repo("assets/icon.png")
-        target = tmp_path / "cache"
+        target = tmp_path / "migrated_cache"  # the root conftest already creates tmp_path/cache
         app_paths._migrate_cache(str(target))
         assert (target / "app_info_cache.enc").is_file()
         assert (target / "app_info_cache.enc.bak1").is_file()
@@ -174,34 +176,45 @@ class TestMigrateCacheAndOutput:
 
     def test_tts_output_moves(self, fake_repo, tmp_path):
         fake_repo("tts_output/spot.wav")
-        target = tmp_path / "tts_output"
+        target = tmp_path / "migrated_tts_output"
         app_paths._migrate_tts_output(str(target))
         assert (target / "spot.wav").is_file()
 
 
 @pytest.mark.unit
 class TestMigrateOnce:
+    """The real overrides stay set (the test environment needs them); the
+    override check runs against a stand-in variable name instead."""
+
+    _FAKE_OVERRIDE = "MUSE_TEST_FAKE_OVERRIDE"
+
     @pytest.fixture(autouse=True)
     def fresh_state(self, monkeypatch, quiet_logger):
         monkeypatch.setattr(app_paths, "_migrated", set())
+        monkeypatch.setattr(app_paths, "_OVERRIDE_VARS", (self._FAKE_OVERRIDE,))
+        monkeypatch.delenv(self._FAKE_OVERRIDE, raising=False)
 
-    def test_runs_once_per_key(self, no_overrides, tmp_path):
+    def test_runs_once_per_key(self, tmp_path):
         calls = []
         app_paths._migrate_once("k", calls.append, str(tmp_path))
         app_paths._migrate_once("k", calls.append, str(tmp_path))
         assert calls == [str(tmp_path)]
 
-    @pytest.mark.parametrize("var", _OVERRIDES)
-    def test_skipped_while_an_override_is_set(self, no_overrides, monkeypatch, tmp_path, var):
-        monkeypatch.setenv(var, str(tmp_path))
+    def test_skipped_while_an_override_is_set(self, monkeypatch, tmp_path):
+        monkeypatch.setenv(self._FAKE_OVERRIDE, str(tmp_path))
         calls = []
         app_paths._migrate_once("k", calls.append, str(tmp_path))
         assert calls == []
 
-    def test_a_failing_migration_is_logged_not_raised(self, no_overrides, tmp_path, caplog):
+    def test_a_failing_migration_is_logged_not_raised(self, tmp_path, caplog):
         def fail(_target):
             raise RuntimeError("disk full")
 
         with caplog.at_level(logging.ERROR, logger="test_app_paths"):
             app_paths._migrate_once("k", fail, str(tmp_path))
         assert "disk full" in caplog.text
+
+
+@pytest.mark.unit
+def test_the_override_list_names_every_override():
+    assert set(app_paths._OVERRIDE_VARS) == set(_OVERRIDES)

@@ -14,6 +14,7 @@ import os
 import time
 
 from utils.app_paths import logs_dir
+from utils.version import describe
 
 FAULT_LOG_NAME = "muse_faults.log"
 # Start the file afresh at the next start once it grows past this.
@@ -34,7 +35,7 @@ def enable_fault_log() -> str:
         except OSError:
             mode = "a"
         _fault_log = open(path, mode, encoding="utf-8")
-        _fault_log.write(f"--- started {time.strftime('%Y-%m-%d %H:%M:%S')} pid {os.getpid()}\n")
+        _fault_log.write(f"--- started {time.strftime('%Y-%m-%d %H:%M:%S')} pid {os.getpid()}, {describe()}\n")
         _fault_log.flush()
         faulthandler.enable(file=_fault_log, all_threads=True)
     return _fault_log.name
