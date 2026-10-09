@@ -11,6 +11,7 @@ import os
 import traceback
 
 from utils.app_paths import resource_path
+from utils.crash_log import enable_fault_log
 from utils.logging_setup import get_logger
 
 logger = get_logger("smoke_test")
@@ -57,7 +58,7 @@ class SmokeTest:
         self.check_dependencies(expect_oqs)
 
     def check_files(self) -> None:
-        """Bundled read-only files at the paths the app resolves them under."""
+        """Bundled read-only files at the paths the app resolves them under; the fault log opens."""
         from utils.config import config
         from utils.translations import I18N
 
@@ -73,6 +74,7 @@ class SmokeTest:
         self.check("English dictionary", os.path.isfile(resource_path("tts", "dictionary_en.txt")))
         for name in _EXAMPLE_FILES:
             self.check(name, os.path.isfile(resource_path("library_data", "data", name)))
+        self.check_call("fault log", enable_fault_log)
 
     def check_data(self) -> None:
         """Encrypted bundled data decrypts, and the library DB is created and seeded."""

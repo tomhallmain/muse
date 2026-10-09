@@ -54,7 +54,9 @@ class PythonStencil:
                 values[cell] = self.kernel(*views)
             except _OutsideArray:
                 pass  # a border cell
-        dtype = np.asarray(next(iter(values.values()))).dtype if values else np.asarray(self.cval).dtype
+        # The type all cells' values share, as numba unifies the kernel's
+        # return types (e.g. an int 0 in one branch and a float in another).
+        dtype = np.asarray(list(values.values())).dtype if values else np.asarray(self.cval).dtype
         result = out if out is not None else np.empty(shape, dtype=dtype)
         result[...] = self.cval
         for cell, value in values.items():
@@ -124,7 +126,10 @@ class PythonGufunc:
                 cell = array[own + (Ellipsis,)]
                 # Scalar inputs as numpy scalars; outputs and core dims as
                 # views, so the kernel's writes land in the caller's arrays.
-                call_args.append(cell[()] if core == 0 and position < n_inputs else cell)
+                # A scalar output is a 1-element view, written as out[0].
+                if core == 0:
+                    cell = cell[()] if position < n_inputs else cell[np.newaxis]
+                call_args.append(cell)
             self.func(*call_args)
         outputs = args[len(args) - self.n_outputs:]
         return outputs[0] if self.n_outputs == 1 else tuple(outputs)

@@ -55,6 +55,7 @@ from lib.qt_alert import qt_alert
 from lib.media_keys import MediaKeyHandler
 from utils.app_info_cache import app_info_cache
 from utils.app_paths import resource_path
+from utils.crash_log import enable_fault_log
 from utils.spinning_record import SpinningRecordVideos
 from utils import (
     config,
@@ -1827,6 +1828,10 @@ def main():
             traceback.print_exc()
             exit_code = 1
         sys.exit(exit_code)
+    try:
+        enable_fault_log()
+    except Exception as e:
+        logger.error(f"Could not open the fault log: {e}")
     _route_qt_messages_to_logger()
     app = QApplication(sys.argv)
     app.setApplicationName("Muse")
