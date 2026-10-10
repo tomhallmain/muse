@@ -1803,8 +1803,9 @@ def _route_qt_messages_to_logger():
     qInstallMessageHandler(_log_qt_message)
 
 
-def _log_source_drift():
-    """In a build, log whether the source checkout it was built from has changed since."""
+def _report_source_drift(window):
+    """In a build, log whether the source checkout it was built from has
+    changed since, and tell the user with a toast when it has."""
     try:
         result = source_drift()
     except Exception as e:
@@ -1814,6 +1815,7 @@ def _log_source_drift():
         drifted, message = result
         if drifted:
             logger.warning(message)
+            window.toast(_("This build no longer matches its source code. See the log for details."))
         else:
             logger.info(message)
 
@@ -1866,7 +1868,7 @@ def main():
     window.show()
     threading.Thread(target=remove_stale_unpack_dirs, name="unpack-cleanup", daemon=True).start()
     # Runs git, which can take a moment.
-    threading.Thread(target=_log_source_drift, name="source-drift", daemon=True).start()
+    threading.Thread(target=_report_source_drift, args=(window,), name="source-drift", daemon=True).start()
 
     def graceful_shutdown(*args):
         logger.info("Caught signal, shutting down gracefully...")
