@@ -140,7 +140,9 @@ class FFmpegHandler:
         mean_volume_tag = "] mean_volume: "
         max_volume_tag = "] max_volume: "
         try:
-            process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            # stdin is set explicitly in every call here: a windowed Windows exe has
+            # no valid console stdin, and inheriting it fails with WinError 6.
+            process = subprocess.Popen(args, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, creationflags=Utils.NO_CONSOLE_WINDOW)
             output, _ = process.communicate()
             output_str = output.decode("utf-8", errors="ignore")
             for line in output_str.split("\n"):
@@ -176,7 +178,7 @@ class FFmpegHandler:
         ]
         
         try:
-            process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            process = subprocess.Popen(args, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, creationflags=Utils.NO_CONSOLE_WINDOW)
             output, _ = process.communicate()
             return process.returncode == 0
         except Exception as e:
@@ -195,7 +197,7 @@ class FFmpegHandler:
         if FFmpegHandler.ffprobe_available:
             args = ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", sanitized_path]
             try:
-                process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+                process = subprocess.Popen(args, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, creationflags=Utils.NO_CONSOLE_WINDOW)
                 output, _ = process.communicate()
                 for line in output.split("\n"):
                     try:
@@ -208,7 +210,7 @@ class FFmpegHandler:
         # Fallback to ffmpeg if ffprobe fails or is not available
         args = ["ffmpeg", "-i", sanitized_path]
         try:
-            process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            process = subprocess.Popen(args, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, creationflags=Utils.NO_CONSOLE_WINDOW)
             stdout, stderr = process.communicate()
             for line in stderr.split("\n"):
                 if "Duration: " in line and ", start:" in line:
@@ -246,7 +248,7 @@ class FFmpegHandler:
         sanitized_path = FFmpegHandler.sanitize_filename(filepath)
         silence_times = []
         args = ["ffmpeg", "-i", sanitized_path, "-af", f"silencedetect=n={noise_threshold}:d={duration}", "-f", "null", "/dev/null"]
-        process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+        process = subprocess.Popen(args, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, creationflags=Utils.NO_CONSOLE_WINDOW)
         output, _ = process.communicate()
         silence_interval = [0.0]
         for line in output.split("\n"):
@@ -335,7 +337,7 @@ class FFmpegHandler:
         ]
         
         try:
-            process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+            process = subprocess.Popen(args, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, creationflags=Utils.NO_CONSOLE_WINDOW)
             output, _ = process.communicate()
             if process.returncode == 0:
                 return temp_filepath

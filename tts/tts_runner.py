@@ -356,7 +356,7 @@ class TextToSpeechRunner:
         args = ["ffmpeg", "-hide_banner", "-loglevel", "error", "-i", os.path.abspath(file_path), output_path]
         # logger.info(args)
         try:
-            completed_process = subprocess.run(args)
+            completed_process = subprocess.run(args, creationflags=Utils.NO_CONSOLE_WINDOW)
             if completed_process.returncode != 0:
                 raise Exception()
             self.add_metadata(output_path, text_content)
@@ -413,7 +413,7 @@ class TextToSpeechRunner:
         args.append(output_path_no_unicode.replace("\\", "/"))
         # logger.info(args)
         try:
-            completed_process = subprocess.run(args)
+            completed_process = subprocess.run(args, creationflags=Utils.NO_CONSOLE_WINDOW)
             if completed_process.returncode == 0:
                 logger.info("Combined audio files: " + output_path)
                 if save_mp3:

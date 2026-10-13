@@ -28,6 +28,7 @@ from typing import List, Dict, Optional, Tuple
 import threading
 
 from utils.logging_setup import get_logger
+from utils.utils import Utils
 from utils.translations import I18N
 
 logger = get_logger(__name__)
@@ -1108,6 +1109,8 @@ class AudioDeviceManager:
             logger.debug(f"Executing PowerShell command for device: {device_name}")
             result = subprocess.run(
                 ["powershell", "-Command", ps_command],
+                stdin=subprocess.DEVNULL,
+                creationflags=Utils.NO_CONSOLE_WINDOW,
                 capture_output=True,
                 text=True,
                 timeout=60  # Increased timeout for module installation

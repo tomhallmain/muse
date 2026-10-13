@@ -20,6 +20,10 @@ from utils.logging_setup import get_logger
 logger = get_logger(__name__)
 
 class Utils:
+    # Pass as creationflags so a console child started from the windowed exe
+    # opens no console window of its own.
+    NO_CONSOLE_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0) if sys.platform == "win32" else 0
+
     # Regular expression to match emoji characters
     EMOJI_PATTERN = re.compile("["
         u"\U0001F600-\U0001F64F"  # emoticons

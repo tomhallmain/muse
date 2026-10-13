@@ -780,7 +780,7 @@ class ExtensionManager:
         e1 = " Destination: "
         logger.warning(f"extending delayed: {a}")
         e = "[download]"
-        p = subprocess.Popen(a, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+        p = subprocess.Popen(a, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, creationflags=Utils.NO_CONSOLE_WINDOW)
         ExtensionManager.current_dl_process = p
         try:
             o, __ = p.communicate()

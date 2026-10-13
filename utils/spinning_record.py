@@ -238,7 +238,7 @@ class SpinningRecordVideos:
             "-frames:v", "1", "-f", "rawvideo", "-pix_fmt", "rgb24", "-",
         ]
         try:
-            finished = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=60)
+            finished = subprocess.run(args, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=60, creationflags=Utils.NO_CONSOLE_WINDOW)
             if finished.returncode == 0 and len(finished.stdout) >= 3:
                 red, green, blue = finished.stdout[0], finished.stdout[1], finished.stdout[2]
                 return f"0x{red:02x}{green:02x}{blue:02x}"
@@ -280,7 +280,7 @@ class SpinningRecordVideos:
     @staticmethod
     def _run_ffmpeg(args: List[str]) -> bool:
         try:
-            process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+            process = subprocess.Popen(args, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, creationflags=Utils.NO_CONSOLE_WINDOW)
             output, _unused = process.communicate()
             if process.returncode != 0:
                 logger.warning(f"ffmpeg exited with {process.returncode}: {(output or '').strip()[-500:]}")
