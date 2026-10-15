@@ -27,16 +27,18 @@ _EXAMPLE_FILES = (
 
 
 def _check_build_info() -> str:
-    """build_info.json is bundled and names this version; returns the startup log line."""
+    """VERSION and build_info.json are bundled, and name the same version;
+    returns the startup log line."""
     from utils.app_paths import IS_BUILD
-    from utils.version import APP_VERSION, BUILD_INFO_FILE, build_info, describe
+    from utils.version import BUILD_INFO_FILE, app_version, build_info, describe
 
+    version = app_version()
     info = build_info()
     if IS_BUILD:
         if not info:
             raise FileNotFoundError(f"{BUILD_INFO_FILE} is not bundled")
-        if info.get("version") != APP_VERSION:
-            raise ValueError(f"{BUILD_INFO_FILE} names version {info.get('version')}, the app is {APP_VERSION}")
+        if info.get("version") != version:
+            raise ValueError(f"{BUILD_INFO_FILE} names version {info.get('version')}, the app is {version}")
     return describe()
 
 

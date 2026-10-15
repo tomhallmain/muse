@@ -11,13 +11,15 @@ from utils import app_paths, smoke_test, version
 
 @pytest.fixture
 def resource_root(monkeypatch, tmp_path):
-    """Resolve bundled files under tmp_path; returns the build_info.json path."""
+    """Resolve bundled files under tmp_path, with a VERSION file of 1.2.3;
+    returns the build_info.json path."""
     monkeypatch.setattr(app_paths, "resource_path", lambda *parts: str(tmp_path.joinpath(*parts)))
+    (tmp_path / version.VERSION_FILE).write_text("1.2.3\n", encoding="utf-8")
     return tmp_path / version.BUILD_INFO_FILE
 
 
 def _write_info(path, **overrides):
-    info = {"version": version.APP_VERSION, "build_id": "20261009-095251", "python": "3.10.14",
+    info = {"version": "1.2.3", "build_id": "20261009-095251", "python": "3.10.14",
             "packages": {"PySide6": "6.11.2", "Nuitka": "4.2.2"}, "coqui_commit": "abc123"}
     info.update(overrides)
     path.write_text(json.dumps(info), encoding="utf-8")
@@ -26,16 +28,23 @@ def _write_info(path, **overrides):
 @pytest.mark.unit
 class TestVersion:
     def test_app_version_fits_windows_version_information(self):
-        assert re.fullmatch(r"\d+(\.\d+){0,3}", version.APP_VERSION)
+        assert re.fullmatch(r"\d+(\.\d+){0,3}", version.app_version())
+
+    def test_app_version_is_read_from_the_version_file(self, resource_root):
+        assert version.app_version() == "1.2.3"
 
     def test_source_checkout(self, resource_root):
         assert version.build_info() == {}
-        assert version.describe() == f"Muse {version.APP_VERSION} (source checkout)"
+        assert version.describe() == "Muse 1.2.3 (source checkout)"
+
+    def test_missing_version_file(self, resource_root):
+        (resource_root.parent / version.VERSION_FILE).unlink()
+        assert "version unreadable" in version.describe()
 
     def test_build(self, resource_root):
         _write_info(resource_root, source={"repo": "R", "commit": "0123456789abcdef", "changes": ""})
         assert version.describe() == (
-            f"Muse {version.APP_VERSION}, build 20261009-095251 from 0123456789 (Nuitka 4.2.2, PySide6 6.11.2)"
+            "Muse 1.2.3, build 20261009-095251 from 0123456789 (Nuitka 4.2.2, PySide6 6.11.2)"
         )
 
     def test_build_with_uncommitted_changes(self, resource_root):
@@ -68,6 +77,13 @@ class TestSmokeCheckBuildInfo:
         with pytest.raises(ValueError, match="0.0.1"):
             smoke_test._check_build_info()
 
+    def test_build_without_version_file_fails(self, resource_root, monkeypatch):
+        monkeypatch.setattr(app_paths, "IS_BUILD", True)
+        _write_info(resource_root)
+        (resource_root.parent / version.VERSION_FILE).unlink()
+        with pytest.raises(FileNotFoundError):
+            smoke_test._check_build_info()
+
     def test_build_with_matching_build_info_passes(self, resource_root, monkeypatch):
         monkeypatch.setattr(app_paths, "IS_BUILD", True)
         _write_info(resource_root)
@@ -77,12 +93,14 @@ class TestSmokeCheckBuildInfo:
 @pytest.mark.unit
 class TestSourceState:
     def test_commit_and_clean_tree_from_git(self, monkeypatch):
-        outputs = {("rev-parse", "HEAD"): "abc123\n", ("diff", "HEAD", "--binary"): ""}
+        outputs = {("rev-parse", "HEAD"): "abc123\n", ("rev-parse", "HEAD^{tree}"): "fed987\n",
+                   ("diff", "HEAD", "--binary"): ""}
         monkeypatch.setattr(version, "run_git", lambda repo, *args: outputs[args])
-        assert version.source_state("R") == {"commit": "abc123", "changes": ""}
+        assert version.source_state("R") == {"commit": "abc123", "tree": "fed987", "changes": ""}
 
     def test_uncommitted_changes_are_fingerprinted(self, monkeypatch):
-        outputs = {("rev-parse", "HEAD"): "abc123\n", ("diff", "HEAD", "--binary"): "diff --git a b\n"}
+        outputs = {("rev-parse", "HEAD"): "abc123\n", ("rev-parse", "HEAD^{tree}"): "fed987\n",
+                   ("diff", "HEAD", "--binary"): "diff --git a b\n"}
         monkeypatch.setattr(version, "run_git", lambda repo, *args: outputs[args])
         changes = version.source_state("R")["changes"]
         assert changes and len(changes) == 40
@@ -91,7 +109,7 @@ class TestSourceState:
         (tmp_path / ".git").mkdir()
         (tmp_path / ".git" / "HEAD").write_text("def456\n", encoding="utf-8")
         monkeypatch.setattr(version, "run_git", lambda repo, *args: None)
-        assert version.source_state(str(tmp_path)) == {"commit": "def456", "changes": None}
+        assert version.source_state(str(tmp_path)) == {"commit": "def456", "tree": "", "changes": None}
 
 
 @pytest.mark.unit
@@ -163,3 +181,27 @@ class TestSourceDrift:
         drifted, message = version.source_drift()
         assert drifted is True
         assert "a different commit" in message
+
+    def _rewritten(self, monkeypatch, tmp_path, current_tree):
+        """A build from commit dddd..., whose checkout is now at eeee... with
+        *current_tree*, and in which git finds no commit dddd... (history
+        rewritten, then gc)."""
+        (tmp_path / ".git").mkdir()
+        monkeypatch.setattr(version, "build_info", lambda: {
+            "source": {"repo": str(tmp_path), "commit": "d" * 40, "tree": "t" * 40, "changes": ""},
+        })
+        monkeypatch.setattr(version, "source_state",
+                            lambda repo: {"commit": "e" * 40, "tree": current_tree, "changes": ""})
+        monkeypatch.setattr(version, "run_git", lambda repo, *args: None)
+
+    def test_rewritten_commit_with_the_same_files_matches(self, monkeypatch, tmp_path):
+        self._rewritten(monkeypatch, tmp_path, current_tree="t" * 40)
+        drifted, message = version.source_drift()
+        assert drifted is False
+        assert "same files" in message
+
+    def test_commit_missing_from_the_history_is_named(self, monkeypatch, tmp_path):
+        self._rewritten(monkeypatch, tmp_path, current_tree="u" * 40)
+        drifted, message = version.source_drift()
+        assert drifted is True
+        assert "not in its history" in message

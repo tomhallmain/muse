@@ -1,6 +1,9 @@
 # Build dependencies for build_exe.py, installed into .venv-build.
 -r requirements.txt
-nuitka
+# A known good pair: SD Runner built with Nuitka 4.3 and PySide6 6.12.0 crashed
+# natively after startup; Muse's builds used these two.
+Nuitka==4.2.2
+PySide6==6.11.2
 zstandard
 # Global media keys on macOS/Linux (lib/media_keys.py); Windows uses Qt's.
 pynput; sys_platform != "win32"

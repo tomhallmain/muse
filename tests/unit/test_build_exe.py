@@ -130,11 +130,21 @@ class TestAppVersion:
 
         assert re.fullmatch(r"\d+(\.\d+){0,3}", build_exe._app_version())
 
+    def test_strips_the_line_end(self, monkeypatch, tmp_path):
+        (tmp_path / build_exe.VERSION_FILE).write_text("1.2.3\n", encoding="utf-8")
+        monkeypatch.setattr(build_exe, "REPO_ROOT", str(tmp_path))
+        assert build_exe._app_version() == "1.2.3"
+
     @pytest.mark.parametrize("bad", ["1.0.0-beta", "1.2.3.4.5", "v1", ""])
-    def test_rejects_what_windows_version_information_cannot_hold(self, monkeypatch, bad):
-        monkeypatch.setattr(build_exe.runpy, "run_path", lambda path: {"APP_VERSION": bad})
+    def test_rejects_what_windows_version_information_cannot_hold(self, monkeypatch, tmp_path, bad):
+        (tmp_path / build_exe.VERSION_FILE).write_text(bad + "\n", encoding="utf-8")
+        monkeypatch.setattr(build_exe, "REPO_ROOT", str(tmp_path))
         with pytest.raises(SystemExit):
             build_exe._app_version()
+
+    def test_the_version_file_is_bundled(self):
+        args = build_exe._nuitka_args("Muse.exe", "1.2.3", "20261009-095251")
+        assert f"--include-data-files={build_exe.VERSION_FILE}={build_exe.VERSION_FILE}" in args
 
 
 @pytest.mark.unit
@@ -157,17 +167,21 @@ class TestLockHas:
 
 @pytest.mark.unit
 class TestTransformersVersionCheck:
-    def test_matching_release_is_quiet(self, capsys):
-        build_exe._check_transformers_version({"transformers": "4.45.2"})
-        assert capsys.readouterr().out == ""
+    def test_matching_release_is_quiet(self, caplog):
+        with caplog.at_level("INFO", logger="build_exe"):
+            build_exe._check_transformers_version({"transformers": "4.45.2"})
+        assert caplog.records == []
 
-    def test_other_release_warns(self, capsys):
-        build_exe._check_transformers_version({"transformers": "4.46.0"})
-        assert "WARNING" in capsys.readouterr().out
+    def test_other_release_warns(self, caplog):
+        with caplog.at_level("INFO", logger="build_exe"):
+            build_exe._check_transformers_version({"transformers": "4.46.0"})
+        assert [r.levelname for r in caplog.records] == ["WARNING"]
+        assert "4.46.0" in caplog.messages[0]
 
-    def test_absent_transformers_is_quiet(self, capsys):
-        build_exe._check_transformers_version({"transformers": None})
-        assert capsys.readouterr().out == ""
+    def test_absent_transformers_is_quiet(self, caplog):
+        with caplog.at_level("INFO", logger="build_exe"):
+            build_exe._check_transformers_version({"transformers": None})
+        assert caplog.records == []
 
 
 @pytest.mark.unit
@@ -211,20 +225,22 @@ class TestBuildInfo:
         # Stubbed so the test runs no git in the real checkout.
         monkeypatch.setattr(build_exe, "_version_module", lambda: {
             "read_git_commit": lambda checkout: "",
-            "source_state": lambda repo: {"commit": "abc123", "changes": ""},
+            "source_state": lambda repo: {"commit": "abc123", "tree": "fed987", "changes": ""},
         })
         monkeypatch.setattr(build_exe, "BUILD_DIR", str(tmp_path))
         monkeypatch.setattr(build_exe, "BUILD_INFO_PATH", str(tmp_path / "build_info.json"))
         environment = {"python": "3.10.14", "packages": {"PySide6": "6.11.2", "torch": None}}
-        build_exe._write_build_info("1.2.3", "20261009-095251", environment, str(tmp_path / "coqui"))
+        build_exe._write_build_info("1.2.3", "20261009-095251", environment, str(tmp_path / "coqui"),
+                                    with_oqs=True)
         info = json.loads((tmp_path / "build_info.json").read_text(encoding="utf-8"))
         assert info == {
             "version": "1.2.3",
             "build_id": "20261009-095251",
+            "with_oqs": True,
             "python": "3.10.14",
             "packages": {"PySide6": "6.11.2"},
             "coqui_commit": "unknown",
-            "source": {"repo": build_exe.REPO_ROOT, "commit": "abc123", "changes": ""},
+            "source": {"repo": build_exe.REPO_ROOT, "commit": "abc123", "tree": "fed987", "changes": ""},
         }
 
     def test_nuitka_args_carry_version_and_build_info(self):
@@ -233,3 +249,70 @@ class TestBuildInfo:
         assert "--file-version=1.2.3" in args
         assert "--file-description=Muse media player, build 20261009-095251" in args
         assert f"--include-data-files={build_exe.BUILD_INFO_PATH}=build_info.json" in args
+
+
+@pytest.mark.unit
+class TestMemoryWait:
+    def test_plugin_is_loaded(self):
+        args = build_exe._nuitka_args("Muse.exe", "1.2.3", "20261009-095251")
+        plugin = build_exe._pop_option(args, "--user-plugin")
+        assert plugin == build_exe.MEMORY_WAIT_PLUGIN
+        assert os.path.isfile(plugin)
+
+    def test_min_free_memory_reaches_nuitka(self, monkeypatch):
+        monkeypatch.delenv(build_exe.MIN_FREE_MEMORY_ENV, raising=False)
+        assert build_exe._nuitka_env("C:/coqui", "12")[build_exe.MIN_FREE_MEMORY_ENV] == "12"
+        assert build_exe.MIN_FREE_MEMORY_ENV not in build_exe._nuitka_env("C:/coqui", None)
+
+    def test_coqui_checkout_is_on_the_path(self, monkeypatch):
+        monkeypatch.setenv("PYTHONPATH", "elsewhere")
+        assert build_exe._nuitka_env("C:/coqui")["PYTHONPATH"] == os.pathsep.join(["C:/coqui", "elsewhere"])
+
+    @pytest.mark.parametrize("value", ["0", "12", "2.5"])
+    def test_min_free_memory_accepts_gib(self, value):
+        assert build_exe._min_free_memory(value) == value
+
+    @pytest.mark.parametrize("value", ["-1", "lots", ""])
+    def test_min_free_memory_refuses_other_values(self, value):
+        with pytest.raises(SystemExit):
+            build_exe._min_free_memory(value)
+
+    def test_variable_matches_the_plugin(self):
+        with open(build_exe.MEMORY_WAIT_PLUGIN, "r", encoding="utf-8") as f:
+            assert f'MIN_FREE_ENV = "{build_exe.MIN_FREE_MEMORY_ENV}"' in f.read()
+
+
+@pytest.mark.unit
+class TestTiming:
+    @pytest.mark.parametrize("seconds, text", [
+        (0, "0s"), (59.6, "1m 00s"), (125, "2m 05s"), (2 * 3600 + 5, "2h 00m 05s"),
+    ])
+    def test_duration(self, seconds, text):
+        assert build_exe._duration(seconds) == text
+
+    def test_timed_logs_the_duration_of_a_step(self, caplog):
+        with caplog.at_level("INFO", logger="build_exe"):
+            with build_exe._timed("Compiling"):
+                pass
+        assert caplog.messages[0] == "Compiling..."
+        assert caplog.messages[-1].startswith("Compiling done in ")
+
+    def test_timed_logs_a_failed_step(self, caplog):
+        with caplog.at_level("INFO", logger="build_exe"):
+            with pytest.raises(SystemExit):
+                with build_exe._timed("Compiling"):
+                    raise SystemExit("broken")
+        assert caplog.messages[-1].startswith("Compiling failed after ")
+
+
+@pytest.mark.unit
+class TestCopyToDist:
+    def test_replaces_a_folder_build(self, monkeypatch, tmp_path):
+        build_dir, dist_dir = tmp_path / "build", tmp_path / "dist"
+        build_dir.mkdir()
+        (build_dir / "Muse").write_bytes(b"exe")
+        (dist_dir / "Muse").mkdir(parents=True)
+        monkeypatch.setattr(build_exe, "BUILD_DIR", str(build_dir))
+        monkeypatch.setattr(build_exe, "DIST_DIR", str(dist_dir))
+        assert build_exe._copy_to_dist("Muse") == str(dist_dir / "Muse")
+        assert (dist_dir / "Muse").read_bytes() == b"exe"
