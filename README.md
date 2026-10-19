@@ -100,7 +100,7 @@ Prerequisites:
 - A Coqui-TTS source checkout, which is compiled into the executable: pass `--coqui-path=<dir>`, or the build uses `coqui_tts_location` from your `config.json`.
 - VLC installed on the build machine. The build checks itself with `Muse --smoke-test` before finishing, which loads Muse's playback code and with it libvlc.
 - Several GB of free disk space: the executable contains PyTorch.
-- Memory: the last step of the compile compresses the payload, with one compression thread per Nuitka job. Before it starts, the build estimates how much memory that needs and, if less is free, waits until it is (close other programs, or press Enter to go ahead). `--min-free-memory=<GiB>` sets the amount, and 0 turns the wait off. `--jobs=N` uses fewer threads, which needs less memory but also makes the C compile slower.
+- Memory: the last step of the compile compresses the payload, with one compression thread per Nuitka job. Before it starts, the build estimates how much memory that needs and, if less is free, waits until it is (close other programs, or press Enter to go ahead). The wait needs app-release installed (see [Releases](#releases)), which ships the plugin that does it; without it the build warns and does not wait. `--min-free-memory=<GiB>` sets the amount, and 0 turns the wait off. `--jobs=N` uses fewer threads, which needs less memory but also makes the C compile slower.
 
 Extra arguments are passed to Nuitka, e.g. `python build_exe.py --jobs=4`. Each step's duration is logged, to the console and to `build/logs/build_exe-<build id>.log`.
 
@@ -116,7 +116,7 @@ What the executable includes and leaves out:
 
 ### Releases
 
-`python scripts/package_release.py` publishes the executable in `dist/` as a GitHub release, using `git` and the GitHub CLI (`gh`, logged in). It first rebuilds the executable if it is behind `HEAD` (arguments after `--` go to `build_exe.py`, e.g. `-- --jobs=4`; `--with-oqs` is added when the previous build had it), and refuses to build while tracked files have uncommitted changes. It then stages `Muse-<version>-<os>-<arch>[.exe]`, the build's lock file, a `SHA256SUMS` file and generated release notes in `dist/release/v<version>/`, shows the notes to approve or edit, tags the build's commit `v<version>`, pushes the branch and the tag, and creates a draft release. Run it again with `--publish` to publish the draft. `--variant cuda` names a CUDA build, `--no-upload` stops after staging, and `--help` lists the other options. Each step is logged to `build/logs/package_release-<time>.log`.
+Releases are made with [app-release](https://github.com/tomhallmain/release-tools), a separate tool installed with `pipx`: `app-release <checkout>` rebuilds the executable in `dist/` if it is behind `HEAD`, stages it in `dist/release/v<version>/` and publishes it as a GitHub release. See its README for the options.
 
 
 ## Testing

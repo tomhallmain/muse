@@ -253,11 +253,46 @@ class TestBuildInfo:
 
 @pytest.mark.unit
 class TestMemoryWait:
-    def test_plugin_is_loaded(self):
+    @staticmethod
+    def _no_tool(monkeypatch, tools=None):
+        """No variable, *tools* ({command: path}) as what shutil.which finds."""
+        monkeypatch.delenv(build_exe.MEMORY_WAIT_PLUGIN_ENV, raising=False)
+        monkeypatch.setattr(build_exe.shutil, "which", lambda name: (tools or {}).get(name))
+
+    def test_the_variable_names_the_plugin(self, monkeypatch, tmp_path):
+        plugin = tmp_path / "memory_wait_plugin.py"
+        plugin.write_text("", encoding="utf-8")
+        self._no_tool(monkeypatch)
+        monkeypatch.setenv(build_exe.MEMORY_WAIT_PLUGIN_ENV, str(plugin))
+        assert build_exe._memory_wait_plugin() == str(plugin)
+
+    def test_an_installed_tool_names_the_plugin(self, monkeypatch, tmp_path):
+        import subprocess
+
+        plugin = tmp_path / "memory_wait_plugin.py"
+        plugin.write_text("", encoding="utf-8")
+        self._no_tool(monkeypatch, tools={"app-release": "/bin/app-release"})
+        calls = []
+
+        def fake_run(args, **kwargs):
+            calls.append(args)
+            return subprocess.CompletedProcess(args, 0, stdout=f"{plugin}\n", stderr="")
+
+        monkeypatch.setattr(build_exe.subprocess, "run", fake_run)
+        assert build_exe._memory_wait_plugin() == str(plugin)
+        assert calls == [["/bin/app-release", "--memory-wait-plugin"]]
+
+    def test_no_plugin_anywhere_builds_without_it(self, monkeypatch, caplog):
+        self._no_tool(monkeypatch)
+        with caplog.at_level("WARNING", logger="build_exe"):
+            assert build_exe._memory_wait_plugin() is None
+        assert any("app-release" in message for message in caplog.messages)
+
+    def test_the_plugin_found_is_passed_to_nuitka(self):
+        args = build_exe._nuitka_args("Muse.exe", "1.2.3", "20261009-095251", "/x/memory_wait_plugin.py")
+        assert build_exe._pop_option(args, "--user-plugin") == "/x/memory_wait_plugin.py"
         args = build_exe._nuitka_args("Muse.exe", "1.2.3", "20261009-095251")
-        plugin = build_exe._pop_option(args, "--user-plugin")
-        assert plugin == build_exe.MEMORY_WAIT_PLUGIN
-        assert os.path.isfile(plugin)
+        assert build_exe._pop_option(args, "--user-plugin") is None
 
     def test_min_free_memory_reaches_nuitka(self, monkeypatch):
         monkeypatch.delenv(build_exe.MIN_FREE_MEMORY_ENV, raising=False)
@@ -277,9 +312,9 @@ class TestMemoryWait:
         with pytest.raises(SystemExit):
             build_exe._min_free_memory(value)
 
-    def test_variable_matches_the_plugin(self):
-        with open(build_exe.MEMORY_WAIT_PLUGIN, "r", encoding="utf-8") as f:
-            assert f'MIN_FREE_ENV = "{build_exe.MIN_FREE_MEMORY_ENV}"' in f.read()
+    def test_the_variable_is_the_one_the_plugin_reads(self):
+        # app-release's tests pin the plugin's side of this name.
+        assert build_exe.MIN_FREE_MEMORY_ENV == "BUILD_MIN_FREE_MEMORY_GB"
 
 
 @pytest.mark.unit

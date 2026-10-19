@@ -22,9 +22,10 @@ machine. Other args are forwarded to Nuitka, e.g. ``--show-scons`` or
 ``--jobs=4``.
 
 Before compressing the onefile payload, the last step of the compile, the
-build waits for enough free memory (scripts/nuitka_memory_wait.py), since a
-failed allocation there loses the whole compile. ``--min-free-memory=<GiB>``
-sets the amount instead of the estimate; 0 turns the wait off. Each step is
+build waits for enough free memory (the memory-wait plugin, from
+app-release when installed), since a failed allocation there loses the
+whole compile. ``--min-free-memory=<GiB>`` sets the amount instead of the
+estimate; 0 turns the wait off. Each step is
 timed, and the log goes to ``build/logs/build_exe-<build id>.log`` as well
 (Nuitka's own output only to the console).
 
@@ -45,8 +46,8 @@ itself with this checkout, and ``build/nuitka/build-requirements.lock.txt``,
 the build venv's ``pip freeze``. ``--lock=<file>`` installs the build venv
 from such a file instead of requirements-build.txt, to repeat a known good
 build; packages already in the venv but absent from the file stay installed,
-so delete .venv-build first for an exact copy. scripts/package_release.py
-publishes the executable in dist/ as a GitHub release.
+so delete .venv-build first for an exact copy. app-release publishes the
+executable in dist/ as a GitHub release.
 """
 import contextlib
 import json
@@ -74,8 +75,9 @@ VERSION_MODULE = os.path.join("utils", "version.py")
 BUILD_INFO_PATH = os.path.join(BUILD_DIR, "build_info.json")
 LOCK_PATH = os.path.join(BUILD_DIR, "build-requirements.lock.txt")
 LOG_DIR = os.path.join(REPO_ROOT, "build", "logs")
-MEMORY_WAIT_PLUGIN = os.path.join(REPO_ROOT, "scripts", "nuitka_memory_wait.py")
-# Read by MEMORY_WAIT_PLUGIN.
+# Set by app-release, which ships the memory-wait plugin, when it runs this script.
+MEMORY_WAIT_PLUGIN_ENV = "NUITKA_MEMORY_WAIT_PLUGIN"
+# Read by the memory-wait plugin.
 MIN_FREE_MEMORY_ENV = "BUILD_MIN_FREE_MEMORY_GB"
 # Versions the build log and build_info.json record.
 RECORDED_DISTRIBUTIONS = ("Nuitka", "PySide6", "torch", "transformers")
@@ -263,7 +265,7 @@ def _write_build_info(version: str, build_id: str, environment: dict, coqui_loca
     info = {
         "version": version,
         "build_id": build_id,
-        # scripts/package_release.py rebuilds with --with-oqs when this is true.
+        # app-release rebuilds with --with-oqs when this is true.
         "with_oqs": with_oqs,
         "python": environment["python"],
         "packages": {name: v for name, v in environment["packages"].items() if v},
@@ -354,7 +356,29 @@ def _write_windows_icon(python: str) -> None:
     subprocess.run([python, "-c", script, os.path.join(REPO_ROOT, ICON_PNG), ICON_ICO], env=env, check=True)
 
 
-def _nuitka_args(exe_name: str, version: str, build_id: str) -> list:
+def _memory_wait_plugin():
+    """The memory-wait plugin's path: from app-release's variable, else from an
+    installed app-release, else None (the build does not wait)."""
+    path = os.environ.get(MEMORY_WAIT_PLUGIN_ENV)
+    tool = None if path else shutil.which("app-release")
+    if tool:
+        try:
+            result = subprocess.run([tool, "--memory-wait-plugin"], capture_output=True, text=True,
+                                    stdin=subprocess.DEVNULL, timeout=60)
+        except (OSError, subprocess.SubprocessError) as e:
+            logger.warning(f"Cannot ask {tool} for the memory-wait plugin: {e}")
+        else:
+            if result.returncode == 0:
+                path = result.stdout.strip()
+    if path and os.path.isfile(path):
+        logger.info(f"Memory-wait plugin: {path}")
+        return path
+    logger.warning("No memory-wait plugin: the onefile step will not wait for free memory. "
+                   "Install app-release, or build through it.")
+    return None
+
+
+def _nuitka_args(exe_name: str, version: str, build_id: str, memory_wait_plugin=None) -> list:
     # The onefile exe unpacks its runtime to this folder. A fixed path (no
     # {PID}/{TIME}) makes Nuitka keep it between runs, so only the first run
     # pays the unpacking cost. The build id gives each build its own folder so
@@ -410,7 +434,7 @@ def _nuitka_args(exe_name: str, version: str, build_id: str) -> list:
         # which compiled functions do not have; both fall back to plain Python.
         "--module-parameter=numba-disable-jit=yes",
         "--module-parameter=torch-disable-jit=yes",
-        f"--user-plugin={MEMORY_WAIT_PLUGIN}",
+        *([f"--user-plugin={memory_wait_plugin}"] if memory_wait_plugin else []),
         "--nofollow-import-to=pytest",
         "--nofollow-import-to=_pytest",
     ]
@@ -547,7 +571,7 @@ def main() -> None:
     if sys.platform == "win32":
         _write_windows_icon(python)
     nuitka_args = [
-        *_nuitka_args(exe_name, version, build_id), *_oqs_args(python, with_oqs),
+        *_nuitka_args(exe_name, version, build_id, _memory_wait_plugin()), *_oqs_args(python, with_oqs),
         *args, os.path.join(REPO_ROOT, ENTRY),
     ]
     with _timed(f"Compiling {EXE_BASE_NAME} with Nuitka"):
