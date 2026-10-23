@@ -13,6 +13,7 @@ Muse is a media player with an integrated voice synthesizer attached to an LLM. 
 - Install [FFmpeg](https://ffmpeg.org/download.html) and make sure `ffmpeg` (and ideally `ffprobe`) is on your PATH; Muse needs it to play tracks. On Windows: `winget install Gyan.FFmpeg`; on macOS: `brew install ffmpeg`; on Linux, your package manager's `ffmpeg` package.
 - In a virtual environment, run `pip install -r requirements.txt` on this directory.
 - Optional (platform-specific): `pip install -r requirements-optional.txt` installs extras for your OS only (e.g. on macOS, Foundation/Cocoa for keychain integration). Note: For keyboard media key support (previous, play/pause, next), install `pynput` via the optional requirements (required for PySide6 on macOS/Linux; Windows has native Qt fallback without `pynput`). The F5-TTS, MaskGCT (Amphion) and Zonos TTS providers are commented out there: F5-TTS and Zonos conflict with versions pinned in `requirements.txt`, and Amphion cannot be installed with pip. See the comments in that file and in `tts/providers/`.
+- For development, `pip install -r requirements-dev.txt` adds pytest for running the test suite (`pytest`).
 - Note: To run TTS by itself, run the run_tts.py file with a text file.
 
 

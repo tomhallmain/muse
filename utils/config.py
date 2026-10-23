@@ -474,10 +474,16 @@ class Config:
         # Create temporary swap file path
         swap_path = os.path.join(Config.CONFIGS_DIR_LOC, f"config_swap_{int(time.time())}.json")
         
+        # The bundled example is only a fallback for reading; saving it would
+        # overwrite the repository's template with the user's settings.
+        target_path = self.config_path
+        if os.path.normcase(os.path.abspath(target_path)) == os.path.normcase(os.path.abspath(CONFIG_EXAMPLE_PATH)):
+            target_path = os.path.join(Config.CONFIGS_DIR_LOC, "config.json")
+
         # Write to swap file
         try:
             with open(swap_path, 'w', encoding='utf-8') as f:
-                json.dump(self.dict, f, indent=4)
+                json.dump(self.dict, f, indent=4, ensure_ascii=False)
         except Exception as e:
             logger.error(f"Failed to write temporary configuration: {e}")
             if os.path.exists(swap_path):
@@ -494,7 +500,7 @@ class Config:
 
         # Write to actual config file
         try:
-            Utils.copy_file(swap_path, self.config_path, overwrite_existing=True)
+            Utils.copy_file(swap_path, target_path, overwrite_existing=True)
         except Exception as e:
             logger.error(f"Failed to write final configuration: {e}")
             os.remove(swap_path)
@@ -502,6 +508,7 @@ class Config:
 
         # Clean up swap file and clear changes
         os.remove(swap_path)
+        self.config_path = target_path
         self.clear_changes()
         return True
 

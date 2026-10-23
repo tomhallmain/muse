@@ -8,6 +8,7 @@ when the new field was never set at all, not when the user explicitly
 emptied it to disable the feature.
 """
 import json
+import sys
 
 import pytest
 
@@ -135,3 +136,20 @@ class TestFillMissingDefaults:
         written = json.loads(config_path.read_text())
         assert written["max_search_results"] == 50
         assert written["auto_fix_album_artwork"] is False
+
+    def test_save_config_never_overwrites_the_example(self, tmp_path, monkeypatch):
+        """With no config.json, the example is read; saving must create config.json instead."""
+        monkeypatch.setattr(Config, "CONFIGS_DIR_LOC", str(tmp_path))
+        example_path = tmp_path / "config_example.json"
+        example_text = json.dumps({"max_search_results": 50})
+        example_path.write_text(example_text, encoding="utf-8")
+        monkeypatch.setattr(sys.modules[Config.__module__], "CONFIG_EXAMPLE_PATH", str(example_path))
+        cfg = Config(config_path=str(example_path))
+        cfg.set_config_value("open_weather_city", "München")
+
+        assert cfg.save_config() is True
+
+        assert example_path.read_text(encoding="utf-8") == example_text
+        config_text = (tmp_path / "config.json").read_text(encoding="utf-8")
+        assert "München" in config_text
+        assert cfg.config_path == str(tmp_path / "config.json")

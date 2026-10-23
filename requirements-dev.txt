@@ -1,0 +1,5 @@
+# Development dependencies: running the test suite (pytest.ini).
+-r requirements.txt
+pytest==9.1.1
+# pytest.ini's addopts pass --cov options, which pytest rejects without this.
+pytest-cov==7.1.0
