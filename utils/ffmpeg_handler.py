@@ -55,7 +55,7 @@ class FFmpegHandler:
             Exception: If the filepath contains emoji or other problematic characters
         """
         if not FFmpegHandler.ffmpeg_available:
-            raise Exception("ffmpeg is not available.")
+            raise Exception("ffmpeg is not available. Install ffmpeg and make sure it is on PATH.")
 
         # Check for emoji in the filepath
         if Utils.contains_emoji(filepath):

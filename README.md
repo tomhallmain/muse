@@ -10,6 +10,7 @@ Muse is a media player with an integrated voice synthesizer attached to an LLM. 
 - Set `coqui_tts_location` in config.json to the path of Coqui-TTS source (see [User data](#user-data) for where config.json lives).
 - Download and install Ollama following the instructions at https://github.com/ollama/ollama
 - Ensure Ollama is operational and serving with `ollama serve`
+- Install [FFmpeg](https://ffmpeg.org/download.html) and make sure `ffmpeg` (and ideally `ffprobe`) is on your PATH; Muse needs it to play tracks. On Windows: `winget install Gyan.FFmpeg`; on macOS: `brew install ffmpeg`; on Linux, your package manager's `ffmpeg` package.
 - In a virtual environment, run `pip install -r requirements.txt` on this directory.
 - Optional (platform-specific): `pip install -r requirements-optional.txt` installs extras for your OS only (e.g. on macOS, Foundation/Cocoa for keychain integration). Note: For keyboard media key support (previous, play/pause, next), install `pynput` via the optional requirements (required for PySide6 on macOS/Linux; Windows has native Qt fallback without `pynput`). The F5-TTS, MaskGCT (Amphion) and Zonos TTS providers are commented out there: F5-TTS and Zonos conflict with versions pinned in `requirements.txt`, and Amphion cannot be installed with pip. See the comments in that file and in `tts/providers/`.
 - Note: To run TTS by itself, run the run_tts.py file with a text file.

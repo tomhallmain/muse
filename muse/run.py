@@ -171,6 +171,8 @@ class Run:
         except Exception as e:
             logger.info(e)
             traceback.print_exc()
+            if self.app_actions is not None:
+                self.app_actions.toast(_("Playback stopped: {0}").format(e))
 
     def execute(self) -> None:
         self.is_complete = False

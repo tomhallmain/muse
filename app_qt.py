@@ -1866,6 +1866,13 @@ def main():
     # Restore saved window geometry (handled by SmartMainWindow)
     window.restore_window_geometry()
     window.show()
+    if not FFmpegHandler.ffmpeg_available:
+        QTimer.singleShot(0, lambda: window.alert(
+            _("FFmpeg not found"),
+            _("Muse needs FFmpeg to play tracks, but ffmpeg was not found on PATH. "
+              "Install FFmpeg, then restart Muse. See the README for details."),
+            kind="warning",
+        ))
     threading.Thread(target=remove_stale_unpack_dirs, name="unpack-cleanup", daemon=True).start()
     # Runs git, which can take a moment.
     threading.Thread(target=_report_source_drift, args=(window,), name="source-drift", daemon=True).start()
