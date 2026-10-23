@@ -7,6 +7,10 @@ voice cloning from a short reference clip (10–30 s recommended).
 Install:
     pip install git+https://github.com/Zyphra/Zonos.git
     # or: pip install zonos   (PyPI dev release, may lag behind GitHub)
+Zonos needs huggingface-hub>=0.28.1, which conflicts with the 0.25.2 pin in
+requirements.txt, so it is commented out in requirements-optional.txt.  To
+re-enable it, raise that pin (check Coqui and transformers still work) or
+install Zonos in a separate environment.
 
 System dependency (phonemization):
     espeak-ng on PATH  (https://github.com/espeak-ng/espeak-ng)

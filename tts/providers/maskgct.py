@@ -2,12 +2,16 @@
 MaskGCT (Amphion) TTS provider.
 
 MaskGCT is a zero-shot voice cloning model from CUHK / Tencent released for
-non-commercial use.  It requires the Amphion library, which can be installed
-via pip or by cloning the repository.
+non-commercial use.  It requires the Amphion library, which is not on PyPI and
+has no setup.py or pyproject.toml, so it cannot be pip-installed.  Clone it and
+put the checkout on PYTHONPATH (its modules import each other as ``models.*``):
+    git clone https://github.com/open-mmlab/Amphion
+    pip install -r Amphion/models/tts/maskgct/requirements.txt
 
-Install options:
-    pip install amphion                         # pip package (may lag behind repo)
-    git clone https://github.com/open-mmlab/Amphion && pip install -e Amphion/
+Not yet functional: Amphion's maskgct_inference.py is a script and defines no
+MaskGCTInference class, so _try_import_maskgct() finds nothing with either
+install style.  The provider needs to build the MaskGCT pipeline from
+maskgct_utils itself before it can work.
 
 Model weights are downloaded from HuggingFace on first use.
 
@@ -84,9 +88,9 @@ class MaskGCTProvider(BaseTTSProvider):
         MaskGCTInference = _try_import_maskgct()
         if MaskGCTInference is None:
             raise ImportError(
-                "Failed to import MaskGCT. Install Amphion:\n"
-                "    pip install amphion\n"
-                "or clone: git clone https://github.com/open-mmlab/Amphion"
+                "Failed to import MaskGCT. Amphion cannot be pip-installed; clone it:\n"
+                "    git clone https://github.com/open-mmlab/Amphion\n"
+                "and add the checkout to PYTHONPATH."
             )
         try:
             self._runner = MaskGCTInference(target_lang=self.language)

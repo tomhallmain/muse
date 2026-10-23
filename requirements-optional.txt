@@ -29,12 +29,15 @@ kokoro-onnx
 
 # F5-TTS: zero-shot voice cloning from a reference WAV (MIT).
 # tts_provider = "f5tts" in config.json
-f5-tts
+# Disabled: every f5-tts release conflicts with requirements.txt (older ones
+# need numpy<=1.26.4, newer ones need gradio, which needs huggingface-hub>0.25.2).
+# f5-tts
 
 # MaskGCT / Amphion: zero-shot voice cloning (non-commercial research license).
 # tts_provider = "maskgct" in config.json
-# Alternatively: git clone https://github.com/open-mmlab/Amphion && pip install -e Amphion/
-amphion
+# Disabled: "amphion" is not on PyPI, and the Amphion repo has no setup.py or
+# pyproject.toml, so it cannot be pip-installed either. See tts/providers/maskgct.py.
+# amphion
 
 # Piper: fast CPU-only TTS with 35+ language voices (Apache 2.0 / MIT).
 # tts_provider = "piper" in config.json
@@ -46,7 +49,8 @@ piper-tts
 # tts_provider = "zonos" in config.json
 # Requires espeak-ng on PATH; GPU recommended (6 GB+ VRAM).
 # Also: pip install torch torchaudio  (if not already installed for Coqui)
-git+https://github.com/Zyphra/Zonos.git
+# Disabled: Zonos needs huggingface-hub>=0.28.1; requirements.txt pins 0.25.2.
+# git+https://github.com/Zyphra/Zonos.git
 
 # ── DJ topic sources ────────────────────────────────────────────────────────
 

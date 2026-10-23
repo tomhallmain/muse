@@ -3,6 +3,10 @@ F5-TTS provider.
 
 F5-TTS is a zero-shot voice cloning model released under MIT license.
 Install: pip install f5-tts
+Every f5-tts release conflicts with the pins in requirements.txt (numpy==2.0.2,
+huggingface-hub==0.25.2), so it is commented out in requirements-optional.txt.
+To re-enable it, raise those pins (check Coqui and transformers still work) or
+install it in a separate environment.
 
 A reference audio file (3–10 s of clean speech) is required.  Reference text
 is optional — F5-TTS will auto-transcribe via faster-whisper if left empty.

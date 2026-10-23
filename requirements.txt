@@ -53,8 +53,8 @@ joblib==1.4.2
 jsonlines==1.2.0
 keyring
 kiwisolver==1.4.7
-langcodes==3.4.1
-language_data==1.2.0
+langcodes==3.5.1
+language_data==1.4.0
 lazy_loader==0.4
 librosa==0.10.2.post1
 llvmlite==0.43.0
