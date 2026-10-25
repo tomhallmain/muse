@@ -1,4 +1,3 @@
-import platform
 from random import randint
 import threading
 import time
@@ -21,6 +20,7 @@ from utils.logging_setup import get_logger
 from utils.spinning_record import SpinningRecordVideos
 from utils.utils import Utils
 from utils.translations import I18N
+from utils.vlc_video_output import set_video_output_window
 
 if TYPE_CHECKING:
     from muse.muse import Muse
@@ -648,11 +648,9 @@ class Playback:
     def ensure_video_frame(self) -> None:
         if not config.play_videos_in_separate_window:
             assert self.vlc_media_player is not None and self.ui_callbacks is not None
-            # set the window id where to render VLC's video output
-            if platform.system() == 'Windows':
-                self.vlc_media_player.set_hwnd(self.ui_callbacks.get_media_frame_handle())
-            else:
-                self.vlc_media_player.set_xwindow(self.ui_callbacks.get_media_frame_handle()) # this line messes up windows
+            handle = self.ui_callbacks.get_media_frame_handle()
+            if not set_video_output_window(self.vlc_media_player, handle):
+                logger.warning("No main window handle to render the video track into.")
 
     def update_ui(self) -> None:
         if self.ui_callbacks is None:

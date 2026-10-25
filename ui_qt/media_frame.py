@@ -4,7 +4,6 @@ Uses QGraphicsView for images (pan/zoom), VLC for video.
 """
 
 import os
-import platform
 import time
 import warnings
 
@@ -27,6 +26,7 @@ from ui_qt.media_controls_overlay import MediaControlsOverlay
 from utils.config import config
 from utils.logging_setup import get_logger
 from utils.translations import I18N
+from utils.vlc_video_output import set_video_output_window
 
 _ = I18N._
 
@@ -338,15 +338,7 @@ class MediaFrame(QFrame):
         """Set the window id for VLC video output."""
         if not _VLC_AVAILABLE or not self.vlc_media_player:
             return
-        wid = int(self.winId()) if self.winId() else 0
-        if not wid:
-            return
-        if platform.system() == "Windows":
-            self.vlc_media_player.set_hwnd(wid)
-        elif platform.system() == "Darwin":
-            self.vlc_media_player.set_nsobject(wid)
-        else:
-            self.vlc_media_player.set_xwindow(wid)
+        set_video_output_window(self.vlc_media_player, self.winId())
 
     def video_display(self):
         """Start video playback (after ensure_video_frame)."""
