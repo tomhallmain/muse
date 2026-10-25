@@ -122,6 +122,7 @@ class Run:
             try:
                 self.get_playback().run()
             finally:
+                self.get_playback().release_sleep_hold()
                 # Ahead of the handlers below, as shutdown_callback can end the process.
                 FFmpegHandler.cleanup_cache()
                 TempDir.cleanup()

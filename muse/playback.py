@@ -9,6 +9,7 @@ ensure_vlc_plugin_cache_if_stale()
 import vlc
 from typing import TYPE_CHECKING, Any, Callable, Optional
 
+from lib.sleep_prevention import WakeLevel, acquire_wake, release_wake
 from library_data import play_counts
 from library_data.media_track import MediaTrack
 from muse.playback_config import PlaybackConfig
@@ -82,6 +83,9 @@ class Playback:
         self._icy_thread: Optional[threading.Thread] = None
         # (artist, title, monotonic start) of the stream title now playing.
         self._icy_current_title: Optional[tuple] = None
+        # The one wake level this playback holds in lib.sleep_prevention, which
+        # counts references: each acquire_wake needs exactly one release_wake.
+        self._wake_level = WakeLevel.NONE
 
     def has_muse(self) -> bool:
         return self._run and self._run.args.muse and self.muse is not None and self.muse.voice.can_speak
@@ -241,16 +245,47 @@ class Playback:
             return False
         return not self._is_track_at_end()
 
+    def _set_wake_level(self, level: WakeLevel) -> None:
+        """Hold *level* in place of the current one; WakeLevel.NONE releases it.
+        The new level is acquired before the old is released, so the computer
+        is held awake throughout the switch."""
+        if level == self._wake_level:
+            return
+        if level != WakeLevel.NONE:
+            acquire_wake(level)
+        if self._wake_level != WakeLevel.NONE:
+            release_wake(self._wake_level)
+        self._wake_level = level
+
+    def _update_sleep_hold(self) -> None:
+        """Keep the computer awake while the track plays, and the display too
+        for a video; let it sleep while paused. Between tracks the last hold
+        stays, so a delay or the Muse speaking cannot let it sleep."""
+        if self.vlc_media_player.get_state() == vlc.State.Paused:
+            self._set_wake_level(WakeLevel.NONE)
+        elif self.track is not None and self.track.get_is_video():
+            self._set_wake_level(WakeLevel.DISPLAY)
+        else:
+            self._set_wake_level(WakeLevel.SYSTEM)
+
+    def release_sleep_hold(self) -> None:
+        self._set_wake_level(WakeLevel.NONE)
+
     def play_one_song(self) -> None:
         if self.get_track():
             self.register_new_song()
             self.vlc_media_player.play()
+            self._update_sleep_hold()
             time.sleep(0.5)
             listened_seconds = 0.0
-            while self._should_continue_track_wait():
-                time.sleep(0.5)
-                if self.vlc_media_player.is_playing():
-                    listened_seconds += 0.5
+            try:
+                while self._should_continue_track_wait():
+                    time.sleep(0.5)
+                    self._update_sleep_hold()
+                    if self.vlc_media_player.is_playing():
+                        listened_seconds += 0.5
+            finally:
+                self.release_sleep_hold()
             self._record_play_if_heard(listened_seconds)
             self.vlc_media_player.stop()
         else:
@@ -378,6 +413,7 @@ class Playback:
             self._run_context.skip_track = False
 
             self.vlc_media_player.play()
+            self._update_sleep_hold()
             # VLC's play() is asynchronous: the player transitions through
             # STOPPED → OPENING → BUFFERING → PLAYING.  On a slow disk, large
             # file, codec loading, or cold start this can exceed 0.5 s, causing
@@ -398,6 +434,7 @@ class Playback:
             while self._should_continue_track_wait():
                 time.sleep(0.5)
                 cumulative_sleep_seconds += 0.5
+                self._update_sleep_hold()
                 if self.vlc_media_player.is_playing():
                     listened_seconds += 0.5
                 seconds_remaining = self.update_progress()
