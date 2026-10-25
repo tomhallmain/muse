@@ -1,5 +1,6 @@
 """Unit tests for library_data.network_media_track.NetworkMediaTrack."""
 
+import ast
 import importlib.util
 import sys
 import types
@@ -179,3 +180,37 @@ def test_str_contains_name_and_url():
     s = str(_make())
     assert _NAME in s
     assert _URL in s
+
+
+# ── attributes the base constructor would have set ───────────────────────────
+
+def _media_track_init_attributes():
+    tree = ast.parse((_ROOT / "library_data" / "media_track.py").read_text(encoding="utf-8"))
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ClassDef) and node.name == "MediaTrack":
+            for item in node.body:
+                if isinstance(item, ast.FunctionDef) and item.name == "__init__":
+                    return {
+                        target.attr
+                        for statement in item.body
+                        if isinstance(statement, ast.Assign)
+                        for target in statement.targets
+                        if isinstance(target, ast.Attribute)
+                        and isinstance(target.value, ast.Name)
+                        and target.value.id == "self"
+                    }
+    raise AssertionError("MediaTrack.__init__ not found")
+
+
+def test_sets_every_attribute_the_skipped_base_constructor_sets():
+    """NetworkMediaTrack skips MediaTrack.__init__, so a field added there must
+    be added here too, or playlist bookkeeping fails on a radio stream."""
+    track = _make()
+    missing = sorted(a for a in _media_track_init_attributes() if not hasattr(track, a))
+    assert missing == []
+
+
+def test_catalogue_and_main_artist_start_unresolved():
+    track = _make()
+    assert track.catalogue is None
+    assert track.main_artist is None

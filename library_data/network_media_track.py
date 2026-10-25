@@ -38,6 +38,7 @@ class NetworkMediaTrack(MediaTrack):
         self.title = name
         self.artist = ""
         self.album = name  # station name; persists as the "Album" label after ICY updates title
+        self.album_from_metadata = False
         self.albumartist = ""
         self.composer = ""
         self.tracknumber = -1
@@ -54,6 +55,8 @@ class NetworkMediaTrack(MediaTrack):
         self.artwork = None
         self.form = None
         self.instrument = None
+        self.catalogue = None
+        self.main_artist = None
         self.searchable_title = name.lower() if name else None
         self.searchable_album = None
         self.searchable_artist = None
