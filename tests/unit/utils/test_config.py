@@ -8,6 +8,7 @@ when the new field was never set at all, not when the user explicitly
 emptied it to disable the feature.
 """
 import json
+import os
 import sys
 
 import pytest
@@ -75,6 +76,35 @@ class TestLanguageLearningLanguagesMigration:
         # Must NOT be re-seeded from the legacy fields -- [] means the user
         # deliberately turned language learning off.
         assert cfg.muse_language_learning_languages == []
+
+
+@pytest.mark.unit
+class TestLocaleSetting:
+    def test_saved_locale_is_installed(self, tmp_path):
+        from utils.translations import I18N
+        previous = I18N.locale
+        I18N.install_locale("en", verbose=False)
+        config_path = tmp_path / "config.json"
+        config_path.write_text(json.dumps({"locale": "de"}))
+        try:
+            cfg = Config(config_path=str(config_path))
+            assert cfg.locale == "de"
+            assert I18N.locale == "de"
+        finally:
+            I18N.install_locale(previous or "en", verbose=False)
+
+    def test_missing_locale_keeps_the_installed_language(self, tmp_path):
+        from utils.translations import I18N
+        previous = I18N.locale
+        I18N.install_locale("fr", verbose=False)
+        config_path = tmp_path / "config.json"
+        config_path.write_text("{}")
+        try:
+            cfg = Config(config_path=str(config_path))
+            assert cfg.locale == "fr"
+            assert I18N.locale == "fr"
+        finally:
+            I18N.install_locale(previous or "en", verbose=False)
 
 
 @pytest.mark.unit
@@ -153,3 +183,54 @@ class TestFillMissingDefaults:
         config_text = (tmp_path / "config.json").read_text(encoding="utf-8")
         assert "München" in config_text
         assert cfg.config_path == str(tmp_path / "config.json")
+
+
+def _home_expanduser(home):
+    def expand(path):
+        if path == "~":
+            return str(home)
+        if isinstance(path, str) and path.startswith("~/"):
+            return str(home / path[2:])
+        return path
+    return expand
+
+
+@pytest.mark.unit
+class TestTildeDirectories:
+    def test_existing_tilde_directory_is_expanded(self, tmp_path, monkeypatch):
+        home = tmp_path / "home"
+        coqui = home / "repos" / "TTS"
+        coqui.mkdir(parents=True)
+        monkeypatch.setattr(os.path, "expanduser", _home_expanduser(home))
+        config_path = tmp_path / "config.json"
+        config_path.write_text(json.dumps({"coqui_tts_location": "~/repos/TTS"}))
+
+        cfg = Config(config_path=str(config_path))
+
+        assert cfg.coqui_tts_location == str(coqui)
+
+    def test_missing_tilde_directory_stays_in_the_file(self, tmp_path, monkeypatch):
+        home = tmp_path / "home"
+        home.mkdir()
+        monkeypatch.setattr(os.path, "expanduser", _home_expanduser(home))
+        config_path = tmp_path / "config.json"
+        config_path.write_text(json.dumps({"coqui_tts_location": "~/repos/TTS"}))
+
+        cfg = Config(config_path=str(config_path))
+
+        # The runtime value stays unset, but the typed path is still what the
+        # settings field has to show.
+        assert cfg.coqui_tts_location == ""
+        assert cfg.dict["coqui_tts_location"] == "~/repos/TTS"
+
+    def test_saving_an_existing_tilde_directory_stores_the_expanded_path(self, tmp_path, monkeypatch):
+        home = tmp_path / "home"
+        coqui = home / "repos" / "TTS"
+        coqui.mkdir(parents=True)
+        monkeypatch.setattr(os.path, "expanduser", _home_expanduser(home))
+        config_path = tmp_path / "config.json"
+        config_path.write_text("{}")
+        cfg = Config(config_path=str(config_path))
+
+        assert cfg.set_config_value("coqui_tts_location", "~/repos/TTS") is True
+        assert cfg.coqui_tts_location == os.path.normpath(os.path.realpath(str(coqui)))

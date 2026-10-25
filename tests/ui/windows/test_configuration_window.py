@@ -691,3 +691,114 @@ class TestAffinityPreferenceSetting:
         widget, _kind = win.config_vars[self.KEY]
 
         assert widget.currentIndex() == 0
+
+
+# ---------------------------------------------------------------------------
+# General tab — interface language, and settings that used to be file-only
+# ---------------------------------------------------------------------------
+
+@pytest.mark.ui
+class TestInterfaceLanguageSetting:
+    def test_combo_stores_a_language_code(self, qapp, qt_master, mock_app_actions):
+        win = _open_window(qt_master, mock_app_actions)
+        _switch_to_general(win)
+        widget, kind = win.config_vars["locale"]
+        assert kind == "combo_value"
+        codes = [widget.itemData(i) for i in range(widget.count())]
+        assert {"en", "de", "es", "fr", "it", "pt", "ru"} <= set(codes)
+        assert widget.currentData() == importlib.import_module("utils.config").config.locale
+        assert widget.currentText() != widget.currentData()
+        _close_clean(win)
+
+    def test_saving_switches_the_installed_language(self, qapp, qt_master, mock_app_actions, monkeypatch):
+        from utils.translations import I18N
+        cfg_mod = importlib.import_module("utils.config")
+        previous = cfg_mod.config.locale
+        target = "es" if previous != "es" else "fr"
+        installed = []
+        monkeypatch.setattr(I18N, "install_locale", lambda locale, verbose=True: installed.append(locale))
+        monkeypatch.setattr(cfg_mod.config, "save_config", lambda: True)
+
+        win = _open_window(qt_master, mock_app_actions)
+        widget, _kind = win.config_vars["locale"]
+        widget.setCurrentIndex(widget.findData(target))
+        win.save_config()
+        QApplication.processEvents()
+
+        assert cfg_mod.config.locale == target
+        assert installed == [target]
+        cfg_mod.config.set_config_value("locale", previous)
+        cfg_mod.config.clear_changes()
+        _close_clean(win)
+
+
+@pytest.mark.ui
+class TestFileOnlySettingsAreEditable:
+    def test_controls_exist_for_settings_that_had_no_widget(self, qapp, qt_master, mock_app_actions):
+        win = _open_window(qt_master, mock_app_actions)
+        for key in (
+            "debug",
+            "auto_fix_vlc_plugin_cache",
+            "show_videos_in_main_window",
+            "play_count_threshold_ratio",
+            "search_enable_semantic_recall",
+            "lastfm_api_key",
+            "library_extender_key",
+            "reddit_client_id",
+            "bluesky_handle",
+            "mastodon_instance",
+            "social_max_rejection_ratio",
+            "radio_watchlist_enabled",
+            "llm_thinking_budget_chars",
+            "prompts_directory",
+            "dj_persona_refresh_context",
+        ):
+            assert key in win.config_vars, key
+        for key in (
+            "directories",
+            "search_semantic_fields",
+            "reddit_subreddits",
+            "bluesky_feeds",
+            "bluesky_languages",
+            "mastodon_languages",
+            "radio_novelty_non_track_patterns",
+            "news_api_source_trustworthiness",
+        ):
+            assert key in win._list_editors, key
+        assert win._muse_inputs
+        assert "language_learning" in win._tts_topic_checks
+        _close_clean(win)
+
+    def test_adding_a_library_directory_is_saved(self, qapp, qt_master, mock_app_actions, monkeypatch):
+        cfg_mod = importlib.import_module("utils.config")
+        previous = list(cfg_mod.config.directories or [])
+        monkeypatch.setattr(cfg_mod.config, "save_config", lambda: True)
+
+        win = _open_window(qt_master, mock_app_actions)
+        listing, kind = win._list_editors["directories"]
+        assert kind == "list"
+        listing.addItem("/tmp/muse-test-music")
+        win.save_config()
+        QApplication.processEvents()
+
+        assert "/tmp/muse-test-music" in cfg_mod.config.directories
+        cfg_mod.config.set_config_value("directories", previous)
+        cfg_mod.config.clear_changes()
+        _close_clean(win)
+
+    def test_invalid_coqui_path_is_shown(self, qapp, qt_master, mock_app_actions):
+        cfg_mod = importlib.import_module("utils.config")
+        previous_attr = cfg_mod.config.coqui_tts_location
+        previous_raw = cfg_mod.config.dict.get("coqui_tts_location")
+        cfg_mod.config.coqui_tts_location = ""
+        cfg_mod.config.dict["coqui_tts_location"] = "~/repos/TTS"
+        try:
+            win = _open_window(qt_master, mock_app_actions)
+            assert win.config_vars["coqui_tts_location"][0].text() == "~/repos/TTS"
+            _close_clean(win)
+        finally:
+            cfg_mod.config.coqui_tts_location = previous_attr
+            if previous_raw is None:
+                cfg_mod.config.dict.pop("coqui_tts_location", None)
+            else:
+                cfg_mod.config.dict["coqui_tts_location"] = previous_raw

@@ -351,23 +351,65 @@ class Utils:
         return relative_dirpath
 
     @staticmethod
+    def _language_code(locale_name):
+        """``de_DE.UTF-8`` or ``de-DE`` to ``de``. ``C`` and ``POSIX`` are not languages."""
+        if not locale_name or not str(locale_name).strip():
+            return None
+        code = str(locale_name).strip().split(".", 1)[0].replace("-", "_")
+        if "_" in code:
+            code = code.split("_", 1)[0]
+        if not code or code in ("C", "POSIX"):
+            return None
+        return code
+
+    @staticmethod
+    def _macos_ui_language():
+        """First language in the macOS preferred-language list, or None."""
+        try:
+            import subprocess
+            output = subprocess.check_output(
+                ["defaults", "read", "-g", "AppleLanguages"],
+                text=True,
+                timeout=2,
+                stderr=subprocess.DEVNULL,
+            )
+        except Exception:
+            return None
+        for line in output.splitlines():
+            line = line.strip().strip(",").strip('"')
+            if line and line not in ("(", ")"):
+                return Utils._language_code(line)
+        return None
+
+    @staticmethod
     def get_default_user_language():
-        _locale = os.environ['LANG'] if "LANG" in os.environ else None
-        if not _locale or _locale == '':
-            if sys.platform == 'win32':
+        """Language of this process, then the OS preference.
+
+        A shell ``LANG=de`` is not the environment of an app opened from the
+        Dock or Finder. On macOS that process often has no ``LANG`` at all, so
+        the system language is read from AppleLanguages. Windows uses the UI
+        language. Anything else, including a macOS lookup that fails, is English.
+        """
+        for var in ("LC_ALL", "LC_MESSAGES", "LANG"):
+            code = Utils._language_code(os.environ.get(var))
+            if code:
+                return code
+        if sys.platform == "win32":
+            try:
                 import ctypes
                 import locale
                 windll = ctypes.windll.kernel32
-                windll.GetUserDefaultUILanguage()
                 _locale = locale.windows_locale[windll.GetUserDefaultUILanguage()]
-                if _locale is not None and "_" in _locale:
-                    _locale = _locale[:_locale.index("_")]
-            # TODO support finding default languages on other platforms
-            else:
-                _locale = 'en'
-        elif _locale is not None and "_" in _locale:
-            _locale = _locale[:_locale.index("_")]
-        return _locale
+                code = Utils._language_code(_locale)
+                if code:
+                    return code
+            except Exception:
+                pass
+        elif sys.platform == "darwin":
+            code = Utils._macos_ui_language()
+            if code:
+                return code
+        return "en"
 
     @staticmethod
     def get_english_language_name(language_code='en'):

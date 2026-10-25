@@ -5,6 +5,7 @@ import time
 
 from utils.app_paths import configs_dir, resource_path, user_library_data_dir
 from utils.globals import Globals, Topic
+from utils.translations import I18N
 from utils.utils import Utils
 from utils.logging_setup import get_logger
 
@@ -104,6 +105,9 @@ class Config:
         self.social_max_rejection_ratio = 0.4
         # List of {"language_code": str, "level": str} the listener is currently learning.
         self.muse_language_learning_languages = []
+        # Interface language. Absent from the file means the language chosen at
+        # startup from the operating system, which I18N has already installed.
+        self.locale = I18N.locale or Utils.get_default_user_language() or "en"
         self.debug = False
 
         self.llm_model_name = "deepseek-r1:14b"
@@ -270,6 +274,7 @@ class Config:
             "zonos_model",
             "zonos_language",
             "piper_quality",
+            "locale",
         )
         self.set_values(int,
             "max_chunk_tokens",
@@ -293,6 +298,7 @@ class Config:
             "mastodon_min_score",
             "mastodon_max_age_hours",
             "social_min_surviving_items",
+            "llm_thinking_budget_chars",
         )
         self.set_values(list,
             "directories",
@@ -339,8 +345,9 @@ class Config:
             "piper_auto_download",
             "llm_use_streaming",
             "llm_stream_redundancy",
-            "llm_thinking_budget_chars",
             "radio_watchlist_enabled",
+            "debug",
+            "show_videos_in_main_window",
         )
         self.set_values(dict,
             "muse_config",
@@ -368,7 +375,12 @@ class Config:
         while i < len(self.directories):
             d = self.directories[i]
             try:
-                if sys.platform == "win32" and not d.startswith("C:\\") and not d.startswith("{HOME}"):
+                if (
+                    sys.platform == "win32"
+                    and not d.startswith("C:\\")
+                    and not d.startswith("{HOME}")
+                    and not d.startswith("~")
+                ):
                     pass
                 elif not os.path.isdir(d):
                     d = self.validate_and_set_directory(d, override=True)
@@ -390,6 +402,11 @@ class Config:
                 "language_code": Utils.get_language_code_for_name(self.dict["muse_language_learning_language"]),
                 "level": self.dict.get("muse_language_learning_language_level") or "intermediate",
             }]
+
+        saved_locale = self.dict.get("locale")
+        if isinstance(saved_locale, str) and saved_locale.strip() and saved_locale.strip() != I18N.locale:
+            I18N.install_locale(saved_locale.strip(), verbose=False)
+            self.locale = saved_locale.strip()
 
     def get_config_value(self, key):
         """Get a configuration value by key"""
@@ -428,6 +445,10 @@ class Config:
 
     def set_config_value(self, key, value):
         """Set a configuration value by key"""
+        if key == "directories" and isinstance(value, list):
+            value = [self._resolve_saved_location(key, item) for item in value]
+        elif isinstance(value, str):
+            value = self._resolve_saved_location(key, value)
         if hasattr(self, key):
             current_value = getattr(self, key)
             if current_value != value:  # Only update if value actually changed
@@ -527,13 +548,27 @@ class Config:
         """Get all configuration values as a dictionary"""
         return {key: getattr(self, key) for key in self.dict.keys() if hasattr(self, key)}
 
+    @staticmethod
+    def expand_config_location(loc):
+        """Expand ``~`` and ``{HOME}`` and normalize separators.
+
+        ``os.path.expanduser`` only treats a leading ``~`` as the home directory.
+        ``{HOME}`` is the placeholder older config files use for the same thing.
+        """
+        if loc is None:
+            return loc
+        loc = str(loc).strip()
+        if "{HOME}" in loc:
+            loc = loc.replace("{HOME}", os.path.expanduser("~"))
+        loc = os.path.expanduser(loc)
+        if sys.platform != "win32" and "\\" in loc:
+            loc = loc.replace("\\", "/")
+        return loc
+
     def validate_and_set_directory(self, key, override=False):
         loc = key if override else self.dict[key]
-        if loc and loc.strip() != "":
-            if "{HOME}" in loc:
-                loc = loc.strip().replace("{HOME}", os.path.expanduser("~"))
-            if not sys.platform == "win32" and "\\" in loc:
-                loc = loc.replace("\\", "/")
+        if loc and str(loc).strip() != "":
+            loc = Config.expand_config_location(loc)
             if not os.path.isdir(loc) and not os.path.isabs(loc) and os.path.isdir(resource_path(loc)):
                 # A relative default such as "prompts" names a bundled dir.
                 loc = resource_path(loc)
@@ -544,10 +579,9 @@ class Config:
 
     def validate_and_set_filepath(self, key):
         filepath = self.dict[key]
-        if filepath and filepath.strip() != "":
-            if "{HOME}" in filepath:
-                filepath = filepath.strip().replace("{HOME}", os.path.expanduser("~"))
-            elif not os.path.isfile(filepath):
+        if filepath and str(filepath).strip() != "":
+            filepath = Config.expand_config_location(filepath)
+            if not os.path.isfile(filepath) and not os.path.isabs(filepath):
                 # User files first, then the bundled templates (*_example.json).
                 for base in (configs_dir(), user_library_data_dir(), resource_path("library_data", "data")):
                     try_path = os.path.join(base, filepath)
@@ -559,8 +593,33 @@ class Config:
             return filepath
         return None
 
+    def _resolve_saved_location(self, key, value):
+        """Expand a directory or file the user typed, when that path exists.
+
+        A value that does not exist yet is kept as typed, so the settings field
+        can show it again. ``~`` and ``{HOME}`` in a path that does exist are
+        stored as the expanded path the rest of the app can open.
+        """
+        if not isinstance(value, str) or not value.strip():
+            return value
+        directory_keys = getattr(self, "_directory_keys", ())
+        file_keys = getattr(self, "_file_keys", ())
+        if key not in directory_keys and key not in file_keys and key != "directories":
+            return value
+        loc = Config.expand_config_location(value)
+        if key in file_keys:
+            exists = os.path.isfile(loc)
+        else:
+            if not os.path.isdir(loc) and not os.path.isabs(loc) and os.path.isdir(resource_path(loc)):
+                loc = resource_path(loc)
+            exists = os.path.isdir(loc)
+        if not exists:
+            return value
+        return os.path.normpath(os.path.realpath(loc))
+
     def set_directories(self, *directories):
         self.known_keys.update(directories)
+        self._directory_keys = set(directories)
         for directory in directories:
             try:
                 setattr(self, directory, self.validate_and_set_directory(directory))
@@ -570,6 +629,7 @@ class Config:
 
     def set_filepaths(self, *filepaths):
         self.known_keys.update(filepaths)
+        self._file_keys = set(filepaths)
         for filepath in filepaths:
             try:
                 setattr(self, filepath, self.validate_and_set_filepath(filepath))
@@ -580,6 +640,9 @@ class Config:
     def set_values(self, type, *names):
         self.known_keys.update(names)
         for name in names:
+            # A file written before a setting existed keeps that setting's default.
+            if name not in self.dict:
+                continue
             if type:
                 try:
                     setattr(self, name, type(self.dict[name]))
