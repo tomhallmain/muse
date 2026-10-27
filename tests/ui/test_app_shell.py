@@ -308,3 +308,71 @@ class TestAppShell:
         window.close()
         process_events_for(0.5)
         qapp.processEvents()
+
+    def test_continue_session_keeps_all_music_and_radio_still_starts(
+        self, qapp, fixture_library_data, audio_library_media_tracks, monkeypatch,
+    ):
+        """Continue after a library search must not leave Playlist Config selected.
+
+        The saved session is replayed for that one run. The control stays on
+        All Music, so a later stream (which does not pass use_all_music) still
+        starts. A Playlist Config left over with no master playlist falls back
+        to All Music instead of raising.
+        """
+        from app_qt import MuseAppQt
+        from muse.playback_session import PlaybackSession, PlaybackSessionStore
+        from muse.playback_state import PlaybackStateManager
+        from utils.globals import PlaybackMasterStrategy
+        from utils.utils import Utils
+
+        track = audio_library_media_tracks[0]
+        PlaybackSessionStore.save(PlaybackSession(
+            resolved_tracks=[track.filepath],
+            current_track_filepath=track.filepath,
+            position_ms=1000,
+        ))
+        PlaybackStateManager.clear_master_config()
+
+        captured = []
+
+        def capture_start(fn, use_asyncio=False, args=None):
+            captured.append(args[0])
+
+        monkeypatch.setattr(Utils, "start_thread", staticmethod(capture_start))
+
+        window = MuseAppQt()
+        window.show()
+        process_events_for(0.2)
+        all_music = PlaybackMasterStrategy.ALL_MUSIC.get_translation()
+        window.playlist_strategy_combo.setCurrentText(all_music)
+
+        window.continue_last_session()
+        process_events_for(0.6)
+
+        assert window.playlist_strategy_combo.currentText() == all_music
+        assert PlaybackMasterStrategy.get(
+            window.runner_app_config.playback_master_strategy
+        ) == PlaybackMasterStrategy.ALL_MUSIC
+        assert captured[-1].playback_master_strategy == PlaybackMasterStrategy.PLAYLIST_CONFIG
+
+        window.job_queue.job_running = False
+        PlaybackStateManager.clear_master_config()
+        window.playlist_strategy_combo.blockSignals(True)
+        window.playlist_strategy_combo.setCurrentText(
+            PlaybackMasterStrategy.PLAYLIST_CONFIG.get_translation()
+        )
+        window.playlist_strategy_combo.blockSignals(False)
+        window.runner_app_config.playback_master_strategy = PlaybackMasterStrategy.PLAYLIST_CONFIG.value
+
+        window.start_playback(track=track)
+        process_events_for(0.6)
+
+        assert window.playlist_strategy_combo.currentText() == all_music
+        assert PlaybackMasterStrategy.get(
+            window.runner_app_config.playback_master_strategy
+        ) == PlaybackMasterStrategy.ALL_MUSIC
+        assert captured[-1].playback_master_strategy == PlaybackMasterStrategy.ALL_MUSIC
+
+        window.close()
+        process_events_for(0.5)
+        qapp.processEvents()

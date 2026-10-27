@@ -135,6 +135,11 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         self._pending_resume_filepath: Optional[str] = None
         self._pending_resume_position_ms: int = 0
         self._pending_resume_skip_issued: bool = False
+        # One run only: replay the saved session list without changing the
+        # strategy control. Persisting PLAYLIST_CONFIG here leaves the next
+        # launch with that strategy and no master config, which breaks
+        # stream playback.
+        self._resume_via_session_playlist: bool = False
         # So @require_password and dialogs (e.g. PasswordDialog) have a parent window
         self.master = self
         # Initialize media key handler
@@ -668,7 +673,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         from muse.playback_config_master import PlaybackConfigMaster
         from muse.playlist_descriptor import PlaylistDescriptor
         from muse.playback_session import PlaybackSessionStore
-        from utils.globals import PlaylistSortType, PlaybackMasterStrategy
+        from utils.globals import PlaylistSortType
 
         session = PlaybackSessionStore.load()
         if not session or not session.resolved_tracks:
@@ -683,7 +688,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         pc = PlaybackConfig.from_playlist_descriptor(pd, self.library_data.data_callbacks)
         master = PlaybackConfigMaster([pc])
         PlaybackStateManager.set_master_config(master)
-        self.set_playback_master_strategy(PlaybackMasterStrategy.PLAYLIST_CONFIG)
+        self._resume_via_session_playlist = True
 
         self._pending_resume_filepath = session.current_track_filepath
         self._pending_resume_position_ms = session.position_ms
@@ -864,7 +869,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         self.set_delay()
         args = RunConfig()
         args.playlist_sort_type = PlaylistSortType.get_from_translation(self.sort_type_combo.currentText())
-        args.playback_master_strategy = PlaybackMasterStrategy.get_from_translation(self.playlist_strategy_combo.currentText())
+        args.playback_master_strategy = self._strategy_for_this_run()
         args.total = -1
         args.is_all_tracks, args.directories = self.get_directories()
         args.rescan = self.rescan_check.isChecked()
@@ -881,6 +886,29 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         # check_entire_playlist is now managed via SortConfig override on PlaybackStateManager
         args_copy = deepcopy(args)
         return args, args_copy
+
+    def _strategy_for_this_run(self):
+        """Strategy for the run about to start.
+
+        Continuing a session replays its track list once, without switching
+        the control off All Music. A saved Playlist Config with no master
+        playlist is the state left behind by that switch: fall back to All
+        Music so a later stream still starts.
+        """
+        resume_session = self._resume_via_session_playlist
+        self._resume_via_session_playlist = False
+        selected = PlaybackMasterStrategy.get_from_translation(
+            self.playlist_strategy_combo.currentText()
+        )
+        master = PlaybackStateManager.get_master_config()
+        has_master = master is not None and bool(master.playback_configs)
+        if resume_session and has_master:
+            return PlaybackMasterStrategy.PLAYLIST_CONFIG
+        if selected == PlaybackMasterStrategy.PLAYLIST_CONFIG and not has_master:
+            self.set_playback_master_strategy(PlaybackMasterStrategy.ALL_MUSIC)
+            self.store_info_cache()
+            return PlaybackMasterStrategy.ALL_MUSIC
+        return selected
 
     def get_directories(self):
         selection = self.playlist_strategy_combo.currentText()

@@ -141,14 +141,16 @@ class Run:
         self.last_config = deepcopy(self.get_playback()._playback_config)
 
     def do_workflow(self) -> None:
+        master_config = None
         if self.args.playback_master_strategy == PlaybackMasterStrategy.PLAYLIST_CONFIG:
             master_config = PlaybackStateManager.get_master_config()
-            if master_config and master_config.playback_configs:
-                playback_config = master_config
-            else:
-                raise ValueError(
-                    "PLAYLIST_CONFIG strategy selected but no master config set"
+            if not master_config or not master_config.playback_configs:
+                logger.warning(
+                    "PLAYLIST_CONFIG strategy selected but no master config set; using All Music"
                 )
+                master_config = None
+        if master_config is not None:
+            playback_config = master_config
         else:
             playback_config = PlaybackConfigMaster(
                 playback_configs=[PlaybackConfig(
