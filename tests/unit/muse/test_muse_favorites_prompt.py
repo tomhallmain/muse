@@ -57,12 +57,13 @@ class TestFavoritesPromptSection:
         assert TrackAttribute.GENRE.get_translation() not in section
 
     def test_at_most_two_examples_are_named(self, monkeypatch):
-        _profile(monkeypatch, {"composer": _favorites(("A", 5), ("B", 4), ("C", 3))})
+        # Single letters collide with the attribute label ("C" is in "Composer").
+        _profile(monkeypatch, {"composer": _favorites(("Alpha", 5), ("Beta", 4), ("Gamma", 3))})
 
         section = Muse._favorites_prompt_section()
 
-        assert "A, B" in section
-        assert "C" not in section
+        assert "Alpha, Beta" in section
+        assert "Gamma" not in section
 
     def test_attribute_labels_are_translated(self, monkeypatch):
         """The section is appended to a prompt that was already loaded in the

@@ -28,6 +28,7 @@ temp*
 !utils/temp_dir.py
 tts_output/*
 tests/fixtures/audio_library/
+tests/fixtures/sample_*.mp3
 !tests/fixtures/manifest.json
 scripts/i18n_fixes.json
 
