@@ -3,7 +3,8 @@
         "name": "Baroque",
         "transliterations": [
             "Baroque",
-            "baroque"
+            "baroque",
+            "Barock"
         ],
         "notes": {}
     },
@@ -20,7 +21,8 @@
         "transliterations": [
             "Plainchant",
             "plainchant",
-            "Gregorian chant"
+            "Gregorian chant",
+            "Gregorianik"
         ],
         "notes": {}
     },
@@ -31,13 +33,6 @@
             "opera"
         ],
         "notes": {}
-    },
-    "Romantic Period Classical": {
-        "name": "Romantic Period Classical",
-        "transliterations": [
-            "Romantic Period Classical",
-            "Romantic period"
-        ]
     },
     "Drum and Bass": {
         "name": "Drum and Bass",
@@ -88,6 +83,164 @@
         "transliterations": [
             "Math Rock",
             "math rock"
+        ],
+        "notes": {}
+    },
+    "Medieval": {
+        "name": "Medieval",
+        "transliterations": [
+            "Medieval",
+            "medieval",
+            "Mittelalter"
+        ],
+        "notes": {}
+    },
+    "Renaissance": {
+        "name": "Renaissance",
+        "transliterations": [
+            "Renaissance",
+            "renaissance"
+        ],
+        "notes": {}
+    },
+    "Classical Period": {
+        "name": "Classical Period",
+        "transliterations": [
+            "Classical Period",
+            "classical period",
+            "Classical era",
+            "Wiener Klassik"
+        ],
+        "notes": {}
+    },
+    "Romantic": {
+        "name": "Romantic",
+        "transliterations": [
+            "Romantic",
+            "romantic",
+            "Romantik",
+            "Romantic period"
+        ],
+        "notes": {}
+    },
+    "Modern": {
+        "name": "Modern",
+        "transliterations": [
+            "Modern",
+            "modern",
+            "Moderne"
+        ],
+        "notes": {}
+    },
+    "Contemporary": {
+        "name": "Contemporary",
+        "transliterations": [
+            "Contemporary",
+            "contemporary",
+            "Contemporary classical",
+            "Neue Musik"
+        ],
+        "notes": {}
+    },
+    "Impressionism": {
+        "name": "Impressionism",
+        "transliterations": [
+            "Impressionism",
+            "impressionism",
+            "Impressionismus"
+        ],
+        "notes": {}
+    },
+    "Expressionism": {
+        "name": "Expressionism",
+        "transliterations": [
+            "Expressionism",
+            "expressionism",
+            "Expressionismus"
+        ],
+        "notes": {}
+    },
+    "Serialism": {
+        "name": "Serialism",
+        "transliterations": [
+            "Serialism",
+            "serialism",
+            "Serialismus",
+            "Zwölftonmusik"
+        ],
+        "notes": {}
+    },
+    "Avant-garde": {
+        "name": "Avant-garde",
+        "transliterations": [
+            "Avant-garde",
+            "avant-garde",
+            "Avantgarde"
+        ],
+        "notes": {}
+    },
+    "Minimalism": {
+        "name": "Minimalism",
+        "transliterations": [
+            "Minimalism",
+            "minimalism",
+            "Minimal Music"
+        ],
+        "notes": {}
+    },
+    "Electronic": {
+        "name": "Electronic",
+        "transliterations": [
+            "Electronic",
+            "electronic",
+            "Elektronische Musik"
+        ],
+        "notes": {}
+    },
+    "Neoclassicism": {
+        "name": "Neoclassicism",
+        "transliterations": [
+            "Neoclassicism",
+            "neoclassicism",
+            "Neoklassizismus"
+        ],
+        "notes": {}
+    },
+    "Neoclassical Piano": {
+        "name": "Neoclassical Piano",
+        "transliterations": [
+            "Neoclassical Piano",
+            "neoclassical piano"
+        ],
+        "notes": {}
+    },
+    "Film Score": {
+        "name": "Film Score",
+        "transliterations": [
+            "Film Score",
+            "film score",
+            "Filmmusik",
+            "Soundtrack"
+        ],
+        "notes": {}
+    },
+    "video_game": {
+        "name": "video_game",
+        "transliterations": [
+            "video_game",
+            "Video Game Music",
+            "Video game music",
+            "Game Music",
+            "Videospielmusik"
+        ],
+        "notes": {}
+    },
+    "codex": {
+        "name": "codex",
+        "transliterations": [
+            "codex",
+            "Codex",
+            "Liederhandschrift"
         ],
         "notes": {}
     }
