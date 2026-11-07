@@ -75,6 +75,76 @@ class TestComposerFixes:
         assert _recorded() == {}
 
 
+def _merge(source, target, fix_id="merge-1", **extra):
+    fix = {"id": fix_id, "table": "composers", "op": "merge_into", "name": source, "value": target}
+    fix.update(extra)
+    return fix
+
+
+def _add(data, name, **fields):
+    from library_data.composer import Composer
+
+    composer = Composer(None, name, **fields)
+    success, error = data.save_composer(composer)
+    assert success, error
+    return composer
+
+
+@pytest.mark.unit
+class TestMergeFixes:
+    def test_the_source_is_folded_into_the_target(self, fixes):
+        fixes()
+        data = ComposersData()
+        _add(data, "Zz Source", indicators=["Zz Source", "Zz Alias"], genres=["Baroque"],
+             notes={"notiz": "source note", "quelle": "source"}, start_date=1700, end_date=1750)
+        _add(data, "Zz Target", notes={"notiz": "target note"})
+        fixes(_merge("Zz Source", "Zz Target"))
+        data = ComposersData()
+        assert "Zz Source" not in data.get_composer_names()
+        target = data.get_data("Zz Target")
+        assert target.indicators == ["Zz Target", "Zz Source", "Zz Alias"]
+        assert target.genres == ["Baroque"]
+        assert target.notes == {"notiz": "target note", "quelle": "source"}
+        assert (target.start_date, target.end_date) == (1700, 1750)
+        assert _recorded() == {"merge-1": data_fixes.APPLIED}
+
+    def test_works_move_to_the_target(self, fixes):
+        fixes()
+        data = ComposersData()
+        source = _add(data, "Zz Source")
+        target = _add(data, "Zz Target")
+        conn = db.get_connection()
+        conn.execute("INSERT INTO works (composer_id, name) VALUES (?, ?)", (source.id, "Zz Work"))
+        conn.commit()
+        fixes(_merge("Zz Source", "Zz Target"))
+        ComposersData().get_composer_names()
+        rows = conn.execute("SELECT composer_id FROM works WHERE name = ?", ("Zz Work",)).fetchall()
+        assert [row["composer_id"] for row in rows] == [target.id]
+
+    def test_without_a_target_the_source_is_renamed(self, fixes):
+        fixes()
+        data = ComposersData()
+        source = _add(data, "Zz Source", indicators=["Zz Source", "Zz Alias"])
+        fixes(_merge("Zz Source", "Zz Target"))
+        data = ComposersData()
+        renamed = data.get_data("Zz Target")
+        assert "Zz Source" not in data.get_composer_names()
+        assert renamed.id == source.id
+        assert renamed.indicators == ["Zz Target", "Zz Source", "Zz Alias"]
+
+    def test_drop_name_leaves_the_source_name_out(self, fixes):
+        fixes()
+        data = ComposersData()
+        _add(data, "Zz Source", indicators=["Zz Source", "Zz Alias"])
+        fixes(_merge("Zz Source", "Zz Target", drop_name=True))
+        assert ComposersData().get_data("Zz Target").indicators == ["Zz Target", "Zz Alias"]
+
+    def test_a_missing_source_is_recorded_as_such(self, fixes):
+        fixes(_merge("No Such Composer", COMPOSER))
+        ComposersData().get_composer_names()
+        assert _recorded() == {"merge-1": data_fixes.TARGET_MISSING}
+
+
 @pytest.mark.unit
 class TestLoadFixes:
     def test_a_missing_file_means_no_fixes(self, monkeypatch, tmp_path):

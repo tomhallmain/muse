@@ -7,5 +7,222 @@
         "op": "add_indicator",
         "name": "László Lajtha",
         "value": "Lajtha"
+    },
+    {
+        "id": "2026-11-07-merge-laurencini",
+        "date": "2026-11-07",
+        "reason": "Duplicate entry for the same composer; the seed keeps \"Lorenzo Tracetti\" and lists \"Laurencini\" among its indicators.",
+        "table": "composers",
+        "op": "merge_into",
+        "name": "Laurencini",
+        "value": "Lorenzo Tracetti"
+    },
+    {
+        "id": "2026-11-07-merge-alberto-ezio-colla",
+        "date": "2026-11-07",
+        "reason": "Duplicate entry for the same composer; the seed keeps \"Alberto Colla\" and lists \"Alberto Ezio Colla\" among its indicators.",
+        "table": "composers",
+        "op": "merge_into",
+        "name": "Alberto Ezio Colla",
+        "value": "Alberto Colla"
+    },
+    {
+        "id": "2026-11-07-merge-aleksandr-lokshin",
+        "date": "2026-11-07",
+        "reason": "Duplicate entry for the same composer; the seed keeps \"Alexander Lokshin\" and lists \"Aleksandr Lokshin\" among its indicators.",
+        "table": "composers",
+        "op": "merge_into",
+        "name": "Aleksandr Lokshin",
+        "value": "Alexander Lokshin"
+    },
+    {
+        "id": "2026-11-07-merge-andrey-osipovich-sychra",
+        "date": "2026-11-07",
+        "reason": "Duplicate entry for the same composer; the seed keeps \"Andrei Sychra\" and lists \"Andrey Osipovich Sychra\" among its indicators.",
+        "table": "composers",
+        "op": "merge_into",
+        "name": "Andrey Osipovich Sychra",
+        "value": "Andrei Sychra"
+    },
+    {
+        "id": "2026-11-07-merge-angel-e-lasala",
+        "date": "2026-11-07",
+        "reason": "Duplicate entry for the same composer; the seed keeps \"Angel Lasala\" and lists \"Angel E. Lasala\" among its indicators.",
+        "table": "composers",
+        "op": "merge_into",
+        "name": "Angel E. Lasala",
+        "value": "Angel Lasala"
+    },
+    {
+        "id": "2026-11-07-merge-avet-rubeni-terterian",
+        "date": "2026-11-07",
+        "reason": "Duplicate entry for the same composer; the seed keeps \"Avet Terterian\" and lists \"Avet Rubeni Terterian\" among its indicators.",
+        "table": "composers",
+        "op": "merge_into",
+        "name": "Avet Rubeni Terterian",
+        "value": "Avet Terterian"
+    },
+    {
+        "id": "2026-11-07-merge-brian-nabors",
+        "date": "2026-11-07",
+        "reason": "Duplicate entry for the same composer; the seed keeps \"Brian Raphael Nabors\" and lists \"Brian Nabors\" among its indicators.",
+        "table": "composers",
+        "op": "merge_into",
+        "name": "Brian Nabors",
+        "value": "Brian Raphael Nabors"
+    },
+    {
+        "id": "2026-11-07-merge-pt-budhadev-dasgupta",
+        "date": "2026-11-07",
+        "reason": "Duplicate entry for the same composer; the seed keeps \"Buddhadev Dasgupta\" and lists \"Pt. Budhadev Dasgupta\" among its indicators.",
+        "table": "composers",
+        "op": "merge_into",
+        "name": "Pt. Budhadev Dasgupta",
+        "value": "Buddhadev Dasgupta"
+    },
+    {
+        "id": "2026-11-07-merge-carson-p-cooman",
+        "date": "2026-11-07",
+        "reason": "Duplicate entry for the same composer; the seed keeps \"Carson Cooman\" and lists \"Carson P. Cooman\" among its indicators.",
+        "table": "composers",
+        "op": "merge_into",
+        "name": "Carson P. Cooman",
+        "value": "Carson Cooman"
+    },
+    {
+        "id": "2026-11-07-merge-david-post",
+        "date": "2026-11-07",
+        "reason": "Duplicate entry for the same composer; the seed keeps \"David L. Post\" and lists \"David Post\" among its indicators.",
+        "table": "composers",
+        "op": "merge_into",
+        "name": "David Post",
+        "value": "David L. Post"
+    },
+    {
+        "id": "2026-11-07-merge-david-serkin-ludwig",
+        "date": "2026-11-07",
+        "reason": "Duplicate entry for the same composer; the seed keeps \"David Ludwig\" and lists \"David Serkin Ludwig\" among its indicators.",
+        "table": "composers",
+        "op": "merge_into",
+        "name": "David Serkin Ludwig",
+        "value": "David Ludwig"
+    },
+    {
+        "id": "2026-11-07-merge-daniel-lesur",
+        "date": "2026-11-07",
+        "reason": "Duplicate entry for the same composer; the seed keeps \"Jean-Yves Daniel-Lesur\" and lists \"Daniel Lesur\" among its indicators.",
+        "table": "composers",
+        "op": "merge_into",
+        "name": "Daniel Lesur",
+        "value": "Jean-Yves Daniel-Lesur"
+    },
+    {
+        "id": "2026-11-07-merge-koffler-jozef",
+        "date": "2026-11-07",
+        "reason": "Duplicate entry for the same composer; the seed keeps \"Józef Koffler\" and lists \"Koffler, Józef\" among its indicators.",
+        "table": "composers",
+        "op": "merge_into",
+        "name": "Koffler, Józef",
+        "value": "Józef Koffler"
+    },
+    {
+        "id": "2026-11-07-merge-jan-krtitel-vanhal",
+        "date": "2026-11-07",
+        "reason": "Duplicate entry for the same composer; the seed keeps \"Johann Baptist Wanhal\" and lists \"Jan Křtitel Vanhal\" among its indicators.",
+        "table": "composers",
+        "op": "merge_into",
+        "name": "Jan Křtitel Vanhal",
+        "value": "Johann Baptist Wanhal"
+    },
+    {
+        "id": "2026-11-07-merge-antonin-rejcha",
+        "date": "2026-11-07",
+        "reason": "Duplicate entry for the same composer; the seed keeps \"Anton Reicha\" and lists \"Antonín Rejcha\" among its indicators.",
+        "table": "composers",
+        "op": "merge_into",
+        "name": "Antonín Rejcha",
+        "value": "Anton Reicha"
+    },
+    {
+        "id": "2026-11-07-merge-jan-vaclav-antonin-stamic",
+        "date": "2026-11-07",
+        "reason": "Duplicate entry for the same composer; the seed keeps \"Johann Stamitz\" and lists \"Jan Václav Antonín Stamic\" among its indicators.",
+        "table": "composers",
+        "op": "merge_into",
+        "name": "Jan Václav Antonín Stamic",
+        "value": "Johann Stamitz"
+    },
+    {
+        "id": "2026-11-07-merge-antonin-stamic",
+        "date": "2026-11-07",
+        "reason": "Duplicate entry for the same composer; the seed keeps \"Anton Stamitz\" and lists \"Antonín Stamic\" among its indicators.",
+        "table": "composers",
+        "op": "merge_into",
+        "name": "Antonín Stamic",
+        "value": "Anton Stamitz"
+    },
+    {
+        "id": "2026-11-07-merge-leopold-kozeluh",
+        "date": "2026-11-07",
+        "reason": "Duplicate entry for the same composer; the seed keeps \"Leopold Koželuch\" and lists \"Leopold Koželuh\" among its indicators.",
+        "table": "composers",
+        "op": "merge_into",
+        "name": "Leopold Koželuh",
+        "value": "Leopold Koželuch"
+    },
+    {
+        "id": "2026-11-07-merge-jiri-antonin-benda",
+        "date": "2026-11-07",
+        "reason": "Duplicate entry for the same composer; the seed keeps \"Georg Benda\" and lists \"Jiří Antonín Benda\" among its indicators.",
+        "table": "composers",
+        "op": "merge_into",
+        "name": "Jiří Antonín Benda",
+        "value": "Georg Benda"
+    },
+    {
+        "id": "2026-11-07-merge-vojtech-matyas-jirovec",
+        "date": "2026-11-07",
+        "reason": "Duplicate entry for the same composer; the seed keeps \"Adalbert Gyrowetz\" and lists \"Vojtech Matyáš Jírovec\" among its indicators.",
+        "table": "composers",
+        "op": "merge_into",
+        "name": "Vojtech Matyáš Jírovec",
+        "value": "Adalbert Gyrowetz"
+    },
+    {
+        "id": "2026-11-07-merge-josef-antonin-steffan",
+        "date": "2026-11-07",
+        "reason": "Duplicate entry for the same composer; the seed keeps \"Josef Antonín Štěpán\" and lists \"Josef Antonín Steffan\" among its indicators.",
+        "table": "composers",
+        "op": "merge_into",
+        "name": "Josef Antonín Steffan",
+        "value": "Josef Antonín Štěpán"
+    },
+    {
+        "id": "2026-11-07-merge-vincenc-vaclav-masek",
+        "date": "2026-11-07",
+        "reason": "Duplicate entry for the same composer; the seed keeps \"Václav Vincenc Mašek\" and lists \"Vincenc Václav Masek\" among its indicators.",
+        "table": "composers",
+        "op": "merge_into",
+        "name": "Vincenc Václav Masek",
+        "value": "Václav Vincenc Mašek"
+    },
+    {
+        "id": "2026-11-07-merge-johann-baptist-vanhal",
+        "date": "2026-11-07",
+        "reason": "Duplicate entry for the same composer; the seed keeps \"Johann Baptist Wanhal\" and lists \"Johann Baptist Vanhal\" among its indicators.",
+        "table": "composers",
+        "op": "merge_into",
+        "name": "Johann Baptist Vanhal",
+        "value": "Johann Baptist Wanhal"
+    },
+    {
+        "id": "2026-11-07-merge-peter-carl-goldmark",
+        "date": "2026-11-07",
+        "reason": "\"Peter Carl Goldmark\" names the engineer (1906-1977); the entry with these dates and indicators is the composer Karl Goldmark (1830-1915). Folded into the seed's \"Karl Goldmark\", or renamed to it, without keeping the engineer's name as an indicator.",
+        "table": "composers",
+        "op": "merge_into",
+        "name": "Peter Carl Goldmark",
+        "value": "Karl Goldmark",
+        "drop_name": true
     }
 ]

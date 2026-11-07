@@ -445,6 +445,8 @@ class ComposersData:
 
     def _apply_data_fix(self, fix):
         """Apply one composers entry from the data fix list; see data_fixes.apply_pending."""
+        if fix.get("op") == "merge_into":
+            return self._apply_merge_fix(fix)
         if fix.get("op") != "add_indicator":
             raise ValueError(f"Unsupported composers data fix op: {fix.get('op')}")
         name, value = fix["name"], fix["value"]
@@ -455,6 +457,57 @@ class ComposersData:
         if value in composer.indicators:
             return data_fixes.ALREADY_PRESENT, detail
         success, error_msg = self.add_composer_indicators(name, [value])
+        if not success:
+            raise RuntimeError(error_msg)
+        return data_fixes.APPLIED, detail
+
+    def _apply_merge_fix(self, fix):
+        """Fold composer `name` into composer `value`, or rename it when `value` is absent.
+
+        The merged composer gains the other's indicators (its name too, unless the
+        fix sets drop_name), genres, works, the note keys it lacks, and its dates
+        if it has none. drop_name is for a name that belongs to another person.
+        """
+        source_name, target_name = fix["name"], fix["value"]
+        detail = f'"{source_name}" into "{target_name}"'
+        source = self._composers.get(source_name)
+        if source is None:
+            return data_fixes.TARGET_MISSING, detail
+        drop_name = bool(fix.get("drop_name", False))
+        carried = [i for i in ([source_name] + source.indicators) if not (drop_name and i == source_name)]
+        target = self._composers.get(target_name)
+        conn = get_connection()
+        if target is None:
+            indicators = [target_name] + [i for i in dict.fromkeys(carried) if i != target_name]
+            conn.execute(
+                "UPDATE composers SET name = ?, indicators = ? WHERE name = ?",
+                (target_name, list_to_delim(indicators), source_name),
+            )
+            conn.commit()
+            self._composers.pop(source_name, None)
+            source.name = target_name
+            source.indicators = indicators
+            self._composers[target_name] = source
+            return data_fixes.APPLIED, detail
+        # New lists rather than appending: Composer's list defaults are shared objects.
+        target.indicators = target.indicators + [i for i in dict.fromkeys(carried) if i not in target.indicators]
+        target.genres = target.genres + [g for g in source.genres if g not in target.genres]
+        target.notes = dict(target.notes or {})
+        for key, value in (source.notes or {}).items():
+            target.notes.setdefault(key, value)
+        if target.start_date in (None, -1) and target.end_date in (None, -1) \
+                and not (source.start_date in (None, -1) and source.end_date in (None, -1)):
+            target.start_date = source.start_date
+            target.end_date = source.end_date
+            target.dates_are_lifespan = source.dates_are_lifespan
+            target.dates_uncertain = source.dates_uncertain
+        # Works the target already has under the same name stay with the source
+        # and go with it when it is deleted.
+        conn.execute("UPDATE OR IGNORE works SET composer_id = ? WHERE composer_id = ?", (target.id, source.id))
+        success, error_msg = self._persist_composers([target])
+        if not success:
+            raise RuntimeError(error_msg)
+        success, error_msg = self.delete_composer(source)
         if not success:
             raise RuntimeError(error_msg)
         return data_fixes.APPLIED, detail

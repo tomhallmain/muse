@@ -14,9 +14,13 @@ Seeding order (one-time, on fresh DB):
                               migrated once, then superseded by direct SQLite writes
 
 Migration state is tracked in the db_meta table so each step runs exactly once.
+
+Composers and genres from the example files also reach databases seeded from an
+older copy of them: see _sync_seed.
 """
 
 import gzip
+import hashlib
 import json
 import logging
 import sqlite3
@@ -112,6 +116,16 @@ CREATE TABLE IF NOT EXISTS instruments (
 
 -- ─── Reference-data corrections ──────────────────────────────────────────────
 -- One row per entry of library_data/data/data_fixes.json this database has run.
+
+-- The example-file entries a database last received, per kind ('composers',
+-- 'genres'): the base _sync_seed compares a changed example file against, so a
+-- value the user removed is not added again.
+CREATE TABLE IF NOT EXISTS seed_snapshot (
+    kind TEXT NOT NULL,
+    name TEXT NOT NULL,
+    data TEXT NOT NULL,
+    PRIMARY KEY (kind, name)
+);
 
 CREATE TABLE IF NOT EXISTS data_fixes_applied (
     id         TEXT PRIMARY KEY,
@@ -262,6 +276,7 @@ def get_connection() -> sqlite3.Connection:
             _migrate_instruments_columns(conn)
             _migrate_media_tracks_columns(conn)
             _seed_if_needed(conn)
+            _sync_seed(conn)
             _migrate_gzip_caches(conn)
             _connection = conn
     return _connection
@@ -360,6 +375,7 @@ def _seed_if_needed(conn: sqlite3.Connection) -> None:
     _seed_blacklist_music(conn)
     _set_meta(conn, "seeded", "1")
     conn.commit()
+    _sync_seed(conn, merge=False)
     logger.info("Seed complete — migrating legacy JSON files...")
     _migrate_legacy_json(conn)
     logger.info("Legacy JSON migration complete.")
@@ -472,6 +488,202 @@ def _seed_composers(conn: sqlite3.Connection) -> None:
         rows,
     )
     logger.debug("Seeded %d composers", len(rows))
+
+
+# ---------------------------------------------------------------------------
+# Seed sync: example-file changes reaching an already seeded database
+# ---------------------------------------------------------------------------
+
+_SEED_SYNC_FILES = (("composers", "composers_example.json"), ("genres", "genres_example.json"))
+
+
+def _is_unset_date(value) -> bool:
+    return value is None or value == -1
+
+
+def _added_since(new_values, base_values) -> list:
+    """Values in the example file now that its previous copy did not have."""
+    return [value for value in new_values if value not in base_values]
+
+
+def _sync_seed(conn: sqlite3.Connection, merge: bool = True) -> None:
+    """Bring example-file changes into an existing database, then record the files.
+
+    Runs only when a file's digest differs from the one recorded in db_meta. Each
+    entry is compared with its copy in seed_snapshot, and only what the example
+    file added since that copy is applied: new entries are inserted, list values
+    appended, missing note keys and dates filled. Nothing stored is removed or
+    overwritten. An entry in the snapshot but no longer in the database was
+    deleted here and stays deleted. A database seeded before the snapshot existed
+    has none, so it gets every entry and value it lacks, once.
+
+    With merge=False (a database seeded just now) only the record is written.
+    Renames and merged duplicates are data fixes (library_data/data_fixes.py).
+    """
+    for kind, filename in _SEED_SYNC_FILES:
+        path = _EXAMPLE_DATA_DIR / filename
+        if not path.exists():
+            continue
+        raw = path.read_bytes()
+        digest = hashlib.sha256(raw).hexdigest()
+        meta_key = f"seed_digest_{kind}"
+        if _get_meta(conn, meta_key) == digest:
+            continue
+        try:
+            data = json.loads(raw.decode("utf-8"))
+            if merge:
+                base = {
+                    row[0]: json.loads(row[1])
+                    for row in conn.execute("SELECT name, data FROM seed_snapshot WHERE kind = ?", (kind,))
+                }
+                if kind == "composers":
+                    counts = _sync_seed_composers(conn, data, base)
+                else:
+                    counts = _sync_seed_genres(conn, data, base)
+                logger.info("Seed sync for %s: %d inserted, %d updated", kind, *counts)
+            conn.execute("DELETE FROM seed_snapshot WHERE kind = ?", (kind,))
+            conn.executemany(
+                "INSERT OR REPLACE INTO seed_snapshot (kind, name, data) VALUES (?, ?, ?)",
+                [(kind, v["name"], json.dumps(v, sort_keys=True)) for v in data.values() if v.get("name")],
+            )
+            _set_meta(conn, meta_key, digest)
+            conn.commit()
+        except (sqlite3.Error, ValueError, KeyError, TypeError) as e:
+            # Left unrecorded, so the next start tries again; the database stays usable.
+            conn.rollback()
+            logger.error("Seed sync for %s failed: %s", kind, e)
+
+
+def _sync_seed_composers(conn: sqlite3.Connection, data: dict, base: dict) -> tuple:
+    import datetime
+
+    rows = {
+        row[1]: row
+        for row in conn.execute(
+            "SELECT id, name, indicators, start_date, end_date, dates_are_lifespan, "
+            "dates_uncertain, genres, notes FROM composers"
+        )
+    }
+    used_ids = {row[0] for row in rows.values()}
+    next_id = max(used_ids, default=0) + 1
+    now_iso = datetime.datetime.now().isoformat()
+    inserted = updated = 0
+    for v in data.values():
+        name = v.get("name")
+        if not name:
+            continue
+        old = base.get(name)
+        row = rows.get(name)
+        if row is None:
+            if old is not None:
+                continue
+            # A composer added in this database since it was seeded can hold the
+            # seed id; ids are surrogates, so the new row takes the next free one.
+            composer_id = v.get("id")
+            if composer_id is None or composer_id in used_ids:
+                composer_id = next_id
+            used_ids.add(composer_id)
+            next_id = max(next_id, composer_id + 1)
+            conn.execute(
+                """INSERT INTO composers
+                   (id, name, indicators, start_date, end_date,
+                    dates_are_lifespan, dates_uncertain, genres, notes, date_added)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    composer_id,
+                    name,
+                    list_to_delim(v.get("indicators", [])),
+                    v.get("start_date"),
+                    v.get("end_date"),
+                    1 if v.get("dates_are_lifespan", True) else 0,
+                    1 if v.get("dates_uncertain", False) else 0,
+                    list_to_delim(v.get("genres", [])),
+                    json.dumps(v.get("notes", {})),
+                    now_iso,
+                ),
+            )
+            inserted += 1
+            continue
+        old = old or {}
+        changed = False
+        lists = {}
+        for field, column in (("indicators", 2), ("genres", 7)):
+            current = delim_to_list(row[column])
+            additions = [
+                value for value in _added_since(v.get(field, []), old.get(field, []))
+                if value not in current
+            ]
+            changed = changed or bool(additions)
+            lists[field] = current + additions
+        try:
+            notes = json.loads(row[8] or "{}")
+        except ValueError:
+            notes = {}
+        old_notes = old.get("notes", {})
+        for key, value in v.get("notes", {}).items():
+            if key not in notes and old_notes.get(key) != value:
+                notes[key] = value
+                changed = True
+        dates = (row[3], row[4], row[5], row[6])
+        seed_dates = (v.get("start_date", -1), v.get("end_date", -1))
+        if (
+            _is_unset_date(row[3]) and _is_unset_date(row[4])
+            and not (_is_unset_date(seed_dates[0]) and _is_unset_date(seed_dates[1]))
+            and (old.get("start_date", -1), old.get("end_date", -1)) != seed_dates
+        ):
+            dates = (
+                seed_dates[0],
+                seed_dates[1],
+                1 if v.get("dates_are_lifespan", True) else 0,
+                1 if v.get("dates_uncertain", False) else 0,
+            )
+            changed = True
+        if changed:
+            conn.execute(
+                """UPDATE composers SET indicators = ?, genres = ?, notes = ?, start_date = ?,
+                   end_date = ?, dates_are_lifespan = ?, dates_uncertain = ? WHERE name = ?""",
+                (
+                    list_to_delim(lists["indicators"]),
+                    list_to_delim(lists["genres"]),
+                    json.dumps(notes),
+                    *dates,
+                    name,
+                ),
+            )
+            updated += 1
+    return inserted, updated
+
+
+def _sync_seed_genres(conn: sqlite3.Connection, data: dict, base: dict) -> tuple:
+    rows = {row[0]: row for row in conn.execute("SELECT name, transliterations FROM genres")}
+    inserted = updated = 0
+    for v in data.values():
+        name = v.get("name")
+        if not name:
+            continue
+        old = base.get(name)
+        row = rows.get(name)
+        if row is None:
+            if old is not None:
+                continue
+            conn.execute(
+                "INSERT INTO genres (name, transliterations, notes) VALUES (?, ?, ?)",
+                (name, list_to_delim(v.get("transliterations", [])), json.dumps(v.get("notes", {}))),
+            )
+            inserted += 1
+            continue
+        current = delim_to_list(row[1])
+        additions = [
+            value for value in _added_since(v.get("transliterations", []), (old or {}).get("transliterations", []))
+            if value not in current
+        ]
+        if additions:
+            conn.execute(
+                "UPDATE genres SET transliterations = ? WHERE name = ?",
+                (list_to_delim(current + additions), name),
+            )
+            updated += 1
+    return inserted, updated
 
 
 def _seed_artists(conn: sqlite3.Connection) -> None:
