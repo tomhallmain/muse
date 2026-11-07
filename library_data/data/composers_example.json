@@ -16734,26 +16734,13 @@
         "id": 4776,
         "name": "Georg Benda",
         "indicators": [
-            "Georg Benda"
-        ],
-        "start_date": 1722,
-        "end_date": 1795,
-        "dates_are_lifespan": true,
-        "dates_uncertain": false,
-        "genres": [],
-        "works": [],
-        "notes": {}
-    },
-    "Ji\u0159\u00ed Anton\u00edn Benda": {
-        "id": 9617,
-        "name": "Ji\u0159\u00ed Anton\u00edn Benda",
-        "indicators": [
+            "Georg Benda",
             "Ji\u0159\u00ed Anton\u00edn Benda",
             "Jiri Antonin Benda",
             "Benda"
         ],
-        "start_date": -1,
-        "end_date": -1,
+        "start_date": 1722,
+        "end_date": 1795,
         "dates_are_lifespan": true,
         "dates_uncertain": false,
         "genres": [
@@ -37100,22 +37087,7 @@
         "id": 10007,
         "name": "Alberto Colla",
         "indicators": [
-            "Alberto Colla"
-        ],
-        "start_date": -1,
-        "end_date": -1,
-        "dates_are_lifespan": false,
-        "dates_uncertain": true,
-        "genres": [],
-        "works": [],
-        "notes": {
-            "gleiche_person": "Alberto Ezio Colla"
-        }
-    },
-    "Alberto Ezio Colla": {
-        "id": 10008,
-        "name": "Alberto Ezio Colla",
-        "indicators": [
+            "Alberto Colla",
             "Alberto Ezio Colla"
         ],
         "start_date": -1,
@@ -37124,9 +37096,7 @@
         "dates_uncertain": true,
         "genres": [],
         "works": [],
-        "notes": {
-            "gleiche_person": "Alberto Colla"
-        }
+        "notes": {}
     },
     "Karl Collan": {
         "id": 13677,
@@ -38102,22 +38072,7 @@
         "id": 10141,
         "name": "Carson Cooman",
         "indicators": [
-            "Carson Cooman"
-        ],
-        "start_date": -1,
-        "end_date": -1,
-        "dates_are_lifespan": false,
-        "dates_uncertain": true,
-        "genres": [],
-        "works": [],
-        "notes": {
-            "gleiche_person": "Carson P. Cooman"
-        }
-    },
-    "Carson P. Cooman": {
-        "id": 10142,
-        "name": "Carson P. Cooman",
-        "indicators": [
+            "Carson Cooman",
             "Carson P. Cooman"
         ],
         "start_date": -1,
@@ -38126,9 +38081,7 @@
         "dates_uncertain": true,
         "genres": [],
         "works": [],
-        "notes": {
-            "gleiche_person": "Carson Cooman"
-        }
+        "notes": {}
     },
     "Douglas Coombes": {
         "id": 12302,
@@ -41521,7 +41474,8 @@
         "id": 13330,
         "name": "Jean-Yves Daniel-Lesur",
         "indicators": [
-            "Jean-Yves Daniel-Lesur"
+            "Jean-Yves Daniel-Lesur",
+            "Daniel Lesur"
         ],
         "start_date": -1,
         "end_date": -1,
@@ -41529,9 +41483,7 @@
         "dates_uncertain": true,
         "genres": [],
         "works": [],
-        "notes": {
-            "gleiche_person": "Daniel Lesur"
-        }
+        "notes": {}
     },
     "Daniel Danielis": {
         "id": 6351,
@@ -41917,22 +41869,7 @@
         "id": 10123,
         "name": "Buddhadev Dasgupta",
         "indicators": [
-            "Buddhadev Dasgupta"
-        ],
-        "start_date": -1,
-        "end_date": -1,
-        "dates_are_lifespan": false,
-        "dates_uncertain": true,
-        "genres": [],
-        "works": [],
-        "notes": {
-            "gleiche_person": "Pt. Budhadev Dasgupta"
-        }
-    },
-    "Pt. Budhadev Dasgupta": {
-        "id": 10124,
-        "name": "Pt. Budhadev Dasgupta",
-        "indicators": [
+            "Buddhadev Dasgupta",
             "Pt. Budhadev Dasgupta"
         ],
         "start_date": -1,
@@ -41941,9 +41878,7 @@
         "dates_uncertain": true,
         "genres": [],
         "works": [],
-        "notes": {
-            "gleiche_person": "Buddhadev Dasgupta"
-        }
+        "notes": {}
     },
     "James Dashow": {
         "id": 13237,
@@ -65133,22 +65068,6 @@
         "works": [],
         "notes": {}
     },
-    "Karl Goldmark": {
-        "id": 13678,
-        "name": "Karl Goldmark",
-        "indicators": [
-            "Karl Goldmark"
-        ],
-        "start_date": -1,
-        "end_date": -1,
-        "dates_are_lifespan": false,
-        "dates_uncertain": true,
-        "genres": [],
-        "works": [],
-        "notes": {
-            "notiz": "Oper Die K\u00f6nigin von Saba, L\u00e4ndliche Hochzeit; nicht Peter Carl Goldmark aus der Saat"
-        }
-    },
     "Peter Carl Goldmark": {
         "id": 521,
         "name": "Peter Carl Goldmark",
@@ -65156,7 +65075,8 @@
             "Peter Carl Goldmark",
             "Carl Goldmark",
             "K\u00e1roly Goldmark",
-            "Karoly Goldmark"
+            "Karoly Goldmark",
+            "Karl Goldmark"
         ],
         "start_date": 1830,
         "end_date": 1915,
@@ -65166,7 +65086,9 @@
             "Romantic"
         ],
         "works": [],
-        "notes": {}
+        "notes": {
+            "notiz": "Oper Die K\u00f6nigin von Saba, L\u00e4ndliche Hochzeit"
+        }
     },
     "Rubin Goldmark": {
         "id": 6828,
@@ -70327,13 +70249,19 @@
         "id": 6920,
         "name": "Adalbert Gyrowetz",
         "indicators": [
-            "Adalbert Gyrowetz"
+            "Adalbert Gyrowetz",
+            "Vojtech Maty\u00e1\u0161 J\u00edrovec",
+            "Vojtech Matyas Jirovec",
+            "J\u00edrovec",
+            "Jirovec"
         ],
         "start_date": 1763,
         "end_date": 1850,
         "dates_are_lifespan": true,
         "dates_uncertain": false,
-        "genres": [],
+        "genres": [
+            "Classical Period"
+        ],
         "works": [],
         "notes": {}
     },
@@ -84463,25 +84391,6 @@
         "works": [],
         "notes": {}
     },
-    "Vojtech Maty\u00e1\u0161 J\u00edrovec": {
-        "id": 9920,
-        "name": "Vojtech Maty\u00e1\u0161 J\u00edrovec",
-        "indicators": [
-            "Vojtech Maty\u00e1\u0161 J\u00edrovec",
-            "Vojtech Matyas Jirovec",
-            "J\u00edrovec",
-            "Jirovec"
-        ],
-        "start_date": -1,
-        "end_date": -1,
-        "dates_are_lifespan": true,
-        "dates_uncertain": false,
-        "genres": [
-            "Classical Period"
-        ],
-        "works": [],
-        "notes": {}
-    },
     "Joseph Joachim": {
         "id": 7148,
         "name": "Joseph Joachim",
@@ -91800,23 +91709,7 @@
         "id": 13647,
         "name": "J\u00f3zef Koffler",
         "indicators": [
-            "J\u00f3zef Koffler"
-        ],
-        "start_date": -1,
-        "end_date": -1,
-        "dates_are_lifespan": false,
-        "dates_uncertain": true,
-        "genres": [],
-        "works": [],
-        "notes": {
-            "notiz": "Zw\u00f6lftonkomponist",
-            "gleiche_person": "Koffler, J\u00f3zef"
-        }
-    },
-    "Koffler, J\u00f3zef": {
-        "id": 9989,
-        "name": "Koffler, J\u00f3zef",
-        "indicators": [
+            "J\u00f3zef Koffler",
             "Koffler, J\u00f3zef"
         ],
         "start_date": -1,
@@ -91825,7 +91718,9 @@
         "dates_uncertain": true,
         "genres": [],
         "works": [],
-        "notes": {}
+        "notes": {
+            "notiz": "Zw\u00f6lftonkomponist"
+        }
     },
     "Jaroslav Kofro\u0148": {
         "id": 13280,
@@ -93396,29 +93291,14 @@
         "indicators": [
             "Leopold Ko\u017eeluch",
             "Leopold Kozeluch",
-            "Kozeluch"
-        ],
-        "start_date": 1747,
-        "end_date": 1818,
-        "dates_are_lifespan": true,
-        "dates_uncertain": false,
-        "genres": [
-            "Classical Period"
-        ],
-        "works": [],
-        "notes": {}
-    },
-    "Leopold Ko\u017eeluh": {
-        "id": 9779,
-        "name": "Leopold Ko\u017eeluh",
-        "indicators": [
+            "Kozeluch",
             "Leopold Ko\u017eeluh",
             "Leopold Kozeluh",
             "Ko\u017eeluh",
             "Kozeluh"
         ],
-        "start_date": -1,
-        "end_date": -1,
+        "start_date": 1747,
+        "end_date": 1818,
         "dates_are_lifespan": true,
         "dates_uncertain": false,
         "genres": [
@@ -98033,10 +97913,11 @@
         "works": [],
         "notes": {}
     },
-    "Angel E. Lasala": {
-        "id": 10051,
-        "name": "Angel E. Lasala",
+    "Angel Lasala": {
+        "id": 10052,
+        "name": "Angel Lasala",
         "indicators": [
+            "Angel Lasala",
             "Angel E. Lasala"
         ],
         "start_date": -1,
@@ -98045,25 +97926,7 @@
         "dates_uncertain": true,
         "genres": [],
         "works": [],
-        "notes": {
-            "gleiche_person": "Angel Lasala"
-        }
-    },
-    "Angel Lasala": {
-        "id": 10052,
-        "name": "Angel Lasala",
-        "indicators": [
-            "Angel Lasala"
-        ],
-        "start_date": -1,
-        "end_date": -1,
-        "dates_are_lifespan": false,
-        "dates_uncertain": true,
-        "genres": [],
-        "works": [],
-        "notes": {
-            "gleiche_person": "Angel E. Lasala"
-        }
+        "notes": {}
     },
     "Hannah Lash": {
         "id": 12965,
@@ -98399,20 +98262,6 @@
         "end_date": 1959,
         "dates_are_lifespan": true,
         "dates_uncertain": false,
-        "genres": [],
-        "works": [],
-        "notes": {}
-    },
-    "Laurencini": {
-        "id": 9966,
-        "name": "Laurencini",
-        "indicators": [
-            "Laurencini"
-        ],
-        "start_date": -1,
-        "end_date": -1,
-        "dates_are_lifespan": false,
-        "dates_uncertain": true,
         "genres": [],
         "works": [],
         "notes": {}
@@ -100984,22 +100833,6 @@
         "notes": {
             "notiz": "Geiger und Pianist; Kammermusik, Kadenzen",
             "quelle": "https://www.bechstein.com/en/the-world-of-bechstein/pianists/kolja-lessing/"
-        }
-    },
-    "Daniel Lesur": {
-        "id": 12119,
-        "name": "Daniel Lesur",
-        "indicators": [
-            "Daniel Lesur"
-        ],
-        "start_date": -1,
-        "end_date": -1,
-        "dates_are_lifespan": false,
-        "dates_uncertain": true,
-        "genres": [],
-        "works": [],
-        "notes": {
-            "gleiche_person": "Jean-Yves Daniel-Lesur"
         }
     },
     "David Letkemann": {
@@ -104158,10 +103991,11 @@
         "works": [],
         "notes": {}
     },
-    "Aleksandr Lokshin": {
-        "id": 10024,
-        "name": "Aleksandr Lokshin",
+    "Alexander Lokshin": {
+        "id": 10023,
+        "name": "Alexander Lokshin",
         "indicators": [
+            "Alexander Lokshin",
             "Aleksandr Lokshin"
         ],
         "start_date": -1,
@@ -104170,25 +104004,7 @@
         "dates_uncertain": true,
         "genres": [],
         "works": [],
-        "notes": {
-            "gleiche_person": "Alexander Lokshin"
-        }
-    },
-    "Alexander Lokshin": {
-        "id": 10023,
-        "name": "Alexander Lokshin",
-        "indicators": [
-            "Alexander Lokshin"
-        ],
-        "start_date": -1,
-        "end_date": -1,
-        "dates_are_lifespan": false,
-        "dates_uncertain": true,
-        "genres": [],
-        "works": [],
-        "notes": {
-            "gleiche_person": "aleksandr lokshin"
-        }
+        "notes": {}
     },
     "Hannibal Lokumbe": {
         "id": 7497,
@@ -105335,22 +105151,7 @@
         "id": 10244,
         "name": "David Ludwig",
         "indicators": [
-            "David Ludwig"
-        ],
-        "start_date": -1,
-        "end_date": -1,
-        "dates_are_lifespan": false,
-        "dates_uncertain": true,
-        "genres": [],
-        "works": [],
-        "notes": {
-            "gleiche_person": "David Serkin Ludwig"
-        }
-    },
-    "David Serkin Ludwig": {
-        "id": 10245,
-        "name": "David Serkin Ludwig",
-        "indicators": [
+            "David Ludwig",
             "David Serkin Ludwig"
         ],
         "start_date": -1,
@@ -105359,9 +105160,7 @@
         "dates_uncertain": true,
         "genres": [],
         "works": [],
-        "notes": {
-            "gleiche_person": "David Ludwig"
-        }
+        "notes": {}
     },
     "Otto Clarence Luening": {
         "id": 4985,
@@ -110558,24 +110357,6 @@
         "works": [],
         "notes": {}
     },
-    "Vincenc V\u00e1clav Masek": {
-        "id": 9917,
-        "name": "Vincenc V\u00e1clav Masek",
-        "indicators": [
-            "Vincenc V\u00e1clav Masek",
-            "Vincenc Vaclav Masek",
-            "Masek"
-        ],
-        "start_date": -1,
-        "end_date": -1,
-        "dates_are_lifespan": true,
-        "dates_uncertain": false,
-        "genres": [
-            "Classical Period"
-        ],
-        "works": [],
-        "notes": {}
-    },
     "Alireza Mashayekhi": {
         "id": 11379,
         "name": "Alireza Mashayekhi",
@@ -111007,7 +110788,9 @@
             "V\u00e1clav Vincenc Ma\u0161ek",
             "Vaclav Vincenc Masek",
             "Ma\u0161ek",
-            "Masek"
+            "Masek",
+            "Vincenc V\u00e1clav Masek",
+            "Vincenc Vaclav Masek"
         ],
         "start_date": -1,
         "end_date": -1,
@@ -120122,10 +119905,11 @@
         "works": [],
         "notes": {}
     },
-    "Brian Nabors": {
-        "id": 10115,
-        "name": "Brian Nabors",
+    "Brian Raphael Nabors": {
+        "id": 10116,
+        "name": "Brian Raphael Nabors",
         "indicators": [
+            "Brian Raphael Nabors",
             "Brian Nabors"
         ],
         "start_date": -1,
@@ -120134,25 +119918,7 @@
         "dates_uncertain": true,
         "genres": [],
         "works": [],
-        "notes": {
-            "gleiche_person": "Brian Raphael Nabors"
-        }
-    },
-    "Brian Raphael Nabors": {
-        "id": 10116,
-        "name": "Brian Raphael Nabors",
-        "indicators": [
-            "Brian Raphael Nabors"
-        ],
-        "start_date": -1,
-        "end_date": -1,
-        "dates_are_lifespan": false,
-        "dates_uncertain": true,
-        "genres": [],
-        "works": [],
-        "notes": {
-            "gleiche_person": "Brian Nabors"
-        }
+        "notes": {}
     },
     "Tivadar Nach\u00e9z": {
         "id": 1040,
@@ -135376,22 +135142,7 @@
         "id": 10240,
         "name": "David L. Post",
         "indicators": [
-            "David L. Post"
-        ],
-        "start_date": -1,
-        "end_date": -1,
-        "dates_are_lifespan": false,
-        "dates_uncertain": true,
-        "genres": [],
-        "works": [],
-        "notes": {
-            "gleiche_person": "David Post"
-        }
-    },
-    "David Post": {
-        "id": 10241,
-        "name": "David Post",
-        "indicators": [
+            "David L. Post",
             "David Post"
         ],
         "start_date": -1,
@@ -135400,9 +135151,7 @@
         "dates_uncertain": true,
         "genres": [],
         "works": [],
-        "notes": {
-            "gleiche_person": "David L. Post"
-        }
+        "notes": {}
     },
     "Karni Postel": {
         "id": 13683,
@@ -140263,7 +140012,10 @@
         "id": 1205,
         "name": "Anton Reicha",
         "indicators": [
-            "Anton Reicha"
+            "Anton Reicha",
+            "Anton\u00edn Rejcha",
+            "Antonin Rejcha",
+            "Rejcha"
         ],
         "start_date": 1770,
         "end_date": 1836,
@@ -140748,24 +140500,6 @@
         "notes": {
             "notiz": "Klavierquintett D-Dur op. 23, Filmmusik The Mummy"
         }
-    },
-    "Anton\u00edn Rejcha": {
-        "id": 9336,
-        "name": "Anton\u00edn Rejcha",
-        "indicators": [
-            "Anton\u00edn Rejcha",
-            "Antonin Rejcha",
-            "Rejcha"
-        ],
-        "start_date": -1,
-        "end_date": -1,
-        "dates_are_lifespan": true,
-        "dates_uncertain": false,
-        "genres": [
-            "Classical Period"
-        ],
-        "works": [],
-        "notes": {}
     },
     "Franz Relling": {
         "id": 1214,
@@ -161829,53 +161563,22 @@
             "codex": "Codex Manesse"
         }
     },
-    "Anton\u00edn Stamic": {
-        "id": 9337,
-        "name": "Anton\u00edn Stamic",
-        "indicators": [
-            "Anton\u00edn Stamic",
-            "Antonin Stamic",
-            "Stamic"
-        ],
-        "start_date": -1,
-        "end_date": -1,
-        "dates_are_lifespan": true,
-        "dates_uncertain": false,
-        "genres": [
-            "Classical Period"
-        ],
-        "works": [],
-        "notes": {}
-    },
-    "Jan V\u00e1clav Anton\u00edn Stamic": {
-        "id": 9599,
-        "name": "Jan V\u00e1clav Anton\u00edn Stamic",
-        "indicators": [
-            "Jan V\u00e1clav Anton\u00edn Stamic",
-            "Jan Vaclav Antonin Stamic",
-            "Stamic"
-        ],
-        "start_date": -1,
-        "end_date": -1,
-        "dates_are_lifespan": true,
-        "dates_uncertain": false,
-        "genres": [
-            "Classical Period"
-        ],
-        "works": [],
-        "notes": {}
-    },
     "Anton Stamitz": {
         "id": 8425,
         "name": "Anton Stamitz",
         "indicators": [
-            "Anton Stamitz"
+            "Anton Stamitz",
+            "Anton\u00edn Stamic",
+            "Antonin Stamic",
+            "Stamic"
         ],
         "start_date": 1754,
         "end_date": 1798,
         "dates_are_lifespan": true,
         "dates_uncertain": true,
-        "genres": [],
+        "genres": [
+            "Classical Period"
+        ],
         "works": [],
         "notes": {}
     },
@@ -161899,7 +161602,10 @@
         "id": 5146,
         "name": "Johann Stamitz",
         "indicators": [
-            "Johann Stamitz"
+            "Johann Stamitz",
+            "Jan V\u00e1clav Anton\u00edn Stamic",
+            "Jan Vaclav Antonin Stamic",
+            "Stamic"
         ],
         "start_date": 1717,
         "end_date": 1757,
@@ -162489,24 +162195,6 @@
         "dates_are_lifespan": false,
         "dates_uncertain": true,
         "genres": [],
-        "works": [],
-        "notes": {}
-    },
-    "Josef Anton\u00edn Steffan": {
-        "id": 9719,
-        "name": "Josef Anton\u00edn Steffan",
-        "indicators": [
-            "Josef Anton\u00edn Steffan",
-            "Josef Antonin Steffan",
-            "Steffan"
-        ],
-        "start_date": -1,
-        "end_date": -1,
-        "dates_are_lifespan": true,
-        "dates_uncertain": false,
-        "genres": [
-            "Classical Period"
-        ],
         "works": [],
         "notes": {}
     },
@@ -165927,22 +165615,7 @@
         "id": 10039,
         "name": "Andrei Sychra",
         "indicators": [
-            "Andrei Sychra"
-        ],
-        "start_date": -1,
-        "end_date": -1,
-        "dates_are_lifespan": false,
-        "dates_uncertain": true,
-        "genres": [],
-        "works": [],
-        "notes": {
-            "gleiche_person": "Andrey Osipovich Sychra"
-        }
-    },
-    "Andrey Osipovich Sychra": {
-        "id": 10040,
-        "name": "Andrey Osipovich Sychra",
-        "indicators": [
+            "Andrei Sychra",
             "Andrey Osipovich Sychra"
         ],
         "start_date": -1,
@@ -165951,9 +165624,7 @@
         "dates_uncertain": true,
         "genres": [],
         "works": [],
-        "notes": {
-            "gleiche_person": "Andrei Sychra"
-        }
+        "notes": {}
     },
     "James Syler": {
         "id": 13249,
@@ -166788,7 +166459,10 @@
             "Josef Anton\u00edn \u0160t\u011bp\u00e1n",
             "Josef Antonin Stepan",
             "\u0160t\u011bp\u00e1n",
-            "Stepan"
+            "Stepan",
+            "Josef Anton\u00edn Steffan",
+            "Josef Antonin Steffan",
+            "Steffan"
         ],
         "start_date": -1,
         "end_date": -1,
@@ -169371,10 +169045,11 @@
         "works": [],
         "notes": {}
     },
-    "Avet Rubeni Terterian": {
-        "id": 10083,
-        "name": "Avet Rubeni Terterian",
+    "Avet Terterian": {
+        "id": 10084,
+        "name": "Avet Terterian",
         "indicators": [
+            "Avet Terterian",
             "Avet Rubeni Terterian"
         ],
         "start_date": -1,
@@ -169383,25 +169058,7 @@
         "dates_uncertain": true,
         "genres": [],
         "works": [],
-        "notes": {
-            "gleiche_person": "Avet Terterian"
-        }
-    },
-    "Avet Terterian": {
-        "id": 10084,
-        "name": "Avet Terterian",
-        "indicators": [
-            "Avet Terterian"
-        ],
-        "start_date": -1,
-        "end_date": -1,
-        "dates_are_lifespan": false,
-        "dates_uncertain": true,
-        "genres": [],
-        "works": [],
-        "notes": {
-            "gleiche_person": "Avet Rubeni Terterian"
-        }
+        "notes": {}
     },
     "\u00c9tienne du Tertre": {
         "id": 15123,
@@ -171837,7 +171494,8 @@
         "name": "Lorenzo Tracetti",
         "indicators": [
             "Lorenzo Tracetti",
-            "Lorenzino Tracetti"
+            "Lorenzino Tracetti",
+            "Laurencini"
         ],
         "start_date": -1,
         "end_date": -1,
@@ -171845,9 +171503,7 @@
         "dates_uncertain": true,
         "genres": [],
         "works": [],
-        "notes": {
-            "gleiche_person": "Laurencini"
-        }
+        "notes": {}
     },
     "Tommaso Traetta": {
         "id": 1514,
@@ -174686,39 +174342,6 @@
         "indicators": [
             "Antonio Vandini",
             "Vandini"
-        ],
-        "start_date": -1,
-        "end_date": -1,
-        "dates_are_lifespan": true,
-        "dates_uncertain": false,
-        "genres": [],
-        "works": [],
-        "notes": {}
-    },
-    "Jan K\u0159titel Vanhal": {
-        "id": 9594,
-        "name": "Jan K\u0159titel Vanhal",
-        "indicators": [
-            "Jan K\u0159titel Vanhal",
-            "Jan Krtitel Vanhal",
-            "Vanhal"
-        ],
-        "start_date": -1,
-        "end_date": -1,
-        "dates_are_lifespan": true,
-        "dates_uncertain": false,
-        "genres": [
-            "Classical Period"
-        ],
-        "works": [],
-        "notes": {}
-    },
-    "Johann Baptist Vanhal": {
-        "id": 9639,
-        "name": "Johann Baptist Vanhal",
-        "indicators": [
-            "Johann Baptist Vanhal",
-            "Vanhal"
         ],
         "start_date": -1,
         "end_date": -1,
@@ -179400,7 +179023,11 @@
         "id": 1568,
         "name": "Johann Baptist Wanhal",
         "indicators": [
-            "Johann Baptist Wanhal"
+            "Johann Baptist Wanhal",
+            "Jan K\u0159titel Vanhal",
+            "Jan Krtitel Vanhal",
+            "Vanhal",
+            "Johann Baptist Vanhal"
         ],
         "start_date": 1739,
         "end_date": 1813,
