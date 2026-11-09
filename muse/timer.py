@@ -3,6 +3,9 @@ import time
 import logging
 
 from muse.playback import Playback
+from utils.translations import I18N
+
+_ = I18N._
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +58,7 @@ class Timer:
     def start_timer(self, duration_seconds: int) -> None:
         """Start the timer with the specified duration in seconds"""
         if self._is_running:
-            logger.warning("Timer is already running")
+            logger.warning(_("Timer is already running"))
             return
         
         self._duration_seconds = duration_seconds
@@ -70,7 +73,7 @@ class Timer:
         self._timer_thread = threading.Thread(target=self._timer_worker, daemon=True)
         self._timer_thread.start()
         
-        logger.info(f"Timer started for {duration_seconds} seconds")
+        logger.info(_("Timer started for {0} seconds").format(duration_seconds))
     
     def pause_timer(self) -> None:
         """Pause the timer"""
@@ -133,7 +136,7 @@ class Timer:
         """Handle timer expiration"""
         self._is_completed = True
         self._is_running = False
-        logger.info("Timer expired")
+        logger.info(_("Timer expired"))
         
         # Reduce volume and start beeping
         self._reduce_volume()
@@ -148,7 +151,7 @@ class Timer:
                 self._volume_reduced = True
                 logger.info(f"Volume reduced to {self._reduced_volume} via playback override")
             else:
-                logger.warning("Playback instance does not have timer volume override method")
+                logger.warning(_("Playback instance does not have timer volume override method"))
     
     def _restore_volume(self) -> None:
         """Restore normal volume via playback.py flag"""

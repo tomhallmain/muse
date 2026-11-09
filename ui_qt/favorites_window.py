@@ -496,7 +496,7 @@ class FavoritesWindow(SmartWindow):
             if favorite.attribute == TrackAttribute.TITLE:
                 track = self._get_track_for_favorite(favorite)
                 if not track:
-                    logger.error("Track not found for favorite %s", favorite.value)
+                    logger.error(_("Track not found for favorite {0}").format(favorite.value))
                     continue
                 search_text = favorite.value
             else:
@@ -578,7 +578,7 @@ class FavoritesWindow(SmartWindow):
                 error_msg += "\n\n" + _(
                     "Tip: If you've recently added or moved files, try checking 'Rescan Library' in the search options."
                 )
-            logger.error("Error playing favorite: %s", error_msg)
+            logger.error(_("Error playing favorite: {0}").format(error_msg))
             self.app_actions.alert(
                 _("Error"), error_msg, kind="error", master=self
             )

@@ -24,6 +24,9 @@ from typing import TYPE_CHECKING, Any, Optional
 from utils.config import config
 from utils.globals import TrackAttribute
 from utils.logging_setup import get_logger
+from utils.translations import I18N
+
+_ = I18N._
 
 if TYPE_CHECKING:
     from extensions.llm import LLM
@@ -50,7 +53,7 @@ def _discover_genre_dirs(base_dir: str) -> dict:
                 if entry.is_dir() and entry.name[0].isupper() and not entry.name.startswith("_"):
                     result[entry.name.lower()] = entry.path
         except OSError as e:
-            logger.warning("Could not scan %s for genre dirs: %s", base_dir, e)
+            logger.warning(_("Could not scan {0} for genre dirs: {1}").format(base_dir, e))
     return result
 
 
@@ -204,7 +207,7 @@ def embed_artwork_from_sidecar(filepath: str) -> bool:
                 Image.open(io.BytesIO(data)).convert("RGB").save(buf, format="JPEG")
                 data = buf.getvalue()
             except ImportError:
-                logger.warning("Pillow not available; embedding WebP as-is")
+                logger.warning(_("Pillow not available; embedding WebP as-is"))
         track.update_metadata({"artwork": data})
         return True
     except Exception as e:
@@ -225,16 +228,16 @@ def delete_extension_file(filepath: str) -> bool:
     back up to config.directories[0] so nothing is left stranded.
     """
     if not filepath or not os.path.exists(filepath):
-        logger.warning("Delete skipped: file not found at %s", filepath)
+        logger.warning(_("Delete skipped: file not found at {0}").format(filepath))
         return False
     try:
         os.remove(filepath)
-        logger.info("Deleted extension file: %s", filepath)
+        logger.info(_("Deleted extension file: {0}").format(filepath))
         if config.directories:
             _remove_empty_parents(filepath, config.directories[0])
         return True
     except OSError as e:
-        logger.error("Failed to delete extension file %s: %s", filepath, e)
+        logger.error(_("Failed to delete extension file {0}: {1}").format(filepath, e))
         return False
 
 
@@ -255,16 +258,16 @@ def file_extension(
     from library_data.media_track import MediaTrack
 
     if not f or not os.path.exists(f):
-        logger.warning("Auto-filing skipped: source file missing at %s", f)
+        logger.warning(_("Auto-filing skipped: source file missing at {0}").format(f))
         return None
 
     if not config.directories:
-        logger.warning("Auto-filing skipped: no directories configured")
+        logger.warning(_("Auto-filing skipped: no directories configured"))
         return None
 
     base_dir = config.directories[0]
     if not os.path.isdir(base_dir):
-        logger.warning("Auto-filing base directory does not exist: %s", base_dir)
+        logger.warning(_("Auto-filing base directory does not exist: {0}").format(base_dir))
     genre_dirs = _discover_genre_dirs(base_dir)
     genre_dir = _infer_genre_dir(attr, entity_name, entity_obj, track_title, genre_dirs, llm)
 
@@ -290,8 +293,8 @@ def file_extension(
             new_path = os.path.join(target_dir, f"{stem} {counter}{ext}")
             counter += 1
         os.rename(f, new_path)
-        logger.info("Auto-filed extension: %s -> %s", f, new_path)
+        logger.info(_("Auto-filed extension: {0} -> {1}").format(f, new_path))
         return new_path
     except Exception as e:
-        logger.error("Auto-filing move failed (%s -> %s): %s", f, target_dir, e, exc_info=True)
+        logger.error(_("Auto-filing move failed ({0} -> {1}): {2}").format(f, target_dir, e), exc_info=True)
         return None

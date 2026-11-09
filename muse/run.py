@@ -112,7 +112,7 @@ class Run:
         
         logger.info(playback_config)
         if self.last_config and playback_config == self.last_config:
-            logger.info("\n\nConfig matches last config. Please modify it or quit.")
+            logger.info(_("\n\nConfig matches last config. Please modify it or quit."))
             return
 
         try:
@@ -128,7 +128,7 @@ class Run:
                 TempDir.cleanup()
         except ScheduledShutdownException as e:
             if self.app_actions is not None:
-                logger.warning(f"\n{'='*50}\nSCHEDULED SHUTDOWN: {str(e)}\n{'='*50}\n")
+                logger.warning(_("\n{0}\nSCHEDULED SHUTDOWN: {1}\n{2}\n").format('='*50, str(e), '='*50))
                 print("Shutting down main thread! Good-bye.")
                 self.app_actions.shutdown_callback()
         except Exception as e:
@@ -146,7 +146,7 @@ class Run:
             master_config = PlaybackStateManager.get_master_config()
             if not master_config or not master_config.playback_configs:
                 logger.warning(
-                    "PLAYLIST_CONFIG strategy selected but no master config set; using All Music"
+                    _("PLAYLIST_CONFIG strategy selected but no master config set; using All Music")
                 )
                 master_config = None
         if master_config is not None:

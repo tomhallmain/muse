@@ -19,6 +19,9 @@ from extensions.llm_redundancy import (
 from utils.app_paths import cache_dir
 from utils.logging_setup import get_logger
 from utils import Utils
+from utils.translations import I18N
+
+_ = I18N._
 
 logger = get_logger(__name__)
 
@@ -128,7 +131,7 @@ class LLMResult:
             self.response = json_obj[attr_name]
             return self
         except Exception as e:
-            logger.error(f"{e} - Failed to get json attr {attr_name} from json response: {json}")
+            logger.error(_("{0} - Failed to get json attr {1} from json response: {2}").format(e, attr_name, json))
             return None
 
 
@@ -242,7 +245,7 @@ class LLM:
         if state_key not in cls._failure_counts:
             cls._failure_counts[state_key] = 0
         cls._failure_counts[state_key] += 1
-        logger.warning(f"LLM failure count increased to {cls._failure_counts[state_key]} for state '{state_key}'")
+        logger.warning(_("LLM failure count increased to {0} for state '{1}'").format(cls._failure_counts[state_key], state_key))
 
     @classmethod
     def _reset_failure_count_for_state(cls, state_key):
@@ -589,7 +592,7 @@ class LLM:
         except LLMResponseException:
             raise
         except Exception as e:
-            logger.error(f"Failed to generate LLM response: {e}")
+            logger.error(_("Failed to generate LLM response: {0}").format(e))
             self.increment_failure_count()
             raise LLMResponseException(f"Failed to generate LLM response: {e}")
 
@@ -640,7 +643,7 @@ class LLM:
             with open(self.prompt_response_history_file, "w", encoding="utf-8") as out_file:
                 json.dump(payload, out_file, indent=2, ensure_ascii=False)
         except Exception as e:
-            logger.warning("Failed to persist LLM prompt/response history: %s", e)
+            logger.warning(_("Failed to persist LLM prompt/response history: {0}").format(e))
 
     def generate_response_async(
         self,
@@ -691,7 +694,7 @@ class LLM:
             except Exception as e:
                 if not self._cancelled:
                     self._exception = e
-                    logger.error(f"Exception in LLM generation thread: {e}")
+                    logger.error(_("Exception in LLM generation thread: {0}").format(e))
 
         # Start the generation in a separate thread
         self._thread = threading.Thread(target=run_generation)
@@ -709,13 +712,13 @@ class LLM:
                 time.sleep(self.CHECK_INTERVAL)
         except Exception as e:
             self._exception = e
-            logger.error(f"Exception while monitoring LLM thread: {e}")
+            logger.error(_("Exception while monitoring LLM thread: {0}").format(e))
         finally:
             self._thread = None  # Clean up thread reference when done
 
         # Handle the result
         if self._exception:
-            logger.error(f"Failed to generate LLM response: {self._exception}")
+            logger.error(_("Failed to generate LLM response: {0}").format(self._exception))
             raise LLMResponseException(f"Failed to generate LLM response: {self._exception}")
         
         return self._result
@@ -820,7 +823,7 @@ class LLM:
             logger.info("Cancelling LLM generation")
             self._thread.join(timeout=1.0)
             if self._thread.is_alive():
-                logger.error("Thread did not terminate gracefully, forcing cleanup")
+                logger.error(_("Thread did not terminate gracefully, forcing cleanup"))
             self._thread = None  # Force cleanup even if thread is still alive
 
     def __del__(self):

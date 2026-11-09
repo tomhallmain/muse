@@ -31,6 +31,9 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 from utils.globals import TrackAttribute
 from utils.logging_setup import get_logger
+from utils.translations import I18N
+
+_ = I18N._
 
 logger = get_logger(__name__)
 
@@ -256,7 +259,7 @@ def saturation_applies(descriptor: Any) -> bool:
     try:
         return not (descriptor.is_track_based() or descriptor.is_search_based())
     except Exception as e:
-        logger.warning(f"Could not read the playlist descriptor, leaving saturation off: {e}")
+        logger.warning(_("Could not read the playlist descriptor, leaving saturation off: {0}").format(e))
         return False
 
 
@@ -308,7 +311,7 @@ def record_listening(track: Any, seconds: Optional[float] = None) -> None:
                 entry.plays = _decayed(entry.plays, entry.last_heard, now) + 1.0
                 entry.last_heard = now
     except Exception as e:
-        logger.warning(f"Could not record listening time: {e}")
+        logger.warning(_("Could not record listening time: {0}").format(e))
 
 
 def _decayed(amount: float, last_heard: float, now: float) -> float:
@@ -458,7 +461,7 @@ def llm_group_scores(reference: Optional[AffinityReference], group_values: List[
             # taking the DJ's generation offline, nor the other way round.
             llm = LLM.from_config(state_key="track_affinity")
         if llm.is_failing():
-            logger.info("Skipping affinity scoring, the model has been failing")
+            logger.info(_("Skipping affinity scoring, the model has been failing"))
             return None
 
         prompt = Prompter().get_prompt("score_track_affinity")
@@ -468,7 +471,7 @@ def llm_group_scores(reference: Optional[AffinityReference], group_values: List[
         result = llm.generate_json_get_value(prompt, "scores",
                                              timeout=LLM_AFFINITY_TIMEOUT_SECONDS)
     except Exception as e:
-        logger.warning(f"Affinity scoring call failed, using attribute overlap alone: {e}")
+        logger.warning(_("Affinity scoring call failed, using attribute overlap alone: {0}").format(e))
         return None
 
     if result is None or not isinstance(result.response, dict) or len(result.response) != len(candidates):
@@ -484,7 +487,7 @@ def llm_group_scores(reference: Optional[AffinityReference], group_values: List[
                 return None
             scores[candidates[index]] = score
     except (TypeError, ValueError) as e:
-        logger.warning(f"Affinity scoring returned an unusable response: {e}")
+        logger.warning(_("Affinity scoring returned an unusable response: {0}").format(e))
         return None
     return scores if len(scores) == len(set(candidates)) else None
 
@@ -511,7 +514,7 @@ def _get_embedder() -> Any:
     except Exception as e:
         # Remembered, so a missing package is not re-attempted on every grouping change.
         _embedder_unavailable = True
-        logger.info(f"Embedding affinity is unavailable, the other signals still apply: {e}")
+        logger.info(_("Embedding affinity is unavailable, the other signals still apply: {0}").format(e))
     return _embedder
 
 
@@ -532,7 +535,7 @@ def embed_texts(texts: List[str]) -> Optional[List[List[float]]]:
     try:
         return [list(vector) for vector in model.encode(texts)]
     except Exception as e:
-        logger.warning(f"Embedding failed: {e}")
+        logger.warning(_("Embedding failed: {0}").format(e))
         return None
 
 
@@ -582,7 +585,7 @@ def embedding_group_scores(reference: Optional[AffinityReference], group_values:
     try:
         vectors = embed_texts(texts)
     except Exception as e:
-        logger.warning(f"Embedding scoring failed, leaving the ordering to the other signals: {e}")
+        logger.warning(_("Embedding scoring failed, leaving the ordering to the other signals: {0}").format(e))
         return None
     if not vectors or len(vectors) != len(texts):
         return None
@@ -630,7 +633,7 @@ def reference_for(descriptor: Any = None, start_track: Any = None,
             reference = AffinityReference.from_favorites_profile(current_favorites_profile())
         return None if reference.is_empty() else reference
     except Exception as e:
-        logger.warning(f"Could not build an affinity reference, leaving playlist order alone: {e}")
+        logger.warning(_("Could not build an affinity reference, leaving playlist order alone: {0}").format(e))
         return None
 
 
@@ -655,7 +658,7 @@ def current_favorites_profile(top_n: int = 5) -> Dict[str, AttributeFavorites]:
         from utils.app_info_cache import app_info_cache
         return favorites_profile(app_info_cache.get("favorites", []), top_n=top_n)
     except Exception as e:
-        logger.warning(f"Could not read favorites: {e}")
+        logger.warning(_("Could not read favorites: {0}").format(e))
         return {}
 
 

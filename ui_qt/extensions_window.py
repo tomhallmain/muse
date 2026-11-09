@@ -325,7 +325,7 @@ class ExtensionsWindow(SmartWindow):
             self.library_data.extension_manager.reset_extension()
             self._refresh_extension_list()
         except Exception as e:
-            logger.warning("Invalid strategy selected: %s - %s", text, e)
+            logger.warning(_("Invalid strategy selected: {0} - {1}").format(text, e))
 
     @require_password(ProtectedActions.EDIT_EXTENSIONS)
     def _clear_history(self):
@@ -402,7 +402,7 @@ class ExtensionsWindow(SmartWindow):
                 error_msg += "\n\n" + _(
                     "Tip: If you've recently added or moved files, try checking 'Rescan Library' in the search options."
                 )
-            logger.error("Error playing extension: %s", error_msg)
+            logger.error(_("Error playing extension: {0}").format(error_msg))
             self.app_actions.alert(
                 _("Error"), error_msg, kind="error", master=self
             )

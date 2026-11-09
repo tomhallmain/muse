@@ -318,7 +318,7 @@ class ArtistsData:
             return True, ""
         except Exception as e:
             error_msg = str(e)
-            logger.error("Error saving artist: %s", error_msg)
+            logger.error(_("Error saving artist: {0}").format(error_msg))
             try:
                 get_connection().rollback()
             except Exception:
@@ -344,7 +344,7 @@ class ArtistsData:
             return True, ""
         except Exception as e:
             error_msg = str(e)
-            logger.error("Error deleting artist: %s", error_msg)
+            logger.error(_("Error deleting artist: {0}").format(error_msg))
             try:
                 get_connection().rollback()
             except Exception:
@@ -355,7 +355,7 @@ class ArtistsData:
         if not isinstance(data_search, ArtistsDataSearch):
             raise TypeError('Artists data search must be of type ArtistsDataSearch')
         if not data_search.is_valid():
-            logger.warning('Invalid search query')
+            logger.warning(_("Invalid search query"))
             return data_search
 
         full_results = False

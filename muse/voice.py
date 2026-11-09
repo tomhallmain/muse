@@ -4,6 +4,9 @@ import traceback
 from utils.app_paths import IS_BUILD
 from utils.config import config as app_config
 from utils.logging_setup import get_logger
+from utils.translations import I18N
+
+_ = I18N._
 
 logger = get_logger(__name__)
 
@@ -16,7 +19,7 @@ try:
     tts_runner_imported = True
 except Exception as e:
     logger.error(e)
-    logger.warning("Failed to import tts_runner.")
+    logger.warning(_("Failed to import tts_runner."))
 
 
 def _resolve_provider() -> "TTSProviderType":
@@ -26,7 +29,7 @@ def _resolve_provider() -> "TTSProviderType":
     try:
         return TTSProviderType(provider_str.lower())
     except (ValueError, NameError):
-        logger.warning("Unknown tts_provider '%s', falling back to coqui.", provider_str)
+        logger.warning(_("Unknown tts_provider '{0}', falling back to coqui.").format(provider_str))
         return TTSProviderType.COQUI
 
 
@@ -56,8 +59,8 @@ class Voice:
                 self._tts = TextToSpeechRunner(tts_config)
                 self.can_speak = True
             except Exception as e:
-                logger.error("Failed to initialise TTS runner: %s", e)
-                logger.warning("Voice synthesis disabled.")
+                logger.error(_("Failed to initialise TTS runner: {0}").format(e))
+                logger.warning(_("Voice synthesis disabled."))
         else:
             self._provider = None
 
@@ -92,7 +95,7 @@ class Voice:
     def say(self, text: str = "", topic: str = "", save_mp3: bool = False, locale=None):
         """Synthesise *text* immediately and play it."""
         if not self.can_speak or self._tts is None:
-            logger.warning("Cannot speak.")
+            logger.warning(_("Cannot speak."))
             return
         logger.info("Saying: %s", text)
         temp_tts = TextToSpeechRunner(self._make_config(overwrite=True))
@@ -114,7 +117,7 @@ class Voice:
     ):
         """Pre-generate speech for *text* without blocking playback."""
         if not self.can_speak or self._tts is None:
-            logger.warning("Cannot speak.")
+            logger.warning(_("Cannot speak."))
             return
         logger.info("Preparing to say: %s", text)
         if save_for_last:
@@ -137,7 +140,7 @@ class Voice:
     ):
         """Synthesise the contents of *filepath* and play them."""
         if not self.can_speak or self._tts is None:
-            logger.warning("Cannot speak.")
+            logger.warning(_("Cannot speak."))
             return
         logger.info("Speaking file: %s", filepath)
         temp_tts = TextToSpeechRunner(self._make_config(overwrite=True))
@@ -157,7 +160,7 @@ class Voice:
     def finish_speaking(self):
         """Block until all pending speech jobs complete."""
         if not self.can_speak or self._tts is None:
-            logger.warning("Cannot speak.")
+            logger.warning(_("Cannot speak."))
             return
         self._tts.await_pending_speech_jobs()
 
@@ -169,6 +172,6 @@ class Voice:
 
     def add_speech_file_to_queue(self, filepath: str):
         if not self.can_speak or self._tts is None:
-            logger.warning("Cannot speak.")
+            logger.warning(_("Cannot speak."))
             return
         self._tts.add_speech_file_to_queue(filepath)

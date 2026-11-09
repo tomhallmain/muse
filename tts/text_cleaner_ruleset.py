@@ -337,7 +337,7 @@ class TextModifierRule:
             else:
                 # If no locale is specified, use the default locale
                 if locale is not None:
-                    logger.warning(f"No replacement found for locale {locale}, using default locale {I18N.locale}")
+                    logger.warning(_("No replacement found for locale {0}, using default locale {1}").format(locale, I18N.locale))
                 try:
                     return self._replacement[I18N.locale]
                 except KeyError:
@@ -392,7 +392,7 @@ class TextCleanerRuleset:
                 self.english_detection_words = set(line.strip().lower() for line in f if line.strip())
             logger.info(f"Loaded {len(self.english_detection_words)} English detection words from {dictionary_path}")
         except Exception as e:
-            logger.warning(f"Failed to load English detection words from {dictionary_path}: {e}")
+            logger.warning(_("Failed to load English detection words from {0}: {1}").format(dictionary_path, e))
     
     def _load_number_words_from_config(self, number_words_config):
         """
@@ -447,7 +447,7 @@ class TextCleanerRuleset:
                 )
                 logger.info(f"Registered number words for locale: {locale}")
             except Exception as e:
-                logger.warning(f"Failed to load number words for locale {locale}: {e}")
+                logger.warning(_("Failed to load number words for locale {0}: {1}").format(locale, e))
     
     def _is_likely_english(self, text):
         """

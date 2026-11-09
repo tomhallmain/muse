@@ -420,7 +420,7 @@ class NetworkMediaWindow(SmartWindow):
                 logger.debug("Radio search returned %d result(s)", len(results))
                 self._sig_invoke.emit(lambda: self._show_search_results(results))
             except Exception as exc:
-                logger.error("Radio Browser search failed: %s", exc, exc_info=True)
+                logger.error(_("Radio Browser search failed: {0}").format(exc), exc_info=True)
                 self._sig_invoke.emit(lambda: self._set_search_status(
                     _("Search failed: ") + str(exc)
                 ))
@@ -446,7 +446,7 @@ class NetworkMediaWindow(SmartWindow):
                     show_watch=True,
                 )
         except Exception:
-            logger.exception("Error rendering search results")
+            logger.exception(_("Error rendering search results"))
 
     # ── Saved Stations ────────────────────────────────────────────────────────
 
@@ -671,7 +671,7 @@ class NetworkMediaWindow(SmartWindow):
         try:
             count = watchlist_service.suppressed_count()
         except Exception as e:
-            logger.warning("Could not read suppressed radio suggestions: %s", e)
+            logger.warning(_("Could not read suppressed radio suggestions: {0}").format(e))
             count = 0
         self._suppressed_label.setText(_("Suggestions not to repeat: {0}").format(count))
         self._clear_suppressed_btn.setEnabled(count > 0)

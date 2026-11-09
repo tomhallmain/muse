@@ -53,7 +53,7 @@ class TimerWindow(SmartWindow):
                 if playback_instance:
                     Timer().set_playback_instance(playback_instance)
         except Exception as e:
-            logger.warning("Could not set playback instance for timer: %s", e)
+            logger.warning(_("Could not set playback instance for timer: {0}").format(e))
 
         self.setStyleSheet(AppStyle.get_stylesheet())
         layout = QVBoxLayout(self)

@@ -51,7 +51,7 @@ class SchedulesManager:
         
         # Limit to MAX_RECENT_SCHEDULES to prevent excessive growth
         if len(SchedulesManager.recent_schedules) > SchedulesManager.MAX_RECENT_SCHEDULES:
-            logger.warning(f"Limiting schedules from {len(SchedulesManager.recent_schedules)} to {SchedulesManager.MAX_RECENT_SCHEDULES}")
+            logger.warning(_("Limiting schedules from {0} to {1}").format(len(SchedulesManager.recent_schedules), SchedulesManager.MAX_RECENT_SCHEDULES))
             SchedulesManager.recent_schedules = SchedulesManager.recent_schedules[:SchedulesManager.MAX_RECENT_SCHEDULES]
 
     @staticmethod
@@ -66,7 +66,7 @@ class SchedulesManager:
         
         # Limit to MAX_RECENT_SCHEDULES
         if len(unique_schedules) > SchedulesManager.MAX_RECENT_SCHEDULES:
-            logger.warning(f"Limiting stored schedules from {len(unique_schedules)} to {SchedulesManager.MAX_RECENT_SCHEDULES}")
+            logger.warning(_("Limiting stored schedules from {0} to {1}").format(len(unique_schedules), SchedulesManager.MAX_RECENT_SCHEDULES))
             unique_schedules = unique_schedules[:SchedulesManager.MAX_RECENT_SCHEDULES]
         
         schedule_dicts = [schedule.to_dict() for schedule in unique_schedules]

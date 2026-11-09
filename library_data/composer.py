@@ -614,7 +614,7 @@ class ComposersData:
             return True, ""
         except Exception as e:
             error_msg = str(e)
-            logger.error(f"Error saving composers: {error_msg}")
+            logger.error(_("Error saving composers: {0}").format(error_msg))
             try:
                 get_connection().rollback()
             except Exception:
@@ -685,7 +685,7 @@ class ComposersData:
             return True, ""
         except Exception as e:
             error_msg = str(e)
-            logger.error(f"Error deleting composer: {error_msg}")
+            logger.error(_("Error deleting composer: {0}").format(error_msg))
             try:
                 get_connection().rollback()
             except Exception:
@@ -736,7 +736,7 @@ class ComposersData:
         if not isinstance(data_search, ComposersDataSearch):
             raise TypeError('Composers data search must be of type ComposersDataSearch')
         if not data_search.is_valid():
-            logger.warning('Invalid search query')
+            logger.warning(_("Invalid search query"))
             return data_search
 
         full_results = False

@@ -18,6 +18,9 @@ from utils.app_paths import IS_BUILD
 from utils.config import config
 from utils.logging_setup import get_logger
 from utils.utils import Utils
+from utils.translations import I18N
+
+_ = I18N._
 
 logger = get_logger(__name__)
 
@@ -68,7 +71,7 @@ class CoquiTTSProvider(BaseTTSProvider):
         try:
             from TTS.api import TTS
             self._TTS = TTS
-            logger.info("Coqui TTS loaded successfully")
+            logger.info(_("Coqui TTS loaded successfully"))
         except ImportError as exc:
             raise ImportError(
                 "Failed to import Coqui TTS. Ensure the library is downloaded "
@@ -89,7 +92,7 @@ class CoquiTTSProvider(BaseTTSProvider):
                 language=self.model[2],
             )
         except Exception as exc:
-            logger.error("Coqui TTS generation failed: %s", exc)
+            logger.error(_("Coqui TTS generation failed: {0}").format(exc))
             if not os.path.exists(output_path):
                 raise Exception("Coqui TTS failed to generate audio file") from exc
             # File was created despite the error — continue.
@@ -131,8 +134,8 @@ class CoquiTTSProvider(BaseTTSProvider):
         for speaker in COQUI_SPEAKERS:
             if Utils.is_similar_strings(speaker, voice_name):
                 logger.warning(
-                    'Fuzzy-matched Coqui voice "%s" → "%s"', voice_name, speaker
+                    _('Fuzzy-matched Coqui voice "{0}" → "{1}"').format(voice_name, speaker)
                 )
                 return speaker
-        logger.warning('Unknown Coqui voice "%s", using as-is.', voice_name)
+        logger.warning(_('Unknown Coqui voice "{0}", using as-is.').format(voice_name))
         return voice_name

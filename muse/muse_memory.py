@@ -9,6 +9,9 @@ from utils.cache_paths import resolve_cache_file
 from utils.globals import Topic
 from utils.logging_setup import get_logger
 from utils import Utils
+from utils.translations import I18N
+
+_ = I18N._
 
 logger = get_logger(__name__)
 
@@ -115,7 +118,7 @@ class MuseMemory:
         except FileNotFoundError:
             self.persona_manager = DJPersonaManager()
         except Exception as e:
-            logger.info(f"Error loading memory: {e}")
+            logger.info(_("Error loading memory: {0}").format(e))
         self._is_loaded = True
 
     def save(self):
@@ -123,7 +126,7 @@ class MuseMemory:
             with open(self._memory_path, 'wb') as f:
                 pickle.dump(self, f)
         except Exception as e:
-            logger.info(f"Error saving muse memory: {e}")
+            logger.info(_("Error saving muse memory: {0}").format(e))
             self._debug_pickle_attributes()
             from scripts.object_inspector import debug_pickle_issues
             debug_pickle_issues(self)
@@ -157,7 +160,7 @@ class MuseMemory:
                 pickle.dumps(attr_value)
                 logger.debug(f"✓ Attribute '{attr_name}' pickles successfully")
             except Exception as e:
-                logger.warning(f"✗ Attribute '{attr_name}' failed to pickle: {e}")
+                logger.warning(_("✗ Attribute '{0}' failed to pickle: {1}").format(attr_name, e))
                 problematic_attributes.append((attr_name, attr_value, str(e)))
 
         has_run_run_spot_profile_debug = False
@@ -174,7 +177,7 @@ class MuseMemory:
                         pickle.dumps(item)
                         logger.debug(f"    ✓ Item [{i}] pickles successfully")
                     except Exception as item_error:
-                        logger.warning(f"    ✗ Item [{i}] failed to pickle: {item_error}")
+                        logger.warning(_("    ✗ Item [{0}] failed to pickle: {1}").format(i, item_error))
                         logger.info(f"    Item [{i}] type: {type(item)}")
                         if hasattr(item, '__dict__'):
                             logger.info(f"    Item [{i}] attributes: {list(item.__dict__.keys())}")
@@ -193,11 +196,11 @@ class MuseMemory:
                         pickle.dumps(value)
                         logger.debug(f"    ✓ Key '{key}' pickles successfully")
                     except Exception as value_error:
-                        logger.warning(f"    ✗ Key '{key}' failed to pickle: {value_error}")
+                        logger.warning(_("    ✗ Key '{0}' failed to pickle: {1}").format(key, value_error))
                         logger.info(f"    Key '{key}' type: {type(value)}")
         
         if problematic_attributes:
-            logger.error(f"Found {len(problematic_attributes)} problematic attributes:")
+            logger.error(_("Found {0} problematic attributes:").format(len(problematic_attributes)))
             for attr_name, attr_value, error in problematic_attributes:
                 logger.error(f"  - {attr_name}: {error}")
         else:
@@ -298,7 +301,7 @@ class MuseMemory:
         """
         self.last_topic = Topic.from_value(topic)
         if topic is not None and self.last_topic is None:
-            logger.warning(f"Failed to convert topic to Topic enum: {topic} (type: {type(topic)})")
+            logger.warning(_("Failed to convert topic to Topic enum: {0} (type: {1})").format(topic, type(topic)))
 
     def is_recent_topics(self, topics_to_check=[], n=1):
         """Check if any of the specified topics were discussed recently.
@@ -323,7 +326,7 @@ class MuseMemory:
             if converted_topic is not None:
                 topic_enums.add(converted_topic)
             elif topic is not None:
-                logger.error(f"Failed to convert topic to Topic enum: {topic} (type: {type(topic)})")
+                logger.error(_("Failed to convert topic to Topic enum: {0} (type: {1})").format(topic, type(topic)))
 
         # Check if last_topic matches any of the topics_to_check
         return self.last_topic in topic_enums

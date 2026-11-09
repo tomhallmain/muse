@@ -154,7 +154,7 @@ class Playback:
                     self._affinity_scoring_active = False
                     raise
         except Exception as e:
-            logger.warning(f"Could not resort upcoming tracks, keeping the existing order: {e}")
+            logger.warning(_("Could not resort upcoming tracks, keeping the existing order: {0}").format(e))
 
     def _score_and_resort_upcoming(self, playlist) -> None:
         """Ask the models to judge the upcoming groups, then order against them.
@@ -174,11 +174,11 @@ class Playback:
                 try:
                     learned = refresh() or learned
                 except Exception as e:
-                    logger.warning(f"An affinity signal failed and was skipped: {e}")
+                    logger.warning(_("An affinity signal failed and was skipped: {0}").format(e))
             if learned:
                 playlist.resort_upcoming()
         except Exception as e:
-            logger.warning(f"Model affinity scoring failed, keeping the existing order: {e}")
+            logger.warning(_("Model affinity scoring failed, keeping the existing order: {0}").format(e))
         finally:
             self._affinity_scoring_active = False
 
@@ -308,7 +308,7 @@ class Playback:
             if play_counts.counts_as_play(listened_seconds, track.get_track_length()):
                 play_counts.record_play(track)
         except Exception as e:
-            logger.warning(f"Could not record play count: {e}")
+            logger.warning(_("Could not record play count: {0}").format(e))
 
     def _record_stream_title_if_heard(self) -> None:
         """Record the stream title that was playing if it played long enough. Never raises.
@@ -329,7 +329,7 @@ class Playback:
             station_name = getattr(self.track, "album", None) if self.track is not None else None
             play_counts.record_stream_title(artist, title, station_name)
         except Exception as e:
-            logger.warning(f"Could not record heard stream title: {e}")
+            logger.warning(_("Could not record heard stream title: {0}").format(e))
 
     def get_track_length(self, track: Optional['MediaTrack'] = None) -> float:
         if track is None:
@@ -357,7 +357,7 @@ class Playback:
         while self.get_track() and not self._run.is_cancelled():
             # Check if user requested shutdown after the previous track finished
             if self.has_played_first_track and self._run_context.shutdown_after_track:
-                logger.info("Shutdown after track requested - initiating shutdown")
+                logger.info(_("Shutdown after track requested - initiating shutdown"))
                 self._run_context.set_shutdown_after_track(False)
                 raise ScheduledShutdownException("User requested shutdown after track")
             self.set_delay_seconds()
@@ -400,7 +400,7 @@ class Playback:
                     self.register_new_song()
             else:
                 if self._run and self._run.args.muse and self._run.muse is not None:
-                    logger.warning("No voice available due to import failure, skipping Muse.")
+                    logger.warning(_("No voice available due to import failure, skipping Muse."))
                 if self.has_played_first_track:
                     self.delay()
                 self.generate_silent_spot_profile()
@@ -458,7 +458,7 @@ class Playback:
                 self.get_track_length(),
             )
             if self._playback_config.has_exceeded_group_limits(self._track_result):
-                logger.info("Stopping playback: group limit reached.")
+                logger.info(_("Stopping playback: group limit reached."))
                 break
 
     def update_progress(self) -> float:
@@ -505,7 +505,7 @@ class Playback:
             muse.prepare(spot_profile)
             self.muse_spot_profiles.append(spot_profile)
         except Exception:
-            logger.warning("Failed to rebuild stream spot profile for ICY commentary", exc_info=True)
+            logger.warning(_("Failed to rebuild stream spot profile for ICY commentary"), exc_info=True)
         finally:
             self._stream_profile_building = False
 
@@ -568,7 +568,7 @@ class Playback:
                 next_track, did_split, split_failed = self.split_track_if_needed(next_track, delayed_prep=delayed_prep)
                 places_from_current += 1
                 if split_failed and places_from_current > (1 if delayed_prep else 5):
-                    logger.error("Failed to split too many tracks in queue!")
+                    logger.error(_("Failed to split too many tracks in queue!"))
                     break
             places_from_current -= 1
         self.has_attempted_track_split = True
@@ -588,10 +588,10 @@ class Playback:
                 return track, True, False
             except Exception as e:
                 traceback.print_exc()
-                logger.warning(f"Error splitting track: {e}")
+                logger.warning(_("Error splitting track: {0}").format(e))
                 return track, True, True
         elif int(track_length) == -1.0 or int(track_length) == 0:
-            logger.warning(f"Failed to set track length: {track}")
+            logger.warning(_("Failed to set track length: {0}").format(track))
         return track, False, False
 
     def get_grouping_type(self):
@@ -633,7 +633,7 @@ class Playback:
                 from extensions.icy_metadata import poll_icy_metadata
                 poll_icy_metadata(url, stop, self._on_icy_title_change)
             except Exception:
-                logger.exception("ICY polling thread raised unexpectedly")
+                logger.exception(_("ICY polling thread raised unexpectedly"))
 
         t = threading.Thread(target=_run, name="icy-metadata", daemon=True)
         self._icy_thread = t
@@ -666,7 +666,7 @@ class Playback:
                     use_asyncio=False,
                 )
             except Exception:
-                logger.warning("Could not trigger Muse ICY commentary", exc_info=True)
+                logger.warning(_("Could not trigger Muse ICY commentary"), exc_info=True)
 
     # ── Song registration / VLC lifecycle ────────────────────────────────────
 
@@ -687,7 +687,7 @@ class Playback:
             assert self.vlc_media_player is not None and self.ui_callbacks is not None
             handle = self.ui_callbacks.get_media_frame_handle()
             if not set_video_output_window(self.vlc_media_player, handle):
-                logger.warning("No main window handle to render the video track into.")
+                logger.warning(_("No main window handle to render the video track into."))
 
     def update_ui(self) -> None:
         if self.ui_callbacks is None:
@@ -787,7 +787,7 @@ class Playback:
         try:
             return library_data.ensure_album_artwork_consistency(track)
         except Exception as e:
-            logger.warning(f"Album artwork consistency check failed for {track.filepath}: {e}")
+            logger.warning(_("Album artwork consistency check failed for {0}: {1}").format(track.filepath, e))
             return False
 
     def update_ui_art_for_muse(self) -> None:
@@ -819,7 +819,7 @@ class Playback:
             toast(_("Preparing {0} spinning record animations. This is done once and "
                     "may take a few minutes.").format(count))
         except Exception as e:
-            logger.warning(f"Could not announce spinning record encoding: {e}")
+            logger.warning(_("Could not announce spinning record encoding: {0}").format(e))
 
     def _get_random_image_asset(self, filename_filter="record") -> Optional[str]:
         """A random image asset whose filename starts with one of the given patterns.
@@ -832,7 +832,7 @@ class Playback:
         patterns = [pattern + r".*\.(png|jpg|jpeg)$" for pattern in patterns]
         filenames = Utils.get_assets_filenames(filename_filter=patterns)
         if len(filenames) == 0:
-            logger.warning(f"No image asset matched {patterns}")
+            logger.warning(_("No image asset matched {0}").format(patterns))
             return None
         return Utils.get_asset(filenames[randint(0, len(filenames)-1)])
 

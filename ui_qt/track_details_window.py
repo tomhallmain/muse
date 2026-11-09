@@ -552,7 +552,7 @@ class TrackDetailsWindow(SmartWindow):
             title = metadata.get("title", "") or track.title or ""
             stem = MediaTrack.sanitize_filename_stem(title)
             if actions.get(TrackActionKey.RETAIN_IDS) and track.basename:
-                _, ids = MediaTrack.extract_ids(os.path.splitext(track.basename)[0])
+                _stem, ids = MediaTrack.extract_ids(os.path.splitext(track.basename)[0])
                 stem = MediaTrack.reattach_ids(stem, ids)
             if stem:
                 ok, result = track.rename_file(stem)
@@ -597,7 +597,7 @@ class TrackDetailsWindow(SmartWindow):
                     os.makedirs(target, exist_ok=True)
                 except OSError as exc:
                     self.app_actions.alert(
-                        _("Error"), f"Could not create directory: {exc}",
+                        _("Error"), _("Could not create directory: {0}").format(exc),
                         kind="error", master=self,
                     )
                     return

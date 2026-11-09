@@ -3,6 +3,9 @@ from typing import Dict, List, Optional
 from library_data.work import Work
 from utils.db import get_connection
 from utils.logging_setup import get_logger
+from utils.translations import I18N
+
+_ = I18N._
 
 logger = get_logger(__name__)
 
@@ -94,7 +97,7 @@ class WorksData:
             conn.commit()
             self._refresh_composer(composer_id)
         except Exception as e:
-            logger.error(f"Error saving works for composer {composer_id}: {e}")
+            logger.error(_("Error saving works for composer {0}: {1}").format(composer_id, e))
             try:
                 get_connection().rollback()
             except Exception:
@@ -115,7 +118,7 @@ class WorksData:
             conn.commit()
             self._refresh_composer(row["composer_id"])
         except Exception as e:
-            logger.error(f"Error setting matched track for work {work_id}: {e}")
+            logger.error(_("Error setting matched track for work {0}: {1}").format(work_id, e))
             try:
                 get_connection().rollback()
             except Exception:

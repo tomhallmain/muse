@@ -463,7 +463,7 @@ class Blacklist:
             elif isinstance(item, BlacklistItem):
                 validated_blacklist.append(item)
             else:
-                logger.error(f"Invalid blacklist item type: {type(item)}")
+                logger.error(_("Invalid blacklist item type: {0}").format(type(item)))
         
         Blacklist.TAG_BLACKLIST = validated_blacklist
         Blacklist._version_cache = None
@@ -654,7 +654,7 @@ class Blacklist:
                         item_type = BlacklistItem._parse_item_type(item.get('type'))
                         Blacklist.add_to_blacklist(BlacklistItem(item['string'], enabled, item_type=item_type))
                     else:
-                        logger.error(f"Invalid item type in JSON blacklist import: {type(item)}")
+                        logger.error(_("Invalid item type in JSON blacklist import: {0}").format(type(item)))
             else:
                 raise ValueError("Invalid JSON format for blacklist import")
 

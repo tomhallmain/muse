@@ -557,7 +557,7 @@ class ComposersWindow(SmartWindow):
                 else:
                     skip_count += 1
         if skip_count > 0:
-            logger.warning("Skipped %s duplicate composer searches", skip_count)
+            logger.warning(_("Skipped {0} duplicate composer searches").format(skip_count))
         if len(ComposersWindow.recent_searches) > ComposersWindow.MAX_RECENT_SEARCHES:
             ComposersWindow.recent_searches = ComposersWindow.recent_searches[
                 : ComposersWindow.MAX_RECENT_SEARCHES

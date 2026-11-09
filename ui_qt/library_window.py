@@ -67,7 +67,7 @@ def _load_snapshot(library_data) -> _LibrarySnapshot:
         from library_data import play_counts
         plays = play_counts.get_all_play_info()
     except Exception as e:
-        logger.warning(f"Could not read play counts for the library window: {e}")
+        logger.warning(_("Could not read play counts for the library window: {0}").format(e))
         plays = {}
     snapshot = _LibrarySnapshot(cache_time=library_data.get_cache_update_time())
     distinct_values: Dict[TrackAttribute, set] = {attr: set() for attr in _VALUE_GETTERS}
@@ -218,7 +218,7 @@ class LibraryWindow(SmartWindow):
         try:
             snapshot, error = _load_snapshot(self.library_data), ""
         except Exception as e:
-            logger.error(f"Error loading library window data: {e}")
+            logger.error(_("Error loading library window data: {0}").format(e))
             snapshot, error = None, str(e)
         try:
             self._snapshot_ready.emit(snapshot, error, generation)

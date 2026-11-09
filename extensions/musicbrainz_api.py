@@ -53,6 +53,9 @@ import requests
 
 from utils.app_paths import configs_dir
 from utils.logging_setup import get_logger
+from utils.translations import I18N
+
+_ = I18N._
 
 logger = get_logger(__name__)
 
@@ -296,7 +299,7 @@ class MusicBrainzReadAPI:
         try:
             response = self._session.get(f"{API_ROOT}{endpoint}", params=params, timeout=30)
         except requests.RequestException as exc:
-            logger.error("MusicBrainz request failed (%s): %s", endpoint, exc)
+            logger.error(_("MusicBrainz request failed ({0}): {1}").format(endpoint, exc))
             raise MusicBrainzError(str(exc)) from exc
         finally:
             self._last_request_at = time.monotonic()
@@ -387,7 +390,7 @@ class MusicBrainzReadAPI:
         try:
             recording = self.get_recording(recording_mbid)
         except MusicBrainzError as exc:
-            logger.warning("Could not fetch recording %s: %s", recording_mbid, exc)
+            logger.warning(_("Could not fetch recording {0}: {1}").format(recording_mbid, exc))
             self._failed_recording_codes[recording_mbid] = exc.status_code
             # TODO: if exc.status_code == 404, consider retrying against
             # /release/{recording_mbid} — Last.fm frequently stores Release
@@ -405,7 +408,7 @@ class MusicBrainzReadAPI:
                 for role, artists in work.composition_credits.items():
                     combined.setdefault(role, []).extend(artists)
             except MusicBrainzError as exc:
-                logger.warning("Could not fetch work %s: %s", work_mbid, exc)
+                logger.warning(_("Could not fetch work {0}: {1}").format(work_mbid, exc))
 
         return combined
 
@@ -489,7 +492,7 @@ class MusicBrainzReadAPI:
                         "writer": [a.name for a in credits.get("writer", [])],
                     })
             except MusicBrainzError as exc:
-                logger.warning("Skipping recording %s during enrichment: %s", mbid, exc)
+                logger.warning(_("Skipping recording {0} during enrichment: {1}").format(mbid, exc))
                 cache.set_failed(mbid, endpoint="recording", status_code=exc.status_code)
             if progress_callback:
                 progress_callback(i + 1, total)

@@ -55,7 +55,7 @@ class AudioDeviceWindow(SmartWindow):
         except ImportError as e:
             self.audio_manager = None
             self.audio_available = False
-            logger.warning("Audio device manager not available: %s", e)
+            logger.warning(_("Audio device manager not available: {0}").format(e))
 
         self.devices = []
         self.show_all_devices = False
@@ -217,7 +217,7 @@ class AudioDeviceWindow(SmartWindow):
             logger.info("Loaded current audio device settings into UI")
 
         except Exception as e:
-            logger.error("Error loading current settings: %s", e)
+            logger.error(_("Error loading current settings: {0}").format(e))
 
     def refresh_devices(self):
         """Refresh the list of available audio devices."""
@@ -238,7 +238,7 @@ class AudioDeviceWindow(SmartWindow):
 
             if not self.devices:
                 self.device_listbox.addItem(_("No audio devices found"))
-                logger.warning("No audio devices found")
+                logger.warning(_("No audio devices found"))
                 return
 
             device_names = []
@@ -278,13 +278,13 @@ class AudioDeviceWindow(SmartWindow):
             current_device = self.audio_manager.get_current_device()
             if current_device:
                 self.device_listbox.addItem("")
-                self.device_listbox.addItem(f"Current Device: {current_device['name']}")
+                self.device_listbox.addItem(_("Current Device: {0}").format(current_device["name"]))
                 logger.info("Current device: %s", current_device["name"])
 
         except Exception as e:
-            logger.error("Error refreshing devices: %s", e)
+            logger.error(_("Error refreshing devices: {0}").format(e))
             self.device_listbox.clear()
-            self.device_listbox.addItem(f"Error loading devices: {str(e)}")
+            self.device_listbox.addItem(_("Error loading devices: {0}").format(e))
 
     def _update_device_menus(self, device_names):
         """Update the device selection combos and auto-select common devices."""

@@ -3,6 +3,9 @@ import requests
 import time
 
 from utils.logging_setup import get_logger
+from utils.translations import I18N
+
+_ = I18N._
 
 logger = get_logger(__name__)
 
@@ -211,7 +214,7 @@ class HolidayAPI:
             for event in events_json:
                 events.append(Event.from_holiday_api(event))
         except Exception as e:
-            logger.error("Error getting events from Holiday API: " + str(e))
+            logger.error(_("Error getting events from Holiday API: {0}").format(e))
             raise e
         return events
 
@@ -239,7 +242,7 @@ class NagerPublicHolidaysAPI:
             for event in events_json:
                 events.append(Event.from_nager_public_holidays_api(event))
         except Exception as e:
-            logger.error("Error getting events from Nager Public Holidays API: " + str(e))
+            logger.error(_("Error getting events from Nager Public Holidays API: {0}").format(e))
             raise e
         return events
 
@@ -267,7 +270,7 @@ class InadiutoriumAPI:
                 events.append(Event.from_inadiutorium_api(event))
             time.sleep(0.5)
         except Exception as e:
-            logger.error("Error getting events from Inadiutorium API: " + str(e))
+            logger.error(_("Error getting events from Inadiutorium API: {0}").format(e))
             raise e
         return events
 
@@ -298,7 +301,7 @@ class HijriCalendarAPI:
                 if len(date["hijri"]["holidays"]) > 0:
                     events.append(Event.from_hijri_api(date))
         except Exception as e:
-            logger.error("Error getting events from Hijri Calendar API: " + str(e))
+            logger.error(_("Error getting events from Hijri Calendar API: {0}").format(e))
             raise e
         return events
 

@@ -158,9 +158,9 @@ class DJPersona:
             for path in test_paths:
                 if not Path(path).exists():
                     test_paths.remove(path)
-                    logger.warning(f"Artwork path \"{path}\" does not exist, removing it")
+                    logger.warning(_('Artwork path "{0}" does not exist, removing it').format(path))
             if len(test_paths) == 0:
-                logger.error(f"No valid artwork paths found for persona \"{self.name}\", using default artwork")
+                logger.error(_('No valid artwork paths found for persona "{0}", using default artwork').format(self.name))
                 self.artwork_paths = None
             else:
                 self.artwork_paths = test_paths
@@ -321,9 +321,9 @@ class DJPersonaManager:
                 if persona.voice_name not in self.personas:
                     self.personas[persona.voice_name] = persona
                 else:
-                    logger.warning(f"Persona already exists, skipping: {persona.voice_name}")
+                    logger.warning(_("Persona already exists, skipping: {0}").format(persona.voice_name))
         except Exception as e:
-            logger.error(f"Error loading personas: {e}")
+            logger.error(_("Error loading personas: {0}").format(e))
         
         if len(self.personas) == 0:
             self._create_default_personas()
@@ -344,10 +344,10 @@ class DJPersonaManager:
             # Remove mock personas
             for name, persona in self.personas.items():
                 if persona.is_mock:
-                    logger.warning(f"Removing mock persona: {name}")
+                    logger.warning(_("Removing mock persona: {0}").format(name))
                     del self.personas[name]
         except Exception as e:
-            logger.error(f"Error reloading personas: {e}")
+            logger.error(_("Error reloading personas: {0}").format(e))
 
     def _create_default_personas(self):
         """Create default personas if none exist."""
@@ -413,7 +413,7 @@ class DJPersonaManager:
         if persona:
             return persona
         elif hasattr(self, "allow_mock_personas") and self.allow_mock_personas:
-            logger.warning(f"Mock persona not found, creating new: {voice_name}")
+            logger.warning(_("Mock persona not found, creating new: {0}").format(voice_name))
             persona = DJPersona(
                 name=voice_name,
                 voice_name=voice_name,
@@ -427,7 +427,7 @@ class DJPersonaManager:
             self.personas[voice_name] = persona
             return persona
         else:
-            logger.error(f"Persona not found: {voice_name}")
+            logger.error(_("Persona not found: {0}").format(voice_name))
             return None
 
     def set_current_persona(self, voice_name: str) -> Optional[DJPersona]:
@@ -463,7 +463,7 @@ class DJPersonaManager:
                 # Default system prompt is used if no persona is selected for some reason
             ) 
         except Exception as e:
-            logger.error(f"Error getting context and system prompt: {e}")
+            logger.error(_("Error getting context and system prompt: {0}").format(e))
             return ([], None)
 
     def save_personas_to_config(self):
@@ -479,24 +479,24 @@ class DJPersonaManager:
             success = config.save_config()
             
             if success:
-                logger.info(f"Successfully saved {len(personas_data)} personas to configuration")
+                logger.info(_("Successfully saved {0} personas to configuration").format(len(personas_data)))
             else:
-                logger.error("Failed to save personas to configuration")
+                logger.error(_("Failed to save personas to configuration"))
             
             return success
             
         except Exception as e:
-            logger.error(f"Error saving personas to config: {e}")
+            logger.error(_("Error saving personas to config: {0}").format(e))
             return False
 
     def add_persona(self, persona: DJPersona) -> bool:
         """Add a new persona to the manager."""
         try:
             self.personas[persona.voice_name] = persona
-            logger.info(f"Added persona: {persona.name} ({persona.voice_name})")
+            logger.info(_("Added persona: {0} ({1})").format(persona.name, persona.voice_name))
             return True
         except Exception as e:
-            logger.error(f"Error adding persona: {e}")
+            logger.error(_("Error adding persona: {0}").format(e))
             return False
 
     def remove_persona(self, voice_name: str) -> bool:
@@ -505,13 +505,13 @@ class DJPersonaManager:
             if voice_name in self.personas:
                 persona = self.personas[voice_name]
                 del self.personas[voice_name]
-                logger.info(f"Removed persona: {persona.name} ({voice_name})")
+                logger.info(_("Removed persona: {0} ({1})").format(persona.name, voice_name))
                 return True
             else:
-                logger.warning(f"Persona not found for removal: {voice_name}")
+                logger.warning(_("Persona not found for removal: {0}").format(voice_name))
                 return False
         except Exception as e:
-            logger.error(f"Error removing persona: {e}")
+            logger.error(_("Error removing persona: {0}").format(e))
             return False
 
     def update_persona(self, voice_name: str, updated_persona: DJPersona) -> bool:
@@ -519,13 +519,13 @@ class DJPersonaManager:
         try:
             if voice_name in self.personas:
                 self.personas[voice_name] = updated_persona
-                logger.info(f"Updated persona: {updated_persona.name} ({voice_name})")
+                logger.info(_("Updated persona: {0} ({1})").format(updated_persona.name, voice_name))
                 return True
             else:
-                logger.warning(f"Persona not found for update: {voice_name}")
+                logger.warning(_("Persona not found for update: {0}").format(voice_name))
                 return False
         except Exception as e:
-            logger.error(f"Error updating persona: {e}")
+            logger.error(_("Error updating persona: {0}").format(e))
             return False
 
     def get_all_personas(self) -> Dict[str, DJPersona]:

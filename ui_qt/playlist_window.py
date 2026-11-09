@@ -334,7 +334,7 @@ class MasterPlaylistWindow(SmartWindow):
                 _("Playlist \"{0}\" frozen to {1} tracks.").format(name, count)
             )
         except Exception as e:
-            logger.error(f"Failed to freeze playlist '{name}': {e}")
+            logger.error(_("Failed to freeze playlist '{0}': {1}").format(name, e))
             QMessageBox.critical(self, _("Error"), str(e))
 
     def _delete_available(self):
@@ -369,7 +369,7 @@ class MasterPlaylistWindow(SmartWindow):
                 library_data=self.library_data,
             )
         except Exception as e:
-            logger.error(f"Failed to create PlaybackConfig from '{name}': {e}")
+            logger.error(_("Failed to create PlaybackConfig from '{0}': {1}").format(name, e))
             QMessageBox.critical(self, _("Error"), str(e))
             return
 
@@ -476,7 +476,7 @@ class MasterPlaylistWindow(SmartWindow):
                 pc.get_list().sort()
                 shuffled += 1
             except Exception as e:
-                logger.error(f"Failed to shuffle playlist '{entry['name']}': {e}")
+                logger.error(_("Failed to shuffle playlist '{0}': {1}").format(entry['name'], e))
 
         if shuffled:
             self._refresh_master_list()
@@ -849,7 +849,7 @@ class MasterPlaylistWindow(SmartWindow):
         try:
             self.app_actions.skip_to_track(filepath)
         except (AttributeError, TypeError) as e:
-            logger.error(f"skip_to_track failed: {e}")
+            logger.error(_("skip_to_track failed: {0}").format(e))
 
     def _on_preview_double_click(self, item):
         """Double-click on a track (other than the current one) skips to it."""
@@ -1305,7 +1305,7 @@ class PlaylistModifyWindow(SmartWindow):
             description=self._desc_edit.text().strip() or None,
         )
         PlaylistDescriptorStore.save(pd, cache=app_info_cache)
-        logger.info(f"Saved playlist descriptor: {pd}")
+        logger.info(_("Saved playlist descriptor: {0}").format(pd))
 
         if self._on_save:
             self._on_save()

@@ -10,6 +10,9 @@ from muse.sort_config import SortConfig
 from utils.app_info_cache import app_info_cache
 from utils.globals import TrackResult
 from utils.logging_setup import get_logger
+from utils.translations import I18N
+
+_ = I18N._
 
 logger = get_logger(__name__)
 
@@ -299,7 +302,7 @@ class PlaybackConfigMaster:
                     self._weight_counter = 0
                     self._active_mask[ci] = True
                     return True
-        logger.warning(f"seek_to_track: target not found: {target_filepath}")
+        logger.warning(_("seek_to_track: target not found: {0}").format(target_filepath))
         return False
 
     def upcoming_track(self, places_from_current: int = 1) -> TrackResult:

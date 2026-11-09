@@ -231,7 +231,7 @@ class FormsData:
             return True, ""
         except Exception as e:
             error_msg = str(e)
-            logger.error("Error saving form: %s", error_msg)
+            logger.error(_("Error saving form: {0}").format(error_msg))
             try:
                 get_connection().rollback()
             except Exception:
@@ -257,7 +257,7 @@ class FormsData:
             return True, ""
         except Exception as e:
             error_msg = str(e)
-            logger.error("Error deleting form: %s", error_msg)
+            logger.error(_("Error deleting form: {0}").format(error_msg))
             try:
                 get_connection().rollback()
             except Exception:
@@ -268,7 +268,7 @@ class FormsData:
         if not isinstance(data_search, FormsDataSearch):
             raise TypeError('Forms data search must be of type FormsDataSearch')
         if not data_search.is_valid():
-            logger.warning('Invalid search query')
+            logger.warning(_("Invalid search query"))
             return data_search
 
         full_results = False

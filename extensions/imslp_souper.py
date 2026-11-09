@@ -7,6 +7,9 @@ import time
 from extensions.soup_utils import SoupUtils
 from utils.app_paths import cache_dir
 from utils.logging_setup import get_logger
+from utils.translations import I18N
+
+_ = I18N._
 
 logger = get_logger(__name__)
 
@@ -304,14 +307,14 @@ class ImslpSouper():
             time.sleep(2)
         
         if len(invalid_data_urls) > 0:
-            logger.warning("Invalid data urls:")
+            logger.warning(_("Invalid data urls:"))
             for url in invalid_data_urls:
                 logger.warning(url)
 
             logger.info("\n-----------------------------------------------------------\n")
 
         if len(failed_urls) > 0:
-            logger.error("Failed urls: ")
+            logger.error(_("Failed urls: "))
             for url, e in failed_urls:
                 logger.error(f"{url} - {e}")
 

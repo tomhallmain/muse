@@ -66,7 +66,7 @@ class RenameConfirmationWindow(QDialog):
         # Extract IDs embedded in the current filename stem
         from library_data.media_track import MediaTrack
         current_stem = os.path.splitext(track.basename or "")[0]
-        _, self._current_ids = MediaTrack.extract_ids(current_stem)
+        _stem, self._current_ids = MediaTrack.extract_ids(current_stem)
 
         self._changed = self._diff_fields()
 

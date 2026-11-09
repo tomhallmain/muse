@@ -28,6 +28,9 @@ from extensions.social_filter import (
 from extensions.soup_utils import WebConnectionException
 from utils.config import config
 from utils.logging_setup import get_logger
+from utils.translations import I18N
+
+_ = I18N._
 
 logger = get_logger(__name__)
 
@@ -74,7 +77,7 @@ class RedditItem:
         try:
             created = float(created_utc)
         except (TypeError, ValueError):
-            logger.warning(f"Unreadable Reddit timestamp: {created_utc}")
+            logger.warning(_("Unreadable Reddit timestamp: {0}").format(created_utc))
             return float("inf")
         return max(0.0, (time.time() - created) / 3600.0)
 
@@ -204,18 +207,18 @@ class RedditAPI:
                     try:
                         raw = self._fetch_via_praw(name, limit_per_sub)
                     except ImportError:
-                        logger.info("praw is not installed; using the public listing")
+                        logger.info(_("praw is not installed; using the public listing"))
                         use_praw = False
                     except Exception as e:
                         # Bad credentials or a praw-side error should not lose
                         # the topic while the public listing still answers.
-                        logger.warning(f"Reddit API path failed ({e}); using the public listing")
+                        logger.warning(_("Reddit API path failed ({0}); using the public listing").format(e))
                         use_praw = False
                 if not use_praw:
                     raw = self._fetch_via_json(name, limit_per_sub)
             except (WebConnectionException, SocialSourceUnusable) as e:
                 # One unreachable or refused subreddit should not lose the rest.
-                logger.warning(f"Skipping r/{name}: {e}")
+                logger.warning(_("Skipping r/{0}: {1}").format(name, e))
                 failures.append(name)
                 if str(e) not in reasons:
                     reasons.append(str(e))

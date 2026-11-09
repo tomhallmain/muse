@@ -28,6 +28,9 @@ from typing import Any, Dict, List, Optional
 
 from tts.providers import BaseTTSProvider
 from utils.logging_setup import get_logger
+from utils.translations import I18N
+
+_ = I18N._
 
 logger = get_logger(__name__)
 
@@ -72,16 +75,13 @@ class ZonosTTSProvider(BaseTTSProvider):
 
         if self.model_name not in ZONOS_MODELS:
             logger.warning(
-                'Unknown Zonos model "%s". Known models: %s',
-                self.model_name,
-                ", ".join(ZONOS_MODELS),
+                _('Unknown Zonos model "{0}". Known models: {1}').format(self.model_name, ", ".join(ZONOS_MODELS)),
             )
 
         if self.reference_audio and not os.path.isfile(self.reference_audio):
             logger.warning(
-                'Zonos reference audio not found: "%s". '
-                "Set zonos_reference_audio in config to a valid audio file.",
-                self.reference_audio,
+                _('Zonos reference audio not found: "{0}". Set zonos_reference_audio in '
+                  "config to a valid audio file.").format(self.reference_audio),
             )
 
     # ------------------------------------------------------------------
@@ -98,14 +98,14 @@ class ZonosTTSProvider(BaseTTSProvider):
     def load(self) -> None:
         if not _espeak_available():
             logger.warning(
-                "espeak-ng not found on PATH. Zonos requires espeak-ng for phonemization."
+                _("espeak-ng not found on PATH. Zonos requires espeak-ng for phonemization.")
             )
         try:
             from zonos.model import Zonos
             from zonos.utils import DEFAULT_DEVICE as device
 
             self._model = Zonos.from_pretrained(self.model_name, device=device)
-            logger.info("Zonos loaded: %s (device=%s)", self.model_name, device)
+            logger.info(_("Zonos loaded: {0} (device={1})").format(self.model_name, device))
         except Exception as exc:
             raise ImportError(
                 "Failed to load Zonos. Install with:\n"

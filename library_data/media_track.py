@@ -54,7 +54,7 @@ try:
     MUSIC_TAG_AVAILABLE = True
 except ImportError as e:
     MUSIC_TAG_AVAILABLE = False
-    logger.warning("No music tag support: %s" % str(e))
+    logger.warning(_("No music tag support: {0}").format(e))
 
 try:
     from mutagen import File
@@ -62,7 +62,7 @@ try:
     MUTAGEN_AVAILABLE = True
 except ImportError as e:
     MUTAGEN_AVAILABLE = False
-    logger.warning("No mutagen (album artwork) support: %s" % str(e))
+    logger.warning(_("No mutagen (album artwork) support: {0}").format(e))
 
 
 
@@ -158,7 +158,7 @@ class MediaTrack:
                     f.write("\n")
             logger.info(f"Wrote {len(errors_to_write)} errors to {filename}")
         except Exception as e:
-            logger.error(f"Failed to write errors to file: {str(e)}")
+            logger.error(_("Failed to write errors to file: {0}").format(str(e)))
 
     def _try_media_info_fallback(self, filepath):
         """Attempt to get basic metadata using MediaInfo as a fallback."""
@@ -213,14 +213,14 @@ class MediaTrack:
                         except (ValueError, TypeError):
                             pass
         except FileNotFoundError:
-            error_msg = f"File not found: {filepath}. This may be due to an outdated cache. Consider refreshing the cache in the UI."
+            error_msg = _("File not found: {0}. This may be due to an outdated cache. Consider refreshing the cache in the UI.").format(filepath)
             logger.error(error_msg)
             self.__class__.collect_error(error_msg)
             raise
         except Exception as e2:
             error_msg = f"Failed to get basic info using MediaInfo for {filepath}: {str(e2)}"
             stack_trace = traceback.format_exc()
-            logger.error(f"{error_msg}\nMediaInfo error details:\n{stack_trace}")
+            logger.error(_("{0}\nMediaInfo error details:\n{1}").format(error_msg, stack_trace))
             self.__class__.collect_error(error_msg, stack_trace)
 
     def _get_year_from_media_info(self, filepath):
@@ -238,7 +238,7 @@ class MediaTrack:
                         self.year = int(date_str[:4])
                         return
         except Exception as e:
-            logger.error(f"Failed to get year from MediaInfo: {str(e)}")
+            logger.error(_("Failed to get year from MediaInfo: {0}").format(str(e)))
 
     def _try_music_tag_load(self, filepath):
         if os.path.splitext(filepath)[1].lower() in self._music_tag_unsupported_extensions:
@@ -247,23 +247,23 @@ class MediaTrack:
         try:
             music_tag_wrapper = music_tag.load_file(filepath)
         except FileNotFoundError:
-            error_msg = f"File not found: {filepath}. This may be due to an outdated cache. Consider refreshing the cache in the UI."
+            error_msg = _("File not found: {0}. This may be due to an outdated cache. Consider refreshing the cache in the UI.").format(filepath)
             logger.warning(error_msg)
             self.__class__.collect_error(error_msg)
             raise
         except NotImplementedError as e:
             stack_trace = None
             if "Mutagen type" in str(e):
-                error_msg = f"Unsupported file format for metadata reading: {filepath}. The file format is not supported by the metadata library."
+                error_msg = _("Unsupported file format for metadata reading: {0}. The file format is not supported by the metadata library.").format(filepath)
             else:
-                error_msg = f"Failed to load metadata for {filepath}: {str(e)}"
+                error_msg = _("Failed to load metadata for {0}: {1}").format(filepath, e)
                 stack_trace = traceback.format_exc()
             logger.warning(error_msg)
             self.__class__.collect_error(error_msg, stack_trace)
             self._try_media_info_fallback(filepath)
             return
         except Exception as e:
-            error_msg = f"Failed to load metadata for {filepath}: {str(e)}"
+            error_msg = _("Failed to load metadata for {0}: {1}").format(filepath, e)
             logger.warning(error_msg)
             self.__class__.collect_error(error_msg, traceback.format_exc())
             self._try_media_info_fallback(filepath)
@@ -271,7 +271,7 @@ class MediaTrack:
 
         # Verify tag_map exists and is a dictionary
         if not hasattr(music_tag_wrapper, "tag_map") or not isinstance(music_tag_wrapper.tag_map, dict):
-            logger.warning(f"Invalid music_tag wrapper for {filepath}: missing or invalid tag_map")
+            logger.warning(_("Invalid music_tag wrapper for {0}: missing or invalid tag_map").format(filepath))
             self._try_media_info_fallback(filepath)
             return
 
@@ -292,9 +292,9 @@ class MediaTrack:
                     if k == 'year':
                         self._get_year_from_media_info(filepath)
                     else:
-                        logger.warning(f"Failed to load {k} for {filepath}: {str(e)}")
+                        logger.warning(_("Failed to load {0} for {1}: {2}").format(k, filepath, str(e)))
                         if failure_count >= max_failures:
-                            logger.warning(f"Too many tag failures ({failure_count}) for {filepath}, falling back to MediaInfo")
+                            logger.warning(_("Too many tag failures ({0}) for {1}, falling back to MediaInfo").format(failure_count, filepath))
                             self._try_media_info_fallback(filepath)
                             return
 
@@ -307,7 +307,7 @@ class MediaTrack:
             if length_value is not None:
                 self.length = float(length_value)
         except Exception as e:
-            logger.warning(f"Failed to load length for {filepath}: {str(e)}")
+            logger.warning(_("Failed to load length for {0}: {1}").format(filepath, str(e)))
 
     def __init__(self, filepath, parent_filepath=None):
         self.filepath = filepath
@@ -552,7 +552,7 @@ class MediaTrack:
                 )
             except Exception as e:
                 if "emoji characters" in str(e):
-                    logger.warning(f"Skipping volume analysis for file with special characters: {self.filepath}")
+                    logger.warning(_("Skipping volume analysis for file with special characters: {0}").format(self.filepath))
                 else:
                     raise # FFMPEG should be catching the other errors
         return self.mean_volume, self.max_volume
@@ -678,7 +678,7 @@ class MediaTrack:
                     self.artwork = bytes((front if front is not None else pictures[0]).data)
                     logger.info("found artwork by accessing APIC frame")
         except Exception as e:
-            logger.warning(f"Album artwork not found: {e}")
+            logger.warning(_("Album artwork not found: {0}").format(e))
         return self.artwork
 
     @staticmethod
@@ -742,7 +742,7 @@ class MediaTrack:
                 filename += MediaTrack.artwork_extension(self.artwork)
             return TempDir.get().add_file(filename, file_content=self.artwork, write_flags='wb')
         except Exception as e:
-            logger.error(f"Could not write album artwork to temp file: {e}")
+            logger.error(_("Could not write album artwork to temp file: {0}").format(e))
             return None
 
     def get_genre(self):
@@ -929,11 +929,11 @@ class MediaTrack:
             bool: True if update was successful, False otherwise
         """
         if not MUSIC_TAG_AVAILABLE:
-            logger.warning("Cannot update metadata: music_tag library not available")
+            logger.warning(_("Cannot update metadata: music_tag library not available"))
             return False
 
         if self.get_is_video():
-            logger.warning("Cannot update metadata: track is a video file")
+            logger.warning(_("Cannot update metadata: track is a video file"))
             return False
 
         try:
@@ -943,10 +943,10 @@ class MediaTrack:
                 try:
                     year = int(year)
                     if year < 0 or year > 9999:
-                        logger.warning(f"Invalid year value: {year}")
+                        logger.warning(_("Invalid year value: {0}").format(year))
                         return False
                 except ValueError:
-                    logger.warning(f"Invalid year format: {year}")
+                    logger.warning(_("Invalid year format: {0}").format(year))
                     return False
 
             track_number = metadata.get('tracknumber')
@@ -954,10 +954,10 @@ class MediaTrack:
                 try:
                     track_number = int(track_number)
                     if track_number < 0:
-                        logger.warning(f"Invalid track number: {track_number}")
+                        logger.warning(_("Invalid track number: {0}").format(track_number))
                         return False
                 except ValueError:
-                    logger.warning(f"Invalid track number format: {track_number}")
+                    logger.warning(_("Invalid track number format: {0}").format(track_number))
                     return False
 
             # Load the file with music_tag
@@ -969,7 +969,7 @@ class MediaTrack:
                     mfile['artwork'] = metadata['artwork']
                     self.artwork = metadata['artwork']  # Update local cache
                 except Exception as e:
-                    logger.warning(f"Failed to update artwork: {str(e)}")
+                    logger.warning(_("Failed to update artwork: {0}").format(str(e)))
                     return False
 
             # Map our metadata keys to music_tag keys
@@ -998,7 +998,7 @@ class MediaTrack:
                     try:
                         mfile[tag_key] = value
                     except Exception as e:
-                        logger.warning(f"Failed to update {tag_key}: {str(e)}")
+                        logger.warning(_("Failed to update {0}: {1}").format(tag_key, str(e)))
 
             # Save the changes
             mfile.save()
@@ -1009,11 +1009,11 @@ class MediaTrack:
                     if value != "" and value != -1:  # Only update if not empty/default
                         setattr(self, our_key, value)
 
-            logger.info(f"Successfully updated metadata for {self.title}")
+            logger.info(_("Successfully updated metadata for {0}").format(self.title))
             return True
 
         except Exception as e:
-            logger.error(f"Failed to update track metadata: {str(e)}")
+            logger.error(_("Failed to update track metadata: {0}").format(str(e)))
             return False
 
     # ------------------------------------------------------------------
@@ -1096,9 +1096,9 @@ class MediaTrack:
             from utils.filepath_update import propagate_file_rename
             propagate_file_rename(old_path, new_path)
         except Exception as exc:
-            logger.warning("Cache propagation failed after file rename: %s", exc)
+            logger.warning(_("Cache propagation failed after file rename: {0}").format(exc))
 
-        logger.info("Renamed track file: %s → %s", old_path, new_path)
+        logger.info(_("Renamed track file: {0} → {1}").format(old_path, new_path))
         return True, new_path
 
     def rename_album_folder(self, new_folder_name: str) -> tuple:
@@ -1139,9 +1139,9 @@ class MediaTrack:
             from utils.filepath_update import propagate_directory_rename
             propagate_directory_rename(old_dir, new_dir)
         except Exception as exc:
-            logger.warning("Cache propagation failed after directory rename: %s", exc)
+            logger.warning(_("Cache propagation failed after directory rename: {0}").format(exc))
 
-        logger.info("Renamed album folder: %s → %s", old_dir, new_dir)
+        logger.info(_("Renamed album folder: {0} → {1}").format(old_dir, new_dir))
         return True, new_dir
 
     def rename_artist_folder(self, new_artist_name: str) -> tuple:
@@ -1182,8 +1182,8 @@ class MediaTrack:
             from utils.filepath_update import propagate_directory_rename
             propagate_directory_rename(old_dir, new_dir)
         except Exception as exc:
-            logger.warning("Cache propagation failed after artist folder rename: %s", exc)
+            logger.warning(_("Cache propagation failed after artist folder rename: {0}").format(exc))
 
-        logger.info("Renamed artist folder: %s → %s", old_dir, new_dir)
+        logger.info(_("Renamed artist folder: {0} → {1}").format(old_dir, new_dir))
         return True, new_dir
 

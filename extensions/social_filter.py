@@ -21,6 +21,9 @@ from typing import List, Optional
 from library_data.blacklist import Blacklist
 from utils.globals import BlacklistItemType
 from utils.logging_setup import get_logger
+from utils.translations import I18N
+
+_ = I18N._
 
 logger = get_logger(__name__)
 
@@ -46,7 +49,7 @@ def iso_age_hours(timestamp) -> float:
     try:
         stamp = datetime.datetime.fromisoformat(str(timestamp).replace("Z", "+00:00"))
     except ValueError:
-        logger.warning(f"Unreadable timestamp: {timestamp}")
+        logger.warning(_("Unreadable timestamp: {0}").format(timestamp))
         return float("inf")
     if stamp.tzinfo is None:
         stamp = stamp.replace(tzinfo=datetime.timezone.utc)

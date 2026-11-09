@@ -25,6 +25,9 @@ from typing import Any, Dict, List, Optional
 
 from tts.providers import BaseTTSProvider
 from utils.logging_setup import get_logger
+from utils.translations import I18N
+
+_ = I18N._
 
 logger = get_logger(__name__)
 
@@ -72,9 +75,8 @@ class MaskGCTProvider(BaseTTSProvider):
 
         if self.reference_audio and not os.path.isfile(self.reference_audio):
             logger.warning(
-                'MaskGCT reference audio not found: "%s". '
-                "Set maskgct_reference_audio in config to a valid WAV file path.",
-                self.reference_audio,
+                _('MaskGCT reference audio not found: "{0}". Set maskgct_reference_audio '
+                  "in config to a valid WAV file path.").format(self.reference_audio),
             )
 
     # ------------------------------------------------------------------
@@ -95,7 +97,7 @@ class MaskGCTProvider(BaseTTSProvider):
         try:
             self._runner = MaskGCTInference(target_lang=self.language)
             self._runner.load_model()
-            logger.info("MaskGCT loaded (lang=%s)", self.language)
+            logger.info(_("MaskGCT loaded (lang={0})").format(self.language))
         except Exception as exc:
             raise RuntimeError(
                 f"MaskGCT model load failed: {exc}\n"

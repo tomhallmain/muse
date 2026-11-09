@@ -16,6 +16,9 @@ from typing import Callable, List, Tuple
 
 from utils.db import get_connection
 from utils.logging_setup import get_logger
+from utils.translations import I18N
+
+_ = I18N._
 
 logger = get_logger(__name__)
 
@@ -38,10 +41,10 @@ def load_fixes() -> List[dict]:
         except FileNotFoundError:
             loaded = []
         except (OSError, ValueError) as e:
-            logger.error(f"Could not read data fixes from {FIXES_PATH}: {e}")
+            logger.error(_("Could not read data fixes from {0}: {1}").format(FIXES_PATH, e))
             loaded = []
         if not isinstance(loaded, list):
-            logger.error(f"Data fixes file is not a list: {FIXES_PATH}")
+            logger.error(_("Data fixes file is not a list: {0}").format(FIXES_PATH))
             loaded = []
         _fixes = [fix for fix in loaded if isinstance(fix, dict) and fix.get("id")]
     return _fixes
@@ -60,7 +63,7 @@ def apply_pending(table: str, apply_fix: Callable[[dict], Tuple[str, str]]) -> N
         conn = get_connection()
         recorded = {row[0] for row in conn.execute("SELECT id FROM data_fixes_applied").fetchall()}
     except sqlite3.Error as e:
-        logger.error(f"Could not read applied data fixes: {e}")
+        logger.error(_("Could not read applied data fixes: {0}").format(e))
         return
     for fix in fixes:
         fix_id = fix["id"]
@@ -74,6 +77,6 @@ def apply_pending(table: str, apply_fix: Callable[[dict], Tuple[str, str]]) -> N
             )
             conn.commit()
         except Exception as e:
-            logger.error(f"Data fix {fix_id} failed, will retry on next load: {e}")
+            logger.error(_("Data fix {0} failed, will retry on next load: {1}").format(fix_id, e))
             continue
-        logger.info(f"Data fix {fix_id}: {outcome} ({detail})")
+        logger.info(_("Data fix {0}: {1} ({2})").format(fix_id, outcome, detail))

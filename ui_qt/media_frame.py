@@ -332,7 +332,7 @@ class MediaFrame(QFrame):
         try:
             self.show_video(path, loop=True)
         except Exception as e:
-            logger.warning(f"Could not restart looped video {path}: {e}")
+            logger.warning(_("Could not restart looped video {0}: {1}").format(path, e))
 
     def ensure_video_frame(self):
         """Set the window id for VLC video output."""

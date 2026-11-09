@@ -68,7 +68,7 @@ class ExtensionManager:
             ExtensionManager.strategy = ExtensionStrategy[strategy_name]
         except KeyError:
             ExtensionManager.strategy = ExtensionStrategy.RANDOM
-            logger.warning(f"Invalid strategy '{strategy_name}' found in cache, defaulting to RANDOM")
+            logger.warning(_("Invalid strategy '{0}' found in cache, defaulting to RANDOM").format(strategy_name))
         ExtensionManager.rejected_extensions = list(app_info_cache.get("rejected_extensions", []))
         repaired = ExtensionManager._repair_corrupted_rejected_ids()
         migrated = ExtensionManager._migrate_legacy_rejected_ids()
@@ -237,7 +237,7 @@ class ExtensionManager:
         self.data_callbacks = data_callbacks
 
     def start_extensions_thread(self, initial_sleep: bool = True, voice: Optional[Any] = None) -> None:
-        logger.info('Starting extensions thread')
+        logger.info(_("Starting extensions thread"))
         if ExtensionManager.extension_thread is not None and ExtensionManager.extension_thread.is_alive():
             logger.info('Extension thread already running')
             return
@@ -280,7 +280,7 @@ class ExtensionManager:
                 if ExtensionManager.extension_thread.is_alive():
                     # Blocked in an uninterruptible call; its event stays set, so
                     # it exits at its next checkpoint and starts no new work.
-                    logger.warning(f"Extension thread still blocked after {timeout}s")
+                    logger.warning(_("Extension thread still blocked after {0}s").format(timeout))
                 closed_one_thread = True
             ExtensionManager.extension_thread = None
 
@@ -289,7 +289,7 @@ class ExtensionManager:
                 if thread.is_alive():
                     thread.join(timeout=timeout)
                     if thread.is_alive():
-                        logger.warning(f"Delayed thread still blocked after {timeout}s")
+                        logger.warning(_("Delayed thread still blocked after {0}s").format(timeout))
                     closed_one_thread = True
 
             ExtensionManager.DELAYED_THREADS = []
@@ -298,7 +298,7 @@ class ExtensionManager:
             if restart_thread:
                 self.start_extensions_thread()
         except Exception as e:
-            logger.error(f"Error during extension reset: {str(e)}")
+            logger.error(_("Error during extension reset: {0}").format(str(e)))
             # Ensure we don't leave the system in an inconsistent state
             ExtensionManager.extension_thread = None
             ExtensionManager.DELAYED_THREADS = []
@@ -347,7 +347,7 @@ class ExtensionManager:
                     self.ui_callbacks.update_extension_status(_("Extension thread waiting for {0} minutes").format(sleep_time_minutes))
                 if Utils.long_wait(stop_event, check_cadence * 60, "extension: idle between cycles", total=sleep_time_minutes * 60, print_cadence=180):
                     break
-        logger.info("Extension thread exiting")
+        logger.info(_("Extension thread exiting"))
 
     def _favored_value(self, attr: TrackAttribute) -> Optional[str]:
         # Bias new material toward what the listener favorites, but only part of
@@ -447,7 +447,7 @@ class ExtensionManager:
                 result = self.llm.generate_json_get_value(prompt.replace("ARTIST", artist), "search_query")
                 query = result.response if result else artist
             except LLMResponseException as e:
-                logger.warning(f"LLM call failed for artist '{artist}', falling back to simple query: {e}")
+                logger.warning(_("LLM call failed for artist '{0}', falling back to simple query: {1}").format(artist, e))
                 query = artist
         obj = self.data_callbacks.instance.artists.get_data(artist)
         self._simple(query, attr=TrackAttribute.ARTIST, strict=(artist if strict else None), entity=obj or artist)
@@ -466,7 +466,7 @@ class ExtensionManager:
                 result = self.llm.generate_json_get_value(prompt.replace("GENRE", genre), "search_query")
                 query = result.response if result else genre
             except LLMResponseException as e:
-                logger.warning(f"LLM call failed for genre '{genre}', falling back to simple query: {e}")
+                logger.warning(_("LLM call failed for genre '{0}', falling back to simple query: {1}").format(genre, e))
                 query = genre
         obj = self.data_callbacks.instance.genres.get_data(genre)
         self._simple(query, attr=TrackAttribute.GENRE, strict=(genre if strict else None), entity=obj or genre)
@@ -482,7 +482,7 @@ class ExtensionManager:
                 result = self.llm.generate_json_get_value(prompt, "search_query")
                 query = result.response if result else f"{instrument} {genre}"
             except LLMResponseException as e:
-                logger.warning(f"LLM call failed for instrument '{instrument}' with genre '{genre}', falling back to simple query: {e}")
+                logger.warning(_("LLM call failed for instrument '{0}' with genre '{1}', falling back to simple query: {2}").format(instrument, genre, e))
                 query = f"{instrument} {genre}"
         obj = self.data_callbacks.instance.instruments.get_data(instrument)
         self._simple(query, attr=TrackAttribute.INSTRUMENT, strict=(instrument if strict else None), entity=obj or instrument)
@@ -748,7 +748,7 @@ class ExtensionManager:
                         os.rename(f, _n)
                         f = _n
                     except Exception as e:
-                        logger.error(f"Failed to rename: {e}")
+                        logger.error(_("Failed to rename: {0}").format(e))
 
             # Auto-file into genre/artist/album subdirectory
             if not config.auto_file_extensions:
@@ -761,7 +761,7 @@ class ExtensionManager:
                 if filed:
                     f = filed
                 else:
-                    logger.warning("Auto-filing returned no path; file remains at %s", f)
+                    logger.warning(_("Auto-filing returned no path; file remains at {0}").format(f))
 
             self._append(b, f, attr, s)
             PlaybackConfigMaster.assign_extension(f)
@@ -770,7 +770,7 @@ class ExtensionManager:
                 # TODO update ExtensionsWindow as well if it's open
             ExtensionManager.extension_thread_delayed_complete = True
         except Exception as e:
-            logger.error(f"Extension delayed processing failed: {e}")
+            logger.error(_("Extension delayed processing failed: {0}").format(e))
             self._append(b, None, attr, s, str(e))
             ExtensionManager.extension_thread_delayed_complete = True
             raise e
@@ -824,7 +824,7 @@ class ExtensionManager:
                 os.rename(_f, new_path)
                 _f = new_path
             except Exception as e:
-                logger.error(f"Failed to rename file to remove emoji: {e}")
+                logger.error(_("Failed to rename file to remove emoji: {0}").format(e))
         return _f, b
 
     @staticmethod
@@ -907,7 +907,7 @@ class ExtensionManager:
                 scores[idx] = score
             return scores if len(scores) == len(a) else None
         except (LLMResponseException, ValueError, TypeError) as e:
-            logger.warning(f"LLM scoring of search results failed, falling back to mechanical quality only: {e}")
+            logger.warning(_("LLM scoring of search results failed, falling back to mechanical quality only: {0}").format(e))
             return None
 
     def _embedding_score_options(self, q: str, a: List[Any]) -> Optional[Dict[int, float]]:
@@ -922,7 +922,7 @@ class ExtensionManager:
             texts = [q] + [cand.n for cand in a]
             vectors = embed_texts(texts)
         except Exception as e:
-            logger.warning(f"Embedding scoring of search results failed, falling back to mechanical quality only: {e}")
+            logger.warning(_("Embedding scoring of search results failed, falling back to mechanical quality only: {0}").format(e))
             return None
         if not vectors or len(vectors) != len(texts):
             return None
@@ -1061,6 +1061,6 @@ class ExtensionManager:
                 if extension["filename"] == filepath:
                     return extension
         except Exception as e:
-            logger.error(f"Error getting extension details for {filepath}: {e}")
-        logger.error(f"No extension details found for {filepath}")
+            logger.error(_("Error getting extension details for {0}: {1}").format(filepath, e))
+        logger.error(_("No extension details found for {0}").format(filepath))
         return None

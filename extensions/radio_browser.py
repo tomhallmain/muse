@@ -11,6 +11,9 @@ from urllib.error import URLError
 from urllib.parse import urlencode
 
 from utils.logging_setup import get_logger
+from utils.translations import I18N
+
+_ = I18N._
 
 logger = get_logger(__name__)
 
@@ -31,7 +34,7 @@ def _resolve_server() -> str:
             _cached_server = f"https://{host}"
             logger.debug("Radio Browser server resolved: %s", _cached_server)
     except Exception as exc:
-        logger.warning("Radio Browser DNS discovery failed, using fallback: %s", exc)
+        logger.warning(_("Radio Browser DNS discovery failed, using fallback: {0}").format(exc))
         _cached_server = "https://de1.api.radio-browser.info"
     return _cached_server
 
@@ -87,7 +90,7 @@ def get_station_by_uuid(uuid: str) -> "dict | None":
         results = _api_get(f"/json/stations/byuuid/{uuid}")
         return results[0] if results else None
     except Exception as exc:
-        logger.warning("Failed to fetch station by UUID %s: %s", uuid, exc)
+        logger.warning(_("Failed to fetch station by UUID {0}: {1}").format(uuid, exc))
         return None
 
 
@@ -110,5 +113,5 @@ def resolve_stream_url(url: str) -> str:
                 if val.startswith("http"):
                     return val
     except Exception as exc:
-        logger.warning("Failed to resolve playlist URL %s: %s", url, exc)
+        logger.warning(_("Failed to resolve playlist URL {0}: {1}").format(url, exc))
     return url

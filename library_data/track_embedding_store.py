@@ -43,7 +43,7 @@ try:
     import numpy as np
 except Exception as e:
     np = None
-    logger.info(f"Semantic search recall is unavailable without numpy: {e}")
+    logger.info(_("Semantic search recall is unavailable without numpy: {0}").format(e))
 
 STORE_FILENAME = "app_track_embeddings.npz"
 
@@ -173,8 +173,8 @@ class TrackEmbeddingStore:
                 meta = json.loads(bytes(archive["meta"]).decode("utf-8"))
                 model_name = _model_name()
                 if meta.get("model") != model_name:
-                    logger.info(f"Discarding the search index, it was built with "
-                                f"{meta.get('model')} and the model is now {model_name}")
+                    logger.info(_("Discarding the search index, it was built with {0} and the model is now "
+                                  "{1}").format(meta.get('model'), model_name))
                     return
                 for field, entries in (meta.get("fields") or {}).items():
                     key = f"vectors_{field}"
@@ -182,8 +182,7 @@ class TrackEmbeddingStore:
                         continue
                     matrix = archive[key]
                     if matrix.ndim != 2 or matrix.shape[0] != len(entries):
-                        logger.warning(f"Dropping {field} from the search index, "
-                                       f"{matrix.shape[0]} rows against {len(entries)} entries")
+                        logger.warning(_("Dropping {0} from the search index, {1} rows against {2} entries").format(field, matrix.shape[0], len(entries)))
                         continue
                     self._matrices[field] = matrix.astype(np.float32, copy=False)
                     self._paths[field] = [entry[0] for entry in entries]
@@ -192,7 +191,7 @@ class TrackEmbeddingStore:
                         + ", ".join(f"{field} {len(paths)}"
                                     for field, paths in self._paths.items()))
         except Exception as e:
-            logger.warning(f"Could not read the search index, it will be rebuilt: {e}")
+            logger.warning(_("Could not read the search index, it will be rebuilt: {0}").format(e))
             self._clear_locked()
 
     def _write_locked(self) -> None:
@@ -209,7 +208,7 @@ class TrackEmbeddingStore:
             payload["meta"] = np.frombuffer(json.dumps(meta).encode("utf-8"), dtype=np.uint8)
             np.savez(self.path, **payload)
         except Exception as e:
-            logger.warning(f"Could not write the search index, it will be rebuilt next time: {e}")
+            logger.warning(_("Could not write the search index, it will be rebuilt next time: {0}").format(e))
 
     def reset(self) -> None:
         """Make every field re-check itself against the library on next use."""
@@ -302,7 +301,7 @@ class TrackEmbeddingStore:
                                 status_callback(_("Building search index... ({0}/{1})").format(
                                     min(start + ENCODE_BATCH_SIZE, len(stale)), len(stale)))
                             except Exception as e:
-                                logger.error(f"Error in search index status callback: {e}")
+                                logger.error(_("Error in search index status callback: {0}").format(e))
                         if time.monotonic() - last_checkpoint >= CHECKPOINT_SECONDS:
                             self._install(field, wanted, rows, len(tracks), partial=True)
                             last_checkpoint = time.monotonic()
@@ -311,8 +310,7 @@ class TrackEmbeddingStore:
                 logger.info(f"Search index for {field} holds {len(wanted)} vectors")
                 return True
             except Exception as e:
-                logger.warning(f"Could not build the {field} search index, "
-                               f"searches stay literal: {e}")
+                logger.warning(_("Could not build the {0} search index, searches stay literal: {1}").format(field, e))
                 return False
 
     def _install(self, field: str, wanted: List[Tuple[str, str, str]], rows: List[Any],
@@ -361,8 +359,8 @@ class TrackEmbeddingStore:
                                   normalize_embeddings=True, show_progress_bar=False)
             vector = np.asarray(vector, dtype=np.float32).reshape(-1)
             if vector.shape[0] != matrix.shape[1]:
-                logger.warning(f"The {field} search index has {matrix.shape[1]}-wide rows "
-                               f"against a {vector.shape[0]}-wide query, discarding it")
+                logger.warning(_("The {0} search index has {1}-wide rows against a {2}-wide query, "
+                                 "discarding it").format(field, matrix.shape[1], vector.shape[0]))
                 return []
             scores = matrix @ vector
             wanted = min(top_k(), scores.shape[0])
@@ -372,8 +370,7 @@ class TrackEmbeddingStore:
             return [(paths[row], float(scores[row])) for row in best
                     if float(scores[row]) >= cutoff]
         except Exception as e:
-            logger.warning(f"Could not query the {field} search index, "
-                           f"the search stays literal: {e}")
+            logger.warning(_("Could not query the {0} search index, the search stays literal: {1}").format(field, e))
             return []
 
 

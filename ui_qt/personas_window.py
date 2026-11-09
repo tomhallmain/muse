@@ -324,7 +324,7 @@ class PersonasWindow(SmartWindow):
                 language_name = Utils.get_english_language_name(text)
                 self.language_edit.setText(language_name)
         except Exception as e:
-            logger.error("Error updating language name from code: %s", e)
+            logger.error(_("Error updating language name from code: {0}").format(e))
 
     def set_default_persona_values(self):
         self.name_edit.setText(_("New Persona"))
@@ -512,7 +512,7 @@ class PersonasWindow(SmartWindow):
             self.selected_persona = persona
             self.app_actions.toast(_("Persona saved successfully."))
         except Exception as e:
-            logger.error("Error saving persona: %s", e)
+            logger.error(_("Error saving persona: {0}").format(e))
             self.app_actions.alert(
                 _("Error"),
                 _("Failed to save persona: {}").format(str(e)),
@@ -534,7 +534,7 @@ class PersonasWindow(SmartWindow):
                     master=self,
                 )
         except Exception as e:
-            logger.error("Error saving personas to config: %s", e)
+            logger.error(_("Error saving personas to config: {0}").format(e))
             self.app_actions.alert(
                 _("Error"),
                 _("Failed to save personas to configuration: {}").format(str(e)),
@@ -568,7 +568,7 @@ class PersonasWindow(SmartWindow):
             self.clear_form()
             self.app_actions.toast(_("Personas reloaded from configuration."))
         except Exception as e:
-            logger.error("Error reloading personas: %s", e)
+            logger.error(_("Error reloading personas: {0}").format(e))
             self.app_actions.alert(
                 _("Error"),
                 _("Failed to reload personas: {}").format(str(e)),

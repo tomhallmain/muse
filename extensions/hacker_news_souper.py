@@ -3,6 +3,9 @@ import datetime
 from extensions.soup_utils import SoupUtils
 from library_data.blacklist import Blacklist
 from utils.logging_setup import get_logger
+from utils.translations import I18N
+
+_ = I18N._
 
 logger = get_logger(__name__)
 
@@ -10,7 +13,7 @@ class HackerNewsItem:
     def __init__(self, id, titleline_el):
         titleline_links = SoupUtils.get_elements(class_path=[["tag", "a"]], parent=titleline_el)
         if len(titleline_links) > 2:
-            logger.warning("Unexpected number of title line links found: " + str(len(titleline_links)))
+            logger.warning(_("Unexpected number of title line links found: {0}").format(len(titleline_links)))
         elif len(titleline_links) == 1:
             return # No source == no item
         elif len(titleline_links) == 0:
@@ -72,12 +75,12 @@ class HackerNewsSouper():
                 if id != "pagespace":
                     titleline_el = el.find(class_="titleline")
                     if titleline_el is None:
-                        logger.warning("Failed to get titleline_el for Hacker New items")
+                        logger.warning(_("Failed to get titleline_el for Hacker New items"))
                     else:
                         try:
                             hacker_news_item = HackerNewsItem(id, titleline_el)
                         except Exception as e:
-                            logger.warning(f"Failed to create Hacker News Item: {e}")
+                            logger.warning(_("Failed to create Hacker News Item: {0}").format(e))
             else:
                 subline_el = el.find(class_="subline")
                 if subline_el is not None:
@@ -89,7 +92,7 @@ class HackerNewsSouper():
                             items.append(hacker_news_item)
                     except Exception as e:
                         logger.error(el)
-                        logger.error("Failed to extract data for Hacker New items: " + str(e))
+                        logger.error(_("Failed to extract data for Hacker New items: {0}").format(e))
                 hacker_news_item = None
 
         return items

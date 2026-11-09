@@ -326,7 +326,7 @@ class LibraryDataSearch:
                 # Opposed vectors carry no more meaning here than unrelated ones.
                 scores[filepath] = max(0.0, min(1.0, similarity))
         except Exception as e:
-            logger.warning(f"Embedding ranking of search results failed, keeping the lexical order: {e}")
+            logger.warning(_("Embedding ranking of search results failed, keeping the lexical order: {0}").format(e))
             return False
         self._embedding_ranking = _EmbeddingRanking(search_field, query_text, scores)
         return True
@@ -583,7 +583,7 @@ class LibraryData:
             conn.commit()
             logger.debug("Stored %d directory entries to DB", len(rows))
         except Exception as e:
-            logger.error(f"Error storing directories cache to DB: {e}")
+            logger.error(_("Error storing directories cache to DB: {0}").format(e))
 
         # Media tracks — column list is derived from to_db_row() so schema changes
         # only need to be made in one place (MediaTrack.to_db_row).
@@ -595,7 +595,7 @@ class LibraryData:
                     r["scanned_at"] = now
                     rows.append(r)
                 except Exception as e:
-                    logger.warning(f"Skipping track {filepath} for DB store: {e}")
+                    logger.warning(_("Skipping track {0} for DB store: {1}").format(filepath, e))
             if rows:
                 cols = list(rows[0].keys())
                 sql = (
@@ -606,7 +606,7 @@ class LibraryData:
                 conn.commit()
                 logger.debug("Stored %d tracks to DB", len(rows))
         except Exception as e:
-            logger.error(f"Error storing media track cache to DB: {e}")
+            logger.error(_("Error storing media track cache to DB: {0}").format(e))
 
     @staticmethod
     def load_directory_cache(force_reload=False):
@@ -630,7 +630,7 @@ class LibraryData:
                 LibraryData._directory_cache_loaded = True
                 return
         except Exception as e:
-            logger.warning(f"Failed to load directories cache from DB: {e}")
+            logger.warning(_("Failed to load directories cache from DB: {0}").format(e))
 
         # Fallback: try loading from pickle file
         try:
@@ -642,7 +642,7 @@ class LibraryData:
                 LibraryData._directory_cache_loaded = True
                 return
         except Exception as e:
-            logger.warning(f"Failed to load directories cache from pickle file: {e}")
+            logger.warning(_("Failed to load directories cache from pickle file: {0}").format(e))
         
         # Fallback: try loading from app_info_cache (for migration from old format)
         try:
@@ -661,9 +661,9 @@ class LibraryData:
                         app_info_cache.store()
                         logger.info("Migrated directories cache to pickle file and removed from app_info_cache")
                     except Exception as e:
-                        logger.warning(f"Migrated directories cache but failed to persist removal from app_info_cache: {e}")
+                        logger.warning(_("Migrated directories cache but failed to persist removal from app_info_cache: {0}").format(e))
                 except Exception as e:
-                    logger.warning(f"Failed to migrate directories cache to pickle file: {e}")
+                    logger.warning(_("Failed to migrate directories cache to pickle file: {0}").format(e))
                 LibraryData._directory_cache_loaded = True
                 return
         except Exception as e:
@@ -711,7 +711,7 @@ class LibraryData:
                     for value in chunk:
                         cached.setdefault(value, 0)
             except Exception as e:
-                logger.warning(f"Could not read group sizes for {column}: {e}")
+                logger.warning(_("Could not read group sizes for {0}: {1}").format(column, e))
         return {v: cached[v] for v in wanted if cached.get(v)}
 
     @staticmethod
@@ -727,14 +727,14 @@ class LibraryData:
                 logger.debug("Loaded %d tracks from DB", len(rows))
                 return
         except Exception as e:
-            logger.warning(f"Failed to load media track cache from DB: {e}")
+            logger.warning(_("Failed to load media track cache from DB: {0}").format(e))
 
         # Fallback: try loading from pickle file
         try:
             with open(LibraryData.media_track_cache_path(), "rb") as f:
                 LibraryData.MEDIA_TRACK_CACHE = pickle.load(f)
         except FileNotFoundError:
-            logger.info("No media track cache found, creating new one")
+            logger.info(_("No media track cache found, creating new one"))
 
     @staticmethod
     def get_cache_update_time():
@@ -745,7 +745,7 @@ class LibraryData:
             try:
                 return datetime.fromisoformat(refresh_time_str)
             except Exception as e:
-                logger.warning(f"Error parsing library refresh time: {e}")
+                logger.warning(_("Error parsing library refresh time: {0}").format(e))
         
         # Fallback to file modification time if no refresh time is recorded
         media_cache_path = LibraryData.media_track_cache_path()
@@ -754,7 +754,7 @@ class LibraryData:
                 mtime = os.path.getmtime(media_cache_path)
                 return datetime.fromtimestamp(mtime)
             except Exception as e:
-                logger.warning(f"Error getting cache file modification time: {e}")
+                logger.warning(_("Error getting cache file modification time: {0}").format(e))
                 return None
         return None
 
@@ -765,7 +765,7 @@ class LibraryData:
             current_time = datetime.now()
             app_info_cache.set(LibraryData.LIBRARY_REFRESH_TIME_KEY, current_time.isoformat())
         except Exception as e:
-            logger.warning(f"Error recording library refresh time: {e}")
+            logger.warning(_("Error recording library refresh time: {0}").format(e))
 
     @staticmethod
     def get_directory_files(directory, rescan=False):
@@ -777,7 +777,7 @@ class LibraryData:
             # Even for cached results, verify file existence
             missing_files = [f for f in files if not os.path.exists(f)]
             if missing_files:
-                logger.warning(f"Found {len(missing_files)} missing files in cache for {directory}. Consider refreshing the cache.")
+                logger.warning(_("Found {0} missing files in cache for {1}. Consider refreshing the cache.").format(len(missing_files), directory))
                 files = [f for f in files if os.path.exists(f)]
                 LibraryData.DIRECTORIES_CACHE[directory] = files
         return list(files)
@@ -838,7 +838,7 @@ class LibraryData:
                             if app_actions:
                                 app_actions.update_extension_status(message)
                         except Exception as e:
-                            logger.error(f"Error in status callback: {e}")
+                            logger.error(_("Error in status callback: {0}").format(e))
                     
                     track = LibraryData.get_track(filepath)
                     if track is not None:
@@ -894,7 +894,7 @@ class LibraryData:
         if not isinstance(library_data_search, LibraryDataSearch):
             raise TypeError('Library data search must be of type LibraryDataSearch')
         if not library_data_search.is_valid():
-            logger.warning('Invalid search query')
+            logger.warning(_("Invalid search query"))
             return library_data_search
 
         logger.info(f"Searching for tracks matching query {library_data_search}")
@@ -914,7 +914,7 @@ class LibraryData:
                     search_status_callback(_(
                         "Searching for tracks... ({0} files searched, {1} files may be remaining)").format(i + 1, total_files - i))
                 except Exception as e:
-                    logger.error(f"Error in status callback: {e}")
+                    logger.error(_("Error in status callback: {0}").format(e))
 
             if library_data_search.test(audio_track) is None:
                 break
@@ -934,7 +934,7 @@ class LibraryData:
             try:
                 completion_callback(library_data_search)
             except Exception as e:
-                logger.error(f"Error in search callback: {e}")
+                logger.error(_("Error in search callback: {0}").format(e))
                 
         return library_data_search
 
@@ -989,7 +989,7 @@ class LibraryData:
                 logger.info(f"Added {added} tracks by {search_field} similarity "
                             f"that the literal search did not match")
         except Exception as e:
-            logger.warning(f"Semantic recall failed, the search stays literal: {e}")
+            logger.warning(_("Semantic recall failed, the search stays literal: {0}").format(e))
 
     def resolve_track(self, media_track):
         # Find any highly similar tracks in the library to this track.
@@ -1193,7 +1193,7 @@ class LibraryData:
                 compilation_name = self.identify_compilation_name(track)
                 compilation_map[track.filepath] = compilation_name
             except Exception as e:
-                error_msg = f"Error processing compilation for track {track.title}: {str(e)}"
+                error_msg = _("Error processing compilation for track {0}: {1}").format(track.title, e)
                 logger.warning(error_msg)
                 MediaTrack.collect_error(error_msg, traceback.format_exc())
                 compilation_map[track.filepath] = track.album  # Fallback to original album name
@@ -1290,7 +1290,7 @@ class LibraryData:
                 else:
                     failed.append(t.title)
             except Exception as e:
-                logger.warning(f"Failed to update artwork for {t.title}: {str(e)}")
+                logger.warning(_("Failed to update artwork for {0}: {1}").format(t.title, str(e)))
                 failed.append(t.title)
 
         if len(updated) > 0:
@@ -1301,8 +1301,7 @@ class LibraryData:
             logger.info(f"{finished}: nothing was changed, every track already carries "
                         f"artwork as good as '{best_track.title}'")
         if len(failed) > 0:
-            logger.warning(f"Album artwork could not be written to {len(failed)} track(s): "
-                           f"{LibraryData._few(failed)}")
+            logger.warning(_("Album artwork could not be written to {0} track(s): {1}").format(len(failed), LibraryData._few(failed)))
         else:
             # A failed write is left unrecorded so a later track retries it.
             LibraryData.albums_checked[memo_key] = fingerprint

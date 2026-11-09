@@ -710,7 +710,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
 
     def quit(self):
         if qt_alert(self, _("Confirm Quit"), _("Would you like to quit the application?"), "askokcancel"):
-            logger.info("Exiting application")
+            logger.info(_("Exiting application"))
             self.close()  # Triggers closeEvent which handles everything
 
     def alert(self, title: str, message: str, kind: str = "info", severity: str = "normal", master: Optional[object] = None):
@@ -987,7 +987,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
             if isinstance(e, ImportError):
                 logger.debug("Audio device management not available (pycaw not installed)")
             else:
-                logger.error("Error checking audio device settings: %s", e)
+                logger.error(_("Error checking audio device settings: {0}").format(e))
         try:
             args.validate()
         except Exception as e:
@@ -1412,7 +1412,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
                 if self.media_frame.show_video(image_filepath, loop=True):
                     return
             except Exception as e:
-                logger.warning(f"Could not play spinning record video {image_filepath}: {e}")
+                logger.warning(_("Could not play spinning record video {0}: {1}").format(image_filepath, e))
             image_filepath = SpinningRecordVideos.source_image_for(image_filepath)
         self.media_frame.show_image(image_filepath if image_filepath else None)
 
@@ -1423,7 +1423,7 @@ class MuseAppQt(FramelessWindowMixin, SmartMainWindow):
         try:
             self.media_frame.set_video_paused(paused)
         except Exception as e:
-            logger.warning(f"Could not {'pause' if paused else 'resume'} the artwork video: {e}")
+            logger.warning(_("Could not {0} the artwork video: {1}").format('pause' if paused else 'resume', e))
 
     def _cache_media_frame_handle(self):
         """Update cached window handle for VLC (must run on main thread)."""
@@ -1837,7 +1837,7 @@ def _report_source_drift(window):
     try:
         result = source_drift()
     except Exception as e:
-        logger.error(f"Could not compare this build with its source checkout: {e}")
+        logger.error(_("Could not compare this build with its source checkout: {0}").format(e))
         return
     if result:
         drifted, message = result
@@ -1879,7 +1879,7 @@ def main():
     try:
         enable_fault_log()
     except Exception as e:
-        logger.error(f"Could not open the fault log: {e}")
+        logger.error(_("Could not open the fault log: {0}").format(e))
     _route_qt_messages_to_logger()
     app = QApplication(sys.argv)
     app.setApplicationName("Muse")
@@ -1906,7 +1906,7 @@ def main():
     threading.Thread(target=_report_source_drift, args=(window,), name="source-drift", daemon=True).start()
 
     def graceful_shutdown(*args):
-        logger.info("Caught signal, shutting down gracefully...")
+        logger.info(_("Caught signal, shutting down gracefully..."))
         window.close()  # Triggers closeEvent which handles everything
 
     try:

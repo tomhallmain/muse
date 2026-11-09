@@ -3,6 +3,9 @@ import traceback
 
 from extensions.soup_utils import SoupUtils
 from utils.logging_setup import get_logger
+from utils.translations import I18N
+
+_ = I18N._
 
 logger = get_logger(__name__)
 
@@ -58,7 +61,7 @@ class WikiOpenSearchAPI:
             req = requests.get(self.__build_url(query, limit), headers=headers)
             return WikiOpenSearchResponse(req.json())
         except Exception as e:
-            logger.error(f"Failed to connect to Wiki OpenSearch API: {e}")
+            logger.error(_("Failed to connect to Wiki OpenSearch API: {0}").format(e))
             traceback.print_exc()
             return None
 
@@ -68,7 +71,7 @@ class WikiOpenSearchAPI:
             req = requests.get(f'{self.BASE_URL}?action=query&generator=random&grnnamespace=0&grnlimit=1&prop=extracts&format=json', headers=headers)
             return RandomWikiResponse(req.json())
         except Exception as e:
-            logger.error(f"Failed to connect to Wiki OpenSearch API: {e}")
+            logger.error(_("Failed to connect to Wiki OpenSearch API: {0}").format(e))
             traceback.print_exc()
             return None
 

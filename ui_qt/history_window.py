@@ -187,7 +187,7 @@ class HistoryWindow(SmartWindow):
                 except Exception as e:
                     display_text = item
                     track = None
-                    logger.error("Error getting track details for: %s (%s)", item, str(e))
+                    logger.error(_("Error getting track details for: {0} ({1})").format(item, str(e)))
             else:
                 display_text = item
                 track = None

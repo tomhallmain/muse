@@ -36,6 +36,9 @@ from extensions.social_filter import (
 from extensions.soup_utils import WebConnectionException
 from utils.config import config
 from utils.logging_setup import get_logger
+from utils.translations import I18N
+
+_ = I18N._
 
 logger = get_logger(__name__)
 
@@ -241,7 +244,7 @@ class BlueskyAPI:
                 entries = self._get_feed(feed_uri, limit_per_feed)
             except (WebConnectionException, SocialSourceUnusable) as e:
                 # One unreachable or unknown feed should not lose the rest.
-                logger.warning(f"Skipping Bluesky feed {name}: {e}")
+                logger.warning(_("Skipping Bluesky feed {0}: {1}").format(name, e))
                 failures.append(name)
                 if str(e) not in reasons:
                     reasons.append(str(e))

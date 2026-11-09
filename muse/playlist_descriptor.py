@@ -5,6 +5,9 @@ from typing import Dict, List, Optional, TYPE_CHECKING
 from muse.sort_config import SortConfig
 from utils.globals import PlaylistSortType
 from utils.logging_setup import get_logger
+from utils.translations import I18N
+
+_ = I18N._
 
 logger = get_logger(__name__)
 
@@ -204,13 +207,12 @@ class PlaylistDescriptor:
                 valid_dirs.append(d)
             else:
                 logger.warning(
-                    f"PlaylistDescriptor '{self.name}': directory not found "
-                    f"(even after retries): {d}"
+                    _("PlaylistDescriptor '{0}': directory not found (even after retries): {1}").format(self.name, d)
                 )
 
         if not valid_dirs:
             logger.warning(
-                f"PlaylistDescriptor '{self.name}': no valid directories found"
+                _("PlaylistDescriptor '{0}': no valid directories found").format(self.name)
             )
             return []
 
@@ -235,12 +237,11 @@ class PlaylistDescriptor:
             else:
                 stale_count += 1
                 logger.warning(
-                    f"PlaylistDescriptor '{self.name}': stale track removed: {fp}"
+                    _("PlaylistDescriptor '{0}': stale track removed: {1}").format(self.name, fp)
                 )
         if stale_count > 0:
             logger.warning(
-                f"PlaylistDescriptor '{self.name}': {stale_count} stale track(s) "
-                f"removed, {len(valid)} remaining"
+                _("PlaylistDescriptor '{0}': {1} stale track(s) removed, {2} remaining").format(self.name, stale_count, len(valid))
             )
         return valid
 
@@ -360,7 +361,7 @@ class PlaylistDescriptorStore:
             try:
                 playlists[name] = PlaylistDescriptor.from_dict(data)
             except Exception:
-                logger.exception(f"Failed to load playlist descriptor '{name}'")
+                logger.exception(_("Failed to load playlist descriptor '{0}'").format(name))
         return playlists
 
     @staticmethod
@@ -390,7 +391,7 @@ class PlaylistDescriptorStore:
         try:
             return PlaylistDescriptor.from_dict(data)
         except Exception:
-            logger.exception(f"Failed to load playlist descriptor '{name}'")
+            logger.exception(_("Failed to load playlist descriptor '{0}'").format(name))
             return None
 
     @staticmethod
@@ -398,11 +399,11 @@ class PlaylistDescriptorStore:
         """Rename a playlist descriptor.  Returns True on success."""
         raw = PlaylistDescriptorStore._get_all_raw(cache)
         if old_name not in raw:
-            logger.warning(f"Cannot rename: playlist descriptor '{old_name}' not found")
+            logger.warning(_("Cannot rename: playlist descriptor '{0}' not found").format(old_name))
             return False
         if new_name in raw:
             logger.warning(
-                f"Cannot rename: playlist descriptor '{new_name}' already exists"
+                _("Cannot rename: playlist descriptor '{0}' already exists").format(new_name)
             )
             return False
         data = raw.pop(old_name)

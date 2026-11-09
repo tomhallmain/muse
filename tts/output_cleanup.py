@@ -4,6 +4,9 @@ from typing import Optional
 
 from utils.app_paths import tts_output_dir
 from utils.logging_setup import get_logger
+from utils.translations import I18N
+
+_ = I18N._
 
 logger = get_logger(__name__)
 
@@ -45,7 +48,7 @@ def cleanup_orphaned_output_files(directory: str) -> int:
             removed += 1
             logger.info("Removed disposable TTS output file: %s", name)
         except OSError as e:
-            logger.warning("Failed to remove disposable TTS output file %s: %s", name, e)
+            logger.warning(_("Failed to remove disposable TTS output file {0}: {1}").format(name, e))
 
     if removed:
         logger.info(

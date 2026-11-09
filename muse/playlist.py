@@ -22,6 +22,9 @@ from utils.app_info_cache import app_info_cache
 from utils.config import config
 from utils.globals import PlaylistSortType, HistoryType, TrackAttribute, TrackResult
 from utils.logging_setup import get_logger
+from utils.translations import I18N
+
+_ = I18N._
 
 logger = get_logger(__name__)
 
@@ -697,7 +700,7 @@ class Playlist:
             for _score, _position, tracks in scored:
                 reordered.extend(tracks)
         except Exception as e:
-            logger.warning(f"Affinity ordering failed, keeping the existing order: {e}")
+            logger.warning(_("Affinity ordering failed, keeping the existing order: {0}").format(e))
             return False
 
         self.sorted_tracks[start:end] = reordered
@@ -731,7 +734,7 @@ class Playlist:
         try:
             start = self._current_group_end(group_of, start)
         except Exception as e:
-            logger.warning(f"Could not find the end of the playing group, keeping the existing order: {e}")
+            logger.warning(_("Could not find the end of the playing group, keeping the existing order: {0}").format(e))
             return False
         return self.apply_affinity_ordering(group_of, start=start)
 
@@ -752,7 +755,7 @@ class Playlist:
                     values.append(value)
             return values
         except Exception as e:
-            logger.warning(f"Could not read the upcoming group values: {e}")
+            logger.warning(_("Could not read the upcoming group values: {0}").format(e))
             return []
 
     def group_attribute_name(self) -> str:
@@ -897,7 +900,7 @@ class Playlist:
             try:
                 sizes = dict(instance.get_group_sizes(column, values))
             except Exception as e:
-                logger.warning(f"Could not read library group sizes for {column}: {e}")
+                logger.warning(_("Could not read library group sizes for {0}: {1}").format(column, e))
         missing = {v for v in values if not sizes.get(v)}
         if missing:
             is_callable_attr = track_attr.startswith("get_")
@@ -945,7 +948,7 @@ class Playlist:
                     f"barely started and stay eligible"
                 )
         except Exception as e:
-            logger.warning(f"Could not apply completion exemptions for {track_attr}: {e}")
+            logger.warning(_("Could not apply completion exemptions for {0}: {1}").format(track_attr, e))
 
     def scour_playlist(self, track_attr, recently_played_attr_list, recently_played_check_count,
                        inclusion_chance=None):

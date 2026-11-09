@@ -233,7 +233,7 @@ class GenresData:
             return True, ""
         except Exception as e:
             error_msg = str(e)
-            logger.error("Error saving genre: %s", error_msg)
+            logger.error(_("Error saving genre: {0}").format(error_msg))
             try:
                 get_connection().rollback()
             except Exception:
@@ -259,7 +259,7 @@ class GenresData:
             return True, ""
         except Exception as e:
             error_msg = str(e)
-            logger.error("Error deleting genre: %s", error_msg)
+            logger.error(_("Error deleting genre: {0}").format(error_msg))
             try:
                 get_connection().rollback()
             except Exception:
@@ -270,7 +270,7 @@ class GenresData:
         if not isinstance(data_search, GenresDataSearch):
             raise TypeError('Genres data search must be of type GenresDataSearch')
         if not data_search.is_valid():
-            logger.warning('Invalid search query')
+            logger.warning(_("Invalid search query"))
             return data_search
 
         full_results = False

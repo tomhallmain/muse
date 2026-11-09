@@ -17,6 +17,9 @@ from typing import Any, Dict, Optional
 from utils.app_info_cache import app_info_cache
 from utils.config import config
 from utils.logging_setup import get_logger
+from utils.translations import I18N
+
+_ = I18N._
 
 logger = get_logger(__name__)
 
@@ -90,7 +93,7 @@ def load_entries() -> list:
         try:
             entries.append(WatchEntry.from_dict(d))
         except Exception as exc:
-            logger.warning("Skipping malformed watchlist entry: %s", exc)
+            logger.warning(_("Skipping malformed watchlist entry: {0}").format(exc))
     return entries
 
 
@@ -168,9 +171,8 @@ class WatchlistService:
             url = self._station_url(station)
             if not url:
                 logger.warning(
-                    "Cannot resolve stream URL for watchlist station %s; "
-                    "this poll thread will not start",
-                    uuid,
+                    _("Cannot resolve stream URL for watchlist station {0}; this poll thread "
+                      "will not start").format(uuid),
                 )
                 return
             try:
@@ -183,7 +185,7 @@ class WatchlistService:
                     ),
                 )
             except Exception:
-                logger.exception("Watchlist ICY poll thread failed for station %s", uuid)
+                logger.exception(_("Watchlist ICY poll thread failed for station {0}").format(uuid))
 
         t = threading.Thread(
             target=run,
@@ -199,7 +201,7 @@ class WatchlistService:
             from extensions.radio_browser import get_station_by_uuid
             return get_station_by_uuid(uuid)
         except Exception as exc:
-            logger.warning("Could not look up watchlist station %s: %s", uuid, exc)
+            logger.warning(_("Could not look up watchlist station {0}: {1}").format(uuid, exc))
         return None
 
     @staticmethod
@@ -211,7 +213,7 @@ class WatchlistService:
             raw = station.get("url_resolved") or station.get("url") or ""
             return resolve_stream_url(raw) if raw else ""
         except Exception as exc:
-            logger.warning("Could not resolve URL for watchlist station: %s", exc)
+            logger.warning(_("Could not resolve URL for watchlist station: {0}").format(exc))
         return ""
 
     def _get_novelty(self):
@@ -284,7 +286,7 @@ class WatchlistService:
                         artist, title, info.name, ", ".join(suggestion.signals))
             self._app_actions.show_radio_suggestion(suggestion)
         except Exception:
-            logger.exception("Novelty check failed for watchlist station %s", uuid)
+            logger.exception(_("Novelty check failed for watchlist station {0}").format(uuid))
 
     def switch_to_suggestion(self, suggestion: Any) -> None:
         """Switch playback to a suggested station, off the calling (UI) thread.
@@ -337,8 +339,7 @@ class WatchlistService:
             station = get_station_by_uuid(uuid)
             if not station:
                 logger.warning(
-                    "No station data returned for watchlist UUID %s; cannot switch",
-                    uuid,
+                    _("No station data returned for watchlist UUID {0}; cannot switch").format(uuid),
                 )
                 return
             raw_url = station.get("url_resolved") or station.get("url") or ""
@@ -361,7 +362,7 @@ class WatchlistService:
                 self._app_actions.start_play_callback(track=track)
         except Exception:
             logger.exception(
-                "Failed to switch playback to watchlist station %s", uuid
+                _("Failed to switch playback to watchlist station {0}").format(uuid)
             )
 
 

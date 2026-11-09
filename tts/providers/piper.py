@@ -43,6 +43,9 @@ from typing import Any, Dict, List, Optional, Tuple
 from tts.providers import BaseTTSProvider
 from utils.app_paths import configs_dir
 from utils.logging_setup import get_logger
+from utils.translations import I18N
+
+_ = I18N._
 
 logger = get_logger(__name__)
 
@@ -71,9 +74,9 @@ def _fetch_voices_index(cache_dir: Path) -> Dict[str, Any]:
             with cache_file.open(encoding="utf-8") as fh:
                 return json.load(fh)
         except Exception as exc:
-            logger.warning("Could not read cached voices.json: %s", exc)
+            logger.warning(_("Could not read cached voices.json: {0}").format(exc))
 
-    logger.info("Fetching Piper voices index from HuggingFace…")
+    logger.info(_("Fetching Piper voices index from HuggingFace…"))
     try:
         with urllib.request.urlopen(_VOICES_INDEX_URL, timeout=30) as resp:
             data = json.loads(resp.read().decode("utf-8"))
@@ -142,7 +145,7 @@ def _download_voice(
         if dest.is_file():
             logger.info("Piper: already cached %s", dest.name)
         else:
-            logger.info("Downloading Piper voice file: %s", dest.name)
+            logger.info(_("Downloading Piper voice file: {0}").format(dest.name))
             try:
                 urllib.request.urlretrieve(url, dest)
             except Exception as exc:
@@ -181,8 +184,7 @@ class PiperTTSProvider(BaseTTSProvider):
 
         if self.model_path and not os.path.isfile(self.model_path):
             logger.warning(
-                'Piper model file not found: "%s".',
-                self.model_path,
+                _('Piper model file not found: "{0}".').format(self.model_path),
             )
 
     # ------------------------------------------------------------------
@@ -204,7 +206,7 @@ class PiperTTSProvider(BaseTTSProvider):
         try:
             from piper.voice import PiperVoice
             self._voice = PiperVoice.load(str(resolved))
-            logger.info("Piper TTS loaded: %s", resolved.name)
+            logger.info(_("Piper TTS loaded: {0}").format(resolved.name))
         except Exception as exc:
             raise ImportError(
                 f"Failed to load Piper TTS from '{resolved}'. "

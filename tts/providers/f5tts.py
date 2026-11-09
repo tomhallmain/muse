@@ -20,6 +20,9 @@ from typing import Any, Dict, List, Optional
 
 from tts.providers import BaseTTSProvider
 from utils.logging_setup import get_logger
+from utils.translations import I18N
+
+_ = I18N._
 
 logger = get_logger(__name__)
 
@@ -40,9 +43,8 @@ class F5TTSProvider(BaseTTSProvider):
 
         if self.reference_audio and not os.path.isfile(self.reference_audio):
             logger.warning(
-                'F5-TTS reference audio not found: "%s". '
-                "Set f5tts_reference_audio in config to a valid WAV file path.",
-                self.reference_audio,
+                _('F5-TTS reference audio not found: "{0}". Set f5tts_reference_audio in '
+                  "config to a valid WAV file path.").format(self.reference_audio),
             )
 
     # ------------------------------------------------------------------
@@ -60,7 +62,7 @@ class F5TTSProvider(BaseTTSProvider):
         try:
             from f5_tts.api import F5TTS
             self._model = F5TTS(model_type=self.model_name)
-            logger.info("F5-TTS loaded: %s", self.model_name)
+            logger.info(_("F5-TTS loaded: {0}").format(self.model_name))
         except Exception as exc:
             raise ImportError(
                 "Failed to load F5-TTS. "

@@ -5,6 +5,9 @@ from time import time
 from typing import Optional, Dict
 
 from utils.logging_setup import get_logger
+from utils.translations import I18N
+
+_ = I18N._
 
 logger = get_logger(__name__)
 
@@ -63,7 +66,7 @@ class RunContext:
             self.skip_grouping = False
             self.skip_delay = True
         elif action == UserAction.SHUTDOWN_AFTER_TRACK:
-            logger.info("Shutdown scheduled after current track finishes.")
+            logger.info(_("Shutdown scheduled after current track finishes."))
             self.shutdown_after_track = True
 
         timestamp = datetime.fromtimestamp(self.interaction_times[action]).strftime('%Y-%m-%d %H:%M:%S')
@@ -101,5 +104,5 @@ class RunContext:
         if shutdown:
             self.update_action(UserAction.SHUTDOWN_AFTER_TRACK)
         else:
-            logger.info("Scheduled shutdown after track cancelled")
+            logger.info(_("Scheduled shutdown after track cancelled"))
             self.shutdown_after_track = False

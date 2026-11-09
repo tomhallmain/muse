@@ -66,14 +66,12 @@ class SearchWindow(SmartWindow):
                 else:
                     skip_count += 1
             else:
-                logger.warning("Invalid search removed: %s", search_json)
+                logger.warning(_("Invalid search removed: {0}").format(search_json))
         if skip_count > 0:
-            logger.warning("Skipped %s duplicate searches", skip_count)
+            logger.warning(_("Skipped {0} duplicate searches").format(skip_count))
         if len(SearchWindow.recent_searches) > SearchWindow.MAX_RECENT_SEARCHES:
             logger.warning(
-                "Limiting searches from %s to %s",
-                len(SearchWindow.recent_searches),
-                SearchWindow.MAX_RECENT_SEARCHES,
+                _("Limiting searches from {0} to {1}").format(len(SearchWindow.recent_searches), SearchWindow.MAX_RECENT_SEARCHES),
             )
             SearchWindow.recent_searches = SearchWindow.recent_searches[
                 : SearchWindow.MAX_RECENT_SEARCHES
@@ -90,9 +88,7 @@ class SearchWindow(SmartWindow):
                     seen_searches.add(library_data_search)
         if len(unique_searches) > SearchWindow.MAX_RECENT_SEARCHES:
             logger.warning(
-                "Limiting stored searches from %s to %s",
-                len(unique_searches),
-                SearchWindow.MAX_RECENT_SEARCHES,
+                _("Limiting stored searches from {0} to {1}").format(len(unique_searches), SearchWindow.MAX_RECENT_SEARCHES),
             )
             unique_searches = unique_searches[: SearchWindow.MAX_RECENT_SEARCHES]
         json_searches = [s.to_json() for s in unique_searches]
@@ -108,7 +104,7 @@ class SearchWindow(SmartWindow):
                 )
                 if track:
                     return track
-                logger.info("No track found by ID, falling back to search")
+                logger.info(_("No track found by ID, falling back to search"))
             library_data.do_search(library_data_search, rescan=False)
             results = library_data_search.get_results()
             if results:
@@ -125,7 +121,7 @@ class SearchWindow(SmartWindow):
                 raise ValueError(_("No matching tracks found"))
             return results[0]
         except Exception as e:
-            logger.error("Error in find_track: %s", str(e))
+            logger.error(_("Error in find_track: {0}").format(str(e)))
             raise
 
     @staticmethod
@@ -528,7 +524,7 @@ class SearchWindow(SmartWindow):
                     semantic_recall=True,
                 )
             except Exception as e:
-                logger.error("Error in search thread: %s", e)
+                logger.error(_("Error in search thread: {0}").format(e))
                 self._search_error.emit(str(e))
 
         Utils.start_thread(search_thread, use_asyncio=False)

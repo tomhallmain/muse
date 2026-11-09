@@ -19,6 +19,9 @@ import requests
 from utils.config import config
 from utils.app_paths import configs_dir
 from utils.logging_setup import get_logger
+from utils.translations import I18N
+
+_ = I18N._
 
 logger = get_logger(__name__)
 
@@ -223,7 +226,7 @@ class LastFmReadAPI:
         try:
             response = self._session.get(API_ROOT, params=query, timeout=30)
         except requests.RequestException as exc:
-            logger.error("Last.fm request failed for %s: %s", method, exc)
+            logger.error(_("Last.fm request failed for {0}: {1}").format(method, exc))
             raise LastFmAPIError(str(exc)) from exc
 
         try:

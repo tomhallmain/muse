@@ -234,7 +234,7 @@ class InstrumentsData:
             return True, ""
         except Exception as e:
             error_msg = str(e)
-            logger.error("Error saving instrument: %s", error_msg)
+            logger.error(_("Error saving instrument: {0}").format(error_msg))
             try:
                 get_connection().rollback()
             except Exception:
@@ -260,7 +260,7 @@ class InstrumentsData:
             return True, ""
         except Exception as e:
             error_msg = str(e)
-            logger.error("Error deleting instrument: %s", error_msg)
+            logger.error(_("Error deleting instrument: {0}").format(error_msg))
             try:
                 get_connection().rollback()
             except Exception:
@@ -271,7 +271,7 @@ class InstrumentsData:
         if not isinstance(data_search, InstrumentsDataSearch):
             raise TypeError('Instruments data search must be of type InstrumentsDataSearch')
         if not data_search.is_valid():
-            logger.warning('Invalid search query')
+            logger.warning(_("Invalid search query"))
             return data_search
 
         full_results = False

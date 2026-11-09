@@ -111,17 +111,11 @@ class Muse:
         if not unresolved:
             return
         logger.warning(
-            "Detected %s unresolved topic failure(s) from history:",
-            len(unresolved),
+            _("Detected {0} unresolved topic failure(s) from history:").format(len(unresolved)),
         )
         for item in unresolved:
             logger.warning(
-                " - Topic '%s' last failed at %s (type=%s, consecutive_failures=%s, last_success=%s)",
-                item.get("topic_translation") or item.get("topic_value"),
-                item.get("last_failure_timestamp") or "unknown",
-                item.get("last_failure_type") or "unknown",
-                item.get("consecutive_failures", 0),
-                item.get("last_success_timestamp") or "never",
+                _(" - Topic '{0}' last failed at {1} (type={2}, consecutive_failures={3}, last_success={4})").format(item.get("topic_translation") or item.get("topic_value"), item.get("last_failure_timestamp") or "unknown", item.get("last_failure_type") or "unknown", item.get("consecutive_failures", 0), item.get("last_success_timestamp") or "never"),
             )
 
     def get_library_data(self):
@@ -238,9 +232,9 @@ class Muse:
         if self._schedule != active_schedule or self._last_checked_schedules is None:
             is_startup = self._last_checked_schedules is None
             if is_startup:
-                logger.warning(f"Starting with DJ {active_schedule.voice} - until {active_schedule.next_end(now)}")
+                logger.warning(_("Starting with DJ {0} - until {1}").format(active_schedule.voice, active_schedule.next_end(now)))
             else:
-                logger.warning(f"Switching DJ to {active_schedule.voice} from {self._schedule.voice} - until {active_schedule.next_end(now)}")
+                logger.warning(_("Switching DJ to {0} from {1} - until {2}").format(active_schedule.voice, self._schedule.voice, active_schedule.next_end(now)))
             self.change_voice(active_schedule.voice, get_upcoming_tracks_callback, skip_intro=is_startup)
         else:
             logger.info("No change in schedule")
@@ -261,8 +255,8 @@ class Muse:
                     self.prepare_to_say(_("Hello, I'm {0}").format(persona.name), locale=persona.language_code)
                 persona.last_hello_time = time.time()
         except Exception as e:
-            logger.error(f"Failed to generate introduction: {e}")
-            logger.error(f"Traceback: {traceback.format_exc()}")
+            logger.error(_("Failed to generate introduction: {0}").format(e))
+            logger.error(_("Traceback: {0}").format(traceback.format_exc()))
             self.prepare_to_say(_("Hello, I'm your DJ"), locale=I18N.locale)
 
     def change_voice(self, voice_name, get_upcoming_tracks_callback=None, *, skip_intro: bool = False):
@@ -296,14 +290,14 @@ class Muse:
 
                 self.wiki_search = WikiOpenSearchAPI(language_code=persona.language_code)
             else:
-                logger.warning(f"No persona found for voice {voice_name}, using default voice")
+                logger.warning(_("No persona found for voice {0}, using default voice").format(voice_name))
                 self.voice = Voice(voice_name, run_context=self._run_context)
                 if self.ui_callbacks and self.ui_callbacks.update_dj_persona_callback is not None:
                     self.ui_callbacks.update_dj_persona_callback("")
                 self.prepare_to_say(_("Hello, I'm your DJ"), locale=I18N.locale)
 
         except Exception as e:
-            logger.error(f"Failed to change voice to {voice_name}: {e}")
+            logger.error(_("Failed to change voice to {0}: {1}").format(voice_name, e))
             traceback.print_exc()
             self.voice = Voice(voice_name, run_context=self._run_context)
             self.prepare_to_say(_("Hello"), locale=I18N.locale)
@@ -509,7 +503,7 @@ class Muse:
             topic = Prompter.get_oldest_topic(excluded_topics=excluded_topics)
             _fallback_attempts += 1
             if _fallback_attempts > len(Topic):
-                logger.warning("get_topic: all topics excluded, returning None")
+                logger.warning(_("get_topic: all topics excluded, returning None"))
                 return None
 
         return topic
@@ -597,7 +591,7 @@ class Muse:
         elif topic == Topic.LANGUAGE_LEARNING:
             func = self.teach_language
         else:
-            logger.warning(f"Unhandled topic: {topic}")
+            logger.warning(_("Unhandled topic: {0}").format(topic))
             return False
 
         topic_succeeded = self._wrap_function(spot_profile, topic, func, args, kwargs)
@@ -838,7 +832,7 @@ class Muse:
                 with open(dict_path, encoding="utf-8") as f:
                     cls._dict_words = [w for w in (line.strip() for line in f) if 4 <= len(w) <= 12 and w.isalpha()]
             except Exception as e:
-                logger.warning("Could not load dictionary for language learning prompt: %s", e)
+                logger.warning(I18N._("Could not load dictionary for language learning prompt: {0}").format(e))
                 cls._dict_words = ["music", "history", "nature", "travel"]
         for _ in range(10):
             word = random.choice(cls._dict_words)
@@ -914,7 +908,7 @@ class Muse:
         
         # If language is English or not supported, use English
         if language_code == "en" or language_code not in SUPPORTED_LANGUAGE_CODES:
-            logger.warning(f"No translation available for language {language_code} topic {topic}, using English")
+            logger.warning(_("No translation available for language {0} topic {1}, using English").format(language_code, topic))
             return prompt
         
         try:
@@ -927,7 +921,7 @@ class Muse:
             else:
                 prompt = self.prompter.get_prompt_with_language(topic, language_code)
         except Exception as e:
-            logger.info(f"Failed to translate prompt for topic {topic} into language {language_code} with error: {e}")
+            logger.info(_("Failed to translate prompt for topic {0} into language {1} with error: {2}").format(topic, language_code, e))
         return prompt
 
     def generate_text(self, prompt, json_key=None, include_time_context=True, interrupt_on_skip=True,
@@ -939,7 +933,7 @@ class Muse:
         
         # If we have no persona/context, use language-specific default prompt
         if not system_prompt:
-            logger.warning("No system prompt available, using default prompt")
+            logger.warning(_("No system prompt available, using default prompt"))
             language_code = Utils.get_default_user_language()
             system_prompt = self.prompter.get_prompt("default_system_prompt", language_code)
         
@@ -1106,7 +1100,7 @@ class Muse:
         if result:
             self.memory.get_persona_manager().update_context(result)
         else:
-            logger.warning(f"Result was None for {persona.name} initial persona prompt, possibly due to user skip.")
+            logger.warning(_("Result was None for {0} initial persona prompt, possibly due to user skip.").format(persona.name))
             return None, None
 
         # Get starting tracks if callback is provided
@@ -1120,7 +1114,7 @@ class Muse:
                 logger.info(f"Starting intro with tracks:\n{upcoming_tracks_str}")
                 starting_tracks_str = _("Starting tracks:") + "\n" + upcoming_tracks_str
             except Exception as e:
-                logger.info(f"Error getting upcoming tracks: {e}")
+                logger.info(_("Error getting upcoming tracks: {0}").format(e))
 
         # Get the appropriate introduction prompt
         template_name = intro_type.get_template_name()

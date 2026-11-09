@@ -18,6 +18,9 @@ from dataclasses import dataclass
 from typing import Any, Callable, Deque, Dict, Iterable, List, Optional, Set
 
 from utils.logging_setup import get_logger
+from utils.translations import I18N
+
+_ = I18N._
 
 logger = get_logger(__name__)
 
@@ -189,7 +192,7 @@ class LibraryIndex:
         try:
             works = list(self._works_for(composer_name) or [])
         except Exception as e:
-            logger.warning(f"Could not read works for {composer_name}: {e}")
+            logger.warning(_("Could not read works for {0}: {1}").format(composer_name, e))
             return None
         matched = [w for w in works if w.matches_title(title)]
         if not matched:
@@ -207,7 +210,7 @@ class LibraryIndex:
         try:
             return list(self._infer_composers(artist or "", title or ""))
         except Exception as e:
-            logger.warning(f"Composer inference failed for '{artist} - {title}': {e}")
+            logger.warning(_("Composer inference failed for '{0} - {1}': {2}").format(artist, title, e))
             return []
 
 
@@ -284,7 +287,7 @@ class NoveltyEvaluator:
             try:
                 self._stations[uuid] = _StationState(float(record["first_seen"]), record.get("titles", []), bound)
             except Exception as e:
-                logger.warning(f"Skipping malformed seen-titles record for station {uuid}: {e}")
+                logger.warning(_("Skipping malformed seen-titles record for station {0}: {1}").format(uuid, e))
 
     def _save_stations(self) -> None:
         if self._cache is None:
@@ -366,7 +369,7 @@ class NoveltyEvaluator:
             if Blacklist.get_violation_item(f"{artist} - {title}") is not None:
                 return True
         except Exception as e:
-            logger.warning(f"Blacklist check skipped for radio title: {e}")
+            logger.warning(_("Blacklist check skipped for radio title: {0}").format(e))
         return False
 
     # ── Evaluation ─────────────────────────────────────────────────────────────
@@ -376,7 +379,7 @@ class NoveltyEvaluator:
         try:
             return self._evaluate(entry, station, artist or "", title or "")
         except Exception as e:
-            logger.error(f"Novelty evaluation failed for '{artist} - {title}': {e}")
+            logger.error(_("Novelty evaluation failed for '{0} - {1}': {2}").format(artist, title, e))
             return None
 
     def _evaluate(self, entry: Any, station: StationInfo, artist: str, title: str) -> Optional[Suggestion]:
@@ -546,7 +549,7 @@ class AffinityScorer:
                 familiarity = self._similarity(vectors[0], self._familiarity_vector) or 0.0
             return _unit(relevance) * (1.0 - _unit(familiarity))
         except Exception as e:
-            logger.warning(f"Affinity scoring of a radio title failed: {e}")
+            logger.warning(_("Affinity scoring of a radio title failed: {0}").format(e))
             return None
 
 

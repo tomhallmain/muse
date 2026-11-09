@@ -12,6 +12,9 @@ from typing import Callable, Tuple
 from urllib.parse import urlparse
 
 from utils.logging_setup import get_logger
+from utils.translations import I18N
+
+_ = I18N._
 
 logger = get_logger(__name__)
 
@@ -140,7 +143,7 @@ def poll_icy_metadata(
                     try:
                         on_title_change(artist, title)
                     except Exception:
-                        logger.exception("on_title_change callback raised")
+                        logger.exception(_("on_title_change callback raised"))
 
         except EOFError as exc:
             if stop_event.is_set():
@@ -150,7 +153,7 @@ def poll_icy_metadata(
             if stop_event.is_set():
                 break
             logger.warning(
-                "ICY connection error (%s); reconnecting in %.0fs", exc, delay
+                _("ICY connection error ({0}); reconnecting in {1:.0f}s").format(exc, delay)
             )
         finally:
             if conn is not None:
