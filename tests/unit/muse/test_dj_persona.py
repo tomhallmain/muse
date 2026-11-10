@@ -118,3 +118,15 @@ class TestSerializationRoundTrip:
         persona = DJPersona.from_dict(legacy_dict)
         assert persona.can_teach_languages == ["*"]
         assert persona.prompt_overrides == {}
+
+    def test_unpickle_fills_fields_missing_from_old_pickle(self):
+        # MuseMemory pickles personas; unpickling skips __init__, so a persona
+        # saved before these fields existed must get their defaults on load.
+        import pickle
+        persona = _make_persona()
+        del persona.__dict__["can_teach_languages"]
+        del persona.__dict__["prompt_overrides"]
+        restored = pickle.loads(pickle.dumps(persona))
+        assert restored.can_teach_languages == ["*"]
+        assert restored.prompt_overrides == {}
+        assert restored.teachable_language_codes(["fr"]) == ["fr"]

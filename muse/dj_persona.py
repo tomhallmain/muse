@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import MISSING, dataclass, field, fields
 from typing import List, Dict, Optional, Tuple, Any
 from pathlib import Path
 import time
@@ -164,6 +164,22 @@ class DJPersona:
                 self.artwork_paths = None
             else:
                 self.artwork_paths = test_paths
+
+    def __setstate__(self, state: Dict[str, Any]) -> None:
+        # Unpickling (MuseMemory persists the persona manager) skips __init__,
+        # so a persona saved before a field existed would lack it entirely.
+        self.__dict__.update(state)
+        for f in fields(self):
+            if f.name in self.__dict__:
+                continue
+            if f.default is not MISSING:
+                setattr(self, f.name, f.default)
+            elif f.default_factory is not MISSING:
+                setattr(self, f.name, f.default_factory())
+        if self.can_teach_languages is None:
+            self.can_teach_languages = ["*"]
+        if self.prompt_overrides is None:
+            self.prompt_overrides = {}
 
     def update_context(self, new_context: List[int]) -> None:
         """Update the context with a new list of integers."""
