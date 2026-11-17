@@ -170,18 +170,38 @@ def _remove_empty_parents(path: str, stop_at: str) -> None:
             break
 
 
-def _find_sidecar(filepath: str) -> Optional[str]:
+SIDECAR_ARTWORK_EXTENSIONS = ('.webp', '.jpg', '.jpeg', '.png')
+
+
+def find_artwork_sidecar(filepath: str) -> Optional[str]:
+    """The thumbnail a downloader saved beside *filepath* under the same stem, if any."""
     stem = os.path.splitext(filepath)[0]
-    for ext in ('.webp', '.jpg', '.jpeg', '.png'):
+    for ext in SIDECAR_ARTWORK_EXTENSIONS:
         p = stem + ext
         if os.path.exists(p):
             return p
     return None
 
 
+def read_sidecar_artwork(sidecar: str) -> bytes:
+    """The sidecar image's bytes, ready to embed: WebP is converted to JPEG when Pillow is present."""
+    with open(sidecar, "rb") as fh:
+        data = fh.read()
+    if sidecar.lower().endswith(".webp"):
+        try:
+            import io
+            from PIL import Image
+            buf = io.BytesIO()
+            Image.open(io.BytesIO(data)).convert("RGB").save(buf, format="JPEG")
+            data = buf.getvalue()
+        except ImportError:
+            logger.warning(_("Pillow not available; embedding WebP as-is"))
+    return data
+
+
 def embed_artwork_from_sidecar(filepath: str) -> bool:
     from library_data.media_track import MediaTrack
-    sidecar = _find_sidecar(filepath)
+    sidecar = find_artwork_sidecar(filepath)
     track = MediaTrack(filepath)
     art = track.get_album_artwork()
     try:
@@ -197,17 +217,7 @@ def embed_artwork_from_sidecar(filepath: str) -> bool:
     if not sidecar:
         return False
     try:
-        with open(sidecar, "rb") as fh:
-            data = fh.read()
-        if sidecar.lower().endswith(".webp"):
-            try:
-                import io
-                from PIL import Image
-                buf = io.BytesIO()
-                Image.open(io.BytesIO(data)).convert("RGB").save(buf, format="JPEG")
-                data = buf.getvalue()
-            except ImportError:
-                logger.warning(_("Pillow not available; embedding WebP as-is"))
+        data = read_sidecar_artwork(sidecar)
         track.update_metadata({"artwork": data})
         return True
     except Exception as e:

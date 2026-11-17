@@ -20454,6 +20454,23 @@
         "works": [],
         "notes": {}
     },
+    "Andrew Blackhall": {
+        "id": 15583,
+        "name": "Andrew Blackhall",
+        "indicators": [
+            "Andrew Blackhall",
+            "Blackhall"
+        ],
+        "start_date": 1536,
+        "end_date": 1609,
+        "dates_are_lifespan": true,
+        "dates_uncertain": true,
+        "genres": [
+            "Renaissance"
+        ],
+        "works": [],
+        "notes": {}
+    },
     "Jodie Blackshaw": {
         "id": 10472,
         "name": "Jodie Blackshaw",
@@ -30442,7 +30459,8 @@
         "id": 6137,
         "name": "Francisco Lopez Capillas",
         "indicators": [
-            "Francisco Lopez Capillas"
+            "Francisco Lopez Capillas",
+            "Francisco L\u00f3pez Capillas"
         ],
         "start_date": 1615,
         "end_date": 1673,
@@ -36108,6 +36126,24 @@
         "dates_are_lifespan": false,
         "dates_uncertain": true,
         "genres": [],
+        "works": [],
+        "notes": {}
+    },
+    "John Clerk of Penicuik": {
+        "id": 15584,
+        "name": "John Clerk of Penicuik",
+        "indicators": [
+            "John Clerk of Penicuik",
+            "Sir John Clerk of Penicuik",
+            "Clerk of Penicuik"
+        ],
+        "start_date": 1676,
+        "end_date": 1755,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "Baroque"
+        ],
         "works": [],
         "notes": {}
     },
@@ -93234,7 +93270,8 @@
         "indicators": [
             "Jan Anton\u00edn Kozeluh",
             "Jan Antonin Kozeluh",
-            "Kozeluh"
+            "Kozeluh",
+            "Jan Anton\u00edn Ko\u017eeluh"
         ],
         "start_date": -1,
         "end_date": -1,
@@ -95219,7 +95256,8 @@
         "id": 7316,
         "name": "Friedrich Ludwig Aemilius Kunzen",
         "indicators": [
-            "Friedrich Ludwig Aemilius Kunzen"
+            "Friedrich Ludwig Aemilius Kunzen",
+            "Friedrich Ludwig \u00c6milius Kunzen"
         ],
         "start_date": 1761,
         "end_date": 1817,
@@ -96689,13 +96727,17 @@
         "id": 12587,
         "name": "Francesco Lambardo",
         "indicators": [
-            "Francesco Lambardo"
+            "Francesco Lambardo",
+            "Francesco Lambardi",
+            "Lambardi"
         ],
-        "start_date": -1,
-        "end_date": -1,
-        "dates_are_lifespan": false,
+        "start_date": 1587,
+        "end_date": 1642,
+        "dates_are_lifespan": true,
         "dates_uncertain": true,
-        "genres": [],
+        "genres": [
+            "Baroque"
+        ],
         "works": [],
         "notes": {
             "notiz": "Toccata, Partite sopra Fidele; meist Francesco Lambardi geschrieben"
@@ -101675,6 +101717,22 @@
             "notiz": "amerikanischer Komponist"
         }
     },
+    "Antimo Liberati": {
+        "id": 15580,
+        "name": "Antimo Liberati",
+        "indicators": [
+            "Antimo Liberati"
+        ],
+        "start_date": 1617,
+        "end_date": 1692,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "Baroque"
+        ],
+        "works": [],
+        "notes": {}
+    },
     "John Liberatore": {
         "id": 13475,
         "name": "John Liberatore",
@@ -105275,7 +105333,9 @@
         "indicators": [
             "Jean-Baptiste Lully",
             "Lully",
-            "Jean Baptiste Lully"
+            "Jean Baptiste Lully",
+            "Lulli",
+            "Giovanni Battista Lulli"
         ],
         "start_date": 1632,
         "end_date": 1687,
@@ -107919,6 +107979,24 @@
         "dates_are_lifespan": true,
         "dates_uncertain": false,
         "genres": [],
+        "works": [],
+        "notes": {}
+    },
+    "Michio Mamiya": {
+        "id": 15581,
+        "name": "Michio Mamiya",
+        "indicators": [
+            "Michio Mamiya",
+            "Mamiya"
+        ],
+        "start_date": 1929,
+        "end_date": -1,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "Modern",
+            "Contemporary"
+        ],
         "works": [],
         "notes": {}
     },
@@ -110806,7 +110884,8 @@
             "Ma\u0161ek",
             "Masek",
             "Vincenc V\u00e1clav Masek",
-            "Vincenc Vaclav Masek"
+            "Vincenc Vaclav Masek",
+            "Vincenc V\u00e1clav Ma\u0161ek"
         ],
         "start_date": -1,
         "end_date": -1,
@@ -127343,7 +127422,8 @@
         "id": 1098,
         "name": "Ferdinando Paer",
         "indicators": [
-            "Ferdinando Paer"
+            "Ferdinando Paer",
+            "Ferdinando Pa\u00ebr"
         ],
         "start_date": 1771,
         "end_date": 1839,
@@ -138527,7 +138607,8 @@
             "Soler y Ramos",
             "Soler i Ramos",
             "Antonio Soler",
-            "Soler"
+            "Soler",
+            "Antonio Soler y Ramos"
         ],
         "start_date": 1729,
         "end_date": 1783,
@@ -159632,7 +159713,8 @@
         "name": "Vicente Martin y Soler",
         "indicators": [
             "Vicente Martin y Soler",
-            "Martin y Soler, Vicente"
+            "Martin y Soler, Vicente",
+            "Vicente Mart\u00edn y Soler"
         ],
         "start_date": 1754,
         "end_date": 1806,
@@ -172628,6 +172710,21 @@
         "works": [],
         "notes": {}
     },
+    "Edmund Turges": {
+        "id": 15582,
+        "name": "Edmund Turges",
+        "indicators": [
+            "Edmund Turges",
+            "Turges"
+        ],
+        "start_date": 1450,
+        "end_date": 1500,
+        "dates_are_lifespan": true,
+        "dates_uncertain": true,
+        "genres": [],
+        "works": [],
+        "notes": {}
+    },
     "Joaqu\u00edn Turina": {
         "id": 1518,
         "name": "Joaqu\u00edn Turina",
@@ -174325,7 +174422,8 @@
         "name": "Francisco Valls",
         "indicators": [
             "Francisco Valls",
-            "Francesc Valls i Galan"
+            "Francesc Valls i Galan",
+            "Francesc Valls"
         ],
         "start_date": 1665,
         "end_date": 1747,
@@ -188951,7 +189049,8 @@
         "name": "Jakob Francisek Zupan",
         "indicators": [
             "Jakob Francisek Zupan",
-            "Zupan"
+            "Zupan",
+            "Jakob Fran\u010di\u0161ek Zupan"
         ],
         "start_date": -1,
         "end_date": -1,
