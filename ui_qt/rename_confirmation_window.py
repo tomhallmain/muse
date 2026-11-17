@@ -100,6 +100,8 @@ class RenameConfirmationWindow(QDialog):
         }
         changed = {}
         for key, (label, old_val) in display_map.items():
+            if key not in m:
+                continue  # a field left out is not written, so it does not change
             new_val = str(m.get(key, "")) if m.get(key) is not None else ""
             # Numeric sentinels (-1, None) normalised to ""
             if new_val in ("-1", "None"):

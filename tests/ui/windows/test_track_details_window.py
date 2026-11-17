@@ -30,6 +30,23 @@ class TestTrackDetailsWindow:
         assert track.get_track_length() > 0
         win.close()
 
+    def test_an_unchanged_composer_is_not_written_back(
+        self, qapp, qt_master, mock_app_actions, audio_library_media_tracks
+    ):
+        """The field shows the resolved composer name, which can differ from the file's
+        tag; saving another field must not overwrite the tag with it."""
+        from ui_qt.track_details_window import TrackDetailsWindow
+
+        win = TrackDetailsWindow(qt_master, mock_app_actions, audio_library_media_tracks[0])
+        process_events_for(0.3)
+        win.title_edit.setText("Zz Changed Title")
+        metadata, errors = win._collect_metadata()
+        assert not errors
+        assert "composer" not in metadata
+        win.composer_edit.setText("Zz Edited Composer")
+        assert win._collect_metadata()[0]["composer"] == "Zz Edited Composer"
+        win.close()
+
     def test_reload_from_file_replaces_cached_values(
         self, qapp, qt_master, mock_app_actions, audio_library_media_tracks, monkeypatch
     ):

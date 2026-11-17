@@ -402,6 +402,11 @@ class TrackDetailsWindow(SmartWindow):
             "discnumber":  self.discnumber_edit.text().strip(),
             "totaldiscs":  self.totaldiscs_edit.text().strip(),
         }
+        # The field shows track.composer, the name resolved from the composer data,
+        # which can differ from the file's tag; write it only when the user changed it.
+        track = TrackDetailsWindow.AUDIO_TRACK
+        if track is not None and metadata["composer"] == (track.composer or "").strip():
+            del metadata["composer"]
         errors = []
         for field, value in numeric_fields.items():
             ok, result = self.validate_numeric_field(value, field)

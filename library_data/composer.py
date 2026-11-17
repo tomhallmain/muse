@@ -416,6 +416,7 @@ class ComposersData:
         # plenty of code paths never read composer data at all.
         self.__composers = None
         self._tag_index = None
+        self._tag_resolutions = {}
 
     @property
     def _composers(self):
@@ -809,6 +810,7 @@ class ComposersData:
 
     def _invalidate_tag_index(self):
         self._tag_index = None
+        self._tag_resolutions = {}
 
     def _composer_tag_index(self):
         """(forms, names): folded names and indicators -> composer names, and folded names alone."""
@@ -847,14 +849,24 @@ class ComposersData:
         name, as in the ", "-joined values this app derives itself; otherwise it
         is read as "Surname, given names".
         """
-        tag = self._TRAILING_PARENTHESIS.sub("", (tag or "").strip())
-        if not tag:
-            return [], self.TAG_UNMATCHED
-        names, how = self._resolve_without_parenthesis(tag)
-        words = NameOps.fold(tag).split()
+        if tag in self._tag_resolutions:
+            names, how = self._tag_resolutions[tag]
+            return list(names), how
+        value = self._TRAILING_PARENTHESIS.sub("", (tag or "").strip())
+        names, how = self._resolve_without_parenthesis(value) if value else ([], self.TAG_UNMATCHED)
+        words = NameOps.fold(value).split()
         if how == self.TAG_UNMATCHED and words and words[0] in self._PLACEHOLDER_WORDS:
-            return [], self.TAG_PLACEHOLDER
-        return names, how
+            names, how = [], self.TAG_PLACEHOLDER
+        self._tag_resolutions[tag] = (tuple(names), how)
+        return list(names), how
+
+    def canonical_composer(self, tag):
+        """The composer names a tag refers to, joined by ", ", or the tag unchanged
+        when it names no composer for certain (ambiguous, placeholder, unmatched)."""
+        names, how = self.resolve_composer_tag(tag)
+        if how in (self.TAG_DIRECT, self.TAG_INVERTED, self.TAG_LIST) and names:
+            return ", ".join(names)
+        return tag
 
     def _resolve_without_parenthesis(self, tag):
         how, names = self._lookup_tag_part(tag)

@@ -66,6 +66,18 @@ except ImportError as e:
 
 
 
+def _canonical_composer(value):
+    """*value* with the composers it names for certain replaced by their names in the
+    composer data ("Bach, Johann Sebastian (1685-1750)" -> "Johann Sebastian Bach")."""
+    if not value:
+        return value
+    try:
+        return composers_data.canonical_composer(value)
+    except Exception as e:
+        logger.debug("Could not resolve composer %r: %s", value, e)
+        return value
+
+
 def has_video_stream(file_path):
     media_info = MediaInfo.parse(file_path)
     for track in media_info.tracks:
@@ -373,7 +385,9 @@ class MediaTrack:
                 self.searchable_artist = Utils.ascii_normalize(self.artist.lower())
             if self.album is not None:
                 self.searchable_album = Utils.ascii_normalize(self.album.lower())
-            if self.composer is None:
+            if self.composer is not None:
+                self.composer = _canonical_composer(self.composer)
+            else:
                 try:
                     composers = composers_data.get_composers(self)
                     if len(composers) > 0:
@@ -407,7 +421,7 @@ class MediaTrack:
         track.albumartist = row["albumartist"]
         track.album = row["album"]
         track.album_from_metadata = bool(row["album_from_metadata"])
-        track.composer = row["composer"]
+        track.composer = _canonical_composer(row["composer"])
         track.tracknumber = row["tracknumber"] if row["tracknumber"] is not None else -1
         track.totaltracks = row["totaltracks"] if row["totaltracks"] is not None else -1
         track.discnumber = row["discnumber"] if row["discnumber"] is not None else -1

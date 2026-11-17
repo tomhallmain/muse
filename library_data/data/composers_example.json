@@ -104042,25 +104042,12 @@
         "name": "Carl Loewe",
         "indicators": [
             "Carl Loewe",
-            "Loewe"
+            "Loewe",
+            "Johann Carl Loewe",
+            "Johann Carl Gottfried Loewe"
         ],
         "start_date": 1796,
         "end_date": 1869,
-        "dates_are_lifespan": true,
-        "dates_uncertain": false,
-        "genres": [],
-        "works": [],
-        "notes": {}
-    },
-    "Johann Carl Loewe": {
-        "id": 9645,
-        "name": "Johann Carl Loewe",
-        "indicators": [
-            "Johann Carl Loewe",
-            "Loewe"
-        ],
-        "start_date": -1,
-        "end_date": -1,
         "dates_are_lifespan": true,
         "dates_uncertain": false,
         "genres": [],

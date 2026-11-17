@@ -453,5 +453,14 @@
         "value": {
             "dates_uncertain": true
         }
+    },
+    {
+        "id": "2026-11-17-merge-johann-carl-loewe",
+        "date": "2026-11-17",
+        "reason": "Duplicate entry for the same composer (Johann Carl Gottfried Loewe, 1796-1869); the seed keeps \"Carl Loewe\" and lists \"Johann Carl Loewe\" among its indicators.",
+        "table": "composers",
+        "op": "merge_into",
+        "name": "Johann Carl Loewe",
+        "value": "Carl Loewe"
     }
 ]

@@ -328,3 +328,30 @@ class TestLoadEmbeddedArtwork:
         track = _reader_track(monkeypatch, music_tag_data=b"from-file")
         track.artwork = b"cached"
         assert track.load_embedded_artwork() == b"cached"
+
+
+def _cached_row(composer):
+    return {
+        "filepath": "/music/artist/album/track.mp3", "parent_filepath": None, "title": "Track",
+        "tracktitle": None, "artist": "Some Artist", "albumartist": None, "album": "Some Album",
+        "album_from_metadata": 1, "composer": composer, "tracknumber": None, "totaltracks": None,
+        "discnumber": None, "totaldiscs": None, "genre": None, "year": None, "compilation": 0,
+        "compilation_name": None, "mean_volume": None, "max_volume": None, "length": None,
+        "form": None, "instrument": None, "is_video": None,
+    }
+
+
+@pytest.mark.parametrize("stored, expected", [
+    ("Testbach, Zz Johann (1685-1750)", "Zz Johann Testbach"),
+    ("Anonymous", "Anonymous"),
+    ("Zz Nobody Known", "Zz Nobody Known"),
+])
+def test_a_cached_composer_value_resolves_to_the_composer_name(stored, expected):
+    import library_data.media_track as media_track
+    from library_data.composer import Composer
+
+    success, error = media_track.composers_data.save_composer(Composer(None, "Zz Johann Testbach"))
+    assert success, error
+    track = MediaTrack.from_db_row(_cached_row(stored))
+    assert track.composer == expected
+    assert track.searchable_composer == expected.lower()
