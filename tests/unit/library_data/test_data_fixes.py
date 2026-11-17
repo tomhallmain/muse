@@ -199,6 +199,42 @@ class TestRemovalFixes:
         assert ComposersData().get_data("Zz Target").genres == ["codex"]
 
 
+def _dates(name, value, old=None, fix_id="dates-1"):
+    fix = {"id": fix_id, "table": "composers", "op": "set_dates", "name": name, "value": value}
+    if old is not None:
+        fix["from"] = old
+    return fix
+
+
+@pytest.mark.unit
+class TestDateFixes:
+    def test_dates_still_as_recorded_are_corrected(self, fixes):
+        fixes()
+        _add(ComposersData(), "Zz Target", start_date=1619, end_date=1663)
+        fixes(_dates("Zz Target", {"start_date": 1619, "end_date": 1677},
+                     old={"start_date": 1619, "end_date": 1663}))
+        composer = ComposersData().get_data("Zz Target")
+        assert (composer.start_date, composer.end_date) == (1619, 1677)
+        assert _recorded() == {"dates-1": data_fixes.APPLIED}
+
+    def test_dates_edited_since_are_left_alone(self, fixes):
+        fixes()
+        _add(ComposersData(), "Zz Target", start_date=1620, end_date=1680)
+        fixes(_dates("Zz Target", {"start_date": 1619, "end_date": 1677},
+                     old={"start_date": 1619, "end_date": 1663}))
+        composer = ComposersData().get_data("Zz Target")
+        assert (composer.start_date, composer.end_date) == (1620, 1680)
+        assert _recorded() == {"dates-1": data_fixes.TARGET_CHANGED}
+
+    def test_dates_already_correct_are_recorded_as_such(self, fixes):
+        fixes()
+        _add(ComposersData(), "Zz Target", start_date=1619, end_date=1677)
+        fixes(_dates("Zz Target", {"start_date": 1619, "end_date": 1677},
+                     old={"start_date": 1619, "end_date": 1663}))
+        ComposersData().get_composer_names()
+        assert _recorded() == {"dates-1": data_fixes.ALREADY_PRESENT}
+
+
 @pytest.mark.unit
 class TestLoadFixes:
     def test_a_missing_file_means_no_fixes(self, monkeypatch, tmp_path):

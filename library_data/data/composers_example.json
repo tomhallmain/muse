@@ -4972,6 +4972,20 @@
         "works": [],
         "notes": {}
     },
+    "Francesco d'Ana": {
+        "id": 15598,
+        "name": "Francesco d'Ana",
+        "indicators": [
+            "Francesco d'Ana"
+        ],
+        "start_date": 1450,
+        "end_date": 1502,
+        "dates_are_lifespan": true,
+        "dates_uncertain": true,
+        "genres": [],
+        "works": [],
+        "notes": {}
+    },
     "Juan de Anchieta": {
         "id": 5397,
         "name": "Juan de Anchieta",
@@ -6863,10 +6877,10 @@
             "Thoinot Arbeau",
             "Jehan Tabourot"
         ],
-        "start_date": -1,
-        "end_date": -1,
-        "dates_are_lifespan": false,
-        "dates_uncertain": true,
+        "start_date": 1520,
+        "end_date": 1595,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
         "genres": [],
         "works": [],
         "notes": {
@@ -6941,7 +6955,7 @@
         "start_date": 1507,
         "end_date": 1568,
         "dates_are_lifespan": true,
-        "dates_uncertain": false,
+        "dates_uncertain": true,
         "genres": [
             "Renaissance"
         ],
@@ -11526,7 +11540,8 @@
         "name": "Claude Balbastre",
         "indicators": [
             "Claude Balbastre",
-            "Balbastre"
+            "Balbastre",
+            "Claude-Benigne Balbastre"
         ],
         "start_date": 1727,
         "end_date": 1799,
@@ -14018,9 +14033,9 @@
         "indicators": [
             "John Baston"
         ],
-        "start_date": 1683,
+        "start_date": 1708,
         "end_date": 1739,
-        "dates_are_lifespan": true,
+        "dates_are_lifespan": false,
         "dates_uncertain": true,
         "genres": [],
         "works": [],
@@ -14923,6 +14938,20 @@
         ],
         "start_date": 1919,
         "end_date": 1994,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [],
+        "works": [],
+        "notes": {}
+    },
+    "John Baldwin": {
+        "id": 15587,
+        "name": "John Baldwin",
+        "indicators": [
+            "John Baldwin"
+        ],
+        "start_date": -1,
+        "end_date": 1615,
         "dates_are_lifespan": true,
         "dates_uncertain": false,
         "genres": [],
@@ -18627,7 +18656,8 @@
         "id": 5795,
         "name": "Anthoine de Bertrand",
         "indicators": [
-            "Anthoine de Bertrand"
+            "Anthoine de Bertrand",
+            "Antoine de Bertrand"
         ],
         "start_date": 1530,
         "end_date": 1581,
@@ -19030,9 +19060,9 @@
         "indicators": [
             "Elway Bevin"
         ],
-        "start_date": -1,
-        "end_date": -1,
-        "dates_are_lifespan": false,
+        "start_date": 1554,
+        "end_date": 1638,
+        "dates_are_lifespan": true,
         "dates_uncertain": true,
         "genres": [],
         "works": [],
@@ -28955,7 +28985,7 @@
         "start_date": 1543,
         "end_date": 1623,
         "dates_are_lifespan": true,
-        "dates_uncertain": false,
+        "dates_uncertain": true,
         "genres": [
             "Renaissance",
             "Baroque"
@@ -30382,7 +30412,8 @@
         "name": "Joseph Canteloube",
         "indicators": [
             "Joseph Canteloube",
-            "Canteloube, Joseph"
+            "Canteloube, Joseph",
+            "Marie-Joseph Canteloube"
         ],
         "start_date": 1879,
         "end_date": 1957,
@@ -32343,7 +32374,8 @@
             "Alfonso X de Castile",
             "Alfonso X",
             "Rey Alfonso el Sabio",
-            "Alfonso de Sabio"
+            "Alfonso de Sabio",
+            "Alfonso X el Sabio"
         ],
         "start_date": 1221,
         "end_date": 1284,
@@ -32875,7 +32907,8 @@
         "id": 6190,
         "name": "Rodrigo de Ceballos",
         "indicators": [
-            "Rodrigo de Ceballos"
+            "Rodrigo de Ceballos",
+            "Rodrigo Cevallos"
         ],
         "start_date": 1525,
         "end_date": 1581,
@@ -33960,7 +33993,7 @@
             "Marc-Antoine Charpentier",
             "Charpentier"
         ],
-        "start_date": 1645,
+        "start_date": 1643,
         "end_date": 1704,
         "dates_are_lifespan": true,
         "dates_uncertain": false,
@@ -35990,6 +36023,20 @@
         "end_date": -1,
         "dates_are_lifespan": true,
         "dates_uncertain": false,
+        "genres": [],
+        "works": [],
+        "notes": {}
+    },
+    "Bernardo Clavijo del Castillo": {
+        "id": 15590,
+        "name": "Bernardo Clavijo del Castillo",
+        "indicators": [
+            "Bernardo Clavijo del Castillo"
+        ],
+        "start_date": 1549,
+        "end_date": 1626,
+        "dates_are_lifespan": true,
+        "dates_uncertain": true,
         "genres": [],
         "works": [],
         "notes": {}
@@ -38641,9 +38688,9 @@
         "indicators": [
             "S\u00e9verin Cornet"
         ],
-        "start_date": -1,
-        "end_date": -1,
-        "dates_are_lifespan": false,
+        "start_date": 1530,
+        "end_date": 1582,
+        "dates_are_lifespan": true,
         "dates_uncertain": true,
         "genres": [],
         "works": [],
@@ -39056,7 +39103,8 @@
         "name": "Guillaume Costeley",
         "indicators": [
             "Guillaume Costeley",
-            "Costeley, Guillaume"
+            "Costeley, Guillaume",
+            "Guillaume Costely"
         ],
         "start_date": 1530,
         "end_date": 1606,
@@ -49025,6 +49073,20 @@
         "works": [],
         "notes": {}
     },
+    "Solomon Eccles": {
+        "id": 15591,
+        "name": "Solomon Eccles",
+        "indicators": [
+            "Solomon Eccles"
+        ],
+        "start_date": 1618,
+        "end_date": 1683,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [],
+        "works": [],
+        "notes": {}
+    },
     "Henry Eccles": {
         "id": 380,
         "name": "Henry Eccles",
@@ -55340,7 +55402,7 @@
             "Irving Fine"
         ],
         "start_date": 1914,
-        "end_date": 1963,
+        "end_date": 1962,
         "dates_are_lifespan": true,
         "dates_uncertain": false,
         "genres": [],
@@ -59798,7 +59860,7 @@
         "start_date": 1532,
         "end_date": 1585,
         "dates_are_lifespan": true,
-        "dates_uncertain": false,
+        "dates_uncertain": true,
         "genres": [
             "Renaissance"
         ],
@@ -59815,7 +59877,7 @@
         "start_date": 1553,
         "end_date": 1612,
         "dates_are_lifespan": true,
-        "dates_uncertain": false,
+        "dates_uncertain": true,
         "genres": [
             "Renaissance"
         ],
@@ -62796,7 +62858,7 @@
             "Carlo Gesualdo",
             "Gesualdo"
         ],
-        "start_date": 1561,
+        "start_date": 1566,
         "end_date": 1613,
         "dates_are_lifespan": true,
         "dates_uncertain": true,
@@ -63194,8 +63256,8 @@
         "indicators": [
             "Felice Giardini"
         ],
-        "start_date": -1,
-        "end_date": -1,
+        "start_date": 1716,
+        "end_date": 1796,
         "dates_are_lifespan": true,
         "dates_uncertain": false,
         "genres": [],
@@ -67207,6 +67269,20 @@
         "works": [],
         "notes": {}
     },
+    "Thomas Greaves": {
+        "id": 15592,
+        "name": "Thomas Greaves",
+        "indicators": [
+            "Thomas Greaves"
+        ],
+        "start_date": 1600,
+        "end_date": 1600,
+        "dates_are_lifespan": false,
+        "dates_uncertain": true,
+        "genres": [],
+        "works": [],
+        "notes": {}
+    },
     "Carl Georg Peter Gr\u00e4dener": {
         "id": 559,
         "name": "Carl Georg Peter Gr\u00e4dener",
@@ -69234,6 +69310,20 @@
             "notiz": "Rot, Scene del potere"
         }
     },
+    "Francesco Guami": {
+        "id": 15589,
+        "name": "Francesco Guami",
+        "indicators": [
+            "Francesco Guami"
+        ],
+        "start_date": 1544,
+        "end_date": 1601,
+        "dates_are_lifespan": true,
+        "dates_uncertain": true,
+        "genres": [],
+        "works": [],
+        "notes": {}
+    },
     "Gioseffo Guami": {
         "id": 6898,
         "name": "Gioseffo Guami",
@@ -69243,7 +69333,7 @@
         "start_date": 1542,
         "end_date": 1611,
         "dates_are_lifespan": true,
-        "dates_uncertain": false,
+        "dates_uncertain": true,
         "genres": [],
         "works": [],
         "notes": {}
@@ -71404,6 +71494,20 @@
             "notiz": "amerikanischer Komponist, Kammer- und Orchesterwerke"
         }
     },
+    "James Harding": {
+        "id": 15593,
+        "name": "James Harding",
+        "indicators": [
+            "James Harding"
+        ],
+        "start_date": -1,
+        "end_date": 1626,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [],
+        "works": [],
+        "notes": {}
+    },
     "Dustin O'Halloran": {
         "id": 12311,
         "name": "Dustin O'Halloran",
@@ -71917,7 +72021,8 @@
             "H\u00e4ndel",
             "Handel",
             "HWV",
-            "Georg Friederich H\u00e4ndel"
+            "Georg Friederich H\u00e4ndel",
+            "George Friederich H\u00e4ndel"
         ],
         "start_date": 1685,
         "end_date": 1759,
@@ -73560,10 +73665,10 @@
         "indicators": [
             "William Hawley"
         ],
-        "start_date": -1,
+        "start_date": 1950,
         "end_date": -1,
-        "dates_are_lifespan": false,
-        "dates_uncertain": true,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
         "genres": [],
         "works": [],
         "notes": {
@@ -75712,6 +75817,21 @@
         ],
         "start_date": -1,
         "end_date": -1,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [],
+        "works": [],
+        "notes": {}
+    },
+    "Moritz von Hessen-Kassel": {
+        "id": 15597,
+        "name": "Moritz von Hessen-Kassel",
+        "indicators": [
+            "Moritz von Hessen-Kassel",
+            "Moritz von Hessen"
+        ],
+        "start_date": 1572,
+        "end_date": 1632,
         "dates_are_lifespan": true,
         "dates_uncertain": false,
         "genres": [],
@@ -83181,7 +83301,8 @@
         "id": 2433,
         "name": "Cl\u00e9ment Janequin",
         "indicators": [
-            "Cl\u00e9ment Janequin"
+            "Cl\u00e9ment Janequin",
+            "Cl\u00e9ment Jannequin"
         ],
         "start_date": 1485,
         "end_date": 1558,
@@ -84182,7 +84303,7 @@
         "start_date": 1528,
         "end_date": 1600,
         "dates_are_lifespan": true,
-        "dates_uncertain": false,
+        "dates_uncertain": true,
         "genres": [],
         "works": [],
         "notes": {}
@@ -97720,6 +97841,20 @@
         "works": [],
         "notes": {}
     },
+    "Erasmus Lapicida": {
+        "id": 15594,
+        "name": "Erasmus Lapicida",
+        "indicators": [
+            "Erasmus Lapicida"
+        ],
+        "start_date": 1440,
+        "end_date": 1547,
+        "dates_are_lifespan": true,
+        "dates_uncertain": true,
+        "genres": [],
+        "works": [],
+        "notes": {}
+    },
     "Andr\u00e9 Laporte": {
         "id": 7358,
         "name": "Andr\u00e9 Laporte",
@@ -98084,8 +98219,8 @@
             "Orlando di Lasso",
             "Di Lasso"
         ],
-        "start_date": -1,
-        "end_date": -1,
+        "start_date": 1532,
+        "end_date": 1594,
         "dates_are_lifespan": true,
         "dates_uncertain": false,
         "genres": [],
@@ -100556,7 +100691,7 @@
             "Ruggero Leoncavallo",
             "Ruggiero Leoncavallo"
         ],
-        "start_date": 1858,
+        "start_date": 1857,
         "end_date": 1919,
         "dates_are_lifespan": true,
         "dates_uncertain": false,
@@ -105908,7 +106043,8 @@
             "Anatoly Lyadov",
             "Anatoli Liadov",
             "Lyadov",
-            "Liadov"
+            "Liadov",
+            "Anatole Konstantinovich Liadov"
         ],
         "start_date": 1855,
         "end_date": 1914,
@@ -106352,7 +106488,7 @@
             "Edward MacDowell",
             "Edward Macdowell"
         ],
-        "start_date": 1861,
+        "start_date": 1860,
         "end_date": 1908,
         "dates_are_lifespan": true,
         "dates_uncertain": false,
@@ -114672,7 +114808,8 @@
         "indicators": [
             "\u00c9tienne M\u00e9hul",
             "M\u00e9hul",
-            "\u00c9tienne Nicolas M\u00e9hul"
+            "\u00c9tienne Nicolas M\u00e9hul",
+            "Etienne-Nicholas M\u00e9hul"
         ],
         "start_date": 1763,
         "end_date": 1817,
@@ -121146,6 +121283,20 @@
         "works": [],
         "notes": {}
     },
+    "Manuel Blasco de Nebra": {
+        "id": 15586,
+        "name": "Manuel Blasco de Nebra",
+        "indicators": [
+            "Manuel Blasco de Nebra"
+        ],
+        "start_date": 1750,
+        "end_date": 1784,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [],
+        "works": [],
+        "notes": {}
+    },
     "Jos\u00e9 de Nebra": {
         "id": 7774,
         "name": "Jos\u00e9 de Nebra",
@@ -123393,9 +123544,9 @@
             "Giovanni Domenico da Nola"
         ],
         "start_date": -1,
-        "end_date": -1,
-        "dates_are_lifespan": false,
-        "dates_uncertain": true,
+        "end_date": 1592,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
         "genres": [],
         "works": [],
         "notes": {}
@@ -125993,7 +126144,8 @@
         "name": "Diego Ortiz",
         "indicators": [
             "Diego Ortiz",
-            "Ortiz, Diego"
+            "Ortiz, Diego",
+            "Guillermo Ortiz"
         ],
         "start_date": 1510,
         "end_date": 1570,
@@ -126672,6 +126824,20 @@
         ],
         "start_date": 1825,
         "end_date": 1889,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [],
+        "works": [],
+        "notes": {}
+    },
+    "Jayme Ovalle": {
+        "id": 15595,
+        "name": "Jayme Ovalle",
+        "indicators": [
+            "Jayme Ovalle"
+        ],
+        "start_date": 1894,
+        "end_date": 1955,
         "dates_are_lifespan": true,
         "dates_uncertain": false,
         "genres": [],
@@ -127470,7 +127636,8 @@
         "indicators": [
             "Niccol\u00f2 Paganini",
             "Niccolo Paganini",
-            "Paganini"
+            "Paganini",
+            "Nicol\u00f2 Paganini"
         ],
         "start_date": 1782,
         "end_date": 1840,
@@ -128443,7 +128610,8 @@
         "name": "Jacob Clemens non Papa",
         "indicators": [
             "Jacob Clemens non Papa",
-            "Clemens non Papa, Jacob"
+            "Clemens non Papa, Jacob",
+            "Jacob Clemens"
         ],
         "start_date": 1510,
         "end_date": 1556,
@@ -128620,9 +128788,9 @@
         "indicators": [
             "Girolamo Parabosco"
         ],
-        "start_date": -1,
-        "end_date": -1,
-        "dates_are_lifespan": false,
+        "start_date": 1524,
+        "end_date": 1557,
+        "dates_are_lifespan": true,
         "dates_uncertain": true,
         "genres": [],
         "works": [],
@@ -129526,10 +129694,10 @@
             "Pierre Passereau",
             "Pierre Passerau"
         ],
-        "start_date": -1,
-        "end_date": -1,
+        "start_date": 1509,
+        "end_date": 1547,
         "dates_are_lifespan": false,
-        "dates_uncertain": true,
+        "dates_uncertain": false,
         "genres": [],
         "works": [],
         "notes": {
@@ -130222,7 +130390,8 @@
         "indicators": [
             "Robert Lucas de Pearsall",
             "Robert Lucas Pearsall",
-            "Pearsall, Robert Lucas"
+            "Pearsall, Robert Lucas",
+            "R. L. Pearsall"
         ],
         "start_date": 1795,
         "end_date": 1856,
@@ -133888,6 +134057,20 @@
             "notiz": "deutscher Komponist"
         }
     },
+    "John Playford": {
+        "id": 15585,
+        "name": "John Playford",
+        "indicators": [
+            "John Playford"
+        ],
+        "start_date": 1623,
+        "end_date": 1687,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [],
+        "works": [],
+        "notes": {}
+    },
     "Juan Bautista Plaza": {
         "id": 7979,
         "name": "Juan Bautista Plaza",
@@ -135827,6 +136010,20 @@
             "notiz": "slowenischer Komponist"
         }
     },
+    "Henry Prentes": {
+        "id": 15596,
+        "name": "Henry Prentes",
+        "indicators": [
+            "Henry Prentes"
+        ],
+        "start_date": -1,
+        "end_date": 1514,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [],
+        "works": [],
+        "notes": {}
+    },
     "Giorgio Pressato": {
         "id": 12801,
         "name": "Giorgio Pressato",
@@ -135945,7 +136142,8 @@
             "Josquin Des Prez",
             "Josquin Desprez",
             "des Prez",
-            "Desprez"
+            "Desprez",
+            "Josquin Despr\u00e9s"
         ],
         "start_date": 1440,
         "end_date": 1521,
@@ -136379,6 +136577,20 @@
         "genres": [
             "video_game"
         ],
+        "works": [],
+        "notes": {}
+    },
+    "Gabriel Prokofiev": {
+        "id": 15588,
+        "name": "Gabriel Prokofiev",
+        "indicators": [
+            "Gabriel Prokofiev"
+        ],
+        "start_date": 1975,
+        "end_date": -1,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [],
         "works": [],
         "notes": {}
     },
@@ -137062,6 +137274,20 @@
         "end_date": 1803,
         "dates_are_lifespan": true,
         "dates_uncertain": false,
+        "genres": [],
+        "works": [],
+        "notes": {}
+    },
+    "Daniel Purcell": {
+        "id": 15599,
+        "name": "Daniel Purcell",
+        "indicators": [
+            "Daniel Purcell"
+        ],
+        "start_date": 1664,
+        "end_date": 1717,
+        "dates_are_lifespan": true,
+        "dates_uncertain": true,
         "genres": [],
         "works": [],
         "notes": {}
@@ -137849,7 +138075,8 @@
             "Sergey Rachmaninov",
             "Rachmaninoff",
             "Rachmaninov",
-            "Sergej rachmininoff"
+            "Sergej rachmininoff",
+            "Sergei Rachmaninov"
         ],
         "start_date": 1873,
         "end_date": 1943,
@@ -149010,10 +149237,10 @@
         "indicators": [
             "Pierre Sandrin"
         ],
-        "start_date": -1,
-        "end_date": -1,
+        "start_date": 1538,
+        "end_date": 1561,
         "dates_are_lifespan": false,
-        "dates_uncertain": true,
+        "dates_uncertain": false,
         "genres": [],
         "works": [],
         "notes": {
@@ -151209,10 +151436,10 @@
             "Johann Christian Schickhardt",
             "Schickhardt"
         ],
-        "start_date": -1,
-        "end_date": -1,
+        "start_date": 1682,
+        "end_date": 1762,
         "dates_are_lifespan": true,
-        "dates_uncertain": false,
+        "dates_uncertain": true,
         "genres": [],
         "works": [],
         "notes": {}
@@ -164430,7 +164657,7 @@
             "Barbara Strozzi"
         ],
         "start_date": 1619,
-        "end_date": 1663,
+        "end_date": 1677,
         "dates_are_lifespan": true,
         "dates_uncertain": false,
         "genres": [
@@ -171199,10 +171426,10 @@
             "Francesco de la Torre",
             "Francisoc del Torre"
         ],
-        "start_date": -1,
-        "end_date": -1,
+        "start_date": 1483,
+        "end_date": 1504,
         "dates_are_lifespan": false,
-        "dates_uncertain": true,
+        "dates_uncertain": false,
         "genres": [
             "Renaissance"
         ],
@@ -172718,7 +172945,7 @@
             "Turges"
         ],
         "start_date": 1450,
-        "end_date": 1500,
+        "end_date": 1501,
         "dates_are_lifespan": true,
         "dates_uncertain": true,
         "genres": [],
@@ -174260,9 +174487,9 @@
         "indicators": [
             "Antonio Valente"
         ],
-        "start_date": -1,
-        "end_date": -1,
-        "dates_are_lifespan": false,
+        "start_date": 1530,
+        "end_date": 1585,
+        "dates_are_lifespan": true,
         "dates_uncertain": true,
         "genres": [],
         "works": [],
@@ -175025,8 +175252,8 @@
         "indicators": [
             "Franz von Vecsey"
         ],
-        "start_date": -1,
-        "end_date": -1,
+        "start_date": 1893,
+        "end_date": 1935,
         "dates_are_lifespan": true,
         "dates_uncertain": false,
         "genres": [],

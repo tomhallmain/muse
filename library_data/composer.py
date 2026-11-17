@@ -415,6 +415,7 @@ class ComposersData:
         # full set means a query plus several thousand object constructions, and
         # plenty of code paths never read composer data at all.
         self.__composers = None
+        self._tag_index = None
 
     @property
     def _composers(self):
@@ -435,6 +436,7 @@ class ComposersData:
                 needs_backfill.append(composer)
             composers[composer.name] = composer
         self.__composers = composers
+        self._invalidate_tag_index()
         if needs_backfill:
             now = datetime.datetime.now()
             for composer in needs_backfill:
@@ -449,6 +451,8 @@ class ComposersData:
             return self._apply_merge_fix(fix)
         if fix.get("op") in ("remove_genre", "remove_note"):
             return self._apply_removal_fix(fix)
+        if fix.get("op") == "set_dates":
+            return self._apply_dates_fix(fix)
         if fix.get("op") != "add_indicator":
             raise ValueError(f"Unsupported composers data fix op: {fix.get('op')}")
         name, value = fix["name"], fix["value"]
@@ -489,6 +493,34 @@ class ComposersData:
             raise RuntimeError(error_msg)
         return data_fixes.APPLIED, detail
 
+    _DATE_FIELDS = ("start_date", "end_date", "dates_are_lifespan", "dates_uncertain")
+
+    def _apply_dates_fix(self, fix):
+        """Set composer `name`'s dates to the fields given in `value`.
+
+        Seed sync only fills dates that are unset, so a corrected date in the
+        example file does not reach existing installs. When the fix names the
+        wrong dates in `from`, it applies only while the composer still has them,
+        so dates edited by hand since are left alone (TARGET_CHANGED).
+        """
+        name, value = fix["name"], fix["value"]
+        fields = {k: value[k] for k in self._DATE_FIELDS if k in value}
+        detail = f'dates {fields} on "{name}"'
+        composer = self._composers.get(name)
+        if composer is None:
+            return data_fixes.TARGET_MISSING, detail
+        if all(getattr(composer, k) == v for k, v in fields.items()):
+            return data_fixes.ALREADY_PRESENT, detail
+        expected = fix.get("from") or {}
+        if any(getattr(composer, k) != v for k, v in expected.items() if k in self._DATE_FIELDS):
+            return data_fixes.TARGET_CHANGED, detail
+        for k, v in fields.items():
+            setattr(composer, k, v)
+        success, error_msg = self._persist_composers([composer])
+        if not success:
+            raise RuntimeError(error_msg)
+        return data_fixes.APPLIED, detail
+
     def _apply_merge_fix(self, fix):
         """Fold composer `name` into composer `value`, or rename it when `value` is absent.
 
@@ -516,6 +548,7 @@ class ComposersData:
             source.name = target_name
             source.indicators = indicators
             self._composers[target_name] = source
+            self._invalidate_tag_index()
             return data_fixes.APPLIED, detail
         # New lists rather than appending: Composer's list defaults are shared objects.
         target.indicators = target.indicators + [i for i in dict.fromkeys(carried) if i not in target.indicators]
@@ -632,6 +665,7 @@ class ComposersData:
         Returns:
             tuple: (bool, str) - (success, error_message)
         """
+        self._invalidate_tag_index()
         try:
             conn = get_connection()
             conn.executemany(
@@ -709,6 +743,7 @@ class ComposersData:
             if cur.rowcount == 0 and composer.name not in self._composers:
                 return False, _("Composer not found")
             self._composers.pop(composer.name, None)
+            self._invalidate_tag_index()
             works_data.reload()  # composer.id's works were cascade-deleted with the row
             return True, ""
         except Exception as e:
@@ -725,6 +760,130 @@ class ComposersData:
 
     def get_all_composers(self):
         return sorted(self._composers.values(), key=lambda c: NameOps.get_full_name_sort_key(c.name))
+
+    # How resolve_composer_tag() found its names.
+    TAG_DIRECT = "direct"          # the value is a composer's name or indicator
+    TAG_INVERTED = "inverted"      # the value is a name as "Surname, given names"
+    TAG_LIST = "list"              # several composers, each found one of the ways above
+    TAG_AMBIGUOUS = "ambiguous"    # the value fits more than one composer
+    TAG_PLACEHOLDER = "placeholder"  # "Anonymous", "Traditional": no composer to find
+    TAG_UNMATCHED = "unmatched"
+
+    # A trailing parenthesis holds life dates or a remark ("(1685-1750)", "(arr. Gray)").
+    _TRAILING_PARENTHESIS = re.compile(r"\s*\([^()]*\)\s*$")
+    _PLACEHOLDER_WORDS = {"anon", "anonymous", "trad", "traditional", "unknown"}
+
+    # Separators between composers in one tag. A comma is not one: it also stands
+    # between surname and given names ("Bach, Johann Sebastian").
+    _TAG_SEPARATORS = re.compile(r"\s*[;/&]\s*")
+    # Words that can end the given names of "Surname, given names" while belonging
+    # to the surname ("Beethoven, Ludwig van"), and titles that can lead them.
+    _NAME_PARTICLES = {"von", "van", "de", "da", "di", "du", "des", "del", "della",
+                       "der", "den", "la", "le", "y", "zu"}
+    _HONORIFICS = {"sir", "dame", "lord", "frei", "fray", "fra", "padre", "pater", "dom", "don"}
+
+    @classmethod
+    def natural_order_forms(cls, value):
+        """*value* read as "Surname, given names" and put back in natural order.
+
+        "Rameau, Jean-Philippe" gives "Jean-Philippe Rameau". Leading titles are
+        dropped ("Walton, Sir William" -> "William Walton"), and trailing particles
+        are both kept and dropped ("Biber, Heinrich von" -> "Heinrich von Biber",
+        "Heinrich Biber"). A value without exactly one comma gives none.
+        """
+        if value.count(",") != 1:
+            return []
+        surname, given = (part.strip() for part in value.split(","))
+        tokens = given.split()
+        while tokens and tokens[0].lower().rstrip(".") in cls._HONORIFICS:
+            tokens = tokens[1:]
+        if not surname or not tokens:
+            return []
+        forms = [" ".join(tokens + [surname])]
+        kept = len(tokens)
+        while kept > 1 and tokens[kept - 1].lower() in cls._NAME_PARTICLES:
+            kept -= 1
+        if kept < len(tokens):
+            forms.append(" ".join(tokens[:kept] + [surname]))
+        return forms
+
+    def _invalidate_tag_index(self):
+        self._tag_index = None
+
+    def _composer_tag_index(self):
+        """(forms, names): folded names and indicators -> composer names, and folded names alone."""
+        if self._tag_index is None:
+            forms, names = {}, {}
+            for composer in self._composers.values():
+                for value in [composer.name] + list(composer.indicators):
+                    forms.setdefault(NameOps.fold(value), set()).add(composer.name)
+                names.setdefault(NameOps.fold(composer.name), set()).add(composer.name)
+            self._tag_index = (forms, names)
+        return self._tag_index
+
+    @staticmethod
+    def _found(how, found):
+        return (how, sorted(found)) if len(found) == 1 else (ComposersData.TAG_AMBIGUOUS, sorted(found))
+
+    def _lookup_tag_part(self, value):
+        """(how, names) for one composer credit; names is empty when nothing fits."""
+        forms, _names = self._composer_tag_index()
+        found = forms.get(NameOps.fold(value))
+        if found:
+            return self._found(self.TAG_DIRECT, found)
+        for form in self.natural_order_forms(value):
+            found = forms.get(NameOps.fold(form))
+            if found:
+                return self._found(self.TAG_INVERTED, found)
+        return self.TAG_UNMATCHED, []
+
+    def resolve_composer_tag(self, tag):
+        """The composer names a composer tag refers to, and how they were found.
+
+        Returns (names, how). For TAG_DIRECT, TAG_INVERTED and TAG_LIST, names are the
+        composers in the tag's order; for TAG_AMBIGUOUS, the candidates; for
+        TAG_PLACEHOLDER and TAG_UNMATCHED, empty. A trailing parenthesis is ignored.
+        A comma separates composers only when every part is a composer's full
+        name, as in the ", "-joined values this app derives itself; otherwise it
+        is read as "Surname, given names".
+        """
+        tag = self._TRAILING_PARENTHESIS.sub("", (tag or "").strip())
+        if not tag:
+            return [], self.TAG_UNMATCHED
+        names, how = self._resolve_without_parenthesis(tag)
+        words = NameOps.fold(tag).split()
+        if how == self.TAG_UNMATCHED and words and words[0] in self._PLACEHOLDER_WORDS:
+            return [], self.TAG_PLACEHOLDER
+        return names, how
+
+    def _resolve_without_parenthesis(self, tag):
+        how, names = self._lookup_tag_part(tag)
+        if how != self.TAG_UNMATCHED:
+            return names, how
+
+        parts = [p.strip() for p in self._TAG_SEPARATORS.split(tag) if p.strip()]
+        if len(parts) > 1:
+            resolved = []
+            for part in parts:
+                part_how, part_names = self._lookup_tag_part(part)
+                if part_how not in (self.TAG_DIRECT, self.TAG_INVERTED):
+                    break
+                resolved.extend(n for n in part_names if n not in resolved)
+            else:
+                return resolved, self.TAG_LIST
+
+        _forms, full_names = self._composer_tag_index()
+        parts = [p.strip() for p in tag.split(",") if p.strip()]
+        if len(parts) > 1:
+            resolved = []
+            for part in parts:
+                found = full_names.get(NameOps.fold(part))
+                if not found or len(found) > 1:
+                    break
+                resolved.extend(n for n in found if n not in resolved)
+            else:
+                return resolved, self.TAG_LIST
+        return [], self.TAG_UNMATCHED
 
     def get_data(self, composer_name):
         if composer_name in self._composers:

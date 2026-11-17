@@ -242,5 +242,216 @@
         "op": "remove_note",
         "name": "Conradin Kreutzer",
         "value": "codex"
+    },
+    {
+        "id": "2026-11-17-barbara-strozzi-dates",
+        "date": "2026-11-17",
+        "reason": "Barbara Strozzi died in 1677, not 1663.",
+        "table": "composers",
+        "op": "set_dates",
+        "name": "Barbara Strozzi",
+        "from": {
+            "start_date": 1619,
+            "end_date": 1663
+        },
+        "value": {
+            "start_date": 1619,
+            "end_date": 1677
+        }
+    },
+    {
+        "id": "2026-11-17-edward-macdowell-dates",
+        "date": "2026-11-17",
+        "reason": "Edward MacDowell was born in 1860; 1861 is a year he gave himself.",
+        "table": "composers",
+        "op": "set_dates",
+        "name": "Edward MacDowell",
+        "from": {
+            "start_date": 1861,
+            "end_date": 1908
+        },
+        "value": {
+            "start_date": 1860,
+            "end_date": 1908
+        }
+    },
+    {
+        "id": "2026-11-17-irving-fine-dates",
+        "date": "2026-11-17",
+        "reason": "Irving Fine died in 1962, not 1963.",
+        "table": "composers",
+        "op": "set_dates",
+        "name": "Irving Fine",
+        "from": {
+            "start_date": 1914,
+            "end_date": 1963
+        },
+        "value": {
+            "start_date": 1914,
+            "end_date": 1962
+        }
+    },
+    {
+        "id": "2026-11-17-marc-antoine-charpentier-dates",
+        "date": "2026-11-17",
+        "reason": "Current research dates Marc-Antoine Charpentier's birth to 1643.",
+        "table": "composers",
+        "op": "set_dates",
+        "name": "Marc-Antoine Charpentier",
+        "from": {
+            "start_date": 1645,
+            "end_date": 1704
+        },
+        "value": {
+            "start_date": 1643,
+            "end_date": 1704
+        }
+    },
+    {
+        "id": "2026-11-17-ruggero-leoncavallo-dates",
+        "date": "2026-11-17",
+        "reason": "Ruggero Leoncavallo was born in 1857, not 1858.",
+        "table": "composers",
+        "op": "set_dates",
+        "name": "Ruggero Leoncavallo",
+        "from": {
+            "start_date": 1858,
+            "end_date": 1919
+        },
+        "value": {
+            "start_date": 1857,
+            "end_date": 1919
+        }
+    },
+    {
+        "id": "2026-11-17-edmund-turges-dates",
+        "date": "2026-11-17",
+        "reason": "Edmund Turges is recorded until 1501, so he died after 1501; the seed entry added on 2026-11-17 gave 1500.",
+        "table": "composers",
+        "op": "set_dates",
+        "name": "Edmund Turges",
+        "from": {
+            "start_date": 1450,
+            "end_date": 1500
+        },
+        "value": {
+            "start_date": 1450,
+            "end_date": 1501,
+            "dates_uncertain": true
+        }
+    },
+    {
+        "id": "2026-11-17-carlo-gesualdo-dates",
+        "date": "2026-11-17",
+        "reason": "Current research dates Carlo Gesualdo's birth to 8 March 1566; 1560/61 is an older estimate.",
+        "table": "composers",
+        "op": "set_dates",
+        "name": "Carlo Gesualdo",
+        "from": {
+            "start_date": 1561
+        },
+        "value": {
+            "start_date": 1566
+        }
+    },
+    {
+        "id": "2026-11-17-john-baston-dates",
+        "date": "2026-11-17",
+        "reason": "John Baston is documented only as active 1708-1739; his birth and death years are unknown.",
+        "table": "composers",
+        "op": "set_dates",
+        "name": "John Baston",
+        "from": {
+            "start_date": 1683,
+            "dates_are_lifespan": true
+        },
+        "value": {
+            "start_date": 1708,
+            "dates_are_lifespan": false
+        }
+    },
+    {
+        "id": "2026-11-17-william-byrd-dates",
+        "date": "2026-11-17",
+        "reason": "William Byrd's birth year is known only approximately (c. 1540/43).",
+        "table": "composers",
+        "op": "set_dates",
+        "name": "William Byrd",
+        "from": {
+            "dates_uncertain": false
+        },
+        "value": {
+            "dates_uncertain": true
+        }
+    },
+    {
+        "id": "2026-11-17-andrea-gabrieli-dates",
+        "date": "2026-11-17",
+        "reason": "Andrea Gabrieli's birth year is known only approximately (c. 1532/33).",
+        "table": "composers",
+        "op": "set_dates",
+        "name": "Andrea Gabrieli",
+        "from": {
+            "dates_uncertain": false
+        },
+        "value": {
+            "dates_uncertain": true
+        }
+    },
+    {
+        "id": "2026-11-17-giovanni-gabrieli-dates",
+        "date": "2026-11-17",
+        "reason": "Giovanni Gabrieli's birth year is known only approximately (c. 1554/57).",
+        "table": "composers",
+        "op": "set_dates",
+        "name": "Giovanni Gabrieli",
+        "from": {
+            "dates_uncertain": false
+        },
+        "value": {
+            "dates_uncertain": true
+        }
+    },
+    {
+        "id": "2026-11-17-jacques-arcadelt-dates",
+        "date": "2026-11-17",
+        "reason": "Jacques Arcadelt's birth year is known only approximately (c. 1507).",
+        "table": "composers",
+        "op": "set_dates",
+        "name": "Jacques Arcadelt",
+        "from": {
+            "dates_uncertain": false
+        },
+        "value": {
+            "dates_uncertain": true
+        }
+    },
+    {
+        "id": "2026-11-17-claude-le-jeune-dates",
+        "date": "2026-11-17",
+        "reason": "Claude Le Jeune's birth year is known only approximately (c. 1528/30).",
+        "table": "composers",
+        "op": "set_dates",
+        "name": "Claude Le Jeune",
+        "from": {
+            "dates_uncertain": false
+        },
+        "value": {
+            "dates_uncertain": true
+        }
+    },
+    {
+        "id": "2026-11-17-gioseffo-guami-dates",
+        "date": "2026-11-17",
+        "reason": "Gioseffo Guami's birth year is known only approximately (c. 1542).",
+        "table": "composers",
+        "op": "set_dates",
+        "name": "Gioseffo Guami",
+        "from": {
+            "dates_uncertain": false
+        },
+        "value": {
+            "dates_uncertain": true
+        }
     }
 ]

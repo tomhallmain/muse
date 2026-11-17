@@ -28,6 +28,7 @@ APPLIED = "applied"
 ALREADY_PRESENT = "already_present"
 ALREADY_ABSENT = "already_absent"
 TARGET_MISSING = "target_missing"
+TARGET_CHANGED = "target_changed"
 
 _fixes = None
 
