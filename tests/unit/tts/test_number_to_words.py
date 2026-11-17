@@ -282,6 +282,117 @@ class TestNumberToWordsConverter:
         assert NumberToWordsConverter._round_large_number(-12345) == -12000
 
 
+class TestGermanCompoundNumbers:
+    """German names the ones before the tens (21 is "einundzwanzig") and writes
+    everything below a million as one word."""
+
+    GERMAN = dict(
+        ones={0: "null", 1: "eins", 2: "zwei", 3: "drei", 4: "vier", 5: "fünf",
+              6: "sechs", 7: "sieben", 8: "acht", 9: "neun"},
+        teens={10: "zehn", 11: "elf", 12: "zwölf", 13: "dreizehn", 14: "vierzehn",
+               15: "fünfzehn", 16: "sechzehn", 17: "siebzehn", 18: "achtzehn", 19: "neunzehn"},
+        tens={20: "zwanzig", 30: "dreißig", 40: "vierzig", 50: "fünfzig",
+              60: "sechzig", 70: "siebzig", 80: "achtzig", 90: "neunzig"},
+        hundred="hundert", thousand="tausend", million="millionen", and_word="und",
+    )
+
+    @pytest.fixture(autouse=True)
+    def own_locales(self, monkeypatch):
+        monkeypatch.setattr(NumberToWordsConverter, "_locale_overrides", {})
+
+    @pytest.mark.parametrize("num, words", [
+        (21, "einundzwanzig"),
+        (42, "zweiundvierzig"),
+        (99, "neunundneunzig"),
+        (30, "dreißig"),
+        (19, "neunzehn"),
+        (1, "eins"),
+        (100, "einhundert"),
+        (101, "einhunderteins"),
+        (105, "einhundertfünf"),
+        (243, "zweihundertdreiundvierzig"),
+        (1000, "eintausend"),
+        (1234, "eintausendzweihundertvierunddreißig"),
+        (21000, "einundzwanzigtausend"),
+        (101000, "einhunderteintausend"),
+        (2000000, "zwei millionen"),
+        (1000000, "eine million"),
+        (1500000, "eine million fünfhunderttausend"),
+        (21000000, "einundzwanzig millionen"),
+    ])
+    def test_ones_come_before_the_tens(self, num, words):
+        NumberToWordsConverter.register_locale("de", **self.GERMAN)
+        assert NumberToWordsConverter.convert_number(num, locale="de") == words
+
+    def test_a_regional_locale_uses_the_same_order(self):
+        NumberToWordsConverter.register_locale("de_AT", **self.GERMAN)
+        assert NumberToWordsConverter.convert_number(21, locale="de_AT") == "einundzwanzig"
+
+    def test_the_order_can_be_switched_off(self):
+        NumberToWordsConverter.register_locale("de", ones_before_tens=False, **self.GERMAN)
+        assert NumberToWordsConverter.convert_number(21, locale="de") == "zwanzig-eins"
+
+    @pytest.mark.parametrize("text, spoken", [
+        ("1703", "siebzehnhundertdrei"),
+        ("1990", "neunzehnhundertneunzig"),
+        ("1100", "elfhundert"),
+        ("1651", "sechzehnhunderteinundfünfzig"),
+        ("2003", "zweitausenddrei"),
+        ("1099", "eintausendneunundneunzig"),
+        ("1651-1703", "sechzehnhunderteinundfünfzig bis siebzehnhundertdrei"),
+    ])
+    def test_years_are_read_in_hundreds(self, text, spoken):
+        NumberToWordsConverter.register_locale("de", to="bis", **self.GERMAN)
+        assert NumberToWordsConverter.convert_text_numbers(text, locale="de") == spoken
+
+    def test_english_keeps_one_million(self):
+        NumberToWordsConverter.register_locale("de", **self.GERMAN)
+        assert NumberToWordsConverter.convert_number(1000000) == "one million"
+
+    def test_joining_can_be_switched_off(self):
+        NumberToWordsConverter.register_locale("de", joined_compounds=False, **self.GERMAN)
+        assert NumberToWordsConverter.convert_number(243, locale="de") == \
+            "zwei hundert und dreiundvierzig"
+
+    def test_other_locales_keep_tens_first(self):
+        NumberToWordsConverter.register_locale("de", **self.GERMAN)
+        assert NumberToWordsConverter.convert_number(21) == "twenty-one"
+
+    def test_config_driven_cleaning(self, monkeypatch):
+        cleaner = TextCleanerRuleset()
+        monkeypatch.setattr(cleaner, "_is_likely_english", lambda _text: False)
+        assert "einundzwanzig" in cleaner.clean("Er ist 21 Jahre alt", locale="de")
+
+
+class TestEnglishYears:
+    """English reads 1100-1999 as two pairs of digits, as years are spoken."""
+
+    @pytest.mark.parametrize("text, spoken", [
+        ("1703", "seventeen oh three"),
+        ("1990", "nineteen ninety"),
+        ("1651", "sixteen fifty-one"),
+        ("1700", "seventeen hundred"),
+        ("1100", "eleven hundred"),
+        ("2003", "two thousand three"),
+        ("1099", "one thousand ninety-nine"),
+        ("1651-1703", "sixteen fifty-one to seventeen oh three"),
+    ])
+    def test_years_are_read_in_pairs(self, text, spoken):
+        assert NumberToWordsConverter.convert_text_numbers(text) == spoken
+
+    def test_a_registered_english_locale_reads_years_in_pairs(self, monkeypatch):
+        monkeypatch.setattr(NumberToWordsConverter, "_locale_overrides", {})
+        NumberToWordsConverter.register_locale("en_GB")
+        assert NumberToWordsConverter.convert_text_numbers("1703", locale="en_GB") == \
+            "seventeen oh three"
+
+    def test_other_registered_locales_keep_the_full_number(self, monkeypatch):
+        monkeypatch.setattr(NumberToWordsConverter, "_locale_overrides", {})
+        NumberToWordsConverter.register_locale("xx", hundred="hundred", thousand="thousand")
+        assert NumberToWordsConverter.convert_text_numbers("1703", locale="xx") == \
+            "one thousand seven hundred and three"
+
+
 class TestTextCleanerRulesetIntegration:
     """Test integration of number conversion with TextCleanerRuleset."""
 

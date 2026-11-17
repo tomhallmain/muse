@@ -40,14 +40,34 @@ class NumberToWordsConverter:
     APPROXIMATELY = "approximately"  # Used when rounding large numbers
     NEGATIVE = "negative"  # Used for negative numbers
     TO = "to"  # Used for ranges like "1651 to 1703"
+    YEAR_OH = "oh"  # Used for the zero in years like "seventeen oh three"
     
+    # How a language builds compound numbers; unset keys follow English, except that
+    # years_in_pairs applies only to English words:
+    # ones_before_tens: 21 is ones + "and" + tens ("einundzwanzig").
+    # joined_compounds: everything below a million is one word, with no "and" after
+    #     the hundreds (243 = "zweihundertdreiundvierzig").
+    # compound_ones: the form a ones word takes inside a compound ("eins" -> "ein").
+    # million_one, million_singular: exactly one million ("eine million").
+    # years_as_hundreds: 1100-1999 are read in hundreds, as years are
+    #     (1703 = "siebzehnhundertdrei").
+    # years_in_pairs: 1100-1999 are read as two pairs of digits ("seventeen oh three").
+    _COMPOUND_STYLES = {
+        "en": {"years_in_pairs": True},
+        "de": {"ones_before_tens": True, "joined_compounds": True, "compound_ones": {1: "ein"},
+               "million_one": "eine", "million_singular": "million", "years_as_hundreds": True},
+    }
+
     # Locale-specific overrides (can be extended later)
     _locale_overrides = {}
-    
+
     @classmethod
-    def register_locale(cls, locale, ones=None, teens=None, tens=None, 
-                       hundred=None, thousand=None, million=None, and_word=None, 
-                       approximately=None, negative=None, to=None):
+    def register_locale(cls, locale, ones=None, teens=None, tens=None,
+                       hundred=None, thousand=None, million=None, and_word=None,
+                       approximately=None, negative=None, to=None,
+                       ones_before_tens=None, joined_compounds=None, compound_ones=None,
+                       million_one=None, million_singular=None, years_as_hundreds=None,
+                       years_in_pairs=None, year_oh=None):
         """
         Register locale-specific number words.
         
@@ -63,8 +83,22 @@ class NumberToWordsConverter:
             approximately: Word for "approximately" (used when rounding)
             negative: Word for "negative" (used for negative numbers)
             to: Word for "to" (used in ranges like "1651 to 1703")
+            ones_before_tens, joined_compounds, compound_ones, million_one,
+            million_singular, years_as_hundreds, years_in_pairs: see _COMPOUND_STYLES.
+            year_oh: Word for the zero in a paired year ("oh" in "seventeen oh three")
+                Each defaults to the locale's language entry there, else to English.
         """
         defaults = cls._get_words_for_locale(None)
+        language = (locale or "").replace("-", "_").split("_")[0].lower()
+        style = cls._COMPOUND_STYLES.get(language, {})
+        if ones_before_tens is None:
+            ones_before_tens = style.get("ones_before_tens", False)
+        if joined_compounds is None:
+            joined_compounds = style.get("joined_compounds", False)
+        if years_as_hundreds is None:
+            years_as_hundreds = style.get("years_as_hundreds", False)
+        if years_in_pairs is None:
+            years_in_pairs = style.get("years_in_pairs", False)
         cls._locale_overrides[locale] = {
             'ones': {**defaults['ones'], **(ones or {})},
             'teens': {**defaults['teens'], **(teens or {})},
@@ -76,8 +110,17 @@ class NumberToWordsConverter:
             'approximately': approximately or defaults['approximately'],
             'negative': negative or defaults['negative'],
             'to': to or defaults['to'],
+            'ones_before_tens': bool(ones_before_tens),
+            'joined_compounds': bool(joined_compounds),
+            'compound_ones': {**style.get("compound_ones", {}), **(compound_ones or {})},
+            'million_one': million_one or style.get("million_one"),
+            'million_singular': (million_singular or style.get("million_singular")
+                                 or million or defaults['million_singular']),
+            'years_as_hundreds': bool(years_as_hundreds),
+            'years_in_pairs': bool(years_in_pairs),
+            'year_oh': year_oh or defaults['year_oh'],
         }
-    
+
     @classmethod
     def _get_words_for_locale(cls, locale):
         """Get number words for a specific locale, falling back to English."""
@@ -93,7 +136,15 @@ class NumberToWordsConverter:
             'and': cls.AND,
             'approximately': cls.APPROXIMATELY,
             'negative': cls.NEGATIVE,
-            'to': cls.TO
+            'to': cls.TO,
+            'ones_before_tens': False,
+            'joined_compounds': False,
+            'compound_ones': {},
+            'million_one': None,
+            'million_singular': cls.MILLION,
+            'years_as_hundreds': False,
+            'years_in_pairs': True,
+            'year_oh': cls.YEAR_OH,
         }
     
     @classmethod
@@ -134,50 +185,96 @@ class NumberToWordsConverter:
                 return f"{approximately} {result}"
             return result
         
+        joined = words['joined_compounds']
+        compound_ones = words['compound_ones']
         result = []
-        
+
         # Handle millions
         if num >= 1000000:
             millions = num // 1000000
-            result.append(cls.convert_number(millions, locale))
-            result.append(million)
+            if millions == 1:
+                result.append(words['million_one'] or cls.convert_number(1, locale))
+                result.append(words['million_singular'])
+            else:
+                result.append(cls.convert_number(millions, locale))
+                result.append(million)
             num %= 1000000
-        
+
+        below_million = []
+
         # Handle thousands
         if num >= 1000:
             thousands = num // 1000
-            result.append(cls.convert_number(thousands, locale))
-            result.append(thousand)
+            below_million.append(cls._multiplier_words(thousands, locale) if joined
+                                 else cls.convert_number(thousands, locale))
+            below_million.append(thousand)
             num %= 1000
-        
+
         # Handle hundreds
         if num >= 100:
             hundreds = num // 100
-            result.append(ones[hundreds])
-            result.append(hundred)
+            below_million.append(compound_ones.get(hundreds, ones[hundreds]) if joined
+                                 else ones[hundreds])
+            below_million.append(hundred)
             num %= 100
-            if num > 0:
-                result.append(and_word)
-        
+            if num > 0 and not joined:
+                below_million.append(and_word)
+
         # Handle tens and ones
         if num >= 20:
             tens_place = (num // 10) * 10
             ones_place = num % 10
-            if ones_place > 0:
+            if ones_place > 0 and words['ones_before_tens']:
+                ones_word = compound_ones.get(ones_place, ones[ones_place])
+                below_million.append(f"{ones_word}{and_word}{tens[tens_place]}")
+            elif ones_place > 0:
                 # Use hyphen for compound numbers like "twenty-one"
-                result.append(f"{tens[tens_place]}-{ones[ones_place]}")
+                below_million.append(f"{tens[tens_place]}-{ones[ones_place]}")
             else:
-                result.append(tens[tens_place])
+                below_million.append(tens[tens_place])
         elif num >= 10:
-            result.append(teens[num])
+            below_million.append(teens[num])
         elif num > 0:
-            result.append(ones[num])
-        
+            below_million.append(ones[num])
+
+        if below_million:
+            result.append(("" if joined else " ").join(below_million))
+
         result_str = " ".join(result)
         if add_approximately:
             return f"{approximately} {result_str}"
         return result_str
     
+    @classmethod
+    def convert_year(cls, num, locale=None):
+        """*num* (1100-1999) read as a year: "siebzehnhundertdrei", "seventeen oh three"."""
+        words = cls._get_words_for_locale(locale)
+        century, rest = cls.convert_number(num // 100, locale), num % 100
+        if words['years_as_hundreds'] or rest == 0:
+            parts = [century, words['hundred']]
+            if rest:
+                parts.append(cls.convert_number(rest, locale))
+            return ("" if words['joined_compounds'] else " ").join(parts)
+        if rest < 10:
+            return f"{century} {words['year_oh']} {cls.convert_number(rest, locale)}"
+        return f"{century} {cls.convert_number(rest, locale)}"
+
+    @classmethod
+    def _multiplier_words(cls, num, locale):
+        """*num* as words in front of "thousand" in a joined compound.
+
+        A final ones word takes its compound form there: 1000 is "eintausend" and
+        101000 "einhunderteintausend", not "einstausend".
+        """
+        words = cls._get_words_for_locale(locale)
+        text = cls.convert_number(num, locale)
+        last = num % 100
+        if 0 < last < 10 and last in words['compound_ones']:
+            plain = words['ones'][last]
+            if text.endswith(plain):
+                text = text[:-len(plain)] + words['compound_ones'][last]
+        return text
+
     @classmethod
     def _is_round_number(cls, num):
         """
@@ -307,6 +404,11 @@ class NumberToWordsConverter:
         if abs_num > 10000000:
             return str(num)
         
+        if 1100 <= num <= 1999:
+            words = cls._get_words_for_locale(locale)
+            if words['years_as_hundreds'] or words['years_in_pairs']:
+                return cls.convert_year(num, locale)
+
         # For numbers 0-9999, convert directly
         if abs_num <= 9999:
             return cls.convert_number(num, locale)
@@ -400,7 +502,11 @@ class TextCleanerRuleset:
         
         Args:
             number_words_config: Dict mapping locale codes to number word configurations.
-                Each locale config should have: ones, teens, tens, hundred, thousand, million, and, approximately, negative, to
+                Each locale config should have: ones, teens, tens, hundred, thousand, million, and, approximately, negative, to.
+                Optional: ones_before_tens, joined_compounds, years_as_hundreds and years_in_pairs (bool),
+                year_oh ("oh"),
+                compound_ones (e.g. {"1": "ein"}), million_one ("eine") and million_singular ("million");
+                for "de" they default to the German compound form, so they are only needed to override it.
                 Example:
                 {
                     "de": {
@@ -431,7 +537,9 @@ class TextCleanerRuleset:
                 tens = words_config.get('tens', {})
                 if tens and len(tens) > 0 and isinstance(list(tens.keys())[0], str):
                     tens = {int(k): v for k, v in tens.items()}
-                
+
+                compound_ones = {int(k): v for k, v in (words_config.get('compound_ones') or {}).items()}
+
                 NumberToWordsConverter.register_locale(
                     locale=locale,
                     ones=ones if ones else None,
@@ -443,7 +551,15 @@ class TextCleanerRuleset:
                     and_word=words_config.get('and'),
                     approximately=words_config.get('approximately'),
                     negative=words_config.get('negative'),
-                    to=words_config.get('to')
+                    to=words_config.get('to'),
+                    ones_before_tens=words_config.get('ones_before_tens'),
+                    joined_compounds=words_config.get('joined_compounds'),
+                    million_one=words_config.get('million_one'),
+                    million_singular=words_config.get('million_singular'),
+                    years_as_hundreds=words_config.get('years_as_hundreds'),
+                    years_in_pairs=words_config.get('years_in_pairs'),
+                    year_oh=words_config.get('year_oh'),
+                    compound_ones=compound_ones or None,
                 )
                 logger.info(f"Registered number words for locale: {locale}")
             except Exception as e:
