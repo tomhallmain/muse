@@ -5,7 +5,7 @@ Seeding only inserts rows a database lacks, so a correction made to a
 data/data_fixes.json is applied once per database, when the table it targets is
 first loaded, and its outcome is recorded in data_fixes_applied: the file's
 history says what was corrected and why, the table what each install did.
-Fixes only add, so one that was applied and later undone by hand stays undone.
+Each fix runs once, so one that was applied and later undone by hand stays undone.
 """
 
 import datetime
@@ -26,6 +26,7 @@ FIXES_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "d
 
 APPLIED = "applied"
 ALREADY_PRESENT = "already_present"
+ALREADY_ABSENT = "already_absent"
 TARGET_MISSING = "target_missing"
 
 _fixes = None

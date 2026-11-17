@@ -224,5 +224,23 @@
         "name": "Peter Carl Goldmark",
         "value": "Karl Goldmark",
         "drop_name": true
+    },
+    {
+        "id": "2026-11-17-kreutzer-remove-codex-genre",
+        "date": "2026-11-17",
+        "reason": "A name match took \"Conradin\" from the Codex Manesse list (Konradin, 1252-1268) for \"Conradin Kreutzer\" (1780-1849), giving Kreutzer the codex genre and note. Konradin has his own entry.",
+        "table": "composers",
+        "op": "remove_genre",
+        "name": "Conradin Kreutzer",
+        "value": "codex"
+    },
+    {
+        "id": "2026-11-17-kreutzer-remove-codex-note",
+        "date": "2026-11-17",
+        "reason": "A name match took \"Conradin\" from the Codex Manesse list (Konradin, 1252-1268) for \"Conradin Kreutzer\" (1780-1849), giving Kreutzer the codex genre and note. Konradin has his own entry.",
+        "table": "composers",
+        "op": "remove_note",
+        "name": "Conradin Kreutzer",
+        "value": "codex"
     }
 ]

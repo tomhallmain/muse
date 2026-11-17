@@ -77810,6 +77810,27 @@
             "codex": "Codex Manesse"
         }
     },
+    "Konradin": {
+        "id": 15578,
+        "name": "Konradin",
+        "indicators": [
+            "Konradin",
+            "K\u00f6nig Konradin",
+            "Konradin von Hohenstaufen",
+            "Conradin of Hohenstaufen"
+        ],
+        "start_date": 1252,
+        "end_date": 1268,
+        "dates_are_lifespan": true,
+        "dates_uncertain": false,
+        "genres": [
+            "codex"
+        ],
+        "works": [],
+        "notes": {
+            "codex": "Codex Manesse"
+        }
+    },
     "Lee Hoiby": {
         "id": 2391,
         "name": "Lee Hoiby",
@@ -94220,13 +94241,9 @@
         "end_date": 1849,
         "dates_are_lifespan": true,
         "dates_uncertain": false,
-        "genres": [
-            "codex"
-        ],
+        "genres": [],
         "works": [],
-        "notes": {
-            "codex": "Codex Manesse"
-        }
+        "notes": {}
     },
     "Joseph Kreutzer": {
         "id": 9954,

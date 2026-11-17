@@ -145,6 +145,60 @@ class TestMergeFixes:
         assert _recorded() == {"merge-1": data_fixes.TARGET_MISSING}
 
 
+def _remove(op, name, value, fix_id="remove-1"):
+    return {"id": fix_id, "table": "composers", "op": op, "name": name, "value": value}
+
+
+def _stored_genres_and_notes(name):
+    row = db.get_connection().execute("SELECT genres, notes FROM composers WHERE name = ?", (name,)).fetchone()
+    return db.delim_to_list(row["genres"]), json.loads(row["notes"] or "{}")
+
+
+@pytest.mark.unit
+class TestRemovalFixes:
+    def test_a_genre_is_removed_and_the_others_kept(self, fixes):
+        fixes()
+        _add(ComposersData(), "Zz Target", genres=["codex", "Romantic"])
+        fixes(_remove("remove_genre", "Zz Target", "codex"))
+        assert ComposersData().get_data("Zz Target").genres == ["Romantic"]
+        assert _stored_genres_and_notes("Zz Target")[0] == ["Romantic"]
+        assert _recorded() == {"remove-1": data_fixes.APPLIED}
+
+    def test_a_note_is_removed_and_the_others_kept(self, fixes):
+        fixes()
+        _add(ComposersData(), "Zz Target", notes={"codex": "Codex Manesse", "notiz": "kept"})
+        fixes(_remove("remove_note", "Zz Target", "codex"))
+        assert ComposersData().get_data("Zz Target").notes == {"notiz": "kept"}
+        assert _stored_genres_and_notes("Zz Target")[1] == {"notiz": "kept"}
+        assert _recorded() == {"remove-1": data_fixes.APPLIED}
+
+    @pytest.mark.parametrize("op", ["remove_genre", "remove_note"])
+    def test_a_value_already_absent_is_recorded_as_such(self, fixes, op):
+        fixes()
+        _add(ComposersData(), "Zz Target", genres=["Romantic"], notes={"notiz": "kept"})
+        fixes(_remove(op, "Zz Target", "codex"))
+        data = ComposersData()
+        assert data.get_data("Zz Target").genres == ["Romantic"]
+        assert data.get_data("Zz Target").notes == {"notiz": "kept"}
+        assert _recorded() == {"remove-1": data_fixes.ALREADY_ABSENT}
+
+    @pytest.mark.parametrize("op", ["remove_genre", "remove_note"])
+    def test_a_missing_composer_is_recorded_as_such(self, fixes, op):
+        fixes(_remove(op, "No Such Composer", "codex"))
+        ComposersData().get_composer_names()
+        assert _recorded() == {"remove-1": data_fixes.TARGET_MISSING}
+
+    def test_a_genre_added_back_by_hand_stays(self, fixes):
+        fixes()
+        _add(ComposersData(), "Zz Target", genres=["codex"])
+        fixes(_remove("remove_genre", "Zz Target", "codex"))
+        data = ComposersData()
+        composer = data.get_data("Zz Target")
+        composer.genres = ["codex"]
+        data.save_composer(composer)
+        assert ComposersData().get_data("Zz Target").genres == ["codex"]
+
+
 @pytest.mark.unit
 class TestLoadFixes:
     def test_a_missing_file_means_no_fixes(self, monkeypatch, tmp_path):

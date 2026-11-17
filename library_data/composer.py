@@ -447,6 +447,8 @@ class ComposersData:
         """Apply one composers entry from the data fix list; see data_fixes.apply_pending."""
         if fix.get("op") == "merge_into":
             return self._apply_merge_fix(fix)
+        if fix.get("op") in ("remove_genre", "remove_note"):
+            return self._apply_removal_fix(fix)
         if fix.get("op") != "add_indicator":
             raise ValueError(f"Unsupported composers data fix op: {fix.get('op')}")
         name, value = fix["name"], fix["value"]
@@ -457,6 +459,32 @@ class ComposersData:
         if value in composer.indicators:
             return data_fixes.ALREADY_PRESENT, detail
         success, error_msg = self.add_composer_indicators(name, [value])
+        if not success:
+            raise RuntimeError(error_msg)
+        return data_fixes.APPLIED, detail
+
+    def _apply_removal_fix(self, fix):
+        """Remove genre `value` (remove_genre) or note key `value` (remove_note) from composer `name`.
+
+        For a value the seed gave the wrong composer: seed sync only adds, so
+        dropping it from the example file does not reach existing installs.
+        """
+        name, value = fix["name"], fix["value"]
+        is_genre = fix["op"] == "remove_genre"
+        detail = f'{"genre" if is_genre else "note"} "{value}" on "{name}"'
+        composer = self._composers.get(name)
+        if composer is None:
+            return data_fixes.TARGET_MISSING, detail
+        # New containers rather than mutating: Composer's defaults are shared objects.
+        if is_genre:
+            if value not in composer.genres:
+                return data_fixes.ALREADY_ABSENT, detail
+            composer.genres = [g for g in composer.genres if g != value]
+        else:
+            if value not in (composer.notes or {}):
+                return data_fixes.ALREADY_ABSENT, detail
+            composer.notes = {k: v for k, v in composer.notes.items() if k != value}
+        success, error_msg = self._persist_composers([composer])
         if not success:
             raise RuntimeError(error_msg)
         return data_fixes.APPLIED, detail
