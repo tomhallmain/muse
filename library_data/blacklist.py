@@ -136,6 +136,44 @@ class BlacklistException(Exception):
 
 
 class BlacklistItem:
+    #: Column order for CSV export; matches the keys to_dict() returns.
+    CSV_FIELDNAMES = (
+        "string",
+        "enabled",
+        "use_regex",
+        "use_word_boundary",
+        "use_space_as_optional_nonword",
+        "exception_pattern",
+        "type",
+    )
+    #: CSV round-trips every value as text, so these need coercing back on import.
+    CSV_BOOL_FIELDS = (
+        "enabled",
+        "use_regex",
+        "use_word_boundary",
+        "use_space_as_optional_nonword",
+    )
+
+    @classmethod
+    def from_csv_row(cls, row: dict) -> "BlacklistItem":
+        """Build an item from a DictReader row, coercing the text booleans.
+
+        Only the columns actually present are used, so a two-column file written
+        by an older export still imports with the constructor defaults.
+        """
+        data = {"string": (row.get("string") or "").strip()}
+        if not data["string"]:
+            return None
+        for field in cls.CSV_BOOL_FIELDS:
+            if row.get(field) is not None:
+                data[field] = str(row[field]).strip().lower() in ("true", "t", "1", "yes")
+        pattern = row.get("exception_pattern")
+        if pattern is not None and str(pattern).strip() != "":
+            data["exception_pattern"] = str(pattern)
+        if row.get("type"):
+            data["type"] = str(row["type"]).strip()
+        return cls.from_dict(data)
+
     def __init__(
         self,
         string: str,
@@ -596,89 +634,113 @@ class Blacklist:
         return None
 
     @staticmethod
-    def import_blacklist_csv(filename: str) -> None:
-        """Import blacklist from a CSV file. Adds items to the current blacklist (does not clear existing items).
+    def _import_items(items: list[BlacklistItem]) -> None:
+        """Merge imported items into the blacklist.
 
-        Expected format:
-        string
-        tag1
-        tag2
-        
-        Or with optional enabled state:
+        An imported item replaces an existing one with the same string, and a
+        later duplicate in the file replaces an earlier one, so re-importing an
+        edited export updates items in place instead of doubling them.
+        """
+        index = {item.string: n for n, item in enumerate(Blacklist.TAG_BLACKLIST)}
+        for item in items:
+            if item.string in index:
+                Blacklist.TAG_BLACKLIST[index[item.string]] = item
+            else:
+                index[item.string] = len(Blacklist.TAG_BLACKLIST)
+                Blacklist.TAG_BLACKLIST.append(item)
+        Blacklist.sort()
+        Blacklist._version_cache = None
+
+    @staticmethod
+    def import_blacklist_csv(filename: str) -> None:
+        """Import blacklist from a CSV file, merged into the current blacklist (see _import_items).
+
+        Expected format: a single column of strings, or a header row naming any of
+        BlacklistItem.CSV_FIELDNAMES, as written by export_blacklist_csv:
         string,enabled
         tag1,true
         tag2,false
         """
+        items = []
         with open(filename, 'r', encoding='utf-8') as f:
             # Read first line to determine format
             first_line = f.readline().strip()
             f.seek(0)  # Reset file pointer to start
-            
+
             if ',' in first_line:
-                # Two-column format with headers
+                # Only the columns present are read, so both older two-column files
+                # and the full export written by export_blacklist_csv round-trip.
                 reader = csv.DictReader(f)
                 for row in reader:
-                    enabled = True
-                    if 'enabled' in row:
-                        enabled_str = row['enabled'].lower()
-                        enabled = enabled_str == 'true' or enabled_str == 't' or enabled_str == '1'
-                    Blacklist.add_to_blacklist(BlacklistItem(row['string'].strip(), enabled))
+                    item = BlacklistItem.from_csv_row(row)
+                    if item is not None:
+                        items.append(item)
             else:
                 # Single-column format
                 reader = csv.reader(f)
                 for row in reader:
                     if row and row[0].strip():
-                        Blacklist.add_to_blacklist(BlacklistItem(row[0].strip()))
+                        items.append(BlacklistItem(row[0].strip()))
+        Blacklist._import_items(items)
 
     @staticmethod
     def import_blacklist_json(filename: str) -> None:
-        """Import blacklist from a JSON file. Adds items to the current blacklist (does not clear existing items).
+        """Import blacklist from a JSON file, merged into the current blacklist (see _import_items).
 
         Expected format:
         ["tag1", "tag2", "tag3"]
-        
-        Or with optional enabled state:
+
+        Or objects, as written by export_blacklist_json; fields left out take
+        their defaults:
         [
-            {"string": "tag1", "enabled": true},
+            {"string": "tag1", "enabled": true, "use_regex": false, ...},
             {"string": "tag2", "enabled": false}
         ]
         """
+        items = []
         with open(filename, 'r', encoding='utf-8') as f:
             data = json.load(f)
             if isinstance(data, list):
-                for item in data:
-                    if isinstance(item, str):
-                        Blacklist.add_to_blacklist(BlacklistItem(item))
-                    elif isinstance(item, dict) and 'string' in item:
-                        enabled = item.get('enabled', True)
-                        item_type = BlacklistItem._parse_item_type(item.get('type'))
-                        Blacklist.add_to_blacklist(BlacklistItem(item['string'], enabled, item_type=item_type))
+                for entry in data:
+                    item = None
+                    if isinstance(entry, str):
+                        item = BlacklistItem(entry)
+                    elif isinstance(entry, dict):
+                        item = BlacklistItem.from_dict(entry)
+                    if item is None:
+                        logger.error(_("Invalid item type in JSON blacklist import: {0}").format(type(entry)))
                     else:
-                        logger.error(_("Invalid item type in JSON blacklist import: {0}").format(type(item)))
+                        items.append(item)
             else:
                 raise ValueError("Invalid JSON format for blacklist import")
+        Blacklist._import_items(items)
 
     @staticmethod
     def import_blacklist_txt(filename: str) -> None:
-        """Import blacklist from a text file. Adds items to the current blacklist (does not clear existing items).
+        """Import blacklist from a text file, merged into the current blacklist (see _import_items).
 
         Expected format:
         tag1
         tag2
         # Comment line
         tag3
+
+        Lines starting with "#" are comments, so the disabled items that
+        export_blacklist_txt writes as "# string" are not imported.
         """
+        items = []
         with open(filename, 'r', encoding='utf-8') as f:
             for line in f:
                 line = line.strip()
                 if line and not line.startswith('#'):
-                    Blacklist.add_to_blacklist(BlacklistItem(line))
+                    items.append(BlacklistItem(line))
+        Blacklist._import_items(items)
 
     @staticmethod
     def export_blacklist_csv(filename: str) -> None:
-        """Export blacklist to a CSV file."""
+        """Export blacklist to a CSV file, one column per field of BlacklistItem.to_dict()."""
         with open(filename, 'w', newline='', encoding='utf-8') as f:
-            writer = csv.DictWriter(f, fieldnames=['string', 'enabled'])
+            writer = csv.DictWriter(f, fieldnames=list(BlacklistItem.CSV_FIELDNAMES))
             writer.writeheader()
             for item in Blacklist.TAG_BLACKLIST:
                 writer.writerow(item.to_dict())
@@ -691,7 +753,8 @@ class Blacklist:
 
     @staticmethod
     def export_blacklist_txt(filename: str) -> None:
-        """Export blacklist to a text file."""
+        """Export blacklist strings to a text file; options are not kept, and disabled
+        items are written as "# string", which import_blacklist_txt reads as a comment."""
         with open(filename, 'w', encoding='utf-8') as f:
             for item in Blacklist.TAG_BLACKLIST:
                 if item.enabled:

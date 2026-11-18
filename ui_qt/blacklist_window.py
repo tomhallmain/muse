@@ -2,6 +2,7 @@
 Blacklist management window (PySide6).
 Port of ui/blacklist_window.py; logic preserved, UI uses Qt.
 """
+import os
 from typing import Callable, Optional
 
 from PySide6.QtWidgets import (
@@ -817,9 +818,10 @@ If you are young, not sure, or even an adult, click the close button on this win
         if not file_path:
             return
         try:
-            if file_path.endswith(".csv"):
+            extension = os.path.splitext(file_path)[1].lower()
+            if extension == ".csv":
                 Blacklist.import_blacklist_csv(file_path)
-            elif file_path.endswith(".json"):
+            elif extension == ".json":
                 Blacklist.import_blacklist_json(file_path)
             else:
                 Blacklist.import_blacklist_txt(file_path)
@@ -842,9 +844,10 @@ If you are young, not sure, or even an adult, click the close button on this win
         if not file_path:
             return
         try:
-            if file_path.endswith(".json"):
+            extension = os.path.splitext(file_path)[1].lower()
+            if extension == ".json":
                 Blacklist.export_blacklist_json(file_path)
-            elif file_path.endswith(".txt"):
+            elif extension == ".txt":
                 Blacklist.export_blacklist_txt(file_path)
             else:
                 Blacklist.export_blacklist_csv(file_path)
