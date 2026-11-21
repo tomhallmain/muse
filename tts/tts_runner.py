@@ -174,13 +174,9 @@ class TextToSpeechRunner:
                 f"TTS provider '{config.provider}' is not available on this system. "
                 "Check that the required package is installed and configured correctly."
             )
-        # WARNING: The speech queue is shared across all TTSRunner instances.
-        # When skip is triggered, it will cancel ALL pending speech jobs, not just
-        # the current one. This means if multiple TTS invocations are running
-        # simultaneously (e.g. from different parts of the application), they will
-        # all be cancelled when skip is pressed. This is currently acceptable since
-        # the DJ's speech is supplementary to the music experience, but this should
-        # be reviewed if more critical TTS functionality is added in the future.
+        # Each runner has its own speech queue, but VLC_MEDIA_PLAYER is shared by all
+        # runners, and a skip request on the shared run context cancels every runner's
+        # pending speech.
         self.speech_queue = JobQueue("Speech Queue")
         self._generation_condition = threading.Condition()
         self._active_generations = 0
@@ -273,12 +269,6 @@ class TextToSpeechRunner:
         if os.path.exists(output_path) and not self.overwrite:
             logger.info("Using existing generation file: " + output_path)
             return
-        output_path1, output_path_no_unicode = self.get_output_path_no_unicode()
-        final_output_path_mp3 = self.get_output_path_mp3(output_path1)
-        final_output_path_mp3 = final_output_path_mp3[:-4] + " - TTS.mp3"
-        if os.path.exists(final_output_path_mp3) and not self.overwrite:
-            logger.info("Using existing generation file: " + final_output_path_mp3)
-            return
         logger.info(f"Generating speech file [{self.config.provider.value}]: {output_path}")
         self._provider.generate_speech_file(text, output_path)
 
@@ -288,7 +278,12 @@ class TextToSpeechRunner:
         self.speech_queue.job_running = True
         TextToSpeechRunner._play(filepath)
         time.sleep(1)
-        while (TextToSpeechRunner.VLC_MEDIA_PLAYER.is_playing()):
+        while True:
+            player = TextToSpeechRunner.VLC_MEDIA_PLAYER
+            if player is None:
+                return  # stop_pending_jobs() ended playback
+            if not player.is_playing():
+                break
             if self.run_context and self.run_context.should_skip():
                 return
             time.sleep(.1)
@@ -354,13 +349,27 @@ class TextToSpeechRunner:
             if os.path.exists(output_path):
                 try:
                     os.remove(output_path)
-                except:
+                except OSError:
                     pass
+
+    def _existing_final_mp3(self):
+        """Path of this output's final "<name> - TTS.mp3" if it exists and may be reused, else None."""
+        if self.overwrite:
+            return None
+        output_path, _output_path_no_unicode = self.get_output_path_no_unicode()
+        final_path = output_path[:-4] + " - TTS.mp3"
+        if os.path.exists(final_path):
+            logger.info("Using existing generation file: " + final_path)
+            return final_path
+        return None
 
     def speak(self, text, save_mp3=False, locale=None):
         if self.run_context and self.run_context.should_skip():
             # Clear the speech queue when skipping
             return self.speech_queue.cancel()
+        existing = self._existing_final_mp3()
+        if existing:
+            return existing
 
         with self._generation_condition:
             self._active_generations += 1
@@ -385,6 +394,9 @@ class TextToSpeechRunner:
     def speak_file(self, filepath, save_mp3=True, split_on_each_line=False, locale=None):
         if self.run_context and self.run_context.should_skip():
             return self.speech_queue.cancel()
+        existing = self._existing_final_mp3()
+        if existing:
+            return existing
 
         with self._generation_condition:
             self._active_generations += 1
@@ -409,18 +421,21 @@ class TextToSpeechRunner:
         if not os.path.exists(file_path):
             raise Exception("File not found: " + file_path)
         output_path = os.path.abspath(os.path.join(os.path.dirname(file_path), os.path.splitext(os.path.basename(file_path))[0] + '.mp3'))
-        if file_path.endswith(".mp3") or os.path.exists(output_path):
+        if file_path.endswith(".mp3"):
             raise Exception("File already exists as mp3")
-        args = ["ffmpeg", "-hide_banner", "-loglevel", "error", "-i", os.path.abspath(file_path), output_path]
+        # The intermediate <name>.mp3 is overwritten (-y); the final "- TTS.mp3" is protected in combine_audio_files.
+        args = ["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-i", os.path.abspath(file_path), output_path]
         # logger.info(args)
         try:
-            completed_process = subprocess.run(args, creationflags=Utils.NO_CONSOLE_WINDOW)
+            completed_process = subprocess.run(args, capture_output=True, text=True, errors="replace",
+                                               creationflags=Utils.NO_CONSOLE_WINDOW)
             if completed_process.returncode != 0:
-                raise Exception()
+                raise Exception(f"ffmpeg exited with code {completed_process.returncode}: "
+                                f"{completed_process.stderr.strip()}")
             self.add_metadata(output_path, text_content)
             return output_path
         except Exception as e:
-            raise Exception("Could not convert file to MP3: " + str(e))
+            raise Exception("Could not convert file to MP3: " + str(e)) from e
 
     def add_metadata(self, output_path, text_content):
         try:
@@ -471,27 +486,28 @@ class TextToSpeechRunner:
         args.append(output_path_no_unicode.replace("\\", "/"))
         # logger.info(args)
         try:
-            completed_process = subprocess.run(args, creationflags=Utils.NO_CONSOLE_WINDOW)
-            if completed_process.returncode == 0:
-                logger.info("Combined audio files: " + output_path)
-                if save_mp3:
-                    mp3_path = self.convert_to_mp3(output_path_no_unicode, text_content=text_content)
-                os.remove(output_path_no_unicode)
-                if self.delete_interim_files:
-                    for f in self.audio_paths:
-                        os.remove(f)
-                else:
-                    self.used_audio_paths.extend(self.audio_paths)
-                self.audio_paths = []
-                if save_mp3:
-                    return Utils.move_file(mp3_path, output_path[:-4] + " - TTS.mp3", overwrite_existing=self.overwrite)
-                else:
-                    return output_path
+            completed_process = subprocess.run(args, capture_output=True, text=True, errors="replace",
+                                               creationflags=Utils.NO_CONSOLE_WINDOW)
+            if completed_process.returncode != 0:
+                raise Exception(f"sox exited with code {completed_process.returncode}: "
+                                f"{completed_process.stderr.strip()}")
+            logger.info("Combined audio files: " + output_path)
+            if save_mp3:
+                mp3_path = self.convert_to_mp3(output_path_no_unicode, text_content=text_content)
+            os.remove(output_path_no_unicode)
+            if self.delete_interim_files:
+                for f in self.audio_paths:
+                    os.remove(f)
             else:
-                self.audio_paths = []
-                raise Exception()
+                self.used_audio_paths.extend(self.audio_paths)
+            if save_mp3:
+                return Utils.move_file(mp3_path, output_path[:-4] + " - TTS.mp3", overwrite_existing=self.overwrite)
+            return output_path
         except Exception as e:
-            raise Exception("Error combining audio files")
+            raise Exception("Error combining audio files: " + str(e)) from e
+        finally:
+            # A failed run must not leave its chunks to be prepended to the next speak().
+            self.audio_paths = []
 
     def add_speech_file_to_queue(self, filepath):
         if not self.auto_play or self.speech_queue.has_pending() or self.speech_queue.job_running:
@@ -503,17 +519,21 @@ class TextToSpeechRunner:
 def main(model, text):
     config = TTSConfig(model=model)
     runner = TextToSpeechRunner(config)
-    try:
-        runner.speak(text)
-    except KeyboardInterrupt:
-        sys.exit()
+    if text.strip():
+        try:
+            runner.speak(text)
+        except KeyboardInterrupt:
+            sys.exit()
     while True:
         try:
-            runner.speak(input())
-        except KeyboardInterrupt:
+            line = input()
+            if line.strip():
+                runner.speak(line)
+        except (KeyboardInterrupt, EOFError):
             break
 
 if __name__ == "__main__":
+    from tts.speakers import speakers
     speaker = list(filter(lambda x: x if x.startswith(sys.argv[2]) else None, speakers))[0] if len(sys.argv)>2 else "Royston Min"
     de_model = ("tts_models/de/thorsten/tacotron2-DDC", None, None)
     multi_model = ("tts_models/multilingual/multi-dataset/xtts_v2", speaker, "en")

@@ -63,10 +63,11 @@ class Chunker:
     
     # Redundancy thresholds and limits
     MIN_SIMILARITY_LENGTH = 20  # Minimum length to trust similarity checking
+    # Ascending by threshold: the first tier the chunk length falls under applies.
     REDUNDANCY_TIERS = [
-        (300, 1),   # Chunks under 300 chars can be repeated once
+        (50, 3),    # Chunks under 50 chars can be repeated three times
         (100, 2),   # Chunks under 100 chars can be repeated twice
-        (50, 3),   # Chunks under 50 chars can be repeated three times
+        (300, 1),   # Chunks under 300 chars can be repeated once
     ]
 
     def __init__(self, skip_cjk=True, skip_redundant=True, options=None, extra_rules=()):
@@ -256,7 +257,6 @@ class Chunker:
         return chunk + line
 
     def _yield_chunks(self, lines_iterable, is_str=False, split_on_each_line=False, locale=None):
-        last_chunk = ""
         chunk = ""
         dropped_count = 0
         for line_no, line in enumerate(lines_iterable, start=1):
@@ -272,7 +272,6 @@ class Chunker:
                         cleaned = self._clean(chunk.strip(), locale)
                         if cleaned is not None:
                             yield cleaned
-                last_chunk = chunk
                 chunk = ""
                 continue
             if self._should_drop(line):
@@ -283,7 +282,7 @@ class Chunker:
             chunk = self._append_line(chunk, line, is_str, locale)
         if dropped_count and self.options.record_dropped:
             logger.info(_("Skipped {0} bracketed lines").format(dropped_count))
-        if chunk != last_chunk and chunk.strip() != "":
+        if chunk.strip() != "":
             if self.contains_alphanumeric(chunk):
                 cleaned = self._clean(chunk.strip(), locale)
                 if cleaned is not None:

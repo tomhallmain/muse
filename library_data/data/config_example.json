@@ -167,175 +167,175 @@
             "locales": ["en"]
         },
         {
-            "pattern": "( |^)(IIII|iiii|IV|iv)(\\.)?( |$)",
+            "pattern": "(\\s|^)(IIII|iiii|IV|iv)(\\.)?(\\s|$)",
             "replacement": "\\1Four \\4",
             "simple_replacement": false,
             "locales": ["en"]
         },
         {
-            "pattern": "( |^)(III|iii)(\\.)?( |$)",
+            "pattern": "(\\s|^)(III|iii)(\\.)?(\\s|$)",
             "replacement": "\\1Three \\4",
             "simple_replacement": false,
             "locales": ["en"]
         },
         {
-            "pattern": "( |^)(II|ii)(\\.)?( |$)",
+            "pattern": "(\\s|^)(II|ii)(\\.)?(\\s|$)",
             "replacement": "\\1Two \\4",
             "simple_replacement": false,
             "locales": ["en"]
         },
         {
-            "pattern": "( |^)(I|i)(\\.)( |$)",
+            "pattern": "(\\s|^)(I|i)(\\.)(\\s|$)",
             "replacement": "\\1One \\4",
             "simple_replacement": false,
             "locales": ["en"]
         },
         {
-            "pattern": "( |^)V(\\.)?( |$)",
+            "pattern": "(\\s|^)V(\\.)?(\\s|$)",
             "replacement": "\\1Five \\3",
             "simple_replacement": false,
             "locales": ["en"]
         },
         {
-            "pattern": "( |^)(VI|vi)(\\.)?( |$)",
+            "pattern": "(\\s|^)(VI|vi)(\\.)?(\\s|$)",
             "replacement": "\\1Six \\4",
             "simple_replacement": false,
             "locales": ["en"]
         },
         {
-            "pattern": "( |^)(VII|vii)(\\.)?( |$)",
+            "pattern": "(\\s|^)(VII|vii)(\\.)?(\\s|$)",
             "replacement": "\\1Seven \\4",
             "simple_replacement": false,
             "locales": ["en"]
         },
         {
-            "pattern": "( |^)(VIII|viii)(\\.)?( |$)",
+            "pattern": "(\\s|^)(VIII|viii)(\\.)?(\\s|$)",
             "replacement": "\\1Eight \\4",
             "simple_replacement": false,
             "locales": ["en"]
         },
         {
-            "pattern": "( |^)(IX|ix)(\\.)?( |$)",
+            "pattern": "(\\s|^)(IX|ix)(\\.)?(\\s|$)",
             "replacement": "\\1Nine \\4",
             "simple_replacement": false,
             "locales": ["en"]
         },
         {
-            "pattern": "( |^)(X|x)(\\.)?( |$)",
+            "pattern": "(\\s|^)(X|x)(\\.)?(\\s|$)",
             "replacement": "\\1Ten \\4",
             "simple_replacement": false,
             "locales": ["en"]
         },
         {
-            "pattern": "( |^)(XI|xi)(\\.)?( |$)",
+            "pattern": "(\\s|^)(XI|xi)(\\.)?(\\s|$)",
             "replacement": "\\1Eleven \\4",
             "simple_replacement": false,
             "locales": ["en"]
         },
         {
-            "pattern": "( |^)(XII|xii)(\\.)?( |$)",
+            "pattern": "(\\s|^)(XII|xii)(\\.)?(\\s|$)",
             "replacement": "\\1Twelve \\4",
             "simple_replacement": false,
             "locales": ["en"]
         },
         {
-            "pattern": "( |^)(XIII|Xiii)(\\.)?( |$)",
+            "pattern": "(\\s|^)(XIII|xiii)(\\.)?(\\s|$)",
             "replacement": "\\1Thirteen \\4",
             "simple_replacement": false,
             "locales": ["en"]
         },
         {
-            "pattern": "( |^)(XIV|xiv)(\\.)?( |$)",
+            "pattern": "(\\s|^)(XIV|xiv)(\\.)?(\\s|$)",
             "replacement": "\\1Fourteen \\4",
             "simple_replacement": false,
             "locales": ["en"]
         },
         {
-            "pattern": "( |^)(XV|xv)(\\.)?( |$)",
+            "pattern": "(\\s|^)(XV|xv)(\\.)?(\\s|$)",
             "replacement": "\\1Fifteen \\4",
             "simple_replacement": false,
             "locales": ["en"]
         },
         {
-            "pattern": "( |^)(XVI|xvi)(\\.)?( |$)",
+            "pattern": "(\\s|^)(XVI|xvi)(\\.)?(\\s|$)",
             "replacement": "\\1Sixteen \\4",
             "simple_replacement": false,
             "locales": ["en"]
         },
         {
-            "pattern": "( |^)(XVII|xvii)(\\.)?( |$)",
+            "pattern": "(\\s|^)(XVII|xvii)(\\.)?(\\s|$)",
             "replacement": "\\1Seventeen \\4",
             "simple_replacement": false,
             "locales": ["en"]
         },
         {
-            "pattern": "( |^)(XVIII|xviii)(\\.)?( |$)",
+            "pattern": "(\\s|^)(XVIII|xviii)(\\.)?(\\s|$)",
             "replacement": "\\1Eighteen \\4",
             "simple_replacement": false,
             "locales": ["en"]
         },
         {
-            "pattern": "( |^)(XIX|xix)(\\.)?( |$)",
+            "pattern": "(\\s|^)(XIX|xix)(\\.)?(\\s|$)",
             "replacement": "\\1Nineteen \\4",
             "simple_replacement": false,
             "locales": ["en"]
         },
         {
-            "pattern": "( |^)(XX|xx)(\\.)?( |$)",
+            "pattern": "(\\s|^)(XX|xx)(\\.)?(\\s|$)",
             "replacement": "\\1Twenty \\4",
             "simple_replacement": false,
             "locales": ["en"]
         },
         {
-            "pattern": "( |^)(XXI|xxi)(\\.)?( |$)",
+            "pattern": "(\\s|^)(XXI|xxi)(\\.)?(\\s|$)",
             "replacement": "\\1Twenty-one \\4",
             "simple_replacement": false,
             "locales": ["en"]
         },
         {
-            "pattern": "( |^)(XXII|ii)(\\.)?( |$)",
+            "pattern": "(\\s|^)(XXII|xxii)(\\.)?(\\s|$)",
             "replacement": "\\1Twenty-two \\4",
             "simple_replacement": false,
             "locales": ["en"]
         },
         {
-            "pattern": "( |^)(XXIII|xxiii)(\\.)?( |$)",
+            "pattern": "(\\s|^)(XXIII|xxiii)(\\.)?(\\s|$)",
             "replacement": "\\1Twenty-three \\4",
             "simple_replacement": false,
             "locales": ["en"]
         },
         {
-            "pattern": "( |^)(XXIV|xxiv)(\\.)?( |$)",
+            "pattern": "(\\s|^)(XXIV|xxiv)(\\.)?(\\s|$)",
             "replacement": "\\1Twenty-four \\4",
             "simple_replacement": false,
             "locales": ["en"]
         },
         {
-            "pattern": "( |^)(XXV|xxv)(\\.)?( |$)",
+            "pattern": "(\\s|^)(XXV|xxv)(\\.)?(\\s|$)",
             "replacement": "\\1Twenty-five \\4",
             "simple_replacement": false,
             "locales": ["en"]
         },
         {
-            "pattern": "( |^)(XXVI|xxvi)(\\.)?( |$)",
+            "pattern": "(\\s|^)(XXVI|xxvi)(\\.)?(\\s|$)",
             "replacement": "\\1Twenty-six \\4",
             "simple_replacement": false,
             "locales": ["en"]
         },
         {
-            "pattern": "( |^)(XXVII|xxvii)(\\.)?( |$)",
+            "pattern": "(\\s|^)(XXVII|xxvii)(\\.)?(\\s|$)",
             "replacement": "\\1Twenty-seven \\4",
             "simple_replacement": false,
             "locales": ["en"]
         },
         {
-            "pattern": "( |^)(XXVIII|xxviii)(\\.)?( |$)",
+            "pattern": "(\\s|^)(XXVIII|xxviii)(\\.)?(\\s|$)",
             "replacement": "\\1Twenty-eight \\4",
             "simple_replacement": false,
             "locales": ["en"]
         },
         {
-            "pattern": "( |^)(XXIX|xxix)(\\.)?( |$)",
+            "pattern": "(\\s|^)(XXIX|xxix)(\\.)?(\\s|$)",
             "replacement": "\\1Twenty-nine \\4",
             "simple_replacement": false,
             "locales": ["en"]

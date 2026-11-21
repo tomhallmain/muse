@@ -495,6 +495,12 @@ class TextModifierRule:
 
 
 class TextCleanerRuleset:
+    # „ “ ” « » -> "   and   ‚ ‘ ’ ‹ › -> ' (also the apostrophe, so ’ needs no context check)
+    QUOTE_TRANSLATION = str.maketrans({
+        "\u201e": '"', "\u201c": '"', "\u201d": '"', "\u00ab": '"', "\u00bb": '"',
+        "\u201a": "'", "\u2018": "'", "\u2019": "'", "\u2039": "'", "\u203a": "'",
+    })
+
     def __init__(self):
         self.rules = []
 
@@ -670,9 +676,7 @@ class TextCleanerRuleset:
         if not self._is_likely_english(text):
             text = NumberToWordsConverter.convert_text_numbers(text, locale)
         # Unfortunately, the quote characters from other languages are not well supported by most TTS models.
-        text = text.replace("\u201c", '"').replace('\u201e', '"')
-        text = text.replace("\u201c", '"').replace('\u201d', '"')
-        text = text.replace("\u00ab", '"').replace('\u00bb', '"')
+        text = text.translate(self.QUOTE_TRANSLATION)
         text = re.sub("#+", "#", text)
         hash_label_key = "Number \\1"
         maybe_false_hash_label = _(hash_label_key)

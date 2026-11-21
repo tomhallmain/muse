@@ -105,6 +105,23 @@ class TestSplitting:
         assert Chunker.count_tokens("a\nb c") == 3
 
 
+class TestRedundancyAndRepeats:
+    def test_redundancy_tiers_by_length(self):
+        chunker = Chunker()
+        assert chunker._get_redundancy_limit(30) == 3
+        assert chunker._get_redundancy_limit(80) == 2
+        assert chunker._get_redundancy_limit(200) == 1
+        assert chunker._get_redundancy_limit(400) == 0
+
+    def test_final_paragraph_equal_to_previous_is_kept(self):
+        _, chunks = _str_chunks("la la la\n\nla la la")
+        assert chunks == ["la la la", "la la la"]
+
+    def test_quote_normalisation(self):
+        cleaned = Chunker.cleaner.clean("„Hallo“, ‚ja‘ und it’s «ok»")
+        assert cleaned == "\"Hallo\", 'ja' und it's \"ok\""
+
+
 class TestTextRules:
     def test_locale_scoped_rule_skipped(self):
         rule = TextModifierRule("\\bx\\b", "Ten", locales=["en"])

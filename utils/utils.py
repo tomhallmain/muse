@@ -241,7 +241,6 @@ class Utils:
 
     @staticmethod
     def is_similar_strings(s0, s1, do_print=False):
-        l_distance = Utils.string_distance(s0, s1)
         min_len = min(len(s0), len(s1))
         if min_len == len(s0):
             weighted_avg_len = (len(s0) + len(s1) / 2) / 2
@@ -249,6 +248,12 @@ class Utils:
             weighted_avg_len = (len(s0) / 2 + len(s1)) / 2
         threshold = int(weighted_avg_len / 2.1) - int(math.log(weighted_avg_len))
         threshold = min(threshold, int(min_len * 0.8))
+        # The edit distance is at least the length difference, so skip computing it.
+        if abs(len(s0) - len(s1)) >= threshold:
+            if do_print:
+                print(f"Threshold:  {threshold}, length difference: {abs(len(s0) - len(s1))}\ns0: {s0}\ns1: {s1}\n")
+            return False
+        l_distance = Utils.string_distance(s0, s1)
         if do_print:
             print(f"Threshold:  {threshold}, Distance: {l_distance}\ns0: {s0}\ns1: {s1}\n")
         return l_distance < threshold
