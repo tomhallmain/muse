@@ -116,6 +116,9 @@ class Config:
         self.llm_thinking_budget_chars = None
 
         self.text_cleaner_ruleset = []
+        # Named rule lists a TTS invocation can opt into (TTSConfig.text_profiles),
+        # same schema as text_cleaner_ruleset entries.
+        self.text_cleaner_profiles = {}
         self.number_words = {}  # Locale-specific number word configurations
         self.coqui_tts_location = ""
         self.coqui_tts_model = ("tts_models/multilingual/multi-dataset/xtts_v2", "Royston Min", "en")
@@ -353,6 +356,7 @@ class Config:
             "muse_config",
             "news_api_source_trustworthiness",
             "number_words",
+            "text_cleaner_profiles",
         )
         self.set_directories(
             "prompts_directory",

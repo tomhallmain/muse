@@ -135,8 +135,8 @@
         {
             "pattern":  "° ?C",
             "replacement": {
-                "en": " degrees Fahrenheit",
-                "de": " Grad Fahrenheit"
+                "en": " degrees Celsius",
+                "de": " Grad Celsius"
             },
             "simple_replacement": false
         },
@@ -163,154 +163,191 @@
         {
             "pattern": " Vol\\.? ?([0-9IVXLM])",
             "replacement": " Volume \\1",
-            "simple_replacement": false
+            "simple_replacement": false,
+            "locales": ["en"]
         },
         {
             "pattern": "( |^)(IIII|iiii|IV|iv)(\\.)?( |$)",
             "replacement": "\\1Four \\4",
-            "simple_replacement": false
+            "simple_replacement": false,
+            "locales": ["en"]
         },
         {
             "pattern": "( |^)(III|iii)(\\.)?( |$)",
             "replacement": "\\1Three \\4",
-            "simple_replacement": false
+            "simple_replacement": false,
+            "locales": ["en"]
         },
         {
             "pattern": "( |^)(II|ii)(\\.)?( |$)",
             "replacement": "\\1Two \\4",
-            "simple_replacement": false
+            "simple_replacement": false,
+            "locales": ["en"]
         },
         {
             "pattern": "( |^)(I|i)(\\.)( |$)",
             "replacement": "\\1One \\4",
-            "simple_replacement": false
+            "simple_replacement": false,
+            "locales": ["en"]
         },
         {
             "pattern": "( |^)V(\\.)?( |$)",
             "replacement": "\\1Five \\3",
-            "simple_replacement": false
+            "simple_replacement": false,
+            "locales": ["en"]
         },
         {
             "pattern": "( |^)(VI|vi)(\\.)?( |$)",
             "replacement": "\\1Six \\4",
-            "simple_replacement": false
+            "simple_replacement": false,
+            "locales": ["en"]
         },
         {
             "pattern": "( |^)(VII|vii)(\\.)?( |$)",
             "replacement": "\\1Seven \\4",
-            "simple_replacement": false
+            "simple_replacement": false,
+            "locales": ["en"]
         },
         {
             "pattern": "( |^)(VIII|viii)(\\.)?( |$)",
             "replacement": "\\1Eight \\4",
-            "simple_replacement": false
+            "simple_replacement": false,
+            "locales": ["en"]
         },
         {
             "pattern": "( |^)(IX|ix)(\\.)?( |$)",
             "replacement": "\\1Nine \\4",
-            "simple_replacement": false
+            "simple_replacement": false,
+            "locales": ["en"]
         },
         {
             "pattern": "( |^)(X|x)(\\.)?( |$)",
             "replacement": "\\1Ten \\4",
-            "simple_replacement": false
+            "simple_replacement": false,
+            "locales": ["en"]
         },
         {
             "pattern": "( |^)(XI|xi)(\\.)?( |$)",
             "replacement": "\\1Eleven \\4",
-            "simple_replacement": false
+            "simple_replacement": false,
+            "locales": ["en"]
         },
         {
             "pattern": "( |^)(XII|xii)(\\.)?( |$)",
             "replacement": "\\1Twelve \\4",
-            "simple_replacement": false
+            "simple_replacement": false,
+            "locales": ["en"]
         },
         {
             "pattern": "( |^)(XIII|Xiii)(\\.)?( |$)",
             "replacement": "\\1Thirteen \\4",
-            "simple_replacement": false
+            "simple_replacement": false,
+            "locales": ["en"]
         },
         {
             "pattern": "( |^)(XIV|xiv)(\\.)?( |$)",
             "replacement": "\\1Fourteen \\4",
-            "simple_replacement": false
+            "simple_replacement": false,
+            "locales": ["en"]
         },
         {
             "pattern": "( |^)(XV|xv)(\\.)?( |$)",
             "replacement": "\\1Fifteen \\4",
-            "simple_replacement": false
+            "simple_replacement": false,
+            "locales": ["en"]
         },
         {
             "pattern": "( |^)(XVI|xvi)(\\.)?( |$)",
             "replacement": "\\1Sixteen \\4",
-            "simple_replacement": false
+            "simple_replacement": false,
+            "locales": ["en"]
         },
         {
             "pattern": "( |^)(XVII|xvii)(\\.)?( |$)",
             "replacement": "\\1Seventeen \\4",
-            "simple_replacement": false
+            "simple_replacement": false,
+            "locales": ["en"]
         },
         {
             "pattern": "( |^)(XVIII|xviii)(\\.)?( |$)",
             "replacement": "\\1Eighteen \\4",
-            "simple_replacement": false
+            "simple_replacement": false,
+            "locales": ["en"]
         },
         {
             "pattern": "( |^)(XIX|xix)(\\.)?( |$)",
             "replacement": "\\1Nineteen \\4",
-            "simple_replacement": false
+            "simple_replacement": false,
+            "locales": ["en"]
         },
         {
             "pattern": "( |^)(XX|xx)(\\.)?( |$)",
             "replacement": "\\1Twenty \\4",
-            "simple_replacement": false
+            "simple_replacement": false,
+            "locales": ["en"]
         },
         {
             "pattern": "( |^)(XXI|xxi)(\\.)?( |$)",
             "replacement": "\\1Twenty-one \\4",
-            "simple_replacement": false
+            "simple_replacement": false,
+            "locales": ["en"]
         },
         {
             "pattern": "( |^)(XXII|ii)(\\.)?( |$)",
             "replacement": "\\1Twenty-two \\4",
-            "simple_replacement": false
+            "simple_replacement": false,
+            "locales": ["en"]
         },
         {
             "pattern": "( |^)(XXIII|xxiii)(\\.)?( |$)",
             "replacement": "\\1Twenty-three \\4",
-            "simple_replacement": false
+            "simple_replacement": false,
+            "locales": ["en"]
         },
         {
             "pattern": "( |^)(XXIV|xxiv)(\\.)?( |$)",
             "replacement": "\\1Twenty-four \\4",
-            "simple_replacement": false
+            "simple_replacement": false,
+            "locales": ["en"]
         },
         {
             "pattern": "( |^)(XXV|xxv)(\\.)?( |$)",
             "replacement": "\\1Twenty-five \\4",
-            "simple_replacement": false
+            "simple_replacement": false,
+            "locales": ["en"]
         },
         {
             "pattern": "( |^)(XXVI|xxvi)(\\.)?( |$)",
             "replacement": "\\1Twenty-six \\4",
-            "simple_replacement": false
+            "simple_replacement": false,
+            "locales": ["en"]
         },
         {
             "pattern": "( |^)(XXVII|xxvii)(\\.)?( |$)",
             "replacement": "\\1Twenty-seven \\4",
-            "simple_replacement": false
+            "simple_replacement": false,
+            "locales": ["en"]
         },
         {
             "pattern": "( |^)(XXVIII|xxviii)(\\.)?( |$)",
             "replacement": "\\1Twenty-eight \\4",
-            "simple_replacement": false
+            "simple_replacement": false,
+            "locales": ["en"]
         },
         {
             "pattern": "( |^)(XXIX|xxix)(\\.)?( |$)",
             "replacement": "\\1Twenty-nine \\4",
-            "simple_replacement": false
+            "simple_replacement": false,
+            "locales": ["en"]
         }
     ],
+    "text_cleaner_profiles": {
+        "de_historical": [
+            {"pattern": "\\bAe(?=[a-zäöüß])", "replacement": "Ä", "locales": ["de"]},
+            {"pattern": "\\bOe(?=[a-zäöüß])", "replacement": "Ö", "locales": ["de"]},
+            {"pattern": "\\bUe(?=[a-zäöüß])", "replacement": "Ü", "locales": ["de"]}
+        ]
+    },
     "number_words": {
         "de": {
             "ones": {"0": "null", "1": "eins", "2": "zwei", "3": "drei", "4": "vier", "5": "fünf", "6": "sechs", "7": "sieben", "8": "acht", "9": "neun"},

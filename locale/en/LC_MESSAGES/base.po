@@ -6811,3 +6811,9 @@ msgstr ""
 "The password is stored with quantum-safe (OQS) encryption, which this build "
 "does not include, so protected actions are unavailable. Use a build made "
 "with OQS support."
+
+msgid "Skipped {0} bracketed lines"
+msgstr "Skipped {0} bracketed lines"
+
+msgid "Unknown text cleaner profile: {0}"
+msgstr "Unknown text cleaner profile: {0}"

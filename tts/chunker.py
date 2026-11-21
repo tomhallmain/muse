@@ -1,11 +1,57 @@
+from dataclasses import dataclass
+from enum import Enum
 import re
+from typing import Optional
 
-from tts.text_cleaner_ruleset import TextCleanerRuleset
+from tts.text_cleaner_ruleset import TextCleanerRuleset, primary_language
 from utils.config import config
+from utils.logging_setup import get_logger
 from utils.translations import I18N
 from utils.utils import Utils
 
 _ = I18N._
+logger = get_logger(__name__)
+
+
+class BracketLinePolicy(str, Enum):
+    ALWAYS = "always"                    # drop any line starting with ( or [
+    ANNOTATION_ONLY = "annotation_only"  # drop only a line that is entirely one bracketed span,
+                                         # e.g. "[Chorus]", "(Applause)", "[Verse 1: X]"
+    NEVER = "never"
+
+
+class SplitStrategy(str, Enum):
+    TOKENS = "tokens"        # cut every max_chunk_tokens - 1 whitespace tokens
+    SENTENCES = "sentences"  # pack whole sentences up to the limit; token-split a single
+                             # sentence longer than the limit
+
+
+@dataclass
+class ChunkingOptions:
+    bracket_lines: BracketLinePolicy = BracketLinePolicy.ALWAYS
+    join_wrapped_lines: bool = False     # join the lines of a paragraph with one space
+    dehyphenate: bool = False            # "Voll-\nmond" -> "Vollmond"; needs join_wrapped_lines
+    split_strategy: SplitStrategy = SplitStrategy.TOKENS
+    max_chunk_tokens: Optional[int] = None   # None -> config.max_chunk_tokens
+    record_dropped: bool = True          # keep (line_no, text) of dropped lines in Chunker.dropped_lines
+
+    @classmethod
+    def for_documents(cls) -> "ChunkingOptions":
+        """Preset for reading prose files (books, articles)."""
+        return cls(
+            bracket_lines=BracketLinePolicy.ANNOTATION_ONLY,
+            join_wrapped_lines=True,
+            dehyphenate=True,
+            split_strategy=SplitStrategy.SENTENCES,
+        )
+
+
+ANNOTATION_LINE = re.compile(r"^\s*(\[[^\]]*\]|\([^)]*\))\s*$")
+# A sentence end must be followed by an optionally quoted/bracketed capital or digit, so
+# abbreviations followed by lowercase or "(=" ("u. s. w. (= und so weiter)") don't split.
+SENTENCE_END = re.compile(r"(?<=[.!?;:])\s+(?=[\"'(\[]?[A-ZÄÖÜ0-9])")
+# Words after which a trailing hyphen is an elision ("Nord- und Südamerika"), not a line break.
+HYPHEN_KEEP_NEXT = {"de": {"und", "oder", "bis", "sowie"}, "en": {"and", "or", "to"}}
 
 
 class Chunker:
@@ -23,7 +69,7 @@ class Chunker:
         (50, 3),   # Chunks under 50 chars can be repeated three times
     ]
 
-    def __init__(self, skip_cjk=True, skip_redundant=True):
+    def __init__(self, skip_cjk=True, skip_redundant=True, options=None, extra_rules=()):
         """
         Initialize a new Chunker instance.
         
@@ -33,9 +79,18 @@ class Chunker:
                      well-handled by the TTS model.
             skip_redundant: If True, skip chunks that are highly similar to previously
                           seen chunks to avoid redundant output.
+            options: ChunkingOptions; defaults to ChunkingOptions().
+            extra_rules: TextModifierRules applied before the global ruleset, for this
+                         chunker only. The shared class-level cleaner is never modified.
         """
         self.skip_cjk = skip_cjk
         self.skip_redundant = skip_redundant
+        self.options = options or ChunkingOptions()
+        self.extra_rules = list(extra_rules)
+        self.max_chunk_tokens = self.options.max_chunk_tokens or self.MAX_CHUNK_TOKENS
+        self.dropped_lines = []      # (line_no, text) of lines dropped by the bracket policy
+        self.split_chunks = []       # indexes of paragraph chunks split for length
+        self.skipped_redundant = 0   # chunks removed by skip_redundant
         self._cjk_warning_given = False
         self._cjk_scripts_seen = set()
         self._total_chars = 0
@@ -151,13 +206,15 @@ class Chunker:
                 self._cjk_warning_given = True
             
         # Apply normal cleaning
-        cleaned = self.cleaner.clean(cleaned, locale)
-        if self.count_tokens(cleaned) > 200 and cleaned.startswith("\"") and cleaned.endswith("\""):
+        cleaned = self.cleaner.clean(cleaned, locale, extra_rules=self.extra_rules)
+        if (self.count_tokens(cleaned) > self.max_chunk_tokens
+                and cleaned.startswith("\"") and cleaned.endswith("\"")):
             # The sentence segmentation algorithm does not break on quotes even if they are long.
             cleaned = cleaned[1:-1]
             
         # Check for redundancy
         if cleaned and self._is_redundant(cleaned):
+            self.skipped_redundant += 1
             return None
             
         # Add to seen chunks if not redundant
@@ -170,10 +227,39 @@ class Chunker:
     def contains_alphanumeric(text):
         return bool(re.search(r'\w', text))
 
+    def _should_drop(self, line):
+        policy = self.options.bracket_lines
+        if policy == BracketLinePolicy.NEVER:
+            return False
+        if policy == BracketLinePolicy.ANNOTATION_ONLY:
+            return bool(ANNOTATION_LINE.match(line))
+        return line.startswith("[") or line.startswith("(")
+
+    @staticmethod
+    def _is_soft_hyphen_break(chunk, nxt, locale):
+        if not re.search(r"\w-$", chunk) or not nxt[:1].islower():
+            return False
+        first = re.match(r"\w+", nxt)
+        keep = HYPHEN_KEEP_NEXT.get(primary_language(locale) or "en", set())
+        return not (first and first.group(0) in keep)
+
+    def _append_line(self, chunk, line, is_str, locale):
+        if self.options.join_wrapped_lines:
+            part = line.strip()
+            if not chunk:
+                return part
+            if self.options.dehyphenate and self._is_soft_hyphen_break(chunk, part, locale):
+                return chunk[:-1] + part
+            return chunk + " " + part
+        if is_str and len(chunk) > 0 and chunk[-1] != " ":
+            chunk += " "
+        return chunk + line
+
     def _yield_chunks(self, lines_iterable, is_str=False, split_on_each_line=False, locale=None):
         last_chunk = ""
         chunk = ""
-        for line in lines_iterable:
+        dropped_count = 0
+        for line_no, line in enumerate(lines_iterable, start=1):
             if split_on_each_line:
                 if self.contains_alphanumeric(line):
                     cleaned = self._clean(line.strip(), locale)
@@ -189,11 +275,14 @@ class Chunker:
                 last_chunk = chunk
                 chunk = ""
                 continue
-            if line.startswith("[") or line.startswith("("):
+            if self._should_drop(line):
+                dropped_count += 1
+                if self.options.record_dropped:
+                    self.dropped_lines.append((line_no, line.rstrip()))
                 continue
-            if is_str and len(chunk) > 0 and chunk[-1] != " ":
-                chunk += " "
-            chunk += line
+            chunk = self._append_line(chunk, line, is_str, locale)
+        if dropped_count and self.options.record_dropped:
+            logger.info(_("Skipped {0} bracketed lines").format(dropped_count))
         if chunk != last_chunk and chunk.strip() != "":
             if self.contains_alphanumeric(chunk):
                 cleaned = self._clean(chunk.strip(), locale)
@@ -202,12 +291,30 @@ class Chunker:
 
     @staticmethod
     def count_tokens(chunk):
-        return len(chunk.strip().split(" "))
+        return len(chunk.split())
 
     @staticmethod
     def split_tokens(chunk, size):
-        chunk_tokens = chunk.strip().split(" ")
+        chunk_tokens = chunk.split()
         return [" ".join(chunk_tokens[i: i + size]) for i in range(0, len(chunk_tokens), size)]
+
+    def _split_sentences(self, chunk, limit):
+        buf, n = [], 0
+        for sentence in SENTENCE_END.split(chunk):
+            k = self.count_tokens(sentence)
+            if k > limit:
+                if buf:
+                    yield " ".join(buf)
+                    buf, n = [], 0
+                yield from self.split_tokens(sentence, size=limit)
+                continue
+            if n + k > limit and buf:
+                yield " ".join(buf)
+                buf, n = [], 0
+            buf.append(sentence)
+            n += k
+        if buf:
+            yield " ".join(buf)
 
     def yield_chunks(self, lines_iterable, is_str=False, split_on_each_line=False, locale=None):
         """
@@ -219,10 +326,15 @@ class Chunker:
             split_on_each_line: Whether to split on each line
             locale: Optional locale for text cleaning
         """
-        for chunk in self._yield_chunks(lines_iterable, is_str=is_str, split_on_each_line=split_on_each_line, locale=locale):
-            if self.count_tokens(chunk) > self.MAX_CHUNK_TOKENS:
-                for subchunk in self.split_tokens(chunk, size=self.MAX_CHUNK_TOKENS - 1):
-                    yield subchunk
+        chunks = self._yield_chunks(lines_iterable, is_str=is_str, split_on_each_line=split_on_each_line, locale=locale)
+        for index, chunk in enumerate(chunks):
+            if self.count_tokens(chunk) > self.max_chunk_tokens:
+                self.split_chunks.append(index)
+                limit = self.max_chunk_tokens - 1
+                if self.options.split_strategy == SplitStrategy.SENTENCES:
+                    yield from self._split_sentences(chunk, limit)
+                else:
+                    yield from self.split_tokens(chunk, size=limit)
             else:
                 yield chunk
 

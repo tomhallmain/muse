@@ -423,17 +423,34 @@ class NumberToWordsConverter:
             return cls.convert_number(rounded, locale, add_approximately=True)
 
 
+def primary_language(locale):
+    """Return the language subtag of *locale* ("de-DE" / "de_DE" -> "de"), or None."""
+    if not locale:
+        return None
+    return re.split(r"[-_]", locale, maxsplit=1)[0].lower()
+
+
 class TextModifierRule:
-    def __init__(self, pattern, replacement, simple_replacement=False, start=False, end=False):
+    def __init__(self, pattern, replacement, simple_replacement=False, start=False, end=False,
+                 locales=None):
         self._pattern = pattern if simple_replacement else re.compile(pattern)
         self._replacement = replacement
         self._is_locale_specific = isinstance(replacement, dict)
         self._simple_replace = simple_replacement
         self._start = start
         self._end = end
+        # When set, the rule only applies to text in these languages.
+        self._locales = None if locales is None else {primary_language(l) for l in locales}
     
+    def applies_to(self, locale):
+        if self._locales is None:
+            return True
+        return primary_language(locale or I18N.locale) in self._locales
+
     def _get_replacement(self, locale):
         if self._is_locale_specific:
+            if locale is not None and locale not in self._replacement:
+                locale = primary_language(locale)
             if locale is not None and locale in self._replacement:
                 return self._replacement[locale]
             else:
@@ -448,6 +465,8 @@ class TextModifierRule:
             return self._replacement
 
     def apply(self, text, locale=None):
+        if not self.applies_to(locale):
+            return text
         replacement = self._get_replacement(locale)
         if not self._start and not self._end:
             if self._simple_replace:
@@ -470,7 +489,9 @@ class TextModifierRule:
         return text
 
     def __str__(self) -> str:
-        return f'{self._pattern} -> {self._replacement}'
+        if self._locales is None:
+            return f'{self._pattern} -> {self._replacement}'
+        return f'{self._pattern} -> {self._replacement} ({", ".join(sorted(self._locales))})'
 
 
 class TextCleanerRuleset:
@@ -482,6 +503,11 @@ class TextCleanerRuleset:
             self.add_rule(rule)
             logger.info(f"Added rule: {rule}")
         
+        self.profiles = {}
+        for name, rule_configs in (getattr(config, "text_cleaner_profiles", None) or {}).items():
+            self.profiles[name] = [TextModifierRule(**rule_config) for rule_config in rule_configs]
+            logger.info(f"Loaded text cleaner profile {name} with {len(self.profiles[name])} rules")
+
         # Load number words configuration from config if available
         if hasattr(config, 'number_words') and config.number_words:
             self._load_number_words_from_config(config.number_words)
@@ -620,7 +646,24 @@ class TextCleanerRuleset:
         # Default: if we can't determine, assume not English (conservative approach)
         return False
         
-    def clean(self, text, locale=None):
+    def resolve_rules(self, profile_names=(), inline_rules=()):
+        """
+        Build the per-invocation rule list from named profiles (config.text_cleaner_profiles)
+        followed by inline rule dicts. Raises ValueError for an unknown profile name.
+        """
+        rules = []
+        for name in profile_names:
+            if name not in self.profiles:
+                raise ValueError(_("Unknown text cleaner profile: {0}").format(name))
+            rules.extend(self.profiles[name])
+        rules.extend(TextModifierRule(**rule_config) for rule_config in inline_rules)
+        return rules
+
+    def clean(self, text, locale=None, extra_rules=()):
+        # Extra rules run first: document-specific normalisation (e.g. historical spelling)
+        # has to happen before the global number and abbreviation rules see the text.
+        for rule in extra_rules:
+            text = rule.apply(text, locale)
         for rule in self.rules:
             text = rule.apply(text, locale)
         # Convert numeric digits to words for TTS processing

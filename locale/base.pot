@@ -6389,3 +6389,11 @@ msgstr ""
 msgid "years"
 msgstr ""
 
+
+#: tts/chunker.py
+msgid "Skipped {0} bracketed lines"
+msgstr ""
+
+#: tts/text_cleaner_ruleset.py
+msgid "Unknown text cleaner profile: {0}"
+msgstr ""

@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime
 import os
 import subprocess
@@ -12,7 +12,7 @@ import music_tag
 
 from tts.output_cleanup import cleanup_default_output_directory, is_orphaned_output_wav
 from tts.providers import BaseTTSProvider, TTSProviderType, get_provider
-from tts.chunker import Chunker
+from tts.chunker import Chunker, ChunkingOptions
 from utils.config import config
 from utils.job_queue import JobQueue
 from utils.app_paths import resource_path, tts_output_dir
@@ -42,6 +42,18 @@ class TTSConfig:
     run_context: Optional[object] = None
     skip_cjk: bool = True
     skip_redundant: bool = True
+    chunking: ChunkingOptions = field(default_factory=ChunkingOptions)
+    text_profiles: list[str] = field(default_factory=list)  # names from config.text_cleaner_profiles
+    extra_text_rules: list[dict] = field(default_factory=list)  # inline rules, same schema as ruleset entries
+
+
+@dataclass
+class ChunkPreview:
+    """What a TTS invocation would send to the provider, without generating audio."""
+    chunks: list[str]                     # exactly what would be sent to the provider
+    dropped_lines: list[tuple[int, str]]  # (line_no, text) dropped by the bracket-line policy
+    split_chunks: list[int]               # indexes of paragraph chunks that were split for length
+    skipped_redundant: int                # chunks removed by skip_redundant
 
 class TTSSpeakInvocation:
     _tracking = {}  # Maps invocation_id to TTSSpeakInvocation
@@ -55,7 +67,12 @@ class TTSSpeakInvocation:
         self.invocation_id = invocation_id
         self.error_count = 0
         self.total_chunks = 0
-        self.chunker = Chunker(skip_cjk=config.skip_cjk, skip_redundant=config.skip_redundant)
+        self.chunker = Chunker(
+            skip_cjk=config.skip_cjk,
+            skip_redundant=config.skip_redundant,
+            options=config.chunking,
+            extra_rules=Chunker.cleaner.resolve_rules(config.text_profiles, config.extra_text_rules),
+        )
         self.speak_callback = speak_callback
         self.config = config  # Store config to access run_context
         self._tracking[invocation_id] = self
@@ -113,7 +130,7 @@ class TTSSpeakInvocation:
             raise Exception("Empty text provided to process")
             
         return self._process_chunks(
-            self.chunker.get_str_chunks(text, locale=locale)
+            self.chunker.get_str_chunks(text, locale=self._resolve_locale(locale))
         )
 
     def process_file(self, filepath, split_on_each_line=False, locale=None):
@@ -132,8 +149,12 @@ class TTSSpeakInvocation:
             raise Exception("Empty or non-existent file provided to process")
             
         return self._process_chunks(
-            self.chunker.get_chunks(filepath, split_on_each_line, locale=locale)
+            self.chunker.get_chunks(filepath, split_on_each_line, locale=self._resolve_locale(locale))
         )
+
+    def _resolve_locale(self, locale):
+        # Text cleaning follows the language the text is spoken in, not the UI locale.
+        return locale or self.config.language
 
     def cleanup(self):
         if self.invocation_id in self._tracking:
@@ -174,6 +195,40 @@ class TextToSpeechRunner:
         self.run_context = config.run_context
 
     is_orphaned_output_wav = staticmethod(is_orphaned_output_wav)
+
+    @staticmethod
+    def _preview(config: TTSConfig, process) -> ChunkPreview:
+        """Run *process(invocation)* with a collecting callback; no provider is created."""
+        chunks = []
+        # A pending skip request on the run context would cut the preview short.
+        invocation = TTSSpeakInvocation.create(
+            lambda chunk, _invocation: chunks.append(chunk), replace(config, run_context=None)
+        )
+        try:
+            process(invocation)
+        finally:
+            invocation.cleanup()
+        chunker = invocation.chunker
+        return ChunkPreview(
+            chunks=chunks,
+            dropped_lines=list(chunker.dropped_lines),
+            split_chunks=list(chunker.split_chunks),
+            skipped_redundant=chunker.skipped_redundant,
+        )
+
+    @staticmethod
+    def preview_file(config: TTSConfig, filepath, split_on_each_line=False, locale=None) -> ChunkPreview:
+        """Return the chunks speak_file() would synthesise for *filepath*, without generating audio."""
+        return TextToSpeechRunner._preview(
+            config, lambda invocation: invocation.process_file(filepath, split_on_each_line, locale)
+        )
+
+    @staticmethod
+    def preview_text(config: TTSConfig, text, locale=None) -> ChunkPreview:
+        """Return the chunks speak() would synthesise for *text*, without generating audio."""
+        return TextToSpeechRunner._preview(
+            config, lambda invocation: invocation.process_text(text, locale)
+        )
 
     @staticmethod
     def cleanup_orphaned_output_files(directory: Optional[str] = None) -> int:
