@@ -164,6 +164,10 @@ class TTSSpeakInvocation:
 class TextToSpeechRunner:
     QUEUES = [] # TODO multiple named queues
     VLC_MEDIA_PLAYER = vlc.MediaPlayer()
+    # VLC's play() is asynchronous (opening -> buffering -> playing), so a chunk is only
+    # finished once it has started and then ended. One that hasn't started within this
+    # many seconds is stopped and skipped.
+    PLAYBACK_START_TIMEOUT_SECONDS = 5.0
     output_directory = tts_output_dir()
     lib_sounds = resource_path("lib", "sounds")
 
@@ -274,26 +278,46 @@ class TextToSpeechRunner:
         self._provider.generate_speech_file(text, output_path)
 
     def play_async(self, filepath):
-        if self.run_context and self.run_context.should_skip():
-            return
+        handed_off = False
         self.speech_queue.job_running = True
-        TextToSpeechRunner._play(filepath)
-        time.sleep(1)
-        while True:
-            player = TextToSpeechRunner.VLC_MEDIA_PLAYER
-            if player is None:
-                return  # stop_pending_jobs() ended playback
-            if not player.is_playing():
-                break
+        try:
             if self.run_context and self.run_context.should_skip():
                 return
+            player = TextToSpeechRunner._play(filepath)
+            if not self._wait_for_playback(player, filepath):
+                return
+            next_job_output_path = self.speech_queue.take()
+            if next_job_output_path is not None and os.path.exists(next_job_output_path):
+                time.sleep(2)
+                Utils.start_thread(self.play_async, use_asyncio=False, args=[next_job_output_path])
+                handed_off = True
+        finally:
+            # Once handed off, the next play_async() owns the flag. Otherwise playback has
+            # ended, been skipped or been stopped, and waiters (speak(), maybe_dj()) go on.
+            if not handed_off:
+                self.speech_queue.job_running = False
+
+    def _wait_for_playback(self, player, filepath):
+        """Wait until *player* has played to the end. False if skipped or stopped first."""
+        deadline = time.time() + TextToSpeechRunner.PLAYBACK_START_TIMEOUT_SECONDS
+        started = False
+        while True:
+            if TextToSpeechRunner.VLC_MEDIA_PLAYER is None:
+                return False  # stop_pending_jobs() ended playback
+            if self.run_context and self.run_context.should_skip():
+                player.stop()
+                return False
+            if player.is_playing():
+                started = True
+            elif player.get_state() in (vlc.State.Ended, vlc.State.Stopped, vlc.State.Error):
+                return True
+            elif not started and time.time() > deadline:
+                # Stopped so it can't start late and play over what comes next.
+                player.stop()
+                logger.warning(_("Speech audio did not start within {0} seconds, skipping it: {1}").format(
+                    TextToSpeechRunner.PLAYBACK_START_TIMEOUT_SECONDS, filepath))
+                return True
             time.sleep(.1)
-        next_job_output_path = self.speech_queue.take()
-        if next_job_output_path is not None and os.path.exists(next_job_output_path):
-            time.sleep(2)
-            Utils.start_thread(self.play_async, use_asyncio=False, args=[next_job_output_path])
-        else:
-            self.speech_queue.job_running = False
 
     def await_pending_speech_jobs(self, run_jobs=True):
         if self.run_context and self.run_context.should_skip():
@@ -324,9 +348,10 @@ class TextToSpeechRunner:
                 time.sleep(.5)
 
     def stop_pending_jobs(self):
-        if TextToSpeechRunner.VLC_MEDIA_PLAYER is not None and \
-           TextToSpeechRunner.VLC_MEDIA_PLAYER.is_playing():
-            TextToSpeechRunner.VLC_MEDIA_PLAYER.stop()
+        player = TextToSpeechRunner.VLC_MEDIA_PLAYER
+        if player is not None:
+            # Also while still opening, or it would start playing after the stop.
+            player.stop()
             TextToSpeechRunner.VLC_MEDIA_PLAYER = None
 
     def stop(self):
@@ -334,8 +359,10 @@ class TextToSpeechRunner:
 
     @staticmethod
     def _play(filepath):
-        TextToSpeechRunner.VLC_MEDIA_PLAYER = vlc.MediaPlayer(filepath)
-        TextToSpeechRunner.VLC_MEDIA_PLAYER.play()
+        player = vlc.MediaPlayer(filepath)
+        TextToSpeechRunner.VLC_MEDIA_PLAYER = player
+        player.play()
+        return player
 
     def _speak(self, text, invocation: TTSSpeakInvocation):
         output_path = self.generate_output_path()

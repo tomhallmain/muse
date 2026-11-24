@@ -210,10 +210,12 @@ class Muse:
         """If the DJ is prepared and will speak, wait for the speech queue to clear, then return immediately."""
         # TODO quality info for songs
         start = time.time()
-        self.voice.finish_speaking()
         while not spot_profile.is_prepared:
-            time.sleep(1)
             self.voice.finish_speaking()
+            time.sleep(1)
+        # prepare() can queue its last speech after the drain above and before it sets
+        # is_prepared; that speech would otherwise wait for the next spot.
+        self.voice.finish_speaking()
         return round(time.time() - start)
 
     def reset(self):
