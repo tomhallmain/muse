@@ -2,8 +2,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
-"POT-Creation-Date: 2026-11-09 15:11-0500\n"
-"PO-Revision-Date: 2026-11-09 15:11-0500\n"
+"POT-Creation-Date: 2026-11-24 11:40-0500\n"
+"PO-Revision-Date: 2026-11-24 11:40-0500\n"
 "Last-Translator: Translator Name <translator@example.com>\n"
 "Language-Team: en Team <<EMAIL>>\n"
 "Language: en\n"
@@ -119,7 +119,7 @@ msgstr "Extensions"
 msgid "Last.fm Library"
 msgstr "Last.fm Library"
 
-#: app_qt.py:286 ui_qt/blacklist_window.py:350
+#: app_qt.py:286 ui_qt/blacklist_window.py:351
 msgid "Blacklist"
 msgstr "Blacklist"
 
@@ -321,6 +321,10 @@ msgstr "Confirm Quit"
 msgid "Would you like to quit the application?"
 msgstr "Would you like to quit the application?"
 
+#: app_qt.py:713
+msgid "Exiting application"
+msgstr "Exiting application"
+
 #: app_qt.py:725 app_qt.py:1590 app_qt.py:1597 app_qt.py:1737 app_qt.py:1794
 #: ui_qt/artists_window.py:313 ui_qt/artists_window.py:338
 #: ui_qt/audio_device_window.py:320 ui_qt/audio_device_window.py:331
@@ -330,7 +334,7 @@ msgstr "Would you like to quit the application?"
 #: ui_qt/audio_device_window.py:391 ui_qt/audio_device_window.py:414
 #: ui_qt/audio_device_window.py:417 ui_qt/auth/password_admin_window.py:131
 #: ui_qt/auth/password_admin_window.py:544 ui_qt/auth/password_dialog.py:284
-#: ui_qt/blacklist_window.py:187 ui_qt/composers_window.py:305
+#: ui_qt/blacklist_window.py:188 ui_qt/composers_window.py:305
 #: ui_qt/composers_window.py:330 ui_qt/composers_window.py:459
 #: ui_qt/composers_window.py:530 ui_qt/composers_window.py:925
 #: ui_qt/configuration_window.py:1115 ui_qt/configuration_window.py:1118
@@ -346,8 +350,8 @@ msgstr "Would you like to quit the application?"
 #: ui_qt/playlist_window.py:1197 ui_qt/playlist_window.py:1239
 #: ui_qt/playlist_window.py:1265 ui_qt/playlist_window.py:1276
 #: ui_qt/playlist_window.py:1282 ui_qt/schedules_window.py:169
-#: ui_qt/track_details_window.py:521 ui_qt/track_details_window.py:600
-#: ui_qt/track_details_window.py:787 ui_qt/track_details_window.py:807
+#: ui_qt/track_details_window.py:526 ui_qt/track_details_window.py:605
+#: ui_qt/track_details_window.py:792 ui_qt/track_details_window.py:812
 msgid "Error"
 msgstr "Error"
 
@@ -358,6 +362,10 @@ msgstr "(no playlist configured)"
 #: app_qt.py:814
 msgid "(see playlist window)"
 msgstr "(see playlist window)"
+
+#: app_qt.py:990
+msgid "Error checking audio device settings: {0}"
+msgstr "Error checking audio device settings: {0}"
 
 #: app_qt.py:994
 msgid "Confirm Run"
@@ -451,6 +459,14 @@ msgstr "Directories: {0}"
 msgid "DJ: "
 msgstr "DJ: "
 
+#: app_qt.py:1415
+msgid "Could not play spinning record video {0}: {1}"
+msgstr "Could not play spinning record video {0}: {1}"
+
+#: app_qt.py:1426
+msgid "Could not {0} the artwork video: {1}"
+msgstr "Could not {0} the artwork video: {1}"
+
 #: app_qt.py:1440
 msgid "VLC plugin cache"
 msgstr "VLC plugin cache"
@@ -494,33 +510,326 @@ msgstr "Debug mode toggled."
 msgid "Password Admin Window Error"
 msgstr "Password Admin Window Error"
 
-#: extensions/extension_manager.py:326 extensions/extension_manager.py:347
+#: app_qt.py:1840
+msgid "Could not compare this build with its source checkout: {0}"
+msgstr "Could not compare this build with its source checkout: {0}"
+
+#: app_qt.py:1846
+msgid "This build no longer matches its source code. See the log for details."
+msgstr ""
+"This build no longer matches its source code. See the log for details."
+
+#: app_qt.py:1882
+msgid "Could not open the fault log: {0}"
+msgstr "Could not open the fault log: {0}"
+
+#: app_qt.py:1899
+msgid "FFmpeg not found"
+msgstr "FFmpeg not found"
+
+#: app_qt.py:1900
+msgid ""
+"Muse needs FFmpeg to play tracks, but ffmpeg was not found on PATH. Install "
+"FFmpeg, then restart Muse. See the README for details."
+msgstr ""
+"Muse needs FFmpeg to play tracks, but ffmpeg was not found on PATH. Install "
+"FFmpeg, then restart Muse. See the README for details."
+
+#: app_qt.py:1909
+msgid "Caught signal, shutting down gracefully..."
+msgstr "Caught signal, shutting down gracefully..."
+
+#: extensions/bluesky_api.py:247
+msgid "Skipping Bluesky feed {0}: {1}"
+msgstr "Skipping Bluesky feed {0}: {1}"
+
+#: extensions/calendar_aggregator.py:217
+msgid "Error getting events from Holiday API: {0}"
+msgstr "Error getting events from Holiday API: {0}"
+
+#: extensions/calendar_aggregator.py:245
+msgid "Error getting events from Nager Public Holidays API: {0}"
+msgstr "Error getting events from Nager Public Holidays API: {0}"
+
+#: extensions/calendar_aggregator.py:273
+msgid "Error getting events from Inadiutorium API: {0}"
+msgstr "Error getting events from Inadiutorium API: {0}"
+
+#: extensions/calendar_aggregator.py:304
+msgid "Error getting events from Hijri Calendar API: {0}"
+msgstr "Error getting events from Hijri Calendar API: {0}"
+
+#: extensions/extension_filer.py:56
+msgid "Could not scan {0} for genre dirs: {1}"
+msgstr "Could not scan {0} for genre dirs: {1}"
+
+#: extensions/extension_filer.py:198
+msgid "Pillow not available; embedding WebP as-is"
+msgstr "Pillow not available; embedding WebP as-is"
+
+#: extensions/extension_filer.py:241
+msgid "Delete skipped: file not found at {0}"
+msgstr "Delete skipped: file not found at {0}"
+
+#: extensions/extension_filer.py:245
+msgid "Deleted extension file: {0}"
+msgstr "Deleted extension file: {0}"
+
+#: extensions/extension_filer.py:250
+msgid "Failed to delete extension file {0}: {1}"
+msgstr "Failed to delete extension file {0}: {1}"
+
+#: extensions/extension_filer.py:271
+msgid "Auto-filing skipped: source file missing at {0}"
+msgstr "Auto-filing skipped: source file missing at {0}"
+
+#: extensions/extension_filer.py:275
+msgid "Auto-filing skipped: no directories configured"
+msgstr "Auto-filing skipped: no directories configured"
+
+#: extensions/extension_filer.py:280
+msgid "Auto-filing base directory does not exist: {0}"
+msgstr "Auto-filing base directory does not exist: {0}"
+
+#: extensions/extension_filer.py:306
+msgid "Auto-filed extension: {0} -> {1}"
+msgstr "Auto-filed extension: {0} -> {1}"
+
+#: extensions/extension_filer.py:309
+msgid "Auto-filing move failed ({0} -> {1}): {2}"
+msgstr "Auto-filing move failed ({0} -> {1}): {2}"
+
+#: extensions/extension_manager.py:72
+msgid "Invalid strategy '{0}' found in cache, defaulting to RANDOM"
+msgstr "Invalid strategy '{0}' found in cache, defaulting to RANDOM"
+
+#: extensions/extension_manager.py:241
+msgid "Starting extensions thread"
+msgstr "Starting extensions thread"
+
+#: extensions/extension_manager.py:284
+msgid "Extension thread still blocked after {0}s"
+msgstr "Extension thread still blocked after {0}s"
+
+#: extensions/extension_manager.py:293
+msgid "Delayed thread still blocked after {0}s"
+msgstr "Delayed thread still blocked after {0}s"
+
+#: extensions/extension_manager.py:302
+msgid "Error during extension reset: {0}"
+msgstr "Error during extension reset: {0}"
+
+#: extensions/extension_manager.py:327 extensions/extension_manager.py:348
 msgid "Extension thread waiting for {0} minutes"
 msgstr "Extension thread waiting for {0} minutes"
 
-#: extensions/extension_manager.py:387
+#: extensions/extension_manager.py:351
+msgid "Extension thread exiting"
+msgstr "Extension thread exiting"
+
+#: extensions/extension_manager.py:388
 msgid "Coming up soon, we'll be listening to a new track from the {0} {1}."
 msgstr "Coming up soon, we'll be listening to a new track from the {0} {1}."
 
-#: extensions/extension_manager.py:407
+#: extensions/extension_manager.py:408
 msgid "Extension failed for {0} with value '{1}': {2}"
 msgstr "Extension failed for {0} with value '{1}': {2}"
 
-#: extensions/extension_manager.py:702
+#: extensions/extension_manager.py:451
+msgid "LLM call failed for artist '{0}', falling back to simple query: {1}"
+msgstr "LLM call failed for artist '{0}', falling back to simple query: {1}"
+
+#: extensions/extension_manager.py:470
+msgid "LLM call failed for genre '{0}', falling back to simple query: {1}"
+msgstr "LLM call failed for genre '{0}', falling back to simple query: {1}"
+
+#: extensions/extension_manager.py:486
+msgid ""
+"LLM call failed for instrument '{0}' with genre '{1}', falling back to "
+"simple query: {2}"
+msgstr ""
+"LLM call failed for instrument '{0}' with genre '{1}', falling back to "
+"simple query: {2}"
+
+#: extensions/extension_manager.py:707
 msgid "Extension \"{0}\" waiting for {1} minutes"
 msgstr "Extension \"{0}\" waiting for {1} minutes"
 
-#: extensions/extension_manager.py:715
+#: extensions/extension_manager.py:720
 msgid "Extension \"{0}\" rejected"
 msgstr "Extension \"{0}\" rejected"
 
-#: extensions/extension_manager.py:722
+#: extensions/extension_manager.py:727
 msgid "Fetching extension \"{0}\""
 msgstr "Fetching extension \"{0}\""
 
+#: extensions/extension_manager.py:756
+msgid "Failed to rename: {0}"
+msgstr "Failed to rename: {0}"
+
 #: extensions/extension_manager.py:769
+msgid "Auto-filing returned no path; file remains at {0}"
+msgstr "Auto-filing returned no path; file remains at {0}"
+
+#: extensions/extension_manager.py:774
 msgid "Extension \"{0}\" ready"
 msgstr "Extension \"{0}\" ready"
+
+#: extensions/extension_manager.py:778
+msgid "Extension delayed processing failed: {0}"
+msgstr "Extension delayed processing failed: {0}"
+
+#: extensions/extension_manager.py:832
+msgid "Failed to rename file to remove emoji: {0}"
+msgstr "Failed to rename file to remove emoji: {0}"
+
+#: extensions/extension_manager.py:915
+msgid ""
+"LLM scoring of search results failed, falling back to mechanical quality "
+"only: {0}"
+msgstr ""
+"LLM scoring of search results failed, falling back to mechanical quality "
+"only: {0}"
+
+#: extensions/extension_manager.py:930
+msgid ""
+"Embedding scoring of search results failed, falling back to mechanical "
+"quality only: {0}"
+msgstr ""
+"Embedding scoring of search results failed, falling back to mechanical "
+"quality only: {0}"
+
+#: extensions/extension_manager.py:1069
+msgid "Error getting extension details for {0}: {1}"
+msgstr "Error getting extension details for {0}: {1}"
+
+#: extensions/extension_manager.py:1070
+msgid "No extension details found for {0}"
+msgstr "No extension details found for {0}"
+
+#: extensions/hacker_news_souper.py:16
+msgid "Unexpected number of title line links found: {0}"
+msgstr "Unexpected number of title line links found: {0}"
+
+#: extensions/hacker_news_souper.py:87
+msgid "Failed to get titleline_el for Hacker New items"
+msgstr "Failed to get titleline_el for Hacker New items"
+
+#: extensions/hacker_news_souper.py:92
+msgid "Failed to create Hacker News Item: {0}"
+msgstr "Failed to create Hacker News Item: {0}"
+
+#: extensions/hacker_news_souper.py:104
+msgid "Failed to extract data for Hacker New items: {0}"
+msgstr "Failed to extract data for Hacker New items: {0}"
+
+#: extensions/icy_metadata.py:146
+msgid "on_title_change callback raised"
+msgstr "on_title_change callback raised"
+
+#: extensions/icy_metadata.py:156
+msgid "ICY connection error ({0}); reconnecting in {1:.0f}s"
+msgstr "ICY connection error ({0}); reconnecting in {1:.0f}s"
+
+#: extensions/imslp_souper.py:310 extensions/wiki_souper.py:354
+msgid "Invalid data urls:"
+msgstr "Invalid data urls:"
+
+#: extensions/imslp_souper.py:317 extensions/wiki_souper.py:361
+msgid "Failed urls: "
+msgstr "Failed urls: "
+
+#: extensions/lastfm_api.py:229
+msgid "Last.fm request failed for {0}: {1}"
+msgstr "Last.fm request failed for {0}: {1}"
+
+#: extensions/llm.py:134
+msgid "{0} - Failed to get json attr {1} from json response: {2}"
+msgstr "{0} - Failed to get json attr {1} from json response: {2}"
+
+#: extensions/llm.py:248
+msgid "LLM failure count increased to {0} for state '{1}'"
+msgstr "LLM failure count increased to {0} for state '{1}'"
+
+#: extensions/llm.py:595 extensions/llm.py:721
+msgid "Failed to generate LLM response: {0}"
+msgstr "Failed to generate LLM response: {0}"
+
+#: extensions/llm.py:646
+msgid "Failed to persist LLM prompt/response history: {0}"
+msgstr "Failed to persist LLM prompt/response history: {0}"
+
+#: extensions/llm.py:697
+msgid "Exception in LLM generation thread: {0}"
+msgstr "Exception in LLM generation thread: {0}"
+
+#: extensions/llm.py:715
+msgid "Exception while monitoring LLM thread: {0}"
+msgstr "Exception while monitoring LLM thread: {0}"
+
+#: extensions/llm.py:826
+msgid "Thread did not terminate gracefully, forcing cleanup"
+msgstr "Thread did not terminate gracefully, forcing cleanup"
+
+#: extensions/musicbrainz_api.py:302
+msgid "MusicBrainz request failed ({0}): {1}"
+msgstr "MusicBrainz request failed ({0}): {1}"
+
+#: extensions/musicbrainz_api.py:393
+msgid "Could not fetch recording {0}: {1}"
+msgstr "Could not fetch recording {0}: {1}"
+
+#: extensions/musicbrainz_api.py:411
+msgid "Could not fetch work {0}: {1}"
+msgstr "Could not fetch work {0}: {1}"
+
+#: extensions/musicbrainz_api.py:495
+msgid "Skipping recording {0} during enrichment: {1}"
+msgstr "Skipping recording {0} during enrichment: {1}"
+
+#: extensions/radio_browser.py:37
+msgid "Radio Browser DNS discovery failed, using fallback: {0}"
+msgstr "Radio Browser DNS discovery failed, using fallback: {0}"
+
+#: extensions/radio_browser.py:93
+msgid "Failed to fetch station by UUID {0}: {1}"
+msgstr "Failed to fetch station by UUID {0}: {1}"
+
+#: extensions/radio_browser.py:116
+msgid "Failed to resolve playlist URL {0}: {1}"
+msgstr "Failed to resolve playlist URL {0}: {1}"
+
+#: extensions/reddit_api.py:80
+msgid "Unreadable Reddit timestamp: {0}"
+msgstr "Unreadable Reddit timestamp: {0}"
+
+#: extensions/reddit_api.py:210
+msgid "praw is not installed; using the public listing"
+msgstr "praw is not installed; using the public listing"
+
+#: extensions/reddit_api.py:215
+msgid "Reddit API path failed ({0}); using the public listing"
+msgstr "Reddit API path failed ({0}); using the public listing"
+
+#: extensions/reddit_api.py:221
+msgid "Skipping r/{0}: {1}"
+msgstr "Skipping r/{0}: {1}"
+
+#: extensions/social_filter.py:52
+msgid "Unreadable timestamp: {0}"
+msgstr "Unreadable timestamp: {0}"
+
+#: extensions/soup_utils.py:78
+msgid "Failed to find elements of class {0} - {1}"
+msgstr "Failed to find elements of class {0} - {1}"
+
+#: extensions/wiki_opensearch_api.py:64 extensions/wiki_opensearch_api.py:74
+msgid "Failed to connect to Wiki OpenSearch API: {0}"
+msgstr "Failed to connect to Wiki OpenSearch API: {0}"
+
+#: extensions/wiki_souper.py:404
+msgid "Failed to download from url: {0}"
+msgstr "Failed to download from url: {0}"
 
 #: library_data/artist.py:54
 msgid "Artist name cannot be empty"
@@ -575,25 +884,47 @@ msgstr "Invalid artist data"
 msgid "An artist named \"{0}\" already exists"
 msgstr "An artist named \"{0}\" already exists"
 
+#: library_data/artist.py:321
+msgid "Error saving artist: {0}"
+msgstr "Error saving artist: {0}"
+
 #: library_data/artist.py:342
 msgid "Artist not found"
 msgstr "Artist not found"
 
-#: library_data/blacklist.py:203
+#: library_data/artist.py:347
+msgid "Error deleting artist: {0}"
+msgstr "Error deleting artist: {0}"
+
+#: library_data/artist.py:358 library_data/composer.py:938
+#: library_data/form.py:271 library_data/genre.py:273
+#: library_data/instrument.py:274 library_data/library_data.py:897
+msgid "Invalid search query"
+msgstr "Invalid search query"
+
+#: library_data/blacklist.py:241
 msgid "[regex]"
 msgstr "[regex]"
 
-#: library_data/blacklist.py:205
+#: library_data/blacklist.py:243
 msgid "[no boundary]"
 msgstr "[no boundary]"
 
-#: library_data/blacklist.py:207
+#: library_data/blacklist.py:245
 msgid "[no space conversion]"
 msgstr "[no space conversion]"
 
-#: library_data/blacklist.py:209
+#: library_data/blacklist.py:247
 msgid "[exception: {0}]"
 msgstr "[exception: {0}]"
+
+#: library_data/blacklist.py:504
+msgid "Invalid blacklist item type: {0}"
+msgstr "Invalid blacklist item type: {0}"
+
+#: library_data/blacklist.py:711
+msgid "Invalid item type in JSON blacklist import: {0}"
+msgstr "Invalid item type in JSON blacklist import: {0}"
 
 #: library_data/composer.py:67
 msgid "Composer name cannot be empty"
@@ -635,13 +966,41 @@ msgstr "Added before {0}"
 msgid "All Composers"
 msgstr "All Composers"
 
-#: library_data/composer.py:634 library_data/composer.py:675
+#: library_data/composer.py:680
+msgid "Error saving composers: {0}"
+msgstr "Error saving composers: {0}"
+
+#: library_data/composer.py:697 library_data/composer.py:738
 msgid "Invalid composer data"
 msgstr "Invalid composer data"
 
-#: library_data/composer.py:658 library_data/composer.py:682
+#: library_data/composer.py:721 library_data/composer.py:745
 msgid "Composer not found"
 msgstr "Composer not found"
+
+#: library_data/composer.py:752
+msgid "Error deleting composer: {0}"
+msgstr "Error deleting composer: {0}"
+
+#: library_data/data_fixes.py:46
+msgid "Could not read data fixes from {0}: {1}"
+msgstr "Could not read data fixes from {0}: {1}"
+
+#: library_data/data_fixes.py:49
+msgid "Data fixes file is not a list: {0}"
+msgstr "Data fixes file is not a list: {0}"
+
+#: library_data/data_fixes.py:68
+msgid "Could not read applied data fixes: {0}"
+msgstr "Could not read applied data fixes: {0}"
+
+#: library_data/data_fixes.py:82
+msgid "Data fix {0} failed, will retry on next load: {1}"
+msgstr "Data fix {0} failed, will retry on next load: {1}"
+
+#: library_data/data_fixes.py:84
+msgid "Data fix {0}: {1} ({2})"
+msgstr "Data fix {0}: {1} ({2})"
 
 #: library_data/form.py:37
 msgid "Form name cannot be empty"
@@ -663,9 +1022,17 @@ msgstr "Invalid form data"
 msgid "A form named \"{0}\" already exists"
 msgstr "A form named \"{0}\" already exists"
 
+#: library_data/form.py:234
+msgid "Error saving form: {0}"
+msgstr "Error saving form: {0}"
+
 #: library_data/form.py:255
 msgid "Form not found"
 msgstr "Form not found"
+
+#: library_data/form.py:260
+msgid "Error deleting form: {0}"
+msgstr "Error deleting form: {0}"
 
 #: library_data/genre.py:37
 msgid "Genre name cannot be empty"
@@ -683,9 +1050,17 @@ msgstr "Invalid genre data"
 msgid "A genre named \"{0}\" already exists"
 msgstr "A genre named \"{0}\" already exists"
 
+#: library_data/genre.py:236
+msgid "Error saving genre: {0}"
+msgstr "Error saving genre: {0}"
+
 #: library_data/genre.py:257
 msgid "Genre not found"
 msgstr "Genre not found"
+
+#: library_data/genre.py:262
+msgid "Error deleting genre: {0}"
+msgstr "Error deleting genre: {0}"
 
 #: library_data/instrument.py:38
 msgid "Instrument name cannot be empty"
@@ -707,9 +1082,85 @@ msgstr "Invalid instrument data"
 msgid "An instrument named \"{0}\" already exists"
 msgstr "An instrument named \"{0}\" already exists"
 
+#: library_data/instrument.py:237
+msgid "Error saving instrument: {0}"
+msgstr "Error saving instrument: {0}"
+
 #: library_data/instrument.py:258
 msgid "Instrument not found"
 msgstr "Instrument not found"
+
+#: library_data/instrument.py:263
+msgid "Error deleting instrument: {0}"
+msgstr "Error deleting instrument: {0}"
+
+#: library_data/library_data.py:329
+msgid ""
+"Embedding ranking of search results failed, keeping the lexical order: {0}"
+msgstr ""
+"Embedding ranking of search results failed, keeping the lexical order: {0}"
+
+#: library_data/library_data.py:586
+msgid "Error storing directories cache to DB: {0}"
+msgstr "Error storing directories cache to DB: {0}"
+
+#: library_data/library_data.py:598
+msgid "Skipping track {0} for DB store: {1}"
+msgstr "Skipping track {0} for DB store: {1}"
+
+#: library_data/library_data.py:609
+msgid "Error storing media track cache to DB: {0}"
+msgstr "Error storing media track cache to DB: {0}"
+
+#: library_data/library_data.py:633
+msgid "Failed to load directories cache from DB: {0}"
+msgstr "Failed to load directories cache from DB: {0}"
+
+#: library_data/library_data.py:645
+msgid "Failed to load directories cache from pickle file: {0}"
+msgstr "Failed to load directories cache from pickle file: {0}"
+
+#: library_data/library_data.py:664
+msgid ""
+"Migrated directories cache but failed to persist removal from "
+"app_info_cache: {0}"
+msgstr ""
+"Migrated directories cache but failed to persist removal from "
+"app_info_cache: {0}"
+
+#: library_data/library_data.py:666
+msgid "Failed to migrate directories cache to pickle file: {0}"
+msgstr "Failed to migrate directories cache to pickle file: {0}"
+
+#: library_data/library_data.py:714
+msgid "Could not read group sizes for {0}: {1}"
+msgstr "Could not read group sizes for {0}: {1}"
+
+#: library_data/library_data.py:730
+msgid "Failed to load media track cache from DB: {0}"
+msgstr "Failed to load media track cache from DB: {0}"
+
+#: library_data/library_data.py:737
+msgid "No media track cache found, creating new one"
+msgstr "No media track cache found, creating new one"
+
+#: library_data/library_data.py:748
+msgid "Error parsing library refresh time: {0}"
+msgstr "Error parsing library refresh time: {0}"
+
+#: library_data/library_data.py:757
+msgid "Error getting cache file modification time: {0}"
+msgstr "Error getting cache file modification time: {0}"
+
+#: library_data/library_data.py:768
+msgid "Error recording library refresh time: {0}"
+msgstr "Error recording library refresh time: {0}"
+
+#: library_data/library_data.py:780
+msgid ""
+"Found {0} missing files in cache for {1}. Consider refreshing the cache."
+msgstr ""
+"Found {0} missing files in cache for {1}. Consider refreshing the cache."
 
 #: library_data/library_data.py:820
 msgid "Updating tracks"
@@ -719,193 +1170,548 @@ msgstr "Updating tracks"
 msgid "Refreshing cache... ({0}/{1} files)"
 msgstr "Refreshing cache... ({0}/{1} files)"
 
+#: library_data/library_data.py:841 library_data/library_data.py:917
+msgid "Error in status callback: {0}"
+msgstr "Error in status callback: {0}"
+
 #: library_data/library_data.py:915
 msgid ""
 "Searching for tracks... ({0} files searched, {1} files may be remaining)"
 msgstr ""
 "Searching for tracks... ({0} files searched, {1} files may be remaining)"
 
-#: library_data/media_track.py:498
+#: library_data/library_data.py:937
+msgid "Error in search callback: {0}"
+msgstr "Error in search callback: {0}"
+
+#: library_data/library_data.py:992
+msgid "Semantic recall failed, the search stays literal: {0}"
+msgstr "Semantic recall failed, the search stays literal: {0}"
+
+#: library_data/library_data.py:1196
+msgid "Error processing compilation for track {0}: {1}"
+msgstr "Error processing compilation for track {0}: {1}"
+
+#: library_data/library_data.py:1293
+msgid "Failed to update artwork for {0}: {1}"
+msgstr "Failed to update artwork for {0}: {1}"
+
+#: library_data/library_data.py:1304
+msgid "Album artwork could not be written to {0} track(s): {1}"
+msgstr "Album artwork could not be written to {0} track(s): {1}"
+
+#: library_data/media_track.py:57
+msgid "No music tag support: {0}"
+msgstr "No music tag support: {0}"
+
+#: library_data/media_track.py:65
+msgid "No mutagen (album artwork) support: {0}"
+msgstr "No mutagen (album artwork) support: {0}"
+
+#: library_data/media_track.py:173
+msgid "Failed to write errors to file: {0}"
+msgstr "Failed to write errors to file: {0}"
+
+#: library_data/media_track.py:228 library_data/media_track.py:262
+msgid ""
+"File not found: {0}. This may be due to an outdated cache. Consider "
+"refreshing the cache in the UI."
+msgstr ""
+"File not found: {0}. This may be due to an outdated cache. Consider "
+"refreshing the cache in the UI."
+
+#: library_data/media_track.py:235
+msgid ""
+"{0}\n"
+"MediaInfo error details:\n"
+"{1}"
+msgstr ""
+"{0}\n"
+"MediaInfo error details:\n"
+"{1}"
+
+#: library_data/media_track.py:253
+msgid "Failed to get year from MediaInfo: {0}"
+msgstr "Failed to get year from MediaInfo: {0}"
+
+#: library_data/media_track.py:269
+msgid ""
+"Unsupported file format for metadata reading: {0}. The file format is not "
+"supported by the metadata library."
+msgstr ""
+"Unsupported file format for metadata reading: {0}. The file format is not "
+"supported by the metadata library."
+
+#: library_data/media_track.py:271 library_data/media_track.py:278
+msgid "Failed to load metadata for {0}: {1}"
+msgstr "Failed to load metadata for {0}: {1}"
+
+#: library_data/media_track.py:286
+msgid "Invalid music_tag wrapper for {0}: missing or invalid tag_map"
+msgstr "Invalid music_tag wrapper for {0}: missing or invalid tag_map"
+
+#: library_data/media_track.py:307
+msgid "Failed to load {0} for {1}: {2}"
+msgstr "Failed to load {0} for {1}: {2}"
+
+#: library_data/media_track.py:309
+msgid "Too many tag failures ({0}) for {1}, falling back to MediaInfo"
+msgstr "Too many tag failures ({0}) for {1}, falling back to MediaInfo"
+
+#: library_data/media_track.py:322
+msgid "Failed to load length for {0}: {1}"
+msgstr "Failed to load length for {0}: {1}"
+
+#: library_data/media_track.py:512
 msgid "Unknown title"
 msgstr "Unknown title"
 
-#: library_data/media_track.py:504
+#: library_data/media_track.py:518
 msgid "Unknown album"
 msgstr "Unknown album"
 
-#: library_data/media_track.py:510
+#: library_data/media_track.py:524
 msgid "Unknown artist"
 msgstr "Unknown artist"
 
-#: library_data/media_track.py:855 library_data/media_track.py:856
+#: library_data/media_track.py:569
+msgid "Skipping volume analysis for file with special characters: {0}"
+msgstr "Skipping volume analysis for file with special characters: {0}"
+
+#: library_data/media_track.py:695
+msgid "Album artwork not found: {0}"
+msgstr "Album artwork not found: {0}"
+
+#: library_data/media_track.py:759
+msgid "Could not write album artwork to temp file: {0}"
+msgstr "Could not write album artwork to temp file: {0}"
+
+#: library_data/media_track.py:869 library_data/media_track.py:870
 msgid "Number \\1"
 msgstr " Number \\1"
 
-#: library_data/media_track.py:857
+#: library_data/media_track.py:871
 msgid "\\1text to speech\\2"
 msgstr "\\1text to speech\\2"
 
-#: library_data/media_track.py:858
+#: library_data/media_track.py:872
 msgid " Opus \\2"
 msgstr " Opus \\2"
+
+#: library_data/media_track.py:946
+msgid "Cannot update metadata: music_tag library not available"
+msgstr "Cannot update metadata: music_tag library not available"
+
+#: library_data/media_track.py:950
+msgid "Cannot update metadata: track is a video file"
+msgstr "Cannot update metadata: track is a video file"
+
+#: library_data/media_track.py:960
+msgid "Invalid year value: {0}"
+msgstr "Invalid year value: {0}"
+
+#: library_data/media_track.py:963
+msgid "Invalid year format: {0}"
+msgstr "Invalid year format: {0}"
+
+#: library_data/media_track.py:971
+msgid "Invalid track number: {0}"
+msgstr "Invalid track number: {0}"
+
+#: library_data/media_track.py:974
+msgid "Invalid track number format: {0}"
+msgstr "Invalid track number format: {0}"
+
+#: library_data/media_track.py:986
+msgid "Failed to update artwork: {0}"
+msgstr "Failed to update artwork: {0}"
+
+#: library_data/media_track.py:1015
+msgid "Failed to update {0}: {1}"
+msgstr "Failed to update {0}: {1}"
+
+#: library_data/media_track.py:1026 scripts/repair_album_artwork.py:88
+#: tests/unit/test_maintenance_scripts.py:112
+msgid "Successfully updated metadata for {0}"
+msgstr "Successfully updated metadata for {0}"
+
+#: library_data/media_track.py:1030
+msgid "Failed to update track metadata: {0}"
+msgstr "Failed to update track metadata: {0}"
+
+#: library_data/media_track.py:1113
+msgid "Cache propagation failed after file rename: {0}"
+msgstr "Cache propagation failed after file rename: {0}"
+
+#: library_data/media_track.py:1115
+msgid "Renamed track file: {0} → {1}"
+msgstr "Renamed track file: {0} → {1}"
+
+#: library_data/media_track.py:1156
+msgid "Cache propagation failed after directory rename: {0}"
+msgstr "Cache propagation failed after directory rename: {0}"
+
+#: library_data/media_track.py:1158
+msgid "Renamed album folder: {0} → {1}"
+msgstr "Renamed album folder: {0} → {1}"
+
+#: library_data/media_track.py:1199
+msgid "Cache propagation failed after artist folder rename: {0}"
+msgstr "Cache propagation failed after artist folder rename: {0}"
+
+#: library_data/media_track.py:1201
+msgid "Renamed artist folder: {0} → {1}"
+msgstr "Renamed artist folder: {0} → {1}"
 
 #: library_data/network_media_track.py:127
 msgid "Live Stream"
 msgstr "Live Stream"
 
+#: library_data/track_embedding_store.py:46
+msgid "Semantic search recall is unavailable without numpy: {0}"
+msgstr "Semantic search recall is unavailable without numpy: {0}"
+
+#: library_data/track_embedding_store.py:176
+msgid ""
+"Discarding the search index, it was built with {0} and the model is now {1}"
+msgstr ""
+"Discarding the search index, it was built with {0} and the model is now {1}"
+
+#: library_data/track_embedding_store.py:185
+msgid "Dropping {0} from the search index, {1} rows against {2} entries"
+msgstr "Dropping {0} from the search index, {1} rows against {2} entries"
+
+#: library_data/track_embedding_store.py:194
+msgid "Could not read the search index, it will be rebuilt: {0}"
+msgstr "Could not read the search index, it will be rebuilt: {0}"
+
+#: library_data/track_embedding_store.py:211
+msgid "Could not write the search index, it will be rebuilt next time: {0}"
+msgstr "Could not write the search index, it will be rebuilt next time: {0}"
+
 #: library_data/track_embedding_store.py:301
 msgid "Building search index... ({0}/{1})"
 msgstr "Building search index... ({0}/{1})"
 
-#: muse/dj_persona.py:192
+#: library_data/track_embedding_store.py:304
+msgid "Error in search index status callback: {0}"
+msgstr "Error in search index status callback: {0}"
+
+#: library_data/track_embedding_store.py:313
+msgid "Could not build the {0} search index, searches stay literal: {1}"
+msgstr "Could not build the {0} search index, searches stay literal: {1}"
+
+#: library_data/track_embedding_store.py:362
+msgid ""
+"The {0} search index has {1}-wide rows against a {2}-wide query, discarding "
+"it"
+msgstr ""
+"The {0} search index has {1}-wide rows against a {2}-wide query, discarding "
+"it"
+
+#: library_data/track_embedding_store.py:373
+msgid "Could not query the {0} search index, the search stays literal: {1}"
+msgstr "Could not query the {0} search index, the search stays literal: {1}"
+
+#: library_data/works_data.py:100
+msgid "Error saving works for composer {0}: {1}"
+msgstr "Error saving works for composer {0}: {1}"
+
+#: library_data/works_data.py:121
+msgid "Error setting matched track for work {0}: {1}"
+msgstr "Error setting matched track for work {0}: {1}"
+
+#: muse/dj_persona.py:161
+msgid "Artwork path \"{0}\" does not exist, removing it"
+msgstr "Artwork path \"{0}\" does not exist, removing it"
+
+#: muse/dj_persona.py:163
+msgid "No valid artwork paths found for persona \"{0}\", using default artwork"
+msgstr "No valid artwork paths found for persona \"{0}\", using default artwork"
+
+#: muse/dj_persona.py:208
 msgid "a man"
 msgstr "a man"
 
-#: muse/dj_persona.py:194
+#: muse/dj_persona.py:210
 msgid "a woman"
 msgstr "a woman"
 
-#: muse/dj_persona.py:210
+#: muse/dj_persona.py:226
 msgid "The listener last tuned in {0} {1} ago"
 msgstr "The listener last tuned in {0} {1} ago"
 
-#: muse/dj_persona.py:211
+#: muse/dj_persona.py:227
 msgid "The listener last tuned in recently"
 msgstr "The listener last tuned in recently"
 
-#: muse/muse.py:255
+#: muse/dj_persona.py:340
+msgid "Persona already exists, skipping: {0}"
+msgstr "Persona already exists, skipping: {0}"
+
+#: muse/dj_persona.py:342
+msgid "Error loading personas: {0}"
+msgstr "Error loading personas: {0}"
+
+#: muse/dj_persona.py:363
+msgid "Removing mock persona: {0}"
+msgstr "Removing mock persona: {0}"
+
+#: muse/dj_persona.py:366 ui_qt/personas_window.py:571
+msgid "Error reloading personas: {0}"
+msgstr "Error reloading personas: {0}"
+
+#: muse/dj_persona.py:432
+msgid "Mock persona not found, creating new: {0}"
+msgstr "Mock persona not found, creating new: {0}"
+
+#: muse/dj_persona.py:446
+msgid "Persona not found: {0}"
+msgstr "Persona not found: {0}"
+
+#: muse/dj_persona.py:482
+msgid "Error getting context and system prompt: {0}"
+msgstr "Error getting context and system prompt: {0}"
+
+#: muse/dj_persona.py:498
+msgid "Successfully saved {0} personas to configuration"
+msgstr "Successfully saved {0} personas to configuration"
+
+#: muse/dj_persona.py:500
+msgid "Failed to save personas to configuration"
+msgstr "Failed to save personas to configuration"
+
+#: muse/dj_persona.py:505 ui_qt/personas_window.py:537
+msgid "Error saving personas to config: {0}"
+msgstr "Error saving personas to config: {0}"
+
+#: muse/dj_persona.py:512
+msgid "Added persona: {0} ({1})"
+msgstr "Added persona: {0} ({1})"
+
+#: muse/dj_persona.py:515
+msgid "Error adding persona: {0}"
+msgstr "Error adding persona: {0}"
+
+#: muse/dj_persona.py:524
+msgid "Removed persona: {0} ({1})"
+msgstr "Removed persona: {0} ({1})"
+
+#: muse/dj_persona.py:527
+msgid "Persona not found for removal: {0}"
+msgstr "Persona not found for removal: {0}"
+
+#: muse/dj_persona.py:530
+msgid "Error removing persona: {0}"
+msgstr "Error removing persona: {0}"
+
+#: muse/dj_persona.py:538
+msgid "Updated persona: {0} ({1})"
+msgstr "Updated persona: {0} ({1})"
+
+#: muse/dj_persona.py:541
+msgid "Persona not found for update: {0}"
+msgstr "Persona not found for update: {0}"
+
+#: muse/dj_persona.py:544
+msgid "Error updating persona: {0}"
+msgstr "Error updating persona: {0}"
+
+#: muse/muse.py:114
+msgid "Detected {0} unresolved topic failure(s) from history:"
+msgstr "Detected {0} unresolved topic failure(s) from history:"
+
+#: muse/muse.py:118
+msgid ""
+" - Topic '{0}' last failed at {1} (type={2}, consecutive_failures={3}, "
+"last_success={4})"
+msgstr ""
+" - Topic '{0}' last failed at {1} (type={2}, consecutive_failures={3}, "
+"last_success={4})"
+
+#: muse/muse.py:237
+msgid "Starting with DJ {0} - until {1}"
+msgstr "Starting with DJ {0} - until {1}"
+
+#: muse/muse.py:239
+msgid "Switching DJ to {0} from {1} - until {2}"
+msgstr "Switching DJ to {0} from {1} - until {2}"
+
+#: muse/muse.py:257
 msgid "Hello, I'm {0}"
 msgstr "Hello, I'm {0}"
 
-#: muse/muse.py:260 muse/muse.py:297
+#: muse/muse.py:260
+msgid "Failed to generate introduction: {0}"
+msgstr "Failed to generate introduction: {0}"
+
+#: muse/muse.py:261
+msgid "Traceback: {0}"
+msgstr "Traceback: {0}"
+
+#: muse/muse.py:262 muse/muse.py:299
 msgid "Hello, I'm your DJ"
 msgstr "Hello, I'm your DJ"
 
-#: muse/muse.py:303
+#: muse/muse.py:295
+msgid "No persona found for voice {0}, using default voice"
+msgstr "No persona found for voice {0}, using default voice"
+
+#: muse/muse.py:302
+msgid "Failed to change voice to {0}: {1}"
+msgstr "Failed to change voice to {0}: {1}"
+
+#: muse/muse.py:305
 msgid "Hello"
 msgstr "Hello"
 
-#: muse/muse.py:321
+#: muse/muse.py:323
 msgid "tonight"
 msgstr "tonight"
 
-#: muse/muse.py:321
+#: muse/muse.py:323
 msgid "today"
 msgstr "today"
 
-#: muse/muse.py:323
+#: muse/muse.py:325
 msgid "The scheduled shutdown time has arrived. That's it for {0}."
 msgstr "The scheduled shutdown time has arrived. That's it for {0}."
 
-#: muse/muse.py:327
+#: muse/muse.py:329
 msgid "I'll be on again tomorrow."
 msgstr "I'll be on again tomorrow."
 
-#: muse/muse.py:329
+#: muse/muse.py:331
 msgid "Tomorrow you'll hear from {0}."
 msgstr "Tomorrow you'll hear from {0}."
 
-#: muse/muse.py:333
+#: muse/muse.py:335
 msgid "The next time I'll be on is next week, at the same time."
 msgstr "The next time I'll be on is next week, at the same time."
 
-#: muse/muse.py:335
+#: muse/muse.py:337
 msgid "I'll be on again this coming {0}."
 msgstr "I'll be on again this coming {0}."
 
-#: muse/muse.py:346
+#: muse/muse.py:348
 msgid "Good morning"
 msgstr "Good morning"
 
-#: muse/muse.py:348
+#: muse/muse.py:350
 msgid "Good day"
 msgstr "Good day"
 
-#: muse/muse.py:350
+#: muse/muse.py:352
 msgid "Good afternoon"
 msgstr "Good afternoon"
 
-#: muse/muse.py:352
+#: muse/muse.py:354
 msgid "Good evening"
 msgstr "Good evening"
 
-#: muse/muse.py:367
+#: muse/muse.py:369
 msgid "That was \"{0}\" in \"{1}\""
 msgstr "That was \"{0}\" in \"{1}\""
 
-#: muse/muse.py:369 muse/muse.py:415
+#: muse/muse.py:371 muse/muse.py:417
 msgid " by \"{0}\"."
 msgstr " by \"{0}\"."
 
-#: muse/muse.py:374
+#: muse/muse.py:376
 msgid "That was a new track. How'd you like that?"
 msgstr "That was a new track. How'd you like that?"
 
-#: muse/muse.py:376
+#: muse/muse.py:378
 msgid "That was a new one. How'd you like it?"
 msgstr "That was a new one. How'd you like it?"
 
-#: muse/muse.py:411
+#: muse/muse.py:413
 msgid "To start, we'll be playing: \"{0}\" from \"{1}\""
 msgstr "To start, we'll be playing: \"{0}\" from \"{1}\""
 
-#: muse/muse.py:413
+#: muse/muse.py:415
 msgid "Next up, we'll be playing: \"{0}\" from \"{1}\""
 msgstr "Next up, we'll be playing: \"{0}\" from \"{1}\""
 
-#: muse/muse.py:420
+#: muse/muse.py:422
 msgid "This one is a new track."
 msgstr "This one is a new track."
 
-#: muse/muse.py:432
+#: muse/muse.py:434
 msgid "After that short interlude, we're back to our {0} shuffle."
 msgstr "After that short interlude, we're back to our {0} shuffle."
 
-#: muse/muse.py:435
+#: muse/muse.py:437
 msgid "We've been listening to a group of tracks from the {0} {1}"
 msgstr "We've been listening to a group of tracks from the {0} {1}"
 
-#: muse/muse.py:445
+#: muse/muse.py:447
 msgid "We're listening to a group of tracks from the {0} {1}."
 msgstr "We're listening to a group of tracks from the {0} {1}."
 
-#: muse/muse.py:448
+#: muse/muse.py:450
 msgid "We're going to start a new group of tracks from the {0} {1}."
 msgstr "We're going to start a new group of tracks from the {0} {1}."
 
-#: muse/muse.py:455
+#: muse/muse.py:457
 msgid "This {0} has {1} tracks in total."
 msgstr "This {0} has {1} tracks in total."
 
-#: muse/muse.py:456
+#: muse/muse.py:458
 msgid "There are {0} tracks in this {1}."
 msgstr "There are {0} tracks in this {1}."
 
-#: muse/muse.py:457
+#: muse/muse.py:459
 msgid "We've got {0} tracks from this {1} coming up."
 msgstr "We've got {0} tracks from this {1} coming up."
 
-#: muse/muse.py:458
+#: muse/muse.py:460
 msgid "This {0} contains {1} tracks."
 msgstr "This {0} contains {1} tracks."
 
-#: muse/muse.py:541
+#: muse/muse.py:508
+msgid "get_topic: all topics excluded, returning None"
+msgstr "get_topic: all topics excluded, returning None"
+
+#: muse/muse.py:543
 msgid "First let's hear about {0}"
 msgstr "First let's hear about {0}"
 
-#: muse/muse.py:543
+#: muse/muse.py:545
 msgid "But first, let's hear about {0}."
 msgstr "But first, let's hear about {0}."
 
-#: muse/muse.py:716
+#: muse/muse.py:596
+msgid "Unhandled topic: {0}"
+msgstr "Unhandled topic: {0}"
+
+#: muse/muse.py:718
 msgid " [already mentioned]"
 msgstr " [already mentioned]"
 
-#: muse/muse.py:757 tests/unit/muse/test_muse_favorites_prompt.py:34
+#: muse/muse.py:759 tests/unit/muse/test_muse_favorites_prompt.py:34
 msgid "The listener tends to lean toward:"
 msgstr "The listener tends to lean toward:"
 
-#: muse/muse.py:1019
+#: muse/muse.py:837
+msgid "Could not load dictionary for language learning prompt: {0}"
+msgstr "Could not load dictionary for language learning prompt: {0}"
+
+#: muse/muse.py:913
+msgid "No translation available for language {0} topic {1}, using English"
+msgstr "No translation available for language {0} topic {1}, using English"
+
+#: muse/muse.py:926
+msgid ""
+"Failed to translate prompt for topic {0} into language {1} with error: {2}"
+msgstr ""
+"Failed to translate prompt for topic {0} into language {1} with error: {2}"
+
+#: muse/muse.py:938
+msgid "No system prompt available, using default prompt"
+msgstr "No system prompt available, using default prompt"
+
+#: muse/muse.py:1021
 msgid ""
 "We're having some technical difficulties in accessing our source for {0}. "
 "We'll try again later"
@@ -913,7 +1719,7 @@ msgstr ""
 "We're having some technical difficulties in accessing our source for {0}. "
 "We'll try again later"
 
-#: muse/muse.py:1037
+#: muse/muse.py:1039
 msgid ""
 "It seems our writer for {0} is unexpectedly away at the moment. Did we "
 "forget to pay his salary again?"
@@ -921,19 +1727,57 @@ msgstr ""
 "It seems our writer for {0} is unexpectedly away at the moment. Did we "
 "forget to pay his salary again?"
 
-#: muse/muse.py:1042
+#: muse/muse.py:1044
 msgid ""
 "We've found problems with all of our {0} ideas. Please try again later."
 msgstr ""
 "We've found problems with all of our {0} ideas. Please try again later."
 
-#: muse/muse.py:1048
+#: muse/muse.py:1050
 msgid "Something went wrong. We'll try to fix it soon."
 msgstr "Something went wrong. We'll try to fix it soon."
 
-#: muse/muse.py:1115
+#: muse/muse.py:1105
+msgid ""
+"Result was None for {0} initial persona prompt, possibly due to user skip."
+msgstr ""
+"Result was None for {0} initial persona prompt, possibly due to user skip."
+
+#: muse/muse.py:1117
 msgid "Starting tracks:"
 msgstr "Starting tracks:"
+
+#: muse/muse.py:1119
+msgid "Error getting upcoming tracks: {0}"
+msgstr "Error getting upcoming tracks: {0}"
+
+#: muse/muse_memory.py:121
+msgid "Error loading memory: {0}"
+msgstr "Error loading memory: {0}"
+
+#: muse/muse_memory.py:129
+msgid "Error saving muse memory: {0}"
+msgstr "Error saving muse memory: {0}"
+
+#: muse/muse_memory.py:163
+msgid "✗ Attribute '{0}' failed to pickle: {1}"
+msgstr "✗ Attribute '{0}' failed to pickle: {1}"
+
+#: muse/muse_memory.py:180
+msgid "    ✗ Item [{0}] failed to pickle: {1}"
+msgstr "    ✗ Item [{0}] failed to pickle: {1}"
+
+#: muse/muse_memory.py:199
+msgid "    ✗ Key '{0}' failed to pickle: {1}"
+msgstr "    ✗ Key '{0}' failed to pickle: {1}"
+
+#: muse/muse_memory.py:203
+msgid "Found {0} problematic attributes:"
+msgstr "Found {0} problematic attributes:"
+
+#: muse/muse_memory.py:304 muse/muse_memory.py:329
+msgid "Failed to convert topic to Topic enum: {0} (type: {1})"
+msgstr "Failed to convert topic to Topic enum: {0} (type: {1})"
 
 #: muse/muse_spot_profile.py:289
 msgid "Talking about: "
@@ -963,6 +1807,70 @@ msgstr "Talking about something"
 msgid "{0} track(s) excluded from playlist by filters"
 msgstr "{0} track(s) excluded from playlist by filters"
 
+#: muse/playback.py:157
+msgid "Could not resort upcoming tracks, keeping the existing order: {0}"
+msgstr "Could not resort upcoming tracks, keeping the existing order: {0}"
+
+#: muse/playback.py:177
+msgid "An affinity signal failed and was skipped: {0}"
+msgstr "An affinity signal failed and was skipped: {0}"
+
+#: muse/playback.py:181
+msgid "Model affinity scoring failed, keeping the existing order: {0}"
+msgstr "Model affinity scoring failed, keeping the existing order: {0}"
+
+#: muse/playback.py:311
+msgid "Could not record play count: {0}"
+msgstr "Could not record play count: {0}"
+
+#: muse/playback.py:332
+msgid "Could not record heard stream title: {0}"
+msgstr "Could not record heard stream title: {0}"
+
+#: muse/playback.py:360
+msgid "Shutdown after track requested - initiating shutdown"
+msgstr "Shutdown after track requested - initiating shutdown"
+
+#: muse/playback.py:403
+msgid "No voice available due to import failure, skipping Muse."
+msgstr "No voice available due to import failure, skipping Muse."
+
+#: muse/playback.py:461
+msgid "Stopping playback: group limit reached."
+msgstr "Stopping playback: group limit reached."
+
+#: muse/playback.py:508
+msgid "Failed to rebuild stream spot profile for ICY commentary"
+msgstr "Failed to rebuild stream spot profile for ICY commentary"
+
+#: muse/playback.py:571
+msgid "Failed to split too many tracks in queue!"
+msgstr "Failed to split too many tracks in queue!"
+
+#: muse/playback.py:591
+msgid "Error splitting track: {0}"
+msgstr "Error splitting track: {0}"
+
+#: muse/playback.py:594
+msgid "Failed to set track length: {0}"
+msgstr "Failed to set track length: {0}"
+
+#: muse/playback.py:636
+msgid "ICY polling thread raised unexpectedly"
+msgstr "ICY polling thread raised unexpectedly"
+
+#: muse/playback.py:669
+msgid "Could not trigger Muse ICY commentary"
+msgstr "Could not trigger Muse ICY commentary"
+
+#: muse/playback.py:690
+msgid "No main window handle to render the video track into."
+msgstr "No main window handle to render the video track into."
+
+#: muse/playback.py:790
+msgid "Album artwork consistency check failed for {0}: {1}"
+msgstr "Album artwork consistency check failed for {0}: {1}"
+
 #: muse/playback.py:819
 msgid ""
 "Preparing {0} spinning record animations. This is done once and may take a "
@@ -971,9 +1879,173 @@ msgstr ""
 "Preparing {0} spinning record animations. This is done once and may take a "
 "few minutes."
 
+#: muse/playback.py:822
+msgid "Could not announce spinning record encoding: {0}"
+msgstr "Could not announce spinning record encoding: {0}"
+
+#: muse/playback.py:835
+msgid "No image asset matched {0}"
+msgstr "No image asset matched {0}"
+
 #: muse/playback.py:847
 msgid "Sleeping for seconds"
 msgstr "Sleeping for seconds"
+
+#: muse/playback_config_master.py:305
+msgid "seek_to_track: target not found: {0}"
+msgstr "seek_to_track: target not found: {0}"
+
+#: muse/playlist.py:703
+msgid "Affinity ordering failed, keeping the existing order: {0}"
+msgstr "Affinity ordering failed, keeping the existing order: {0}"
+
+#: muse/playlist.py:737
+msgid ""
+"Could not find the end of the playing group, keeping the existing order: {0}"
+msgstr ""
+"Could not find the end of the playing group, keeping the existing order: {0}"
+
+#: muse/playlist.py:758
+msgid "Could not read the upcoming group values: {0}"
+msgstr "Could not read the upcoming group values: {0}"
+
+#: muse/playlist.py:903
+msgid "Could not read library group sizes for {0}: {1}"
+msgstr "Could not read library group sizes for {0}: {1}"
+
+#: muse/playlist.py:951
+msgid "Could not apply completion exemptions for {0}: {1}"
+msgstr "Could not apply completion exemptions for {0}: {1}"
+
+#: muse/playlist_descriptor.py:210
+msgid ""
+"PlaylistDescriptor '{0}': directory not found (even after retries): {1}"
+msgstr ""
+"PlaylistDescriptor '{0}': directory not found (even after retries): {1}"
+
+#: muse/playlist_descriptor.py:215
+msgid "PlaylistDescriptor '{0}': no valid directories found"
+msgstr "PlaylistDescriptor '{0}': no valid directories found"
+
+#: muse/playlist_descriptor.py:240
+msgid "PlaylistDescriptor '{0}': stale track removed: {1}"
+msgstr "PlaylistDescriptor '{0}': stale track removed: {1}"
+
+#: muse/playlist_descriptor.py:244
+msgid "PlaylistDescriptor '{0}': {1} stale track(s) removed, {2} remaining"
+msgstr "PlaylistDescriptor '{0}': {1} stale track(s) removed, {2} remaining"
+
+#: muse/playlist_descriptor.py:364 muse/playlist_descriptor.py:394
+msgid "Failed to load playlist descriptor '{0}'"
+msgstr "Failed to load playlist descriptor '{0}'"
+
+#: muse/playlist_descriptor.py:402
+msgid "Cannot rename: playlist descriptor '{0}' not found"
+msgstr "Cannot rename: playlist descriptor '{0}' not found"
+
+#: muse/playlist_descriptor.py:406
+msgid "Cannot rename: playlist descriptor '{0}' already exists"
+msgstr "Cannot rename: playlist descriptor '{0}' already exists"
+
+#: muse/radio_novelty.py:195
+msgid "Could not read works for {0}: {1}"
+msgstr "Could not read works for {0}: {1}"
+
+#: muse/radio_novelty.py:213
+msgid "Composer inference failed for '{0} - {1}': {2}"
+msgstr "Composer inference failed for '{0} - {1}': {2}"
+
+#: muse/radio_novelty.py:290
+msgid "Skipping malformed seen-titles record for station {0}: {1}"
+msgstr "Skipping malformed seen-titles record for station {0}: {1}"
+
+#: muse/radio_novelty.py:372
+msgid "Blacklist check skipped for radio title: {0}"
+msgstr "Blacklist check skipped for radio title: {0}"
+
+#: muse/radio_novelty.py:382
+msgid "Novelty evaluation failed for '{0} - {1}': {2}"
+msgstr "Novelty evaluation failed for '{0} - {1}': {2}"
+
+#: muse/radio_novelty.py:552
+msgid "Affinity scoring of a radio title failed: {0}"
+msgstr "Affinity scoring of a radio title failed: {0}"
+
+#: muse/radio_watchlist.py:96
+msgid "Skipping malformed watchlist entry: {0}"
+msgstr "Skipping malformed watchlist entry: {0}"
+
+#: muse/radio_watchlist.py:174
+msgid ""
+"Cannot resolve stream URL for watchlist station {0}; this poll thread will "
+"not start"
+msgstr ""
+"Cannot resolve stream URL for watchlist station {0}; this poll thread will "
+"not start"
+
+#: muse/radio_watchlist.py:188
+msgid "Watchlist ICY poll thread failed for station {0}"
+msgstr "Watchlist ICY poll thread failed for station {0}"
+
+#: muse/radio_watchlist.py:204
+msgid "Could not look up watchlist station {0}: {1}"
+msgstr "Could not look up watchlist station {0}: {1}"
+
+#: muse/radio_watchlist.py:216
+msgid "Could not resolve URL for watchlist station: {0}"
+msgstr "Could not resolve URL for watchlist station: {0}"
+
+#: muse/radio_watchlist.py:289
+msgid "Novelty check failed for watchlist station {0}"
+msgstr "Novelty check failed for watchlist station {0}"
+
+#: muse/radio_watchlist.py:342
+msgid "No station data returned for watchlist UUID {0}; cannot switch"
+msgstr "No station data returned for watchlist UUID {0}; cannot switch"
+
+#: muse/radio_watchlist.py:365
+msgid "Failed to switch playback to watchlist station {0}"
+msgstr "Failed to switch playback to watchlist station {0}"
+
+#: muse/run.py:115
+msgid ""
+"\n"
+"\n"
+"Config matches last config. Please modify it or quit."
+msgstr ""
+"\n"
+"\n"
+"Config matches last config. Please modify it or quit."
+
+#: muse/run.py:131
+msgid ""
+"\n"
+"{0}\n"
+"SCHEDULED SHUTDOWN: {1}\n"
+"{2}\n"
+msgstr ""
+"\n"
+"{0}\n"
+"SCHEDULED SHUTDOWN: {1}\n"
+"{2}\n"
+
+#: muse/run.py:149
+msgid ""
+"PLAYLIST_CONFIG strategy selected but no master config set; using All Music"
+msgstr ""
+"PLAYLIST_CONFIG strategy selected but no master config set; using All Music"
+
+#: muse/run.py:178
+msgid "Playback stopped: {0}"
+msgstr "Playback stopped: {0}"
+
+#: muse/run_context.py:69
+msgid "Shutdown scheduled after current track finishes."
+msgstr "Shutdown scheduled after current track finishes."
+
+#: muse/run_context.py:107
+msgid "Scheduled shutdown after track cancelled"
+msgstr "Scheduled shutdown after track cancelled"
 
 #: muse/schedule.py:8 ui_qt/schedules_window.py:64
 msgid "New Schedule"
@@ -991,9 +2063,98 @@ msgstr "Every day"
 msgid "{0} - DJ: {1} - Days: {2} - Times: {3}-{4} - Shutdown: {5}"
 msgstr "{0} - DJ: {1} - Days: {2} - Times: {3}-{4} - Shutdown: {5}"
 
+#: muse/schedules_manager.py:54
+msgid "Limiting schedules from {0} to {1}"
+msgstr "Limiting schedules from {0} to {1}"
+
+#: muse/schedules_manager.py:69
+msgid "Limiting stored schedules from {0} to {1}"
+msgstr "Limiting stored schedules from {0} to {1}"
+
 #: muse/schedules_manager.py:105
 msgid "Not enough schedules found."
 msgstr "Not enough schedules found."
+
+#: muse/timer.py:61
+msgid "Timer is already running"
+msgstr "Timer is already running"
+
+#: muse/timer.py:76
+msgid "Timer started for {0} seconds"
+msgstr "Timer started for {0} seconds"
+
+#: muse/timer.py:139
+msgid "Timer expired"
+msgstr "Timer expired"
+
+#: muse/timer.py:154
+msgid "Playback instance does not have timer volume override method"
+msgstr "Playback instance does not have timer volume override method"
+
+#: muse/track_affinity.py:262
+msgid "Could not read the playlist descriptor, leaving saturation off: {0}"
+msgstr "Could not read the playlist descriptor, leaving saturation off: {0}"
+
+#: muse/track_affinity.py:314
+msgid "Could not record listening time: {0}"
+msgstr "Could not record listening time: {0}"
+
+#: muse/track_affinity.py:464
+msgid "Skipping affinity scoring, the model has been failing"
+msgstr "Skipping affinity scoring, the model has been failing"
+
+#: muse/track_affinity.py:474
+msgid "Affinity scoring call failed, using attribute overlap alone: {0}"
+msgstr "Affinity scoring call failed, using attribute overlap alone: {0}"
+
+#: muse/track_affinity.py:490
+msgid "Affinity scoring returned an unusable response: {0}"
+msgstr "Affinity scoring returned an unusable response: {0}"
+
+#: muse/track_affinity.py:517
+msgid "Embedding affinity is unavailable, the other signals still apply: {0}"
+msgstr "Embedding affinity is unavailable, the other signals still apply: {0}"
+
+#: muse/track_affinity.py:538
+msgid "Embedding failed: {0}"
+msgstr "Embedding failed: {0}"
+
+#: muse/track_affinity.py:588
+msgid ""
+"Embedding scoring failed, leaving the ordering to the other signals: {0}"
+msgstr ""
+"Embedding scoring failed, leaving the ordering to the other signals: {0}"
+
+#: muse/track_affinity.py:636
+msgid ""
+"Could not build an affinity reference, leaving playlist order alone: {0}"
+msgstr ""
+"Could not build an affinity reference, leaving playlist order alone: {0}"
+
+#: muse/track_affinity.py:661
+msgid "Could not read favorites: {0}"
+msgstr "Could not read favorites: {0}"
+
+#: muse/voice.py:22
+msgid "Failed to import tts_runner."
+msgstr "Failed to import tts_runner."
+
+#: muse/voice.py:32
+msgid "Unknown tts_provider '{0}', falling back to coqui."
+msgstr "Unknown tts_provider '{0}', falling back to coqui."
+
+#: muse/voice.py:62
+msgid "Failed to initialise TTS runner: {0}"
+msgstr "Failed to initialise TTS runner: {0}"
+
+#: muse/voice.py:63
+msgid "Voice synthesis disabled."
+msgstr "Voice synthesis disabled."
+
+#: muse/voice.py:103 muse/voice.py:127 muse/voice.py:150 muse/voice.py:171
+#: muse/voice.py:183
+msgid "Cannot speak."
+msgstr "Cannot speak."
 
 #: tests/ui/windows/test_blacklist_preview_window.py:57
 #: ui_qt/blacklist_preview_window.py:85
@@ -1081,35 +2242,161 @@ msgstr "Delete Track"
 msgid "Delete Album"
 msgstr "Delete Album"
 
-#: tests/ui/windows/test_track_details_window.py:69
+#: tests/ui/windows/test_track_details_window.py:86
 #: ui_qt/track_details_window.py:333
 msgid "Plays: {0} (last: {1})"
 msgstr "Plays: {0} (last: {1})"
 
-#: tests/ui/windows/test_track_details_window.py:80
+#: tests/ui/windows/test_track_details_window.py:97
 #: ui_qt/track_details_window.py:329 ui_qt/track_details_window.py:331
 msgid "Plays: {0}"
 msgstr "Plays: {0}"
 
-#: tts/chunker.py:144
+#: tts/chunker.py:200
 msgid "Chinese"
 msgstr "Chinese"
 
-#: tts/chunker.py:145
+#: tts/chunker.py:201
 msgid "Japanese"
 msgstr "Japanese"
 
-#: tts/chunker.py:146
+#: tts/chunker.py:202
 msgid "Korean"
 msgstr "Korean"
 
-#: tts/chunker.py:148
+#: tts/chunker.py:204
 msgid " and "
 msgstr " and "
 
-#: tts/chunker.py:149
+#: tts/chunker.py:205
 msgid "*This text contains {0}, I can't read it but it looks interesting*"
 msgstr "*This text contains {0}, I can't read it but it looks interesting*"
+
+#: tts/output_cleanup.py:51
+msgid "Failed to remove disposable TTS output file {0}: {1}"
+msgstr "Failed to remove disposable TTS output file {0}: {1}"
+
+#: tts/text_cleaner_ruleset.py:459
+msgid "No replacement found for locale {0}, using default locale {1}"
+msgstr "No replacement found for locale {0}, using default locale {1}"
+
+#: tts/text_cleaner_ruleset.py:531
+msgid "Failed to load English detection words from {0}: {1}"
+msgstr "Failed to load English detection words from {0}: {1}"
+
+#: tts/text_cleaner_ruleset.py:600
+msgid "Failed to load number words for locale {0}: {1}"
+msgstr "Failed to load number words for locale {0}: {1}"
+
+#: tts/tts_runner.py:246
+msgid "Failed to delete audio files: {0}"
+msgstr "Failed to delete audio files: {0}"
+
+#: tts/tts_runner.py:332
+msgid "Cannot find speech output path: {0}"
+msgstr "Cannot find speech output path: {0}"
+
+#: tts/tts_runner.py:375
+msgid "TTS generation error: {0}"
+msgstr "TTS generation error: {0}"
+
+#: tts/tts_runner.py:516
+msgid "Could not add metadata: {0}"
+msgstr "Could not add metadata: {0}"
+
+#: tts/providers/coqui.py:74
+msgid "Coqui TTS loaded successfully"
+msgstr "Coqui TTS loaded successfully"
+
+#: tts/providers/coqui.py:95
+msgid "Coqui TTS generation failed: {0}"
+msgstr "Coqui TTS generation failed: {0}"
+
+#: tts/providers/coqui.py:137
+msgid "Fuzzy-matched Coqui voice \"{0}\" → \"{1}\""
+msgstr "Fuzzy-matched Coqui voice \"{0}\" → \"{1}\""
+
+#: tts/providers/coqui.py:140
+msgid "Unknown Coqui voice \"{0}\", using as-is."
+msgstr "Unknown Coqui voice \"{0}\", using as-is."
+
+#: tts/providers/f5tts.py:46
+msgid ""
+"F5-TTS reference audio not found: \"{0}\". Set f5tts_reference_audio in "
+"config to a valid WAV file path."
+msgstr ""
+"F5-TTS reference audio not found: \"{0}\". Set f5tts_reference_audio in "
+"config to a valid WAV file path."
+
+#: tts/providers/f5tts.py:65
+msgid "F5-TTS loaded: {0}"
+msgstr "F5-TTS loaded: {0}"
+
+#: tts/providers/kokoro.py:81
+msgid ""
+"Unknown Kokoro voice \"{0}\". Run KokoroTTSProvider().voices() for the full "
+"list."
+msgstr ""
+"Unknown Kokoro voice \"{0}\". Run KokoroTTSProvider().voices() for the full "
+"list."
+
+#: tts/providers/kokoro.py:100
+msgid "Kokoro TTS loaded: {0}"
+msgstr "Kokoro TTS loaded: {0}"
+
+#: tts/providers/maskgct.py:78
+msgid ""
+"MaskGCT reference audio not found: \"{0}\". Set maskgct_reference_audio in "
+"config to a valid WAV file path."
+msgstr ""
+"MaskGCT reference audio not found: \"{0}\". Set maskgct_reference_audio in "
+"config to a valid WAV file path."
+
+#: tts/providers/maskgct.py:100
+msgid "MaskGCT loaded (lang={0})"
+msgstr "MaskGCT loaded (lang={0})"
+
+#: tts/providers/piper.py:77
+msgid "Could not read cached voices.json: {0}"
+msgstr "Could not read cached voices.json: {0}"
+
+#: tts/providers/piper.py:79
+msgid "Fetching Piper voices index from HuggingFace…"
+msgstr "Fetching Piper voices index from HuggingFace…"
+
+#: tts/providers/piper.py:148
+msgid "Downloading Piper voice file: {0}"
+msgstr "Downloading Piper voice file: {0}"
+
+#: tts/providers/piper.py:187
+msgid "Piper model file not found: \"{0}\"."
+msgstr "Piper model file not found: \"{0}\"."
+
+#: tts/providers/piper.py:209
+msgid "Piper TTS loaded: {0}"
+msgstr "Piper TTS loaded: {0}"
+
+#: tts/providers/zonos.py:78
+msgid "Unknown Zonos model \"{0}\". Known models: {1}"
+msgstr "Unknown Zonos model \"{0}\". Known models: {1}"
+
+#: tts/providers/zonos.py:83
+msgid ""
+"Zonos reference audio not found: \"{0}\". Set zonos_reference_audio in "
+"config to a valid audio file."
+msgstr ""
+"Zonos reference audio not found: \"{0}\". Set zonos_reference_audio in "
+"config to a valid audio file."
+
+#: tts/providers/zonos.py:101
+msgid ""
+"espeak-ng not found on PATH. Zonos requires espeak-ng for phonemization."
+msgstr ""
+"espeak-ng not found on PATH. Zonos requires espeak-ng for phonemization."
+
+#: tts/providers/zonos.py:108
+msgid "Zonos loaded: {0} (device={1})"
+msgstr "Zonos loaded: {0} (device={1})"
 
 #: ui_qt/artists_window.py:46 ui_qt/artists_window.py:438
 msgid "New Artist"
@@ -1204,8 +2491,8 @@ msgstr "New note"
 #: ui_qt/instruments_window.py:196 ui_qt/instruments_window.py:213
 #: ui_qt/personas_window.py:436 ui_qt/personas_window.py:445
 #: ui_qt/personas_window.py:454 ui_qt/personas_window.py:463
-#: ui_qt/personas_window.py:497 ui_qt/track_details_window.py:473
-#: ui_qt/track_details_window.py:497
+#: ui_qt/personas_window.py:497 ui_qt/track_details_window.py:478
+#: ui_qt/track_details_window.py:502
 msgid "Validation Error"
 msgstr "Validation Error"
 
@@ -1259,6 +2546,10 @@ msgstr "No recent searches found."
 #: ui_qt/audio_device_window.py:42
 msgid "Audio Device Management"
 msgstr "Audio Device Management"
+
+#: ui_qt/audio_device_window.py:58
+msgid "Audio device manager not available: {0}"
+msgstr "Audio device manager not available: {0}"
 
 #: ui_qt/audio_device_window.py:85
 msgid "Available Audio Devices"
@@ -1315,6 +2606,10 @@ msgstr "Test Day/Night Switch"
 msgid "Close"
 msgstr "Close"
 
+#: ui_qt/audio_device_window.py:220
+msgid "Error loading current settings: {0}"
+msgstr "Error loading current settings: {0}"
+
 #: ui_qt/audio_device_window.py:227 ui_qt/audio_device_window.py:320
 #: ui_qt/audio_device_window.py:343 ui_qt/audio_device_window.py:382
 msgid "Audio device management not available"
@@ -1327,6 +2622,18 @@ msgstr "Install pycaw and comtypes to enable this feature"
 #: ui_qt/audio_device_window.py:240 ui_qt/audio_device_window.py:241
 msgid "No audio devices found"
 msgstr "No audio devices found"
+
+#: ui_qt/audio_device_window.py:281
+msgid "Current Device: {0}"
+msgstr "Current Device: {0}"
+
+#: ui_qt/audio_device_window.py:285
+msgid "Error refreshing devices: {0}"
+msgstr "Error refreshing devices: {0}"
+
+#: ui_qt/audio_device_window.py:287
+msgid "Error loading devices: {0}"
+msgstr "Error loading devices: {0}"
 
 #: ui_qt/audio_device_window.py:327
 msgid "Audio device monitoring started"
@@ -1388,27 +2695,27 @@ msgstr "Matched {0} item(s):"
 msgid "  \"{0}\" → rule \"{1}\""
 msgstr "  \"{0}\" → rule \"{1}\""
 
-#: ui_qt/blacklist_window.py:61
+#: ui_qt/blacklist_window.py:62
 msgid "New Blacklist Item"
 msgstr "New Blacklist Item"
 
-#: ui_qt/blacklist_window.py:63
+#: ui_qt/blacklist_window.py:64
 msgid "Modify Blacklist Item: {0}"
 msgstr "Modify Blacklist Item: {0}"
 
-#: ui_qt/blacklist_window.py:99
+#: ui_qt/blacklist_window.py:100
 msgid "Blacklist String"
 msgstr "Blacklist String"
 
-#: ui_qt/blacklist_window.py:109 ui_qt/blacklist_window.py:476
+#: ui_qt/blacklist_window.py:110 ui_qt/blacklist_window.py:477
 msgid "Enabled"
 msgstr "Enabled"
 
-#: ui_qt/blacklist_window.py:114 ui_qt/blacklist_window.py:476
+#: ui_qt/blacklist_window.py:115 ui_qt/blacklist_window.py:477
 msgid "Type"
 msgstr "Type"
 
-#: ui_qt/blacklist_window.py:121
+#: ui_qt/blacklist_window.py:122
 msgid ""
 "Scope this item to a specific kind of text (e.g. only channel names), or Any"
 " to check it everywhere, as before."
@@ -1416,43 +2723,43 @@ msgstr ""
 "Scope this item to a specific kind of text (e.g. only channel names), or Any"
 " to check it everywhere, as before."
 
-#: ui_qt/blacklist_window.py:126
+#: ui_qt/blacklist_window.py:127
 msgid "Use glob-based regex"
 msgstr "Use glob-based regex"
 
-#: ui_qt/blacklist_window.py:131
+#: ui_qt/blacklist_window.py:132
 msgid "Use word boundary matching"
 msgstr "Use word boundary matching"
 
-#: ui_qt/blacklist_window.py:137
+#: ui_qt/blacklist_window.py:138
 msgid "Convert spaces to optional non-word characters"
 msgstr "Convert spaces to optional non-word characters"
 
-#: ui_qt/blacklist_window.py:147
+#: ui_qt/blacklist_window.py:148
 msgid "Exception Pattern (optional regex to unfilter tags)"
 msgstr "Exception Pattern (optional regex to unfilter tags)"
 
-#: ui_qt/blacklist_window.py:164
+#: ui_qt/blacklist_window.py:165
 msgid "Done"
 msgstr "Done"
 
-#: ui_qt/blacklist_window.py:188
+#: ui_qt/blacklist_window.py:189
 msgid "Blacklist string cannot be empty."
 msgstr "Blacklist string cannot be empty."
 
-#: ui_qt/blacklist_window.py:212
+#: ui_qt/blacklist_window.py:213
 msgid "No changes were made"
 msgstr "No changes were made"
 
-#: ui_qt/blacklist_window.py:229
+#: ui_qt/blacklist_window.py:230
 msgid "Unsaved Changes"
 msgstr "Unsaved Changes"
 
-#: ui_qt/blacklist_window.py:230
+#: ui_qt/blacklist_window.py:231
 msgid "Do you want to save changes before closing?"
 msgstr "Do you want to save changes before closing?"
 
-#: ui_qt/blacklist_window.py:263
+#: ui_qt/blacklist_window.py:264
 msgid ""
 "WARNING: Are you sure you want to reveal the blacklist concepts? These concepts are damaging or offensive and WILL cause you severe psychological harm. Do not, under any circumstances, reveal these concepts to minors.\n"
 "\n"
@@ -1462,53 +2769,53 @@ msgstr ""
 "\n"
 "If you are young, not sure, or even an adult, click the close button on this window now and do something fun instead."
 
-#: ui_qt/blacklist_window.py:372
+#: ui_qt/blacklist_window.py:373
 msgid "Global Settings:"
 msgstr "Global Settings:"
 
-#: ui_qt/blacklist_window.py:376
+#: ui_qt/blacklist_window.py:377
 msgid "These settings affect how the blacklist is applied globally."
 msgstr "These settings affect how the blacklist is applied globally."
 
-#: ui_qt/blacklist_window.py:385
+#: ui_qt/blacklist_window.py:386
 msgid "Choose how the blacklist is enforced: block, warn, or allow."
 msgstr "Choose how the blacklist is enforced: block, warn, or allow."
 
-#: ui_qt/blacklist_window.py:390
+#: ui_qt/blacklist_window.py:391
 msgid "Silent Removal"
 msgstr "Silent Removal"
 
-#: ui_qt/blacklist_window.py:393
+#: ui_qt/blacklist_window.py:394
 msgid ""
 "If enabled, blacklisted words are removed silently without notification."
 msgstr ""
 "If enabled, blacklisted words are removed silently without notification."
 
-#: ui_qt/blacklist_window.py:402
+#: ui_qt/blacklist_window.py:403
 msgid "Import"
 msgstr "Import"
 
-#: ui_qt/blacklist_window.py:405
+#: ui_qt/blacklist_window.py:406
 msgid "Export"
 msgstr "Export"
 
-#: ui_qt/blacklist_window.py:408
+#: ui_qt/blacklist_window.py:409
 msgid "Load Default"
 msgstr "Load Default"
 
-#: ui_qt/blacklist_window.py:411
+#: ui_qt/blacklist_window.py:412
 msgid "Preview"
 msgstr "Preview"
 
-#: ui_qt/blacklist_window.py:418
+#: ui_qt/blacklist_window.py:419
 msgid "Add to blacklist"
 msgstr "Add to blacklist"
 
-#: ui_qt/blacklist_window.py:421
+#: ui_qt/blacklist_window.py:422
 msgid "Clear items"
 msgstr "Clear items"
 
-#: ui_qt/blacklist_window.py:454
+#: ui_qt/blacklist_window.py:455
 msgid ""
 "No blacklist items found. You can add items by clicking the 'Add to "
 "blacklist' button below, or load the default blacklist."
@@ -1516,11 +2823,11 @@ msgstr ""
 "No blacklist items found. You can add items by clicking the 'Add to "
 "blacklist' button below, or load the default blacklist."
 
-#: ui_qt/blacklist_window.py:457
+#: ui_qt/blacklist_window.py:458
 msgid "Click below to reveal blacklist concepts."
 msgstr "Click below to reveal blacklist concepts."
 
-#: ui_qt/blacklist_window.py:460
+#: ui_qt/blacklist_window.py:461
 msgid ""
 "Default blacklist is loaded. You can load your own blacklist by editing the "
 "existing concepts, clearing the blacklist and adding your own, or importing "
@@ -1530,53 +2837,53 @@ msgstr ""
 "existing concepts, clearing the blacklist and adding your own, or importing "
 "concepts from a file."
 
-#: ui_qt/blacklist_window.py:468
+#: ui_qt/blacklist_window.py:469
 msgid "Reveal Concepts"
 msgstr "Reveal Concepts"
 
-#: ui_qt/blacklist_window.py:476
+#: ui_qt/blacklist_window.py:477
 msgid "Item"
 msgstr "Item"
 
-#: ui_qt/blacklist_window.py:487 ui_qt/blacklist_window.py:759
+#: ui_qt/blacklist_window.py:488 ui_qt/blacklist_window.py:760
 msgid "Disabled"
 msgstr "Disabled"
 
-#: ui_qt/blacklist_window.py:495 ui_qt/schedules_window.py:264
+#: ui_qt/blacklist_window.py:496 ui_qt/schedules_window.py:264
 msgid "Modify"
 msgstr "Modify"
 
-#: ui_qt/blacklist_window.py:498 ui_qt/favorites_window.py:422
+#: ui_qt/blacklist_window.py:499 ui_qt/favorites_window.py:422
 #: ui_qt/playlist_window.py:1176 ui_qt/search_window.py:426
 msgid "Remove"
 msgstr "Remove"
 
-#: ui_qt/blacklist_window.py:501
+#: ui_qt/blacklist_window.py:502
 msgid "Toggle"
 msgstr "Toggle"
 
-#: ui_qt/blacklist_window.py:513 ui_qt/blacklist_window.py:520
-#: ui_qt/blacklist_window.py:527
+#: ui_qt/blacklist_window.py:514 ui_qt/blacklist_window.py:521
+#: ui_qt/blacklist_window.py:528
 msgid "Select an item first"
 msgstr "Select an item first"
 
-#: ui_qt/blacklist_window.py:551
+#: ui_qt/blacklist_window.py:552
 msgid "Preview window not yet available."
 msgstr "Preview window not yet available."
 
-#: ui_qt/blacklist_window.py:592 ui_qt/blacklist_window.py:634
+#: ui_qt/blacklist_window.py:593 ui_qt/blacklist_window.py:635
 msgid "Added item to blacklist: {0}"
 msgstr "Added item to blacklist: {0}"
 
-#: ui_qt/blacklist_window.py:596
+#: ui_qt/blacklist_window.py:597
 msgid "Modified blacklist item: {0}"
 msgstr "Modified blacklist item: {0}"
 
-#: ui_qt/blacklist_window.py:602
+#: ui_qt/blacklist_window.py:603
 msgid "Remove blacklist item"
 msgstr "Remove blacklist item"
 
-#: ui_qt/blacklist_window.py:603
+#: ui_qt/blacklist_window.py:604
 msgid ""
 "Are you sure you want to remove this blacklist concept?\n"
 "\n"
@@ -1586,23 +2893,23 @@ msgstr ""
 "\n"
 "{0}"
 
-#: ui_qt/blacklist_window.py:614
+#: ui_qt/blacklist_window.py:615
 msgid "Removed item: {0}"
 msgstr "Removed item: {0}"
 
-#: ui_qt/blacklist_window.py:624
+#: ui_qt/blacklist_window.py:625
 msgid "Warning"
 msgstr "Warning"
 
-#: ui_qt/blacklist_window.py:625
+#: ui_qt/blacklist_window.py:626
 msgid "Please enter a string to add to the blacklist."
 msgstr "Please enter a string to add to the blacklist."
 
-#: ui_qt/blacklist_window.py:720
+#: ui_qt/blacklist_window.py:721
 msgid "Confirm Clear Blacklist"
 msgstr "Confirm Clear Blacklist"
 
-#: ui_qt/blacklist_window.py:722
+#: ui_qt/blacklist_window.py:723
 msgid ""
 "Are you sure you want to clear all blacklist items?\n"
 "\n"
@@ -1622,31 +2929,31 @@ msgstr ""
 "\n"
 "Do you want to continue?"
 
-#: ui_qt/blacklist_window.py:738
+#: ui_qt/blacklist_window.py:739
 msgid "Cleared item blacklist"
 msgstr "Cleared item blacklist"
 
-#: ui_qt/blacklist_window.py:765
+#: ui_qt/blacklist_window.py:766
 msgid "Item \"{0}\" is now {1}"
 msgstr "Item \"{0}\" is now {1}"
 
-#: ui_qt/blacklist_window.py:767
+#: ui_qt/blacklist_window.py:768
 msgid "enabled"
 msgstr "enabled"
 
-#: ui_qt/blacklist_window.py:767
+#: ui_qt/blacklist_window.py:768
 msgid "disabled"
 msgstr "disabled"
 
-#: ui_qt/blacklist_window.py:780
+#: ui_qt/blacklist_window.py:781
 msgid "Concepts revealed"
 msgstr "Concepts revealed"
 
-#: ui_qt/blacklist_window.py:786
+#: ui_qt/blacklist_window.py:787
 msgid "Confirm Load Default Blacklist"
 msgstr "Confirm Load Default Blacklist"
 
-#: ui_qt/blacklist_window.py:788
+#: ui_qt/blacklist_window.py:789
 msgid ""
 "Are you sure you want to load the default blacklist?\n"
 "\n"
@@ -1664,43 +2971,43 @@ msgstr ""
 "\n"
 "Do you want to continue?"
 
-#: ui_qt/blacklist_window.py:802
+#: ui_qt/blacklist_window.py:803
 msgid "Loaded default blacklist"
 msgstr "Loaded default blacklist"
 
-#: ui_qt/blacklist_window.py:806
+#: ui_qt/blacklist_window.py:807
 msgid "Error loading default blacklist"
 msgstr "Error loading default blacklist"
 
-#: ui_qt/blacklist_window.py:813
+#: ui_qt/blacklist_window.py:814
 msgid "Import Blacklist"
 msgstr "Import Blacklist"
 
-#: ui_qt/blacklist_window.py:828
+#: ui_qt/blacklist_window.py:830
 msgid "Successfully imported blacklist"
 msgstr "Successfully imported blacklist"
 
-#: ui_qt/blacklist_window.py:831 ui_qt/composers_window.py:930
+#: ui_qt/blacklist_window.py:833 ui_qt/composers_window.py:930
 msgid "Import Error"
 msgstr "Import Error"
 
-#: ui_qt/blacklist_window.py:838
+#: ui_qt/blacklist_window.py:840
 msgid "Export Blacklist"
 msgstr "Export Blacklist"
 
-#: ui_qt/blacklist_window.py:851
+#: ui_qt/blacklist_window.py:854
 msgid "Successfully exported blacklist"
 msgstr "Successfully exported blacklist"
 
-#: ui_qt/blacklist_window.py:854
+#: ui_qt/blacklist_window.py:857
 msgid "Export Error"
 msgstr "Export Error"
 
-#: ui_qt/blacklist_window.py:865
+#: ui_qt/blacklist_window.py:868
 msgid "Blacklist mode set to: {0}"
 msgstr "Blacklist mode set to: {0}"
 
-#: ui_qt/blacklist_window.py:872
+#: ui_qt/blacklist_window.py:875
 msgid "Silent removal set to: {0}"
 msgstr "Silent removal set to: {0}"
 
@@ -1793,6 +3100,10 @@ msgstr "Text files (*.txt);;All files (*)"
 msgid "Failed to save report:"
 msgstr "Failed to save report:"
 
+#: ui_qt/composers_window.py:560
+msgid "Skipped {0} duplicate composer searches"
+msgstr "Skipped {0} duplicate composer searches"
+
 #: ui_qt/composers_window.py:584 ui_qt/composers_window.py:948
 msgid "Composer Search"
 msgstr "Composer Search"
@@ -1865,6 +3176,50 @@ msgstr "TTS Settings"
 msgid "Save Configuration"
 msgstr "Save Configuration"
 
+#: ui_qt/configuration_window.py:105 ui_qt/personas_window.py:332
+msgid "English"
+msgstr "English"
+
+#: ui_qt/configuration_window.py:106
+msgid "German"
+msgstr "German"
+
+#: ui_qt/configuration_window.py:107
+msgid "Spanish"
+msgstr "Spanish"
+
+#: ui_qt/configuration_window.py:108
+msgid "French"
+msgstr "French"
+
+#: ui_qt/configuration_window.py:109
+msgid "Italian"
+msgstr "Italian"
+
+#: ui_qt/configuration_window.py:110
+msgid "Portuguese"
+msgstr "Portuguese"
+
+#: ui_qt/configuration_window.py:111
+msgid "Russian"
+msgstr "Russian"
+
+#: ui_qt/configuration_window.py:126
+msgid "Appearance"
+msgstr "Appearance"
+
+#: ui_qt/configuration_window.py:129
+msgid "Interface Language"
+msgstr "Interface Language"
+
+#: ui_qt/configuration_window.py:132
+msgid ""
+"Language of menus and buttons. Restart after saving so windows that are "
+"already open pick up the new language."
+msgstr ""
+"Language of menus and buttons. Restart after saving so windows that are "
+"already open pick up the new language."
+
 #: ui_qt/configuration_window.py:138
 msgid "Foreground Color"
 msgstr "Foreground Color"
@@ -1872,6 +3227,14 @@ msgstr "Foreground Color"
 #: ui_qt/configuration_window.py:139
 msgid "Background Color"
 msgstr "Background Color"
+
+#: ui_qt/configuration_window.py:140
+msgid "Write Debug Logs"
+msgstr "Write Debug Logs"
+
+#: ui_qt/configuration_window.py:143
+msgid "Repair the VLC Plugin Cache When It Is Out of Date"
+msgstr "Repair the VLC Plugin Cache When It Is Out of Date"
 
 #: ui_qt/configuration_window.py:145
 msgid "Enable Dynamic Volume"
@@ -1884,6 +3247,89 @@ msgstr "Enable Long Track Splitting"
 #: ui_qt/configuration_window.py:152
 msgid "Long Track Cutoff (minutes)"
 msgstr "Long Track Cutoff (minutes)"
+
+#: ui_qt/configuration_window.py:163
+msgid "Library Directories"
+msgstr "Library Directories"
+
+#: ui_qt/configuration_window.py:165
+msgid "Folders scanned into the music library."
+msgstr "Folders scanned into the music library."
+
+#: ui_qt/configuration_window.py:171
+msgid "Directory path"
+msgstr "Directory path"
+
+#: ui_qt/configuration_window.py:177
+msgid "Library Data Files"
+msgstr "Library Data Files"
+
+#: ui_qt/configuration_window.py:179
+msgid "Prompts Directory"
+msgstr "Prompts Directory"
+
+#: ui_qt/configuration_window.py:181
+msgid "Tongue Twisters Directory"
+msgstr "Tongue Twisters Directory"
+
+#: ui_qt/configuration_window.py:184
+msgid "Artists File"
+msgstr "Artists File"
+
+#: ui_qt/configuration_window.py:184 ui_qt/configuration_window.py:187
+#: ui_qt/configuration_window.py:190 ui_qt/configuration_window.py:193
+msgid "JSON files"
+msgstr "JSON files"
+
+#: ui_qt/configuration_window.py:187
+msgid "Forms File"
+msgstr "Forms File"
+
+#: ui_qt/configuration_window.py:190
+msgid "Genres File"
+msgstr "Genres File"
+
+#: ui_qt/configuration_window.py:193
+msgid "Instruments File"
+msgstr "Instruments File"
+
+#: ui_qt/configuration_window.py:202
+msgid ""
+"When the DJ speaks, and how often. Chances are fractions between 0 and 1."
+msgstr ""
+"When the DJ speaks, and how often. Chances are fractions between 0 and 1."
+
+#: ui_qt/configuration_window.py:211
+msgid "Prepare the next spot before the track ends"
+msgstr "Prepare the next spot before the track ends"
+
+#: ui_qt/configuration_window.py:213
+msgid "Start preparation this many minutes before the end"
+msgstr "Start preparation this many minutes before the end"
+
+#: ui_qt/configuration_window.py:215
+msgid "Or after this many seconds, whichever is sooner"
+msgstr "Or after this many seconds, whichever is sooner"
+
+#: ui_qt/configuration_window.py:216
+msgid "Chance of speaking before a track"
+msgstr "Chance of speaking before a track"
+
+#: ui_qt/configuration_window.py:217
+msgid "Chance of speaking after a track"
+msgstr "Chance of speaking after a track"
+
+#: ui_qt/configuration_window.py:218
+msgid "Topic discussion chance factor"
+msgstr "Topic discussion chance factor"
+
+#: ui_qt/configuration_window.py:219
+msgid "Minimum seconds between spots"
+msgstr "Minimum seconds between spots"
+
+#: ui_qt/configuration_window.py:234
+msgid "Refresh persona context when the persona changes"
+msgstr "Refresh persona context when the persona changes"
 
 #: ui_qt/configuration_window.py:247
 msgid "Language Learning"
@@ -1913,9 +3359,17 @@ msgstr "Add"
 msgid "Remove Selected"
 msgstr "Remove Selected"
 
+#: ui_qt/configuration_window.py:305
+msgid "Playback"
+msgstr "Playback"
+
 #: ui_qt/configuration_window.py:308
 msgid "Play Videos in Separate Window"
 msgstr "Play Videos in Separate Window"
+
+#: ui_qt/configuration_window.py:311
+msgid "Play Videos in the Main Window"
+msgstr "Play Videos in the Main Window"
 
 #: ui_qt/configuration_window.py:315
 msgid "Show a Spinning Record Video When a Track Has No Album Art"
@@ -1945,6 +3399,14 @@ msgstr "Off"
 msgid "Recently Played Check Count"
 msgstr "Recently Played Check Count"
 
+#: ui_qt/configuration_window.py:337
+msgid "Fraction of a Track That Counts as a Play"
+msgstr "Fraction of a Track That Counts as a Play"
+
+#: ui_qt/configuration_window.py:341
+msgid "Seconds That Always Count as a Play (0 to disable)"
+msgstr "Seconds That Always Count as a Play (0 to disable)"
+
 #: ui_qt/configuration_window.py:347
 msgid "Max Search Results"
 msgstr "Max Search Results"
@@ -1952,6 +3414,82 @@ msgstr "Max Search Results"
 #: ui_qt/configuration_window.py:348
 msgid "Max Recent Searches"
 msgstr "Max Recent Searches"
+
+#: ui_qt/configuration_window.py:351
+msgid "Rank Search Results with Text Embeddings"
+msgstr "Rank Search Results with Text Embeddings"
+
+#: ui_qt/configuration_window.py:355
+msgid "Include Tracks Whose Text Is Close to the Query"
+msgstr "Include Tracks Whose Text Is Close to the Query"
+
+#: ui_qt/configuration_window.py:357
+msgid "Fields Indexed for Semantic Search"
+msgstr "Fields Indexed for Semantic Search"
+
+#: ui_qt/configuration_window.py:360
+msgid "Field name, such as title"
+msgstr "Field name, such as title"
+
+#: ui_qt/configuration_window.py:362
+msgid "Semantic Candidates per Query"
+msgstr "Semantic Candidates per Query"
+
+#: ui_qt/configuration_window.py:365
+msgid "Keep Candidates Within This of the Best Score"
+msgstr "Keep Candidates Within This of the Best Score"
+
+#: ui_qt/configuration_window.py:368
+msgid "Minimum Semantic Score"
+msgstr "Minimum Semantic Score"
+
+#: ui_qt/configuration_window.py:379
+msgid "Watch Saved Stations for Matching Tracks"
+msgstr "Watch Saved Stations for Matching Tracks"
+
+#: ui_qt/configuration_window.py:382
+msgid "Minutes Between Alerts for One Station"
+msgstr "Minutes Between Alerts for One Station"
+
+#: ui_qt/configuration_window.py:385
+msgid "Maximum Watched Stations"
+msgstr "Maximum Watched Stations"
+
+#: ui_qt/configuration_window.py:388
+msgid "Seconds Before a Stream Title Counts as Heard"
+msgstr "Seconds Before a Stream Title Counts as Heard"
+
+#: ui_qt/configuration_window.py:391
+msgid "Minutes Before Suggesting Unfamiliar Tracks"
+msgstr "Minutes Before Suggesting Unfamiliar Tracks"
+
+#: ui_qt/configuration_window.py:395
+msgid "Minutes Between Discovery Suggestions"
+msgstr "Minutes Between Discovery Suggestions"
+
+#: ui_qt/configuration_window.py:399
+msgid "Remember This Many Titles per Station"
+msgstr "Remember This Many Titles per Station"
+
+#: ui_qt/configuration_window.py:401
+msgid "Titles That Are Not Tracks"
+msgstr "Titles That Are Not Tracks"
+
+#: ui_qt/configuration_window.py:404
+msgid "Pattern, such as jingle"
+msgstr "Pattern, such as jingle"
+
+#: ui_qt/configuration_window.py:406
+msgid "Tags Treated as Classical"
+msgstr "Tags Treated as Classical"
+
+#: ui_qt/configuration_window.py:409
+msgid "Tag, such as classical"
+msgstr "Tag, such as classical"
+
+#: ui_qt/configuration_window.py:416
+msgid "Weather and News"
+msgstr "Weather and News"
 
 #: ui_qt/configuration_window.py:418
 msgid "OpenWeather API Key"
@@ -1964,6 +3502,124 @@ msgstr "OpenWeather City"
 #: ui_qt/configuration_window.py:420
 msgid "News API Key"
 msgstr "News API Key"
+
+#: ui_qt/configuration_window.py:421
+msgid "Last.fm API Key"
+msgstr "Last.fm API Key"
+
+#: ui_qt/configuration_window.py:422
+msgid "Library Extender Key"
+msgstr "Library Extender Key"
+
+#: ui_qt/configuration_window.py:423
+msgid "News Source Trustworthiness"
+msgstr "News Source Trustworthiness"
+
+#: ui_qt/configuration_window.py:430
+msgid "source-id: 0.5"
+msgstr "source-id: 0.5"
+
+#: ui_qt/configuration_window.py:434
+msgid "Reddit"
+msgstr "Reddit"
+
+#: ui_qt/configuration_window.py:437
+msgid ""
+"Leave the id and secret blank to use the public listing. The subreddit list "
+"is the only source that gets read."
+msgstr ""
+"Leave the id and secret blank to use the public listing. The subreddit list "
+"is the only source that gets read."
+
+#: ui_qt/configuration_window.py:443
+msgid "Client Id"
+msgstr "Client Id"
+
+#: ui_qt/configuration_window.py:444
+msgid "Client Secret"
+msgstr "Client Secret"
+
+#: ui_qt/configuration_window.py:446 ui_qt/configuration_window.py:466
+#: ui_qt/configuration_window.py:481
+msgid "Minimum Score"
+msgstr "Minimum Score"
+
+#: ui_qt/configuration_window.py:447 ui_qt/configuration_window.py:467
+#: ui_qt/configuration_window.py:482
+msgid "Maximum Age (hours)"
+msgstr "Maximum Age (hours)"
+
+#: ui_qt/configuration_window.py:448
+msgid "Subreddits"
+msgstr "Subreddits"
+
+#: ui_qt/configuration_window.py:450
+msgid "Subreddit name"
+msgstr "Subreddit name"
+
+#: ui_qt/configuration_window.py:454
+msgid "Bluesky"
+msgstr "Bluesky"
+
+#: ui_qt/configuration_window.py:457
+msgid ""
+"Leave the handle and app password blank to read the public AppView. The feed"
+" list is the only source that gets read."
+msgstr ""
+"Leave the handle and app password blank to read the public AppView. The feed"
+" list is the only source that gets read."
+
+#: ui_qt/configuration_window.py:463
+msgid "Handle"
+msgstr "Handle"
+
+#: ui_qt/configuration_window.py:464
+msgid "App Password"
+msgstr "App Password"
+
+#: ui_qt/configuration_window.py:468
+msgid "Feed URIs"
+msgstr "Feed URIs"
+
+#: ui_qt/configuration_window.py:470
+msgid "at:// feed URI"
+msgstr "at:// feed URI"
+
+#: ui_qt/configuration_window.py:472 ui_qt/configuration_window.py:483
+msgid "Languages"
+msgstr "Languages"
+
+#: ui_qt/configuration_window.py:474 ui_qt/configuration_window.py:485
+msgid "Language code, such as en"
+msgstr "Language code, such as en"
+
+#: ui_qt/configuration_window.py:478
+msgid "Mastodon"
+msgstr "Mastodon"
+
+#: ui_qt/configuration_window.py:480
+msgid "Instance"
+msgstr "Instance"
+
+#: ui_qt/configuration_window.py:489
+msgid "All Social Sources"
+msgstr "All Social Sources"
+
+#: ui_qt/configuration_window.py:492
+msgid ""
+"A topic is dropped when filtering removes more than this share of its posts,"
+" or leaves fewer than the minimum."
+msgstr ""
+"A topic is dropped when filtering removes more than this share of its posts,"
+" or leaves fewer than the minimum."
+
+#: ui_qt/configuration_window.py:499
+msgid "Minimum Posts Kept"
+msgstr "Minimum Posts Kept"
+
+#: ui_qt/configuration_window.py:502
+msgid "Maximum Fraction Discarded"
+msgstr "Maximum Fraction Discarded"
 
 #: ui_qt/configuration_window.py:524
 msgid "TTS Provider:"
@@ -1985,9 +3641,17 @@ msgstr "Stop LLM on repetitive output (streaming redundancy)"
 msgid "Max Chunk Tokens"
 msgstr "Max Chunk Tokens"
 
+#: ui_qt/configuration_window.py:553
+msgid "LLM Thinking Budget (characters, blank for no limit)"
+msgstr "LLM Thinking Budget (characters, blank for no limit)"
+
 #: ui_qt/configuration_window.py:559
 msgid "Coqui TTS"
 msgstr "Coqui TTS"
+
+#: ui_qt/configuration_window.py:562
+msgid "Included in this build."
+msgstr "Included in this build."
 
 #: ui_qt/configuration_window.py:566
 msgid "TTS Library Path"
@@ -2110,6 +3774,14 @@ msgstr "Unlimited"
 msgid "Max minutes per group:"
 msgstr "Max minutes per group:"
 
+#: ui_qt/configuration_window.py:779
+msgid "Keep a Recording of These Topics"
+msgstr "Keep a Recording of These Topics"
+
+#: ui_qt/configuration_window.py:781
+msgid "Spoken audio for a checked topic is saved so it can be replayed."
+msgstr "Spoken audio for a checked topic is saved so it can be replayed."
+
 #: ui_qt/configuration_window.py:842 ui_qt/configuration_window.py:936
 #: ui_qt/configuration_window.py:964 ui_qt/tts_window.py:113
 #: ui_qt/tts_window.py:155
@@ -2128,6 +3800,18 @@ msgstr ""
 "Do you want to close the configuration window?\n"
 "Any unsaved changes will be lost."
 
+#: ui_qt/configuration_window.py:1052
+msgid "News source trustworthiness must look like \"bbc-news: 0.5\"."
+msgstr "News source trustworthiness must look like \"bbc-news: 0.5\"."
+
+#: ui_qt/configuration_window.py:1102
+msgid ""
+"Configuration saved. Restart to apply the new language to windows that are "
+"already open."
+msgstr ""
+"Configuration saved. Restart to apply the new language to windows that are "
+"already open."
+
 #: ui_qt/configuration_window.py:1106 ui_qt/extensions_window.py:651
 msgid "Configuration saved successfully"
 msgstr "Configuration saved successfully"
@@ -2135,6 +3819,18 @@ msgstr "Configuration saved successfully"
 #: ui_qt/configuration_window.py:1115 ui_qt/extensions_window.py:654
 msgid "Failed to save configuration"
 msgstr "Failed to save configuration"
+
+#: ui_qt/custom_title_bar.py:159
+msgid "Minimize"
+msgstr "Minimize"
+
+#: ui_qt/custom_title_bar.py:164 ui_qt/custom_title_bar.py:295
+msgid "Maximize"
+msgstr "Maximize"
+
+#: ui_qt/custom_title_bar.py:292
+msgid "Restore"
+msgstr "Restore"
 
 #: ui_qt/extensions_window.py:78
 msgid "Extension Settings"
@@ -2230,6 +3926,10 @@ msgstr "Average Duration: {}"
 msgid "Average Duration: N/A"
 msgstr "Average Duration: N/A"
 
+#: ui_qt/extensions_window.py:328
+msgid "Invalid strategy selected: {0} - {1}"
+msgstr "Invalid strategy selected: {0} - {1}"
+
 #: ui_qt/extensions_window.py:333
 msgid "Confirm Clear"
 msgstr "Confirm Clear"
@@ -2239,8 +3939,8 @@ msgid "Are you sure you want to clear all extension history?"
 msgstr "Are you sure you want to clear all extension history?"
 
 #: ui_qt/extensions_window.py:367 ui_qt/extensions_window.py:786
-#: ui_qt/personas_window.py:407 ui_qt/track_details_window.py:706
-#: ui_qt/track_details_window.py:730
+#: ui_qt/personas_window.py:407 ui_qt/track_details_window.py:711
+#: ui_qt/track_details_window.py:735
 msgid "Confirm Delete"
 msgstr "Confirm Delete"
 
@@ -2259,6 +3959,10 @@ msgid ""
 msgstr ""
 "Tip: If you've recently added or moved files, try checking 'Rescan Library' "
 "in the search options."
+
+#: ui_qt/extensions_window.py:405
+msgid "Error playing extension: {0}"
+msgstr "Error playing extension: {0}"
 
 #: ui_qt/extensions_window.py:412
 msgid "No extension thread running"
@@ -2454,9 +4158,17 @@ msgstr "Value"
 msgid "No favorites found."
 msgstr "No favorites found."
 
+#: ui_qt/favorites_window.py:499
+msgid "Track not found for favorite {0}"
+msgstr "Track not found for favorite {0}"
+
 #: ui_qt/favorites_window.py:568
 msgid "No valid play query could be generated for this favorite"
 msgstr "No valid play query could be generated for this favorite"
+
+#: ui_qt/favorites_window.py:581
+msgid "Error playing favorite: {0}"
+msgstr "Error playing favorite: {0}"
 
 #: ui_qt/favorites_window.py:589
 msgid "No Favorites"
@@ -2576,6 +4288,10 @@ msgstr "Search History"
 #: ui_qt/history_window.py:174
 msgid "No history found."
 msgstr "No history found."
+
+#: ui_qt/history_window.py:190
+msgid "Error getting track details for: {0} ({1})"
+msgstr "Error getting track details for: {0} ({1})"
 
 #: ui_qt/instruments_window.py:45 ui_qt/instruments_window.py:350
 msgid "New Instrument"
@@ -2792,6 +4508,10 @@ msgstr "Error: {0}"
 msgid "Last.fm Error"
 msgstr "Last.fm Error"
 
+#: ui_qt/library_window.py:70
+msgid "Could not read play counts for the library window: {0}"
+msgstr "Could not read play counts for the library window: {0}"
+
 #: ui_qt/library_window.py:106 ui_qt/library_window.py:116
 msgid "Library"
 msgstr "Library"
@@ -2819,6 +4539,10 @@ msgstr "Plays"
 #: ui_qt/library_window.py:192
 msgid "Last Played"
 msgstr "Last Played"
+
+#: ui_qt/library_window.py:221
+msgid "Error loading library window data: {0}"
+msgstr "Error loading library window data: {0}"
 
 #: ui_qt/library_window.py:235
 msgid "Could not load library data: {0}"
@@ -2875,6 +4599,10 @@ msgstr "LIVE"
 #: ui_qt/media_controls_overlay.py:354
 msgid "Unmute"
 msgstr "Unmute"
+
+#: ui_qt/media_frame.py:335
+msgid "Could not restart looped video {0}: {1}"
+msgstr "Could not restart looped video {0}: {1}"
 
 #: ui_qt/network_media_window.py:41
 msgid "Match criteria"
@@ -3056,6 +4784,10 @@ msgstr "Enter a station name, tag, or country code to search."
 msgid "Searching…"
 msgstr "Searching…"
 
+#: ui_qt/network_media_window.py:423
+msgid "Radio Browser search failed: {0}"
+msgstr "Radio Browser search failed: {0}"
+
 #: ui_qt/network_media_window.py:425
 msgid "Search failed: "
 msgstr "Search failed: "
@@ -3063,6 +4795,10 @@ msgstr "Search failed: "
 #: ui_qt/network_media_window.py:436
 msgid "No stations found."
 msgstr "No stations found."
+
+#: ui_qt/network_media_window.py:449
+msgid "Error rendering search results"
+msgstr "Error rendering search results"
 
 #: ui_qt/network_media_window.py:463
 msgid "No saved stations yet. Click ★ on a search result to save one."
@@ -3120,6 +4856,10 @@ msgstr "Enable / disable this watch entry"
 msgid "Delete this watch entry"
 msgstr "Delete this watch entry"
 
+#: ui_qt/network_media_window.py:674
+msgid "Could not read suppressed radio suggestions: {0}"
+msgstr "Could not read suppressed radio suggestions: {0}"
+
 #: ui_qt/personas_window.py:49 ui_qt/personas_window.py:81
 msgid "DJ Personas"
 msgstr "DJ Personas"
@@ -3158,7 +4898,7 @@ msgstr "Save Changes"
 
 #: ui_qt/auth/password_admin_window.py:84 ui_qt/auth/password_dialog.py:176
 #: ui_qt/auth/password_dialog.py:246 ui_qt/auth/password_dialog.py:267
-#: ui_qt/personas_window.py:141 ui_qt/rename_confirmation_window.py:211
+#: ui_qt/personas_window.py:141 ui_qt/rename_confirmation_window.py:213
 msgid "Cancel"
 msgstr "Cancel"
 
@@ -3258,6 +4998,10 @@ msgstr "Clear Override for Topic"
 msgid "Topics with an override set:"
 msgstr "Topics with an override set:"
 
+#: ui_qt/personas_window.py:327
+msgid "Error updating language name from code: {0}"
+msgstr "Error updating language name from code: {0}"
+
 #: ui_qt/personas_window.py:330
 msgid "New Persona"
 msgstr "New Persona"
@@ -3265,10 +5009,6 @@ msgstr "New Persona"
 #: ui_qt/personas_window.py:331
 msgid "friendly and engaging"
 msgstr "friendly and engaging"
-
-#: ui_qt/configuration_window.py:105 ui_qt/personas_window.py:332
-msgid "English"
-msgstr "English"
 
 #: ui_qt/personas_window.py:344
 msgid "music enthusiast"
@@ -3353,6 +5093,10 @@ msgstr "Invalid persona data: {}"
 #: ui_qt/personas_window.py:513
 msgid "Persona saved successfully."
 msgstr "Persona saved successfully."
+
+#: ui_qt/personas_window.py:515
+msgid "Error saving persona: {0}"
+msgstr "Error saving persona: {0}"
 
 #: ui_qt/personas_window.py:518
 msgid "Failed to save persona: {}"
@@ -3455,20 +5199,36 @@ msgstr ""
 msgid "Playlist \"{0}\" frozen to {1} tracks."
 msgstr "Playlist \"{0}\" frozen to {1} tracks."
 
+#: ui_qt/playlist_window.py:337
+msgid "Failed to freeze playlist '{0}': {1}"
+msgstr "Failed to freeze playlist '{0}': {1}"
+
 #: ui_qt/playlist_window.py:347
 msgid "Delete playlist \"{0}\"?"
 msgstr "Delete playlist \"{0}\"?"
+
+#: ui_qt/playlist_window.py:372
+msgid "Failed to create PlaybackConfig from '{0}': {1}"
+msgstr "Failed to create PlaybackConfig from '{0}': {1}"
 
 #: ui_qt/playlist_window.py:426
 msgid "Sequential Preview"
 msgstr "Sequential Preview"
 
+#: ui_qt/playlist_window.py:479
+msgid "Failed to shuffle playlist '{0}': {1}"
+msgstr "Failed to shuffle playlist '{0}': {1}"
+
 #: ui_qt/playlist_window.py:658
 msgid "played"
 msgstr "played"
 
+#: ui_qt/playlist_window.py:852
+msgid "skip_to_track failed: {0}"
+msgstr "skip_to_track failed: {0}"
+
 #: ui_qt/playlist_window.py:871 ui_qt/track_details_window.py:41
-#: ui_qt/track_details_window.py:502 ui_qt/track_details_window.py:650
+#: ui_qt/track_details_window.py:507 ui_qt/track_details_window.py:655
 msgid "Track Details"
 msgstr "Track Details"
 
@@ -3547,6 +5307,10 @@ msgstr "Please select a directory."
 #: ui_qt/playlist_window.py:1283
 msgid "Please add at least one track."
 msgstr "Please add at least one track."
+
+#: ui_qt/playlist_window.py:1308
+msgid "Saved playlist descriptor: {0}"
+msgstr "Saved playlist descriptor: {0}"
 
 #: ui_qt/playlist_window.py:1313
 msgid "Playlist updated successfully"
@@ -3650,76 +5414,76 @@ msgstr "Lyrics"
 msgid "Comment"
 msgstr "Comment"
 
-#: ui_qt/rename_confirmation_window.py:129
+#: ui_qt/rename_confirmation_window.py:131
 msgid "Pending changes"
 msgstr "Pending changes"
 
-#: ui_qt/rename_confirmation_window.py:136
-#: ui_qt/rename_confirmation_window.py:137
+#: ui_qt/rename_confirmation_window.py:138
+#: ui_qt/rename_confirmation_window.py:139
 msgid "(empty)"
 msgstr "(empty)"
 
-#: ui_qt/rename_confirmation_window.py:142
+#: ui_qt/rename_confirmation_window.py:144
 msgid "No metadata fields have changed."
 msgstr "No metadata fields have changed."
 
-#: ui_qt/rename_confirmation_window.py:145
+#: ui_qt/rename_confirmation_window.py:147
 msgid "Filepath preview"
 msgstr "Filepath preview"
 
-#: ui_qt/rename_confirmation_window.py:147
+#: ui_qt/rename_confirmation_window.py:149
 msgid "Current:"
 msgstr "Current:"
 
-#: ui_qt/rename_confirmation_window.py:149
+#: ui_qt/rename_confirmation_window.py:151
 msgid "Proposed:"
 msgstr "Proposed:"
 
-#: ui_qt/rename_confirmation_window.py:158
+#: ui_qt/rename_confirmation_window.py:160
 msgid "Rename track file to match new title"
 msgstr "Rename track file to match new title"
 
-#: ui_qt/rename_confirmation_window.py:165
+#: ui_qt/rename_confirmation_window.py:167
 msgid "Retain IDs in filename (e.g. [FLAC], [2024])"
 msgstr "Retain IDs in filename (e.g. [FLAC], [2024])"
 
-#: ui_qt/rename_confirmation_window.py:181
+#: ui_qt/rename_confirmation_window.py:183
 msgid "Album directory"
 msgstr "Album directory"
 
-#: ui_qt/rename_confirmation_window.py:195
+#: ui_qt/rename_confirmation_window.py:197
 msgid "Artist directory"
 msgstr "Artist directory"
 
-#: ui_qt/rename_confirmation_window.py:208
+#: ui_qt/rename_confirmation_window.py:210
 msgid "Apply Changes"
 msgstr "Apply Changes"
 
-#: ui_qt/rename_confirmation_window.py:237
+#: ui_qt/rename_confirmation_window.py:239
 msgid "⚠  Renaming this directory affects every track by this artist."
 msgstr "⚠  Renaming this directory affects every track by this artist."
 
-#: ui_qt/rename_confirmation_window.py:244
+#: ui_qt/rename_confirmation_window.py:246
 msgid "Keep current directory (tag change only)"
 msgstr "Keep current directory (tag change only)"
 
-#: ui_qt/rename_confirmation_window.py:246
+#: ui_qt/rename_confirmation_window.py:248
 msgid "Rename directory to match new value: \"{v}\""
 msgstr "Rename directory to match new value: \"{v}\""
 
-#: ui_qt/rename_confirmation_window.py:248
+#: ui_qt/rename_confirmation_window.py:250
 msgid "Move this track to an existing directory"
 msgstr "Move this track to an existing directory"
 
-#: ui_qt/rename_confirmation_window.py:249
+#: ui_qt/rename_confirmation_window.py:251
 msgid "Move this track to a new directory"
 msgstr "Move this track to a new directory"
 
-#: ui_qt/rename_confirmation_window.py:259
+#: ui_qt/rename_confirmation_window.py:261
 msgid "Target directory path"
 msgstr "Target directory path"
 
-#: ui_qt/rename_confirmation_window.py:262
+#: ui_qt/rename_confirmation_window.py:264
 msgid "Browse…"
 msgstr "Browse…"
 
@@ -3763,9 +5527,33 @@ msgstr "Create and modify schedules"
 msgid "Clear schedules"
 msgstr "Clear schedules"
 
+#: ui_qt/search_window.py:69
+msgid "Invalid search removed: {0}"
+msgstr "Invalid search removed: {0}"
+
+#: ui_qt/search_window.py:71
+msgid "Skipped {0} duplicate searches"
+msgstr "Skipped {0} duplicate searches"
+
+#: ui_qt/search_window.py:74
+msgid "Limiting searches from {0} to {1}"
+msgstr "Limiting searches from {0} to {1}"
+
+#: ui_qt/search_window.py:91
+msgid "Limiting stored searches from {0} to {1}"
+msgstr "Limiting stored searches from {0} to {1}"
+
+#: ui_qt/search_window.py:107
+msgid "No track found by ID, falling back to search"
+msgstr "No track found by ID, falling back to search"
+
 #: ui_qt/search_window.py:121
 msgid "No matching tracks found"
 msgstr "No matching tracks found"
+
+#: ui_qt/search_window.py:124
+msgid "Error in find_track: {0}"
+msgstr "Error in find_track: {0}"
 
 #: ui_qt/search_window.py:150
 msgid "Search Library"
@@ -3827,6 +5615,10 @@ msgstr "Please wait, rescanning library and searching..."
 #: ui_qt/search_window.py:495
 msgid "Searching..."
 msgstr "Searching..."
+
+#: ui_qt/search_window.py:527
+msgid "Error in search thread: {0}"
+msgstr "Error in search thread: {0}"
 
 #: ui_qt/search_window.py:598
 msgid "No results found."
@@ -3962,6 +5754,10 @@ msgstr "Check count override:"
 #: ui_qt/sort_config_window.py:95
 msgid "Override the adaptive recently-played check count with a fixed value"
 msgstr "Override the adaptive recently-played check count with a fixed value"
+
+#: ui_qt/timer_window.py:56
+msgid "Could not set playback instance for timer: {0}"
+msgstr "Could not set playback instance for timer: {0}"
 
 #: ui_qt/timer_window.py:71
 msgid "Set Timer"
@@ -4099,7 +5895,7 @@ msgstr "Rename Album Folder"
 msgid "Folder name:"
 msgstr "Folder name:"
 
-#: ui_qt/track_details_window.py:243 ui_qt/track_details_window.py:649
+#: ui_qt/track_details_window.py:243 ui_qt/track_details_window.py:654
 msgid "In: "
 msgstr "In: "
 
@@ -4135,44 +5931,48 @@ msgstr "Duration: "
 msgid "The file for this track could not be found."
 msgstr "The file for this track could not be found."
 
-#: ui_qt/track_details_window.py:421
+#: ui_qt/track_details_window.py:426
 msgid "Year must be between 0 and 9999"
 msgstr "Year must be between 0 and 9999"
 
-#: ui_qt/track_details_window.py:424
+#: ui_qt/track_details_window.py:429
 msgid "{0} cannot be negative"
 msgstr "{0} cannot be negative"
 
-#: ui_qt/track_details_window.py:427
+#: ui_qt/track_details_window.py:432
 msgid "{0} must be a valid number"
 msgstr "{0} must be a valid number"
 
-#: ui_qt/track_details_window.py:522
+#: ui_qt/track_details_window.py:527
 msgid "Failed to update track metadata. Check the logs."
 msgstr "Failed to update track metadata. Check the logs."
 
-#: ui_qt/track_details_window.py:560 ui_qt/track_details_window.py:589
-#: ui_qt/track_details_window.py:800 ui_qt/track_details_window.py:819
+#: ui_qt/track_details_window.py:565 ui_qt/track_details_window.py:594
+#: ui_qt/track_details_window.py:805 ui_qt/track_details_window.py:824
 msgid "Rename Failed"
 msgstr "Rename Failed"
 
-#: ui_qt/track_details_window.py:563
+#: ui_qt/track_details_window.py:568
 msgid "Track updated successfully"
 msgstr "Track updated successfully"
 
-#: ui_qt/track_details_window.py:610 ui_qt/track_details_window.py:623
+#: ui_qt/track_details_window.py:605
+msgid "Could not create directory: {0}"
+msgstr "Could not create directory: {0}"
+
+#: ui_qt/track_details_window.py:615 ui_qt/track_details_window.py:628
 msgid "Move Failed"
 msgstr "Move Failed"
 
-#: ui_qt/track_details_window.py:611
+#: ui_qt/track_details_window.py:616
 msgid "A file named '{}' already exists in the target directory."
 msgstr "A file named '{}' already exists in the target directory."
 
-#: ui_qt/track_details_window.py:679
+#: ui_qt/track_details_window.py:684
 msgid "Currently Playing"
 msgstr "Currently Playing"
 
-#: ui_qt/track_details_window.py:680
+#: ui_qt/track_details_window.py:685
 msgid ""
 "This track is currently playing. Modifying it may interrupt playback. "
 "Proceed?"
@@ -4180,7 +5980,7 @@ msgstr ""
 "This track is currently playing. Modifying it may interrupt playback. "
 "Proceed?"
 
-#: ui_qt/track_details_window.py:707
+#: ui_qt/track_details_window.py:712
 msgid ""
 "Permanently delete this file from disk?\n"
 "\n"
@@ -4194,11 +5994,11 @@ msgstr ""
 "\n"
 "This cannot be undone."
 
-#: ui_qt/track_details_window.py:716
+#: ui_qt/track_details_window.py:721
 msgid "Track deleted: {}"
 msgstr "Track deleted: {}"
 
-#: ui_qt/track_details_window.py:731
+#: ui_qt/track_details_window.py:736
 msgid ""
 "Permanently delete this folder and the {0} file(s) inside it?\n"
 "\n"
@@ -4212,23 +6012,23 @@ msgstr ""
 "\n"
 "This cannot be undone."
 
-#: ui_qt/track_details_window.py:740
+#: ui_qt/track_details_window.py:745
 msgid "Album deleted: {}"
 msgstr "Album deleted: {}"
 
-#: ui_qt/track_details_window.py:787
+#: ui_qt/track_details_window.py:792
 msgid "Filename cannot be empty."
 msgstr "Filename cannot be empty."
 
-#: ui_qt/track_details_window.py:798
+#: ui_qt/track_details_window.py:803
 msgid "Track renamed to: {}"
 msgstr "Track renamed to: {}"
 
-#: ui_qt/track_details_window.py:807
+#: ui_qt/track_details_window.py:812
 msgid "Folder name cannot be empty."
 msgstr "Folder name cannot be empty."
 
-#: ui_qt/track_details_window.py:816
+#: ui_qt/track_details_window.py:821
 msgid "Album folder renamed to: {}"
 msgstr "Album folder renamed to: {}"
 
@@ -4659,6 +6459,20 @@ msgstr ""
 msgid "Incorrect password"
 msgstr "Incorrect password"
 
+#: ui_qt/auth/password_utils.py:68
+msgid "Password Unavailable"
+msgstr "Password Unavailable"
+
+#: ui_qt/auth/password_utils.py:69
+msgid ""
+"The password is stored with quantum-safe (OQS) encryption, which this build "
+"does not include, so protected actions are unavailable. Use a build made "
+"with OQS support."
+msgstr ""
+"The password is stored with quantum-safe (OQS) encryption, which this build "
+"does not include, so protected actions are unavailable. Use a build made "
+"with OQS support."
+
 #: utils/audio_device_manager.py:1559
 msgid "Audio Device Detection Failed"
 msgstr "Audio Device Detection Failed"
@@ -4999,1821 +6813,99 @@ msgstr "months"
 msgid "years"
 msgstr "years"
 
-#: app_qt.py:713
-msgid "Exiting application"
-msgstr "Exiting application"
-
-#: app_qt.py:990
-msgid "Error checking audio device settings: {0}"
-msgstr "Error checking audio device settings: {0}"
-
-#: app_qt.py:1415
-msgid "Could not play spinning record video {0}: {1}"
-msgstr "Could not play spinning record video {0}: {1}"
-
-#: app_qt.py:1426
-msgid "Could not {0} the artwork video: {1}"
-msgstr "Could not {0} the artwork video: {1}"
-
-#: app_qt.py:1840
-msgid "Could not compare this build with its source checkout: {0}"
-msgstr "Could not compare this build with its source checkout: {0}"
-
-#: app_qt.py:1846
-msgid "This build no longer matches its source code. See the log for details."
-msgstr ""
-"This build no longer matches its source code. See the log for details."
-
-#: app_qt.py:1882
-msgid "Could not open the fault log: {0}"
-msgstr "Could not open the fault log: {0}"
-
-#: app_qt.py:1899
-msgid "FFmpeg not found"
-msgstr "FFmpeg not found"
-
-#: app_qt.py:1900
-msgid ""
-"Muse needs FFmpeg to play tracks, but ffmpeg was not found on PATH. Install "
-"FFmpeg, then restart Muse. See the README for details."
-msgstr ""
-"Muse needs FFmpeg to play tracks, but ffmpeg was not found on PATH. Install "
-"FFmpeg, then restart Muse. See the README for details."
-
-#: app_qt.py:1909
-msgid "Caught signal, shutting down gracefully..."
-msgstr "Caught signal, shutting down gracefully..."
-
-#: extensions/bluesky_api.py:247
-msgid "Skipping Bluesky feed {0}: {1}"
-msgstr "Skipping Bluesky feed {0}: {1}"
-
-#: extensions/calendar_aggregator.py:217
-msgid "Error getting events from Holiday API: {0}"
-msgstr "Error getting events from Holiday API: {0}"
-
-#: extensions/calendar_aggregator.py:245
-msgid "Error getting events from Nager Public Holidays API: {0}"
-msgstr "Error getting events from Nager Public Holidays API: {0}"
-
-#: extensions/calendar_aggregator.py:273
-msgid "Error getting events from Inadiutorium API: {0}"
-msgstr "Error getting events from Inadiutorium API: {0}"
-
-#: extensions/calendar_aggregator.py:304
-msgid "Error getting events from Hijri Calendar API: {0}"
-msgstr "Error getting events from Hijri Calendar API: {0}"
-
-#: extensions/extension_filer.py:56
-msgid "Could not scan {0} for genre dirs: {1}"
-msgstr "Could not scan {0} for genre dirs: {1}"
-
-#: extensions/extension_filer.py:210
-msgid "Pillow not available; embedding WebP as-is"
-msgstr "Pillow not available; embedding WebP as-is"
-
-#: extensions/extension_filer.py:231
-msgid "Delete skipped: file not found at {0}"
-msgstr "Delete skipped: file not found at {0}"
-
-#: extensions/extension_filer.py:235
-msgid "Deleted extension file: {0}"
-msgstr "Deleted extension file: {0}"
-
-#: extensions/extension_filer.py:240
-msgid "Failed to delete extension file {0}: {1}"
-msgstr "Failed to delete extension file {0}: {1}"
-
-#: extensions/extension_filer.py:261
-msgid "Auto-filing skipped: source file missing at {0}"
-msgstr "Auto-filing skipped: source file missing at {0}"
-
-#: extensions/extension_filer.py:265
-msgid "Auto-filing skipped: no directories configured"
-msgstr "Auto-filing skipped: no directories configured"
-
-#: extensions/extension_filer.py:270
-msgid "Auto-filing base directory does not exist: {0}"
-msgstr "Auto-filing base directory does not exist: {0}"
-
-#: extensions/extension_filer.py:296
-msgid "Auto-filed extension: {0} -> {1}"
-msgstr "Auto-filed extension: {0} -> {1}"
-
-#: extensions/extension_filer.py:299
-msgid "Auto-filing move failed ({0} -> {1}): {2}"
-msgstr "Auto-filing move failed ({0} -> {1}): {2}"
-
-#: extensions/extension_manager.py:71
-msgid "Invalid strategy '{0}' found in cache, defaulting to RANDOM"
-msgstr "Invalid strategy '{0}' found in cache, defaulting to RANDOM"
-
-#: extensions/extension_manager.py:240
-msgid "Starting extensions thread"
-msgstr "Starting extensions thread"
-
-#: extensions/extension_manager.py:283
-msgid "Extension thread still blocked after {0}s"
-msgstr "Extension thread still blocked after {0}s"
-
-#: extensions/extension_manager.py:292
-msgid "Delayed thread still blocked after {0}s"
-msgstr "Delayed thread still blocked after {0}s"
-
-#: extensions/extension_manager.py:301
-msgid "Error during extension reset: {0}"
-msgstr "Error during extension reset: {0}"
-
-#: extensions/extension_manager.py:350
-msgid "Extension thread exiting"
-msgstr "Extension thread exiting"
-
-#: extensions/extension_manager.py:450
-msgid "LLM call failed for artist '{0}', falling back to simple query: {1}"
-msgstr "LLM call failed for artist '{0}', falling back to simple query: {1}"
-
-#: extensions/extension_manager.py:469
-msgid "LLM call failed for genre '{0}', falling back to simple query: {1}"
-msgstr "LLM call failed for genre '{0}', falling back to simple query: {1}"
-
-#: extensions/extension_manager.py:485
-msgid ""
-"LLM call failed for instrument '{0}' with genre '{1}', falling back to "
-"simple query: {2}"
-msgstr ""
-"LLM call failed for instrument '{0}' with genre '{1}', falling back to "
-"simple query: {2}"
-
-#: extensions/extension_manager.py:751
-msgid "Failed to rename: {0}"
-msgstr "Failed to rename: {0}"
-
-#: extensions/extension_manager.py:764
-msgid "Auto-filing returned no path; file remains at {0}"
-msgstr "Auto-filing returned no path; file remains at {0}"
-
-#: extensions/extension_manager.py:773
-msgid "Extension delayed processing failed: {0}"
-msgstr "Extension delayed processing failed: {0}"
-
-#: extensions/extension_manager.py:827
-msgid "Failed to rename file to remove emoji: {0}"
-msgstr "Failed to rename file to remove emoji: {0}"
-
-#: extensions/extension_manager.py:910
-msgid ""
-"LLM scoring of search results failed, falling back to mechanical quality "
-"only: {0}"
-msgstr ""
-"LLM scoring of search results failed, falling back to mechanical quality "
-"only: {0}"
-
-#: extensions/extension_manager.py:925
-msgid ""
-"Embedding scoring of search results failed, falling back to mechanical "
-"quality only: {0}"
-msgstr ""
-"Embedding scoring of search results failed, falling back to mechanical "
-"quality only: {0}"
-
-#: extensions/extension_manager.py:1064
-msgid "Error getting extension details for {0}: {1}"
-msgstr "Error getting extension details for {0}: {1}"
-
-#: extensions/extension_manager.py:1065
-msgid "No extension details found for {0}"
-msgstr "No extension details found for {0}"
-
-#: extensions/hacker_news_souper.py:16
-msgid "Unexpected number of title line links found: {0}"
-msgstr "Unexpected number of title line links found: {0}"
-
-#: extensions/hacker_news_souper.py:78
-msgid "Failed to get titleline_el for Hacker New items"
-msgstr "Failed to get titleline_el for Hacker New items"
-
-#: extensions/hacker_news_souper.py:83
-msgid "Failed to create Hacker News Item: {0}"
-msgstr "Failed to create Hacker News Item: {0}"
-
-#: extensions/hacker_news_souper.py:95
-msgid "Failed to extract data for Hacker New items: {0}"
-msgstr "Failed to extract data for Hacker New items: {0}"
-
-#: extensions/icy_metadata.py:146
-msgid "on_title_change callback raised"
-msgstr "on_title_change callback raised"
-
-#: extensions/icy_metadata.py:156
-msgid "ICY connection error ({0}); reconnecting in {1:.0f}s"
-msgstr "ICY connection error ({0}); reconnecting in {1:.0f}s"
-
-#: extensions/imslp_souper.py:310 extensions/wiki_souper.py:354
-msgid "Invalid data urls:"
-msgstr "Invalid data urls:"
-
-#: extensions/imslp_souper.py:317 extensions/wiki_souper.py:361
-msgid "Failed urls: "
-msgstr "Failed urls: "
-
-#: extensions/lastfm_api.py:229
-msgid "Last.fm request failed for {0}: {1}"
-msgstr "Last.fm request failed for {0}: {1}"
-
-#: extensions/llm.py:134
-msgid "{0} - Failed to get json attr {1} from json response: {2}"
-msgstr "{0} - Failed to get json attr {1} from json response: {2}"
-
-#: extensions/llm.py:248
-msgid "LLM failure count increased to {0} for state '{1}'"
-msgstr "LLM failure count increased to {0} for state '{1}'"
-
-#: extensions/llm.py:595 extensions/llm.py:721
-msgid "Failed to generate LLM response: {0}"
-msgstr "Failed to generate LLM response: {0}"
-
-#: extensions/llm.py:646
-msgid "Failed to persist LLM prompt/response history: {0}"
-msgstr "Failed to persist LLM prompt/response history: {0}"
-
-#: extensions/llm.py:697
-msgid "Exception in LLM generation thread: {0}"
-msgstr "Exception in LLM generation thread: {0}"
-
-#: extensions/llm.py:715
-msgid "Exception while monitoring LLM thread: {0}"
-msgstr "Exception while monitoring LLM thread: {0}"
-
-#: extensions/llm.py:826
-msgid "Thread did not terminate gracefully, forcing cleanup"
-msgstr "Thread did not terminate gracefully, forcing cleanup"
-
-#: extensions/musicbrainz_api.py:302
-msgid "MusicBrainz request failed ({0}): {1}"
-msgstr "MusicBrainz request failed ({0}): {1}"
-
-#: extensions/musicbrainz_api.py:393
-msgid "Could not fetch recording {0}: {1}"
-msgstr "Could not fetch recording {0}: {1}"
-
-#: extensions/musicbrainz_api.py:411
-msgid "Could not fetch work {0}: {1}"
-msgstr "Could not fetch work {0}: {1}"
-
-#: extensions/musicbrainz_api.py:495
-msgid "Skipping recording {0} during enrichment: {1}"
-msgstr "Skipping recording {0} during enrichment: {1}"
-
-#: extensions/radio_browser.py:37
-msgid "Radio Browser DNS discovery failed, using fallback: {0}"
-msgstr "Radio Browser DNS discovery failed, using fallback: {0}"
-
-#: extensions/radio_browser.py:93
-msgid "Failed to fetch station by UUID {0}: {1}"
-msgstr "Failed to fetch station by UUID {0}: {1}"
-
-#: extensions/radio_browser.py:116
-msgid "Failed to resolve playlist URL {0}: {1}"
-msgstr "Failed to resolve playlist URL {0}: {1}"
-
-#: extensions/reddit_api.py:80
-msgid "Unreadable Reddit timestamp: {0}"
-msgstr "Unreadable Reddit timestamp: {0}"
-
-#: extensions/reddit_api.py:210
-msgid "praw is not installed; using the public listing"
-msgstr "praw is not installed; using the public listing"
-
-#: extensions/reddit_api.py:215
-msgid "Reddit API path failed ({0}); using the public listing"
-msgstr "Reddit API path failed ({0}); using the public listing"
-
-#: extensions/reddit_api.py:221
-msgid "Skipping r/{0}: {1}"
-msgstr "Skipping r/{0}: {1}"
-
-#: extensions/social_filter.py:52
-msgid "Unreadable timestamp: {0}"
-msgstr "Unreadable timestamp: {0}"
-
-#: extensions/soup_utils.py:78
-msgid "Failed to find elements of class {0} - {1}"
-msgstr "Failed to find elements of class {0} - {1}"
-
-#: extensions/wiki_opensearch_api.py:64 extensions/wiki_opensearch_api.py:74
-msgid "Failed to connect to Wiki OpenSearch API: {0}"
-msgstr "Failed to connect to Wiki OpenSearch API: {0}"
-
-#: extensions/wiki_souper.py:404
-msgid "Failed to download from url: {0}"
-msgstr "Failed to download from url: {0}"
-
-#: library_data/artist.py:321
-msgid "Error saving artist: {0}"
-msgstr "Error saving artist: {0}"
-
-#: library_data/artist.py:347
-msgid "Error deleting artist: {0}"
-msgstr "Error deleting artist: {0}"
-
-#: library_data/artist.py:358 library_data/composer.py:739
-#: library_data/form.py:271 library_data/genre.py:273
-#: library_data/instrument.py:274 library_data/library_data.py:897
-msgid "Invalid search query"
-msgstr "Invalid search query"
-
-#: library_data/blacklist.py:466
-msgid "Invalid blacklist item type: {0}"
-msgstr "Invalid blacklist item type: {0}"
-
-#: library_data/blacklist.py:657
-msgid "Invalid item type in JSON blacklist import: {0}"
-msgstr "Invalid item type in JSON blacklist import: {0}"
-
-#: library_data/composer.py:617
-msgid "Error saving composers: {0}"
-msgstr "Error saving composers: {0}"
-
-#: library_data/composer.py:688
-msgid "Error deleting composer: {0}"
-msgstr "Error deleting composer: {0}"
-
-#: library_data/data_fixes.py:44
-msgid "Could not read data fixes from {0}: {1}"
-msgstr "Could not read data fixes from {0}: {1}"
-
-#: library_data/data_fixes.py:47
-msgid "Data fixes file is not a list: {0}"
-msgstr "Data fixes file is not a list: {0}"
-
-#: library_data/data_fixes.py:66
-msgid "Could not read applied data fixes: {0}"
-msgstr "Could not read applied data fixes: {0}"
-
-#: library_data/data_fixes.py:80
-msgid "Data fix {0} failed, will retry on next load: {1}"
-msgstr "Data fix {0} failed, will retry on next load: {1}"
-
-#: library_data/data_fixes.py:82
-msgid "Data fix {0}: {1} ({2})"
-msgstr "Data fix {0}: {1} ({2})"
-
-#: library_data/form.py:234
-msgid "Error saving form: {0}"
-msgstr "Error saving form: {0}"
-
-#: library_data/form.py:260
-msgid "Error deleting form: {0}"
-msgstr "Error deleting form: {0}"
-
-#: library_data/genre.py:236
-msgid "Error saving genre: {0}"
-msgstr "Error saving genre: {0}"
-
-#: library_data/genre.py:262
-msgid "Error deleting genre: {0}"
-msgstr "Error deleting genre: {0}"
-
-#: library_data/instrument.py:237
-msgid "Error saving instrument: {0}"
-msgstr "Error saving instrument: {0}"
-
-#: library_data/instrument.py:263
-msgid "Error deleting instrument: {0}"
-msgstr "Error deleting instrument: {0}"
-
-#: library_data/library_data.py:329
-msgid ""
-"Embedding ranking of search results failed, keeping the lexical order: {0}"
-msgstr ""
-"Embedding ranking of search results failed, keeping the lexical order: {0}"
-
-#: library_data/library_data.py:586
-msgid "Error storing directories cache to DB: {0}"
-msgstr "Error storing directories cache to DB: {0}"
-
-#: library_data/library_data.py:598
-msgid "Skipping track {0} for DB store: {1}"
-msgstr "Skipping track {0} for DB store: {1}"
-
-#: library_data/library_data.py:609
-msgid "Error storing media track cache to DB: {0}"
-msgstr "Error storing media track cache to DB: {0}"
-
-#: library_data/library_data.py:633
-msgid "Failed to load directories cache from DB: {0}"
-msgstr "Failed to load directories cache from DB: {0}"
-
-#: library_data/library_data.py:645
-msgid "Failed to load directories cache from pickle file: {0}"
-msgstr "Failed to load directories cache from pickle file: {0}"
-
-#: library_data/library_data.py:664
-msgid ""
-"Migrated directories cache but failed to persist removal from "
-"app_info_cache: {0}"
-msgstr ""
-"Migrated directories cache but failed to persist removal from "
-"app_info_cache: {0}"
-
-#: library_data/library_data.py:666
-msgid "Failed to migrate directories cache to pickle file: {0}"
-msgstr "Failed to migrate directories cache to pickle file: {0}"
-
-#: library_data/library_data.py:714
-msgid "Could not read group sizes for {0}: {1}"
-msgstr "Could not read group sizes for {0}: {1}"
-
-#: library_data/library_data.py:730
-msgid "Failed to load media track cache from DB: {0}"
-msgstr "Failed to load media track cache from DB: {0}"
-
-#: library_data/library_data.py:737
-msgid "No media track cache found, creating new one"
-msgstr "No media track cache found, creating new one"
-
-#: library_data/library_data.py:748
-msgid "Error parsing library refresh time: {0}"
-msgstr "Error parsing library refresh time: {0}"
-
-#: library_data/library_data.py:757
-msgid "Error getting cache file modification time: {0}"
-msgstr "Error getting cache file modification time: {0}"
-
-#: library_data/library_data.py:768
-msgid "Error recording library refresh time: {0}"
-msgstr "Error recording library refresh time: {0}"
-
-#: library_data/library_data.py:780
-msgid ""
-"Found {0} missing files in cache for {1}. Consider refreshing the cache."
-msgstr ""
-"Found {0} missing files in cache for {1}. Consider refreshing the cache."
-
-#: library_data/library_data.py:841 library_data/library_data.py:917
-msgid "Error in status callback: {0}"
-msgstr "Error in status callback: {0}"
-
-#: library_data/library_data.py:937
-msgid "Error in search callback: {0}"
-msgstr "Error in search callback: {0}"
-
-#: library_data/library_data.py:992
-msgid "Semantic recall failed, the search stays literal: {0}"
-msgstr "Semantic recall failed, the search stays literal: {0}"
-
-#: library_data/library_data.py:1196
-msgid "Error processing compilation for track {0}: {1}"
-msgstr "Error processing compilation for track {0}: {1}"
-
-#: library_data/library_data.py:1293
-msgid "Failed to update artwork for {0}: {1}"
-msgstr "Failed to update artwork for {0}: {1}"
-
-#: library_data/library_data.py:1304
-msgid "Album artwork could not be written to {0} track(s): {1}"
-msgstr "Album artwork could not be written to {0} track(s): {1}"
-
-#: library_data/media_track.py:57
-msgid "No music tag support: {0}"
-msgstr "No music tag support: {0}"
-
-#: library_data/media_track.py:65
-msgid "No mutagen (album artwork) support: {0}"
-msgstr "No mutagen (album artwork) support: {0}"
-
-#: library_data/media_track.py:161
-msgid "Failed to write errors to file: {0}"
-msgstr "Failed to write errors to file: {0}"
-
-#: library_data/media_track.py:216 library_data/media_track.py:250
-msgid ""
-"File not found: {0}. This may be due to an outdated cache. Consider "
-"refreshing the cache in the UI."
-msgstr ""
-"File not found: {0}. This may be due to an outdated cache. Consider "
-"refreshing the cache in the UI."
-
-#: library_data/media_track.py:223
-msgid ""
-"{0}\n"
-"MediaInfo error details:\n"
-"{1}"
-msgstr ""
-"{0}\n"
-"MediaInfo error details:\n"
-"{1}"
-
-#: library_data/media_track.py:241
-msgid "Failed to get year from MediaInfo: {0}"
-msgstr "Failed to get year from MediaInfo: {0}"
-
-#: library_data/media_track.py:257
-msgid ""
-"Unsupported file format for metadata reading: {0}. The file format is not "
-"supported by the metadata library."
-msgstr ""
-"Unsupported file format for metadata reading: {0}. The file format is not "
-"supported by the metadata library."
-
-#: library_data/media_track.py:259 library_data/media_track.py:266
-msgid "Failed to load metadata for {0}: {1}"
-msgstr "Failed to load metadata for {0}: {1}"
-
-#: library_data/media_track.py:274
-msgid "Invalid music_tag wrapper for {0}: missing or invalid tag_map"
-msgstr "Invalid music_tag wrapper for {0}: missing or invalid tag_map"
-
-#: library_data/media_track.py:295
-msgid "Failed to load {0} for {1}: {2}"
-msgstr "Failed to load {0} for {1}: {2}"
-
-#: library_data/media_track.py:297
-msgid "Too many tag failures ({0}) for {1}, falling back to MediaInfo"
-msgstr "Too many tag failures ({0}) for {1}, falling back to MediaInfo"
-
-#: library_data/media_track.py:310
-msgid "Failed to load length for {0}: {1}"
-msgstr "Failed to load length for {0}: {1}"
-
-#: library_data/media_track.py:555
-msgid "Skipping volume analysis for file with special characters: {0}"
-msgstr "Skipping volume analysis for file with special characters: {0}"
-
-#: library_data/media_track.py:681
-msgid "Album artwork not found: {0}"
-msgstr "Album artwork not found: {0}"
-
-#: library_data/media_track.py:745
-msgid "Could not write album artwork to temp file: {0}"
-msgstr "Could not write album artwork to temp file: {0}"
-
-#: library_data/media_track.py:932
-msgid "Cannot update metadata: music_tag library not available"
-msgstr "Cannot update metadata: music_tag library not available"
-
-#: library_data/media_track.py:936
-msgid "Cannot update metadata: track is a video file"
-msgstr "Cannot update metadata: track is a video file"
-
-#: library_data/media_track.py:946
-msgid "Invalid year value: {0}"
-msgstr "Invalid year value: {0}"
-
-#: library_data/media_track.py:949
-msgid "Invalid year format: {0}"
-msgstr "Invalid year format: {0}"
-
-#: library_data/media_track.py:957
-msgid "Invalid track number: {0}"
-msgstr "Invalid track number: {0}"
-
-#: library_data/media_track.py:960
-msgid "Invalid track number format: {0}"
-msgstr "Invalid track number format: {0}"
-
-#: library_data/media_track.py:972
-msgid "Failed to update artwork: {0}"
-msgstr "Failed to update artwork: {0}"
-
-#: library_data/media_track.py:1001
-msgid "Failed to update {0}: {1}"
-msgstr "Failed to update {0}: {1}"
-
-#: library_data/media_track.py:1012
-msgid "Successfully updated metadata for {0}"
-msgstr "Successfully updated metadata for {0}"
-
-#: library_data/media_track.py:1016
-msgid "Failed to update track metadata: {0}"
-msgstr "Failed to update track metadata: {0}"
-
-#: library_data/media_track.py:1099
-msgid "Cache propagation failed after file rename: {0}"
-msgstr "Cache propagation failed after file rename: {0}"
-
-#: library_data/media_track.py:1101
-msgid "Renamed track file: {0} → {1}"
-msgstr "Renamed track file: {0} → {1}"
-
-#: library_data/media_track.py:1142
-msgid "Cache propagation failed after directory rename: {0}"
-msgstr "Cache propagation failed after directory rename: {0}"
-
-#: library_data/media_track.py:1144
-msgid "Renamed album folder: {0} → {1}"
-msgstr "Renamed album folder: {0} → {1}"
-
-#: library_data/media_track.py:1185
-msgid "Cache propagation failed after artist folder rename: {0}"
-msgstr "Cache propagation failed after artist folder rename: {0}"
-
-#: library_data/media_track.py:1187
-msgid "Renamed artist folder: {0} → {1}"
-msgstr "Renamed artist folder: {0} → {1}"
-
-#: library_data/track_embedding_store.py:46
-msgid "Semantic search recall is unavailable without numpy: {0}"
-msgstr "Semantic search recall is unavailable without numpy: {0}"
-
-#: library_data/track_embedding_store.py:176
-msgid ""
-"Discarding the search index, it was built with {0} and the model is now {1}"
-msgstr ""
-"Discarding the search index, it was built with {0} and the model is now {1}"
-
-#: library_data/track_embedding_store.py:185
-msgid "Dropping {0} from the search index, {1} rows against {2} entries"
-msgstr "Dropping {0} from the search index, {1} rows against {2} entries"
-
-#: library_data/track_embedding_store.py:194
-msgid "Could not read the search index, it will be rebuilt: {0}"
-msgstr "Could not read the search index, it will be rebuilt: {0}"
-
-#: library_data/track_embedding_store.py:211
-msgid "Could not write the search index, it will be rebuilt next time: {0}"
-msgstr "Could not write the search index, it will be rebuilt next time: {0}"
-
-#: library_data/track_embedding_store.py:304
-msgid "Error in search index status callback: {0}"
-msgstr "Error in search index status callback: {0}"
-
-#: library_data/track_embedding_store.py:313
-msgid "Could not build the {0} search index, searches stay literal: {1}"
-msgstr "Could not build the {0} search index, searches stay literal: {1}"
-
-#: library_data/track_embedding_store.py:362
-msgid ""
-"The {0} search index has {1}-wide rows against a {2}-wide query, discarding "
-"it"
-msgstr ""
-"The {0} search index has {1}-wide rows against a {2}-wide query, discarding "
-"it"
-
-#: library_data/track_embedding_store.py:373
-msgid "Could not query the {0} search index, the search stays literal: {1}"
-msgstr "Could not query the {0} search index, the search stays literal: {1}"
-
-#: library_data/works_data.py:100
-msgid "Error saving works for composer {0}: {1}"
-msgstr "Error saving works for composer {0}: {1}"
-
-#: library_data/works_data.py:121
-msgid "Error setting matched track for work {0}: {1}"
-msgstr "Error setting matched track for work {0}: {1}"
-
-#: muse/dj_persona.py:161
-msgid "Artwork path \"{0}\" does not exist, removing it"
-msgstr "Artwork path \"{0}\" does not exist, removing it"
-
-#: muse/dj_persona.py:163
-msgid "No valid artwork paths found for persona \"{0}\", using default artwork"
-msgstr "No valid artwork paths found for persona \"{0}\", using default artwork"
-
-#: muse/dj_persona.py:324
-msgid "Persona already exists, skipping: {0}"
-msgstr "Persona already exists, skipping: {0}"
-
-#: muse/dj_persona.py:326
-msgid "Error loading personas: {0}"
-msgstr "Error loading personas: {0}"
-
-#: muse/dj_persona.py:347
-msgid "Removing mock persona: {0}"
-msgstr "Removing mock persona: {0}"
-
-#: muse/dj_persona.py:350 ui_qt/personas_window.py:571
-msgid "Error reloading personas: {0}"
-msgstr "Error reloading personas: {0}"
-
-#: muse/dj_persona.py:416
-msgid "Mock persona not found, creating new: {0}"
-msgstr "Mock persona not found, creating new: {0}"
-
-#: muse/dj_persona.py:430
-msgid "Persona not found: {0}"
-msgstr "Persona not found: {0}"
-
-#: muse/dj_persona.py:466
-msgid "Error getting context and system prompt: {0}"
-msgstr "Error getting context and system prompt: {0}"
-
-#: muse/dj_persona.py:482
-msgid "Successfully saved {0} personas to configuration"
-msgstr "Successfully saved {0} personas to configuration"
-
-#: muse/dj_persona.py:484
-msgid "Failed to save personas to configuration"
-msgstr "Failed to save personas to configuration"
-
-#: muse/dj_persona.py:489 ui_qt/personas_window.py:537
-msgid "Error saving personas to config: {0}"
-msgstr "Error saving personas to config: {0}"
-
-#: muse/dj_persona.py:496
-msgid "Added persona: {0} ({1})"
-msgstr "Added persona: {0} ({1})"
-
-#: muse/dj_persona.py:499
-msgid "Error adding persona: {0}"
-msgstr "Error adding persona: {0}"
-
-#: muse/dj_persona.py:508
-msgid "Removed persona: {0} ({1})"
-msgstr "Removed persona: {0} ({1})"
-
-#: muse/dj_persona.py:511
-msgid "Persona not found for removal: {0}"
-msgstr "Persona not found for removal: {0}"
-
-#: muse/dj_persona.py:514
-msgid "Error removing persona: {0}"
-msgstr "Error removing persona: {0}"
-
-#: muse/dj_persona.py:522
-msgid "Updated persona: {0} ({1})"
-msgstr "Updated persona: {0} ({1})"
-
-#: muse/dj_persona.py:525
-msgid "Persona not found for update: {0}"
-msgstr "Persona not found for update: {0}"
-
-#: muse/dj_persona.py:528
-msgid "Error updating persona: {0}"
-msgstr "Error updating persona: {0}"
-
-#: muse/muse.py:114
-msgid "Detected {0} unresolved topic failure(s) from history:"
-msgstr "Detected {0} unresolved topic failure(s) from history:"
-
-#: muse/muse.py:118
-msgid ""
-" - Topic '{0}' last failed at {1} (type={2}, consecutive_failures={3}, "
-"last_success={4})"
-msgstr ""
-" - Topic '{0}' last failed at {1} (type={2}, consecutive_failures={3}, "
-"last_success={4})"
-
-#: muse/muse.py:235
-msgid "Starting with DJ {0} - until {1}"
-msgstr "Starting with DJ {0} - until {1}"
-
-#: muse/muse.py:237
-msgid "Switching DJ to {0} from {1} - until {2}"
-msgstr "Switching DJ to {0} from {1} - until {2}"
-
-#: muse/muse.py:258
-msgid "Failed to generate introduction: {0}"
-msgstr "Failed to generate introduction: {0}"
-
-#: muse/muse.py:259
-msgid "Traceback: {0}"
-msgstr "Traceback: {0}"
-
-#: muse/muse.py:293
-msgid "No persona found for voice {0}, using default voice"
-msgstr "No persona found for voice {0}, using default voice"
-
-#: muse/muse.py:300
-msgid "Failed to change voice to {0}: {1}"
-msgstr "Failed to change voice to {0}: {1}"
-
-#: muse/muse.py:506
-msgid "get_topic: all topics excluded, returning None"
-msgstr "get_topic: all topics excluded, returning None"
-
-#: muse/muse.py:594
-msgid "Unhandled topic: {0}"
-msgstr "Unhandled topic: {0}"
-
-#: muse/muse.py:835
-msgid "Could not load dictionary for language learning prompt: {0}"
-msgstr "Could not load dictionary for language learning prompt: {0}"
-
-#: muse/muse.py:911
-msgid "No translation available for language {0} topic {1}, using English"
-msgstr "No translation available for language {0} topic {1}, using English"
-
-#: muse/muse.py:924
-msgid ""
-"Failed to translate prompt for topic {0} into language {1} with error: {2}"
-msgstr ""
-"Failed to translate prompt for topic {0} into language {1} with error: {2}"
-
-#: muse/muse.py:936
-msgid "No system prompt available, using default prompt"
-msgstr "No system prompt available, using default prompt"
-
-#: muse/muse.py:1103
-msgid ""
-"Result was None for {0} initial persona prompt, possibly due to user skip."
-msgstr ""
-"Result was None for {0} initial persona prompt, possibly due to user skip."
-
-#: muse/muse.py:1117
-msgid "Error getting upcoming tracks: {0}"
-msgstr "Error getting upcoming tracks: {0}"
-
-#: muse/muse_memory.py:121
-msgid "Error loading memory: {0}"
-msgstr "Error loading memory: {0}"
-
-#: muse/muse_memory.py:129
-msgid "Error saving muse memory: {0}"
-msgstr "Error saving muse memory: {0}"
-
-#: muse/muse_memory.py:163
-msgid "✗ Attribute '{0}' failed to pickle: {1}"
-msgstr "✗ Attribute '{0}' failed to pickle: {1}"
-
-#: muse/muse_memory.py:180
-msgid "    ✗ Item [{0}] failed to pickle: {1}"
-msgstr "    ✗ Item [{0}] failed to pickle: {1}"
-
-#: muse/muse_memory.py:199
-msgid "    ✗ Key '{0}' failed to pickle: {1}"
-msgstr "    ✗ Key '{0}' failed to pickle: {1}"
-
-#: muse/muse_memory.py:203
-msgid "Found {0} problematic attributes:"
-msgstr "Found {0} problematic attributes:"
-
-#: muse/muse_memory.py:304 muse/muse_memory.py:329
-msgid "Failed to convert topic to Topic enum: {0} (type: {1})"
-msgstr "Failed to convert topic to Topic enum: {0} (type: {1})"
-
-#: muse/playback.py:157
-msgid "Could not resort upcoming tracks, keeping the existing order: {0}"
-msgstr "Could not resort upcoming tracks, keeping the existing order: {0}"
-
-#: muse/playback.py:177
-msgid "An affinity signal failed and was skipped: {0}"
-msgstr "An affinity signal failed and was skipped: {0}"
-
-#: muse/playback.py:181
-msgid "Model affinity scoring failed, keeping the existing order: {0}"
-msgstr "Model affinity scoring failed, keeping the existing order: {0}"
-
-#: muse/playback.py:311
-msgid "Could not record play count: {0}"
-msgstr "Could not record play count: {0}"
-
-#: muse/playback.py:332
-msgid "Could not record heard stream title: {0}"
-msgstr "Could not record heard stream title: {0}"
-
-#: muse/playback.py:360
-msgid "Shutdown after track requested - initiating shutdown"
-msgstr "Shutdown after track requested - initiating shutdown"
-
-#: muse/playback.py:403
-msgid "No voice available due to import failure, skipping Muse."
-msgstr "No voice available due to import failure, skipping Muse."
-
-#: muse/playback.py:461
-msgid "Stopping playback: group limit reached."
-msgstr "Stopping playback: group limit reached."
-
-#: muse/playback.py:508
-msgid "Failed to rebuild stream spot profile for ICY commentary"
-msgstr "Failed to rebuild stream spot profile for ICY commentary"
-
-#: muse/playback.py:571
-msgid "Failed to split too many tracks in queue!"
-msgstr "Failed to split too many tracks in queue!"
-
-#: muse/playback.py:591
-msgid "Error splitting track: {0}"
-msgstr "Error splitting track: {0}"
-
-#: muse/playback.py:594
-msgid "Failed to set track length: {0}"
-msgstr "Failed to set track length: {0}"
-
-#: muse/playback.py:636
-msgid "ICY polling thread raised unexpectedly"
-msgstr "ICY polling thread raised unexpectedly"
-
-#: muse/playback.py:669
-msgid "Could not trigger Muse ICY commentary"
-msgstr "Could not trigger Muse ICY commentary"
-
-#: muse/playback.py:690
-msgid "No main window handle to render the video track into."
-msgstr "No main window handle to render the video track into."
-
-#: muse/playback.py:790
-msgid "Album artwork consistency check failed for {0}: {1}"
-msgstr "Album artwork consistency check failed for {0}: {1}"
-
-#: muse/playback.py:822
-msgid "Could not announce spinning record encoding: {0}"
-msgstr "Could not announce spinning record encoding: {0}"
-
-#: muse/playback.py:835
-msgid "No image asset matched {0}"
-msgstr "No image asset matched {0}"
-
-#: muse/playback_config_master.py:305
-msgid "seek_to_track: target not found: {0}"
-msgstr "seek_to_track: target not found: {0}"
-
-#: muse/playlist.py:703
-msgid "Affinity ordering failed, keeping the existing order: {0}"
-msgstr "Affinity ordering failed, keeping the existing order: {0}"
-
-#: muse/playlist.py:737
-msgid ""
-"Could not find the end of the playing group, keeping the existing order: {0}"
-msgstr ""
-"Could not find the end of the playing group, keeping the existing order: {0}"
-
-#: muse/playlist.py:758
-msgid "Could not read the upcoming group values: {0}"
-msgstr "Could not read the upcoming group values: {0}"
-
-#: muse/playlist.py:903
-msgid "Could not read library group sizes for {0}: {1}"
-msgstr "Could not read library group sizes for {0}: {1}"
-
-#: muse/playlist.py:951
-msgid "Could not apply completion exemptions for {0}: {1}"
-msgstr "Could not apply completion exemptions for {0}: {1}"
-
-#: muse/playlist_descriptor.py:210
-msgid ""
-"PlaylistDescriptor '{0}': directory not found (even after retries): {1}"
-msgstr ""
-"PlaylistDescriptor '{0}': directory not found (even after retries): {1}"
-
-#: muse/playlist_descriptor.py:215
-msgid "PlaylistDescriptor '{0}': no valid directories found"
-msgstr "PlaylistDescriptor '{0}': no valid directories found"
-
-#: muse/playlist_descriptor.py:240
-msgid "PlaylistDescriptor '{0}': stale track removed: {1}"
-msgstr "PlaylistDescriptor '{0}': stale track removed: {1}"
-
-#: muse/playlist_descriptor.py:244
-msgid "PlaylistDescriptor '{0}': {1} stale track(s) removed, {2} remaining"
-msgstr "PlaylistDescriptor '{0}': {1} stale track(s) removed, {2} remaining"
-
-#: muse/playlist_descriptor.py:364 muse/playlist_descriptor.py:394
-msgid "Failed to load playlist descriptor '{0}'"
-msgstr "Failed to load playlist descriptor '{0}'"
-
-#: muse/playlist_descriptor.py:402
-msgid "Cannot rename: playlist descriptor '{0}' not found"
-msgstr "Cannot rename: playlist descriptor '{0}' not found"
-
-#: muse/playlist_descriptor.py:406
-msgid "Cannot rename: playlist descriptor '{0}' already exists"
-msgstr "Cannot rename: playlist descriptor '{0}' already exists"
-
-#: muse/radio_novelty.py:195
-msgid "Could not read works for {0}: {1}"
-msgstr "Could not read works for {0}: {1}"
-
-#: muse/radio_novelty.py:213
-msgid "Composer inference failed for '{0} - {1}': {2}"
-msgstr "Composer inference failed for '{0} - {1}': {2}"
-
-#: muse/radio_novelty.py:290
-msgid "Skipping malformed seen-titles record for station {0}: {1}"
-msgstr "Skipping malformed seen-titles record for station {0}: {1}"
-
-#: muse/radio_novelty.py:372
-msgid "Blacklist check skipped for radio title: {0}"
-msgstr "Blacklist check skipped for radio title: {0}"
-
-#: muse/radio_novelty.py:382
-msgid "Novelty evaluation failed for '{0} - {1}': {2}"
-msgstr "Novelty evaluation failed for '{0} - {1}': {2}"
-
-#: muse/radio_novelty.py:552
-msgid "Affinity scoring of a radio title failed: {0}"
-msgstr "Affinity scoring of a radio title failed: {0}"
-
-#: muse/radio_watchlist.py:96
-msgid "Skipping malformed watchlist entry: {0}"
-msgstr "Skipping malformed watchlist entry: {0}"
-
-#: muse/radio_watchlist.py:174
-msgid ""
-"Cannot resolve stream URL for watchlist station {0}; this poll thread will "
-"not start"
-msgstr ""
-"Cannot resolve stream URL for watchlist station {0}; this poll thread will "
-"not start"
-
-#: muse/radio_watchlist.py:188
-msgid "Watchlist ICY poll thread failed for station {0}"
-msgstr "Watchlist ICY poll thread failed for station {0}"
-
-#: muse/radio_watchlist.py:204
-msgid "Could not look up watchlist station {0}: {1}"
-msgstr "Could not look up watchlist station {0}: {1}"
-
-#: muse/radio_watchlist.py:216
-msgid "Could not resolve URL for watchlist station: {0}"
-msgstr "Could not resolve URL for watchlist station: {0}"
-
-#: muse/radio_watchlist.py:289
-msgid "Novelty check failed for watchlist station {0}"
-msgstr "Novelty check failed for watchlist station {0}"
-
-#: muse/radio_watchlist.py:342
-msgid "No station data returned for watchlist UUID {0}; cannot switch"
-msgstr "No station data returned for watchlist UUID {0}; cannot switch"
-
-#: muse/radio_watchlist.py:365
-msgid "Failed to switch playback to watchlist station {0}"
-msgstr "Failed to switch playback to watchlist station {0}"
-
-#: muse/run.py:115
-msgid ""
-"\n"
-"\n"
-"Config matches last config. Please modify it or quit."
-msgstr ""
-"\n"
-"\n"
-"Config matches last config. Please modify it or quit."
-
-#: muse/run.py:131
-msgid ""
-"\n"
-"{0}\n"
-"SCHEDULED SHUTDOWN: {1}\n"
-"{2}\n"
-msgstr ""
-"\n"
-"{0}\n"
-"SCHEDULED SHUTDOWN: {1}\n"
-"{2}\n"
-
-#: muse/run.py:149
-msgid ""
-"PLAYLIST_CONFIG strategy selected but no master config set; using All Music"
-msgstr ""
-"PLAYLIST_CONFIG strategy selected but no master config set; using All Music"
-
-#: muse/run.py:178
-msgid "Playback stopped: {0}"
-msgstr "Playback stopped: {0}"
-
-#: muse/run_context.py:69
-msgid "Shutdown scheduled after current track finishes."
-msgstr "Shutdown scheduled after current track finishes."
-
-#: muse/run_context.py:107
-msgid "Scheduled shutdown after track cancelled"
-msgstr "Scheduled shutdown after track cancelled"
-
-#: muse/schedules_manager.py:54
-msgid "Limiting schedules from {0} to {1}"
-msgstr "Limiting schedules from {0} to {1}"
-
-#: muse/schedules_manager.py:69
-msgid "Limiting stored schedules from {0} to {1}"
-msgstr "Limiting stored schedules from {0} to {1}"
-
-#: muse/timer.py:61
-msgid "Timer is already running"
-msgstr "Timer is already running"
-
-#: muse/timer.py:76
-msgid "Timer started for {0} seconds"
-msgstr "Timer started for {0} seconds"
-
-#: muse/timer.py:139
-msgid "Timer expired"
-msgstr "Timer expired"
-
-#: muse/timer.py:154
-msgid "Playback instance does not have timer volume override method"
-msgstr "Playback instance does not have timer volume override method"
-
-#: muse/track_affinity.py:262
-msgid "Could not read the playlist descriptor, leaving saturation off: {0}"
-msgstr "Could not read the playlist descriptor, leaving saturation off: {0}"
-
-#: muse/track_affinity.py:314
-msgid "Could not record listening time: {0}"
-msgstr "Could not record listening time: {0}"
-
-#: muse/track_affinity.py:464
-msgid "Skipping affinity scoring, the model has been failing"
-msgstr "Skipping affinity scoring, the model has been failing"
-
-#: muse/track_affinity.py:474
-msgid "Affinity scoring call failed, using attribute overlap alone: {0}"
-msgstr "Affinity scoring call failed, using attribute overlap alone: {0}"
-
-#: muse/track_affinity.py:490
-msgid "Affinity scoring returned an unusable response: {0}"
-msgstr "Affinity scoring returned an unusable response: {0}"
-
-#: muse/track_affinity.py:517
-msgid "Embedding affinity is unavailable, the other signals still apply: {0}"
-msgstr "Embedding affinity is unavailable, the other signals still apply: {0}"
-
-#: muse/track_affinity.py:538
-msgid "Embedding failed: {0}"
-msgstr "Embedding failed: {0}"
-
-#: muse/track_affinity.py:588
-msgid ""
-"Embedding scoring failed, leaving the ordering to the other signals: {0}"
-msgstr ""
-"Embedding scoring failed, leaving the ordering to the other signals: {0}"
-
-#: muse/track_affinity.py:636
-msgid ""
-"Could not build an affinity reference, leaving playlist order alone: {0}"
-msgstr ""
-"Could not build an affinity reference, leaving playlist order alone: {0}"
-
-#: muse/track_affinity.py:661
-msgid "Could not read favorites: {0}"
-msgstr "Could not read favorites: {0}"
-
-#: muse/voice.py:22
-msgid "Failed to import tts_runner."
-msgstr "Failed to import tts_runner."
-
-#: muse/voice.py:32
-msgid "Unknown tts_provider '{0}', falling back to coqui."
-msgstr "Unknown tts_provider '{0}', falling back to coqui."
-
-#: muse/voice.py:62
-msgid "Failed to initialise TTS runner: {0}"
-msgstr "Failed to initialise TTS runner: {0}"
-
-#: muse/voice.py:63
-msgid "Voice synthesis disabled."
-msgstr "Voice synthesis disabled."
-
-#: muse/voice.py:98 muse/voice.py:120 muse/voice.py:143 muse/voice.py:163
-#: muse/voice.py:175
-msgid "Cannot speak."
-msgstr "Cannot speak."
-
-#: tts/output_cleanup.py:51
-msgid "Failed to remove disposable TTS output file {0}: {1}"
-msgstr "Failed to remove disposable TTS output file {0}: {1}"
-
-#: tts/text_cleaner_ruleset.py:340
-msgid "No replacement found for locale {0}, using default locale {1}"
-msgstr "No replacement found for locale {0}, using default locale {1}"
-
-#: tts/text_cleaner_ruleset.py:395
-msgid "Failed to load English detection words from {0}: {1}"
-msgstr "Failed to load English detection words from {0}: {1}"
-
-#: tts/text_cleaner_ruleset.py:450
-msgid "Failed to load number words for locale {0}: {1}"
-msgstr "Failed to load number words for locale {0}: {1}"
-
-#: tts/tts_runner.py:190
-msgid "Failed to delete audio files: {0}"
-msgstr "Failed to delete audio files: {0}"
-
-#: tts/tts_runner.py:257
-msgid "Cannot find speech output path: {0}"
-msgstr "Cannot find speech output path: {0}"
-
-#: tts/tts_runner.py:297
-msgid "TTS generation error: {0}"
-msgstr "TTS generation error: {0}"
-
-#: tts/tts_runner.py:390
-msgid "Could not add metadata: {0}"
-msgstr "Could not add metadata: {0}"
-
-#: tts/providers/coqui.py:74
-msgid "Coqui TTS loaded successfully"
-msgstr "Coqui TTS loaded successfully"
-
-#: tts/providers/coqui.py:95
-msgid "Coqui TTS generation failed: {0}"
-msgstr "Coqui TTS generation failed: {0}"
-
-#: tts/providers/coqui.py:137
-msgid "Fuzzy-matched Coqui voice \"{0}\" → \"{1}\""
-msgstr "Fuzzy-matched Coqui voice \"{0}\" → \"{1}\""
-
-#: tts/providers/coqui.py:140
-msgid "Unknown Coqui voice \"{0}\", using as-is."
-msgstr "Unknown Coqui voice \"{0}\", using as-is."
-
-#: tts/providers/f5tts.py:46
-msgid ""
-"F5-TTS reference audio not found: \"{0}\". Set f5tts_reference_audio in "
-"config to a valid WAV file path."
-msgstr ""
-"F5-TTS reference audio not found: \"{0}\". Set f5tts_reference_audio in "
-"config to a valid WAV file path."
-
-#: tts/providers/f5tts.py:65
-msgid "F5-TTS loaded: {0}"
-msgstr "F5-TTS loaded: {0}"
-
-#: tts/providers/kokoro.py:81
-msgid ""
-"Unknown Kokoro voice \"{0}\". Run KokoroTTSProvider().voices() for the full "
-"list."
-msgstr ""
-"Unknown Kokoro voice \"{0}\". Run KokoroTTSProvider().voices() for the full "
-"list."
-
-#: tts/providers/kokoro.py:100
-msgid "Kokoro TTS loaded: {0}"
-msgstr "Kokoro TTS loaded: {0}"
-
-#: tts/providers/maskgct.py:78
-msgid ""
-"MaskGCT reference audio not found: \"{0}\". Set maskgct_reference_audio in "
-"config to a valid WAV file path."
-msgstr ""
-"MaskGCT reference audio not found: \"{0}\". Set maskgct_reference_audio in "
-"config to a valid WAV file path."
-
-#: tts/providers/maskgct.py:100
-msgid "MaskGCT loaded (lang={0})"
-msgstr "MaskGCT loaded (lang={0})"
-
-#: tts/providers/piper.py:77
-msgid "Could not read cached voices.json: {0}"
-msgstr "Could not read cached voices.json: {0}"
-
-#: tts/providers/piper.py:79
-msgid "Fetching Piper voices index from HuggingFace…"
-msgstr "Fetching Piper voices index from HuggingFace…"
-
-#: tts/providers/piper.py:148
-msgid "Downloading Piper voice file: {0}"
-msgstr "Downloading Piper voice file: {0}"
-
-#: tts/providers/piper.py:187
-msgid "Piper model file not found: \"{0}\"."
-msgstr "Piper model file not found: \"{0}\"."
-
-#: tts/providers/piper.py:209
-msgid "Piper TTS loaded: {0}"
-msgstr "Piper TTS loaded: {0}"
-
-#: tts/providers/zonos.py:78
-msgid "Unknown Zonos model \"{0}\". Known models: {1}"
-msgstr "Unknown Zonos model \"{0}\". Known models: {1}"
-
-#: tts/providers/zonos.py:83
-msgid ""
-"Zonos reference audio not found: \"{0}\". Set zonos_reference_audio in "
-"config to a valid audio file."
-msgstr ""
-"Zonos reference audio not found: \"{0}\". Set zonos_reference_audio in "
-"config to a valid audio file."
-
-#: tts/providers/zonos.py:101
-msgid ""
-"espeak-ng not found on PATH. Zonos requires espeak-ng for phonemization."
-msgstr ""
-"espeak-ng not found on PATH. Zonos requires espeak-ng for phonemization."
-
-#: tts/providers/zonos.py:108
-msgid "Zonos loaded: {0} (device={1})"
-msgstr "Zonos loaded: {0} (device={1})"
-
-#: ui_qt/audio_device_window.py:58
-msgid "Audio device manager not available: {0}"
-msgstr "Audio device manager not available: {0}"
-
-#: ui_qt/audio_device_window.py:220
-msgid "Error loading current settings: {0}"
-msgstr "Error loading current settings: {0}"
-
-#: ui_qt/audio_device_window.py:281
-msgid "Current Device: {0}"
-msgstr "Current Device: {0}"
-
-#: ui_qt/audio_device_window.py:285
-msgid "Error refreshing devices: {0}"
-msgstr "Error refreshing devices: {0}"
-
-#: ui_qt/audio_device_window.py:287
-msgid "Error loading devices: {0}"
-msgstr "Error loading devices: {0}"
-
-#: ui_qt/composers_window.py:560
-msgid "Skipped {0} duplicate composer searches"
-msgstr "Skipped {0} duplicate composer searches"
-
-#: ui_qt/configuration_window.py:106
-msgid "German"
-msgstr "German"
-
-#: ui_qt/configuration_window.py:107
-msgid "Spanish"
-msgstr "Spanish"
-
-#: ui_qt/configuration_window.py:108
-msgid "French"
-msgstr "French"
-
-#: ui_qt/configuration_window.py:109
-msgid "Italian"
-msgstr "Italian"
-
-#: ui_qt/configuration_window.py:110
-msgid "Portuguese"
-msgstr "Portuguese"
-
-#: ui_qt/configuration_window.py:111
-msgid "Russian"
-msgstr "Russian"
-
-#: ui_qt/configuration_window.py:126
-msgid "Appearance"
-msgstr "Appearance"
-
-#: ui_qt/configuration_window.py:129
-msgid "Interface Language"
-msgstr "Interface Language"
-
-#: ui_qt/configuration_window.py:132
-msgid ""
-"Language of menus and buttons. Restart after saving so windows that are "
-"already open pick up the new language."
-msgstr ""
-"Language of menus and buttons. Restart after saving so windows that are "
-"already open pick up the new language."
-
-#: ui_qt/configuration_window.py:140
-msgid "Write Debug Logs"
-msgstr "Write Debug Logs"
-
-#: ui_qt/configuration_window.py:143
-msgid "Repair the VLC Plugin Cache When It Is Out of Date"
-msgstr "Repair the VLC Plugin Cache When It Is Out of Date"
-
-#: ui_qt/configuration_window.py:163
-msgid "Library Directories"
-msgstr "Library Directories"
-
-#: ui_qt/configuration_window.py:165
-msgid "Folders scanned into the music library."
-msgstr "Folders scanned into the music library."
-
-#: ui_qt/configuration_window.py:171
-msgid "Directory path"
-msgstr "Directory path"
-
-#: ui_qt/configuration_window.py:177
-msgid "Library Data Files"
-msgstr "Library Data Files"
-
-#: ui_qt/configuration_window.py:179
-msgid "Prompts Directory"
-msgstr "Prompts Directory"
-
-#: ui_qt/configuration_window.py:181
-msgid "Tongue Twisters Directory"
-msgstr "Tongue Twisters Directory"
-
-#: ui_qt/configuration_window.py:184
-msgid "Artists File"
-msgstr "Artists File"
-
-#: ui_qt/configuration_window.py:184 ui_qt/configuration_window.py:187
-#: ui_qt/configuration_window.py:190 ui_qt/configuration_window.py:193
-msgid "JSON files"
-msgstr "JSON files"
-
-#: ui_qt/configuration_window.py:187
-msgid "Forms File"
-msgstr "Forms File"
-
-#: ui_qt/configuration_window.py:190
-msgid "Genres File"
-msgstr "Genres File"
-
-#: ui_qt/configuration_window.py:193
-msgid "Instruments File"
-msgstr "Instruments File"
-
-#: ui_qt/configuration_window.py:202
-msgid ""
-"When the DJ speaks, and how often. Chances are fractions between 0 and 1."
-msgstr ""
-"When the DJ speaks, and how often. Chances are fractions between 0 and 1."
-
-#: ui_qt/configuration_window.py:211
-msgid "Prepare the next spot before the track ends"
-msgstr "Prepare the next spot before the track ends"
-
-#: ui_qt/configuration_window.py:213
-msgid "Start preparation this many minutes before the end"
-msgstr "Start preparation this many minutes before the end"
-
-#: ui_qt/configuration_window.py:215
-msgid "Or after this many seconds, whichever is sooner"
-msgstr "Or after this many seconds, whichever is sooner"
-
-#: ui_qt/configuration_window.py:216
-msgid "Chance of speaking before a track"
-msgstr "Chance of speaking before a track"
-
-#: ui_qt/configuration_window.py:217
-msgid "Chance of speaking after a track"
-msgstr "Chance of speaking after a track"
-
-#: ui_qt/configuration_window.py:218
-msgid "Topic discussion chance factor"
-msgstr "Topic discussion chance factor"
-
-#: ui_qt/configuration_window.py:219
-msgid "Minimum seconds between spots"
-msgstr "Minimum seconds between spots"
-
-#: ui_qt/configuration_window.py:234
-msgid "Refresh persona context when the persona changes"
-msgstr "Refresh persona context when the persona changes"
-
-#: ui_qt/configuration_window.py:305
-msgid "Playback"
-msgstr "Playback"
-
-#: ui_qt/configuration_window.py:311
-msgid "Play Videos in the Main Window"
-msgstr "Play Videos in the Main Window"
-
-#: ui_qt/configuration_window.py:337
-msgid "Fraction of a Track That Counts as a Play"
-msgstr "Fraction of a Track That Counts as a Play"
-
-#: ui_qt/configuration_window.py:341
-msgid "Seconds That Always Count as a Play (0 to disable)"
-msgstr "Seconds That Always Count as a Play (0 to disable)"
-
-#: ui_qt/configuration_window.py:351
-msgid "Rank Search Results with Text Embeddings"
-msgstr "Rank Search Results with Text Embeddings"
-
-#: ui_qt/configuration_window.py:355
-msgid "Include Tracks Whose Text Is Close to the Query"
-msgstr "Include Tracks Whose Text Is Close to the Query"
-
-#: ui_qt/configuration_window.py:357
-msgid "Fields Indexed for Semantic Search"
-msgstr "Fields Indexed for Semantic Search"
-
-#: ui_qt/configuration_window.py:360
-msgid "Field name, such as title"
-msgstr "Field name, such as title"
-
-#: ui_qt/configuration_window.py:362
-msgid "Semantic Candidates per Query"
-msgstr "Semantic Candidates per Query"
-
-#: ui_qt/configuration_window.py:365
-msgid "Keep Candidates Within This of the Best Score"
-msgstr "Keep Candidates Within This of the Best Score"
-
-#: ui_qt/configuration_window.py:368
-msgid "Minimum Semantic Score"
-msgstr "Minimum Semantic Score"
-
-#: ui_qt/configuration_window.py:379
-msgid "Watch Saved Stations for Matching Tracks"
-msgstr "Watch Saved Stations for Matching Tracks"
-
-#: ui_qt/configuration_window.py:382
-msgid "Minutes Between Alerts for One Station"
-msgstr "Minutes Between Alerts for One Station"
-
-#: ui_qt/configuration_window.py:385
-msgid "Maximum Watched Stations"
-msgstr "Maximum Watched Stations"
-
-#: ui_qt/configuration_window.py:388
-msgid "Seconds Before a Stream Title Counts as Heard"
-msgstr "Seconds Before a Stream Title Counts as Heard"
-
-#: ui_qt/configuration_window.py:391
-msgid "Minutes Before Suggesting Unfamiliar Tracks"
-msgstr "Minutes Before Suggesting Unfamiliar Tracks"
-
-#: ui_qt/configuration_window.py:395
-msgid "Minutes Between Discovery Suggestions"
-msgstr "Minutes Between Discovery Suggestions"
-
-#: ui_qt/configuration_window.py:399
-msgid "Remember This Many Titles per Station"
-msgstr "Remember This Many Titles per Station"
-
-#: ui_qt/configuration_window.py:401
-msgid "Titles That Are Not Tracks"
-msgstr "Titles That Are Not Tracks"
-
-#: ui_qt/configuration_window.py:404
-msgid "Pattern, such as jingle"
-msgstr "Pattern, such as jingle"
-
-#: ui_qt/configuration_window.py:406
-msgid "Tags Treated as Classical"
-msgstr "Tags Treated as Classical"
-
-#: ui_qt/configuration_window.py:409
-msgid "Tag, such as classical"
-msgstr "Tag, such as classical"
-
-#: ui_qt/configuration_window.py:416
-msgid "Weather and News"
-msgstr "Weather and News"
-
-#: ui_qt/configuration_window.py:421
-msgid "Last.fm API Key"
-msgstr "Last.fm API Key"
-
-#: ui_qt/configuration_window.py:422
-msgid "Library Extender Key"
-msgstr "Library Extender Key"
-
-#: ui_qt/configuration_window.py:423
-msgid "News Source Trustworthiness"
-msgstr "News Source Trustworthiness"
-
-#: ui_qt/configuration_window.py:430
-msgid "source-id: 0.5"
-msgstr "source-id: 0.5"
-
-#: ui_qt/configuration_window.py:434
-msgid "Reddit"
-msgstr "Reddit"
-
-#: ui_qt/configuration_window.py:437
-msgid ""
-"Leave the id and secret blank to use the public listing. The subreddit list "
-"is the only source that gets read."
-msgstr ""
-"Leave the id and secret blank to use the public listing. The subreddit list "
-"is the only source that gets read."
-
-#: ui_qt/configuration_window.py:443
-msgid "Client Id"
-msgstr "Client Id"
-
-#: ui_qt/configuration_window.py:444
-msgid "Client Secret"
-msgstr "Client Secret"
-
-#: ui_qt/configuration_window.py:446 ui_qt/configuration_window.py:466
-#: ui_qt/configuration_window.py:481
-msgid "Minimum Score"
-msgstr "Minimum Score"
-
-#: ui_qt/configuration_window.py:447 ui_qt/configuration_window.py:467
-#: ui_qt/configuration_window.py:482
-msgid "Maximum Age (hours)"
-msgstr "Maximum Age (hours)"
-
-#: ui_qt/configuration_window.py:448
-msgid "Subreddits"
-msgstr "Subreddits"
-
-#: ui_qt/configuration_window.py:450
-msgid "Subreddit name"
-msgstr "Subreddit name"
-
-#: ui_qt/configuration_window.py:454
-msgid "Bluesky"
-msgstr "Bluesky"
-
-#: ui_qt/configuration_window.py:457
-msgid ""
-"Leave the handle and app password blank to read the public AppView. The feed"
-" list is the only source that gets read."
-msgstr ""
-"Leave the handle and app password blank to read the public AppView. The feed"
-" list is the only source that gets read."
-
-#: ui_qt/configuration_window.py:463
-msgid "Handle"
-msgstr "Handle"
-
-#: ui_qt/configuration_window.py:464
-msgid "App Password"
-msgstr "App Password"
-
-#: ui_qt/configuration_window.py:468
-msgid "Feed URIs"
-msgstr "Feed URIs"
-
-#: ui_qt/configuration_window.py:470
-msgid "at:// feed URI"
-msgstr "at:// feed URI"
-
-#: ui_qt/configuration_window.py:472 ui_qt/configuration_window.py:483
-msgid "Languages"
-msgstr "Languages"
-
-#: ui_qt/configuration_window.py:474 ui_qt/configuration_window.py:485
-msgid "Language code, such as en"
-msgstr "Language code, such as en"
-
-#: ui_qt/configuration_window.py:478
-msgid "Mastodon"
-msgstr "Mastodon"
-
-#: ui_qt/configuration_window.py:480
-msgid "Instance"
-msgstr "Instance"
-
-#: ui_qt/configuration_window.py:489
-msgid "All Social Sources"
-msgstr "All Social Sources"
-
-#: ui_qt/configuration_window.py:492
-msgid ""
-"A topic is dropped when filtering removes more than this share of its posts,"
-" or leaves fewer than the minimum."
-msgstr ""
-"A topic is dropped when filtering removes more than this share of its posts,"
-" or leaves fewer than the minimum."
-
-#: ui_qt/configuration_window.py:499
-msgid "Minimum Posts Kept"
-msgstr "Minimum Posts Kept"
-
-#: ui_qt/configuration_window.py:502
-msgid "Maximum Fraction Discarded"
-msgstr "Maximum Fraction Discarded"
-
-#: ui_qt/configuration_window.py:553
-msgid "LLM Thinking Budget (characters, blank for no limit)"
-msgstr "LLM Thinking Budget (characters, blank for no limit)"
-
-#: ui_qt/configuration_window.py:562
-msgid "Included in this build."
-msgstr "Included in this build."
-
-#: ui_qt/configuration_window.py:779
-msgid "Keep a Recording of These Topics"
-msgstr "Keep a Recording of These Topics"
-
-#: ui_qt/configuration_window.py:781
-msgid "Spoken audio for a checked topic is saved so it can be replayed."
-msgstr "Spoken audio for a checked topic is saved so it can be replayed."
-
-#: ui_qt/configuration_window.py:1052
-msgid "News source trustworthiness must look like \"bbc-news: 0.5\"."
-msgstr "News source trustworthiness must look like \"bbc-news: 0.5\"."
-
-#: ui_qt/configuration_window.py:1102
-msgid ""
-"Configuration saved. Restart to apply the new language to windows that are "
-"already open."
-msgstr ""
-"Configuration saved. Restart to apply the new language to windows that are "
-"already open."
-
-#: ui_qt/custom_title_bar.py:159
-msgid "Minimize"
-msgstr "Minimize"
-
-#: ui_qt/custom_title_bar.py:164 ui_qt/custom_title_bar.py:295
-msgid "Maximize"
-msgstr "Maximize"
-
-#: ui_qt/custom_title_bar.py:292
-msgid "Restore"
-msgstr "Restore"
-
-#: ui_qt/extensions_window.py:328
-msgid "Invalid strategy selected: {0} - {1}"
-msgstr "Invalid strategy selected: {0} - {1}"
-
-#: ui_qt/extensions_window.py:405
-msgid "Error playing extension: {0}"
-msgstr "Error playing extension: {0}"
-
-#: ui_qt/favorites_window.py:499
-msgid "Track not found for favorite {0}"
-msgstr "Track not found for favorite {0}"
-
-#: ui_qt/favorites_window.py:581
-msgid "Error playing favorite: {0}"
-msgstr "Error playing favorite: {0}"
-
-#: ui_qt/history_window.py:190
-msgid "Error getting track details for: {0} ({1})"
-msgstr "Error getting track details for: {0} ({1})"
-
-#: ui_qt/library_window.py:70
-msgid "Could not read play counts for the library window: {0}"
-msgstr "Could not read play counts for the library window: {0}"
-
-#: ui_qt/library_window.py:221
-msgid "Error loading library window data: {0}"
-msgstr "Error loading library window data: {0}"
-
-#: ui_qt/media_frame.py:335
-msgid "Could not restart looped video {0}: {1}"
-msgstr "Could not restart looped video {0}: {1}"
-
-#: ui_qt/network_media_window.py:423
-msgid "Radio Browser search failed: {0}"
-msgstr "Radio Browser search failed: {0}"
-
-#: ui_qt/network_media_window.py:449
-msgid "Error rendering search results"
-msgstr "Error rendering search results"
-
-#: ui_qt/network_media_window.py:674
-msgid "Could not read suppressed radio suggestions: {0}"
-msgstr "Could not read suppressed radio suggestions: {0}"
-
-#: ui_qt/personas_window.py:327
-msgid "Error updating language name from code: {0}"
-msgstr "Error updating language name from code: {0}"
-
-#: ui_qt/personas_window.py:515
-msgid "Error saving persona: {0}"
-msgstr "Error saving persona: {0}"
-
-#: ui_qt/playlist_window.py:337
-msgid "Failed to freeze playlist '{0}': {1}"
-msgstr "Failed to freeze playlist '{0}': {1}"
-
-#: ui_qt/playlist_window.py:372
-msgid "Failed to create PlaybackConfig from '{0}': {1}"
-msgstr "Failed to create PlaybackConfig from '{0}': {1}"
-
-#: ui_qt/playlist_window.py:479
-msgid "Failed to shuffle playlist '{0}': {1}"
-msgstr "Failed to shuffle playlist '{0}': {1}"
-
-#: ui_qt/playlist_window.py:852
-msgid "skip_to_track failed: {0}"
-msgstr "skip_to_track failed: {0}"
-
-#: ui_qt/playlist_window.py:1308
-msgid "Saved playlist descriptor: {0}"
-msgstr "Saved playlist descriptor: {0}"
-
-#: ui_qt/search_window.py:69
-msgid "Invalid search removed: {0}"
-msgstr "Invalid search removed: {0}"
-
-#: ui_qt/search_window.py:71
-msgid "Skipped {0} duplicate searches"
-msgstr "Skipped {0} duplicate searches"
-
-#: ui_qt/search_window.py:74
-msgid "Limiting searches from {0} to {1}"
-msgstr "Limiting searches from {0} to {1}"
-
-#: ui_qt/search_window.py:91
-msgid "Limiting stored searches from {0} to {1}"
-msgstr "Limiting stored searches from {0} to {1}"
-
-#: ui_qt/search_window.py:107
-msgid "No track found by ID, falling back to search"
-msgstr "No track found by ID, falling back to search"
-
-#: ui_qt/search_window.py:124
-msgid "Error in find_track: {0}"
-msgstr "Error in find_track: {0}"
-
-#: ui_qt/search_window.py:527
-msgid "Error in search thread: {0}"
-msgstr "Error in search thread: {0}"
-
-#: ui_qt/timer_window.py:56
-msgid "Could not set playback instance for timer: {0}"
-msgstr "Could not set playback instance for timer: {0}"
-
-#: ui_qt/track_details_window.py:600
-msgid "Could not create directory: {0}"
-msgstr "Could not create directory: {0}"
-
-#: ui_qt/auth/password_utils.py:68
-msgid "Password Unavailable"
-msgstr "Password Unavailable"
-
-#: ui_qt/auth/password_utils.py:69
-msgid ""
-"The password is stored with quantum-safe (OQS) encryption, which this build "
-"does not include, so protected actions are unavailable. Use a build made "
-"with OQS support."
-msgstr ""
-"The password is stored with quantum-safe (OQS) encryption, which this build "
-"does not include, so protected actions are unavailable. Use a build made "
-"with OQS support."
-
+#: tts/chunker.py:284
 msgid "Skipped {0} bracketed lines"
 msgstr "Skipped {0} bracketed lines"
 
+#: tts/text_cleaner_ruleset.py:665
 msgid "Unknown text cleaner profile: {0}"
 msgstr "Unknown text cleaner profile: {0}"
+
+#: docs/Filter_verbesserungen/andere_Anwendung_blacklist.py:737
+msgid "Matched blacklist items: {0}"
+msgstr "Matched blacklist items: {0}"
+
+#: docs/Filter_verbesserungen/andere_Anwendung_blacklist.py:742
+msgid "One or more tags were removed due to blacklist failure."
+msgstr "One or more tags were removed due to blacklist failure."
+
+#: docs/Filter_verbesserungen/andere_Anwendung_blacklist.py:751
+msgid "Blacklisted words in one or more tags were replaced with random words."
+msgstr ""
+"Blacklisted words in one or more tags were replaced with random words."
+
+#: docs/Filter_verbesserungen/andere_Anwendung_blacklist.py:965
+msgid "Filtering concepts for blacklist: "
+msgstr "Filtering concepts for blacklist: "
+
+#: docs/Filter_verbesserungen/andere_Anwendung_blacklist.py:1111
+msgid "Could not load the dictionary for blacklist replacement: {0}"
+msgstr "Could not load the dictionary for blacklist replacement: {0}"
+
+#: extensions/library_extender_q_dict.py:66
+msgid "Failed to load library extender q_dict cache, will decrypt: {0}"
+msgstr "Failed to load library extender q_dict cache, will decrypt: {0}"
+
+#: extensions/library_extender_q_dict.py:75
+msgid "Could not write library extender q_dict cache: {0}"
+msgstr "Could not write library extender q_dict cache: {0}"
+
+#: tts/tts_runner.py:317
+msgid "Speech audio did not start within {0} seconds, skipping it: {1}"
+msgstr "Speech audio did not start within {0} seconds, skipping it: {1}"
+
+#: tts/tts_runner.py:454
+msgid "File not found: {0}"
+msgstr "File not found: {0}"
+
+#: tts/tts_runner.py:457
+msgid "File already exists as mp3: {0}"
+msgstr "File already exists as mp3: {0}"
+
+#: tts/tts_runner.py:468
+msgid ""
+"sox was not found. Install sox and make sure it is on the PATH; it is needed"
+" to combine the speech chunks into one file."
+msgstr ""
+"sox was not found. Install sox and make sure it is on the PATH; it is needed"
+" to combine the speech chunks into one file."
+
+#: tts/tts_runner.py:470
+msgid ""
+"ffmpeg was not found. Install ffmpeg and make sure it is on the PATH; it is "
+"needed to convert speech output to MP3."
+msgstr ""
+"ffmpeg was not found. Install ffmpeg and make sure it is on the PATH; it is "
+"needed to convert speech output to MP3."
+
+#: tts/tts_runner.py:491
+msgid "Could not start {0}: {1}"
+msgstr "Could not start {0}: {1}"
+
+#: tts/tts_runner.py:493
+msgid "{0} exited with code {1}: {2}"
+msgstr "{0} exited with code {1}: {2}"
+
+#: tts/tts_runner.py:559
+msgid "Could not create the speech audio file: {0}"
+msgstr "Could not create the speech audio file: {0}"
+
+#: utils/media_file_tools.py:38
+msgid "Could not read the configured directories: {0}"
+msgstr "Could not read the configured directories: {0}"
+
+#: utils/media_file_tools.py:163
+msgid "Could not read the artwork of {0}: {1}"
+msgstr "Could not read the artwork of {0}: {1}"
+
+#: utils/media_file_tools.py:177
+msgid "music_tag could not open the file"
+msgstr "music_tag could not open the file"
+
+#: utils/media_file_tools.py:181
+msgid "Could not write the artwork: {0}"
+msgstr "Could not write the artwork: {0}"
+
+#: utils/media_file_tools.py:183
+msgid "The artwork is still absent after writing"
+msgstr "The artwork is still absent after writing"
