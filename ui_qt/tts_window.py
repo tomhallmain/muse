@@ -414,7 +414,7 @@ class TTSWindow(SmartWindow):
         def speak_thread():
             try:
                 output_path = self.voice.say(
-                    text, topic=TTSWindow.DEFAULT_TOPIC, save_mp3=True
+                    text, topic=TTSWindow.DEFAULT_TOPIC, save_mp3=True, raise_errors=True
                 )
                 if output_path:
                     self.status_message.emit(

@@ -92,8 +92,13 @@ class Voice:
     # Public API
     # ------------------------------------------------------------------
 
-    def say(self, text: str = "", topic: str = "", save_mp3: bool = False, locale=None):
-        """Synthesise *text* immediately and play it."""
+    def say(self, text: str = "", topic: str = "", save_mp3: bool = False, locale=None,
+            raise_errors: bool = False):
+        """Synthesise *text* immediately and play it.
+
+        Errors are logged; with *raise_errors* they are also re-raised so the caller can
+        show them.
+        """
         if not self.can_speak or self._tts is None:
             logger.warning(_("Cannot speak."))
             return
@@ -106,6 +111,8 @@ class Voice:
         except Exception as e:
             logger.error(e)
             traceback.print_exc()
+            if raise_errors:
+                raise
 
     def prepare_to_say(
         self,
@@ -138,7 +145,7 @@ class Voice:
         split_on_each_line: bool = False,
         locale=None,
     ):
-        """Synthesise the contents of *filepath* and play them."""
+        """Synthesise the contents of *filepath* and play them. Errors are logged and re-raised."""
         if not self.can_speak or self._tts is None:
             logger.warning(_("Cannot speak."))
             return
@@ -156,6 +163,7 @@ class Voice:
         except Exception as e:
             logger.error(e)
             traceback.print_exc()
+            raise
 
     def finish_speaking(self):
         """Block until all pending speech jobs complete."""

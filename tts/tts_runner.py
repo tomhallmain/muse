@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field, replace
 from datetime import datetime
 import os
+import shutil
 import subprocess
 import sys
 import threading
@@ -397,6 +398,10 @@ class TextToSpeechRunner:
         existing = self._existing_final_mp3()
         if existing:
             return existing
+        # A file can take a long time to generate, so fail before generating if the result
+        # can't be written. speak() skips this check: DJ speech plays chunk by chunk, so it
+        # still works without sox.
+        TextToSpeechRunner._check_audio_tools(save_mp3)
 
         with self._generation_condition:
             self._active_generations += 1
@@ -419,23 +424,47 @@ class TextToSpeechRunner:
 
     def convert_to_mp3(self, file_path, text_content=None):
         if not os.path.exists(file_path):
-            raise Exception("File not found: " + file_path)
+            raise Exception(_("File not found: {0}").format(file_path))
         output_path = os.path.abspath(os.path.join(os.path.dirname(file_path), os.path.splitext(os.path.basename(file_path))[0] + '.mp3'))
         if file_path.endswith(".mp3"):
-            raise Exception("File already exists as mp3")
+            raise Exception(_("File already exists as mp3: {0}").format(file_path))
         # The intermediate <name>.mp3 is overwritten (-y); the final "- TTS.mp3" is protected in combine_audio_files.
         args = ["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-i", os.path.abspath(file_path), output_path]
         # logger.info(args)
+        TextToSpeechRunner._run_audio_tool(args)
+        self.add_metadata(output_path, text_content)
+        return output_path
+
+    @staticmethod
+    def _missing_tool_message(tool):
+        if tool == "sox":
+            return _("sox was not found. Install sox and make sure it is on the PATH; "
+                     "it is needed to combine the speech chunks into one file.")
+        return _("ffmpeg was not found. Install ffmpeg and make sure it is on the PATH; "
+                 "it is needed to convert speech output to MP3.")
+
+    @staticmethod
+    def _check_audio_tools(save_mp3):
+        """Raise before any generation if a program needed to write the output file is missing."""
+        for tool in ("sox", "ffmpeg") if save_mp3 else ("sox",):
+            if shutil.which(tool) is None:
+                raise Exception(TextToSpeechRunner._missing_tool_message(tool))
+
+    @staticmethod
+    def _run_audio_tool(args):
+        """Run sox or ffmpeg (args[0]); on failure raise an error that names the program."""
+        tool = args[0]
         try:
             completed_process = subprocess.run(args, capture_output=True, text=True, errors="replace",
                                                creationflags=Utils.NO_CONSOLE_WINDOW)
-            if completed_process.returncode != 0:
-                raise Exception(f"ffmpeg exited with code {completed_process.returncode}: "
-                                f"{completed_process.stderr.strip()}")
-            self.add_metadata(output_path, text_content)
-            return output_path
-        except Exception as e:
-            raise Exception("Could not convert file to MP3: " + str(e)) from e
+        except FileNotFoundError as e:
+            raise Exception(TextToSpeechRunner._missing_tool_message(tool)) from e
+        except OSError as e:
+            # The program exists but could not be started, e.g. blocked by Windows.
+            raise Exception(_("Could not start {0}: {1}").format(tool, e)) from e
+        if completed_process.returncode != 0:
+            raise Exception(_("{0} exited with code {1}: {2}").format(
+                tool, completed_process.returncode, completed_process.stderr.strip()))
 
     def add_metadata(self, output_path, text_content):
         try:
@@ -486,11 +515,7 @@ class TextToSpeechRunner:
         args.append(output_path_no_unicode.replace("\\", "/"))
         # logger.info(args)
         try:
-            completed_process = subprocess.run(args, capture_output=True, text=True, errors="replace",
-                                               creationflags=Utils.NO_CONSOLE_WINDOW)
-            if completed_process.returncode != 0:
-                raise Exception(f"sox exited with code {completed_process.returncode}: "
-                                f"{completed_process.stderr.strip()}")
+            TextToSpeechRunner._run_audio_tool(args)
             logger.info("Combined audio files: " + output_path)
             if save_mp3:
                 mp3_path = self.convert_to_mp3(output_path_no_unicode, text_content=text_content)
@@ -504,7 +529,7 @@ class TextToSpeechRunner:
                 return Utils.move_file(mp3_path, output_path[:-4] + " - TTS.mp3", overwrite_existing=self.overwrite)
             return output_path
         except Exception as e:
-            raise Exception("Error combining audio files: " + str(e)) from e
+            raise Exception(_("Could not create the speech audio file: {0}").format(e)) from e
         finally:
             # A failed run must not leave its chunks to be prepended to the next speak().
             self.audio_paths = []

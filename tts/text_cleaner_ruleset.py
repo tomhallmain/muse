@@ -472,6 +472,8 @@ class TextModifierRule:
             if self._simple_replace:
                 text = text.replace(self._pattern, replacement)
             else:
+                # No re.M: ^/$ match only at the ends of the text, and chunks can contain
+                # line breaks, so patterns meant to match at a line break use (\s|^) / (\s|$).
                 text = re.sub(self._pattern, replacement, text)
         else:
             if self._start:
