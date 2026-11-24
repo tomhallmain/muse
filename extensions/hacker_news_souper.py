@@ -30,13 +30,23 @@ class HackerNewsItem:
 
     def update_for_subline(self, subline_el):
         score_el = subline_el.find(class_="score")
-        age_str = subline_el.find(class_="age").attrs["title"]
-        date = datetime.datetime.fromtimestamp(int(age_str.split(" ")[1]))
-        comments_el = subline_el.select_one('a[href*="item?id="]')
-        self.points = SoupUtils.extract_int_from_start(score_el.text)
-        self.user = subline_el.find(class_="hnuser").text
-        self.age = date
-        self.comments = SoupUtils.extract_int_from_start(comments_el.text)
+        self.points = SoupUtils.extract_int_from_start(score_el.text) if score_el is not None else -1
+        user_el = subline_el.find(class_="hnuser") or subline_el.select_one('a[href^="user?id="]')
+        self.user = user_el.text if user_el is not None else None
+        self.age = HackerNewsItem._parse_age(subline_el.find(class_="age").attrs["title"])
+        # The age link also points to item?id=, so the comments link is the last one.
+        item_links = subline_el.select('a[href*="item?id="]')
+        comments_text = item_links[-1].text if item_links else ""
+        self.comments = SoupUtils.extract_int_from_start(comments_text) if comments_text[:1].isdigit() else 0
+
+    @staticmethod
+    def _parse_age(age_title):
+        """Local naive datetime from the age title: "<ISO UTC time>", optionally followed by a Unix timestamp."""
+        parts = age_title.split()
+        if len(parts) > 1 and parts[1].isdigit():
+            return datetime.datetime.fromtimestamp(int(parts[1]))
+        utc_time = datetime.datetime.fromisoformat(parts[0]).replace(tzinfo=datetime.timezone.utc)
+        return utc_time.astimezone().replace(tzinfo=None)
 
     def __str__(self):
         current_date = datetime.datetime.now()
@@ -46,13 +56,12 @@ class HackerNewsItem:
             time_str = "on " + self.age.strftime("%Y-%m-%d")
         else:
             time_str = "over a month ago"
-        comments_str = ""
         if self.comments < 100:
             comments_str = ""
         elif self.comments < 200:
-            "(100+ comments - some engagement)"
+            comments_str = "(100+ comments - some engagement)"
         else:
-            "(200+ comments - this news is generating very high engagement)"
+            comments_str = "(200+ comments - this news is generating very high engagement)"
         return f"""{self.title} (from {self.source} {time_str}) {comments_str}"""
 
 class HackerNewsSouper():
@@ -122,6 +131,7 @@ class HackerNewsSouper():
             counter += 1
             out += f"{item}\n"
         return out
+
 
 if __name__ == "__main__":
     HackerNewsSouper.get_hacker_news_items()
