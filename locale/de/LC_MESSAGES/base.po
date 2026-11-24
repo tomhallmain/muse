@@ -224,7 +224,7 @@ msgstr ""
 #: ui_qt/network_media_window.py:391 ui_qt/search_window.py:399
 #: ui_qt/search_window.py:757
 msgid "Play"
-msgstr "Spiel"
+msgstr "Abspielen"
 
 #: app_qt.py:415 ui_qt/timer_window.py:130
 msgid "Stop"
@@ -1051,17 +1051,17 @@ msgstr "neuer Komponist"
 #: tests/ui/windows/test_radio_suggestion_window.py:48
 #: ui_qt/radio_suggestion_window.py:42
 msgid "new to this station"
-msgstr "Neu an dieser Station"
+msgstr "neu auf diesem Sender"
 
 #: tests/ui/windows/test_radio_suggestion_window.py:110
 #: ui_qt/radio_suggestion_window.py:37
 msgid "new work: {0}"
-msgstr "neue Arbeit: {0}"
+msgstr "neues Werk: {0}"
 
 #: tests/ui/windows/test_radio_suggestion_window.py:111
 #: ui_qt/radio_suggestion_window.py:44
 msgid "close to your taste"
-msgstr "Nahe an Ihrem Geschmack"
+msgstr "passt zu Ihrem Geschmack"
 
 #: tests/ui/windows/test_search_window.py:216 ui_qt/artists_window.py:579
 #: ui_qt/composers_window.py:875 ui_qt/extensions_window.py:275
@@ -2908,15 +2908,15 @@ msgstr "Stummschaltung aufheben"
 
 #: ui_qt/network_media_window.py:41
 msgid "Match criteria"
-msgstr "Abgleichkriterien"
+msgstr "Nach Kriterien"
 
 #: ui_qt/network_media_window.py:41
 msgid "Discover new tracks"
-msgstr "Entdecke neue Titel"
+msgstr "Neues entdecken"
 
 #: ui_qt/network_media_window.py:45
 msgid "Detect"
-msgstr "Erkennen"
+msgstr "Automatisch"
 
 #: ui_qt/network_media_window.py:45
 msgid "Yes"
@@ -2956,13 +2956,11 @@ msgstr "Gespeicherte Sender"
 
 #: ui_qt/network_media_window.py:173
 msgid "Add Watch Entry"
-msgstr "Beobachtungseintrag hinzufügen"
+msgstr "Sender beobachten"
 
 #: ui_qt/network_media_window.py:177 ui_qt/network_media_window.py:587
 msgid "No station selected — use Search tab or enter UUID below."
-msgstr ""
-"Kein Sender ausgewählt — verwenden Sie die Registerkarte Suche oder geben "
-"Sie unten eine UUID ein."
+msgstr "Kein Sender ausgewählt. Wählen Sie einen auf der Registerkarte „Suche“ aus oder geben Sie unten eine UUID ein."
 
 #: ui_qt/network_media_window.py:183
 msgid "Station UUID:"
@@ -2970,7 +2968,7 @@ msgstr "Sender-UUID:"
 
 #: ui_qt/network_media_window.py:185
 msgid "Paste UUID from Radio Browser"
-msgstr "UUID aus Radio Browser einfügen"
+msgstr "UUID von Radio Browser einfügen"
 
 #: ui_qt/network_media_window.py:192
 msgid "Mode:"
@@ -2980,13 +2978,11 @@ msgstr "Modus:"
 msgid ""
 "Match criteria: switch to the station when its title matches.\n"
 "Discover new tracks: suggest titles new to you, without switching."
-msgstr ""
-"Übereinstimmungskriterium: Zur Station wechseln, wenn ihr Titel übereinstimmt.\n"
-"Neue Tracks entdecken: Titel vorschlagen, die du noch nicht kennst, ohne zu wechseln."
+msgstr "Nach Kriterien: zum Sender wechseln, sobald der laufende Titel passt.\nNeues entdecken: Ihnen unbekannte Titel vorschlagen, ohne zu wechseln."
 
 #: ui_qt/network_media_window.py:208
 msgid "Classical station:"
-msgstr "Klassische Station:"
+msgstr "Klassiksender:"
 
 #: ui_qt/network_media_window.py:213
 msgid ""
@@ -3013,7 +3009,7 @@ msgstr "ICY-Titel enthält (z. B. Suite)"
 
 #: ui_qt/network_media_window.py:233
 msgid "Matches full StreamTitle (e.g. classical)"
-msgstr "Entspricht vollständigem StreamTitle (z. B. classical)"
+msgstr "Irgendwo im StreamTitle enthalten (z. B. classical)"
 
 #: ui_qt/network_media_window.py:237
 msgid "Match artist:"
@@ -3037,18 +3033,16 @@ msgstr "Leeren"
 
 #: ui_qt/network_media_window.py:277
 msgid "Reload Watch Service"
-msgstr "Beobachtungsdienst neu laden"
+msgstr "Beobachtung neu starten"
 
 #: ui_qt/network_media_window.py:278
 msgid "Restart background polling threads after editing the list"
-msgstr "Hintergrund-Abfrage-Threads nach Bearbeitung der Liste neu starten"
+msgstr "Startet nach Änderungen an der Liste die Abfragen im Hintergrund neu"
 
 #: ui_qt/network_media_window.py:286
 msgid ""
 "Allow every suggestion marked \"Don't Suggest Again\" to be suggested again"
-msgstr ""
-"Erlaube, dass jeder mit \"Nicht mehr vorschlagen\" markierte Vorschlag "
-"erneut vorgeschlagen wird"
+msgstr "Alle mit „Nicht mehr vorschlagen“ markierten Vorschläge wieder zulassen"
 
 #: ui_qt/network_media_window.py:296
 msgid "Watch-list"
@@ -3068,7 +3062,7 @@ msgstr "URL abspielen"
 
 #: ui_qt/network_media_window.py:378
 msgid "Save to Saved Stations"
-msgstr "In gespeicherte Sender übernehmen"
+msgstr "Zu den gespeicherten Sendern hinzufügen"
 
 #: ui_qt/network_media_window.py:386
 msgid "Remove from Saved Stations"
@@ -3084,11 +3078,11 @@ msgstr "Zur Beobachtungsliste hinzufügen"
 
 #: ui_qt/network_media_window.py:410
 msgid "Enter a station name, tag, or country code to search."
-msgstr "Geben Sie einen Sendernamen, Tag oder Ländercode zur Suche ein."
+msgstr "Geben Sie zum Suchen einen Sendernamen, ein Tag oder einen Ländercode ein."
 
 #: ui_qt/network_media_window.py:412
 msgid "Searching…"
-msgstr "Suche…"
+msgstr "Suche läuft …"
 
 #: ui_qt/network_media_window.py:425
 msgid "Search failed: "
@@ -3100,9 +3094,7 @@ msgstr "Keine Sender gefunden."
 
 #: ui_qt/network_media_window.py:463
 msgid "No saved stations yet. Click ★ on a search result to save one."
-msgstr ""
-"Noch keine gespeicherten Sender. Klicken Sie ★ bei einem Suchergebnis, um "
-"einen zu speichern."
+msgstr "Noch keine gespeicherten Sender. Klicken Sie bei einem Suchergebnis auf ★, um den Sender zu speichern."
 
 #: ui_qt/network_media_window.py:535
 msgid "Selected: "
@@ -3112,9 +3104,7 @@ msgstr "Ausgewählt: "
 msgid ""
 "No watch entries yet. Search for a station and click Watch, or enter a UUID "
 "above."
-msgstr ""
-"Noch keine Beobachtungseinträge. Suchen Sie einen Sender und klicken Sie "
-"Beobachten, oder geben Sie oben eine UUID ein."
+msgstr "Die Beobachtungsliste ist leer. Suchen Sie einen Sender und klicken Sie auf „Beobachten“ oder geben Sie oben eine UUID ein."
 
 #: ui_qt/network_media_window.py:603
 msgid "Label"
@@ -3130,7 +3120,7 @@ msgstr "Modus"
 
 #: ui_qt/network_media_window.py:621
 msgid "Discover new tracks (classical: {0})"
-msgstr "Entdecke neue Stücke (klassisch: {0})"
+msgstr "Neues entdecken (Klassik: {0})"
 
 #: ui_qt/network_media_window.py:625
 msgid "any: {0}"
@@ -3150,11 +3140,11 @@ msgstr "(keine Kriterien)"
 
 #: ui_qt/network_media_window.py:638
 msgid "Enable / disable this watch entry"
-msgstr "Diesen Beobachtungseintrag aktivieren / deaktivieren"
+msgstr "Diesen Eintrag aktivieren oder deaktivieren"
 
 #: ui_qt/network_media_window.py:647
 msgid "Delete this watch entry"
-msgstr "Diesen Beobachtungseintrag löschen"
+msgstr "Diesen Eintrag löschen"
 
 #: ui_qt/personas_window.py:49 ui_qt/personas_window.py:81
 msgid "DJ Personas"
@@ -3615,19 +3605,19 @@ msgstr "Neu im Radio"
 
 #: ui_qt/radio_suggestion_window.py:111
 msgid "On {0}: {1}"
-msgstr "Am {0}: {1}"
+msgstr "Auf {0}: {1}"
 
 #: ui_qt/radio_suggestion_window.py:121
 msgid "Switch"
-msgstr "Schalter"
+msgstr "Wechseln"
 
 #: ui_qt/radio_suggestion_window.py:122
 msgid "Stop what is playing and switch to this station"
-msgstr "Stoppe das, was gerade läuft, und wechsle zu diesem Sender"
+msgstr "Aktuelle Wiedergabe beenden und zu diesem Sender wechseln"
 
 #: ui_qt/radio_suggestion_window.py:126
 msgid "Dismiss"
-msgstr "Verwerfen"
+msgstr "Ausblenden"
 
 #: ui_qt/radio_suggestion_window.py:130
 msgid "Don't Suggest Again"
@@ -3635,15 +3625,15 @@ msgstr "Nicht mehr vorschlagen"
 
 #: ui_qt/radio_suggestion_window.py:132
 msgid "Never suggest this title again, from any station"
-msgstr "Nie wieder diesen Titel vorschlagen, von jeder Station"
+msgstr "Diesen Titel auf keinem Sender mehr vorschlagen"
 
 #: ui_qt/radio_suggestion_window.py:134
 msgid "Never suggest this artist again, from any station"
-msgstr "Nie wieder diesen Künstler vorschlagen, von allen Sendern"
+msgstr "Diesen Künstler auf keinem Sender mehr vorschlagen"
 
 #: ui_qt/radio_suggestion_window.py:146
 msgid "This track has ended on the station"
-msgstr "Dieser Streckenabschnitt endet am Bahnhof"
+msgstr "Dieser Titel läuft auf dem Sender nicht mehr"
 
 #: ui_qt/rename_confirmation_window.py:57
 msgid "Confirm Changes"
@@ -5281,7 +5271,7 @@ msgstr "on_title_change Callback ausgelöst"
 
 #: extensions/icy_metadata.py:156
 msgid "ICY connection error ({0}); reconnecting in {1:.0f}s"
-msgstr "ICY-Verbindungsfehler ({0}); Wiederverbindung in {1:.0f}s"
+msgstr "ICY-Verbindungsfehler ({0}); neuer Versuch in {1:.0f} s"
 
 #: extensions/imslp_souper.py:310 extensions/wiki_souper.py:354
 msgid "Invalid data urls:"
@@ -5342,15 +5332,15 @@ msgstr "Aufzeichnung {0} wird bei der Anreicherung übersprungen: {1}"
 
 #: extensions/radio_browser.py:37
 msgid "Radio Browser DNS discovery failed, using fallback: {0}"
-msgstr "Radio Browser DNS-Ermittlung fehlgeschlagen, verwende Fallback: {0}"
+msgstr "Radio-Browser-Server konnten nicht ermittelt werden, verwende Ersatzserver: {0}"
 
 #: extensions/radio_browser.py:93
 msgid "Failed to fetch station by UUID {0}: {1}"
-msgstr "Fehler beim Abrufen der Station mit UUID {0}: {1}"
+msgstr "Sender mit der UUID {0} konnte nicht abgerufen werden: {1}"
 
 #: extensions/radio_browser.py:116
 msgid "Failed to resolve playlist URL {0}: {1}"
-msgstr "Fehler beim Auflösen der Playlist-URL {0}: {1}"
+msgstr "Wiedergabelisten-URL {0} konnte nicht aufgelöst werden: {1}"
 
 #: extensions/reddit_api.py:80
 msgid "Unreadable Reddit timestamp: {0}"
@@ -5960,7 +5950,7 @@ msgstr "Abspielzähler konnte nicht erfasst werden: {0}"
 
 #: muse/playback.py:332
 msgid "Could not record heard stream title: {0}"
-msgstr "Konnte den gehörten Stream-Titel nicht aufnehmen: {0}"
+msgstr "Gehörter Streamtitel konnte nicht gespeichert werden: {0}"
 
 #: muse/playback.py:360
 msgid "Shutdown after track requested - initiating shutdown"
@@ -5977,7 +5967,7 @@ msgstr "Wiedergabe wird gestoppt: Gruppenlimit erreicht."
 
 #: muse/playback.py:508
 msgid "Failed to rebuild stream spot profile for ICY commentary"
-msgstr "Fehler beim Wiederaufbau des Stream‑Spot‑Profils für ICY‑Kommentar"
+msgstr "Spot-Profil für den Kommentar zum Streamtitel konnte nicht neu erstellt werden"
 
 #: muse/playback.py:571
 msgid "Failed to split too many tracks in queue!"
@@ -5993,11 +5983,11 @@ msgstr "Fehler beim Festlegen der Spurlänge: {0}"
 
 #: muse/playback.py:636
 msgid "ICY polling thread raised unexpectedly"
-msgstr "ICY-Polling-Thread unerwartet ausgelöst"
+msgstr "ICY-Abfrage unerwartet mit einem Fehler abgebrochen"
 
 #: muse/playback.py:669
 msgid "Could not trigger Muse ICY commentary"
-msgstr "Muse ICY-Kommentar konnte nicht ausgelöst werden"
+msgstr "Kommentar zum Streamtitel konnte nicht gestartet werden"
 
 #: muse/playback.py:690
 msgid "No main window handle to render the video track into."
@@ -6079,23 +6069,23 @@ msgstr ""
 
 #: muse/radio_novelty.py:195
 msgid "Could not read works for {0}: {1}"
-msgstr "Konnte Werke für {0} nicht lesen: {1}"
+msgstr "Werke von {0} konnten nicht gelesen werden: {1}"
 
 #: muse/radio_novelty.py:213
 msgid "Composer inference failed for '{0} - {1}': {2}"
-msgstr "Composer-Inferenz für '{0} - {1}' fehlgeschlagen: {2}"
+msgstr "Komponist für „{0} - {1}“ konnte nicht ermittelt werden: {2}"
 
 #: muse/radio_novelty.py:290
 msgid "Skipping malformed seen-titles record for station {0}: {1}"
-msgstr "Überspringe fehlerhaften seen‑titles‑Datensatz für Station {0}: {1}"
+msgstr "Fehlerhafter Eintrag der gehörten Titel von Sender {0} wird übersprungen: {1}"
 
 #: muse/radio_novelty.py:372
 msgid "Blacklist check skipped for radio title: {0}"
-msgstr "Blacklist‑Prüfung für Radiotitel übersprungen: {0}"
+msgstr "Sperrlistenprüfung für Radiotitel übersprungen: {0}"
 
 #: muse/radio_novelty.py:382
 msgid "Novelty evaluation failed for '{0} - {1}': {2}"
-msgstr "Bewertung der Neuheit fehlgeschlagen für '{0} - {1}': {2}"
+msgstr "Neuheitsbewertung für „{0} - {1}“ fehlgeschlagen: {2}"
 
 #: muse/radio_novelty.py:552
 msgid "Affinity scoring of a radio title failed: {0}"
@@ -6103,42 +6093,37 @@ msgstr "Affinitätsbewertung eines Radiotitels fehlgeschlagen: {0}"
 
 #: muse/radio_watchlist.py:96
 msgid "Skipping malformed watchlist entry: {0}"
-msgstr "Überspringe fehlerhaften Watchlist‑Eintrag: {0}"
+msgstr "Fehlerhafter Eintrag der Beobachtungsliste wird übersprungen: {0}"
 
 #: muse/radio_watchlist.py:174
 msgid ""
 "Cannot resolve stream URL for watchlist station {0}; this poll thread will "
 "not start"
-msgstr ""
-"Stream-URL für Watchlist-Station {0} kann nicht aufgelöst werden; dieser "
-"Abfrage-Thread wird nicht gestartet"
+msgstr "Stream-URL des beobachteten Senders {0} lässt sich nicht ermitteln; seine Abfrage wird nicht gestartet"
 
 #: muse/radio_watchlist.py:188
 msgid "Watchlist ICY poll thread failed for station {0}"
-msgstr "Watchlist-ICY-Abfrage-Thread für Station {0} fehlgeschlagen"
+msgstr "ICY-Abfrage des beobachteten Senders {0} fehlgeschlagen"
 
 #: muse/radio_watchlist.py:204
 msgid "Could not look up watchlist station {0}: {1}"
-msgstr "Konnte Station {0} der Beobachtungsliste nicht nachschlagen: {1}"
+msgstr "Beobachteter Sender {0} konnte nicht abgerufen werden: {1}"
 
 #: muse/radio_watchlist.py:216
 msgid "Could not resolve URL for watchlist station: {0}"
-msgstr "Konnte URL für Beobachtungslisten‑Station nicht auflösen: {0}"
+msgstr "URL des beobachteten Senders konnte nicht ermittelt werden: {0}"
 
 #: muse/radio_watchlist.py:289
 msgid "Novelty check failed for watchlist station {0}"
-msgstr "Neuheitsprüfung für die Beobachtungslisten-Station {0} fehlgeschlagen"
+msgstr "Neuheitsprüfung für den beobachteten Sender {0} fehlgeschlagen"
 
 #: muse/radio_watchlist.py:342
 msgid "No station data returned for watchlist UUID {0}; cannot switch"
-msgstr ""
-"Keine Stationsdaten für Watchlist-UUID {0} zurückgegeben; Umschalten nicht "
-"möglich"
+msgstr "Keine Senderdaten für die UUID {0} erhalten; Wechsel nicht möglich"
 
 #: muse/radio_watchlist.py:365
 msgid "Failed to switch playback to watchlist station {0}"
-msgstr ""
-"Fehler beim Umschalten der Wiedergabe zur Beobachtungsliste-Station {0}"
+msgstr "Wechsel zum beobachteten Sender {0} fehlgeschlagen"
 
 #: muse/run.py:115
 msgid ""
@@ -6607,39 +6592,39 @@ msgstr "Minimaler semantischer Score"
 
 #: ui_qt/configuration_window.py:379
 msgid "Watch Saved Stations for Matching Tracks"
-msgstr "Gespeicherte Stationen für passende Titel beobachten"
+msgstr "Beobachtete Sender auf passende Titel prüfen"
 
 #: ui_qt/configuration_window.py:382
 msgid "Minutes Between Alerts for One Station"
-msgstr "Minuten zwischen Alarmen für eine Station"
+msgstr "Minuten zwischen zwei Hinweisen desselben Senders"
 
 #: ui_qt/configuration_window.py:385
 msgid "Maximum Watched Stations"
-msgstr "Maximale überwachte Stationen"
+msgstr "Höchstzahl beobachteter Sender"
 
 #: ui_qt/configuration_window.py:388
 msgid "Seconds Before a Stream Title Counts as Heard"
-msgstr "Sekunden, bevor ein Stream-Titel als gehört gilt"
+msgstr "Sekunden, bis ein Streamtitel als gehört gilt"
 
 #: ui_qt/configuration_window.py:391
 msgid "Minutes Before Suggesting Unfamiliar Tracks"
-msgstr "Minuten, bevor unbekannte Titel vorgeschlagen werden"
+msgstr "Minuten bis zum ersten Vorschlag unbekannter Titel"
 
 #: ui_qt/configuration_window.py:395
 msgid "Minutes Between Discovery Suggestions"
-msgstr "Minuten zwischen Entdeckungsvorschlägen"
+msgstr "Minuten zwischen zwei Entdeckungsvorschlägen"
 
 #: ui_qt/configuration_window.py:399
 msgid "Remember This Many Titles per Station"
-msgstr "Diese vielen Titel pro Station merken"
+msgstr "Gemerkte Titel pro Sender"
 
 #: ui_qt/configuration_window.py:401
 msgid "Titles That Are Not Tracks"
-msgstr "Titel, die keine Tracks sind"
+msgstr "Titel, die keine Musikstücke sind"
 
 #: ui_qt/configuration_window.py:404
 msgid "Pattern, such as jingle"
-msgstr "Muster, etwa Jingle"
+msgstr "Muster, z. B. Jingle"
 
 #: ui_qt/configuration_window.py:406
 msgid "Tags Treated as Classical"
@@ -6647,7 +6632,7 @@ msgstr "Tags als klassisch behandelt"
 
 #: ui_qt/configuration_window.py:409
 msgid "Tag, such as classical"
-msgstr "Tag, z. B. klassisch"
+msgstr "Tag, z. B. klassisch"
 
 #: ui_qt/configuration_window.py:416
 msgid "Weather and News"
@@ -6850,15 +6835,15 @@ msgstr "Konnte das wiederholte Video {0} nicht neu starten: {1}"
 
 #: ui_qt/network_media_window.py:423
 msgid "Radio Browser search failed: {0}"
-msgstr "Radio‑Browser‑Suche fehlgeschlagen: {0}"
+msgstr "Suche bei Radio Browser fehlgeschlagen: {0}"
 
 #: ui_qt/network_media_window.py:449
 msgid "Error rendering search results"
-msgstr "Fehler beim Rendern der Suchergebnisse"
+msgstr "Fehler beim Anzeigen der Suchergebnisse"
 
 #: ui_qt/network_media_window.py:674
 msgid "Could not read suppressed radio suggestions: {0}"
-msgstr "Kann unterdrückte Radio‑Vorschläge nicht lesen: {0}"
+msgstr "Unterdrückte Radiovorschläge konnten nicht gelesen werden: {0}"
 
 #: ui_qt/personas_window.py:327
 msgid "Error updating language name from code: {0}"

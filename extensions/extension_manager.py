@@ -18,6 +18,7 @@ from utils.config import config
 from utils.globals import TrackAttribute, ExtensionStrategy, MediaFileType
 from utils.job_queue import JobQueue
 from utils.logging_setup import get_logger
+from utils.name_ops import NameOps
 from utils.utils import Utils
 from utils.translations import I18N
 
@@ -600,8 +601,12 @@ class ExtensionManager:
         if attr is None or strict is None:
             raise Exception("No strict test attribute specified")
         if attr == TrackAttribute.COMPOSER:
+            # Folded so that uploads spelling a name without accents
+            # ("Vasquez" for "Vásquez") still count as naming the composer.
+            name, description = NameOps.fold(b.n), NameOps.fold(b.d)
             for indicator in strict.indicators:
-                if indicator.lower() in b.n.lower() or indicator.lower() in b.d.lower():
+                folded = NameOps.fold(indicator)
+                if folded and (folded in name or folded in description):
                     return False
             if "biography" in b.n.lower() or "biography" in b.d.lower():
                 return False

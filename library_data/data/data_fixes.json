@@ -462,5 +462,1076 @@
         "op": "merge_into",
         "name": "Johann Carl Loewe",
         "value": "Carl Loewe"
+    },
+    {
+        "id": "2026-11-24-indicator-carlos-a-vasquez-carlos-alberto-vasquez",
+        "date": "2026-11-24",
+        "reason": "Uploads give the full forename and spell the surname Vásquez, Vázquez or Vasquez; the only indicator was \"Carlos A. Vásquez\", so the composer check rejected every result.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Carlos A. Vásquez",
+        "value": "Carlos Alberto Vásquez"
+    },
+    {
+        "id": "2026-11-24-indicator-carlos-a-vasquez-carlos-alberto-vazquez",
+        "date": "2026-11-24",
+        "reason": "Uploads give the full forename and spell the surname Vásquez, Vázquez or Vasquez; the only indicator was \"Carlos A. Vásquez\", so the composer check rejected every result.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Carlos A. Vásquez",
+        "value": "Carlos Alberto Vázquez"
+    },
+    {
+        "id": "2026-11-24-indicator-carlos-a-vasquez-carlos-alberto-vasquez-2",
+        "date": "2026-11-24",
+        "reason": "Uploads give the full forename and spell the surname Vásquez, Vázquez or Vasquez; the only indicator was \"Carlos A. Vásquez\", so the composer check rejected every result.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Carlos A. Vásquez",
+        "value": "Carlos Alberto Vasquez"
+    },
+    {
+        "id": "2026-11-24-indicator-carlos-a-vasquez-carlos-a-vazquez",
+        "date": "2026-11-24",
+        "reason": "Uploads give the full forename and spell the surname Vásquez, Vázquez or Vasquez; the only indicator was \"Carlos A. Vásquez\", so the composer check rejected every result.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Carlos A. Vásquez",
+        "value": "Carlos A. Vázquez"
+    },
+    {
+        "id": "2026-11-24-indicator-theodor-w-adorno-theodor-wiesengrund-adorno",
+        "date": "2026-11-24",
+        "reason": "Adds \"Theodor Wiesengrund Adorno\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Theodor W. Adorno",
+        "value": "Theodor Wiesengrund Adorno"
+    },
+    {
+        "id": "2026-11-24-indicator-theodor-w-adorno-theodor-adorno",
+        "date": "2026-11-24",
+        "reason": "Adds \"Theodor Adorno\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Theodor W. Adorno",
+        "value": "Theodor Adorno"
+    },
+    {
+        "id": "2026-11-24-indicator-w-c-handy-william-christopher-handy",
+        "date": "2026-11-24",
+        "reason": "Adds \"William Christopher Handy\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "W. C. Handy",
+        "value": "William Christopher Handy"
+    },
+    {
+        "id": "2026-11-24-indicator-george-m-cohan-george-michael-cohan",
+        "date": "2026-11-24",
+        "reason": "Adds \"George Michael Cohan\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "George M. Cohan",
+        "value": "George Michael Cohan"
+    },
+    {
+        "id": "2026-11-24-indicator-george-m-cohan-george-cohan",
+        "date": "2026-11-24",
+        "reason": "Adds \"George Cohan\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "George M. Cohan",
+        "value": "George Cohan"
+    },
+    {
+        "id": "2026-11-24-indicator-g-i-gurdjieff-george-ivanovich-gurdjieff",
+        "date": "2026-11-24",
+        "reason": "Adds \"George Ivanovich Gurdjieff\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "G. I. Gurdjieff",
+        "value": "George Ivanovich Gurdjieff"
+    },
+    {
+        "id": "2026-11-24-indicator-g-i-gurdjieff-gurdjieff",
+        "date": "2026-11-24",
+        "reason": "Adds \"Gurdjieff\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "G. I. Gurdjieff",
+        "value": "Gurdjieff"
+    },
+    {
+        "id": "2026-11-24-indicator-t-j-anderson-thomas-jefferson-anderson",
+        "date": "2026-11-24",
+        "reason": "Adds \"Thomas Jefferson Anderson\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "T. J. Anderson",
+        "value": "Thomas Jefferson Anderson"
+    },
+    {
+        "id": "2026-11-24-indicator-h-leslie-adams-harrison-leslie-adams",
+        "date": "2026-11-24",
+        "reason": "Adds \"Harrison Leslie Adams\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "H. Leslie Adams",
+        "value": "Harrison Leslie Adams"
+    },
+    {
+        "id": "2026-11-24-indicator-f-melius-christiansen-fredrik-melius-christiansen",
+        "date": "2026-11-24",
+        "reason": "Adds \"Fredrik Melius Christiansen\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "F. Melius Christiansen",
+        "value": "Fredrik Melius Christiansen"
+    },
+    {
+        "id": "2026-11-24-indicator-james-p-johnson-james-price-johnson",
+        "date": "2026-11-24",
+        "reason": "Adds \"James Price Johnson\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "James P. Johnson",
+        "value": "James Price Johnson"
+    },
+    {
+        "id": "2026-11-24-indicator-charles-h-gabriel-charles-hutchinson-gabriel",
+        "date": "2026-11-24",
+        "reason": "Adds \"Charles Hutchinson Gabriel\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Charles H. Gabriel",
+        "value": "Charles Hutchinson Gabriel"
+    },
+    {
+        "id": "2026-11-24-indicator-charles-h-gabriel-charles-gabriel",
+        "date": "2026-11-24",
+        "reason": "Adds \"Charles Gabriel\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Charles H. Gabriel",
+        "value": "Charles Gabriel"
+    },
+    {
+        "id": "2026-11-24-indicator-john-w-duarte-john-william-duarte",
+        "date": "2026-11-24",
+        "reason": "Adds \"John William Duarte\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "John W. Duarte",
+        "value": "John William Duarte"
+    },
+    {
+        "id": "2026-11-24-indicator-john-w-duarte-john-duarte",
+        "date": "2026-11-24",
+        "reason": "Adds \"John Duarte\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "John W. Duarte",
+        "value": "John Duarte"
+    },
+    {
+        "id": "2026-11-24-indicator-edward-t-cone-edward-toner-cone",
+        "date": "2026-11-24",
+        "reason": "Adds \"Edward Toner Cone\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Edward T. Cone",
+        "value": "Edward Toner Cone"
+    },
+    {
+        "id": "2026-11-24-indicator-edward-t-cone-edward-cone",
+        "date": "2026-11-24",
+        "reason": "Adds \"Edward Cone\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Edward T. Cone",
+        "value": "Edward Cone"
+    },
+    {
+        "id": "2026-11-24-indicator-john-j-becker-john-joseph-becker",
+        "date": "2026-11-24",
+        "reason": "Adds \"John Joseph Becker\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "John J. Becker",
+        "value": "John Joseph Becker"
+    },
+    {
+        "id": "2026-11-24-indicator-louis-w-ballard-louis-wayne-ballard",
+        "date": "2026-11-24",
+        "reason": "Adds \"Louis Wayne Ballard\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Louis W. Ballard",
+        "value": "Louis Wayne Ballard"
+    },
+    {
+        "id": "2026-11-24-indicator-louis-w-ballard-louis-ballard",
+        "date": "2026-11-24",
+        "reason": "Adds \"Louis Ballard\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Louis W. Ballard",
+        "value": "Louis Ballard"
+    },
+    {
+        "id": "2026-11-24-indicator-john-f-larchet-john-francis-larchet",
+        "date": "2026-11-24",
+        "reason": "Adds \"John Francis Larchet\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "John F. Larchet",
+        "value": "John Francis Larchet"
+    },
+    {
+        "id": "2026-11-24-indicator-john-f-larchet-john-larchet",
+        "date": "2026-11-24",
+        "reason": "Adds \"John Larchet\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "John F. Larchet",
+        "value": "John Larchet"
+    },
+    {
+        "id": "2026-11-24-indicator-a-j-potter-archibald-james-potter",
+        "date": "2026-11-24",
+        "reason": "Adds \"Archibald James Potter\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "A. J. Potter",
+        "value": "Archibald James Potter"
+    },
+    {
+        "id": "2026-11-24-indicator-t-c-kelly-thomas-charles-kelly",
+        "date": "2026-11-24",
+        "reason": "Adds \"Thomas Charles Kelly\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "T. C. Kelly",
+        "value": "Thomas Charles Kelly"
+    },
+    {
+        "id": "2026-11-24-indicator-t-r-g-joze-thomas-richard-gonsalvez-joze",
+        "date": "2026-11-24",
+        "reason": "Adds \"Thomas Richard Gonsalvez Jozé\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "T. R. G. Jozé",
+        "value": "Thomas Richard Gonsalvez Jozé"
+    },
+    {
+        "id": "2026-11-24-indicator-s-p-somtow-somtow-sucharitkul",
+        "date": "2026-11-24",
+        "reason": "Adds \"Somtow Sucharitkul\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "S. P. Somtow",
+        "value": "Somtow Sucharitkul"
+    },
+    {
+        "id": "2026-11-24-indicator-richard-m-sherman-richard-morton-sherman",
+        "date": "2026-11-24",
+        "reason": "Adds \"Richard Morton Sherman\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Richard M. Sherman",
+        "value": "Richard Morton Sherman"
+    },
+    {
+        "id": "2026-11-24-indicator-richard-m-sherman-richard-sherman",
+        "date": "2026-11-24",
+        "reason": "Adds \"Richard Sherman\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Richard M. Sherman",
+        "value": "Richard Sherman"
+    },
+    {
+        "id": "2026-11-24-indicator-jose-m-sanchez-verdu-jose-maria-sanchez-verdu",
+        "date": "2026-11-24",
+        "reason": "Adds \"José María Sánchez-Verdú\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "José M. Sánchez-Verdú",
+        "value": "José María Sánchez-Verdú"
+    },
+    {
+        "id": "2026-11-24-indicator-jose-m-sanchez-verdu-jose-sanchez-verdu",
+        "date": "2026-11-24",
+        "reason": "Adds \"José Sánchez-Verdú\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "José M. Sánchez-Verdú",
+        "value": "José Sánchez-Verdú"
+    },
+    {
+        "id": "2026-11-24-indicator-william-j-kirkpatrick-william-james-kirkpatrick",
+        "date": "2026-11-24",
+        "reason": "Adds \"William James Kirkpatrick\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "William J. Kirkpatrick",
+        "value": "William James Kirkpatrick"
+    },
+    {
+        "id": "2026-11-24-indicator-william-j-kirkpatrick-william-kirkpatrick",
+        "date": "2026-11-24",
+        "reason": "Adds \"William Kirkpatrick\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "William J. Kirkpatrick",
+        "value": "William Kirkpatrick"
+    },
+    {
+        "id": "2026-11-24-indicator-otto-m-zykan-otto-matthaus-zykan",
+        "date": "2026-11-24",
+        "reason": "Adds \"Otto Matthäus Zykan\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Otto M. Zykan",
+        "value": "Otto Matthäus Zykan"
+    },
+    {
+        "id": "2026-11-24-indicator-otto-m-zykan-otto-zykan",
+        "date": "2026-11-24",
+        "reason": "Adds \"Otto Zykan\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Otto M. Zykan",
+        "value": "Otto Zykan"
+    },
+    {
+        "id": "2026-11-24-indicator-johannes-x-schachtner-johannes-xaver-schachtner",
+        "date": "2026-11-24",
+        "reason": "Adds \"Johannes Xaver Schachtner\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Johannes X. Schachtner",
+        "value": "Johannes Xaver Schachtner"
+    },
+    {
+        "id": "2026-11-24-indicator-johannes-x-schachtner-johannes-schachtner",
+        "date": "2026-11-24",
+        "reason": "Adds \"Johannes Schachtner\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Johannes X. Schachtner",
+        "value": "Johannes Schachtner"
+    },
+    {
+        "id": "2026-11-24-indicator-albert-e-brumley-albert-edward-brumley",
+        "date": "2026-11-24",
+        "reason": "Adds \"Albert Edward Brumley\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Albert E. Brumley",
+        "value": "Albert Edward Brumley"
+    },
+    {
+        "id": "2026-11-24-indicator-ellis-b-kohs-ellis-bonoff-kohs",
+        "date": "2026-11-24",
+        "reason": "Adds \"Ellis Bonoff Kohs\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Ellis B. Kohs",
+        "value": "Ellis Bonoff Kohs"
+    },
+    {
+        "id": "2026-11-24-indicator-c-friedemann-carl-friedemann",
+        "date": "2026-11-24",
+        "reason": "Adds \"Carl Friedemann\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "C. Friedemann",
+        "value": "Carl Friedemann"
+    },
+    {
+        "id": "2026-11-24-indicator-st-ambrose-saint-ambrose",
+        "date": "2026-11-24",
+        "reason": "Adds \"Saint Ambrose\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "St. Ambrose",
+        "value": "Saint Ambrose"
+    },
+    {
+        "id": "2026-11-24-indicator-st-ambrose-ambrose-of-milan",
+        "date": "2026-11-24",
+        "reason": "Adds \"Ambrose of Milan\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "St. Ambrose",
+        "value": "Ambrose of Milan"
+    },
+    {
+        "id": "2026-11-24-indicator-uc-de-st-cirq-uc-de-saint-circ",
+        "date": "2026-11-24",
+        "reason": "Adds \"Uc de Saint-Circ\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Uc De St. Cirq",
+        "value": "Uc de Saint-Circ"
+    },
+    {
+        "id": "2026-11-24-indicator-easley-blackwood-jr-easley-blackwood-jr",
+        "date": "2026-11-24",
+        "reason": "Adds \"Easley Blackwood Jr.\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Easley Blackwood, Jr.",
+        "value": "Easley Blackwood Jr."
+    },
+    {
+        "id": "2026-11-24-indicator-john-serry-sr-john-serry-sr",
+        "date": "2026-11-24",
+        "reason": "Adds \"John Serry Sr.\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "John Serry, Sr.",
+        "value": "John Serry Sr."
+    },
+    {
+        "id": "2026-11-24-indicator-alton-augustus-adams-sr-alton-augustus-adams-sr",
+        "date": "2026-11-24",
+        "reason": "Adds \"Alton Augustus Adams Sr.\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Alton Augustus Adams, Sr.",
+        "value": "Alton Augustus Adams Sr."
+    },
+    {
+        "id": "2026-11-24-indicator-alton-augustus-adams-sr-alton-a-adams",
+        "date": "2026-11-24",
+        "reason": "Adds \"Alton A. Adams\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Alton Augustus Adams, Sr.",
+        "value": "Alton A. Adams"
+    },
+    {
+        "id": "2026-11-24-indicator-clifton-j-noble-jr-clifton-j-noble-jr",
+        "date": "2026-11-24",
+        "reason": "Adds \"Clifton J. Noble Jr.\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Clifton J. Noble, Jr.",
+        "value": "Clifton J. Noble Jr."
+    },
+    {
+        "id": "2026-11-24-indicator-clifton-j-noble-jr-clifton-noble",
+        "date": "2026-11-24",
+        "reason": "Adds \"Clifton Noble\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Clifton J. Noble, Jr.",
+        "value": "Clifton Noble"
+    },
+    {
+        "id": "2026-11-24-indicator-alex-t-favazza-jr-alex-t-favazza-jr",
+        "date": "2026-11-24",
+        "reason": "Adds \"Alex T. Favazza Jr.\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Alex T. Favazza, Jr.",
+        "value": "Alex T. Favazza Jr."
+    },
+    {
+        "id": "2026-11-24-indicator-alex-t-favazza-jr-alex-favazza",
+        "date": "2026-11-24",
+        "reason": "Adds \"Alex Favazza\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Alex T. Favazza, Jr.",
+        "value": "Alex Favazza"
+    },
+    {
+        "id": "2026-11-24-indicator-james-a-beckel-jr-james-beckel",
+        "date": "2026-11-24",
+        "reason": "Adds \"James Beckel\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "James A. Beckel Jr.",
+        "value": "James Beckel"
+    },
+    {
+        "id": "2026-11-24-indicator-kenneth-j-alford-kenneth-alford",
+        "date": "2026-11-24",
+        "reason": "Adds \"Kenneth Alford\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Kenneth J. Alford",
+        "value": "Kenneth Alford"
+    },
+    {
+        "id": "2026-11-24-indicator-arthur-h-bird-arthur-bird",
+        "date": "2026-11-24",
+        "reason": "Adds \"Arthur Bird\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Arthur H. Bird",
+        "value": "Arthur Bird"
+    },
+    {
+        "id": "2026-11-24-indicator-joshua-m-abramson-joshua-abramson",
+        "date": "2026-11-24",
+        "reason": "Adds \"Joshua Abramson\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Joshua M. Abramson",
+        "value": "Joshua Abramson"
+    },
+    {
+        "id": "2026-11-24-indicator-ali-n-askin-ali-askin",
+        "date": "2026-11-24",
+        "reason": "Adds \"Ali Askin\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Ali N. Askin",
+        "value": "Ali Askin"
+    },
+    {
+        "id": "2026-11-24-indicator-tryggvi-m-baldvinsson-tryggvi-baldvinsson",
+        "date": "2026-11-24",
+        "reason": "Adds \"Tryggvi Baldvinsson\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Tryggvi M. Baldvinsson",
+        "value": "Tryggvi Baldvinsson"
+    },
+    {
+        "id": "2026-11-24-indicator-gary-d-belshaw-gary-belshaw",
+        "date": "2026-11-24",
+        "reason": "Adds \"Gary Belshaw\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Gary D. Belshaw",
+        "value": "Gary Belshaw"
+    },
+    {
+        "id": "2026-11-24-indicator-birke-j-bertelsmeier-birke-bertelsmeier",
+        "date": "2026-11-24",
+        "reason": "Adds \"Birke Bertelsmeier\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Birke J. Bertelsmeier",
+        "value": "Birke Bertelsmeier"
+    },
+    {
+        "id": "2026-11-24-indicator-john-g-bilotta-john-bilotta",
+        "date": "2026-11-24",
+        "reason": "Adds \"John Bilotta\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "John G. Bilotta",
+        "value": "John Bilotta"
+    },
+    {
+        "id": "2026-11-24-indicator-anders-s-borgesson-anders-borgesson",
+        "date": "2026-11-24",
+        "reason": "Adds \"Anders Börgesson\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Anders S. Börgesson",
+        "value": "Anders Börgesson"
+    },
+    {
+        "id": "2026-11-24-indicator-douglas-s-bristol-douglas-bristol",
+        "date": "2026-11-24",
+        "reason": "Adds \"Douglas Bristol\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Douglas S. Bristol",
+        "value": "Douglas Bristol"
+    },
+    {
+        "id": "2026-11-24-indicator-howard-j-buss-howard-buss",
+        "date": "2026-11-24",
+        "reason": "Adds \"Howard Buss\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Howard J. Buss",
+        "value": "Howard Buss"
+    },
+    {
+        "id": "2026-11-24-indicator-john-a-carollo-john-carollo",
+        "date": "2026-11-24",
+        "reason": "Adds \"John Carollo\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "John A. Carollo",
+        "value": "John Carollo"
+    },
+    {
+        "id": "2026-11-24-indicator-james-p-carrell-james-carrell",
+        "date": "2026-11-24",
+        "reason": "Adds \"James Carrell\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "James P. Carrell",
+        "value": "James Carrell"
+    },
+    {
+        "id": "2026-11-24-indicator-justine-f-chen-justine-chen",
+        "date": "2026-11-24",
+        "reason": "Adds \"Justine Chen\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Justine F. Chen",
+        "value": "Justine Chen"
+    },
+    {
+        "id": "2026-11-24-indicator-olaf-c-christiansen-olaf-christiansen",
+        "date": "2026-11-24",
+        "reason": "Adds \"Olaf Christiansen\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Olaf C. Christiansen",
+        "value": "Olaf Christiansen"
+    },
+    {
+        "id": "2026-11-24-indicator-lisa-r-coons-lisa-coons",
+        "date": "2026-11-24",
+        "reason": "Adds \"Lisa Coons\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Lisa R. Coons",
+        "value": "Lisa Coons"
+    },
+    {
+        "id": "2026-11-24-indicator-nickitas-j-demos-nickitas-demos",
+        "date": "2026-11-24",
+        "reason": "Adds \"Nickitas Demos\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Nickitas J. Demos",
+        "value": "Nickitas Demos"
+    },
+    {
+        "id": "2026-11-24-indicator-sandford-c-faulkner-sandford-faulkner",
+        "date": "2026-11-24",
+        "reason": "Adds \"Sandford Faulkner\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Sandford C. Faulkner",
+        "value": "Sandford Faulkner"
+    },
+    {
+        "id": "2026-11-24-indicator-marques-l-a-garrett-marques-garrett",
+        "date": "2026-11-24",
+        "reason": "Adds \"Marques Garrett\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Marques L. A. Garrett",
+        "value": "Marques Garrett"
+    },
+    {
+        "id": "2026-11-24-indicator-daniel-e-gawthrop-daniel-gawthrop",
+        "date": "2026-11-24",
+        "reason": "Adds \"Daniel Gawthrop\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Daniel E. Gawthrop",
+        "value": "Daniel Gawthrop"
+    },
+    {
+        "id": "2026-11-24-indicator-andre-e-godsey-andre-godsey",
+        "date": "2026-11-24",
+        "reason": "Adds \"Andre’ Godsey\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Andre’ E. Godsey",
+        "value": "Andre’ Godsey"
+    },
+    {
+        "id": "2026-11-24-indicator-andre-e-godsey-andre-godsey-2",
+        "date": "2026-11-24",
+        "reason": "Adds \"Andre Godsey\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Andre’ E. Godsey",
+        "value": "Andre Godsey"
+    },
+    {
+        "id": "2026-11-24-indicator-anne-h-goldberg-baldwin-anne-goldberg-baldwin",
+        "date": "2026-11-24",
+        "reason": "Adds \"Anne Goldberg-Baldwin\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Anne H. Goldberg-Baldwin",
+        "value": "Anne Goldberg-Baldwin"
+    },
+    {
+        "id": "2026-11-24-indicator-samuel-e-goldfarb-samuel-goldfarb",
+        "date": "2026-11-24",
+        "reason": "Adds \"Samuel Goldfarb\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Samuel E. Goldfarb",
+        "value": "Samuel Goldfarb"
+    },
+    {
+        "id": "2026-11-24-indicator-francisco-c-goldschmidt-francisco-goldschmidt",
+        "date": "2026-11-24",
+        "reason": "Adds \"Francisco Goldschmidt\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Francisco C. Goldschmidt",
+        "value": "Francisco Goldschmidt"
+    },
+    {
+        "id": "2026-11-24-indicator-joseph-e-heidenfelder-joseph-heidenfelder",
+        "date": "2026-11-24",
+        "reason": "Adds \"Joseph Heidenfelder\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Joseph E. Heidenfelder",
+        "value": "Joseph Heidenfelder"
+    },
+    {
+        "id": "2026-11-24-indicator-robert-m-helmschrott-robert-helmschrott",
+        "date": "2026-11-24",
+        "reason": "Adds \"Robert Helmschrott\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Robert M. Helmschrott",
+        "value": "Robert Helmschrott"
+    },
+    {
+        "id": "2026-11-24-indicator-blake-r-henson-blake-henson",
+        "date": "2026-11-24",
+        "reason": "Adds \"Blake Henson\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Blake R. Henson",
+        "value": "Blake Henson"
+    },
+    {
+        "id": "2026-11-24-indicator-quincy-c-hilliard-quincy-hilliard",
+        "date": "2026-11-24",
+        "reason": "Adds \"Quincy Hilliard\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Quincy C. Hilliard",
+        "value": "Quincy Hilliard"
+    },
+    {
+        "id": "2026-11-24-indicator-nicolaus-a-huber-nicolaus-huber",
+        "date": "2026-11-24",
+        "reason": "Adds \"Nicolaus Huber\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Nicolaus A. Huber",
+        "value": "Nicolaus Huber"
+    },
+    {
+        "id": "2026-11-24-indicator-fernando-c-lapa-fernando-lapa",
+        "date": "2026-11-24",
+        "reason": "Adds \"Fernando Lapa\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Fernando C. Lapa",
+        "value": "Fernando Lapa"
+    },
+    {
+        "id": "2026-11-24-indicator-david-s-lefkowitz-david-lefkowitz",
+        "date": "2026-11-24",
+        "reason": "Adds \"David Lefkowitz\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "David S. Lefkowitz",
+        "value": "David Lefkowitz"
+    },
+    {
+        "id": "2026-11-24-indicator-leonard-j-lehrman-leonard-lehrman",
+        "date": "2026-11-24",
+        "reason": "Adds \"Leonard Lehrman\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Leonard J. Lehrman",
+        "value": "Leonard Lehrman"
+    },
+    {
+        "id": "2026-11-24-indicator-salvador-n-llamozas-salvador-llamozas",
+        "date": "2026-11-24",
+        "reason": "Adds \"Salvador Llamozas\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Salvador N. Llamozas",
+        "value": "Salvador Llamozas"
+    },
+    {
+        "id": "2026-11-24-indicator-jason-r-lovelace-jason-lovelace",
+        "date": "2026-11-24",
+        "reason": "Adds \"Jason Lovelace\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Jason R. Lovelace",
+        "value": "Jason Lovelace"
+    },
+    {
+        "id": "2026-11-24-indicator-derek-a-mckinney-derek-mckinney",
+        "date": "2026-11-24",
+        "reason": "Adds \"Derek McKinney\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Derek A. McKinney",
+        "value": "Derek McKinney"
+    },
+    {
+        "id": "2026-11-24-indicator-jonathan-b-mcnair-jonathan-mcnair",
+        "date": "2026-11-24",
+        "reason": "Adds \"Jonathan McNair\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Jonathan B. McNair",
+        "value": "Jonathan McNair"
+    },
+    {
+        "id": "2026-11-24-indicator-kimberly-r-osberg-kimberly-osberg",
+        "date": "2026-11-24",
+        "reason": "Adds \"Kimberly Osberg\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Kimberly R. Osberg",
+        "value": "Kimberly Osberg"
+    },
+    {
+        "id": "2026-11-24-indicator-grigor-g-pahlavuni-grigor-pahlavuni",
+        "date": "2026-11-24",
+        "reason": "Adds \"Grigor Pahlavuni\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Grigor G. Pahlavuni",
+        "value": "Grigor Pahlavuni"
+    },
+    {
+        "id": "2026-11-24-indicator-eudenice-v-palaruan-eudenice-palaruan",
+        "date": "2026-11-24",
+        "reason": "Adds \"Eudenice Palaruan\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Eudenice V. Palaruan",
+        "value": "Eudenice Palaruan"
+    },
+    {
+        "id": "2026-11-24-indicator-russell-j-peck-russell-peck",
+        "date": "2026-11-24",
+        "reason": "Adds \"Russell Peck\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Russell J. Peck",
+        "value": "Russell Peck"
+    },
+    {
+        "id": "2026-11-24-indicator-lucio-d-san-pedro-lucio-san-pedro",
+        "date": "2026-11-24",
+        "reason": "Adds \"Lucio San Pedro\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Lucio D. San Pedro",
+        "value": "Lucio San Pedro"
+    },
+    {
+        "id": "2026-11-24-indicator-alexander-j-petshaft-alexander-petshaft",
+        "date": "2026-11-24",
+        "reason": "Adds \"Alexander Petshaft\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Alexander J. Petshaft",
+        "value": "Alexander Petshaft"
+    },
+    {
+        "id": "2026-11-24-indicator-aldo-d-platteau-aldo-platteau",
+        "date": "2026-11-24",
+        "reason": "Adds \"Aldo Platteau\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Aldo D. Platteau",
+        "value": "Aldo Platteau"
+    },
+    {
+        "id": "2026-11-24-indicator-robert-j-poselt-robert-poselt",
+        "date": "2026-11-24",
+        "reason": "Adds \"Robert Poselt\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Robert J. Poselt",
+        "value": "Robert Poselt"
+    },
+    {
+        "id": "2026-11-24-indicator-tobias-p-m-schneid-tobias-schneid",
+        "date": "2026-11-24",
+        "reason": "Adds \"Tobias Schneid\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Tobias P. M. Schneid",
+        "value": "Tobias Schneid"
+    },
+    {
+        "id": "2026-11-24-indicator-svend-s-schultz-svend-schultz",
+        "date": "2026-11-24",
+        "reason": "Adds \"Svend Schultz\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Svend S. Schultz",
+        "value": "Svend Schultz"
+    },
+    {
+        "id": "2026-11-24-indicator-joseph-t-spaniola-joseph-spaniola",
+        "date": "2026-11-24",
+        "reason": "Adds \"Joseph Spaniola\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Joseph T. Spaniola",
+        "value": "Joseph Spaniola"
+    },
+    {
+        "id": "2026-11-24-indicator-john-a-speight-john-speight",
+        "date": "2026-11-24",
+        "reason": "Adds \"John Speight\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "John A. Speight",
+        "value": "John Speight"
+    },
+    {
+        "id": "2026-11-24-indicator-mira-j-spektor-mira-spektor",
+        "date": "2026-11-24",
+        "reason": "Adds \"Mira Spektor\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Mira J. Spektor",
+        "value": "Mira Spektor"
+    },
+    {
+        "id": "2026-11-24-indicator-greg-a-steinke-greg-steinke",
+        "date": "2026-11-24",
+        "reason": "Adds \"Greg Steinke\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Greg A. Steinke",
+        "value": "Greg Steinke"
+    },
+    {
+        "id": "2026-11-24-indicator-constantinos-y-stylianou-constantinos-stylianou",
+        "date": "2026-11-24",
+        "reason": "Adds \"Constantinos Stylianou\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Constantinos Y. Stylianou",
+        "value": "Constantinos Stylianou"
+    },
+    {
+        "id": "2026-11-24-indicator-john-r-sweney-john-sweney",
+        "date": "2026-11-24",
+        "reason": "Adds \"John Sweney\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "John R. Sweney",
+        "value": "John Sweney"
+    },
+    {
+        "id": "2026-11-24-indicator-timothy-c-takach-timothy-takach",
+        "date": "2026-11-24",
+        "reason": "Adds \"Timothy Takach\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Timothy C. Takach",
+        "value": "Timothy Takach"
+    },
+    {
+        "id": "2026-11-24-indicator-frederick-c-tillis-frederick-tillis",
+        "date": "2026-11-24",
+        "reason": "Adds \"Frederick Tillis\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Frederick C. Tillis",
+        "value": "Frederick Tillis"
+    },
+    {
+        "id": "2026-11-24-indicator-audun-g-vassdal-audun-vassdal",
+        "date": "2026-11-24",
+        "reason": "Adds \"Audun Vassdal\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Audun G. Vassdal",
+        "value": "Audun Vassdal"
+    },
+    {
+        "id": "2026-11-24-indicator-neil-d-voss-neil-voss",
+        "date": "2026-11-24",
+        "reason": "Adds \"Neil Voss\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Neil D. Voss",
+        "value": "Neil Voss"
+    },
+    {
+        "id": "2026-11-24-indicator-zoe-a-wallace-zoe-wallace",
+        "date": "2026-11-24",
+        "reason": "Adds \"Zoë Wallace\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Zoë A. Wallace",
+        "value": "Zoë Wallace"
+    },
+    {
+        "id": "2026-11-24-indicator-meira-m-warshauer-meira-warshauer",
+        "date": "2026-11-24",
+        "reason": "Adds \"Meira Warshauer\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Meira M. Warshauer",
+        "value": "Meira Warshauer"
+    },
+    {
+        "id": "2026-11-24-indicator-paul-w-whear-paul-whear",
+        "date": "2026-11-24",
+        "reason": "Adds \"Paul Whear\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Paul W. Whear",
+        "value": "Paul Whear"
+    },
+    {
+        "id": "2026-11-24-indicator-david-f-wilborn-david-wilborn",
+        "date": "2026-11-24",
+        "reason": "Adds \"David Wilborn\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "David F. Wilborn",
+        "value": "David Wilborn"
+    },
+    {
+        "id": "2026-11-24-indicator-carle-j-wirshba-carle-wirshba",
+        "date": "2026-11-24",
+        "reason": "Adds \"Carle Wirshba\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Carle J. Wirshba",
+        "value": "Carle Wirshba"
+    },
+    {
+        "id": "2026-11-24-indicator-jordan-c-witherspoon-jordan-witherspoon",
+        "date": "2026-11-24",
+        "reason": "Adds \"Jordan Witherspoon\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Jordan C. Witherspoon",
+        "value": "Jordan Witherspoon"
+    },
+    {
+        "id": "2026-11-24-indicator-gregory-w-yasinitsky-gregory-yasinitsky",
+        "date": "2026-11-24",
+        "reason": "Adds \"Gregory Yasinitsky\", a form of the name the existing indicators don't cover, so the extension composer check and track matching recognise it.",
+        "table": "composers",
+        "op": "add_indicator",
+        "name": "Gregory W. Yasinitsky",
+        "value": "Gregory Yasinitsky"
     }
 ]

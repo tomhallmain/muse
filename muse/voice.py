@@ -105,7 +105,7 @@ class Voice:
         logger.info("Saying: %s", text)
         temp_tts = TextToSpeechRunner(self._make_config(overwrite=True))
         current_time_str = str(datetime.datetime.now().timestamp()).split(".")[0]
-        self._tts.set_output_path(topic + "_" + current_time_str + "_")
+        temp_tts.set_output_path(topic + "_" + current_time_str + "_")
         try:
             return temp_tts.speak(text, save_mp3=save_mp3, locale=locale)
         except Exception as e:
@@ -152,7 +152,7 @@ class Voice:
         logger.info("Speaking file: %s", filepath)
         temp_tts = TextToSpeechRunner(self._make_config(overwrite=True))
         current_time_str = str(datetime.datetime.now().timestamp()).split(".")[0]
-        self._tts.set_output_path(topic + "_" + current_time_str + "_")
+        temp_tts.set_output_path(topic + "_" + current_time_str + "_")
         try:
             return temp_tts.speak_file(
                 filepath,
